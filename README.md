@@ -3,7 +3,7 @@ This is a test repository of the ALIGN-analoglayout repository.
 
 # Run a test using docker
 
-First build the g++ environment including googletest and a json parser:
+First build the g++ environment including googletest, a json parser, and protobuf:
 ````bash
 docker build -f Dockerfile.build -t with_protobuf .
 ````
