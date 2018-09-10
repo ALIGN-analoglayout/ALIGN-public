@@ -13,8 +13,8 @@ docker build -f Dockerfile.test -t tester .
 ````
 and finally execute the tests:
 ````bash
-docker run --rm -t tester /Apps/src/tester
-docker run --rm -t tester /Apps/src/ptest
+docker run --rm -t tester /Apps/src/json/tester
+docker run --rm -t tester /Apps/src/proto/ptest
 ````
 
 This was tried using Ubuntu 18.04 using the docker installation instructions found here: https://docs.docker.com/install/linux/docker-ce/ubuntu/
