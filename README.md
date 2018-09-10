@@ -19,7 +19,11 @@ docker run --rm -t tester /Apps/src/ptest
 
 # Modification when behind the firewall at Intel
 
-The docker build commands need the following arguments.
+The docker build commands need the following arguments:
+````bash
+--build-arg http_proxy=http://proxy-chain.intel.com:911 --build-arg https_proxy=http://proxy-chain.intel.com:911
+````
+so the command become:
 ````bash
 docker build -f Dockerfile.build -t with_protobuf --build-arg http_proxy=http://proxy-chain.intel.com:911 --build-arg https_proxy=http://proxy-chain.intel.com:911 .
 docker build -f Dockerfile.test -t tester --build-arg http_proxy=http://proxy-chain.intel.com:911 --build-arg https_proxy=http://proxy-chain.intel.com:911 .
