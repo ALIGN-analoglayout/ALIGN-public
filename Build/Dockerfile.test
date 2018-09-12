@@ -1,0 +1,17 @@
+FROM with_protobuf
+
+RUN \
+    mkdir -p Apps
+
+ADD ./src /Apps/src
+
+RUN \
+    cd /Apps/src/json  && make && \
+    cd /Apps/src/proto && make
+
+
+
+
+
+
+
