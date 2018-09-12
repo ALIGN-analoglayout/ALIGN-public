@@ -1,4 +1,4 @@
-# foo
+# ALIGN
 This is a test repository of the ALIGN-analoglayout repository.
 
 # Run a test using docker
