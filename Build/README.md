@@ -43,5 +43,5 @@ docker build -f Dockerfile.build.python -t with_python_protobuf .
 To run a python example, try:
 ```bash
 tar cvfjB - src | docker run --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvfjB -"
-docker run --mount source=srcVol,target=/vol with_python_protobuf bash -t -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
+docker run --mount source=srcVol,target=/vol -t with_python_protobuf bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
 ````
