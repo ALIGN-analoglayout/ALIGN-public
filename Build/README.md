@@ -9,7 +9,7 @@ docker build -f Dockerfile.build -t with_protobuf .
 ````
 Then copy the src directory to a Docker volume (one time)
 ````bash
-tar cvfjB - src | docker run --rm --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvfjB -"
+tar cvf - src | docker run --rm --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
 ````
 and finally execute the tests:
 ````bash
@@ -42,6 +42,6 @@ docker build -f Dockerfile.build.python -t with_python_protobuf .
 
 To run a python example, try:
 ```bash
-tar cvfjB - src | docker run --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvfjB -"
+tar cvf - src | docker run --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
 docker run --mount source=srcVol,target=/vol -t with_python_protobuf bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
 ````
