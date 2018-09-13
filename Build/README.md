@@ -14,7 +14,7 @@ tar cvf - src | docker run --rm --mount source=srcVol,target=/vol -i ubuntu bash
 and finally execute the tests:
 ````bash
 docker run --rm --mount source=srcVol,target=/vol -t with_protobuf bash -c "cd /vol/src/json && make && ./tester"
-docker run --mount source=srcVol,target=/vol -t with_protobuf bash -c "cd /vol/src/proto && make && ./ptest"
+docker run --rm --mount source=srcVol,target=/vol -t with_protobuf bash -c "cd /vol/src/proto && make && ./ptest"
 ````
 
 This was tried using Ubuntu 18.04 using the docker installation instructions found here: https://docs.docker.com/install/linux/docker-ce/ubuntu/
@@ -42,6 +42,6 @@ docker build -f Dockerfile.build.python -t with_python_protobuf .
 
 To run a python example, try:
 ```bash
-tar cvf - src | docker run --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
-docker run --mount source=srcVol,target=/vol -t with_python_protobuf bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
+tar cvf - src | docker run --rm --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
+docker run --rm --mount source=srcVol,target=/vol -t with_python_protobuf bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
 ````
