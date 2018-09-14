@@ -5,3 +5,5 @@
 /*.egg-info
 /build/
 /.eggs/
+.coverage
+/htmlcov/
