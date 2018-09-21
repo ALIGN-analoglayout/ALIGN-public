@@ -22,7 +22,7 @@ tar cvf - . | docker run --mount source=routerStrawman,target=/DR_COLLATERAL -i 
 
 This runs the router.
 ````bash
-docker run --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
+docker run --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
 ````
 
 This backannotates the router results into a json file for viewer/
