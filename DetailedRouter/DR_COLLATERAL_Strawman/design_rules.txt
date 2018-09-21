@@ -1,0 +1,16 @@
+Rule name=M1_41 type=minete value=720 layer=metal1
+Rule name=M2_41 type=minete value=720 layer=metal2
+Rule name=M3_41 type=minete value=720 layer=metal3
+Rule name=M4_41 type=minete value=720 layer=metal4
+Rule name=M5_41 type=minete value=720 layer=metal5
+
+Rule name=M1_60 type=minlength value=2160 layer=metal1
+Rule name=M2_60 type=minlength value=2160 layer=metal2
+Rule name=M3_60 type=minlength value=2160 layer=metal3
+Rule name=M4_60 type=minlength value=2160 layer=metal4
+Rule name=M5_60 type=minlength value=2160 layer=metal5
+
+
+
+
+
