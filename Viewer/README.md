@@ -1,6 +1,6 @@
 # Simple Layout Viewer
 
-Currently reads a JSON file named /public/INPUT/mydesign_blah_blah.json
+Currently reads a JSON file named /public/INPUT/mydesign_dr_globalrouting.json (need to change this.)
 
 To build in docker, build upon "with_python_protobuf" (see the Build/ subdirectory):
 
