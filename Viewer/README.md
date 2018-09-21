@@ -29,8 +29,9 @@ This will be something like:
 docker run --mount source=myJSONVol,target=/public/INPUT -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 ````
 You'll need to have written your new JSON file to the docker volume ahead of time.
-You can do it like this:
+You can do it like this (there is another json file in the subdirectory larger_example)
 ````bash
+cd larger_example
 tar cvf - mydesign_dr_globalrouting.json | docker run --mount source=myJSONVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
 ````
 
