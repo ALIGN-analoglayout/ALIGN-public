@@ -14,7 +14,7 @@ docker run --mount source=inputVol,target=/Cktgen/INPUT cktgen bash -c "source /
 ````
 The input collateral for the router is placed in the docker volume named "inputVol".
 
-This puts the detailed routing process collateral (for the strawman process) in the docker volume names "routerStrawman". Change to the directory with the collateral before doing the docker run.
+This puts the detailed routing process collateral (for the strawman process) in the docker volume named "routerStrawman". Change to the directory with the collateral before doing the docker run.
 ````bash
 cd ../DetailedRouter/DR_COLLATERAL_Strawman
 #docker volume rm routerStrawman
