@@ -12,7 +12,7 @@ This runs the script that generates a two device placement and global routing
 ````bash
 docker run --mount source=inputVol,target=/Cktgen/INPUT cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py -n mydesign --route --show_global_routes"
 ````
-The input collateral for the router is placed in the docker volume named "inputVol".
+The input collateral for the router is placed in the docker volume named "inputVol". Also try cktgen-bigger.py and cktgen8.py for circuits with more devices.
 
 This puts the detailed routing process collateral (for the strawman process) in the docker volume named "routerStrawman". Change to the directory with the collateral before doing the docker run.
 ````bash
