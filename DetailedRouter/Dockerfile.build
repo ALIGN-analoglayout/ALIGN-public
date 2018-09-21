@@ -1,0 +1,26 @@
+FROM ubuntu:18.04 as router
+
+ADD . /router
+
+RUN \
+  cd /router && \
+  tar xvfj router.tar.bz2 && \
+  cd /usr/lib && \
+  tar xvfj /router/boost.tar.bz2 && \
+  cp -p /router/lib/libamsr.so . && \
+  cp -p /router/bin/amsr.exe /usr/bin && \
+  rm -rf /router
+
+
+
+
+
+
+
+
+
+
+
+
+
+
