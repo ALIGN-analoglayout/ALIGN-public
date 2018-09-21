@@ -12,4 +12,5 @@ layers.txt - specifies the layer stack and connectivity (also the poly and fin p
 
 metal_templates.txt - specifies the metal templates for each layer.
 
-The rule set is very simple. All metals have the same pitch (72nm). The poly and fin pitches are also the same. The wire widths are 40nm an the space between wires is 32nm.
+The rule set is very simple. All metals have the same pitch (72nm). The poly and fin pitches are also the same. The wire widths are 40nm and the space between wires is 32nm. Metal end to end is also 72nm and min length should be three times that.
+ 
