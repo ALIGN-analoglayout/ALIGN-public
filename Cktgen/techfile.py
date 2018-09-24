@@ -2,56 +2,6 @@
 
 import json
 
-json_Strawman = """
-{
-    "pitchDG" : 720,
-    "dgPerRow" :  6,
-    "pitchPoly" : 720,
-    "pitchM1" : 720,
-    "halfWidthM1" : 200,
-    "halfMinETESpaceM1" : 360,
-
-    "halfWidthM3" : [200],
-    "halfWidthM4" : [200],
-
-    "halfXGRGrid" : 3,
-    "halfYGRGrid" : 3,
-
-    "metalTemplates" : [
-                   {
-                     "layer":"metal5", "name":"m5",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                   {
-                     "layer":"metal4", "name":"m4",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal3", "name":"m3",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal2", "name":"m2",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal1", "name":"m1",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  }
-    ]
-}
-"""
-
 class MetalTemplate:
   def __init__( self, *, layer, name, widths, spaces, colors):
     self.layer = layer
@@ -71,8 +21,9 @@ class MetalTemplate:
 
 
 class TechFile:
-  def __init__( self, s):
-    self.json = json.loads(s)
+  def __init__( self, fn):
+    with open( fn, 'rt') as fp:
+      self.json = json.load( fp)
 
 
   @property

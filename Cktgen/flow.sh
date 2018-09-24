@@ -1,13 +1,17 @@
 #!/bin/bash
 
-docker run --rm --mount source=inputVol,target=/Cktgen/INPUT cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py -n mydesign --route --show_global_routes"
+M_INPUT="--mount source=inputVol,target=/Cktgen/INPUT"
+M_out="--mount source=outputVol,target=/Cktgen/out"
+M_DR_COLLATERAL="--mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL"
 
-#docker volume rm routerStrawman
-#tar cvf - . | docker run --rm --mount source=routerStrawman,target=/DR_COLLATERAL -i ubuntu bash -c "cd DR_COLLATERAL; tar xvf -"
+docker volume rm routerStrawman
+(cd ../DetailedRouter/DR_COLLATERAL_Strawman; tar cvf - . | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL; tar xvf -")
 
-docker run --rm --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
+docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py -n mydesign --route"
 
-docker run --rm --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py --consume_results -n mydesign"
+docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
 
-docker run --rm --mount source=inputVol,target=/public/INPUT -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
+docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py --consume_results -n mydesign"
+
+docker run --rm ${M_INPUT} -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 

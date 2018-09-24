@@ -480,15 +480,11 @@ def parse_args():
   parser.add_argument( "--show_global_routes", action='store_true')
   parser.add_argument( "--show_metal_templates", action='store_true')
   parser.add_argument( "--consume_results", action='store_true')
-  parser.add_argument( "-t", "--technology", type=str, default="Strawman")
+  parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
 
   args = parser.parse_args()
 
-  tech = None
-  if   args.technology == "Strawman":
-    tech = techfile.TechFile(techfile.json_Strawman)
-  else:
-    assert False, ("Unknown technology type: %s" % args.technology)
+  tech = techfile.TechFile( args.technology_file)
 
   if args.consume_results:
     netl = parse_lgf( 'out/' + args.block_name + '.lgf')  
