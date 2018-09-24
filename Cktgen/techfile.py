@@ -25,46 +25,48 @@ class TechFile:
     with open( fn, 'rt') as fp:
       self.json = json.load( fp)
 
+  def __getattr__( self, nm):
+    return self.json[nm]
 
-  @property
-  def pitchDG( self):
-    return self.json['pitchDG']
+  # @property
+  # def pitchDG( self):
+  #   return self.json['pitchDG']
 
-  @property
-  def dgPerRow( self):
-    return self.json['dgPerRow']
+  # @property
+  # def dgPerRow( self):
+  #   return self.json['dgPerRow']
 
-  @property
-  def pitchPoly( self):
-    return self.json['pitchPoly']
+  # @property
+  # def pitchPoly( self):
+  #   return self.json['pitchPoly']
 
-  @property
-  def pitchM1( self):
-    return self.json['pitchM1']
+  # @property
+  # def pitchM1( self):
+  #   return self.json['pitchM1']
 
-  @property
-  def halfWidthM1( self):
-    return self.json['halfWidthM1']
+  # @property
+  # def halfWidthM1( self):
+  #   return self.json['halfWidthM1']
 
-  @property
-  def halfMinETESpaceM1( self):
-    return self.json['halfMinETESpaceM1']
+  # @property
+  # def halfMinETESpaceM1( self):
+  #   return self.json['halfMinETESpaceM1']
 
-  @property
-  def halfWidthM3( self):
-    return self.json['halfWidthM3']
+  # @property
+  # def halfWidthM3( self):
+  #   return self.json['halfWidthM3']
 
-  @property
-  def halfWidthM4( self):
-    return self.json['halfWidthM4']
+  # @property
+  # def halfWidthM4( self):
+  #   return self.json['halfWidthM4']
 
-  @property
-  def halfXGRGrid( self):
-    return self.json['halfXGRGrid']
+  # @property
+  # def halfXGRGrid( self):
+  #   return self.json['halfXGRGrid']
 
-  @property
-  def halfYGRGrid( self):
-    return self.json['halfYGRGrid']
+  # @property
+  # def halfYGRGrid( self):
+  #   return self.json['halfYGRGrid']
 
   @property
   def metalTemplates( self):

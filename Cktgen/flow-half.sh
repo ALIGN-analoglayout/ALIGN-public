@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exe=cktgen.py
+exe=cktgen8.py
 
 M_INPUT="--mount source=inputVol,target=/Cktgen/INPUT"
 M_out="--mount source=outputVol,target=/Cktgen/out"
@@ -12,10 +12,6 @@ docker volume rm routerStrawman
 docker volume rm inputVol
 docker volume rm outputVol
 docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python ${exe} -n mydesign --route"
-
-docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
-
-docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python ${exe} --consume_results -n mydesign"
 
 docker run --rm --mount source=inputVol,target=/public/INPUT -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 
