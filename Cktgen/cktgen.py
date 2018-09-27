@@ -43,7 +43,7 @@ class ADT:
     """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.)
 """
     xc = self.tech.pitchM1*m1TracksOffset
-    return self.newWire( netName, Rect( xc-self.tech.halfWidthM1, self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1, self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
+    return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
 
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
@@ -241,6 +241,12 @@ class Rect:
   def __repr__( self):
     return str(self)
 
+  def canonical( self):
+    llx,lly,urx,ury = self.llx,self.lly,self.urx,self.ury
+    if llx > urx: llx,urx = urx,llx
+    if lly > ury: lly,ury = ury,lly
+    return Rect( llx,lly,urx,ury)
+
 class Wire:
   def __init__( self):
     self.netName = None
@@ -358,7 +364,7 @@ class Netlist:
 
     gr.netName = netName
     gr.layer = l
-    gr.rect = r
+    gr.rect = r.canonical()
     gr.width = w
 
     if netName not in self.nets:

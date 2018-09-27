@@ -1,6 +1,6 @@
 #!/bin/bash
 
-exe=cktgen.py
+exe=cktgen_river8.py
 
 M_INPUT="--mount source=inputVol,target=/Cktgen/INPUT"
 M_out="--mount source=outputVol,target=/Cktgen/out"

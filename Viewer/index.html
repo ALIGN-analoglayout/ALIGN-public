@@ -256,6 +256,8 @@ function onJson( error, data) {
 	   .attr("stroke", "gray")
 	   .attr("stroke-width", `${invScale*1}px`);
 
+/*========================*/
+
      d3.select("body").select("svg").select("g").selectAll(".grRectangle")
        .data([])
        .exit()
@@ -277,21 +279,9 @@ function onJson( error, data) {
 	   .attr("fill-opacity", 0.5)
 	   .attr("stroke", "black");
 
-     var textSz = invScale*20
+     gs.append("title").text( d => `${d.netName},${d.layer}`);
 
-     gs.append("text")
-       .text( function(d) {
-         return d.netName;
-       })
-      .style("font-size", `${textSz}px`)
-      .style("font-color", "black")
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "middle")
-      .attr("transform", function(d) {
-         dx = (d.rect[2]-d.rect[0])/2 + .7*textSz;
-         dy = (d.rect[3]-d.rect[1])/2 + .7*textSz;
-         return `translate(${dx},${dy}) scale(1,-1)`;
-       });
+/*========================*/
 
      d3.select("body").select("svg").select("g").selectAll(".terminalRectangle")
        .data([])
@@ -314,34 +304,8 @@ function onJson( error, data) {
 	   .attr("fill-opacity", 0.5)
 	   .attr("stroke", "black");
 
-
      gt.append("title").text( d => `${d.netName},${d.layer}`);
   
-/*
-     gt.selectAll("rect").on("mouseover",legendOver);
-     gt.selectAll("rect").on("mouseout",legendOut);
-
-     function legendOver(d) {
-       console.log("mouseover",d.netName,d.layer);
-     }
-     function legendOut(d) {
-       console.log("mouseout",d.netName,d.layer);
-     }
-*/
-
-/*
-     gt.append("text")
-       .text( d => d.netName)
-       .style("font-size", `${textSz}px`)
-       .style("font-color", "black")
-       .attr("text-anchor", "left")
-       .attr("dominant-baseline", "middle")
-       .attr("transform", function(d) {
-          dx = (d.rect[2]-d.rect[0])/2 + .1*textSz; 
-          dy = (d.rect[3]-d.rect[1])/2 + .7*textSz;
-          return `translate(${dx},${dy}) scale(1,-1)`;
-       });
-*/
   }
 }
 

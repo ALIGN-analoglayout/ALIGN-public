@@ -3,11 +3,14 @@
     "dgPerRow" :  6,
     "pitchPoly" : 720,
     "pitchM1" : 720,
-    "halfWidthM1" : 200,
+
     "halfMinETESpaceM1" : 360,
 
+    "halfWidthM1" : [200],
+    "halfWidthM2" : [200],
     "halfWidthM3" : [200],
     "halfWidthM4" : [200],
+    "halfWidthM5" : [200],
 
     "halfXGRGrid" : 3,
     "halfYGRGrid" : 3,
