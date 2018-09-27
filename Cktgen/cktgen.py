@@ -219,6 +219,8 @@ class ADNetlist:
   def genNetlist( self, netl):
     for (k,v) in self.instances.items():
       print( "templateName", v.template.nm, "instanceName", v.instanceName)
+      netl.instances[v.instanceName] = v.bbox
+
       for w in v.template.terminals:
         a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
         if True or a not in ["vcc","vss"]:
@@ -295,12 +297,29 @@ class Netlist:
     self.bbox = bbox
     self.nets = OrderedDict()
     self.gidIndex = 0
+    self.instances = OrderedDict()
 
   def dumpGR( self, tech, fn):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
       grs = []
       terminals = []
+
+      wire = Wire()
+      wire.netName = 'top'
+      wire.rect = self.bbox
+      wire.layer = 'diearea'
+      wire.gid = -1
+      terminals.append( wire)
+
+      for (instanceName, rect) in self.instances.items():
+        wire = Wire()
+        wire.netName = instanceName
+        wire.rect = rect
+        wire.layer = 'cellarea'
+        wire.gid = -1
+        terminals.append( wire)
+
       for (netName,net) in self.nets.items():
         for gr in net.grs:
           grs.append(gr)
