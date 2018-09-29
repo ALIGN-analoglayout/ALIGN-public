@@ -5,12 +5,16 @@
     "pitchM1" : 720,
 
     "halfMinETESpaceM1" : 360,
+    "halfMinETESpaceM2" : 360,
+    "halfMinETESpaceM3" : 360,
+    "halfMinETESpaceM4" : 720,
+    "halfMinETESpaceM5" : 720,
 
     "halfWidthM1" : [200],
     "halfWidthM2" : [200],
     "halfWidthM3" : [200],
-    "halfWidthM4" : [200],
-    "halfWidthM5" : [200],
+    "halfWidthM4" : [400],
+    "halfWidthM5" : [400],
 
     "halfXGRGrid" : 3,
     "halfYGRGrid" : 3,
@@ -18,14 +22,14 @@
     "metalTemplates" : [
                    {
                      "layer":"metal5", "name":"m5",
-                     "widths":[400,400],
-                     "spaces":[320],
+                     "widths":[800,800],
+                     "spaces":[640],
                      "colors":[]
                   },
                    {
                      "layer":"metal4", "name":"m4",
-                     "widths":[400,400],
-                     "spaces":[320],
+                     "widths":[800,800],
+                     "spaces":[640],
                      "colors":[]
                   },
                   {

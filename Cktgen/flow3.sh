@@ -7,7 +7,7 @@ M_out="--mount source=outputVol,target=/Cktgen/out"
 M_DR_COLLATERAL="--mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL"
 
 docker volume rm routerStrawman
-(cd ../DetailedRouter/DR_COLLATERAL_Generator/strawman1; tar cvf - . | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL; tar xvf -")
+(cd ../DetailedRouter/DR_COLLATERAL_Generator/strawman3; tar cvf - . | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL; tar xvf -")
 
 docker volume rm inputVol
 docker volume rm outputVol

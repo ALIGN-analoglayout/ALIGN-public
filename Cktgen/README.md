@@ -11,8 +11,7 @@ docker build -t cktgen .
 This puts the detailed routing process collateral (for the strawman process) in the docker volume named "routerStrawman". Change to the directory with the collateral before doing the docker run.
 ````bash
 docker volume rm routerStrawman
-cd ../DetailedRouter/DR_COLLATERAL_Strawman
-tar cvf - . | docker run --rm --mount source=routerStrawman,target=/DR_COLLATERAL -i ubuntu bash -c "cd DR_COLLATERAL; tar xvf -"
+(cd ../DetailedRouter/DR_COLLATERAL_Generator/strawman1; tar cvf - . ) | docker run --rm --mount source=routerStrawman,target=/DR_COLLATERAL -i ubuntu bash -c "cd DR_COLLATERAL; tar xvf -"
 cd -
 ````
 
