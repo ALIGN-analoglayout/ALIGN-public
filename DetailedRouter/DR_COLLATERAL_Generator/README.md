@@ -18,3 +18,9 @@ There are three strawman process versions currently:
 
 3) Same as 2) except for metals 4 and 5 where the width and space bump up to 80nm and 64nm.
 
+The following will run collateral generation for the three strawman processes:
+````
+(cd strawman1 && python3 ../gen.py)
+(cd strawman2 && python3 ../gen.py)
+(cd strawman3 && python3 ../gen.py)
+````
