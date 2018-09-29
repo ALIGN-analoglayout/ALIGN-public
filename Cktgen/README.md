@@ -9,26 +9,26 @@ docker build -t cktgen .
 ````
 
 Use the `flow.sh` script to run a complete flow.
-The script does the following:
+This script does the following:
 1) Copies the detailed routing collateral (specified by the `-td` or `--techdir` options) to a docker volume (specified by the `-rv` or `routervolume` options.)
 
-2) Generate the input collateral for the run by running the circuit generation script (generates leaf cells, connections, placement, and global routes.) Which script to run is specified with the `-s` or `--script` options. The input collateral is put in a docker volume (specified by the `-iv` or `--inputvolume` options.)
+2) Generates the input collateral for the detailed router by running a circuit generation script (generates leaf cells, connections, placement, and global routes.) Which script to run is specified with the `-s` or `--script` options. The input collateral is put in a docker volume (specified by the `-iv` or `--inputvolume` options.)
 
-3) Optionally, run the detailed router is run (to disable use `-sr` or `--skiprouter` options) and process the router results so that it can be shown in the viewer. The output of the router goes to a docker volume (specified by the `-ov` or `--outputVolume` options.)
+3) Optionally, run the detailed router (to disable use the `-sr` or `--skiprouter` options) and process the router results so that it can be shown in the viewer. The output of the router goes to a docker volume (specified by the `-ov` or `--outputVolume` options.)
 
 4) Run the web-based layout viewer. The port of the viewer is specified using the `-p` or `--port` option.
 
 Here are several examples:
-First, this will stop all running docker containers. This will free up ports so the viewer can use them.
+First, this will stop all running docker containers and free up ports so the viewer can use them.
 ````bash
 docker stop $(docker ps -a)
 ````
 
-This run the river routing example with the strawman1 collateral.
+This runs the river routing example with the strawman1 collateral.
 ````
 ./flow.sh
 ````
-This is the same as:
+and is the same as executing this:
 ````
 ./flow.sh -s cktgen_river.py -p 8082 -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1 -tf Process.json -iv inputVol -ov outputVol -rv routerStrawman
 ````
