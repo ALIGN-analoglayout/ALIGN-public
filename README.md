@@ -1,7 +1,5 @@
-# ALIGN
-This the main repository for the DARPA IDEA ALIGN project lead by University of Minnesota.
-
-Look in the *Build* subdirectory for build environments.
-
-The Cktgen directory includes an example flow (placed primitives, global routing, detailed routing, and layout visualization.)
-A sample process technology is included as well.
+# Running magic
+To run the version created from source. (Works on a Linux box.)
+````
+docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" magicfromsource bash
+````
