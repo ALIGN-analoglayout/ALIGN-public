@@ -26,7 +26,7 @@ docker stop $(docker ps -a)
 
 This runs the river routing example with the strawman1 collateral.
 ````
-./flow.sh
+./flow.sh -s cktgen_river.py
 ````
 and is the same as executing this:
 ````
