@@ -4,7 +4,10 @@ import techfile
 import io
 import pathlib
 
-def test_A():
+import pytest
+
+@pytest.fixture(scope="module")
+def get_tech():
     with io.StringIO("""{
     "pitchDG" : 720,
     "dgPerRow" :  6,
@@ -60,7 +63,14 @@ def test_A():
     ]
 }
 """) as fp:
+        print("Reading techfile")
         tech = techfile.TechFile( fp)
+        yield tech
+        print("Closing techfile")
+
+def test_A(get_tech):
+
+    tech = get_tech
 
     with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
@@ -961,63 +971,47 @@ Wire net=z layer=nwell rect=47520:47520:51840:51840
 """) as fp:
         netl = parse_lgf( fp)
 
-def test_B():
-    with io.StringIO("""{
-    "pitchDG" : 720,
-    "dgPerRow" :  6,
-    "pitchPoly" : 720,
-    "pitchM1" : 720,
+def test_AA(get_tech):
 
-    "halfMinETESpaceM1" : 360,
-    "halfMinETESpaceM2" : 360,
-    "halfMinETESpaceM3" : 360,
-    "halfMinETESpaceM4" : 360,
-    "halfMinETESpaceM5" : 360,
+    tech = get_tech
 
-    "halfWidthM1" : [200],
-    "halfWidthM2" : [200],
-    "halfWidthM3" : [200],
-    "halfWidthM4" : [200],
-    "halfWidthM5" : [200],
+    with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
-    "halfXGRGrid" : 3,
-    "halfYGRGrid" : 3,
-
-    "metalTemplates" : [
-                   {
-                     "layer":"metal5", "name":"m5",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                   {
-                     "layer":"metal4", "name":"m4",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal3", "name":"m3",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal2", "name":"m2",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  },
-                  {
-                     "layer":"metal1", "name":"m1",
-                     "widths":[400,400],
-                     "spaces":[320],
-                     "colors":[]
-                  }
-    ]
-}
+Wire net=i0 gid=1 layer=metal1 rect=1960:47880:2360:51480
+Obj net=i0 gen=via1_simple x=2160 y=49680
+Wire net=i1 layer=metal2 rect=1960:43560:2360:47160
 """) as fp:
-        tech = techfile.TechFile( fp)
+        netl = parse_lgf( fp)
+        assert netl.bbox.llx == 0
+        assert netl.bbox.lly == 0
+        assert netl.bbox.urx == 51840
+        assert netl.bbox.ury == 51840
+        assert netl.nets["i0"].wires[0].layer == "metal1"
+        assert netl.nets["i0"].wires[0].gid == 1
+        r = netl.nets["i0"].wires[0].rect
+        assert r.llx == 1960
+        assert r.lly == 47880
+        assert r.urx == 2360
+        assert r.ury == 51480
+
+def test_AB(get_tech):
+
+    tech = get_tech
+
+    with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
+
+Wire net=i0 gid=1 layer=metal1 rect=1960:47880:2360:51480
+Obj net=i0 gen=via1_simple x=2160 y=49680
+Wire net=i1 layer=metal2 rect=1960:43560:2360:47160
+""") as fp:
+        netl = parse_lgf( fp)
+        assert netl.nets["i1"].wires[0].layer == "metal2"
+        assert netl.nets["i1"].wires[0].gid is None
+
+
+
+def test_B(get_tech):
+    tech = get_tech
 
     with io.StringIO("""Cell mydesign bbox=0:0:43200:43200
 
@@ -1198,3 +1192,26 @@ Wire net=z layer=nwell rect=38880:34560:43200:38880
 Wire net=z layer=nwell rect=38880:38880:43200:43200
 """) as fp:
         netl = parse_lgf( fp)
+
+def test_BA(get_tech):
+    tech = get_tech
+
+    with io.StringIO("""Cell mydesign bbox=0:1:2:3
+
+Wire net=i layer=metal1 rect=0:1:2:3 gid=4
+Wire net=i layer=metal2 rect=10:11:12:13
+Obj net=i gen=via1_simple x=6480 y=6480 {
+  Wire net=i layer=via1 rect=6280:6280:6680:6680
+  Wire net=i layer=metal1 rect=6280:6120:6680:6840
+  Wire net=i layer=metal2 rect=6120:6280:6840:6680
+}
+""") as fp:
+        netl = parse_lgf( fp)
+        assert netl.nets['i'].wires[0].layer == "metal1"
+        assert netl.nets['i'].wires[1].layer == "metal2"
+        r = netl.nets['i'].wires[0].rect
+        assert (r.llx,r.lly,r.urx,r.ury) == (0,1,2,3)
+        r = netl.nets['i'].wires[1].rect
+        assert (r.llx,r.lly,r.urx,r.ury) == (10,11,12,13)
+        assert netl.nets['i'].wires[0].gid == 4
+        assert netl.nets['i'].wires[1].gid is None
