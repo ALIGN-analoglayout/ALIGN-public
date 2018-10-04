@@ -51,11 +51,11 @@ class ADT:
   @staticmethod
   def parse_lgf( tech, fn):
 
-    p_cell = re.compile( '^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
-    p_wire = re.compile( '^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
-    p_obj = re.compile( '^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
-    p_space = re.compile( '^\s*$')
-    p_comment = re.compile( '^#.*$')
+    p_cell = re.compile( r'^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
+    p_wire = re.compile( r'^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
+    p_obj = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
+    p_space = re.compile( r'^\s*$')
+    p_comment = re.compile( r'^#.*$')
 
     with open( fn, "r") as fp:
       adt = None
@@ -447,16 +447,26 @@ Option name=create_fake_metal_template_instances value={3}
 
 import re
 
-def parse_lgf( fn):
+def parse_lgf( fp):
 
   netl = None
 
-  p_cell = re.compile( '^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
-  p_wire = re.compile( '^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
-  p_obj = re.compile( '^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
-  p_space = re.compile( '^\s*$')
+  p_cell = re.compile( r'^Cell\s+(\S+)\s+bbox=(\S+):(\S+):(\S+):(\S+)\s*$')
+  p_wire = re.compile( r'^Wire\s+net=(\S+)\s+(gid=(\S+)\s+|)layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
 
-  with open( fn, "r") as fp:
+  p_wire2 = re.compile( r'^Wire\s+net=(\S+)\s+layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)(\s+gid=(\S+)|)\s*$')
+
+  p_wire_in_obj = re.compile( r'^\s+Wire\s+net=(\S+)\s+layer=(\S+)\s+rect=(\S+):(\S+):(\S+):(\S+)\s*$')
+
+  p_obj = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*$')
+
+  p_obj_lbrace = re.compile( r'^Obj\s+net=(\S+)\s+gen=(\S+)\s+x=(\S+)\s+y=(\S+)\s*{\s*$')
+
+  p_rbrace = re.compile( r'^\s*}\s*$')
+
+  p_space = re.compile( r'^\s*$')
+
+  if True:
     for line in fp:
       line = line.rstrip( '\n')
       
@@ -481,13 +491,44 @@ def parse_lgf( fn):
 
         continue
 
+      m = p_wire2.match( line)
+      if m:
+        net = m.groups()[0]
+        layer = m.groups()[1]        
+        rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
+        gid = m.groups()[7]
+        if gid is not None: gid = int(gid)
+
+        w = netl.newWire( net, rect, layer)
+        w.gid = gid
+
+        continue
+
       m = p_obj.match( line)
       if m:
         net = m.groups()[0]
         gen = m.groups()[1]
         x = int(m.groups()[2])
         y = int(m.groups()[3])
-        print( "Obj", net, gen, x, y)
+        continue
+
+      m = p_obj_lbrace.match( line)
+      if m:
+        net = m.groups()[0]
+        gen = m.groups()[1]
+        x = int(m.groups()[2])
+        y = int(m.groups()[3])
+        continue
+
+      m = p_wire_in_obj.match( line)
+      if m:
+        net = m.groups()[0]
+        layer = m.groups()[1]        
+        rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
+        continue
+
+      m = p_rbrace.match( line)
+      if m:
         continue
 
       m = p_space.match( line)
@@ -509,10 +550,12 @@ def parse_args():
 
   args = parser.parse_args()
 
-  tech = techfile.TechFile( args.technology_file)
+  with open( args.technology_file) as fp:
+    tech = techfile.TechFile( fp)
 
   if args.consume_results:
-    netl = parse_lgf( 'out/' + args.block_name + '.lgf')  
+    with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  
+      netl = parse_lgf( fp)
 
     netl.write_input_file( netl.nm + "_xxx.txt")
     netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json")

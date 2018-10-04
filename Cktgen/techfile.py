@@ -21,9 +21,8 @@ class MetalTemplate:
 
 
 class TechFile:
-  def __init__( self, fn):
-    with open( fn, 'rt') as fp:
-      self.json = json.load( fp)
+  def __init__( self, fp):
+    self.json = json.load( fp)
 
   def __getattr__( self, nm):
     return self.json[nm]
