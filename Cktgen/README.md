@@ -8,31 +8,35 @@ This "installs" the python scripts in a docker image.
 docker build -t cktgen .
 ````
 
-This puts the detailed routing process collateral (for the strawman process) in the docker volume named "routerStrawman". Change to the directory with the collateral before doing the docker run.
+Use the `flow.sh` script to run a complete flow.
+This script does the following:
+1) Copies the detailed routing collateral (specified by the `-td` or `--techdir` options) to a docker volume (specified by the `-rv` or `routervolume` options.)
+
+2) Generates the input collateral for the detailed router by running a circuit generation script (generates leaf cells, connections, placement, and global routes.) Which script to run is specified with the `-s` or `--script` options. The input collateral is put in a docker volume (specified by the `-iv` or `--inputvolume` options.)
+
+3) Optionally, run the detailed router (to disable use the `-sr` or `--skiprouter` options) and process the router results so that it can be shown in the viewer. The output of the router goes to a docker volume (specified by the `-ov` or `--outputVolume` options.)
+
+4) Run the web-based layout viewer. The port of the viewer is specified using the `-p` or `--port` option.
+
+Here are several examples:
+First, this will stop all running docker containers and free up ports so the viewer can use them.
 ````bash
-docker volume rm routerStrawman
-(cd ../DetailedRouter/DR_COLLATERAL_Generator/strawman1; tar cvf - . ) | docker run --rm --mount source=routerStrawman,target=/DR_COLLATERAL -i ubuntu bash -c "cd DR_COLLATERAL; tar xvf -"
-cd -
+docker stop $(docker ps -a)
 ````
 
-This runs the script that generates a two device placement and global routing
-````bash
-docker run --rm --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL --mount source=inputVol,target=/Cktgen/INPUT cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py -n mydesign --route"
+This runs the river routing example with the strawman1 collateral.
 ````
-The input collateral for the router is placed in the docker volume named "inputVol". Also try cktgen4.py and cktgen8.py for circuits with more devices.
-
-
-This runs the router. (The image containing the router needs to be downloaded from docker hub. Please get a login at hub.docker.com, send steven.m.burns@intel.com an email with your docker user name, and you'll be granted permission to download this docker image.)
-````bash
-docker run --rm --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
+./flow.sh
 ````
-
-This backannotates the router results into a json file for viewer/
-````bash
-docker run --rm --mount source=outputVol,target=/Cktgen/out --mount source=inputVol,target=/Cktgen/INPUT --mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python cktgen.py --consume_results -n mydesign"
+and is the same as executing this:
 ````
+./flow.sh -s cktgen_river.py -p 8082 -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1 -tf Process.json -iv inputVol -ov outputVol -rv routerStrawman
+````
+You can view the results by visiting lcoalhost:8082 in your web browser.
 
-This starts up the viewer on localhoast:8082. Point your browser there to see the layout.
-````bash
-docker run --rm --mount source=inputVol,target=/public/INPUT -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
+If you want to run several at the same time do this:
+````
+./flow.sh -s cktgen_river.py -p 8081 -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1 -iv inputVol1 -ov outputVol1 -rv routerStrawman1 &
+./flow.sh -s cktgen_river.py -p 8082 -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman2 -iv inputVol2 -ov outputVol2 -rv routerStrawman2 &
+./flow.sh -s cktgen_river.py -p 8083 -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman3 -iv inputVol3 -ov outputVol3 -rv routerStrawman3 &
 ````

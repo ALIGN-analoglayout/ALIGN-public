@@ -92,7 +92,6 @@ class ADT:
           gen = m.groups()[1]
           x = int(m.groups()[2])
           y = int(m.groups()[3])
-          print( "Obj", net, gen, x, y)
           continue
 
         m = p_space.match( line)
@@ -529,6 +528,7 @@ def parse_lgf( fp):
 
       m = p_rbrace.match( line)
       if m:
+
         continue
 
       m = p_space.match( line)

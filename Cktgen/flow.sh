@@ -1,21 +1,93 @@
 #!/bin/bash
 
-exe=cktgen_river.py
+SCRIPT=cktgen.py
+PORT=8082
+TECHDIR=../DetailedRouter/DR_COLLATERAL_Generator/strawman1
+TECHFILE=Process.json
+INPUTVOL=inputVol
+OUTPUTVOL=outputVol
+ROUTERVOL=routerStrawman
+SKIPROUTER=NO
 
-M_INPUT="--mount source=inputVol,target=/Cktgen/INPUT"
-M_out="--mount source=outputVol,target=/Cktgen/out"
-M_DR_COLLATERAL="--mount source=routerStrawman,target=/Cktgen/DR_COLLATERAL"
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
 
-docker volume rm routerStrawman
-(cd ../DetailedRouter/DR_COLLATERAL_Generator/strawman1; tar cvf - . | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL; tar xvf -")
+case $key in
+    -s|--script)
+    SCRIPT="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -p|--port)
+    PORT="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -td|--techdir)
+    TECHDIR="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -tf|--techfile)
+    TECHFILE="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -iv|--inputvolume)
+    INPUTVOL="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -ov|--outputvolume)
+    OUTPUTVOL="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -rv|--routervolume)
+    ROUTERVOL="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -sr|--skiprouter)
+    SKIPROUTER=YES
+    shift # past argument
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 
-docker volume rm inputVol
-docker volume rm outputVol
-docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python ${exe} -n mydesign --route"
+echo SCRIPT  = "${SCRIPT}"
+echo PORT    = "${PORT}"
+echo TECHDIR = "${TECHDIR}"
+echo TECHFILE = "${TECHFILE}"
+echo INPUTVOL = "${INPUTVOL}"
+echo OUTPUTVOL = "${OUTPUTVOL}"
+echo ROUTERVOL = "${ROUTERVOL}"
+echo SKIPROUTER = "${SKIPROUTER}"
 
-docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen; amsr.exe -file INPUT/ctrl.txt"
+M_INPUT="--mount source=${INPUTVOL},target=/Cktgen/INPUT"
+M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
+M_out="--mount source=${OUTPUTVOL},target=/Cktgen/out"
+M_DR_COLLATERAL="--mount source=${ROUTERVOL},target=/Cktgen/DR_COLLATERAL"
 
-docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen; python ${exe} --consume_results -n mydesign"
+docker volume rm ${ROUTERVOL}
+(cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
 
-docker run --rm --mount source=inputVol,target=/public/INPUT -p8082:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
+docker volume rm ${INPUTVOL}
+docker volume rm ${OUTPUTVOL}
+docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route"
+
+if [ ${SKIPROUTER} = "NO" ]; then
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
+
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign"
+fi
+
+docker run --rm ${M_INPUT_VIEWER} -p${PORT}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
 
