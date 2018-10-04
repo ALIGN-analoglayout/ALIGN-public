@@ -8,6 +8,7 @@ INPUTVOL=inputVol
 OUTPUTVOL=outputVol
 ROUTERVOL=routerStrawman
 SKIPROUTER=NO
+SKIPGENERATE=NO
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -54,6 +55,10 @@ case $key in
     SKIPROUTER=YES
     shift # past argument
     ;;
+    -sg|--skipgenerate)
+    SKIPGENERATE=YES
+    shift # past argument
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -79,9 +84,11 @@ M_DR_COLLATERAL="--mount source=${ROUTERVOL},target=/Cktgen/DR_COLLATERAL"
 docker volume rm ${ROUTERVOL}
 (cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
 
-docker volume rm ${INPUTVOL}
-docker volume rm ${OUTPUTVOL}
-docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route"
+if [ ${SKIPGENERATE} = "NO" ]; then
+    docker volume rm ${INPUTVOL}
+    docker volume rm ${OUTPUTVOL}
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route"
+fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
