@@ -25,7 +25,11 @@ if __name__ == "__main__":
     return ADITransform.mirrorAcrossYAxis().preMult( ADITransform.translate( adt.bbox.urx, 0))    
 
 
-  n = 6
+#  n = 18
+#  k = (n-2)//2
+  k = 3
+  n = 2*k+2
+
 
   netl = Netlist( nm=args.block_name, bbox=Rect( 0,0, xg(n), yg(n)))
 
@@ -41,9 +45,9 @@ if __name__ == "__main__":
 #              8,1
 
 #left and right
-  for i in range(n-3):
+  for i in range(n-2-k):
     adnetl.addInstance( ADI( ndev, ("un%d" % i), ADITransform.translate( xg(0), yg(n-2-i))))
-    adnetl.addInstance( ADI( pdev, ("up%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-1), yg(n-3-i)))))
+    adnetl.addInstance( ADI( pdev, ("up%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-1), yg(n-2-k-i)))))
 
     dev = 'un%d' % i
     adnetl.connect( dev,'g',('i%d' % i))
@@ -56,9 +60,9 @@ if __name__ == "__main__":
     adnetl.connect( dev,'s',('z%d' % i))
 
 #top and bot
-  for i in range(n-3):
+  for i in range(n-2-k):
     adnetl.addInstance( ADI( ndev, ("vn%d" % i), ADITransform.translate( xg(n-2-i), yg(0))))
-    adnetl.addInstance( ADI( pdev, ("vp%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-3-i), yg(n-1)))))
+    adnetl.addInstance( ADI( pdev, ("vp%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-2-k-i), yg(n-1)))))
 
     dev = 'vn%d' % i
     adnetl.connect( dev,'g',('a%d' % i))
@@ -77,31 +81,26 @@ if __name__ == "__main__":
   vly = "metal5"
   vWidth = tech.halfWidthM5[0]*2
 
-  for i in range(n-3):
-    netl.newGR( ('i%d' % i), Rect( 0,     n-2-i, n-2-i, n-2-i), hly, hWidth)
-    netl.newGR( ('i%d' % i), Rect( n-2-i, n-2-i, n-2-i, n-3-i), vly, vWidth)
-    netl.newGR( ('i%d' % i), Rect( n-2-i, n-3-i, n-1,   n-3-i), hly, hWidth)
+  for i in range(n-2-k):
+    mx = n-2-i
+    sy = n-2-i
+    fy = n-2-k-i
 
-    netl.newGR( ('o%d' % i), Rect( 0,     n-2-i, n-2-i, n-2-i), hly, hWidth)
-    netl.newGR( ('o%d' % i), Rect( n-2-i, n-2-i, n-2-i, n-3-i), vly, vWidth)
-    netl.newGR( ('o%d' % i), Rect( n-2-i, n-3-i, n-1,   n-3-i), hly, hWidth)
+    for p in ['i','o','z']:
+      netl.newGR( ('%s%d' % (p,i)), Rect( 0,  sy, mx,  sy), hly, hWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( mx, sy, mx,  fy), vly, vWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( mx, fy, n-1, fy), hly, hWidth)
 
-    netl.newGR( ('z%d' % i), Rect( 0,     n-2-i, n-2-i, n-2-i), hly, hWidth)
-    netl.newGR( ('z%d' % i), Rect( n-2-i, n-2-i, n-2-i, n-3-i), vly, vWidth)
-    netl.newGR( ('z%d' % i), Rect( n-2-i, n-3-i, n-1,   n-3-i), hly, hWidth)
+  for i in range(n-2-k):
+    my = n-2-i-k
+    sx = n-2-i
+    fx = n-2-k-i
 
-  for i in range(n-3):
-    netl.newGR( ('a%d' % i), Rect( n-2-i,     0, n-2-i, n-2-i), vly, vWidth)
-    netl.newGR( ('a%d' % i), Rect( n-2-i, n-2-i, n-3-i, n-2-i), hly, hWidth)
-    netl.newGR( ('a%d' % i), Rect( n-3-i, n-2-i, n-3-i, n-1),   vly, vWidth)
+    for p in ['a','b','c']:
+      netl.newGR( ('%s%d' % (p,i)), Rect( sx, 0,  sx, my),  vly, vWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( sx, my, fx, my),  hly, hWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( fx, my, fx, n-1), vly, vWidth)
 
-    netl.newGR( ('b%d' % i), Rect( n-2-i,     0, n-2-i, n-2-i), vly, vWidth)
-    netl.newGR( ('b%d' % i), Rect( n-2-i, n-2-i, n-3-i, n-2-i), hly, hWidth)
-    netl.newGR( ('b%d' % i), Rect( n-3-i, n-2-i, n-3-i, n-1),   vly, vWidth)
-
-    netl.newGR( ('c%d' % i), Rect( n-2-i,     0, n-2-i, n-2-i), vly, vWidth)
-    netl.newGR( ('c%d' % i), Rect( n-2-i, n-2-i, n-3-i, n-2-i), hly, hWidth)
-    netl.newGR( ('c%d' % i), Rect( n-3-i, n-2-i, n-3-i, n-1),   vly, vWidth)
 
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
