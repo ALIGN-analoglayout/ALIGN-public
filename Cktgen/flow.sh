@@ -9,6 +9,7 @@ OUTPUTVOL=outputVol
 ROUTERVOL=routerStrawman
 SKIPROUTER=NO
 SKIPGENERATE=NO
+SKIPVIEWER=NO
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -59,6 +60,10 @@ case $key in
     SKIPGENERATE=YES
     shift # past argument
     ;;
+    -sv|--skipviewer)
+    SKIPVIEWER=YES
+    shift # past argument
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -75,6 +80,8 @@ echo INPUTVOL = "${INPUTVOL}"
 echo OUTPUTVOL = "${OUTPUTVOL}"
 echo ROUTERVOL = "${ROUTERVOL}"
 echo SKIPROUTER = "${SKIPROUTER}"
+echo SKIPGENERATE = "${SKIPGENERATE}"
+echo SKIPVIEWER = "${SKIPVIEWER}"
 
 M_INPUT="--mount source=${INPUTVOL},target=/Cktgen/INPUT"
 M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
@@ -85,7 +92,9 @@ docker volume rm ${ROUTERVOL}
 (cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
 
 if [ ${SKIPGENERATE} = "NO" ]; then
-    docker volume rm ${INPUTVOL}
+    if [ ${SKIPVIEWER} = "NO" ]; then
+	docker volume rm ${INPUTVOL}
+    fi
     docker volume rm ${OUTPUTVOL}
     docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route"
 fi
@@ -96,5 +105,6 @@ if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign"
 fi
 
-docker run --rm ${M_INPUT_VIEWER} -p${PORT}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
-
+if [ ${SKIPVIEWER} = "NO" ]; then
+    docker run --rm ${M_INPUT_VIEWER} -p${PORT}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+fi
