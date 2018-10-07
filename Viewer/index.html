@@ -13,7 +13,9 @@
 
 <script>
 
-d3.json("INPUT/mydesign_dr_globalrouting.json", onJson);
+// Hack to keep the json file from being cached
+var timestamp = Date.now();
+d3.json("INPUT/mydesign_dr_globalrouting.json" + "?_=" + timestamp, onJson);
 
 function onJson( error, data) {
 

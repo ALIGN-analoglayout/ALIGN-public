@@ -35,44 +35,32 @@ if __name__ == "__main__":
 
   adnetl =  ADNetlist( args.block_name)
   
-# 1,8
-# 1,7
-# 1,6
-# 1,5
-#              8,4
-#              8,3
-#              8,2
-#              8,1
-
 #left and right
   for i in range(n-2-k):
-    adnetl.addInstance( ADI( ndev, ("un%d" % i), ADITransform.translate( xg(0), yg(n-2-i))))
+    sx = 0
+    sy = n-2-i
+    fx = n-1
+    fy = n-2-k-i
+    adnetl.addInstance( ADI( ndev, ("un%d" % i), ADITransform.translate( xg(sx), yg(sy))))
     adnetl.addInstance( ADI( pdev, ("up%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-1), yg(n-2-k-i)))))
 
-    dev = 'un%d' % i
-    adnetl.connect( dev,'g',('i%d' % i))
-    adnetl.connect( dev,'d',('o%d' % i))
-    adnetl.connect( dev,'s',('z%d' % i))
-
-    dev = 'up%d' % i
-    adnetl.connect( dev,'g',('i%d' % i))
-    adnetl.connect( dev,'d',('o%d' % i))
-    adnetl.connect( dev,'s',('z%d' % i))
+    for (f,a) in [('g','i'),('d','o'),('s','z')]:
+      adnetl.connect( 'un%d' % i, f, ('%s%d' % (a,i)))
+      adnetl.connect( 'up%d' % i, f, ('%s%d' % (a,i)))
 
 #top and bot
   for i in range(n-2-k):
-    adnetl.addInstance( ADI( ndev, ("vn%d" % i), ADITransform.translate( xg(n-2-i), yg(0))))
-    adnetl.addInstance( ADI( pdev, ("vp%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(n-2-k-i), yg(n-1)))))
+    sy = 0
+    fy = n-1
+    sx = n-2-i
+    fx = n-2-k-i
 
-    dev = 'vn%d' % i
-    adnetl.connect( dev,'g',('a%d' % i))
-    adnetl.connect( dev,'d',('b%d' % i))
-    adnetl.connect( dev,'s',('c%d' % i))
+    adnetl.addInstance( ADI( ndev, ("vn%d" % i), ADITransform.translate( xg(sx), yg(sy))))
+    adnetl.addInstance( ADI( pdev, ("vp%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(fx), yg(fy)))))
 
-    dev = 'vp%d' % i
-    adnetl.connect( dev,'g',('a%d' % i))
-    adnetl.connect( dev,'d',('b%d' % i))
-    adnetl.connect( dev,'s',('c%d' % i))
+    for (f,a) in [('g','a'),('d','b'),('s','c')]:
+      adnetl.connect( 'vn%d' % i, f, ('%s%d' % (a,i)))
+      adnetl.connect( 'vp%d' % i, f, ('%s%d' % (a,i)))
 
   adnetl.genNetlist( netl)
 
@@ -82,24 +70,28 @@ if __name__ == "__main__":
   vWidth = tech.halfWidthM5[0]*2
 
   for i in range(n-2-k):
+    sx = 0
+    fx = n-1
     mx = n-2-i
     sy = n-2-i
     fy = n-2-k-i
 
     for p in ['i','o','z']:
-      netl.newGR( ('%s%d' % (p,i)), Rect( 0,  sy, mx,  sy), hly, hWidth)
-      netl.newGR( ('%s%d' % (p,i)), Rect( mx, sy, mx,  fy), vly, vWidth)
-      netl.newGR( ('%s%d' % (p,i)), Rect( mx, fy, n-1, fy), hly, hWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( sx, sy, mx, sy), hly, hWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( mx, sy, mx, fy), vly, vWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( mx, fy, fx, fy), hly, hWidth)
 
   for i in range(n-2-k):
+    sy = 0
+    fy = n-1
     my = n-2-i-k
     sx = n-2-i
     fx = n-2-k-i
 
     for p in ['a','b','c']:
-      netl.newGR( ('%s%d' % (p,i)), Rect( sx, 0,  sx, my),  vly, vWidth)
-      netl.newGR( ('%s%d' % (p,i)), Rect( sx, my, fx, my),  hly, hWidth)
-      netl.newGR( ('%s%d' % (p,i)), Rect( fx, my, fx, n-1), vly, vWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( sx, sy, sx, my), vly, vWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( sx, my, fx, my), hly, hWidth)
+      netl.newGR( ('%s%d' % (p,i)), Rect( fx, my, fx, fy), vly, vWidth)
 
 
 
