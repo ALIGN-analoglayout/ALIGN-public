@@ -25,6 +25,21 @@ if __name__ == "__main__":
     return ADITransform.mirrorAcrossYAxis().preMult( ADITransform.translate( adt.bbox.urx, 0))    
 
 
+
+# n-1
+# n-2 ----------
+# ...
+# c+1 = k+2 ----
+# c = k+1 blank
+# c-1 = k ------
+# ..
+# 1   -----
+# 0
+
+# 1 matches n-2
+# 2 matches n-3
+
+
 #  n = 18
 #  k = (n-2)//2
   k = 8
@@ -40,7 +55,7 @@ if __name__ == "__main__":
     sx = 0
     sy = n-2-i
     fx = n-1
-    fy = n-3-k-i
+    fy = n-1 - sy
     adnetl.addInstance( ADI( ndev, ("un%d" % i), ADITransform.translate( xg(sx), yg(sy))))
     adnetl.addInstance( ADI( pdev, ("vn%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(fx), yg(fy)))))
 
@@ -53,7 +68,7 @@ if __name__ == "__main__":
     sy = 0
     fy = n-1
     sx = n-2-i
-    fx = n-3-k-i
+    fx = n-1 - sx
 
     adnetl.addInstance( ADI( ndev, ("up%d" % i), ADITransform.translate( xg(sx), yg(sy))))
     adnetl.addInstance( ADI( pdev, ("vp%d" % i), mirrorAcrossYAxis( pdev).preMult( ADITransform.translate( xg(fx), yg(fy)))))
@@ -72,9 +87,9 @@ if __name__ == "__main__":
   for i in range(n-3-k):
     sx = 0
     fx = n-1
-    mx = n-2-i
+    mx = k+2+i
     sy = n-2-i
-    fy = n-3-k-i
+    fy = n-1 - sy
 
     for p in ['i','o','z']:
       netl.newGR( ('%s%d' % (p,i)), Rect( sx, sy, mx, sy), hly, hWidth)
@@ -86,7 +101,7 @@ if __name__ == "__main__":
     fy = n-1
     my = n-3-i-k
     sx = n-2-i
-    fx = n-3-k-i
+    fx = n-1 - sx
 
     for p in ['a','b','c']:
       netl.newGR( ('%s%d' % (p,i)), Rect( sx, sy, sx, my), vly, vWidth)
