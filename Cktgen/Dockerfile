@@ -1,4 +1,4 @@
-FROM with_python_protobuf as cktgen
+FROM with_python as cktgen
 
 ADD *.py /Cktgen/
 

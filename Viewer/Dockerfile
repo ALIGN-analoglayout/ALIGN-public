@@ -1,3 +1,3 @@
-FROM with_python_protobuf
+FROM with_python
 
 ADD . /public
