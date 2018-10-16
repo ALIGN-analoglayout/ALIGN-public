@@ -130,6 +130,9 @@ class ADITransform:
     self.xScale = 1
     self.yScale = 1
 
+  def __repr__( self):
+    return "xo yo xs ys: %d %d %d %d" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)
+
   def copy( self):
     R = ADITransform()
     R.xOffset = self.xOffset
@@ -193,6 +196,9 @@ class ADI:
     else:
       self.trans = trans
 
+  def __repr__( self):
+    return "template: %s instance: %s trans: %s" % (self.template, self.instanceName, self.trans)
+
   def hit( self, r):
     (llx,lly) = self.trans.hit( (r.llx, r.lly))
     (urx,ury) = self.trans.hit( (r.urx, r.ury))
@@ -208,11 +214,15 @@ class ADNetlist:
   def __init__( self, nm):
     self.nm = nm
     self.instances = OrderedDict()
+    self.nets = OrderedDict()
 
   def addInstance( self, i):
     self.instances[i.instanceName] = i
 
   def connect( self, instanceName, f, a):
+    if a not in self.nets:
+      self.nets[a] = []
+    self.nets[a].append( (instanceName,f))
     self.instances[instanceName].formalActualMap[f] = a
 
   def genNetlist( self, netl):
@@ -228,17 +238,20 @@ class ADNetlist:
 
 
 class Rect:
-  def __init__( self, llx, lly, urx, ury):
+  def __init__( self, llx, lly, urx=None, ury=None):
     self.llx = llx
     self.lly = lly
-    self.urx = urx
-    self.ury = ury
+    self.urx = llx if urx is None else urx
+    self.ury = lly if ury is None else ury
 
   def __str__( self):
     return "%d:%d:%d:%d" % (self.llx,self.lly,self.urx,self.ury)
 
   def __repr__( self):
     return str(self)
+
+  def add( self, x, y):
+    return Rect( min(x,self.llx), min(y,self.lly), max(x,self.urx), max(y,self.ury))
 
   def canonical( self):
     llx,lly,urx,ury = self.llx,self.lly,self.urx,self.ury

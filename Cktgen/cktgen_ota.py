@@ -30,6 +30,13 @@ if __name__ == "__main__":
   def yg( y): 
     return tech.pitchDG  *tech.halfYGRGrid*2*y
 
+  def ixg( x): 
+    return x // (tech.pitchPoly*tech.halfXGRGrid*2)
+  def iyg( y): 
+    return y // (tech.pitchDG  *tech.halfYGRGrid*2)
+
+
+
   def mirrorAcrossYAxis( adt):
     return ADITransform.mirrorAcrossYAxis().preMult( ADITransform.translate( adt.bbox.urx, 0))    
 
@@ -88,14 +95,39 @@ if __name__ == "__main__":
 
   adnetl.genNetlist( netl)
 
+  net_bbox = {}
 
-  netl.newGR( 'net13', Rect( 3, 3, 3, 5), "metal3", tech.halfWidthM3[0]*2)
-  netl.newGR( 'Voutp', Rect( 4, 1, 4, 3), "metal3", tech.halfWidthM3[0]*2)
-  netl.newGR( 'Voutn', Rect( 3, 1, 3, 3), "metal3", tech.halfWidthM3[0]*2)
-  netl.newGR( 'net10', Rect( 1, 1, 4, 1), "metal2", tech.halfWidthM2[0]*2)
-  netl.newGR( 'net11', Rect( 1, 1, 4, 1), "metal2", tech.halfWidthM2[0]*2)
-  netl.newGR( 'net12', Rect( 4, 3, 4, 5), "metal3", tech.halfWidthM3[0]*2)
-  netl.newGR( 'net6',  Rect( 1, 1, 1, 4), "metal3", tech.halfWidthM3[0]*2)
+  for v in adnetl.instances.values():
+
+    for w in v.template.terminals:
+      a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
+      if a not in ["!kor"]:
+        r = v.hit( w.rect)
+        if a not in net_bbox:
+          net_bbox[a] = r
+        else:
+          net_bbox[a] = net_bbox[a].add( r.llx, r.lly).add( r.urx, r.ury)
+          
+
+  for k in adnetl.nets.keys():
+    if k in net_bbox:
+      v = net_bbox[k]
+      print( k, v, ixg(v.llx), iyg(v.lly), ixg(v.urx), iyg( v.ury))
+      r = Rect( ixg(v.llx), iyg(v.lly), ixg(v.urx), iyg( v.ury))
+      assert r.llx == r.urx or r.lly == r.ury
+      if r.llx != r.urx or r.lly != r.ury:
+        (ly,w) = ("metal2",tech.halfWidthM2[0]*2) if r.llx != r.urx else ("metal3",tech.halfWidthM3[0]*2)
+        netl.newGR( k, r, ly, w)
+
+
+#  netl.newGR( 'net13', Rect( 3, 3, 3, 5), "metal3", tech.halfWidthM3[0]*2)
+#  netl.newGR( 'Voutp', Rect( 4, 1, 4, 3), "metal3", tech.halfWidthM3[0]*2)
+#  netl.newGR( 'Voutn', Rect( 3, 1, 3, 3), "metal3", tech.halfWidthM3[0]*2)
+#  netl.newGR( 'net10', Rect( 1, 1, 4, 1), "metal2", tech.halfWidthM2[0]*2)
+#  netl.newGR( 'net11', Rect( 1, 1, 4, 1), "metal2", tech.halfWidthM2[0]*2)
+#  netl.newGR( 'net12', Rect( 4, 3, 4, 5), "metal3", tech.halfWidthM3[0]*2)
+#  netl.newGR( 'net6',  Rect( 1, 1, 1, 4), "metal3", tech.halfWidthM3[0]*2)
+
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 
