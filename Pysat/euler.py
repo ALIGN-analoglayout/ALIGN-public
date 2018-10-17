@@ -1,75 +1,7 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append( '..')
-sys.path.append( '../..')
-
 import networkx as nx
 import tally
-import os
-import re
-
-def cr( g, e):
-  G = g.copy()
-  G.remove_edge( e[0], e[1], key=e[2])
-  return G
-
-def se( g, n):
-  return g.number_of_edges() == 1 and len(g.edges(n)) == 1
-
-def all_euler_pair_paths( t0, t1):
-   (g0, n0) = t0
-   (g1, n1) = t1
-
-   if se( g0, n0) and se( g1, n1):
-      e0 = g0.edges(n0,keys=True,data=True)[0]
-      e1 = g1.edges(n1,keys=True,data=True)[0]
-      if e0[3]['label'] == e1[3]['label']: # Labels equal
-         return [([e0],[e1])]
-   
-   QQQ = [ ([e0] + p0,[e1] + p1) 
-               for e0 in g0.edges(n0,keys=True,data=True)
-               for e1 in g1.edges(n1,keys=True,data=True)
-               if e0[3]['label'] == e1[3]['label']
-               for (p0,p1) in all_euler_pair_paths( (cr(g0,e0), e0[1]), (cr(g1,e1), e1[1])) ]
-   
-   return QQQ
-
-
-def all_euler_paths(g, n):
-    if se( g, n):
-       return [g.edges(n,keys=True,data=True)]
-
-    return [ [e] + list(p) for e in g.edges(n,keys=True,data=True)
-                           for p in all_euler_paths( cr(g,e), e[1])]
-
-def all_euler_paths_from_all_nodes( G):
-   return [ p for n in G.nodes() for p in all_euler_paths( G, n)]
-
-def all_euler_pair_paths_from_all_nodes( G0, G1):
-   return [ pp for n0 in G0.nodes() for n1 in G1.nodes()
-               for pp in all_euler_pair_paths( (G0, n0), (G1, n1))]
-
-
-def gen_pair_graph( G0, G1):
-   ns = set()
-   es = []
-   for e0 in G0.edges(keys=True,data=True):
-      for e1 in G1.edges(keys=True,data=True):
-         if True or e0[3]['label'] == e1[3]['label']:
-            ns.add( (e0[0],e1[0]))
-            ns.add( (e0[1],e1[1]))
-            ns.add( (e0[0],e1[1]))
-            ns.add( (e0[1],e1[0]))
-            es.append( ((e0[0],e1[0]),(e0[1],e1[1]),(e0[2],e1[2]),(e0[3]['label'],e1[3]['label'])))
-            es.append( ((e0[0],e1[1]),(e0[1],e1[0]),(e0[2],e1[2]),(e0[3]['label'],e1[3]['label'])))
-
-   G = nx.MultiDiGraph()
-   G.add_nodes_from( list(ns))
-   for e in es:
-      G.add_edge( e[0], e[1], key=e[2], label=(str(e[2])+"_"+str(e[3])))
-
-   return G
 
 class SatBasedEulerPathsRow:
    def __init__( self, p, row_nm):
@@ -379,20 +311,11 @@ Count the number nets that touch a device with both p_var=off and p_var=on
          self.dad.s.emit_always( out_vars[limit-1])
          self.dad.s.emit_never( out_vars[limit])
 
-   def split( self, mdl=None):
+   def split( self):
       G0 = nx.MultiDiGraph()
       G1 = nx.MultiDiGraph()
 
-      if mdl:
-         iv_m = dict( zip( self.dad.s.important_vars, mdl))
-
-         m = {}
-         for v in self.vars:
-             assert v.var() in iv_m
-             m[v] = iv_m[v.var()]
-
-      else:
-         m = dict( [ (v,v.val()) for v in self.vars])
+      m = dict( [ (v,v.val()) for v in self.vars])
 
       for ( tuple, var) in zip( self.edges, self.vars):
          ( e0, e1, k, lbl) = tuple
@@ -414,9 +337,6 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
       self.mgr = tally.VarMgr( self.s)
       self.limit_crossings = limit_crossings
       self.all_sat = False
-      self.nsols = 0
-      if self.nsols > 1:
-         self.s.nsols = self.nsols
 
       self.nets = {}
       self.p_row = SatPartitionAux( self, 'p', GP)
@@ -443,24 +363,22 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
             else:
                print( 'no crossing', net_var)
                for ( ty, idx) in v:
+                  assert ty in ['p','n']
                   if   ty == 'p':
                      vv = self.p_row.vars[idx].val()
                   elif ty == 'n':
                      vv = self.n_row.vars[idx].val()
-                  else:
-                     assert False
                   if vv:
                      only_in_on[k] = True   
                   else:
                      only_in_off[k] = True   
 
             for ( ty, idx) in v:
+               assert ty in ['p','n']
                if   ty == 'p':
                   vv = self.p_row.vars[idx].val()
                elif ty == 'n':
                   vv = self.n_row.vars[idx].val()
-               else:
-                  assert False
                print( '   ', ty, idx, vv)
 
 
@@ -499,12 +417,11 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
          or_off_vars = []
 
          for ( ty, idx) in v:
+            assert ty in ['p','n']
             if   ty == 'p':
                vv = self.p_row.vars[idx].var()
             elif ty == 'n':
                vv = self.n_row.vars[idx].var()
-            else:
-               assert False
             or_on_vars.append( vv)             
             or_off_vars.append( tally.Tally.neg( vv))
 
@@ -516,32 +433,8 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
       self.s.emit_tally( [ v.var() for v in self.net_vars], out_vars)
       self.s.emit_never( out_vars[-1])
 
-      if self.all_sat:
-         self.s.important_vars = [ v.var() for v in self.p_row.vars] + [ v.var() for v in self.n_row.vars]
-         self.s.solve()
-
-         for ( idx, mdl) in enumerate( self.s.all_models):
-            if idx > 0:
-               print( 32*'=')
-            print( "Model:", idx)
-
-            (GP0,GP1) = self.p_row.split( mdl)
-            (GN0,GN1) = self.n_row.split( mdl)
-
-            print( '|P0|:', len(GP0.edges(keys=True,data=True)))
-            print( '|N0|:', len(GN0.edges(keys=True,data=True)))
-            print( '|P1|:', len(GP1.edges(keys=True,data=True)))
-            print( '|N1|:', len(GN1.edges(keys=True,data=True)))
-
-            master = [ e[2] for e in GP0.edges(keys=True,data=True) + GN0.edges(keys=True,data=True)]
-            slave  = [ e[2] for e in GP1.edges(keys=True,data=True) + GN1.edges(keys=True,data=True)]
-
-            print( "Option name=placement_group_dependency master=%s slave=%s" % ( ','.join( master), ','.join( slave)))
-
-
-      else:
-         self.s.solve()
-         self.print_model()
+      self.s.solve()
+      self.print_model()
 
 def test_euler_aoi022():
   print( "aoi022")
@@ -549,13 +442,11 @@ def test_euler_aoi022():
   GP = nx.MultiDiGraph()
   GN = nx.MultiDiGraph()
 
-#  GP.add_nodes_from( ["vcc","n1","o1"])
   GP.add_edge( "vcc", "n1", key="pa", label="a")
   GP.add_edge( "vcc", "n1", key="pb", label="b")
   GP.add_edge( "n1",  "o1", key="pc", label="c")
   GP.add_edge( "n1",  "o1", key="pd", label="d")
 
-#  GN.add_nodes_from( ["vss","n2","n3","o1"])
   GN.add_edge( "vss", "n2", key="na", label="a")
   GN.add_edge( "n2",  "o1", key="nb", label="b")
   GN.add_edge( "vss", "n3", key="nc", label="c")
@@ -564,38 +455,69 @@ def test_euler_aoi022():
   print( GP.edges(keys=True,data=True))
   print( GN.edges(keys=True,data=True))
 
-  print( all_euler_paths_from_all_nodes( GP))
-  print( all_euler_paths_from_all_nodes( GN))
-
   sbep = SatBasedEulerPaths()
+  sbep.limit_channel_width = 3
   sbep.sat_based_euler_paths( GP, GN)
   sbep.solve()
+  assert sbep.s.state == 'SAT'
 
-def test_euler_nand02():
+def test_euler_nand02_one():
   print( "nand02")
 
   GP = nx.MultiDiGraph()
   GN = nx.MultiDiGraph()
-#  GP.add_nodes_from( ["vcc","o1"])
+
   GP.add_edge( "vcc", "o1", key="pa", label="a")
   GP.add_edge( "vcc", "o1", key="pb", label="b")
 
-#  GN.add_nodes_from( ["vss","n1","o1"])
   GN.add_edge( "vss", "n1", key="na", label="a")
   GN.add_edge( "n1",  "o1", key="nb", label="b")
 
   print( GP.edges(keys=True,data=True))
   print( GN.edges(keys=True,data=True))
 
-  print( all_euler_paths_from_all_nodes( GP))
-  print( all_euler_paths_from_all_nodes( GN))
-
   sbep = SatBasedEulerPaths()
+  sbep.limit_channel_width = 1
   sbep.sat_based_euler_paths( GP, GN)
   sbep.solve()
+  assert sbep.s.state == 'UNSAT'
 
 
-def test_sat_partition():
+def test_sat_partition_nand03_doubled():
+  print( "nand03")
+
+  GP = nx.MultiDiGraph()
+  GN = nx.MultiDiGraph()
+
+  GP.add_edge( "vcc", "o1", key="p0a", label="a")
+  GP.add_edge( "vcc", "o1", key="p0b", label="b")
+  GP.add_edge( "vcc", "o1", key="p0c", label="c")
+  GP.add_edge( "vcc", "o1", key="p1a", label="a")
+  GP.add_edge( "vcc", "o1", key="p1b", label="b")
+  GP.add_edge( "vcc", "o1", key="p1c", label="c")
+
+  GN.add_edge( "vss", "n1", key="n0a", label="a")
+  GN.add_edge( "n1",  "n2", key="n0b", label="b")
+  GN.add_edge( "n2",  "o1", key="n0c", label="c")
+  GN.add_edge( "vss", "n1", key="n1a", label="a")
+  GN.add_edge( "n1",  "n2", key="n1b", label="b")
+  GN.add_edge( "n2",  "o1", key="n1c", label="c")
+
+  print( GP.edges(keys=True,data=True))
+  print( GN.edges(keys=True,data=True))
+
+  sp = SatPartition( GP, GN, 2)
+  assert sp.s.state == 'SAT'
+
+  (GP0,GP1) = sp.p_row.split()
+  (GN0,GN1) = sp.n_row.split()
+  print( GP0.edges(keys=True,data=True))
+  print( GP1.edges(keys=True,data=True))
+  print( GN0.edges(keys=True,data=True))
+  print( GN1.edges(keys=True,data=True))
+
+
+def test_sat_partition_aoi022():
 
   GP = nx.MultiDiGraph()
   GN = nx.MultiDiGraph()
@@ -616,8 +538,11 @@ def test_sat_partition():
   print( GN.edges(keys=True,data=True))
 
   sp = SatPartition( GP, GN, 2)
+  assert sp.s.state == 'SAT'
 
-if __name__ == "__main__":
-  test_euler_aoi022()
-  test_euler_nand02()
-#  test_sat_partition()
+  (GP0,GP1) = sp.p_row.split()
+  (GN0,GN1) = sp.n_row.split()
+  print( GP0.edges(keys=True,data=True))
+  print( GP1.edges(keys=True,data=True))
+  print( GN0.edges(keys=True,data=True))
+  print( GN1.edges(keys=True,data=True))
