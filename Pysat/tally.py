@@ -285,6 +285,41 @@ def test_tally_3a():
   assert not mgr.nm_map['bb'].val()
   assert not mgr.nm_map['cc'].val()
 
+def test_tally_6_2():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','c','d','e','f','aa','bb']
+  [a,b,c,d,e,f,aa,bb] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b,c,d,e,f],[aa,bb])
+  s.emit_never( a)
+  s.emit_never( b)
+  s.emit_never( c)
+  s.emit_always( d)
+  s.emit_never( e)
+  s.emit_never( f)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+  assert     mgr.nm_map['aa'].val()
+  assert not mgr.nm_map['bb'].val()
+
+def test_tally_6_2a():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','c','d','e','f','aa','bb']
+  [a,b,c,d,e,f,aa,bb] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b,c,d,e,f],[aa,bb])
+  s.emit_never( a)
+  s.emit_always( b)
+  s.emit_never( c)
+  s.emit_always( d)
+  s.emit_never( e)
+  s.emit_always( f)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+  assert     mgr.nm_map['aa'].val()
+  assert     mgr.nm_map['bb'].val()
 
 if __name__ == "__main__":
   import argparse
