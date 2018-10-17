@@ -5,7 +5,7 @@ sys.path.append( '..')
 sys.path.append( '../..')
 
 import networkx as nx
-import pysat
+import tally
 import os
 import re
 
@@ -40,8 +40,8 @@ def all_euler_paths(g, n):
     if se( g, n):
        return [g.edges(n,keys=True,data=True)]
 
-    return [ [e] + p for e in g.edges(n,keys=True,data=True)
-                     for p in all_euler_paths( cr(g,e), e[1])]
+    return [ [e] + list(p) for e in g.edges(n,keys=True,data=True)
+                           for p in all_euler_paths( cr(g,e), e[1])]
 
 def all_euler_paths_from_all_nodes( G):
    return [ p for n in G.nodes() for p in all_euler_paths( G, n)]
@@ -52,7 +52,7 @@ def all_euler_pair_paths_from_all_nodes( G0, G1):
 
 
 def gen_pair_graph( G0, G1):
-   ns = Set()
+   ns = set()
    es = []
    for e0 in G0.edges(keys=True,data=True):
       for e1 in G1.edges(keys=True,data=True):
@@ -85,21 +85,21 @@ class SatBasedEulerPathsRow:
 # Build raster of diffusions
 #   
    
-      self.node_values = G.nodes()
+      self.node_values = list(G.nodes())
       print( "node_values:", self.node_values)
 
 
-      edge_values = map( lambda e: e[2], G.edges(keys=True))
+      edge_values = [ e[2] for e in G.edges(keys=True)]
 
       print( "edge_values:", edge_values)
 
 
-      self.unflipped = [ self.p.mgr.add_var( pysat.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('==>[%s]'%idx), edge_values)) for idx in range(0,m) ]
-      self.flipped   = [ self.p.mgr.add_var( pysat.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('<==[%s]'%idx), edge_values)) for idx in range(0,m) ]
+      self.unflipped = [ self.p.mgr.add_var( tally.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('==>[%s]'%idx), edge_values)) for idx in range(0,m) ]
+      self.flipped   = [ self.p.mgr.add_var( tally.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('<==[%s]'%idx), edge_values)) for idx in range(0,m) ]
 
-      self.diffs     = [ self.p.mgr.add_var( pysat.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('dif[%s]'%idx), self.node_values)) for idx in range(0,m+1) ]
+      self.diffs     = [ self.p.mgr.add_var( tally.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('dif[%s]'%idx), self.node_values)) for idx in range(0,m+1) ]
 
-      self.polys = [ self.p.mgr.add_var( pysat.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('ply[%s]'%idx), self.p.gate_values)) for idx in range(0,m) ]
+      self.polys = [ self.p.mgr.add_var( tally.PossiblyUnknownEnumVar( self.p.s, self.row_nm+('ply[%s]'%idx), self.p.gate_values)) for idx in range(0,m) ]
 
 
 
@@ -107,7 +107,7 @@ class SatBasedEulerPathsRow:
 # For each transistor, make sure that it is instantiated at least once
 #
       for ev in edge_values:
-         self.p.s.emit_exactly_one( map( lambda t: t.var(ev), self.unflipped + self.flipped))
+         self.p.s.emit_exactly_one( [ t.var(ev) for t in self.unflipped + self.flipped])
 
       for e in G.edges(keys=True,data=True):
          n0 = e[0]
@@ -161,10 +161,10 @@ class SatBasedEulerPathsRow:
 #
 
          q0 = self.p.s.add_var()
-         self.p.s.emit_and( [c1, pysat.Sat.neg( self.same_diffs[idx])], q0)
+         self.p.s.emit_and( [c1, tally.Tally.neg( self.same_diffs[idx])], q0)
          q1 = self.p.s.add_var()
          self.p.s.emit_or( [q0,self.different_diffs[idx]], q1)
-         self.p.s.emit_and( [pysat.Sat.neg( self.tran_defined[idx]), q1], self.different_diffs_and_unknown_tran[idx])
+         self.p.s.emit_and( [tally.Tally.neg( self.tran_defined[idx]), q1], self.different_diffs_and_unknown_tran[idx])
             
 
 #      self.count_different_diffs_and_unknown_tran = [ self.p.s.add_var() for idx in range(0,m) ]
@@ -174,8 +174,8 @@ class SatBasedEulerPathsRow:
 
 class SatBasedEulerPaths:
    def __init__( self):
-      self.s   = pysat.Sat()
-      self.mgr = pysat.VarMgr( self.s)
+      self.s   = tally.Tally()
+      self.mgr = tally.VarMgr( self.s)
       self.ncols = 0
       self.extra_cols = 0
       self.limit_different_polys = 0
@@ -197,8 +197,8 @@ Check that each edge of the Multigraph G has a unique key
       self.ncols = max( GP.number_of_edges(), GN.number_of_edges()) + self.extra_cols
 
       self.gate_values = list(set( \
-         map( lambda e: e[3]['label'], GP.edges(keys=True,data=True)) +
-         map( lambda e: e[3]['label'], GN.edges(keys=True,data=True))))
+         [ e[3]['label'] for e in GP.edges(keys=True,data=True)] + \
+         [ e[3]['label'] for e in GN.edges(keys=True,data=True)]))
 
       self.row_p = SatBasedEulerPathsRow( self, 'P-')
       self.row_p.sat_based_euler_paths_aux( GP)
@@ -248,19 +248,13 @@ Check that each edge of the Multigraph G has a unique key
 
       for (p,n) in zip( self.row_p.diffs, self.row_n.diffs):
          same_diff = [] 
-
          p_dict = dict( zip( p.vals, p.vars))
-
-         print( "same_p_and_n_diffusions:", zip( p.vals, p.vars), zip( n.vals, n.vars))
-
          for (nval,nvar) in zip( n.vals, n.vars):
             if nval in p_dict:
-               print( "Match:", nval)          
                same_diff.append( self.s.add_var())
                self.s.emit_and( [p_dict[nval],nvar], same_diff[-1])
 
          self.same_p_and_n_diffusions.append( self.s.add_var())
-         print( "defining same_p_and_n_diffusions:", same_diff, self.same_p_and_n_diffusions[-1])
          self.s.emit_or( same_diff, self.same_p_and_n_diffusions[-1])
 
 
@@ -281,7 +275,7 @@ Check that each edge of the Multigraph G has a unique key
 
       m = len(self.row_p.diffs)
 
-      left_scan = [ self.mgr.add_var( pysat.PowerSetEnumVar( self.s, 'ls[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
+      left_scan = [ self.mgr.add_var( tally.PowerSetEnumVar( self.s, 'ls[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
 
       left_scan_in = []
       for idx in range(0,m):
@@ -293,7 +287,7 @@ Check that each edge of the Multigraph G has a unique key
 
       self.build_scan( m, left_scan, left_scan_in)
 
-      right_scan = [ self.mgr.add_var( pysat.PowerSetEnumVar( self.s, 'rs[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
+      right_scan = [ self.mgr.add_var( tally.PowerSetEnumVar( self.s, 'rs[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
       right_scan.reverse()
 
       right_scan_in = [ l[:] for l in left_scan_in[:] ] # explicit deep copy
@@ -303,7 +297,7 @@ Check that each edge of the Multigraph G has a unique key
 
       right_scan.reverse()
 
-      and_of_scans = [ self.mgr.add_var( pysat.PowerSetEnumVar( self.s, 'as[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
+      and_of_scans = [ self.mgr.add_var( tally.PowerSetEnumVar( self.s, 'as[%02d]'%idx, self.all_net_values)) for idx in range(len(self.row_p.polys + self.row_p.diffs)) ]
 
       for ((l,r),q) in zip( zip( left_scan, right_scan), and_of_scans):      
          for val in q.vals:
@@ -316,15 +310,15 @@ Check that each edge of the Multigraph G has a unique key
 
    def solve( self):
       self.s.solve()
-      if self.s.indicator == 'UNSAT':
+      if self.s.state == 'UNSAT':
          print( 'UNSAT')
       else:     
-         assert self.s.indicator == 'SAT'
+         assert self.s.state == 'SAT'
          print( 'SAT')
 
          for nm,v in sorted( self.mgr.nm_map.items()):
             pass
-#            print( '%s=%s'%(nm, v.val()))
+            print( '%s=%s'%(nm, v.val()))
 
    def build_scan( self, m, scn, scn_in):
       for idx in range(0,m):
@@ -349,7 +343,7 @@ class SatPartitionAux:
       self.ty = ty
       self.G = G
       self.edges = G.edges( keys=True, data=True)
-      self.vars = [ self.dad.mgr.add_var( pysat.BitVar( self.dad.s, ('%s_edge_%d' % (ty,idx)))) for (idx,e) in enumerate(self.edges)]
+      self.vars = [ self.dad.mgr.add_var( tally.BitVar( self.dad.s, ('%s_edge_%d' % (ty,idx)))) for (idx,e) in enumerate(self.edges)]
       self.semantic()
 
    def semantic( self):
@@ -370,17 +364,17 @@ Count the number nets that touch a device with both p_var=off and p_var=on
       n = len(self.edges)
       out_vars = [ self.dad.s.add_var() for idx in range(n+1)]
 
-      self.dad.s.emit_tally( map( lambda v: v.var(), self.vars), out_vars)
+      self.dad.s.emit_tally( [ v.var() for v in self.vars], out_vars)
       
       if n % 4 == 2:
          assert n >= 2
-         limit = n/2 + 1 
+         limit = n//2 + 1 
          print( "Limiting number of devices in %s master to %d of %d" % (self.ty, limit, n))
          self.dad.s.emit_always( out_vars[limit-1])
          self.dad.s.emit_never( out_vars[limit])
       else:
          assert n >= 2
-         limit = n/2
+         limit = n//2
          print( "Limiting number of devices in %s master to %d of %d" % (self.ty, limit, n))
          self.dad.s.emit_always( out_vars[limit-1])
          self.dad.s.emit_never( out_vars[limit])
@@ -412,15 +406,15 @@ Count the number nets that touch a device with both p_var=off and p_var=on
 
 
 class SatPartition:
-   def __init__( self, GP, GN, args):
+   def __init__( self, GP, GN, limit_crossings=3):
       """
 Divide (GP,GN) into two graphs each, without about half the device (edges) in each graph, minimizing the number of wires that cross 
 """
-      self.s   = pysat.Sat( args.use_picosat, args.use_eureka)
-      self.mgr = pysat.VarMgr( self.s)
-      self.limit_crossings = args.limit_crossings
-      self.all_sat = args.all_sat
-      self.nsols = args.nsols
+      self.s   = tally.Tally()
+      self.mgr = tally.VarMgr( self.s)
+      self.limit_crossings = limit_crossings
+      self.all_sat = False
+      self.nsols = 0
       if self.nsols > 1:
          self.s.nsols = self.nsols
 
@@ -433,7 +427,7 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
 
    def print_model( self):
 
-      if self.s.indicator == 'SAT':
+      if self.s.state == 'SAT':
          
          in_common = {}
          only_in_off = {}
@@ -480,9 +474,9 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
 
 
    def semantic( self):
-      self.lst = [ (k, Set( v)) for ( k, v) in self.nets.items()]
+      self.lst = [ (k, set( v)) for ( k, v) in self.nets.items()]
 
-      self.net_vars = [ self.mgr.add_var( pysat.BitVar( self.s, ('net_%s' % k))) for (k, v) in self.lst]
+      self.net_vars = [ self.mgr.add_var( tally.BitVar( self.s, ('net_%s' % k))) for (k, v) in self.lst]
 
       for ( (k, v), net_var) in zip(self.lst,self.net_vars):
          if k in ['vss','vcc']: continue
@@ -512,7 +506,7 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
             else:
                assert False
             or_on_vars.append( vv)             
-            or_off_vars.append( pysat.Sat.neg( vv))
+            or_off_vars.append( tally.Tally.neg( vv))
 
          self.s.emit_or( or_on_vars, one_on)
          self.s.emit_or( or_off_vars, one_off)
@@ -549,5 +543,81 @@ Divide (GP,GN) into two graphs each, without about half the device (edges) in ea
          self.s.solve()
          self.print_model()
 
+def test_euler_aoi022():
+  print( "aoi022")
+
+  GP = nx.MultiDiGraph()
+  GN = nx.MultiDiGraph()
+
+#  GP.add_nodes_from( ["vcc","n1","o1"])
+  GP.add_edge( "vcc", "n1", key="pa", label="a")
+  GP.add_edge( "vcc", "n1", key="pb", label="b")
+  GP.add_edge( "n1",  "o1", key="pc", label="c")
+  GP.add_edge( "n1",  "o1", key="pd", label="d")
+
+#  GN.add_nodes_from( ["vss","n2","n3","o1"])
+  GN.add_edge( "vss", "n2", key="na", label="a")
+  GN.add_edge( "n2",  "o1", key="nb", label="b")
+  GN.add_edge( "vss", "n3", key="nc", label="c")
+  GN.add_edge( "n3",  "o1", key="nd", label="d")
+
+  print( GP.edges(keys=True,data=True))
+  print( GN.edges(keys=True,data=True))
+
+  print( all_euler_paths_from_all_nodes( GP))
+  print( all_euler_paths_from_all_nodes( GN))
+
+  sbep = SatBasedEulerPaths()
+  sbep.sat_based_euler_paths( GP, GN)
+  sbep.solve()
+
+def test_euler_nand02():
+  print( "nand02")
+
+  GP = nx.MultiDiGraph()
+  GN = nx.MultiDiGraph()
+#  GP.add_nodes_from( ["vcc","o1"])
+  GP.add_edge( "vcc", "o1", key="pa", label="a")
+  GP.add_edge( "vcc", "o1", key="pb", label="b")
+
+#  GN.add_nodes_from( ["vss","n1","o1"])
+  GN.add_edge( "vss", "n1", key="na", label="a")
+  GN.add_edge( "n1",  "o1", key="nb", label="b")
+
+  print( GP.edges(keys=True,data=True))
+  print( GN.edges(keys=True,data=True))
+
+  print( all_euler_paths_from_all_nodes( GP))
+  print( all_euler_paths_from_all_nodes( GN))
+
+  sbep = SatBasedEulerPaths()
+  sbep.sat_based_euler_paths( GP, GN)
+  sbep.solve()
+
+
+def test_sat_partition():
+
+  GP = nx.MultiDiGraph()
+  GN = nx.MultiDiGraph()
+
+#  GP.add_nodes_from( ["vcc","n1","o1"])
+  GP.add_edge( "vcc", "n1", key="pa", label="a")
+  GP.add_edge( "vcc", "n1", key="pb", label="b")
+  GP.add_edge( "n1",  "o1", key="pc", label="c")
+  GP.add_edge( "n1",  "o1", key="pd", label="d")
+
+#  GN.add_nodes_from( ["vss","n2","n3","o1"])
+  GN.add_edge( "vss", "n2", key="na", label="a")
+  GN.add_edge( "n2",  "o1", key="nb", label="b")
+  GN.add_edge( "vss", "n3", key="nc", label="c")
+  GN.add_edge( "n3",  "o1", key="nd", label="d")
+
+  print( GP.edges(keys=True,data=True))
+  print( GN.edges(keys=True,data=True))
+
+  sp = SatPartition( GP, GN, 2)
+
 if __name__ == "__main__":
-  pass
+  test_euler_aoi022()
+  test_euler_nand02()
+#  test_sat_partition()
