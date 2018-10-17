@@ -6,6 +6,8 @@ import sys
 import io
 import gzip
 
+import pysat.solvers
+
 class BitVar:
   def __init__( self, s, nm):
     self.s = s
@@ -33,7 +35,7 @@ class EnumVar:
     return self.vars[self.vals.index(val)]
 
   def val( self):
-    return self.vals[map( lambda v: self.s.h[v], self.vars).index(True)]
+    return self.vals[ [ self.s.h[v] for v in self.vars].index(True)]
 
 class PossiblyUnknownEnumVar:
   def __repr__( self):
@@ -105,325 +107,68 @@ class VarMgr:
         self.nm_map[v.nm] = v
     return v
  
-class Sat:
-  def __init__( self, use_picosat=False, use_eureka=False):
-    self.use_picosat = use_picosat
-    self.use_eureka  = use_eureka
-    self.use_glucose = False
-    self.use_parallel_glucose = False
-    self.use_minicard = False
-    self.unsat_core = None
+from collections import defaultdict
 
+class Tally:
+  def __init__( self):
     self.nvars = 0
-    self.clauses = []
-    self.cardinality_constraints = []
-    self.indicator = 'UNKNOWN'
-    self.h = {}
     self.nm_map = {}
-    self.important_vars = []
-    self.nsols = 1
-
-  def write_dimacs( self, fp):
-    nclause_like = len(self.clauses)+len(self.cardinality_constraints)
-
-    tag = "cnf+" if self.cardinality_constraints else "cnf"
-
-    print 'Header: p %s %d %d' % ( tag, self.nvars, nclause_like)
-    fp.write( u'p %s %d %d\n' % ( tag, self.nvars, nclause_like))
-    for ( cl, op, k) in self.cardinality_constraints:
-       for l in cl:
-          fp.write( u'%d ' % l)
-       fp.write( op)
-       fp.write( u' %d\n' % k)
-    for cl in self.clauses:
-       for l in cl:
-          fp.write( u'%d ' % l)
-       fp.write( u'0\n')
-    print 'Done with write_dimacs'
-
-  def read_unsat_core( self, fn):
-     self.unsat_core = []
-     with io.open( fn, 'r') as fp:
-        for line in fp:
-           line = line.rstrip('\n')
-           if line[0] == 'p':
-              pass
-           else:
-              vec = map( int, line.split( ' '))
-              assert vec[-1] == 0, vec
-              self.unsat_core.append( vec[:-1])
-
-  def report_unsat_core( self, mgr, f=None):
-     print 'Ready to report unsat core'     
-     imap = {}
-     for (k,v) in mgr.nm_map.items():
-        for (idx,vv) in enumerate(v.vars):
-           if f:
-              imap[vv] = f( v, idx, vv)
-           else:
-              imap[vv] = (v.nm,idx)
-     for clause in self.unsat_core:
-        for lit in clause:
-           vv = abs(lit)
-           if vv in imap:
-              print 'DECODE:', vv, imap[vv]
-        print clause
-
-  def write_important_vars( self, fn):
-     with open( fn, 'w') as fp:
-       fp.write( 'p ilits %d\n' % len(self.important_vars))
-       for v in self.important_vars:
-          fp.write( '%d 0 0\n' % v)
-
-  def read_minisat_results( self, fn):
-     with io.open( '__result', 'r') as fp:
-        res = fp.readlines()
-        self.indicator = res[0].rstrip('\n')
-        if self.indicator == 'SAT':
-           model = map( lambda x: int(x), res[1].rstrip('\n').split())
-           assert model.pop() == 0
-           self.h = {}
-           for m in model:
-              self.h[abs(m)] = m > 0
-        else:
-           assert self.indicator == 'UNSAT'
-
-  def read_glucose_results( self, fn):
-     with io.open( '__result', 'r') as fp:
-        res = fp.readlines()
-        self.indicator = res[0].rstrip('\n')
-        if self.indicator == 'UNSAT':
-           pass
-        else:
-           self.indicator = 'SAT'
-           model = map( lambda x: int(x), res[0].rstrip('\n').split())
-           assert model.pop() == 0
-           self.h = {}
-           for m in model:
-              self.h[abs(m)] = m > 0
-
-  def read_parallel_glucose_results( self, fn):
-
-
-     p_c = re.compile( '^c.*$')
-     p_blank = re.compile( '^\s*$')
-     p_s = re.compile( '^s (\S+)\s*$')
-     p_v = re.compile( '^v .*$')
-
-     with io.open( '__result', 'r') as fp:
-        for line in fp:
-           line = line.rstrip( '\n')
-           m = p_c.match( line)
-           if m:
-              continue
-
-           m = p_blank.match( line)
-           if m:
-              continue
-
-           m = p_s.match( line)
-           if m:
-             self.indicator = m.groups()[0]
-             continue
-             
-           m = p_v.match( line)
-           if m:
-             model = map( lambda x: int(x), line[2:].split())
-             assert model.pop() == 0
-             self.h = {}
-             for m in model:
-               self.h[abs(m)] = m > 0
-
-             continue
-
-           assert False, ('"' + line + '"')
-
-
+    self.h = defaultdict( list)
+    self.state = 'UNKNOWN'
+    self.solver = pysat.solvers.Glucose4()
 
   def solve( self):
-    self.h = {}
-    self.indicator = 'UNKNOWN'
-    with open( '__dimacs', 'w') as fp:
-#    with gzip.GzipFile( '__dimacs.gz', 'w') as fp:
-      self.write_dimacs( fp)
-
-    if self.use_picosat:
-       install_dir = '/nfs/site/disks/scl.work.46/ppt/users/smburns/fabrics/picosat-936'
-
-       os.system( install_dir + '/picosat -v -c __unsat_core -o __result __dimacs')
-
-       model = []
-
-       with io.open( '__result', 'r') as fp:
-         for line in fp:
-            line = line.rstrip('\n')
-            if   line[0] == 'c':
-               pass
-            elif line[0] == 's':
-               if line[2:] == 'SATISFIABLE':
-                  self.indicator = 'SAT'
-               elif line[2:] == 'UNSATISFIABLE':
-                  self.indicator = 'UNSAT'
-               else:
-                  assert False, line
-            elif line[0] == 'v':
-               model += map( int, line[2:].split( ' '))
-            else:
-               assert False
-
-       if self.indicator == 'SAT':
-         assert model.pop() == 0
-         self.h = {}
-         for m in model:
-             self.h[abs(m)] = m > 0
-       elif self.indicator == 'UNSAT':
-         print 'Unsatisfiable'
-         self.read_unsat_core( '__unsat_core')
-
-    elif self.use_eureka:
-      
-       os.environ['CAD_ROOT'] = '/p/dt/cad/em64t_SLES10'
-
-       install_dir = os.environ['CAD_ROOT'] + '/prover/12.2_rc1_stOpt64/bin'
-
-       os.system( 'rm -f __dimacs.ilits')
-
-       if self.important_vars == []:
-          self.write_important_vars( '__dimacs.ilits')
-          os.system( install_dir + '/eureka_tool __dimacs > __result')
-       else:
-          self.write_important_vars( '__dimacs.ilits')
-          os.system( install_dir + ( '/eureka_tool __dimacs -preprocess 1 -allsat 1 -force_diff_models_strat 0 -cex_max_num %d > __result' % self.nsols))
-
-
-       model = []
-
-       p_model = re.compile( '^Model\s+(\S+)\s*$')
-       p_enum = re.compile( '^Enum:\s+(\S.*)$')
-
-       self.all_models = []
-
-       with io.open( '__result', 'r') as fp:
-         for line in fp:
-            line = line.rstrip('\n')
-
-            if line == "":
-               pass
-            elif line[0] == 'c':
-               pass
-            elif line[0] == 's':
-               if line[2:] == 'SATISFIABLE':
-                  self.indicator = 'SAT'
-               elif line[2:] == 'UNSATISFIABLE':
-                  if self.indicator != 'SAT':
-                     self.indicator = 'UNSAT'
-               else:
-                  assert False, line
-            elif line[0] == 'v':
-               self.indicator = 'SAT'
-               lst = filter( lambda x: x != '', line[2:].split( ' '))
-               model += map( int, lst)
-            else:
-               m = p_model.match( line)
-               if m:
-                  continue             
-
-               m = p_enum.match( line)
-               if m:
-                  self.all_models.append( [ int(x) for x in m.groups()[0].split()])
-                  continue             
-
-               assert False, line
-     
-       if self.important_vars != []:
-          print "# of models: %d (limit %d)" % ( len( self.all_models), self.nsols)
-
-       if self.indicator == 'SAT' and self.all_models == []:
-         assert model.pop() == 0
-         self.h = {}
-         for m in model:
-             self.h[abs(m)] = m > 0
-       elif self.indicator == 'UNSAT':
-         if self.important_vars == []:
-            print 'Unsatisfiable'
-            self.read_unsat_core( '__unsat_core')
-
-    elif self.use_glucose:
-       install_dir = '/nfs/site/disks/scl.work.46/ppt/users/smburns/FABRIC_ENV/glucose/glucose-syrup/simp'
-
-       os.system( install_dir + '/glucose -cl-lim=-1 -verb=2 -minSizeMinimizingClause=120 __dimacs __result')
-       self.read_glucose_results( '__result')
-
-    elif self.use_parallel_glucose:
-       install_dir = '/nfs/site/disks/scl.work.46/ppt/users/smburns/FABRIC_ENV/glucose/glucose-syrup/parallel'
-
-       os.system( install_dir + '/glucose-syrup -model __dimacs > __result')
-       self.read_parallel_glucose_results( '__result')
-
-    elif self.use_minicard:
-       install_dir = '/nfs/site/disks/scl.work.46/ppt/users/smburns/FABRIC_ENV/minicard/minicard/minicard'
-
-       os.system( install_dir + '/minicard_static __dimacs __result')
-       self.read_minisat_results( '__result')
-
+    res = self.solver.solve()
+    if res == True:
+      self.state = 'SAT'
     else:
-       if 'VIRTUAL_ENV' in os.environ:
-          install_dir = os.environ['VIRTUAL_ENV'] + '/minisat-install'
-       else:
-          install_dir = '/home/saasbook/python-ext/minisat/minisat-install'
-#          install_dir = '/nfs/site/disks/scl.work.46/ppt/users/smburns/fabrics/minisat-install'
+      self.state = 'UNSAT'
 
-       os.environ['LD_LIBRARY_PATH'] = install_dir + '/lib'
-#       os.system( install_dir + '/bin/minisat __dimacs.gz __result')
-       os.system( install_dir + '/bin/minisat __dimacs __result')
-       self.read_minisat_results( '__result')
-#       os.system( 'rm -f __dimacs __result')
+    for i in self.solver.get_model():
+      self.h[i if i > 0 else -i] = i > 0
 
   def add_var( self):
     self.nvars += 1
     return self.nvars
 
   def add_clause( self, cl):
-    self.clauses.append( cl)
-
-  def add_cardinality_constraint( self, cl, op, k):
-    self.cardinality_constraints.append( (cl, op, k))
+    self.solver.add_clause( cl)
 
   def emit_or_aux( self, a, z):
 # a0 | a1 | ... => z 
 # z => a0 | a1 | ... 
-    self.add_clause( [Sat.neg(z)] + a)
+    self.add_clause( [Tally.neg(z)] + a)
     for l in a:
-       self.add_clause( [Sat.neg(l) , z])
+       self.add_clause( [Tally.neg(l) , z])
 
   def emit_or( self, a, z):
     self.emit_or_aux( a, z)
 
   def emit_and( self, a, z):
-    self.emit_or_aux( map( Sat.neg, a), Sat.neg(z))
+    self.emit_or_aux( [ Tally.neg(l) for l in a], Tally.neg(z))
 
   def emit_equiv( self, x, z):
     self.emit_or( [x], z)
 
   def emit_implies( self, x, z):
-    self.add_clause( [ Sat.neg(x), z])
+    self.add_clause( [ Tally.neg(x), z])
 
   def emit_iif( self, x, z):
-    self.add_clause( [ Sat.neg(x), z])
-    self.add_clause( [ x, Sat.neg(z)])
+    self.add_clause( [ Tally.neg(x), z])
+    self.add_clause( [ x, Tally.neg(z)])
 
   def emit_always( self, z):
     self.add_clause( [z])
 
   def emit_never( self, z):
-    self.add_clause( [Sat.neg(z)])
+    self.add_clause( [Tally.neg(z)])
 
   def emit_at_most_one( self, inps):
 #
 #    for x in inps:
 #       for y in inps:
 #          if x < y:
-#            self.add_clause( [ Sat.neg(x), Sat.neg(y)])
+#            self.add_clause( [ Tally.neg(x), Tally.neg(y)])
     outs = [ self.add_var(), self.add_var()]
     self.emit_tally( inps, outs)
     self.emit_never( outs[1])
@@ -440,6 +185,8 @@ class Sat:
     self.emit_at_least_one( inps)
 
   def emit_tally( self, inps, outs):
+    print( "emit_tally", inps, outs)
+
     for o in outs[len(inps):]:
        self.emit_never( o)
 
@@ -479,56 +226,67 @@ class Sat:
   def neg( var):
     return -var
 
+def test_one_variable_contradiction():
+  s = Tally()
+  mgr = VarMgr( s)
+  a = mgr.add_var( BitVar( s, 'a')).var()
+  s.emit_never( a)
+  s.emit_always( a)
+  assert not s.solver.solve()
+  assert s.solver.get_model() is None
+
+def test_one_variable_T():
+  s = Tally()
+  mgr = VarMgr( s)
+  a = mgr.add_var( BitVar( s, 'a')).var()
+  s.emit_always( a)
+  s.solve()
+  assert s.state == 'SAT'
+  assert mgr.nm_map['a'].val()
+
+def test_one_variable_F():
+  s = Tally()
+  mgr = VarMgr( s)
+  a = mgr.add_var( BitVar( s, 'a')).var()
+  s.emit_never( a)
+  s.solve()
+  assert s.state == 'SAT'
+  assert not mgr.nm_map['a'].val()
+    
+def test_tally_3():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','c','aa','bb','cc']
+  [a,b,c,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b,c],[aa,bb,cc])
+  s.emit_never( a)
+  s.emit_always( b)
+  s.emit_always( c)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+  assert mgr.nm_map['aa'].val()
+  assert mgr.nm_map['bb'].val()
+  assert not mgr.nm_map['cc'].val()
+
+def test_tally_3a():
+  s = Tally()
+  mgr = VarMgr( s)
+  nms = ['a','b','c','aa','bb','cc']
+  [a,b,c,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
+  s.emit_tally( [a,b,c],[aa,bb,cc])
+  s.emit_never( a)
+  s.emit_never( b)
+  s.emit_never( c)
+  s.solve()
+  assert s.state == 'SAT'
+  print( [ mgr.nm_map[nm].val() for nm in nms])
+  assert not mgr.nm_map['aa'].val()
+  assert not mgr.nm_map['bb'].val()
+  assert not mgr.nm_map['cc'].val()
+
+
 if __name__ == "__main__":
-
-   import argparse
-
-   parser = argparse.ArgumentParser( description="Compute Finite Projective Plane of Order n Straight from Definition")
-
-   parser.add_argument( '-use_picosat', action='store_true')
-   parser.add_argument( '-use_eureka', action='store_true')
-   parser.add_argument( '-use_glucose', action='store_true')
-   parser.add_argument( '-use_parallel_glucose', action='store_true')
-   parser.add_argument( '-use_minicard', action='store_true')
-
-   args = parser.parse_args()
-
-   s = Sat()
-
-   if args.use_picosat: s.use_picosat = True
-   if args.use_eureka: s.use_eureka = True
-   if args.use_glucose: s.use_glucose = True
-   if args.use_parallel_glucose: s.use_parallel_glucose = True
-   if args.use_minicard: s.use_minicard = True
-
-   mgr = VarMgr( s)
-
-   if False:
-     a = mgr.add_var( BitVar( s, 'a'))
-     s.emit_never( a.var())
-     s.emit_always( a.var())
-     s.solve()
-     if s.indicator == 'UNSAT':
-       if s.unsat_core is not None:
-         s.report_unsat_core( mgr)
-
-   if False:
-     a = mgr.add_var( BitVec( s, 'a', 8))
-     s.emit_never( a.var( 0))
-     s.emit_always( a.var( 0))
-     s.solve()
-     if s.indicator == 'UNSAT':
-       if s.unsat_core is not None:
-         s.report_unsat_core( mgr)
-
-   if True:
-     a = mgr.add_var( BitVec( s, 'a', 8))
-     s.emit_never( a.var( 0))
-
-     s.add_cardinality_constraint( [a.var(i) for i in range(8)], ">=", 7) 
-
-     s.solve()
-     if s.indicator == 'UNSAT':
-       if s.unsat_core is not None:
-         s.report_unsat_core( mgr)
-
+  import argparse
+  parser = argparse.ArgumentParser( description="Tally Circuits and other helpers around pysat")
+  args = parser.parse_args()
