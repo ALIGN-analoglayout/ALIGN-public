@@ -121,7 +121,20 @@ class Grid:
                                 print( "wire", k, ly, "x", x, "y0", y0, "y1", y1)
                                 y0,y1 = None,None
 
-def test_simple():
+    def print_routes( self):
+        for (k,v) in self.routes.items():
+            for bv in v:
+                print( bv, bv.val())
+
+    def print_rasters( self):
+        for (k,v) in self.per_net_grid.items():
+            for (ly,bv) in v.items():
+                print( k, ly)
+                for y in range(self.ny-1,-1,-1): 
+                    print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(self.nx)]))
+
+
+def test_river_routing():
     halfn = 10
     n = 2*halfn
     g = Grid( n, n)
@@ -133,17 +146,22 @@ def test_simple():
     g.s.solve()
     print( g.s.state)
 
-    for (k,v) in g.routes.items():
-        for bv in v:
-            print( bv, bv.val())
+    g.print_routes()
+    g.print_rasters()
+    g.genWires()
 
-    
+def test_backward_xy():
+    halfn = 2
+    n = 2*halfn
+    g = Grid( n, n)
+    for q in range(0,halfn):
+        g.addTerminal( 'a%d' % q, n-1, q+halfn)
+        g.addTerminal( 'a%d' % q, 0,   q)
 
-    for (k,v) in g.per_net_grid.items():
-        for (ly,bv) in v.items():
-            print( k, ly)
-            for y in range(g.ny-1,-1,-1): 
-                tmp = [ ('1' if bv.val(g.idx(x,y)) else '0') for x in range(g.nx)]
-                print( ''.join( tmp))
+    g.semantic()
+    g.s.solve()
+    print( g.s.state)
 
+    g.print_routes()
+    g.print_rasters()
     g.genWires()
