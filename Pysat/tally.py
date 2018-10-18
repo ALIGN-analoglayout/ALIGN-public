@@ -92,13 +92,12 @@ class BitVec:
   def var( self, idx):
     return self.vars[idx]
 
-
-  def val( self):
-
-    def tr( x):
-      return '1' if x else '0'
-
-    return ''.join( [ tr(self.s.h[self.vars[idx]]) for idx in range(self.n)])
+  def val( self, idx=None):
+    def tr( x): return '1' if x else '0'
+    if idx is None:
+      return ''.join( [ tr(self.s.h[self.vars[idx]]) for idx in range(self.n)])
+    else:
+      return self.s.h[self.vars[idx]]
 
 class VarMgr:
   def __init__( self, s):

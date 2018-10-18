@@ -476,11 +476,61 @@ def test_euler_nand02_one():
   print( GP.edges(keys=True,data=True))
   print( GN.edges(keys=True,data=True))
 
-  sbep = SatBasedEulerPaths()
+  sbep = SatBasedEulerPaths() 
   sbep.limit_channel_width = 1
   sbep.sat_based_euler_paths( GP, GN)
   sbep.solve()
   assert sbep.s.state == 'UNSAT'
+
+
+def test_euler_ru0023( extra_cols=2, max_capacity=6):
+  print( "ru0023 %d %d" % (extra_cols, max_capacity))
+
+  GP = nx.MultiDiGraph()
+  GN = nx.MultiDiGraph()
+
+  GP.add_edge( "vcc", "n9",  key="M02", label="n10")
+  GP.add_edge( "vcc", "n10", key="M01", label="a")
+  GN.add_edge( "vss", "n9",  key="M16", label="n10")
+  GN.add_edge( "vss", "n10", key="M15", label="a")
+
+  GP.add_edge( "n9",  "carry",  key="M13", label="n16")
+  GP.add_edge( "n10", "sum",    key="M11", label="n16")
+  GN.add_edge( "n9",  "carry",  key="M27", label="n11")
+  GN.add_edge( "n10", "sum",    key="M25", label="n11")
+  GP.add_edge( "n15", "carry",  key="M14", label="n11")
+  GP.add_edge( "n9",  "sum",    key="M12", label="n11")
+  GN.add_edge( "n15", "carry",  key="M28", label="n16")
+  GN.add_edge( "n9",  "sum",    key="M26", label="n16")
+
+  GP.add_edge( "vcc", "n15",    key="M06", label="n13")
+  GN.add_edge( "vss", "n15",    key="M20", label="n13")
+  GP.add_edge( "vcc", "n12",    key="M03", label="b")
+  GP.add_edge( "n12", "n11",    key="M10", label="n13")
+  GN.add_edge( "vss", "n12",    key="M17", label="b")
+  GN.add_edge( "n12", "n16",    key="M21", label="n13")
+
+  GP.add_edge( "n12", "n16",    key="M07", label="n15")
+  GP.add_edge( "n14", "n11",    key="M09", label="n15")
+  GN.add_edge( "n12", "n11",    key="M24", label="n15")
+  GN.add_edge( "n14", "n16",    key="M22", label="n15")
+  GP.add_edge( "n14", "n16",    key="M08", label="n13")
+  GP.add_edge( "vcc", "n14",    key="M04", label="n12")
+  GN.add_edge( "n14", "n11",    key="M23", label="n13")
+  GN.add_edge( "vss", "n14",    key="M18", label="n12")
+  GP.add_edge( "vcc", "n13",    key="M05", label="c")
+  GN.add_edge( "vss", "n13",    key="M19", label="c")
+
+
+  print( GP.edges(keys=True,data=True))
+  print( GN.edges(keys=True,data=True))
+
+  sbep = SatBasedEulerPaths()
+  sbep.extra_cols = extra_cols
+  sbep.limit_channel_width = max_capacity
+  sbep.sat_based_euler_paths( GP, GN)
+  sbep.solve()
+  assert sbep.s.state == 'SAT'
 
 
 def test_sat_partition_nand03_doubled():
@@ -546,3 +596,6 @@ def test_sat_partition_aoi022():
   print( GP1.edges(keys=True,data=True))
   print( GN0.edges(keys=True,data=True))
   print( GN1.edges(keys=True,data=True))
+
+if __name__ == "__main__":
+  test_euler_ru0023(2,6)
