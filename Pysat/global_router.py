@@ -91,8 +91,38 @@ class Grid:
                 self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x0,y)))
 
 
+    def genWires( self):
+        horizontalMetals = ['metal2']
+        verticalMetals   = ['metal3']
+        self.wires = OrderedDict()
+        for (k,v) in self.per_net_grid.items():
+            for (ly,bv) in v.items():
+                if ly in horizontalMetals:
+                    for y in range(self.ny):
+                        x0,x1 = None,None
+                        for x in range(self.nx):
+                            filled = bv.val(self.idx(x,y))
+                            if filled:
+                                if x0 is None: x0 = x
+                                x1 = x
+                            if filled and x == self.nx-1 or not filled and x1 is not None:
+                                print( "wire", k, ly, "y", y, "x0", x0, "x1", x1)
+                                x0,x1 = None,None
+
+                if ly in verticalMetals:
+                    for x in range(self.nx):
+                        y0,y1 = None,None
+                        for y in range(self.ny):
+                            filled = bv.val(self.idx(x,y))
+                            if filled:
+                                if y0 is None: y0 = y
+                                y1 = y
+                            if filled and y == self.ny-1 or not filled and y1 is not None:
+                                print( "wire", k, ly, "x", x, "y0", y0, "y1", y1)
+                                y0,y1 = None,None
+
 def test_simple():
-    halfn = 50
+    halfn = 10
     n = 2*halfn
     g = Grid( n, n)
     for q in range(0,halfn):
@@ -107,9 +137,13 @@ def test_simple():
         for bv in v:
             print( bv, bv.val())
 
+    
+
     for (k,v) in g.per_net_grid.items():
         for (ly,bv) in v.items():
             print( k, ly)
             for y in range(g.ny-1,-1,-1): 
                 tmp = [ ('1' if bv.val(g.idx(x,y)) else '0') for x in range(g.nx)]
                 print( ''.join( tmp))
+
+    g.genWires()
