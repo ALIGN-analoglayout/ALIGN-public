@@ -24,7 +24,6 @@ docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && cd /scrip
 # Show global routes
 ````
 docker run --rm --mount source=inputVol,target=/INPUT -it tally bash -c "source sympy/bin/activate && cd /scripts && python global_router.py && cp mydesign_dr_globalrouting.json /INPUT"
-python global_router.py
 
 docker run --mount source=inputVol,target=/public/INPUT --rm -d -p 8085:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
 ````
