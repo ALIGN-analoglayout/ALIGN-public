@@ -72,16 +72,14 @@ class Grid:
     def genDifferentNetMaxCapacityConstraints( self, max_capacity):
           for x in range(self.nx):
             for y in range(self.ny):
-              for l in self.layers:
-                for ll in self.layers:
-                  if l != ll:
-                    for k in self.nets.keys():
-                      inps = [ self.per_net_grid[k ][l ].var( self.idx(x,y))] + \
-                             [ self.per_net_grid[kk][ll].var( self.idx(x,y)) for kk in self.nets.keys() if k != kk]
-                      outs_bv = tally.BitVec( self.s, 'cap2_%s_%s_%s_%d_%d' % (l,ll,k,x,y), max_capacity+1)
-                      outs = [ outs_bv.var( i) for i in range( max_capacity+1)]
-                      self.s.emit_tally( inps, outs)
-                      self.s.emit_never( outs_bv.var( max_capacity))
+              for (l,ll) in ( (l, ll) for l in self.layers for ll in self.layers if l != ll):
+                for k in self.nets.keys():
+                  inps = [ self.per_net_grid[k ][l ].var( self.idx(x,y))] + \
+                         [ self.per_net_grid[kk][ll].var( self.idx(x,y)) for kk in self.nets.keys() if k != kk]
+                  outs_bv = tally.BitVec( self.s, 'cap2_%s_%s_%s_%d_%d' % (l,ll,k,x,y), max_capacity+1)
+                  outs = [ outs_bv.var( i) for i in range( max_capacity+1)]
+                  self.s.emit_tally( inps, outs)
+                  self.s.emit_never( outs_bv.var( max_capacity))
 
     def genRoutes( self):
         self.routes = OrderedDict()
