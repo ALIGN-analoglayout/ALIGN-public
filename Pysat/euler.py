@@ -483,7 +483,7 @@ def test_euler_nand02_one():
   sbep.solve()
   assert sbep.s.state == 'UNSAT'
 
-@pytest.mark.skip(reason="Takes too long.")
+@pytest.mark.slow
 def test_euler_ru0023( extra_cols=2, max_capacity=6):
   print( "ru0023 %d %d" % (extra_cols, max_capacity))
 
