@@ -1,5 +1,49 @@
 import tally
 from collections import OrderedDict
+import json
+
+class Tech:
+  def __init__( self):
+      self.halfXGRGrid = 3
+      self.halfYGRGrid = 3
+      self.pitchPoly   = 720
+      self.pitchDG     = 720
+
+class Rect:
+  def __init__( self, llx, lly, urx, ury):
+      self.llx = llx
+      self.lly = lly
+      self.urx = urx
+      self.ury = ury
+
+class GR:
+  def __init__( self):
+    self.netName = None
+    self.rect = None
+    self.layer = None
+    self.width = None
+
+def encode_GR( tech, obj):
+  if isinstance(obj, GR):
+# Convert global route coords to physical coords
+    if obj.rect.llx == obj.rect.urx: # vertical wire
+      xc = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
+      llx = xc - obj.width//2
+      urx = xc + obj.width//2
+      lly = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid)
+      ury = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.ury + tech.halfYGRGrid)
+    elif obj.rect.lly == obj.rect.ury: # horizontal wire
+      yc = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid)
+      lly = yc - obj.width//2
+      ury = yc + obj.width//2
+      llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
+      urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid)
+    else:
+      raise RuntimeError(repr(obj) + ("is not horizontal nor vertical (%d,%d,%d,%d)." % (obj.rect.llx,obj.rect.lly,obj.rect.urx,obj.rect.ury)))
+
+    return { "netName" : obj.netName, "layer" : obj.layer, "width" : obj.width, "rect" : [llx, lly, urx, ury]}
+  else:
+    raise TypeError(repr(obj) + " is not JSON serializable.")
 
 class Grid:
     def __init__( self, nx, ny):
@@ -15,7 +59,7 @@ class Grid:
     def idx( self, x, y):
         return self.ny*x + y
 
-    def semantic( self):
+    def semantic( self, max_capacity=1):
         self.s = tally.Tally() 
 
         self.per_net_grid = OrderedDict()
@@ -24,7 +68,6 @@ class Grid:
             for ly in self.layers:
                 self.per_net_grid[k][ly] = tally.BitVec( self.s, k + '_' + ly, self.nx * self.ny)
         
-        max_capacity = 1
         for x in range(self.nx):
             for y in range(self.ny):
                 for ly in self.layers:
@@ -91,36 +134,6 @@ class Grid:
                 self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x0,y)))
 
 
-    def genWires( self):
-        horizontalMetals = ['metal2']
-        verticalMetals   = ['metal3']
-        self.wires = OrderedDict()
-        for (k,v) in self.per_net_grid.items():
-            for (ly,bv) in v.items():
-                if ly in horizontalMetals:
-                    for y in range(self.ny):
-                        x0,x1 = None,None
-                        for x in range(self.nx):
-                            filled = bv.val(self.idx(x,y))
-                            if filled:
-                                if x0 is None: x0 = x
-                                x1 = x
-                            if filled and x == self.nx-1 or not filled and x1 is not None:
-                                print( "wire", k, ly, "y", y, "x0", x0, "x1", x1)
-                                x0,x1 = None,None
-
-                if ly in verticalMetals:
-                    for x in range(self.nx):
-                        y0,y1 = None,None
-                        for y in range(self.ny):
-                            filled = bv.val(self.idx(x,y))
-                            if filled:
-                                if y0 is None: y0 = y
-                                y1 = y
-                            if filled and y == self.ny-1 or not filled and y1 is not None:
-                                print( "wire", k, ly, "x", x, "y0", y0, "y1", y1)
-                                y0,y1 = None,None
-
     def print_routes( self):
         for (k,v) in self.routes.items():
             for bv in v:
@@ -133,6 +146,72 @@ class Grid:
                 for y in range(self.ny-1,-1,-1): 
                     print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(self.nx)]))
 
+    def genWires( self):
+        horizontalMetals = ['metal2']
+        verticalMetals   = ['metal3']
+        self.wires = OrderedDict()
+        for (k,v) in self.per_net_grid.items():
+            self.wires[k] = {}
+            for (ly,bv) in v.items():
+                if ly in horizontalMetals:
+                    for y in range(self.ny):
+                        x0,x1 = None,None
+                        for x in range(self.nx):
+                            filled = bv.val(self.idx(x,y))
+                            if filled:
+                                if x0 is None: x0 = x
+                                x1 = x
+                            if filled and x == self.nx-1 or not filled and x1 is not None:
+                                print( "wire", k, ly, "y", y, "x0", x0, "x1", x1)
+                                if ly not in self.wires[k]: self.wires[k][ly] = [] 
+                                gr = GR()
+                                gr.netName = k
+                                gr.layer = ly
+                                gr.width = 400
+                                gr.rect = Rect( x0, y, x1, y)
+                                self.wires[k][ly].append( gr)
+                                x0,x1 = None,None
+
+                if ly in verticalMetals:
+                    for x in range(self.nx):
+                        y0,y1 = None,None
+                        for y in range(self.ny):
+                            filled = bv.val(self.idx(x,y))
+                            if filled:
+                                if y0 is None: y0 = y
+                                y1 = y
+                            if filled and y == self.ny-1 or not filled and y1 is not None:
+                                print( "wire", k, ly, "x", x, "y0", y0, "y1", y1)
+                                if ly not in self.wires[k]: self.wires[k][ly] = [] 
+                                gr = GR()
+                                gr.netName = k
+                                gr.layer = ly
+                                gr.width = 400
+                                gr.rect = Rect( x, y0, x, y1)
+                                self.wires[k][ly].append( gr)
+                                y0,y1 = None,None
+
+    def write_globalrouting_json( self, fp, tech):
+        grs = []
+        terminals = []
+
+        for (k,v) in self.wires.items():
+            for (ly, vv) in v.items():
+                for gr in vv:
+                    grs.append(gr)
+
+        grGrid = []
+        dx = tech.pitchPoly*tech.halfXGRGrid*2
+        dy = tech.pitchDG*tech.halfYGRGrid*2
+        self.bbox = Rect( 0, 0, dx*self.nx, dy*self.ny)
+        for x in range( self.bbox.llx, self.bbox.urx, dx):
+            for y in range( self.bbox.lly, self.bbox.ury, dy):
+                grGrid.append( [x,y,x+dx,y+dy])
+
+        data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
+
+        fp.write( json.dumps( data, default=lambda x: encode_GR(tech,x)) + "\n")
+
 
 def test_river_routing():
     halfn = 10
@@ -142,13 +221,39 @@ def test_river_routing():
         g.addTerminal( 'a%d' % q, 0,   q)
         g.addTerminal( 'a%d' % q, n-1, q+halfn)
 
-    g.semantic()
+    g.semantic( max_capacity=1)
     g.s.solve()
-    print( g.s.state)
+    assert g.s.state == 'SAT'
 
     g.print_routes()
     g.print_rasters()
     g.genWires()
+
+    return g
+
+def test_cross_routing():
+    halfn = 10
+    n = 2*halfn
+    g = Grid( n, n)
+    for q in range(0,halfn):
+        g.addTerminal( 'a%d' % q, 0,   q)
+        g.addTerminal( 'a%d' % q, n-1, q+halfn)
+    for q in range(0,halfn):
+        g.addTerminal( 'b%d' % q, 0,   q)
+        g.addTerminal( 'b%d' % q, n-1, q+halfn)
+    for q in range(0,halfn):
+        g.addTerminal( 'c%d' % q, 0,   q)
+        g.addTerminal( 'c%d' % q, n-1, q+halfn)
+
+    g.semantic( max_capacity=3)
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+    g.print_routes()
+    g.print_rasters()
+    g.genWires()
+
+    return g
 
 def test_backward_xy():
     halfn = 2
@@ -158,10 +263,16 @@ def test_backward_xy():
         g.addTerminal( 'a%d' % q, n-1, q+halfn)
         g.addTerminal( 'a%d' % q, 0,   q)
 
-    g.semantic()
+    g.semantic( max_capacity=1)
     g.s.solve()
-    print( g.s.state)
+    assert g.s.state == 'SAT'
 
     g.print_routes()
     g.print_rasters()
     g.genWires()
+
+if __name__ == "__main__":
+    g = test_river_routing()
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)

@@ -115,7 +115,7 @@ class Tally:
   def __init__( self):
     self.nvars = 0
     self.nm_map = {}
-    self.h = defaultdict( list)
+    self.h = defaultdict( lambda: None)
     self.state = 'UNKNOWN'
     self.solver = pysat.solvers.Glucose4()
 
