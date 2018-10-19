@@ -59,36 +59,31 @@ class Grid:
     def idx( self, x, y):
         return self.ny*x + y
 
-    def semantic( self, max_capacity=1):
-        self.s = tally.Tally() 
+    def genMaxCapacityConstraints( self, max_capacity):
+      for x in range(self.nx):
+        for y in range(self.ny):
+          for ly in self.layers:
+            outs_bv = tally.BitVec( self.s, 'cap_%s_%d_%d' % (ly,x,y), max_capacity+1)
+            outs = [ outs_bv.var( i) for i in range(max_capacity+1)]
+            inps = [ self.per_net_grid[k][ly].var( self.idx(x,y)) for k in self.nets.keys()]
+            self.s.emit_tally( inps, outs)
+            self.s.emit_never( outs_bv.var( max_capacity))
 
-        self.per_net_grid = OrderedDict()
-        for (k,v) in self.nets.items():
-            self.per_net_grid[k] = OrderedDict()
-            for ly in self.layers:
-                self.per_net_grid[k][ly] = tally.BitVec( self.s, k + '_' + ly, self.nx * self.ny)
-        
-        for x in range(self.nx):
+    def genDifferentNetMaxCapacityConstraints( self, max_capacity):
+          for x in range(self.nx):
             for y in range(self.ny):
-                for ly in self.layers:
-                    outs_bv = tally.BitVec( self.s, 'cap_%s_%d_%d' % (ly,x,y), max_capacity+1)
-                    outs = [ outs_bv.var( i) for i in range(max_capacity+1)]
-                    inps = [ self.per_net_grid[k][ly].var( self.idx(x,y)) for k in self.nets.keys()]
-                    self.s.emit_tally( inps, outs)
-                    self.s.emit_never( outs_bv.var( max_capacity))
+              for l in self.layers:
+                for ll in self.layers:
+                  if l != ll:
+                    for k in self.nets.keys():
+                      inps = [ self.per_net_grid[k ][l ].var( self.idx(x,y))] + \
+                             [ self.per_net_grid[kk][ll].var( self.idx(x,y)) for kk in self.nets.keys() if k != kk]
+                      outs_bv = tally.BitVec( self.s, 'cap2_%s_%s_%s_%d_%d' % (l,ll,k,x,y), max_capacity+1)
+                      outs = [ outs_bv.var( i) for i in range( max_capacity+1)]
+                      self.s.emit_tally( inps, outs)
+                      self.s.emit_never( outs_bv.var( max_capacity))
 
-# hack to make it a river route
-                for l in self.layers:
-                  for ll in self.layers:
-                    if l != ll:
-                      for k in self.nets.keys():
-                        inps = [ self.per_net_grid[k][l].var( self.idx(x,y))] + [self.per_net_grid[kk][ll].var( self.idx(x,y))  for kk in self.nets.keys() if k != kk]
-                        outs_bv = tally.BitVec( self.s, 'cap2_%s_%s_%s_%d_%d' % (l,ll,k,x,y), max_capacity+1)
-                        outs = [ outs_bv.var( i) for i in range(max_capacity+1)]
-                        self.s.emit_tally( inps, outs)
-                        self.s.emit_never( outs_bv.var( max_capacity))
-
-                    
+    def genRoutes( self):
         self.routes = OrderedDict()
 
 # All i,l, and z routes for two terminal nets        
@@ -128,6 +123,23 @@ class Grid:
                 if y != y1: self.emitWire( k, r, "metal3", x1, y, x1, y1)
 
             self.s.emit_at_least_one( [ bv.var() for bv in self.routes[k]])
+
+
+    def semantic( self, max_capacity=1, different_net_max_capacity=None):
+        self.s = tally.Tally() 
+
+        self.per_net_grid = OrderedDict()
+        for (k,v) in self.nets.items():
+            self.per_net_grid[k] = OrderedDict()
+            for ly in self.layers:
+                self.per_net_grid[k][ly] = tally.BitVec( self.s, k + '_' + ly, self.nx * self.ny)
+        
+        self.genMaxCapacityConstraints( max_capacity=max_capacity)
+        if different_net_max_capacity is not None:
+          self.genDifferentNetMaxCapacityConstaints( different_net_max_capacity)
+
+        self.genRoutes()
+
 
 
     def emitWire( self, k, r, ly, x0, y0, x1, y1):
