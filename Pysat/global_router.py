@@ -76,10 +76,22 @@ class Grid:
                     inps = [ self.per_net_grid[k][ly].var( self.idx(x,y)) for k in self.nets.keys()]
                     self.s.emit_tally( inps, outs)
                     self.s.emit_never( outs_bv.var( max_capacity))
+
+# hack to make it a river route
+                for l in self.layers:
+                  for ll in self.layers:
+                    if l != ll:
+                      for k in self.nets.keys():
+                        inps = [ self.per_net_grid[k][l].var( self.idx(x,y))] + [self.per_net_grid[kk][ll].var( self.idx(x,y))  for kk in self.nets.keys() if k != kk]
+                        outs_bv = tally.BitVec( self.s, 'cap2_%s_%s_%s_%d_%d' % (l,ll,k,x,y), max_capacity+1)
+                        outs = [ outs_bv.var( i) for i in range(max_capacity+1)]
+                        self.s.emit_tally( inps, outs)
+                        self.s.emit_never( outs_bv.var( max_capacity))
+
                     
         self.routes = OrderedDict()
 
-# All z routes for two terminal nets        
+# All i,l, and z routes for two terminal nets        
         for (k,v) in self.nets.items():
             assert len(v) == 2
 
@@ -198,7 +210,7 @@ class Grid:
         for (k,v) in self.wires.items():
             for (ly, vv) in v.items():
                 for gr in vv:
-                    grs.append(gr)
+                    terminals.append(gr)
 
         grGrid = []
         dx = tech.pitchPoly*tech.halfXGRGrid*2
@@ -210,10 +222,10 @@ class Grid:
 
         data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
-        fp.write( json.dumps( data, default=lambda x: encode_GR(tech,x)) + "\n")
+        fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
 
-def test_river_routing():
+def test_river_routing( max_capacity=1):
     halfn = 10
     n = 2*halfn
     g = Grid( n, n)
@@ -221,7 +233,7 @@ def test_river_routing():
         g.addTerminal( 'a%d' % q, 0,   q)
         g.addTerminal( 'a%d' % q, n-1, q+halfn)
 
-    g.semantic( max_capacity=1)
+    g.semantic( max_capacity=max_capacity)
     g.s.solve()
     assert g.s.state == 'SAT'
 
@@ -272,7 +284,7 @@ def test_backward_xy():
     g.genWires()
 
 if __name__ == "__main__":
-    g = test_river_routing()
+    g = test_river_routing(1)
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
