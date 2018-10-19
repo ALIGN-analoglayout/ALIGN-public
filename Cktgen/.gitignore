@@ -1,2 +1,4 @@
+INPUT/
+.cache/
 __pycache__/
 *~
