@@ -26,18 +26,20 @@ class GR:
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
 # Convert global route coords to physical coords
-    if obj.rect.llx == obj.rect.urx: # vertical wire
+    if obj.layer in ['metal3']: # vertical wire
+      assert obj.rect.llx == obj.rect.urx
       xc = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
       llx = xc - obj.width//2
       urx = xc + obj.width//2
-      lly = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid)
-      ury = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.ury + tech.halfYGRGrid)
-    elif obj.rect.lly == obj.rect.ury: # horizontal wire
+      lly = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid - 2)
+      ury = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.ury + tech.halfYGRGrid + 2)
+    elif obj.layer in ['metal2']: # horizontal wire
+      assert obj.rect.lly == obj.rect.ury
       yc = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid)
       lly = yc - obj.width//2
       ury = yc + obj.width//2
-      llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
-      urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid)
+      llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid - 2)
+      urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid + 2)
     else:
       raise RuntimeError(repr(obj) + ("is not horizontal nor vertical (%d,%d,%d,%d)." % (obj.rect.llx,obj.rect.lly,obj.rect.urx,obj.rect.ury)))
 
@@ -338,7 +340,7 @@ class Grid:
         fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
 
-def test_river_routing( max_capacity=1, different_net_max_capacity=1):
+def ex_river_routing( max_capacity=1, different_net_max_capacity=1):
     halfn = 10
     n = 2*halfn
     g = Grid( n, n)
@@ -358,7 +360,7 @@ def test_river_routing( max_capacity=1, different_net_max_capacity=1):
 
     return g
 
-def test_symmetric( max_capacity=1, different_net_max_capacity=1):
+def ex_symmetric( max_capacity=1, different_net_max_capacity=1):
     g = Grid( 6, 4)
     g.addTerminal( 'a', 0, 0)
     g.addTerminal( 'a', 2, 3)
@@ -387,31 +389,7 @@ def test_symmetric( max_capacity=1, different_net_max_capacity=1):
 
     return g
 
-def test_cross_routing():
-    halfn = 10
-    n = 2*halfn
-    g = Grid( n, n)
-    for q in range(0,halfn):
-        g.addTerminal( 'a%d' % q, 0,   q)
-        g.addTerminal( 'a%d' % q, n-1, q+halfn)
-    for q in range(0,halfn):
-        g.addTerminal( 'b%d' % q, 0,   q)
-        g.addTerminal( 'b%d' % q, n-1, q+halfn)
-    for q in range(0,halfn):
-        g.addTerminal( 'c%d' % q, 0,   q)
-        g.addTerminal( 'c%d' % q, n-1, q+halfn)
-
-    g.semantic( max_capacity=3)
-    g.s.solve()
-    assert g.s.state == 'SAT'
-
-    g.print_routes()
-    g.print_rasters()
-    g.genWires()
-
-    return g
-
-def test_backward_xy():
+def ex_backward_xy():
     halfn = 2
     n = 2*halfn
     g = Grid( n, n)
@@ -426,10 +404,26 @@ def test_backward_xy():
     g.print_routes()
     g.print_rasters()
     g.genWires()
+    return g
+
+def test_symmetric_1_1():
+  ex_symmetric( max_capacity=1, different_net_max_capacity=1)
+
+def test_symmetric_1_None():
+  ex_symmetric( max_capacity=1, different_net_max_capacity=None)
+
+def test_river_routing_1_None():
+  ex_river_routing(1,None)
+
+def test_river_routing_1_1():
+  ex_river_routing(1,1)
+
+def test_backward_xy():
+  ex_backward_xy()
 
 if __name__ == "__main__":
-    g = test_river_routing(1,None)
-#    g = test_symmetric(1)
+    g = ex_river_routing(1,None)
+    g = ex_symmetric(1,1)
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
