@@ -85,25 +85,19 @@ class Grid:
       assert self.s.state == 'SAT'
 
       print( "Phase 2: cleanAntennas: force all empty sites to remain empty.")
-      for x in range(self.nx):
-        for y in range(self.ny):
-          for (k,v) in self.per_net_grid.items():
-            for (ly,bv) in v.items():
-              if bv.val( self.idx(x,y)) is False:
-                self.s.emit_never( bv.var( self.idx(x,y)))
+      for (x,y,k,ly,bv) in self.allRasterPoints():
+        if bv.val( self.idx(x,y)) is False:
+          self.s.emit_never( bv.var( self.idx(x,y)))
       self.s.solve()
       assert self.s.state == 'SAT'
 
       print( "Phase 3: cleanAntennas: one by one, check if a site can be made empty, then force it to remain empty.")
-      for x in range(self.nx):
-        for y in range(self.ny):
-          for (k,v) in self.per_net_grid.items():
-            for (ly,bv) in v.items():
-              if bv.val( self.idx(x,y)) is True:
-                self.s.solve( assumptions=[-bv.var( self.idx(x,y))])
-                if self.s.state == 'SAT':
-                  print( "Removing antenna from %s %s %d %d" % (k,ly,x,y))
-                  self.s.emit_never( bv.var( self.idx(x,y)))                           
+      for (x,y,k,ly,bv) in self.allRasterPoints():
+        if bv.val( self.idx(x,y)) is True:
+          self.s.solve( assumptions=[-bv.var( self.idx(x,y))])
+          if self.s.state == 'SAT':
+            print( "Removing antenna from %s %s %d %d" % (k,ly,x,y))
+            self.s.emit_never( bv.var( self.idx(x,y)))                           
       self.s.solve()
       assert self.s.state == 'SAT'
 
