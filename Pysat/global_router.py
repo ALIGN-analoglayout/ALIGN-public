@@ -384,9 +384,6 @@ def ex_symmetric( max_capacity=1, different_net_max_capacity=1):
 
     for ly in g.layers:
       pass
-#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(0,3)))
-#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(0,2)))
-#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
       g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
       g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
       g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(5,3)))
@@ -402,6 +399,96 @@ def ex_symmetric( max_capacity=1, different_net_max_capacity=1):
 
     return g
 
+def test_symmetric_sat_3():
+    g = Grid( 6, 4)
+    g.addTerminal( 'a', 0, 0)
+    g.addTerminal( 'a', 2, 3)
+    g.addTerminal( 'b', 3, 3)
+    g.addTerminal( 'b', 5, 0)
+
+    g.semanticSymmetric( 1, 1)
+
+    for ly in ["metal2"]:
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
+#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,3)))
+
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+def test_symmetric_sat_2():
+    g = Grid( 6, 4)
+    g.addTerminal( 'a', 0, 0)
+    g.addTerminal( 'a', 2, 3)
+    g.addTerminal( 'b', 3, 3)
+    g.addTerminal( 'b', 5, 0)
+
+    g.semanticSymmetric( 1, 1)
+
+    for ly in ["metal2"]:
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
+#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,3)))
+
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+def test_symmetric_sat_1():
+    g = Grid( 6, 4)
+    g.addTerminal( 'a', 0, 0)
+    g.addTerminal( 'a', 2, 3)
+    g.addTerminal( 'b', 3, 3)
+    g.addTerminal( 'b', 5, 0)
+
+    g.semanticSymmetric( 1, 1)
+
+    for ly in ["metal2"]:
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
+#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,3)))
+
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+def test_symmetric_sat_0():
+    g = Grid( 6, 4)
+    g.addTerminal( 'a', 0, 0)
+    g.addTerminal( 'a', 2, 3)
+    g.addTerminal( 'b', 3, 3)
+    g.addTerminal( 'b', 5, 0)
+
+    g.semanticSymmetric( 1, 1)
+
+    for ly in ["metal2"]:
+#      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,3)))
+
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+def test_symmetric_unsat():
+    g = Grid( 6, 4)
+    g.addTerminal( 'a', 0, 0)
+    g.addTerminal( 'a', 2, 3)
+    g.addTerminal( 'b', 3, 3)
+    g.addTerminal( 'b', 5, 0)
+
+    g.semanticSymmetric( 1, 1)
+
+    for ly in ["metal2"]:
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,0)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,1)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(1,2)))
+      g.s.emit_always( g.per_net_grid['!kor'][ly].var( g.idx(5,3)))
+
+    g.s.solve()
+    assert g.s.state == 'UNSAT'
+
 def ex_backward_xy():
     halfn = 2
     n = 2*halfn
@@ -413,11 +500,6 @@ def ex_backward_xy():
     g.semantic( max_capacity=1)
     g.s.solve()
     assert g.s.state == 'SAT'
-
-    g.print_routes()
-    g.print_rasters()
-    g.genWires()
-    return g
 
 def ex_write_globalrouting_json( g):
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:

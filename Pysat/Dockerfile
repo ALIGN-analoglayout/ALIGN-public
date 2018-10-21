@@ -6,7 +6,10 @@ RUN \
 
 FROM pysat as tally
 
-ADD . /scripts
+RUN \
+    mkdir -p /scripts
+
+ADD *.py /scripts/
 
 
 
