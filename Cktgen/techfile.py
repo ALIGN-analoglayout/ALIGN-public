@@ -23,53 +23,14 @@ class MetalTemplate:
 class TechFile:
   def __init__( self, fp):
     self.json = json.load( fp)
+    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors']) for d in self.json['metalTemplates']]
 
   def __getattr__( self, nm):
     return self.json[nm]
 
-  # @property
-  # def pitchDG( self):
-  #   return self.json['pitchDG']
-
-  # @property
-  # def dgPerRow( self):
-  #   return self.json['dgPerRow']
-
-  # @property
-  # def pitchPoly( self):
-  #   return self.json['pitchPoly']
-
-  # @property
-  # def pitchM1( self):
-  #   return self.json['pitchM1']
-
-  # @property
-  # def halfWidthM1( self):
-  #   return self.json['halfWidthM1']
-
-  # @property
-  # def halfMinETESpaceM1( self):
-  #   return self.json['halfMinETESpaceM1']
-
-  # @property
-  # def halfWidthM3( self):
-  #   return self.json['halfWidthM3']
-
-  # @property
-  # def halfWidthM4( self):
-  #   return self.json['halfWidthM4']
-
-  # @property
-  # def halfXGRGrid( self):
-  #   return self.json['halfXGRGrid']
-
-  # @property
-  # def halfYGRGrid( self):
-  #   return self.json['halfYGRGrid']
-
   @property
   def metalTemplates( self):
-    return [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors']) for d in self.json['metalTemplates']]
+    return self._metalTemplates
 
   def write_files( self, dir, nm):
     self.write_options_file( dir + "/" + nm + "_dr_mti.txt")

@@ -1,4 +1,7 @@
 {
+    "verticalMetals" : [ "metal1", "metal3", "metal5"],
+    "horizontalMetals" : [ "metal2", "metal4"],
+
     "pitchDG" : 720,
     "dgPerRow" :  6,
     "pitchPoly" : 720,

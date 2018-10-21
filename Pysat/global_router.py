@@ -3,11 +3,14 @@ from collections import OrderedDict
 import json
 
 class Tech:
+# Mock the tech file to temporarily simplify integration
   def __init__( self):
       self.halfXGRGrid = 3
       self.halfYGRGrid = 3
       self.pitchPoly   = 720
       self.pitchDG     = 720
+      self.verticalMetals = ["metal1","metal3","metal5"]
+      self.horizontalMetals = ["metal2","metal4"]
 
 class Rect:
   def __init__( self, llx, lly, urx, ury):
@@ -26,20 +29,20 @@ class GR:
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
 # Convert global route coords to physical coords
-    if obj.layer in ['metal3']: # vertical wire
+    if obj.layer in tech.verticalMetals:
       assert obj.rect.llx == obj.rect.urx
       xc = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
       llx = xc - obj.width//2
       urx = xc + obj.width//2
-      lly = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid - 2)
-      ury = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.ury + tech.halfYGRGrid + 2)
-    elif obj.layer in ['metal2']: # horizontal wire
+      lly = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid - (tech.halfYGRGrid - 1))
+      ury = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.ury + tech.halfYGRGrid + (tech.halfYGRGrid - 1))
+    elif obj.layer in tech.horizontalMetals:
       assert obj.rect.lly == obj.rect.ury
       yc = tech.pitchDG*(tech.halfYGRGrid*2*obj.rect.lly + tech.halfYGRGrid)
       lly = yc - obj.width//2
       ury = yc + obj.width//2
-      llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid - 2)
-      urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid + 2)
+      llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid - (tech.halfXGRGrid - 1))
+      urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid + (tech.halfXGRGrid - 1))
     else:
       raise RuntimeError(repr(obj) + ("is not horizontal nor vertical (%d,%d,%d,%d)." % (obj.rect.llx,obj.rect.lly,obj.rect.urx,obj.rect.ury)))
 
@@ -62,28 +65,45 @@ class Grid:
     def idx( self, x, y):
         return self.ny*x + y
 
-    def cleanAntennas( self):
-      
-      print( "Phase 1: cleanAntennas")
+    def allRasterPoints( self):
       for x in range(self.nx):
         for y in range(self.ny):
           for (k,v) in self.per_net_grid.items():
             for (ly,bv) in v.items():
-              if self.per_net_grid[k][ly].val( self.idx(x,y)) is False:
-                self.s.emit_never( self.per_net_grid[k][ly].var( self.idx(x,y)))
+              yield x,y,k,ly,bv
+
+    def cleanAntennas( self):
+      
+      print( "Phase 1: cleanAntennas: force all routing decision to remain.")
+      for (k,v) in self.routes.items():
+        for r in v:
+          if r.val() is True:
+            self.s.emit_always( r.var())
+          elif r.val() is False:
+            self.s.emit_never( r.var())
       self.s.solve()
       assert self.s.state == 'SAT'
 
-      print( "Phase 2: cleanAntennas")
+      print( "Phase 2: cleanAntennas: force all empty sites to remain empty.")
       for x in range(self.nx):
         for y in range(self.ny):
           for (k,v) in self.per_net_grid.items():
             for (ly,bv) in v.items():
-              if self.per_net_grid[k][ly].val( self.idx(x,y)) is True:
-                self.s.solve( assumptions=[-self.per_net_grid[k][ly].var( self.idx(x,y))])
+              if bv.val( self.idx(x,y)) is False:
+                self.s.emit_never( bv.var( self.idx(x,y)))
+      self.s.solve()
+      assert self.s.state == 'SAT'
+
+      print( "Phase 3: cleanAntennas: one by one, check if a site can be made empty, then force it to remain empty.")
+      for x in range(self.nx):
+        for y in range(self.ny):
+          for (k,v) in self.per_net_grid.items():
+            for (ly,bv) in v.items():
+              if bv.val( self.idx(x,y)) is True:
+                self.s.solve( assumptions=[-bv.var( self.idx(x,y))])
                 if self.s.state == 'SAT':
                   print( "Removing antenna from %s %s %d %d" % (k,ly,x,y))
-                  self.s.emit_never( self.per_net_grid[k][ly].var( self.idx(x,y)))                           
+                  self.s.emit_never( bv.var( self.idx(x,y)))                           
       self.s.solve()
       assert self.s.state == 'SAT'
 
@@ -211,7 +231,6 @@ class Grid:
         allStepY( k0, v0, k1, v1)
         self.s.emit_exactly_one( [ bv.var() for bv in self.routes[k0]])
 
-        self.genRoutes()
 
     def semantic( self, max_capacity=1, different_net_max_capacity=None):
         self.s = tally.Tally() 
@@ -406,6 +425,12 @@ def ex_backward_xy():
     g.genWires()
     return g
 
+def ex_write_globalrouting_json( g):
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
+  
+
 def test_symmetric_1_1():
   ex_symmetric( max_capacity=1, different_net_max_capacity=1)
 
@@ -421,9 +446,11 @@ def test_river_routing_1_1():
 def test_backward_xy():
   ex_backward_xy()
 
+def test_write_globalrouting_json_symmetric():
+  ex_write_globalrouting_json( ex_symmetric(1,1))
+
+def test_write_globalrouting_json_symmetric():
+  ex_write_globalrouting_json( ex_river_routing(1,None))
+
 if __name__ == "__main__":
-    g = ex_river_routing(1,None)
-    g = ex_symmetric(1,1)
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        g.write_globalrouting_json( fp, tech)
+  ex_write_globalrouting_json( ex_symmetric(1,1))
