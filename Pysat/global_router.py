@@ -124,7 +124,9 @@ class Grid:
                   self.s.emit_never( outs_bv.var( max_capacity))
 
     def genRoutes( self):
-# All i,l, and z routes for two terminal nets        
+        hly = "metal2"
+        vly = "metal3"
+
         for (k,v) in self.nets.items():
             assert len(v) == 2
 
@@ -141,9 +143,9 @@ class Grid:
                 r = tally.BitVar( self.s, '%s_route_x_%d' % ( k, x))
                 self.routes[k].append( r)
 
-                if x != x0: self.emitWire( k, r, "metal2", x0, y0, x, y0)
-                self.emitWire( k, r, "metal3", x, y0, x, y1)
-                if x != x1: self.emitWire( k, r, "metal2", x, y1, x1, y1)
+                if x != x0: self.emitWire( k, r, hly, x0, y0, x,  y0)
+                self.emitWire(             k, r, vly, x,  y0, x,  y1)
+                if x != x1: self.emitWire( k, r, hly, x,  y1, x1, y1)
 
 # step in y
             x0,y0 = v[0]
@@ -156,14 +158,17 @@ class Grid:
                 r = tally.BitVar( self.s, '%s_route_y_%d' % ( k, y))
                 self.routes[k].append( r)
 
-                if y != y0: self.emitWire( k, r, "metal3", x0, y0, x0, y)
-                self.emitWire( k, r, "metal2", x0, y, x1, y)
-                if y != y1: self.emitWire( k, r, "metal3", x1, y, x1, y1)
+                if y != y0: self.emitWire( k, r, vly, x0, y0, x0, y)
+                self.emitWire(             k, r, hly, x0, y,  x1, y)
+                if y != y1: self.emitWire( k, r, vly, x1, y,  x1, y1)
 
             self.s.emit_at_least_one( [ bv.var() for bv in self.routes[k]])
 
 
     def genSymmetricRoutes( self, n0, n1):
+        hly = "metal2"
+        vly = "metal3"
+
         (k0,v0) = n0
         (k1,v1) = n1
 
@@ -189,16 +194,16 @@ class Grid:
             x0,y0,x1,y1 = x1,y1,x0,y0
 
           for x in range(x0,x1+1):
-            r = tally.BitVar( self.s, '%s_route_x_%d' % ( k, x))
+            r = tally.BitVar( self.s, '%s_%s_symmetric_route_x_%d' % ( k, kk, x))
             self.routes[k].append( r)
 
-            if x != x0: self.emitWire( k, r, "metal2", x0, y0, x, y0)
-            self.emitWire( k, r, "metal3", x, y0, x, y1)
-            if x != x1: self.emitWire( k, r, "metal2", x, y1, x1, y1)
+            if x != x0: self.emitWire( k, r, hly, x0, y0, x,  y0)
+            self.emitWire(             k, r, vly, x,  y0, x,  y1)
+            if x != x1: self.emitWire( k, r, hly, x,  y1, x1, y1)
 
-            if x != x0: self.emitWire( kk, r, "metal2", xdist - x, y0, xdist - x0, y0)
-            self.emitWire( kk, r, "metal3", xdist - x, y0, xdist - x, y1)
-            if x != x1: self.emitWire( kk, r, "metal2", xdist - x1, y1, xdist -x, y1)
+            if x != x0: self.emitWire( kk, r, hly, xdist - x,  y0, xdist - x0, y0)
+            self.emitWire(             kk, r, vly, xdist - x,  y0, xdist - x,  y1)
+            if x != x1: self.emitWire( kk, r, hly, xdist - x1, y1, xdist - x,  y1)
 
         def allStepY( k, v, kk, vv):
           x0,y0 = v[0]
@@ -208,16 +213,16 @@ class Grid:
             x0,y0,x1,y1 = x1,y1,x0,y0
 
           for y in range(y0,y1+1):
-            r = tally.BitVar( self.s, '%s_route_y_%d' % ( k, y))
+            r = tally.BitVar( self.s, '%s_%s_symmetric_route_y_%d' % ( k, kk, y))
             self.routes[k].append( r)
 
-            if y != y0: self.emitWire( k, r, "metal3", x0, y0, x0, y)
-            self.emitWire( k, r, "metal2", x0, y, x1, y)
-            if y != y1: self.emitWire( k, r, "metal3", x1, y, x1, y1)
+            if y != y0: self.emitWire( k, r, vly, x0, y0, x0, y)
+            self.emitWire(             k, r, hly, x0, y,  x1, y)
+            if y != y1: self.emitWire( k, r, vly, x1, y,  x1, y1)
 
-            if y != y0: self.emitWire( kk, r, "metal3", xdist - x0, y0, xdist - x0, y)
-            self.emitWire( kk, r, "metal2", xdist - x1, y, xdist - x0, y)
-            if y != y1: self.emitWire( kk, r, "metal3", xdist - x1, y, xdist - x1, y1)
+            if y != y0: self.emitWire( kk, r, vly, xdist - x0, y0, xdist - x0, y)
+            self.emitWire(             kk, r, hly, xdist - x1, y,  xdist - x0, y)
+            if y != y1: self.emitWire( kk, r, vly, xdist - x1, y,  xdist - x1, y1)
 
         self.routes[k0] = []
 
