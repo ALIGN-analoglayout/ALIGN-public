@@ -188,7 +188,7 @@ class CellTemplate:
         terminals.append( { "netName" : self.nm, "layer" : "diearea", "rect" : self.bbox})
         for inst in self.instances:
             r = inst.transformation.hitRect( inst.template.bbox)
-            nm = self.nm + '/' + inst.nm
+            nm = self.nm + '/' + inst.nm + ':' + inst.template.nm
             terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.canonical()})
 
         grGrid = []
@@ -219,21 +219,95 @@ class CellHier(CellTemplate):
         self.instances = []
         self.bbox = None
 
+    def updateBbox( self):
+        self.bbox = Rect(None,None,None,None)
+        for inst in self.instances:
+            r = inst.transformation.hitRect( inst.template.bbox).canonical()
+            if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
+            if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
+            if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
+            if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
+
+
 class CellInstance:
     def __init__( self, nm, template, trans):
         self.nm = nm
         self.template = template
         self.transformation = trans
 
+class RasterInstance:
+    def __init__( self, r, ci):
+        self.r = r
+        self.ci = ci
+        self.filled = tally.BitVec( r.s, ci.nm + '_filled', r.nx*r.ny)
+        self.anchor = tally.BitVec( r.s, ci.nm + '_anchor', r.nx*r.ny)
+
+    def backannotatePlacement( self):
+        self.ci.transformation = None
+        for x in range(self.r.nx):
+            for y in range(self.r.ny):
+                if self.anchor.val( self.r.idx( x, y)) is True:
+                    self.ci.transformation = Transformation( x, y)
+
+    def semantic( self):
+        for x in range(self.r.nx):
+            for y in range(self.r.ny):
+                anchor = self.anchor.var( self.r.idx( x, y))
+                bbox = self.ci.template.bbox
+                for xx in range( bbox.llx, bbox.urx):
+                    for yy in range( bbox.lly, bbox.ury):
+                        if x + xx < self.r.nx and y + yy < self.r.ny:
+                            self.r.s.emit_implies( anchor, self.filled.var( self.r.idx( x+xx, y+yy)))
+                        else:
+                            self.r.s.emit_never( anchor)
+
+        self.r.s.emit_exactly_one( [self.anchor.var( i) for i in range( self.r.nx*self.r.ny)])
+
+
 class Raster:
-    def __init__( self, s, nm, nx, ny):
+    def __init__( self, s, template, nx, ny):
+        self.s = s    
+        self.template = template
+        self.ris = []
         self.nx = nx
         self.ny = ny
-        self.bv = tally.BitVec( s, 'nm', nx*ny)
+        self.bv = tally.BitVec( s, template.nm, nx*ny)
 
-    def idx( x, y):
-        return x*ny + y
+    def idx( self, x, y):
+        return x*self.ny + y
 
+    def semantic( self):
+        for inst in self.template.instances:
+            print( 'Instance Name:', inst.nm)
+            self.ris.append( RasterInstance( self, inst))
+            for ri in self.ris:
+                ri.semantic()
+
+        for x in range(self.nx):
+            for y in range(self.ny):
+                master = self.bv.var( self.idx( x, y))
+                for ri in self.ris:
+                    filled = ri.filled.var( self.idx( x, y))
+                    self.s.emit_implies( filled, master)
+                self.s.emit_at_most_one( [ri.filled.var( self.idx( x, y)) for ri in self.ris])
+
+        self.s.solve()
+        assert self.s.state == 'SAT'
+
+        for ri in self.ris:
+            ri.backannotatePlacement()
+
+        for ri in self.ris:
+            self.print_rasters( ri.anchor)
+            self.print_rasters( ri.filled)
+
+        self.print_rasters( self.bv)
+
+
+    def print_rasters( self, bv):
+        print( bv)
+        for y in range(self.ny-1,-1,-1): 
+            print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(self.nx)]))
 
 
 def test_build_raster():
@@ -250,11 +324,41 @@ def test_simple_hier():
 
     h.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
     h.instances.append( CellInstance( 'u1', l, Transformation(1,0)))
-    h.bbox = Rect(0,0,2,1)
 
+    h.updateBbox()
+        
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
         h.write_globalrouting_json( fp, tech)
 
+def test_grid_hier():
+
+    l = CellLeaf( "ndev")
+
+    b0 = CellHier( "block0")
+    b0.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
+    b0.instances.append( CellInstance( 'u1', l, Transformation(4,2,-1,-1)))
+    b0.updateBbox()
+
+    b1 = CellHier( "block1")
+    b1.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
+    b1.instances.append( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
+    b1.updateBbox()
+
+    g = CellHier( "grid")
+    g.instances.append( CellInstance( 'u0', b0, Transformation(0,0)))
+    g.instances.append( CellInstance( 'u1', b1, Transformation(4,2)))
+    g.instances.append( CellInstance( 'u2', b1, Transformation(6,2)))
+    g.updateBbox()
+
+    s = tally.Tally()
+    r = Raster( s, g, 4, 6)
+    r.semantic()
+    g.updateBbox()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
+
 if __name__ == "__main__":
-    test_simple_hier()
+    test_grid_hier()
