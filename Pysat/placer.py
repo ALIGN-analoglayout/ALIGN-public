@@ -349,10 +349,12 @@ def test_grid_hier():
     g.instances.append( CellInstance( 'u0', b0, Transformation(0,0)))
     g.instances.append( CellInstance( 'u1', b1, Transformation(4,2)))
     g.instances.append( CellInstance( 'u2', b1, Transformation(6,2)))
-    g.updateBbox()
+    g.instances.append( CellInstance( 'u3', b1, Transformation(6,2)))
+    g.instances.append( CellInstance( 'u4', b1, Transformation(6,2)))
+#    g.instances.append( CellInstance( 'u5', b0, Transformation(0,0)))
 
     s = tally.Tally()
-    r = Raster( s, g, 4, 6)
+    r = Raster( s, g, 8, 6)
     r.semantic()
     g.updateBbox()
 
