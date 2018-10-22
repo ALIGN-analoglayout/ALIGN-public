@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import pytest
 import tally
 import json
+from collections import defaultdict
+from collections import OrderedDict
 
 """
 Placer problem:
@@ -163,6 +164,12 @@ def test_transformation_postMult0():
     b = Transformation( 0,  0, 1,-1)
     assert (0,-10) == (b.postMult(a)).hit( (0,0))
 
+class Terminal:
+  def __init__( self, nm, layer, r):
+    self.nm = nm
+    self.layer = layer
+    self.r = r
+
 def encode_T( tech, obj):
   if isinstance(obj, Rect):
     r = Rect()
@@ -171,13 +178,30 @@ def encode_T( tech, obj):
     r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.lly
     r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.ury 
     return r.toList()
+  elif isinstance(obj, Terminal):
+    if obj.layer == 'metal1':
+      r = Rect()
+      r.llx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.llx - 200
+      r.urx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.urx + 200
+      r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.lly + 200
+      r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.ury - 200
+      return { "netName" : obj.nm, "layer" : obj.layer, "rect" : r.toList()}
+    else:
+      raise TypeError(repr(obj) + (" is not JSON serializable. Unknown terminal layer %s" % obj.layer))
   else:
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
 class CellTemplate:
     def __init__( self, nm):
         self.nm = nm
+        self.terminals = OrderedDict()
         
+    def addTerminal( self, nm, r):
+        if nm not in self.terminals: self.terminals[nm] = []
+        assert r.llx     == r.urx
+        assert r.lly + 1 == r.ury
+        self.terminals[nm].append( r)
+
     def __repr__( self):
         return "CellTemplate(" + nm + "," + self.instances + "," + self.bbox + ")"
 
@@ -190,6 +214,10 @@ class CellTemplate:
             r = inst.transformation.hitRect( inst.template.bbox)
             nm = self.nm + '/' + inst.nm + ':' + inst.template.nm
             terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.canonical()})
+
+            for (k,v) in inst.template.terminals.items():
+              for term in v:
+                terminals.append( Terminal( k, "metal1", inst.transformation.hitRect( term)))
 
         grGrid = []
         for x in range( self.bbox.llx, self.bbox.urx):
@@ -228,12 +256,12 @@ class CellHier(CellTemplate):
             if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
             if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
 
-
 class CellInstance:
     def __init__( self, nm, template, trans):
         self.nm = nm
         self.template = template
         self.transformation = trans
+        self.fa_map = OrderedDict()
 
 class RasterInstance:
     def __init__( self, r, ci):
@@ -317,14 +345,23 @@ def test_build_raster():
     s.solve()
     assert s.state == 'SAT'
 
-def test_simple_hier():
+def test_flat_hier():
 
     l = CellLeaf( "ndev")
+    l.addTerminal( "sd0", Rect(0,0,0,1))
+    l.addTerminal( "sd1", Rect(1,0,1,1))
+
     h = CellHier( "npair")
 
     h.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
-    h.instances.append( CellInstance( 'u1', l, Transformation(1,0)))
+    h.instances.append( CellInstance( 'u1', l, Transformation(0,0)))
 
+    nx = 2
+    ny = 2
+
+    s = tally.Tally()
+    r = Raster( s, h, nx, ny)
+    r.semantic()
     h.updateBbox()
         
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
@@ -334,6 +371,8 @@ def test_simple_hier():
 def test_grid_hier():
 
     l = CellLeaf( "ndev")
+    l.addTerminal( "sd0", Rect(0,0,0,1))
+    l.addTerminal( "sd1", Rect(1,0,1,1))
 
     b0 = CellHier( "block0")
     b0.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
@@ -345,16 +384,21 @@ def test_grid_hier():
     b1.instances.append( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
     b1.updateBbox()
 
+    
+    m = 12
+
     g = CellHier( "grid")
-    g.instances.append( CellInstance( 'u0', b0, Transformation(0,0)))
-    g.instances.append( CellInstance( 'u1', b1, Transformation(4,2)))
-    g.instances.append( CellInstance( 'u2', b1, Transformation(6,2)))
-    g.instances.append( CellInstance( 'u3', b1, Transformation(6,2)))
-    g.instances.append( CellInstance( 'u4', b1, Transformation(6,2)))
-#    g.instances.append( CellInstance( 'u5', b0, Transformation(0,0)))
+    for i in range(m):
+      g.instances.append( CellInstance( 'u%d' % i, b0, Transformation(0,0)))
+
+    for i in range(m):
+      g.instances.append( CellInstance( 'v%d' % i, b1, Transformation(0,0)))
+
+    nx = 12
+    ny = 16
 
     s = tally.Tally()
-    r = Raster( s, g, 8, 6)
+    r = Raster( s, g, nx, ny)
     r.semantic()
     g.updateBbox()
 
@@ -363,4 +407,4 @@ def test_grid_hier():
         g.write_globalrouting_json( fp, tech)
 
 if __name__ == "__main__":
-    test_grid_hier()
+    test_flat_hier()
