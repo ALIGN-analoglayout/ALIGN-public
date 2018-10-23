@@ -316,9 +316,10 @@ class Raster:
             if a not in nets: nets[a] = []
             nets[a].append( (inst,f))
 
+# One bigger in x because there are terminals on both sides of the ADT
         net_bvs = OrderedDict()
         for k in nets.keys():
-          net_bvs[k] = self.s.BitVec( 'net_terminal_%s' % k, self.nx*self.ny)
+          net_bvs[k] = tally.BitVec( self.s, ('net_terminal_%s' % k), (self.nx+1)*self.ny)
 
         for x in range(self.nx):
           for y in range(self.ny):
@@ -329,21 +330,19 @@ class Raster:
                 a = inst.fa_map[f]
                 for term in v:
                   r = Transformation( x, y).hitRect( term)
-                  if r.llx < self.nx and r.lly < self.ny:
+                  if r.llx < self.nx+1 and r.lly < self.ny:
                     self.s.emit_implies( anchor, net_bvs[a].var( self.idx( r.llx, r.lly)))
                   else:
-                    self.s.emit_never( anchor)
-
+                    assert False
+    
         for x in range(self.nx):
           for y in range(self.ny):
             vector = [ bv.var( self.idx( x, y)) for (k,bv) in net_bvs.items()]
-            print( x, y, vector)
             self.s.emit_at_most_one( vector)
 
 
     def semantic( self):
         for inst in self.template.instances:
-            print( 'Instance Name:', inst.nm)
             self.ris.append( RasterInstance( self, inst))
             for ri in self.ris:
                 ri.semantic()
@@ -389,8 +388,8 @@ def test_flat_hier():
     h.instances[-1].fa_map['sd0'] = 'a'
     h.instances[-1].fa_map['sd1'] = 'b'
     h.instances.append( CellInstance( 'u1', l, Transformation(0,0)))
-    h.instances[-1].fa_map['sd0'] = 'b'
-    h.instances[-1].fa_map['sd1'] = 'c'
+    h.instances[-1].fa_map['sd0'] = 'c'
+    h.instances[-1].fa_map['sd1'] = 'b'
 
     nx = 2
     ny = 1
