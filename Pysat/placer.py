@@ -345,10 +345,10 @@ class Raster:
 
 
     def semantic( self):
-        for inst in self.template.instances.values():
-            self.ris.append( RasterInstance( self, inst))
-            for ri in self.ris:
-                ri.semantic()
+        self.ris = [ RasterInstance( self, inst) for inst in self.template.instances.values()]
+
+        for ri in self.ris:
+          ri.semantic()
 
         for x in range(self.nx):
             for y in range(self.ny):
@@ -390,7 +390,7 @@ def test_flat_hier():
     h = CellHier( "npair")
 
     nx = 4
-    ny = 4
+    ny = 6
 
     for x in range(nx):
       for y in range(ny):
@@ -408,11 +408,12 @@ def test_flat_hier():
     for ri in r.ris:
       ri_map[ri.ci.nm] = ri
 
-
-    s.emit_always( ri_map['u_0_0'].anchor.var( r.idx( 0, 0)))
-    s.emit_always( ri_map['u_0_1'].anchor.var( r.idx( 0, 1)))
-    s.emit_always( ri_map['u_0_2'].anchor.var( r.idx( 0, 2)))
-    s.emit_always( ri_map['u_0_3'].anchor.var( r.idx( 0, 3)))
+    for x in range(nx):
+      for y in range(ny):
+        inst_name = 'u_%d_%d' % (x,y)
+        for yy in range(ny):
+          if y == yy: continue
+          s.emit_never( ri_map[inst_name].anchor.var( r.idx( x, y)))
 
     r.solve()
     h.updateBbox()
