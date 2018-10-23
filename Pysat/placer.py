@@ -217,7 +217,8 @@ class CellTemplate:
 
             for (k,v) in inst.template.terminals.items():
               for term in v:
-                terminals.append( Terminal( k, "metal1", inst.transformation.hitRect( term)))
+                nm = self.nm + '/' + inst.nm + '/' + k + ':' + inst.fa_map[k]
+                terminals.append( Terminal( nm, "metal1", inst.transformation.hitRect( term)))
 
         grGrid = []
         for x in range( self.bbox.llx, self.bbox.urx):
@@ -299,10 +300,53 @@ class Raster:
         self.ris = []
         self.nx = nx
         self.ny = ny
-        self.bv = tally.BitVec( s, template.nm, nx*ny)
 
     def idx( self, x, y):
         return x*self.ny + y
+
+
+    def addNetConstraints( self):
+
+
+        nets = OrderedDict()
+        for ri in self.ris:
+          inst = ri.ci
+          for (f,v) in inst.template.terminals.items():
+            a = inst.fa_map[f]
+            if a not in nets: nets[a] = []
+            nets[a].append( (inst,f))
+
+        net_bvs = OrderedDict()
+        for k in nets.keys():
+          net_bvs[k] = self.s.BitVec( 'net_terminal_%s' % k, self.nx*self.ny)
+
+        netConstraints = {}
+        for k in nets.keys():
+          for x in range(self.nx):
+            for y in range(self.ny):
+              netConstraints[(k,x,y)] = []
+
+        for x in range(self.nx):
+          for y in range(self.ny):
+            for ri in self.ris:
+              inst = ri.ci
+              anchor = ri.anchor.var( self.idx( x, y))              
+              for (f,v) in inst.template.terminals.items():
+                a = inst.fa_map[f]
+                for term in v:
+                  r = Transformation( x, y).hitRect( term)
+                  if r.llx < self.nx and r.lly < self.ny:
+                    netConstraints[(a,r.llx,r.lly)].append( anchor)
+
+        for x in range(self.nx):
+          for y in range(self.ny):
+            vector = []
+            for k in nets.keys():
+              for anchor in netConstraints[(k,x,y)]:
+                vector.append( anchor)
+            print( x, y, vector)
+            self.s.emit_at_most_one( vector)
+
 
     def semantic( self):
         for inst in self.template.instances:
@@ -313,11 +357,9 @@ class Raster:
 
         for x in range(self.nx):
             for y in range(self.ny):
-                master = self.bv.var( self.idx( x, y))
-                for ri in self.ris:
-                    filled = ri.filled.var( self.idx( x, y))
-                    self.s.emit_implies( filled, master)
                 self.s.emit_at_most_one( [ri.filled.var( self.idx( x, y)) for ri in self.ris])
+
+        self.addNetConstraints()
 
         self.s.solve()
         assert self.s.state == 'SAT'
@@ -328,9 +370,6 @@ class Raster:
         for ri in self.ris:
             self.print_rasters( ri.anchor)
             self.print_rasters( ri.filled)
-
-        self.print_rasters( self.bv)
-
 
     def print_rasters( self, bv):
         print( bv)
@@ -354,10 +393,14 @@ def test_flat_hier():
     h = CellHier( "npair")
 
     h.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
+    h.instances[-1].fa_map['sd0'] = 'a'
+    h.instances[-1].fa_map['sd1'] = 'b'
     h.instances.append( CellInstance( 'u1', l, Transformation(0,0)))
+    h.instances[-1].fa_map['sd0'] = 'b'
+    h.instances[-1].fa_map['sd1'] = 'c'
 
     nx = 2
-    ny = 2
+    ny = 1
 
     s = tally.Tally()
     r = Raster( s, h, nx, ny)
@@ -384,7 +427,6 @@ def test_grid_hier():
     b1.instances.append( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
     b1.updateBbox()
 
-    
     m = 12
 
     g = CellHier( "grid")
@@ -408,3 +450,4 @@ def test_grid_hier():
 
 if __name__ == "__main__":
     test_flat_hier()
+#    test_grid_hier()
