@@ -218,6 +218,8 @@ class CellTemplate:
             nm = self.nm + '/' + inst.nm + ':' + inst.template.nm
             terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.canonical()})
 
+        for inst in self.instances.values():
+            r = inst.transformation.hitRect( inst.template.bbox)
             for (k,v) in inst.template.terminals.items():
               for term in v:
                 nm = self.nm + '/' + inst.nm + '/' + k + ':' + inst.fa_map[k]
