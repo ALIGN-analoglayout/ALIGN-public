@@ -320,12 +320,6 @@ class Raster:
         for k in nets.keys():
           net_bvs[k] = self.s.BitVec( 'net_terminal_%s' % k, self.nx*self.ny)
 
-        netConstraints = {}
-        for k in nets.keys():
-          for x in range(self.nx):
-            for y in range(self.ny):
-              netConstraints[(k,x,y)] = []
-
         for x in range(self.nx):
           for y in range(self.ny):
             for ri in self.ris:
@@ -336,14 +330,13 @@ class Raster:
                 for term in v:
                   r = Transformation( x, y).hitRect( term)
                   if r.llx < self.nx and r.lly < self.ny:
-                    netConstraints[(a,r.llx,r.lly)].append( anchor)
+                    self.s.emit_implies( anchor, net_bvs[a].var( self.idx( r.llx, r.lly)))
+                  else:
+                    self.s.emit_never( anchor)
 
         for x in range(self.nx):
           for y in range(self.ny):
-            vector = []
-            for k in nets.keys():
-              for anchor in netConstraints[(k,x,y)]:
-                vector.append( anchor)
+            vector = [ bv.var( self.idx( x, y)) for (k,bv) in net_bvs.items()]
             print( x, y, vector)
             self.s.emit_at_most_one( vector)
 
