@@ -196,6 +196,9 @@ class CellTemplate:
         self.nm = nm
         self.terminals = OrderedDict()
         
+    def addInstance( self, ci):
+        self.instances[ci.nm] = ci
+
     def addTerminal( self, nm, r):
         if nm not in self.terminals: self.terminals[nm] = []
         assert r.llx     == r.urx
@@ -210,7 +213,7 @@ class CellTemplate:
         terminals = []
 
         terminals.append( { "netName" : self.nm, "layer" : "diearea", "rect" : self.bbox})
-        for inst in self.instances:
+        for inst in self.instances.values():
             r = inst.transformation.hitRect( inst.template.bbox)
             nm = self.nm + '/' + inst.nm + ':' + inst.template.nm
             terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.canonical()})
@@ -236,7 +239,7 @@ class CellLeaf(CellTemplate):
 
     @property
     def instances( self):
-        return []
+        return OrderedDict()
 
     @property
     def bbox( self):
@@ -245,12 +248,12 @@ class CellLeaf(CellTemplate):
 class CellHier(CellTemplate):
     def __init__( self, nm):
         super().__init__(nm)
-        self.instances = []
+        self.instances = OrderedDict()
         self.bbox = None
 
     def updateBbox( self):
         self.bbox = Rect(None,None,None,None)
-        for inst in self.instances:
+        for inst in self.instances.values():
             r = inst.transformation.hitRect( inst.template.bbox).canonical()
             if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
             if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
@@ -306,8 +309,6 @@ class Raster:
 
 
     def addNetConstraints( self):
-
-
         nets = OrderedDict()
         for ri in self.ris:
           inst = ri.ci
@@ -342,7 +343,7 @@ class Raster:
 
 
     def semantic( self):
-        for inst in self.template.instances:
+        for inst in self.template.instances.values():
             self.ris.append( RasterInstance( self, inst))
             for ri in self.ris:
                 ri.semantic()
@@ -353,6 +354,8 @@ class Raster:
 
         self.addNetConstraints()
 
+        
+    def solve( self):
         self.s.solve()
         assert self.s.state == 'SAT'
 
@@ -384,19 +387,32 @@ def test_flat_hier():
 
     h = CellHier( "npair")
 
-    h.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
-    h.instances[-1].fa_map['sd0'] = 'a'
-    h.instances[-1].fa_map['sd1'] = 'b'
-    h.instances.append( CellInstance( 'u1', l, Transformation(0,0)))
-    h.instances[-1].fa_map['sd0'] = 'c'
-    h.instances[-1].fa_map['sd1'] = 'b'
+    nx = 4
+    ny = 4
 
-    nx = 2
-    ny = 1
+    for x in range(nx):
+      for y in range(ny):
+        inst_name = 'u_%d_%d' % (x,y)
+        h.addInstance( CellInstance( inst_name, l, Transformation(0,0)))
+        h.instances[inst_name].fa_map['sd0'] = 'a_%d_%d' % (x,y)
+        h.instances[inst_name].fa_map['sd1'] = 'a_%d_%d' % (x+1,y)
+
 
     s = tally.Tally()
     r = Raster( s, h, nx, ny)
     r.semantic()
+
+    ri_map = {}
+    for ri in r.ris:
+      ri_map[ri.ci.nm] = ri
+
+
+    s.emit_always( ri_map['u_0_0'].anchor.var( r.idx( 0, 0)))
+    s.emit_always( ri_map['u_0_1'].anchor.var( r.idx( 0, 1)))
+    s.emit_always( ri_map['u_0_2'].anchor.var( r.idx( 0, 2)))
+    s.emit_always( ri_map['u_0_3'].anchor.var( r.idx( 0, 3)))
+
+    r.solve()
     h.updateBbox()
         
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
@@ -410,23 +426,25 @@ def test_grid_hier():
     l.addTerminal( "sd1", Rect(1,0,1,1))
 
     b0 = CellHier( "block0")
-    b0.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
-    b0.instances.append( CellInstance( 'u1', l, Transformation(4,2,-1,-1)))
+    b0.addInstance( CellInstance( 'u0', l, Transformation(0,0)))
+    b0.addInstance( CellInstance( 'u1', l, Transformation(4,2,-1,-1)))
     b0.updateBbox()
 
     b1 = CellHier( "block1")
-    b1.instances.append( CellInstance( 'u0', l, Transformation(0,0)))
-    b1.instances.append( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
+    b1.addInstance( CellInstance( 'u0', l, Transformation(0,0)))
+    b1.addInstance( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
     b1.updateBbox()
 
     m = 12
 
     g = CellHier( "grid")
     for i in range(m):
-      g.instances.append( CellInstance( 'u%d' % i, b0, Transformation(0,0)))
+      inst_name = 'u%d' % i
+      g.instances[inst_name] = CellInstance( inst_name, b0, Transformation(0,0))
 
     for i in range(m):
-      g.instances.append( CellInstance( 'v%d' % i, b1, Transformation(0,0)))
+      inst_name = 'v%d' % i
+      g.instances[inst_name] = CellInstance( inst_name, b1, Transformation(0,0))
 
     nx = 12
     ny = 16
@@ -434,6 +452,7 @@ def test_grid_hier():
     s = tally.Tally()
     r = Raster( s, g, nx, ny)
     r.semantic()
+    r.solve()
     g.updateBbox()
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
