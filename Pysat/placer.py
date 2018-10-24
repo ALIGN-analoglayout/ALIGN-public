@@ -2,7 +2,6 @@
 
 import tally
 import json
-from collections import defaultdict
 from collections import OrderedDict
 
 """
@@ -185,8 +184,8 @@ def encode_T( tech, obj):
       r = Rect()
       r.llx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.llx - 200
       r.urx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.urx + 200
-      r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.lly + 200
-      r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.ury - 200
+      r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.lly + 360
+      r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.ury - 360
       return { "netName" : obj.nm, "layer" : obj.layer, "rect" : r.toList()}
     else:
       raise TypeError(repr(obj) + (" is not JSON serializable. Unknown terminal layer %s" % obj.layer))
@@ -206,6 +205,9 @@ class CellTemplate:
         assert r.llx     == r.urx
         assert r.lly + 1 == r.ury
         self.terminals[nm].append( r)
+
+    def connect( self, i, p, n):
+      self.instances[i].fa_map[p] = n
 
     def __repr__( self):
         return "CellTemplate(" + nm + "," + self.instances + "," + self.bbox + ")"
@@ -527,8 +529,99 @@ def test_hier():
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
 
+def test_sc():
+
+    ndual = CellLeaf( "ndual", Rect(0,0,5,2))
+    ndual.addTerminal( "d1", Rect(0,0,0,1))
+    ndual.addTerminal( "g1", Rect(1,0,1,1))
+    ndual.addTerminal( "s1", Rect(2,0,2,1))
+    ndual.addTerminal( "s2", Rect(3,0,3,1))
+    ndual.addTerminal( "g2", Rect(4,0,4,1))
+    ndual.addTerminal( "d2", Rect(5,0,5,1))
+
+    ndualss = CellLeaf( "ndualss", Rect(0,0,4,2))
+    ndualss.addTerminal( "d1", Rect(0,0,0,1))
+    ndualss.addTerminal( "g1", Rect(1,0,1,1))
+    ndualss.addTerminal( "s",  Rect(2,0,2,1))
+    ndualss.addTerminal( "g2", Rect(3,0,3,1))
+    ndualss.addTerminal( "d2", Rect(4,0,4,1))
+
+    ncap = CellLeaf( "ncap", Rect(0,0,4,2))
+    ncap.addTerminal( "d1", Rect(0,0,0,1))
+    ncap.addTerminal( "s",  Rect(2,0,2,1))
+
+    sc = CellHier( "sc")
+
+    sc.addInstance( CellInstance( "L1_MM4_MM3", ncap))
+    sc.addInstance( CellInstance( "L1_MM1_MM0", ndualss))
+
+    sc.addInstance( CellInstance( "L1_MM9_MM8", ndual))
+    sc.addInstance( CellInstance( "L1_MM7_MM6", ndual))
+    sc.addInstance( CellInstance( "L1_MM10_MM2", ndual))
+
+    sc.connect('L1_MM1_MM0','g1','Vinp')
+
+    sc.connect('L1_MM7_MM6','s1','net13')
+    sc.connect('L1_MM9_MM8','d1','net13')
+
+    sc.connect('L1_MM7_MM6','d2','Voutp')
+    sc.connect('L1_MM10_MM2','d2','Voutp')
+
+    sc.connect('L1_MM7_MM6','d1','Voutn')
+    sc.connect('L1_MM10_MM2','d1','Voutn')
+
+    sc.connect('L1_MM10_MM2','s1','net10')
+    sc.connect('L1_MM1_MM0','d1','net10')
+
+    sc.connect('L1_MM9_MM8','s1','vdd!')
+    sc.connect('L1_MM9_MM8','s2','vdd!')
+
+    sc.connect('L1_MM10_MM2','g1','Vbiasn')
+    sc.connect('L1_MM10_MM2','g2','Vbiasn')
+
+    sc.connect('L1_MM10_MM2','s2','net11')
+    sc.connect('L1_MM1_MM0','d2','net11')
+    
+    sc.connect('L1_MM9_MM8','g1','Vbiasp2')
+    sc.connect('L1_MM9_MM8','g2','Vbiasp2')
+
+    sc.connect('L1_MM7_MM6','g1','Vbiasp1')
+    sc.connect('L1_MM7_MM6','g2','Vbiasp1')
+
+    sc.connect('L1_MM4_MM3','s','gnd!')
+
+    sc.connect('L1_MM7_MM6','s2','net12')
+    sc.connect('L1_MM9_MM8','d2','net12')
+
+    sc.connect('L1_MM1_MM0','s','net6')
+    sc.connect('L1_MM4_MM3','d2','net6')
+
+    sc.connect('L1_MM1_MM0','g2','Vinn')
+
+    sc.connect('L1_MM4_MM3','d1','net1')
+
+    nx = 20
+    ny = 9
+
+    s = tally.Tally()
+    r = Raster( s, sc, nx, ny)
+    r.semantic()
+
+    ri_map = { ri.ci.nm : ri for ri in r.ris}
+
+    #place in corner
+#    s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
+
+    r.solve()
+    sc.updateBbox()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        sc.write_globalrouting_json( fp, tech)
+
 if __name__ == "__main__":
 #    test_grid_hier()
 #    test_flat_hier()
-    test_hier()
+#    test_hier()
+  test_sc()
 
