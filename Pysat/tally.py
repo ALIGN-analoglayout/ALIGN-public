@@ -191,33 +191,36 @@ class Tally:
     for o in outs[len(inps):]:
        self.emit_never( o)
 
-    if len(inps) == 0:
-       pass
-    elif len(inps) == 1:
-       if len(outs) > 0:
+    while True:
+      if len(inps) == 0:
+        break
+      elif len(inps) == 1:
+        if len(outs) > 0:
           self.emit_equiv( inps[0], outs[0])
-    elif len(inps) == 2:
-       if len(outs) > 0:
-          self.emit_or( inps, outs[0])
-       if len(outs) > 1:
-          self.emit_and( inps, outs[1])
-    else:           
-       if len(outs) < len(inps):
+        elif len(inps) == 2:
+          if len(outs) > 0:
+            self.emit_or( inps, outs[0])
+          if len(outs) > 1:
+            self.emit_and( inps, outs[1])
+        break
+      else:           
+        if len(outs) < len(inps):
           outs0,outs1 = outs[:],[]
-       else:
+        else:
           outs0,outs1 = outs[:-1],outs[-1:]
-       sub_outs = [ self.add_var() for out in outs0]
-       self.emit_tally( inps[:-1], sub_outs)
-       sub_ands = [ self.add_var() for out in sub_outs[:-1]]
-       assert len(sub_outs) == len(sub_ands) + 1
-# zip autotruncates 
-       for (x,z) in zip(sub_outs, sub_ands + outs1):
+        sub_outs = [ self.add_var() for out in outs0]
+        sub_ands = [ self.add_var() for out in sub_outs[:-1]]
+        assert len(sub_outs) == len(sub_ands) + 1
+        # zip autotruncates 
+        for (x,z) in zip(sub_outs, sub_ands + outs1):
           self.emit_and( [ x, inps[-1]], z)
-       assert 1 + len(sub_ands) == len(sub_outs)
-       assert len(sub_outs) == len(outs0)
-       for ((x,y),z) in zip(zip([inps[-1]]+sub_ands, sub_outs), outs0):
+        assert 1 + len(sub_ands) == len(sub_outs)
+        assert len(sub_outs) == len(outs0)
+        for ((x,y),z) in zip(zip([inps[-1]]+sub_ands, sub_outs), outs0):
           self.emit_or( [ x, y], z)
 
+        inps = inps[:-1]
+        outs = sub_outs
 
   @staticmethod
   def neg( var):

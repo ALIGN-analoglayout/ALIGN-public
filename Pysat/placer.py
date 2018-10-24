@@ -105,6 +105,8 @@ class Rect:
   def toList( self):
       return [self.llx, self.lly, self.urx, self.ury]
 
+  def __repr__( self):
+    return str(self.toList())
 
 class Transformation:
     def __init__( self, oX=0, oY = 0, sX=1, sY=1):
@@ -223,7 +225,7 @@ class CellTemplate:
             for (k,v) in inst.template.terminals.items():
               for term in v:
                 nm = self.nm + '/' + inst.nm + '/' + k + ':' + inst.fa_map[k]
-                terminals.append( Terminal( nm, "metal1", inst.transformation.hitRect( term)))
+                terminals.append( Terminal( nm, "metal1", inst.transformation.hitRect( term).canonical()))
 
         grGrid = []
         for x in range( self.bbox.llx, self.bbox.urx):
@@ -273,29 +275,50 @@ class RasterInstance:
     def __init__( self, r, ci):
         self.r = r
         self.ci = ci
-        self.filled = tally.BitVec( r.s, ci.nm + '_filled', r.nx*r.ny)
-        self.anchor = tally.BitVec( r.s, ci.nm + '_anchor', r.nx*r.ny)
+        self.filled    = tally.BitVec( r.s, ci.nm + '_filled', r.nx*r.ny)
+        self.anchor    = tally.BitVec( r.s, ci.nm + '_anchor',   r.nx*r.ny)
+        self.anchorMY  = tally.BitVec( r.s, ci.nm + '_anchorMY', r.nx*r.ny)
+        self.anchorMX  = tally.BitVec( r.s, ci.nm + '_anchorMX', r.nx*r.ny)
+        self.anchorMXY = tally.BitVec( r.s, ci.nm + '_anchorMXY', r.nx*r.ny)
+        self.semantic()
+
+    def tGen( self):
+        for x in range(self.r.nx):
+            for y in range(self.r.ny):
+              pairs = [( self.anchor,    Transformation( x, y,  1,  1)),
+                       ( self.anchorMY,  Transformation( x, y, -1,  1)),
+                       ( self.anchorMX,  Transformation( x, y,  1, -1)),
+                       ( self.anchorMXY, Transformation( x, y, -1, -1))]
+              for ( bv, tr) in pairs:
+                yield ( x, y, bv, tr)
 
     def backannotatePlacement( self):
-        self.ci.transformation = None
-        for x in range(self.r.nx):
-            for y in range(self.r.ny):
-                if self.anchor.val( self.r.idx( x, y)) is True:
-                    self.ci.transformation = Transformation( x, y)
+      self.ci.transformation = None
+      for ( x, y, bv, tr) in self.tGen():
+        if bv.val( self.r.idx( x, y)) is True:
+          if tr.sX == -1: tr.oX += 1
+          if tr.sY == -1: tr.oY += 1
+          self.ci.transformation = tr
 
     def semantic( self):
-        for x in range(self.r.nx):
-            for y in range(self.r.ny):
-                anchor = self.anchor.var( self.r.idx( x, y))
-                bbox = self.ci.template.bbox
-                for xx in range( bbox.llx, bbox.urx):
-                    for yy in range( bbox.lly, bbox.ury):
-                        if x + xx < self.r.nx and y + yy < self.r.ny:
-                            self.r.s.emit_implies( anchor, self.filled.var( self.r.idx( x+xx, y+yy)))
-                        else:
-                            self.r.s.emit_never( anchor)
+      print( "Building RasterInstance", self.ci.nm)
+      for ( x, y, bv, tr) in self.tGen():      
+        anchor = bv.var( self.r.idx( x, y))
+        bbox = self.ci.template.bbox
+        for xx in range( bbox.llx, bbox.urx):
+          for yy in range( bbox.lly, bbox.ury):
+            (xxx,yyy) = tr.hit( (xx,yy))
+            if 0 <= xxx and xxx < self.r.nx and 0 <= yyy and yyy < self.r.ny:
+              self.r.s.emit_implies( anchor, self.filled.var( self.r.idx( xxx, yyy)))
+            else:
+              self.r.s.emit_never( anchor)
 
-        self.r.s.emit_exactly_one( [self.anchor.var( i) for i in range( self.r.nx*self.r.ny)])
+      allCand    = [self.anchor.var( i)    for i in range( self.r.nx*self.r.ny)]
+      allCandMY  = [self.anchorMY.var( i)  for i in range( self.r.nx*self.r.ny)]
+      allCandMX  = [self.anchorMX.var( i)  for i in range( self.r.nx*self.r.ny)]
+      allCandMXY = [self.anchorMXY.var( i) for i in range( self.r.nx*self.r.ny)]
+
+      self.r.s.emit_exactly_one( allCand + allCandMY + allCandMX + allCandMXY)
 
 
 class Raster:
@@ -309,7 +332,6 @@ class Raster:
     def idx( self, x, y):
         return x*self.ny + y
 
-
     def addNetConstraints( self):
         nets = OrderedDict()
         for ri in self.ris:
@@ -319,36 +341,33 @@ class Raster:
             if a not in nets: nets[a] = []
             nets[a].append( (inst,f))
 
-# One bigger in x because there are terminals on both sides of the ADT
-        net_bvs = OrderedDict()
-        for k in nets.keys():
-          net_bvs[k] = tally.BitVec( self.s, ('net_terminal_%s' % k), (self.nx+1)*self.ny)
+        print( "Building bit vectors for %d nets" % len(nets))
 
-        for x in range(self.nx):
+        self.net_bvs = OrderedDict()
+        for k in nets.keys():
+          self.net_bvs[k] = tally.BitVec( self.s, ('net_terminal_%s' % k), (self.nx+1)*self.ny)
+
+        for ri in self.ris:
+          inst = ri.ci
+          for ( x, y, bv, tr) in ri.tGen():
+            if tr.sX < 0: tr.oX += 1
+            if tr.sY < 0: tr.oY += 1
+            anchor = bv.var( self.idx( x, y))              
+            for (f,v) in inst.template.terminals.items():
+              a = inst.fa_map[f]
+              for term in v:
+                r = tr.hitRect( term).canonical()
+                if 0 <= r.llx and r.llx < self.nx+1 and 0 <= r.lly and r.lly < self.ny:
+                  self.s.emit_implies( anchor, self.net_bvs[a].var( self.idx( r.llx, r.lly)))
+
+        for x in range(self.nx+1):
           for y in range(self.ny):
-            for ri in self.ris:
-              inst = ri.ci
-              anchor = ri.anchor.var( self.idx( x, y))              
-              for (f,v) in inst.template.terminals.items():
-                a = inst.fa_map[f]
-                for term in v:
-                  r = Transformation( x, y).hitRect( term)
-                  if r.llx < self.nx+1 and r.lly < self.ny:
-                    self.s.emit_implies( anchor, net_bvs[a].var( self.idx( r.llx, r.lly)))
-                  else:
-                    assert False
-    
-        for x in range(self.nx):
-          for y in range(self.ny):
-            vector = [ bv.var( self.idx( x, y)) for (k,bv) in net_bvs.items()]
+            vector = [ bv.var( self.idx( x, y)) for (k,bv) in self.net_bvs.items()]
             self.s.emit_at_most_one( vector)
 
 
     def semantic( self):
         self.ris = [ RasterInstance( self, inst) for inst in self.template.instances.values()]
-
-        for ri in self.ris:
-          ri.semantic()
 
         for x in range(self.nx):
             for y in range(self.ny):
@@ -358,6 +377,7 @@ class Raster:
 
         
     def solve( self):
+        print( 'Solving Raster')
         self.s.solve()
         assert self.s.state == 'SAT'
 
@@ -366,12 +386,19 @@ class Raster:
 
         for ri in self.ris:
             self.print_rasters( ri.anchor)
+            self.print_rasters( ri.anchorMY)
+            self.print_rasters( ri.anchorMX)
+            self.print_rasters( ri.anchorMXY)
             self.print_rasters( ri.filled)
 
-    def print_rasters( self, bv):
+        for (k,bv) in self.net_bvs.items():
+            self.print_rasters( bv, nx=self.nx+1)
+
+    def print_rasters( self, bv, nx=None):
+        if nx is None: nx = self.nx
         print( bv)
         for y in range(self.ny-1,-1,-1): 
-            print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(self.nx)]))
+            print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(nx)]))
 
 
 def test_build_raster():
@@ -387,33 +414,37 @@ def test_flat_hier():
     l.addTerminal( "sd0", Rect(0,0,0,1))
     l.addTerminal( "sd1", Rect(1,0,1,1))
 
-    h = CellHier( "npair")
+    h = CellHier( "flat")
 
-    nx = 4
-    ny = 6
+    nx = 20
+    ny = 10
 
     for x in range(nx):
       for y in range(ny):
         inst_name = 'u_%d_%d' % (x,y)
         h.addInstance( CellInstance( inst_name, l, Transformation(0,0)))
-        h.instances[inst_name].fa_map['sd0'] = 'a_%d_%d' % (x,y)
-        h.instances[inst_name].fa_map['sd1'] = 'a_%d_%d' % (x+1,y)
-
+        h.instances[inst_name].fa_map['sd0'] = 'a_%d_%d' % (x+1,y)
+        h.instances[inst_name].fa_map['sd1'] = 'a_%d_%d' % (x+0,y)
 
     s = tally.Tally()
     r = Raster( s, h, nx, ny)
     r.semantic()
 
-    ri_map = {}
-    for ri in r.ris:
-      ri_map[ri.ci.nm] = ri
-
+    ri_map = { ri.ci.nm : ri for ri in r.ris}
     for x in range(nx):
       for y in range(ny):
         inst_name = 'u_%d_%d' % (x,y)
-        for yy in range(ny):
-          if y == yy: continue
-          s.emit_never( ri_map[inst_name].anchor.var( r.idx( x, y)))
+        for xx in range(nx):
+          for yy in range(ny):
+#            s.emit_never( ri_map[inst_name].anchor.var(    r.idx( xx, yy)))
+            s.emit_never( ri_map[inst_name].anchorMY.var(  r.idx( xx, yy)))
+            s.emit_never( ri_map[inst_name].anchorMX.var(  r.idx( xx, yy)))
+            s.emit_never( ri_map[inst_name].anchorMXY.var( r.idx( xx, yy)))
+
+    for y in range(ny):
+      for x in range(nx):
+        inst_name = 'u_%d_%d' % (x,y)
+        s.emit_always( ri_map[inst_name].anchor.var( r.idx( nx-1-x, y)))
 
     r.solve()
     h.updateBbox()
@@ -438,7 +469,7 @@ def test_grid_hier():
     b1.addInstance( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
     b1.updateBbox()
 
-    m = 12
+    m = 4
 
     g = CellHier( "grid")
     for i in range(m):
@@ -449,8 +480,8 @@ def test_grid_hier():
       inst_name = 'v%d' % i
       g.instances[inst_name] = CellInstance( inst_name, b1, Transformation(0,0))
 
-    nx = 12
-    ny = 16
+    nx = 9
+    ny = 9
 
     s = tally.Tally()
     r = Raster( s, g, nx, ny)
@@ -464,4 +495,4 @@ def test_grid_hier():
 
 if __name__ == "__main__":
     test_flat_hier()
-#    test_grid_hier()
+    test_grid_hier()
