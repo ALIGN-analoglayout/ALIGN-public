@@ -282,22 +282,21 @@ class RasterInstance:
         self.anchorMXY = tally.BitVec( r.s, ci.nm + '_anchorMXY', r.nx*r.ny)
         self.semantic()
 
-    def tGen( self):
+    def tGen( self, plusOneIfMirrored=False):
         for x in range(self.r.nx):
             for y in range(self.r.ny):
-              pairs = [( self.anchor,    Transformation( x, y,  1,  1)),
-                       ( self.anchorMY,  Transformation( x, y, -1,  1)),
-                       ( self.anchorMX,  Transformation( x, y,  1, -1)),
-                       ( self.anchorMXY, Transformation( x, y, -1, -1))]
+              o = 1 if plusOneIfMirrored else 0
+              pairs = [( self.anchor,    Transformation( x,   y,    1,  1)),
+                       ( self.anchorMY,  Transformation( x+o, y,   -1,  1)),
+                       ( self.anchorMX,  Transformation( x,   y+o,  1, -1)),
+                       ( self.anchorMXY, Transformation( x+o, y+o, -1, -1))]
               for ( bv, tr) in pairs:
                 yield ( x, y, bv, tr)
 
     def backannotatePlacement( self):
       self.ci.transformation = None
-      for ( x, y, bv, tr) in self.tGen():
+      for ( x, y, bv, tr) in self.tGen( plusOneIfMirrored=True):
         if bv.val( self.r.idx( x, y)) is True:
-          if tr.sX == -1: tr.oX += 1
-          if tr.sY == -1: tr.oY += 1
           self.ci.transformation = tr
 
     def semantic( self):
@@ -349,9 +348,7 @@ class Raster:
 
         for ri in self.ris:
           inst = ri.ci
-          for ( x, y, bv, tr) in ri.tGen():
-            if tr.sX < 0: tr.oX += 1
-            if tr.sY < 0: tr.oY += 1
+          for ( x, y, bv, tr) in ri.tGen( plusOneIfMirrored=True):
             anchor = bv.var( self.idx( x, y))              
             for (f,v) in inst.template.terminals.items():
               a = inst.fa_map[f]
@@ -526,11 +523,12 @@ def test_hier():
 
     assert ri_map['u1'].anchorMXY.val( r.idx(nx-1,ny-1)) is True
 
-#    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-#        tech = Tech()
-#        g.write_globalrouting_json( fp, tech)
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
 
 if __name__ == "__main__":
 #    test_grid_hier()
-    test_flat_hier()
+#    test_flat_hier()
+    test_hier()
 
