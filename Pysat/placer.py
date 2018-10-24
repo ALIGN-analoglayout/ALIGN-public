@@ -238,16 +238,16 @@ class CellTemplate:
 
 
 class CellLeaf(CellTemplate):
-    def __init__( self, nm):
+    def __init__( self, nm, bbox=None):
         super().__init__(nm)
+        if bbox is None:
+          self.bbox = Rect(0,0,1,1)
+        else:
+          self.bbox = bbox
 
     @property
     def instances( self):
         return OrderedDict()
-
-    @property
-    def bbox( self):
-        return Rect(0,0,1,1)
 
 class CellHier(CellTemplate):
     def __init__( self, nm):
@@ -265,7 +265,7 @@ class CellHier(CellTemplate):
             if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
 
 class CellInstance:
-    def __init__( self, nm, template, trans):
+    def __init__( self, nm, template, trans=None):
         self.nm = nm
         self.template = template
         self.transformation = trans
@@ -422,7 +422,7 @@ def test_flat_hier():
     for x in range(nx):
       for y in range(ny):
         inst_name = 'u_%d_%d' % (x,y)
-        h.addInstance( CellInstance( inst_name, l, Transformation(0,0)))
+        h.addInstance( CellInstance( inst_name, l))
         h.instances[inst_name].fa_map['sd0'] = 'a_%d_%d' % (x+1,y)
         h.instances[inst_name].fa_map['sd1'] = 'a_%d_%d' % (x+0,y)
 
@@ -455,30 +455,19 @@ def test_flat_hier():
 
 def test_grid_hier():
 
-    l = CellLeaf( "ndev")
-    l.addTerminal( "sd0", Rect(0,0,0,1))
-    l.addTerminal( "sd1", Rect(1,0,1,1))
-
-    b0 = CellHier( "block0")
-    b0.addInstance( CellInstance( 'u0', l, Transformation(0,0)))
-    b0.addInstance( CellInstance( 'u1', l, Transformation(4,2,-1,-1)))
-    b0.updateBbox()
-
-    b1 = CellHier( "block1")
-    b1.addInstance( CellInstance( 'u0', l, Transformation(0,0)))
-    b1.addInstance( CellInstance( 'u1', l, Transformation(2,4,-1,-1)))
-    b1.updateBbox()
+    b0 = CellLeaf( "block0", Rect(0,0,4,2))
+    b1 = CellLeaf( "block1", Rect(0,0,2,4))
 
     m = 4
 
     g = CellHier( "grid")
     for i in range(m):
       inst_name = 'u%d' % i
-      g.instances[inst_name] = CellInstance( inst_name, b0, Transformation(0,0))
+      g.instances[inst_name] = CellInstance( inst_name, b0)
 
     for i in range(m):
       inst_name = 'v%d' % i
-      g.instances[inst_name] = CellInstance( inst_name, b1, Transformation(0,0))
+      g.instances[inst_name] = CellInstance( inst_name, b1)
 
     nx = 9
     ny = 9
@@ -493,6 +482,55 @@ def test_grid_hier():
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
 
+def test_hier():
+
+    b0 = CellLeaf( "block0", Rect(0,0,4,2))
+    b0.addTerminal( "l0", Rect(0,0,0,1))
+    b0.addTerminal( "l1", Rect(0,1,0,2))
+    b0.addTerminal( "r0", Rect(4,0,4,1))
+    b0.addTerminal( "r1", Rect(4,1,4,2))
+
+
+    m = 2
+
+    g = CellHier( "grid")
+    for i in range(m):
+      inst_name = 'u%d' % i
+      g.instances[inst_name] = CellInstance( inst_name, b0)
+
+    g.instances['u0'].fa_map['l0'] = 'a'
+    g.instances['u0'].fa_map['l1'] = 'b'
+    g.instances['u0'].fa_map['r0'] = 'c'
+    g.instances['u0'].fa_map['r1'] = 'd'
+
+    g.instances['u1'].fa_map['l0'] = 'a'
+    g.instances['u1'].fa_map['l1'] = 'b'
+    g.instances['u1'].fa_map['r0'] = 'd'
+    g.instances['u1'].fa_map['r1'] = 'c'
+
+
+    nx = 8
+    ny = 2
+
+    s = tally.Tally()
+    r = Raster( s, g, nx, ny)
+    r.semantic()
+
+    ri_map = { ri.ci.nm : ri for ri in r.ris}
+
+    #place in corner
+    s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
+
+    r.solve()
+    g.updateBbox()
+
+    assert ri_map['u1'].anchorMXY.val( r.idx(nx-1,ny-1)) is True
+
+#    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+#        tech = Tech()
+#        g.write_globalrouting_json( fp, tech)
+
 if __name__ == "__main__":
+#    test_grid_hier()
     test_flat_hier()
-    test_grid_hier()
+
