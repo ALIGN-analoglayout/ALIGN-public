@@ -108,7 +108,7 @@ class Rect:
     return str(self.toList())
 
 class Transformation:
-    def __init__( self, oX=0, oY = 0, sX=1, sY=1):
+    def __init__( self, oX=0, oY=0, sX=1, sY=1):
         self.oX = oX
         self.oY = oY
         self.sX = sX
@@ -123,29 +123,23 @@ class Transformation:
         urx,ury = self.hit( (r.urx, r.ury))
         return Rect( llx, lly, urx, ury)
 
-    def preMult( self, A):
-        # A            self
-        # sx 0  ox     sx 0  ox
-        # 0  sy oy     0  sy oy   
-        # 0  0  1      0  0  1
+    @staticmethod
+    def mult( A, B):
+        # A.sx 0    A.ox     B.sx 0    B.ox
+        # 0    A.sy A.oy     0    B.sy B.oy   
+        # 0    0    1        0    0    1
         C = Transformation()
-        C.sX = A.sX * self.sX
-        C.sY = A.sY * self.sY
-        C.oX = A.sX * self.oX + A.oX
-        C.oY = A.sY * self.oY + A.oY
+        C.sX = A.sX * B.sX
+        C.sY = A.sY * B.sY
+        C.oX = A.sX * B.oX + A.oX
+        C.oY = A.sY * B.oY + A.oY
         return C
 
+    def preMult( self, A):
+      return self.__class__.mult( A, self)
+
     def postMult( self, A):
-        # self         A
-        # sx 0  ox     sx 0  ox
-        # 0  sy oy     0  sy oy   
-        # 0  0  1      0  0  1
-        C = Transformation()
-        C.sX = self.sX * A.sX
-        C.sY = self.sY * A.sY
-        C.oX = self.sX * A.oX + self.oX
-        C.oY = self.sY * A.oY + self.oY
-        return C
+      return self.__class__.mult( self, A)
 
 def test_transformation_hit0():
     t = Transformation( 0, 10)
@@ -154,6 +148,11 @@ def test_transformation_hit0():
 def test_transformation_hit1():
     t = Transformation( 0, 10, 1, -1)
     assert (0,0) == t.hit( (0,10))
+
+def test_transformation_Mult0():
+    a = Transformation( 0, 10, 0, 0)
+    b = Transformation( 0,  0, 1,-1)
+    assert (0,-10) == (Transformation.mult( b, a)).hit( (0,0))
 
 def test_transformation_preMult0():
     a = Transformation( 0, 10, 0, 0)
@@ -333,19 +332,11 @@ class Raster:
     def idx( self, x, y):
         return x*self.ny + y
 
-    def addNetConstraints( self):
-        nets = OrderedDict()
-        for ri in self.ris:
-          inst = ri.ci
-          for (f,v) in inst.template.terminals.items():
-            a = inst.fa_map[f]
-            if a not in nets: nets[a] = []
-            nets[a].append( (inst,f))
-
-        print( "Building bit vectors for %d nets" % len(nets))
+    def addTerminalOverlapConstraints( self):
+        print( "Building bit vectors for %d nets" % len(self.nets))
 
         self.net_bvs = OrderedDict()
-        for k in nets.keys():
+        for k in self.nets.keys():
           self.net_bvs[k] = tally.BitVec( self.s, ('net_terminal_%s' % k), (self.nx+1)*self.ny)
 
         for ri in self.ris:
@@ -365,6 +356,9 @@ class Raster:
             self.s.emit_at_most_one( vector)
 
 
+    def addNetLengthConstraints( self):
+      pass
+
     def semantic( self):
         self.ris = [ RasterInstance( self, inst) for inst in self.template.instances.values()]
 
@@ -372,8 +366,17 @@ class Raster:
             for y in range(self.ny):
                 self.s.emit_at_most_one( [ri.filled.var( self.idx( x, y)) for ri in self.ris])
 
-        self.addNetConstraints()
+        self.nets = OrderedDict()
+        for ri in self.ris:
+          inst = ri.ci
+          for (f,v) in inst.template.terminals.items():
+            a = inst.fa_map[f]
+            if a not in self.nets: self.nets[a] = []
+            self.nets[a].append( (inst,f))
 
+        self.addTerminalOverlapConstraints()
+
+        self.addNetLengthConstraints()
         
     def solve( self):
         print( 'Solving Raster')
@@ -507,7 +510,6 @@ def test_hier():
     g.instances['u1'].fa_map['r0'] = 'd'
     g.instances['u1'].fa_map['r1'] = 'c'
 
-
     nx = 8
     ny = 2
 
@@ -529,7 +531,7 @@ def test_hier():
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
 
-def test_sc():
+def test_ota():
 
     ndual = CellLeaf( "ndual", Rect(0,0,5,2))
     ndual.addTerminal( "d1", Rect(0,0,0,1))
@@ -550,78 +552,77 @@ def test_sc():
     ncap.addTerminal( "d1", Rect(0,0,0,1))
     ncap.addTerminal( "s",  Rect(2,0,2,1))
 
-    sc = CellHier( "sc")
+    ota = CellHier( "ota")
 
-    sc.addInstance( CellInstance( "L1_MM4_MM3", ncap))
-    sc.addInstance( CellInstance( "L1_MM1_MM0", ndualss))
+    ota.addInstance( CellInstance( "L1_MM4_MM3", ncap))
+    ota.addInstance( CellInstance( "L1_MM1_MM0", ndualss))
 
-    sc.addInstance( CellInstance( "L1_MM9_MM8", ndual))
-    sc.addInstance( CellInstance( "L1_MM7_MM6", ndual))
-    sc.addInstance( CellInstance( "L1_MM10_MM2", ndual))
+    ota.addInstance( CellInstance( "L1_MM9_MM8", ndual))
+    ota.addInstance( CellInstance( "L1_MM7_MM6", ndual))
+    ota.addInstance( CellInstance( "L1_MM10_MM2", ndual))
 
-    sc.connect('L1_MM1_MM0','g1','Vinp')
+    ota.connect('L1_MM1_MM0','g1','Vinp')
 
-    sc.connect('L1_MM7_MM6','s1','net13')
-    sc.connect('L1_MM9_MM8','d1','net13')
+    ota.connect('L1_MM7_MM6','s1','net13')
+    ota.connect('L1_MM9_MM8','d1','net13')
 
-    sc.connect('L1_MM7_MM6','d2','Voutp')
-    sc.connect('L1_MM10_MM2','d2','Voutp')
+    ota.connect('L1_MM7_MM6','d2','Voutp')
+    ota.connect('L1_MM10_MM2','d2','Voutp')
 
-    sc.connect('L1_MM7_MM6','d1','Voutn')
-    sc.connect('L1_MM10_MM2','d1','Voutn')
+    ota.connect('L1_MM7_MM6','d1','Voutn')
+    ota.connect('L1_MM10_MM2','d1','Voutn')
 
-    sc.connect('L1_MM10_MM2','s1','net10')
-    sc.connect('L1_MM1_MM0','d1','net10')
+    ota.connect('L1_MM10_MM2','s1','net10')
+    ota.connect('L1_MM1_MM0','d1','net10')
 
-    sc.connect('L1_MM9_MM8','s1','vdd!')
-    sc.connect('L1_MM9_MM8','s2','vdd!')
+    ota.connect('L1_MM9_MM8','s1','vdd!')
+    ota.connect('L1_MM9_MM8','s2','vdd!')
 
-    sc.connect('L1_MM10_MM2','g1','Vbiasn')
-    sc.connect('L1_MM10_MM2','g2','Vbiasn')
+    ota.connect('L1_MM10_MM2','g1','Vbiasn')
+    ota.connect('L1_MM10_MM2','g2','Vbiasn')
 
-    sc.connect('L1_MM10_MM2','s2','net11')
-    sc.connect('L1_MM1_MM0','d2','net11')
+    ota.connect('L1_MM10_MM2','s2','net11')
+    ota.connect('L1_MM1_MM0','d2','net11')
     
-    sc.connect('L1_MM9_MM8','g1','Vbiasp2')
-    sc.connect('L1_MM9_MM8','g2','Vbiasp2')
+    ota.connect('L1_MM9_MM8','g1','Vbiasp2')
+    ota.connect('L1_MM9_MM8','g2','Vbiasp2')
 
-    sc.connect('L1_MM7_MM6','g1','Vbiasp1')
-    sc.connect('L1_MM7_MM6','g2','Vbiasp1')
+    ota.connect('L1_MM7_MM6','g1','Vbiasp1')
+    ota.connect('L1_MM7_MM6','g2','Vbiasp1')
 
-    sc.connect('L1_MM4_MM3','s','gnd!')
+    ota.connect('L1_MM4_MM3','s','gnd!')
 
-    sc.connect('L1_MM7_MM6','s2','net12')
-    sc.connect('L1_MM9_MM8','d2','net12')
+    ota.connect('L1_MM7_MM6','s2','net12')
+    ota.connect('L1_MM9_MM8','d2','net12')
 
-    sc.connect('L1_MM1_MM0','s','net6')
-    sc.connect('L1_MM4_MM3','d2','net6')
+    ota.connect('L1_MM1_MM0','s','net6')
+    ota.connect('L1_MM4_MM3','d2','net6')
 
-    sc.connect('L1_MM1_MM0','g2','Vinn')
+    ota.connect('L1_MM1_MM0','g2','Vinn')
 
-    sc.connect('L1_MM4_MM3','d1','net1')
+    ota.connect('L1_MM4_MM3','d1','net1')
 
-    nx = 20
-    ny = 9
+    nx = 13
+    ny = 4
 
     s = tally.Tally()
-    r = Raster( s, sc, nx, ny)
+    r = Raster( s, ota, nx, ny)
     r.semantic()
 
-    ri_map = { ri.ci.nm : ri for ri in r.ris}
-
     #place in corner
-#    s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
+    #ri_map = { ri.ci.nm : ri for ri in r.ris}
+    #s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
 
     r.solve()
-    sc.updateBbox()
+    ota.updateBbox()
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
-        sc.write_globalrouting_json( fp, tech)
+        ota.write_globalrouting_json( fp, tech)
 
 if __name__ == "__main__":
 #    test_grid_hier()
 #    test_flat_hier()
 #    test_hier()
-  test_sc()
+  test_ota()
 
