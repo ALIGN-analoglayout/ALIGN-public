@@ -3,12 +3,13 @@
 import json
 
 class MetalTemplate:
-  def __init__( self, *, layer, name, widths, spaces, colors):
+  def __init__( self, *, layer, name, widths, spaces, colors, stops):
     self.layer = layer
     self.name = name
     self.widths = widths
     self.spaces = spaces
     self.colors = colors
+    self.stops  = stops
 
   def __eq__( self, that):
     return self.layer == that.layer and self.name == that.name and self.widths == that.widths and self.spaces == that.spaces and self.colors == that.colors
@@ -16,14 +17,15 @@ class MetalTemplate:
   def __str__( self):
     result = "MetalTemplate layer=%s name=%s widths=%s spaces=%s" % ( self.layer, self.name, (",".join( str(i) for i in self.widths)), (",".join( str(i) for i in self.spaces)))
     if self.colors:
-      result += " colors=%s" % (",".join( c for c in self.colors))
+      result += " colors=%s" % (",".join( self.colors))
+    result += " stops=%s" % (",".join( str(i) for i in self.stops))
     return result
 
 
 class TechFile:
   def __init__( self, fp):
     self.json = json.load( fp)
-    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors']) for d in self.json['metalTemplates']]
+    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops']) for d in self.json['metalTemplates']]
 
   def __getattr__( self, nm):
     return self.json[nm]

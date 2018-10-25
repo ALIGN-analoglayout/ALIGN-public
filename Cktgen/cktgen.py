@@ -440,7 +440,7 @@ Option name=create_fake_metal_template_instances value={3}
           fp.write( " }\n")
           fp.write( "\n")
 
-        s = ';'.join( ["(%d,%d,%d,%d,%s,%d)" % (gr.rect.llx,
+        s = ';'.join( ["(%d,%d,%d,%d,%s,minw=%d)" % (gr.rect.llx,
                                                 gr.rect.lly,
                                                 gr.rect.urx,
                                                 gr.rect.ury,
