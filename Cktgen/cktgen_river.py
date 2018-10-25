@@ -76,5 +76,5 @@ if __name__ == "__main__":
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 
-  tech.write_files( "INPUT", netl.nm)
+  tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)

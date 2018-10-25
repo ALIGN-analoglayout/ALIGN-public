@@ -259,6 +259,9 @@ class Rect:
     if lly > ury: lly,ury = ury,lly
     return Rect( llx,lly,urx,ury)
 
+  def toList( self):
+    return [self.llx,self.lly,self.urx,self.ury]
+
 class Wire:
   def __init__( self):
     self.netName = None
@@ -417,6 +420,7 @@ Option name=create_fake_global_routes            value={2}
 Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
 Option name=create_fake_metal_template_instances value={3}
+Option name=create_fake_line_end_grids           value=1
 """.format( self.nm,
             "1" if route else "0",
             "1" if show_global_routes else "0",
@@ -627,5 +631,5 @@ if __name__ == "__main__":
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 
-  tech.write_files( "INPUT", netl.nm)
+  tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)

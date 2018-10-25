@@ -3,13 +3,14 @@
 import json
 
 class MetalTemplate:
-  def __init__( self, *, layer, name, widths, spaces, colors, stops):
+  def __init__( self, *, layer, name, widths, spaces, colors, stops, stop_offset):
     self.layer = layer
     self.name = name
     self.widths = widths
     self.spaces = spaces
     self.colors = colors
     self.stops  = stops
+    self.stop_offset = stop_offset
 
   def __eq__( self, that):
     return self.layer == that.layer and self.name == that.name and self.widths == that.widths and self.spaces == that.spaces and self.colors == that.colors
@@ -25,7 +26,7 @@ class MetalTemplate:
 class TechFile:
   def __init__( self, fp):
     self.json = json.load( fp)
-    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops']) for d in self.json['metalTemplates']]
+    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops'], stop_offset=d['stop_offset']) for d in self.json['metalTemplates']]
 
   def __getattr__( self, nm):
     return self.json[nm]
@@ -34,14 +35,14 @@ class TechFile:
   def metalTemplates( self):
     return self._metalTemplates
 
-  def write_files( self, dir, nm):
-    self.write_options_file( dir + "/" + nm + "_dr_mti.txt")
+  def write_files( self, dir, nm, bbox):
+    self.write_options_file( dir + "/" + nm + "_dr_mti.txt", bbox)
     self.write_metal_template_file( dir + "/" + nm + "_dr_metal_templates.txt")
 
-  def write_options_file( self, fn):
+  def write_options_file( self, fn, bbox):
     with open( fn, "w") as fp:
-#      fp.write( "MetalTemplateInstance template=adt_m2 pgoffset_abs=0 region=%s\n" % self.bbox)
-      pass
+      for mt in self.metalTemplates:
+        fp.write( "MetalTemplateInstance template=%s pgdoffset_abs=0 ogdoffset_abs=%d region=%s\n" % (mt.name, mt.stop_offset, (':'.join( str(i) for i in bbox))))
 
   def write_metal_template_file( self, fn):
     with open( fn, "w") as fp:
