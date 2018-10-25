@@ -100,7 +100,7 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} router_image bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
 
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign"
 fi

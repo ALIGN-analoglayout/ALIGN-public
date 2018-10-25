@@ -27,31 +27,36 @@
                      "layer":"metal5", "name":"m5",
                      "widths":[600,600],
                      "spaces":[480],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[540]
                   },
                    {
                      "layer":"metal4", "name":"m4",
                      "widths":[600,600],
                      "spaces":[480],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[540]
                   },
                   {
                      "layer":"metal3", "name":"m3",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[360]
                   },
                   {
                      "layer":"metal2", "name":"m2",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[360]
                   },
                   {
                      "layer":"metal1", "name":"m1",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[360]
                   }
     ]
 }
