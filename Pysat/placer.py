@@ -125,8 +125,8 @@ class Transformation:
 
     @staticmethod
     def mult( A, B):
-        # A.sx 0    A.ox     B.sx 0    B.ox
-        # 0    A.sy A.oy     0    B.sy B.oy   
+        # A.sX 0    A.oX     B.sX 0    B.oX
+        # 0    A.sY A.oY     0    B.sY B.oY
         # 0    0    1        0    0    1
         C = Transformation()
         C.sX = A.sX * B.sX
@@ -356,8 +356,44 @@ class Raster:
             self.s.emit_at_most_one( vector)
 
 
-    def addNetLengthConstraints( self):
-      pass
+    def addNetLengthConstraints( self, net_nm):
+      """
+Compute extent of net net_nm in X
+Returns a pair (bitvector of net extent and bitvector of tallys)
+Use tallys to constrain length
+"""
+
+      bv = self.net_bvs[net_nm]
+      col_or = tally.BitVec( self.s, 'col_or_%s' % net_nm, self.nx+1)
+
+      nx = self.nx
+
+      for x in range(nx+1):
+        self.s.emit_or( [ bv.var( self.idx( x, y)) for y in range(self.ny)], col_or.var( x))
+
+      lscan = tally.BitVec( self.s, 'lscan_%s' % net_nm, nx+1)
+      for x in range(nx+1):
+        if x == 0:
+          self.s.emit_or( [col_or.var( x)], lscan.var( x))
+        else:
+          self.s.emit_or( [col_or.var( x), lscan.var( x-1)], lscan.var( x))
+
+      rscan = tally.BitVec( self.s, 'rscan_%s' % net_nm, nx+1)
+      for x in range(nx+1):
+        if x == 0:
+          self.s.emit_or( [col_or.var( nx-x)], rscan.var( nx-x))
+        else:
+          self.s.emit_or( [col_or.var( nx-x), rscan.var( nx-(x-1))], rscan.var( nx-x))
+
+      extent = tally.BitVec( self.s, 'extent_%s' % net_nm, nx+1)
+      for x in range(nx+1):
+        self.s.emit_and( [lscan.var(x), rscan.var(x)], extent.var( x))
+
+      tallys = tally.BitVec( self.s, 'counts_%s' % net_nm, nx+1)
+      self.s.emit_tally( extent.vars, tallys.vars)
+
+      return extent,tallys
+
 
     def semantic( self):
         self.ris = [ RasterInstance( self, inst) for inst in self.template.instances.values()]
@@ -376,7 +412,10 @@ class Raster:
 
         self.addTerminalOverlapConstraints()
 
-        self.addNetLengthConstraints()
+        self.xExtents = {}
+        for (k,v) in self.nets.items():
+          self.xExtents[k] = self.addNetLengthConstraints( k)
+
         
     def solve( self):
         print( 'Solving Raster')
@@ -551,6 +590,7 @@ def test_ota():
     ncap = CellLeaf( "ncap", Rect(0,0,4,2))
     ncap.addTerminal( "d1", Rect(0,0,0,1))
     ncap.addTerminal( "s",  Rect(2,0,2,1))
+    ncap.addTerminal( "d2", Rect(4,0,4,1))
 
     ota = CellHier( "ota")
 
@@ -609,11 +649,50 @@ def test_ota():
     r = Raster( s, ota, nx, ny)
     r.semantic()
 
-    #place in corner
-    #ri_map = { ri.ci.nm : ri for ri in r.ris}
-    #s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
+    s.solve()
+    assert s.state == 'SAT'
+
+    def findSmallest( net_nm, lst=[]):
+      for lim in range(nx,-1,-1):
+        # if SAT, you can do it in < lim
+        s.solve( [-r.xExtents[net_nm][1].var( lim)] + lst)
+        if s.state == 'SAT':
+          print( 'Can route %s with < %d x extent' % (net_nm,lim))
+        else:
+          print( 'Fails to route %s with < %d x extend' % (net_nm,lim))
+          return lim
+
+
+    priority_nets = ['net6', 'Vbiasn', 'Vbiasp1', 'Vbiasp2', 'Voutn', 'Voutp', 'net12', 'net13']
+
+    other_nets = [ net_nm for net_nm in r.nets.keys() if net_nm not in priority_nets]
+
+    limits_independent = []
+    for net_nm in priority_nets + other_nets:
+      lim = findSmallest( net_nm)
+      limits_independent.append( (net_nm, lim))
+
+    limits_sequential2 = []
+    accum = []
+    for net_nm in priority_nets + other_nets:
+      lim = findSmallest( net_nm, accum) + 1
+      limits_sequential2.append( (net_nm, lim))
+      if lim < nx-1:
+        accum.append( -r.xExtents[net_nm][1].var( lim))
+
+    limits_sequential = []
+    for net_nm in priority_nets + other_nets:
+      lim = findSmallest( net_nm)
+      limits_sequential.append( (net_nm, lim))
+      if lim != nx:
+        s.emit_never( r.xExtents[net_nm][1].var( lim+1))
 
     r.solve()
+
+    print( 'independent', limits_independent)
+    print( 'sequential2', limits_sequential2)
+    print( 'sequential', limits_sequential)
+
     ota.updateBbox()
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
