@@ -783,6 +783,38 @@ def test_ota():
       if lim < nx-1:
         accum.append( -r.xExtents[net_nm][1].var( lim))
 
+    s.solve( accum)
+    assert s.state == 'SAT'
+
+    def optimizeNetLength( tag, nets):
+      count = 0
+      netsInp = []
+      for net_nm in nets:
+        for x in range(r.nx):
+          netsInp.append( r.xExtents[net_nm][0].var( x))
+          if r.xExtents[net_nm][0].val( x) is True:
+            count += 1
+      print( 'Total X length for %s nets' % tag, count)
+
+      netsOut = tally.BitVec( s, ('%s X' % tag), count)
+      s.emit_tally( netsInp, [netsOut.var(x) for x in range(count)])
+
+      for lim in range(count-1,-1,-1):
+        # if SAT, you can do it in < lim
+        s.solve( [-netsOut.var(lim)])
+        if s.state == 'SAT':
+          print( 'Can route %s nets with < %d total x extent' % (tag,lim))
+        else:
+          print( 'Fails to route %s nets with < %d total x extend' % (tag,lim))
+          break
+      
+      s.emit_never( -netsOut.var(lim))
+      s.solve()
+      assert s.state == 'SAT'
+
+    optimizeNetLength( 'priority', priority_nets)
+    optimizeNetLength( 'other', other_nets)
+
     limits_sequential = []
     for net_nm in priority_nets + other_nets:
       lim = findSmallest( net_nm)

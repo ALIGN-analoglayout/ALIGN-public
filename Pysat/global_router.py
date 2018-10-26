@@ -513,7 +513,7 @@ def test_ota():
     for term in placer_results['terminals']:
       g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
 
-    g.semantic( max_capacity=4)
+    g.semantic( max_capacity=3)
     g.s.solve()
     assert g.s.state == 'SAT'
 
