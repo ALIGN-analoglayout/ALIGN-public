@@ -19,12 +19,15 @@ class Rect:
       self.urx = urx
       self.ury = ury
 
+  def toList( self):
+      return [self.llx, self.lly, self.urx, self.ury]
+
 class GR:
-  def __init__( self):
-    self.netName = None
-    self.rect = None
-    self.layer = None
-    self.width = None
+  def __init__( self, netName=None, layer=None, width=None, rect=None):
+    self.netName = netName
+    self.layer = layer
+    self.width = width
+    self.rect = rect
 
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
@@ -57,6 +60,20 @@ class Grid:
         self.nets = OrderedDict()
         self.layers = ['metal2','metal3']
         self.routes = OrderedDict()
+
+    def dumpJSON( self, fp, tech):
+      terminals = []
+      for (k,v) in self.nets.items():
+        terminals.append( { "layer": "metal1", "net_name": k, "xy": list(v)})
+
+      wires = []
+      for (k,v) in self.wires.items():
+        for (ly,grs) in v.items():
+          for gr in grs:
+            wires.append( { "layer": gr.layer, "net_name": gr.netName, "width": gr.width, "rect": gr.rect.toList()})
+
+      data = { "terminals": terminals, "wires": wires}
+      fp.write( json.dumps( data, indent=2) + "\n") 
 
     def addTerminal( self, net_nm, x, y):
         if net_nm not in self.nets: self.nets[net_nm] = []
@@ -310,12 +327,7 @@ class Grid:
                                 x1 = x
                             if filled and x == self.nx-1 or not filled and x1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                gr = GR()
-                                gr.netName = k
-                                gr.layer = ly
-                                gr.width = 400
-                                gr.rect = Rect( x0, y, x1, y)
-                                self.wires[k][ly].append( gr)
+                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x0, y, x1, y)))
                                 x0,x1 = None,None
 
                 if ly in verticalMetals:
@@ -328,12 +340,7 @@ class Grid:
                                 y1 = y
                             if filled and y == self.ny-1 or not filled and y1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                gr = GR()
-                                gr.netName = k
-                                gr.layer = ly
-                                gr.width = 400
-                                gr.rect = Rect( x, y0, x, y1)
-                                self.wires[k][ly].append( gr)
+                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x, y0, x, y1)))
                                 y0,y1 = None,None
 
     def write_globalrouting_json( self, fp, tech):
@@ -524,6 +531,9 @@ def test_ota():
         tech = Tech()
         g.write_globalrouting_json( fp, tech)
 
+    with open( "ota_global_router_out.json", "wt") as fp:
+        tech = Tech()      
+        g.dumpJSON( fp, tech)
 
 def ex_backward_xy():
     halfn = 2

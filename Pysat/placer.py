@@ -239,13 +239,8 @@ class CellTemplate:
     def addTerminal( self, nm, r):
         if nm not in self.terminals: self.terminals[nm] = []
         assert r.llx == r.urx
-        assert r.lly <  r.ury
-        if False or r.lly + 1 == r.ury:
-          self.terminals[nm].append( r)
-        else:
-          for y in range( r.lly, r.ury):
-            rr = Rect( r.llx, y, r.urx, y+1)
-            self.terminals[nm].append( rr)
+        assert r.lly < r.ury
+        self.terminals[nm].append( r)
 
     def connect( self, i, p, n):
       self.instances[i].fa_map[p] = n
@@ -392,9 +387,11 @@ class Raster:
             for (f,v) in inst.template.terminals.items():
               a = inst.fa_map[f]
               for term in v:
-                r = tr.hitRect( term).canonical()
-                if 0 <= r.llx and r.llx < self.nx+1 and 0 <= r.lly and r.lly < self.ny:
-                  self.s.emit_implies( anchor, self.net_bvs[a].var( self.idx( r.llx, r.lly)))
+                for yy in range(term.lly, term.ury):
+                  newterm = Rect( term.llx, yy, term.urx, yy+1)
+                  r = tr.hitRect( newterm).canonical()
+                  if 0 <= r.llx and r.llx < self.nx+1 and 0 <= r.lly and r.lly < self.ny:
+                    self.s.emit_implies( anchor, self.net_bvs[a].var( self.idx( r.llx, r.lly)))
 
         for x in range(self.nx+1):
           for y in range(self.ny):
@@ -577,7 +574,6 @@ def test_hier():
     b0.addTerminal( "r0", Rect(4,0,4,1))
     b0.addTerminal( "r1", Rect(4,1,4,2))
 
-
     m = 2
 
     g = CellHier( "grid")
@@ -611,6 +607,54 @@ def test_hier():
     g.updateBbox()
 
     assert ri_map['u1'].anchorMXY.val( r.idx(nx-1,ny-1)) is True
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
+
+def test_non_unit_pins():
+
+    b0 = CellLeaf( "block0", Rect(0,0,4,2))
+    b0.addTerminal( "l", Rect(0,0,0,2))
+    b0.addTerminal( "r", Rect(4,0,4,2))
+
+    m = 2
+
+    g = CellHier( "grid")
+    for i in range(m):
+      inst_name = 'u%d' % i
+      g.instances[inst_name] = CellInstance( inst_name, b0)
+
+    g.instances['u0'].fa_map['l'] = 'a'
+    g.instances['u0'].fa_map['r'] = 'b'
+
+    g.instances['u1'].fa_map['l'] = 'b'
+    g.instances['u1'].fa_map['r'] = 'c'
+
+    nx = 8
+    ny = 2
+
+    s = tally.Tally()
+    r = Raster( s, g, nx, ny)
+    r.semantic()
+
+    ri_map = { ri.ci.nm : ri for ri in r.ris}
+
+    #place in corner
+    s.emit_always( ri_map['u0'].anchor.var( r.idx( 0, 0)))
+
+    for x in range(nx):
+      for y in range(ny):
+        pass
+        s.emit_never( ri_map['u1'].anchor.var( r.idx( x, y)))
+#        s.emit_never( ri_map['u1'].anchorMX.var( r.idx( x, y)))
+        s.emit_never( ri_map['u1'].anchorMY.var( r.idx( x, y)))
+        s.emit_never( ri_map['u1'].anchorMXY.var( r.idx( x, y)))
+
+    r.solve()
+    g.updateBbox()
+
+    assert ri_map['u1'].anchorMX.val( r.idx(4,1)) is True
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
@@ -750,8 +794,9 @@ def test_ota():
         ota.dumpJson( fp, tech)
 
 if __name__ == "__main__":
-#    test_grid_hier()
-#    test_flat_hier()
-#    test_hier()
+#  test_grid_hier()
+#  test_flat_hier()
+#  test_hier()
   test_ota()
+#  test_non_unit_pins()
 
