@@ -504,6 +504,7 @@ def test_ota():
 
     [_,_,nx,ny] = placer_results['bbox']
 
+    # the global router grid is twice the placer (ADT) grid
     def tr( p):
       x,y = p
       return x//2, y//2
