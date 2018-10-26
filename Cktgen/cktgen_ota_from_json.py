@@ -6,10 +6,10 @@ if __name__ == "__main__":
   args,tech = parse_args()
 
 
-  with open( "ota_placer_out.json", "rt") as fp:
+  with open( "INPUT/ota_placer_out.json", "rt") as fp:
     placer_results = json.load( fp)
 
-  with open( "ota_global_router_out.json", "rt") as fp:
+  with open( "INPUT/ota_global_router_out.json", "rt") as fp:
     global_router_results = json.load( fp)
 
 
@@ -39,8 +39,7 @@ if __name__ == "__main__":
 
   bbox = placer_results['bbox']
 
-  def roundUp( x):
-    return 4+2*((x+1)//2)
+  def roundUp( x): return 2*((x+1)//2)
 
   netl = Netlist( nm=args.block_name, bbox=Rect( 0,0, xg(roundUp(bbox[2])), yg(roundUp(bbox[3]))))
   adnetl =  ADNetlist( args.block_name)
@@ -52,7 +51,7 @@ if __name__ == "__main__":
 
     print( tr)
 
-    adnetl.addInstance( ADI( adts[tN], iN, ADITransform( xg(tr['oX']+2), yg(tr['oY']+2), tr['sX'], tr['sY'])))
+    adnetl.addInstance( ADI( adts[tN], iN, ADITransform( xg(tr['oX']), yg(tr['oY']), tr['sX'], tr['sY'])))
 
     for (f,a) in inst['formal_actual_map'].items():
       adnetl.connect( iN, f, a)
@@ -60,9 +59,7 @@ if __name__ == "__main__":
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
-    # shift by one for router
-    r = [i+1 for i in wire['rect']]
-    netl.newGR( wire['net_name'], Rect( *r), wire['layer'], wire['width'])
+    netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'])
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

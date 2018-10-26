@@ -241,8 +241,10 @@ class CellTemplate:
                                 "layer": "metal1",
                                 "rect": r.toList()})
 
+      bbox = self.bbox.toList()
+#      bbox[2] += 1
       data = { "nm": self.nm,
-               "bbox": self.bbox.toList(),
+               "bbox": bbox,
                "leaves": leaves,
                "instances": instances,
                "terminals": terminals}
@@ -498,6 +500,80 @@ Use tallys to constrain length
             print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(nx)]))
 
 
+    def optimizeNets( self, priority_nets):
+      def findSmallest( net_nm, lst=[]):
+        for lim in range(self.nx,-1,-1):
+          # if SAT, you can do it in < lim
+          self.s.solve( [-self.xExtents[net_nm][1].var( lim)] + lst)
+          if self.s.state == 'SAT':
+            print( 'Can route %s with < %d x extent' % (net_nm,lim))
+          else:
+            print( 'Fails to route %s with < %d x extend' % (net_nm,lim))
+            return lim
+
+
+      other_nets = [ net_nm for net_nm in self.nets.keys() if net_nm not in priority_nets]
+
+      limits_independent = []
+      for net_nm in priority_nets + other_nets:
+        lim = findSmallest( net_nm)
+        limits_independent.append( (net_nm, lim))
+
+      limits_sequential2 = []
+      accum = []
+      for net_nm in priority_nets + other_nets:
+        lim = findSmallest( net_nm, accum) + 1
+        limits_sequential2.append( (net_nm, lim))
+        if lim < self.nx-1:
+          accum.append( -self.xExtents[net_nm][1].var( lim))
+
+      self.s.solve( accum)
+      assert self.s.state == 'SAT'
+
+      def optimizeNetLength( tag, nets):
+        count = 0
+        netsInp = []
+        for net_nm in nets:
+          for x in range(self.nx):
+            netsInp.append( self.xExtents[net_nm][0].var( x))
+            if self.xExtents[net_nm][0].val( x) is True:
+              count += 1
+        print( 'Total X length for %s nets' % tag, count)
+
+        netsOut = tally.BitVec( self.s, ('%s X' % tag), count)
+        self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count)])
+
+        for lim in range(count-1,-1,-1):
+          # if SAT, you can do it in < lim
+          self.s.solve( [-netsOut.var(lim)])
+          if self.s.state == 'SAT':
+            print( 'Can route %s nets with < %d total x extent' % (tag,lim))
+          else:
+            print( 'Fails to route %s nets with < %d total x extend' % (tag,lim))
+            break
+        
+        self.s.emit_never( -netsOut.var(lim))
+        self.s.solve()
+        assert self.s.state == 'SAT'
+
+      optimizeNetLength( 'priority', priority_nets)
+      optimizeNetLength( 'other', other_nets)
+      
+      limits_sequential = []
+      for net_nm in priority_nets + other_nets:
+        lim = findSmallest( net_nm)
+        limits_sequential.append( (net_nm, lim))
+        if lim != self.nx:
+          self.s.emit_never( self.xExtents[net_nm][1].var( lim+1))
+
+      self.solve()
+
+      print( 'independent', limits_independent)
+      print( 'sequential2', limits_sequential2)
+      print( 'sequential', limits_sequential)
+
+
+
 def test_build_raster():
     s = tally.Tally()
     raster = Raster( s, 'xy', 4, 10)
@@ -742,93 +818,30 @@ def test_ota():
     ota.connect('L1_MM4_MM3','d2','net6')
 
     ota.connect('L1_MM1_MM0','g2','Vinn')
-
+ 
     ota.connect('L1_MM4_MM3','d1','net1')
 
-    nx = 11
+    nx = 13
     ny = 6
+
+    ota.bbox = Rect( 0, 0, nx, ny)
 
     s = tally.Tally()
     r = Raster( s, ota, nx, ny)
     r.semantic()
 
+    #put a raft on the left and right
+    for x in [0,nx-1]:
+      for y in range(ny):
+        for ri in r.ris:
+          print( ri.ci.nm, x, y)
+          s.emit_never( ri.filled.var( r.idx( x, y)))
+
     s.solve()
     assert s.state == 'SAT'
 
-    def findSmallest( net_nm, lst=[]):
-      for lim in range(nx,-1,-1):
-        # if SAT, you can do it in < lim
-        s.solve( [-r.xExtents[net_nm][1].var( lim)] + lst)
-        if s.state == 'SAT':
-          print( 'Can route %s with < %d x extent' % (net_nm,lim))
-        else:
-          print( 'Fails to route %s with < %d x extend' % (net_nm,lim))
-          return lim
-
-
     priority_nets = ['net6', 'Vbiasn', 'Vbiasp1', 'Vbiasp2', 'Voutn', 'Voutp', 'net12', 'net13']
-
-    other_nets = [ net_nm for net_nm in r.nets.keys() if net_nm not in priority_nets]
-
-    limits_independent = []
-    for net_nm in priority_nets + other_nets:
-      lim = findSmallest( net_nm)
-      limits_independent.append( (net_nm, lim))
-
-    limits_sequential2 = []
-    accum = []
-    for net_nm in priority_nets + other_nets:
-      lim = findSmallest( net_nm, accum) + 1
-      limits_sequential2.append( (net_nm, lim))
-      if lim < nx-1:
-        accum.append( -r.xExtents[net_nm][1].var( lim))
-
-    s.solve( accum)
-    assert s.state == 'SAT'
-
-    def optimizeNetLength( tag, nets):
-      count = 0
-      netsInp = []
-      for net_nm in nets:
-        for x in range(r.nx):
-          netsInp.append( r.xExtents[net_nm][0].var( x))
-          if r.xExtents[net_nm][0].val( x) is True:
-            count += 1
-      print( 'Total X length for %s nets' % tag, count)
-
-      netsOut = tally.BitVec( s, ('%s X' % tag), count)
-      s.emit_tally( netsInp, [netsOut.var(x) for x in range(count)])
-
-      for lim in range(count-1,-1,-1):
-        # if SAT, you can do it in < lim
-        s.solve( [-netsOut.var(lim)])
-        if s.state == 'SAT':
-          print( 'Can route %s nets with < %d total x extent' % (tag,lim))
-        else:
-          print( 'Fails to route %s nets with < %d total x extend' % (tag,lim))
-          break
-      
-      s.emit_never( -netsOut.var(lim))
-      s.solve()
-      assert s.state == 'SAT'
-
-    optimizeNetLength( 'priority', priority_nets)
-    optimizeNetLength( 'other', other_nets)
-
-    limits_sequential = []
-    for net_nm in priority_nets + other_nets:
-      lim = findSmallest( net_nm)
-      limits_sequential.append( (net_nm, lim))
-      if lim != nx:
-        s.emit_never( r.xExtents[net_nm][1].var( lim+1))
-
-    r.solve()
-
-    print( 'independent', limits_independent)
-    print( 'sequential2', limits_sequential2)
-    print( 'sequential', limits_sequential)
-
-    ota.updateBbox()
+    r.optimizeNets( priority_nets)
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()

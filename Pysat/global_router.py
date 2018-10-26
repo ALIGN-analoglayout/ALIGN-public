@@ -285,13 +285,14 @@ class Grid:
             assert y0 == y1
             if x0 > x1: x0,x1 = x1,x0
             for x in range( x0, x1+1):
-                self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x,y0)))
+              print( k, x, y0, y1)
+              self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x,y0)))
 
         if y0 != y1:
             assert x0 == x1
             if y0 > y1: y0,y1 = y1,y0
             for y in range( y0, y1+1):
-                self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x0,y)))
+              self.s.emit_implies( r.var(), self.per_net_grid[k][ly].var( self.idx(x0,y)))
 
 
     def print_routes( self):
@@ -509,6 +510,7 @@ def test_ota():
       x,y = p
       return x//2, y//2
 
+    # add one to round up
     g = Grid( *tr( (nx+1, ny+1)))
 
     for term in placer_results['terminals']:
