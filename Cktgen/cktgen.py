@@ -124,11 +124,11 @@ class ADITransform:
     trans.xScale = -1
     return trans
 
-  def __init__( self):
-    self.xOffset = 0
-    self.yOffset = 0
-    self.xScale = 1
-    self.yScale = 1
+  def __init__( self, oX=0, oY=0, sX=1, sY=1):
+    self.xOffset = oX
+    self.yOffset = oY
+    self.xScale = sX
+    self.yScale = sY
 
   def __repr__( self):
     return "xo yo xs ys: %d %d %d %d" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)

@@ -1,6 +1,6 @@
 FROM with_python as cktgen
 
-ADD *.py /Cktgen/
+ADD *.py *.json /Cktgen/
 
 
 

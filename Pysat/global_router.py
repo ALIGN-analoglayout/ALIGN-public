@@ -5,8 +5,8 @@ import json
 class Tech:
 # Mock the tech file to temporarily simplify integration
   def __init__( self):
-      self.halfXGRGrid = 3
-      self.halfYGRGrid = 3
+      self.halfXGRGrid = 2
+      self.halfYGRGrid = 2
       self.pitchPoly   = 720
       self.pitchDG     = 720
       self.verticalMetals = ["metal1","metal3","metal5"]
@@ -62,17 +62,13 @@ class Grid:
         self.routes = OrderedDict()
 
     def dumpJSON( self, fp, tech):
-      terminals = []
-      for (k,v) in self.nets.items():
-        terminals.append( { "layer": "metal1", "net_name": k, "xy": list(v)})
-
       wires = []
       for (k,v) in self.wires.items():
         for (ly,grs) in v.items():
           for gr in grs:
             wires.append( { "layer": gr.layer, "net_name": gr.netName, "width": gr.width, "rect": gr.rect.toList()})
 
-      data = { "terminals": terminals, "wires": wires}
+      data = { "wires": wires}
       fp.write( json.dumps( data, indent=2) + "\n") 
 
     def addTerminal( self, net_nm, x, y):
@@ -510,9 +506,9 @@ def test_ota():
 
     def tr( p):
       x,y = p
-      return x//3, y//3
+      return x//2, y//2
 
-    g = Grid( *tr( (nx+2, ny+2)))
+    g = Grid( *tr( (nx+1, ny+1)))
 
     for term in placer_results['terminals']:
       g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))

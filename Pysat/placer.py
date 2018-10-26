@@ -197,16 +197,32 @@ class CellTemplate:
         self.terminals = OrderedDict()
         
     def dumpJson( self, fp, tech):
-      
-      instances = []
+      collect_templates = {}
+      for ci in self.instances.values():
+        if ci.template.nm not in collect_templates: collect_templates[ci.template.nm] = []
+        collect_templates[ci.template.nm].append( ci.template)
 
+      leaves = []
+      for (k,v) in collect_templates.items():
+        assert len(v) > 0
+        terminals = []
+        for (net_nm,term_lst) in v[0].terminals.items():
+          for term in term_lst:
+            terminals.append( { "net_name": net_nm,
+                                "layer": "metal1",
+                                "rect": term.toList()})
+        leaves.append( { "template_name": k,
+                         "bbox": v[0].bbox.toList(),
+                         "terminals": terminals})
+
+      instances = []
       for (k,ci) in self.instances.items():
         instances.append( { "instance_name": k,
                             "template_name": ci.template.nm,
                             "transformation": { "oX" : ci.transformation.oX,
                                                 "oY" : ci.transformation.oY,
                                                 "sX" : ci.transformation.sX,
-                                                "sY" : ci.transformation.sX},
+                                                "sY" : ci.transformation.sY},
                             "formal_actual_map": ci.fa_map})
 
       terminals = []
@@ -227,6 +243,7 @@ class CellTemplate:
 
       data = { "nm": self.nm,
                "bbox": self.bbox.toList(),
+               "leaves": leaves,
                "instances": instances,
                "terminals": terminals}
 
@@ -273,10 +290,6 @@ class CellTemplate:
         data = { "bbox" : self.bbox, "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
         fp.write( json.dumps( data, indent=2, default=lambda x: encode_T(tech,x)) + "\n")
-
-
-
-
 
 
 class CellLeaf(CellTemplate):
