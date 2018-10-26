@@ -128,7 +128,11 @@ class Grid:
         vly = "metal3"
 
         for (k,v) in self.nets.items():
-            assert len(v) == 2
+            if len(v) > 2:
+              print( "Clipping net %s to 2 terminals (has %d)" % (k,len(v)))
+              v = v[:2]
+            elif len(v) < 2:
+              continue
 
             self.routes[k] = []
 
@@ -264,8 +268,6 @@ class Grid:
         self.genSymmetricRoutes( items[0], items[1])
 
     def emitWire( self, k, r, ly, x0, y0, x1, y1):
-        print( ly, x0, y0, x1, y1)
-
         if x0 != x1:
             assert y0 == y1
             if x0 > x1: x0,x1 = x1,x0
@@ -307,7 +309,6 @@ class Grid:
                                 if x0 is None: x0 = x
                                 x1 = x
                             if filled and x == self.nx-1 or not filled and x1 is not None:
-                                print( "wire", k, ly, "y", y, "x0", x0, "x1", x1)
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
                                 gr = GR()
                                 gr.netName = k
@@ -326,7 +327,6 @@ class Grid:
                                 if y0 is None: y0 = y
                                 y1 = y
                             if filled and y == self.ny-1 or not filled and y1 is not None:
-                                print( "wire", k, ly, "x", x, "y0", y0, "y1", y1)
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
                                 gr = GR()
                                 gr.netName = k
@@ -494,6 +494,37 @@ def test_symmetric_unsat():
     g.s.solve()
     assert g.s.state == 'UNSAT'
 
+def test_ota():
+  with open( 'ota_placer_out.json', 'rt') as fp:
+    placer_results = json.load( fp)
+    print( placer_results)
+
+    [_,_,nx,ny] = placer_results['bbox']
+
+    def tr( p):
+      x,y = p
+      return x//3, y//3
+
+    g = Grid( *tr( (nx+2, ny+2)))
+
+    for term in placer_results['terminals']:
+      g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
+
+    g.semantic( max_capacity=4)
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+    g.cleanAntennas()
+
+    g.print_routes()
+    g.print_rasters()
+    g.genWires()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
+
+
 def ex_backward_xy():
     halfn = 2
     n = 2*halfn
@@ -534,4 +565,5 @@ def test_write_globalrouting_json_symmetric():
   ex_write_globalrouting_json( ex_river_routing(1,None))
 
 if __name__ == "__main__":
-  ex_write_globalrouting_json( ex_symmetric(1,1))
+#  ex_write_globalrouting_json( ex_symmetric(1,1))
+  test_ota()

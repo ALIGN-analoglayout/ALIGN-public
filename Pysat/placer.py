@@ -196,14 +196,56 @@ class CellTemplate:
         self.nm = nm
         self.terminals = OrderedDict()
         
+    def dumpJson( self, fp, tech):
+      
+      instances = []
+
+      for (k,ci) in self.instances.items():
+        instances.append( { "instance_name": k,
+                            "template_name": ci.template.nm,
+                            "transformation": { "oX" : ci.transformation.oX,
+                                                "oY" : ci.transformation.oY,
+                                                "sX" : ci.transformation.sX,
+                                                "sY" : ci.transformation.sX},
+                            "formal_actual_map": ci.fa_map})
+
+      terminals = []
+      for (net_nm,term_lst) in self.terminals.items():
+        for term in term_lst:
+          terminals.append( { "net_name": net_nm,
+                              "layer": "metal1",
+                              "rect": term.toList()})
+
+      for (k,ci) in self.instances.items():
+        for (net_nm,term_lst) in ci.template.terminals.items():
+          for term in term_lst:
+            r = ci.transformation.hitRect( term).canonical()
+            terminals.append( { "hier_name": k + '/' + net_nm,
+                                "net_name": ci.fa_map[net_nm],
+                                "layer": "metal1",
+                                "rect": r.toList()})
+
+      data = { "nm": self.nm,
+               "bbox": self.bbox.toList(),
+               "instances": instances,
+               "terminals": terminals}
+
+      fp.write( json.dumps( data, indent=2) + "\n")
+
+
     def addInstance( self, ci):
         self.instances[ci.nm] = ci
 
     def addTerminal( self, nm, r):
         if nm not in self.terminals: self.terminals[nm] = []
-        assert r.llx     == r.urx
-        assert r.lly + 1 == r.ury
-        self.terminals[nm].append( r)
+        assert r.llx == r.urx
+        assert r.lly <  r.ury
+        if False or r.lly + 1 == r.ury:
+          self.terminals[nm].append( r)
+        else:
+          for y in range( r.lly, r.ury):
+            rr = Rect( r.llx, y, r.urx, y+1)
+            self.terminals[nm].append( rr)
 
     def connect( self, i, p, n):
       self.instances[i].fa_map[p] = n
@@ -236,6 +278,10 @@ class CellTemplate:
         data = { "bbox" : self.bbox, "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
         fp.write( json.dumps( data, indent=2, default=lambda x: encode_T(tech,x)) + "\n")
+
+
+
+
 
 
 class CellLeaf(CellTemplate):
@@ -573,24 +619,24 @@ def test_hier():
 def test_ota():
 
     ndual = CellLeaf( "ndual", Rect(0,0,5,2))
-    ndual.addTerminal( "d1", Rect(0,0,0,1))
-    ndual.addTerminal( "g1", Rect(1,0,1,1))
-    ndual.addTerminal( "s1", Rect(2,0,2,1))
-    ndual.addTerminal( "s2", Rect(3,0,3,1))
-    ndual.addTerminal( "g2", Rect(4,0,4,1))
-    ndual.addTerminal( "d2", Rect(5,0,5,1))
+    ndual.addTerminal( "d1", Rect(0,0,0,2))
+    ndual.addTerminal( "g1", Rect(1,0,1,2))
+    ndual.addTerminal( "s1", Rect(2,0,2,2))
+    ndual.addTerminal( "s2", Rect(3,0,3,2))
+    ndual.addTerminal( "g2", Rect(4,0,4,2))
+    ndual.addTerminal( "d2", Rect(5,0,5,2))
 
     ndualss = CellLeaf( "ndualss", Rect(0,0,4,2))
-    ndualss.addTerminal( "d1", Rect(0,0,0,1))
-    ndualss.addTerminal( "g1", Rect(1,0,1,1))
-    ndualss.addTerminal( "s",  Rect(2,0,2,1))
-    ndualss.addTerminal( "g2", Rect(3,0,3,1))
-    ndualss.addTerminal( "d2", Rect(4,0,4,1))
+    ndualss.addTerminal( "d1", Rect(0,0,0,2))
+    ndualss.addTerminal( "g1", Rect(1,0,1,2))
+    ndualss.addTerminal( "s",  Rect(2,0,2,2))
+    ndualss.addTerminal( "g2", Rect(3,0,3,2))
+    ndualss.addTerminal( "d2", Rect(4,0,4,2))
 
     ncap = CellLeaf( "ncap", Rect(0,0,4,2))
-    ncap.addTerminal( "d1", Rect(0,0,0,1))
-    ncap.addTerminal( "s",  Rect(2,0,2,1))
-    ncap.addTerminal( "d2", Rect(4,0,4,1))
+    ncap.addTerminal( "d1", Rect(0,0,0,2))
+    ncap.addTerminal( "s",  Rect(2,0,2,2))
+    ncap.addTerminal( "d2", Rect(4,0,4,2))
 
     ota = CellHier( "ota")
 
@@ -642,8 +688,8 @@ def test_ota():
 
     ota.connect('L1_MM4_MM3','d1','net1')
 
-    nx = 13
-    ny = 4
+    nx = 11
+    ny = 6
 
     s = tally.Tally()
     r = Raster( s, ota, nx, ny)
@@ -698,6 +744,10 @@ def test_ota():
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
         ota.write_globalrouting_json( fp, tech)
+
+    with open( "ota_placer_out.json", "wt") as fp:
+        tech = Tech()
+        ota.dumpJson( fp, tech)
 
 if __name__ == "__main__":
 #    test_grid_hier()
