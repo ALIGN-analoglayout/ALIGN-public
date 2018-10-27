@@ -4,6 +4,16 @@
 docker build -t tally .
 ````
 
+# End to End flow
+
+````
+./flow.sh
+
+docker run --mount source=inputVol,target=/public/INPUT --rm -d -p 8085:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+````
+Then visit `localhost:8085`
+
+
 # Test
 
 ````
