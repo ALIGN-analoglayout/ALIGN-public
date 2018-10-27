@@ -5,7 +5,7 @@ docker build -t tally .
 ````
 
 # End to End flow
-
+The runs the OTA example, complete through placement, global routing, and then detailed routing.
 ````
 ./flow.sh
 
