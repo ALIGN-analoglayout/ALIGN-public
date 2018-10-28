@@ -72,8 +72,8 @@ class Grid:
       fp.write( json.dumps( data, indent=2) + "\n") 
 
     def addTerminal( self, net_nm, x, y):
-        if net_nm not in self.nets: self.nets[net_nm] = []
-        self.nets[net_nm].append( ( x, y))
+        if net_nm not in self.nets: self.nets[net_nm] = set()
+        self.nets[net_nm].add( ( x, y))
     
     def idx( self, x, y):
         return self.ny*x + y
@@ -141,6 +141,7 @@ class Grid:
         vly = "metal3"
 
         for (k,v) in self.nets.items():
+            v = list(set(v))
             if len(v) > 2:
               print( "Clipping net %s to 2 terminals (has %d)" % (k,len(v)))
               v = v[:2]
@@ -534,6 +535,42 @@ def test_ota():
         tech = Tech()      
         g.dumpJSON( fp, tech)
 
+def test_sc():
+  with open( 'sc_placer_out.json', 'rt') as fp:
+    placer_results = json.load( fp)
+    print( placer_results)
+
+    [_,_,nx,ny] = placer_results['bbox']
+
+    # the global router grid is twice the placer (ADT) grid
+    def tr( p):
+      x,y = p
+      return x//2, y//2
+
+    # add one to round up
+    g = Grid( *tr( (nx+1, ny+1)))
+
+    for term in placer_results['terminals']:
+      g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
+
+    g.semantic( max_capacity=3)
+    g.s.solve()
+    assert g.s.state == 'SAT'
+
+    g.cleanAntennas()
+
+    g.print_routes()
+    g.print_rasters()
+    g.genWires()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        g.write_globalrouting_json( fp, tech)
+
+    with open( "sc_global_router_out.json", "wt") as fp:
+        tech = Tech()      
+        g.dumpJSON( fp, tech)
+
 def ex_backward_xy():
     halfn = 2
     n = 2*halfn
@@ -575,4 +612,5 @@ def test_write_globalrouting_json_symmetric():
 
 if __name__ == "__main__":
 #  ex_write_globalrouting_json( ex_symmetric(1,1))
-  test_ota()
+#  test_ota()
+  test_sc()

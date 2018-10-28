@@ -3,6 +3,7 @@
 import tally
 import json
 from collections import OrderedDict
+import itertools
 
 """
 Placer problem:
@@ -453,7 +454,7 @@ Use tallys to constrain length
       return extent,tallys
 
 
-    def semantic( self):
+    def semantic( self, skipTerminals=False):
         self.ris = [ RasterInstance( self, inst) for inst in self.template.instances.values()]
 
         for x in range(self.nx):
@@ -468,11 +469,11 @@ Use tallys to constrain length
             if a not in self.nets: self.nets[a] = []
             self.nets[a].append( (inst,f))
 
-        self.addTerminalOverlapConstraints()
-
-        self.xExtents = {}
-        for (k,v) in self.nets.items():
-          self.xExtents[k] = self.addNetLengthConstraints( k)
+        if not skipTerminals:
+          self.addTerminalOverlapConstraints()
+          self.xExtents = {}
+          for (k,v) in self.nets.items():
+            self.xExtents[k] = self.addNetLengthConstraints( k)
 
         
     def solve( self):
@@ -512,16 +513,16 @@ Use tallys to constrain length
             return lim
 
 
-      other_nets = [ net_nm for net_nm in self.nets.keys() if net_nm not in priority_nets]
+      all_nets = [ x for lst in priority_nets for x in lst]
 
       limits_independent = []
-      for net_nm in priority_nets + other_nets:
+      for net_nm in all_nets:
         lim = findSmallest( net_nm)
         limits_independent.append( (net_nm, lim))
 
       limits_sequential2 = []
       accum = []
-      for net_nm in priority_nets + other_nets:
+      for net_nm in all_nets:
         lim = findSmallest( net_nm, accum) + 1
         limits_sequential2.append( (net_nm, lim))
         if lim < self.nx-1:
@@ -556,11 +557,11 @@ Use tallys to constrain length
         self.s.solve()
         assert self.s.state == 'SAT'
 
-      optimizeNetLength( 'priority', priority_nets)
-      optimizeNetLength( 'other', other_nets)
+      for (idx,lst) in enumerate(priority_nets):
+        optimizeNetLength( 'priority_%d' % idx, lst)
       
       limits_sequential = []
-      for net_nm in priority_nets + other_nets:
+      for net_nm in all_nets:
         lim = findSmallest( net_nm)
         limits_sequential.append( (net_nm, lim))
         if lim != self.nx:
@@ -841,7 +842,8 @@ def test_ota():
     assert s.state == 'SAT'
 
     priority_nets = ['net6', 'Vbiasn', 'Vbiasp1', 'Vbiasp2', 'Voutn', 'Voutp', 'net12', 'net13']
-    r.optimizeNets( priority_nets)
+    other_nets = [ n for n in r.nets.keys() if n not in priority_nets]
+    r.optimizeNets( [priority_nets,other_nets])
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
@@ -851,10 +853,191 @@ def test_ota():
         tech = Tech()
         ota.dumpJson( fp, tech)
 
+def test_sc():
+
+    ndev = CellLeaf( "ndev", Rect(0,0,2,2))
+    ndev.addTerminal( "d", Rect(0,0,0,2))
+    ndev.addTerminal( "g", Rect(1,0,1,2))
+    ndev.addTerminal( "s", Rect(2,0,2,2))
+
+    cc = CellLeaf( "cc", Rect(0,0,3,2))
+    cc.addTerminal( "cp1", Rect(0,0,0,2))
+    cc.addTerminal( "cn1", Rect(1,0,1,2))
+    cc.addTerminal( "cn2", Rect(2,0,2,2))
+    cc.addTerminal( "cp2", Rect(3,0,3,2))
+
+    ccbig = CellLeaf( "ccbig", Rect(0,0,5,2))
+    ccbig.addTerminal( "cp1", Rect(0,0,0,2))
+    ccbig.addTerminal( "cn1", Rect(1,0,1,2))
+    ccbig.addTerminal( "cn2", Rect(4,0,4,2))
+    ccbig.addTerminal( "cp2", Rect(5,0,5,2))
+
+    sc = CellHier( "sc")
+
+    sc.addInstance( CellInstance( "L0_MM0", ndev))
+    sc.addInstance( CellInstance( "L0_MM1", ndev))
+    sc.addInstance( CellInstance( "L0_MM2", ndev))
+    sc.addInstance( CellInstance( "L0_MM3", ndev))
+    sc.addInstance( CellInstance( "L0_MM4", ndev))
+    sc.addInstance( CellInstance( "L0_MM5", ndev))
+    sc.addInstance( CellInstance( "L0_MM6", ndev))
+    sc.addInstance( CellInstance( "L0_MM7", ndev))
+    sc.addInstance( CellInstance( "L0_MM8", ndev))
+
+    sc.addInstance( CellInstance( "L0_MM9", ndev))
+    sc.addInstance( CellInstance( "L0_MM10", ndev))
+    sc.addInstance( CellInstance( "L0_MM11", ndev))
+
+    sc.addInstance( CellInstance( "L1_CC5_CC7", cc))
+    sc.addInstance( CellInstance( "L1_CC4_CC6", ccbig))
+    sc.addInstance( CellInstance( "L1_CC1_CC3", ccbig))
+    sc.addInstance( CellInstance( "L1_CC0_CC2", ccbig))
+
+    sc.connect( 'L1_CC5_CC7', 'cp1', 'net23')
+    sc.connect( 'L1_CC0_CC2', 'cp1', 'net23')
+    sc.connect( 'L0_MM1', 's', 'net23')
+#    sc.connect( 'I0', 'Vinn', 'net23')
+
+    sc.connect( 'L0_MM0', 's', 'net3')
+    sc.connect( 'L0_MM10', 's', 'net3')
+    sc.connect( 'L1_CC4_CC6', 'cn1', 'net3')
+
+    sc.connect( 'L0_MM11', 's', 'net12')
+    sc.connect( 'L0_MM8', 'd', 'net12')
+    sc.connect( 'L1_CC1_CC3', 'cn2', 'net12')
+
+    sc.connect( 'L0_MM3', 'd', 'net7')
+    sc.connect( 'L1_CC5_CC7', 'cp2', 'net7')
+    sc.connect( 'L1_CC0_CC2', 'cp2', 'net7')
+#    sc.connect( 'I0', 'Vinp', 'net7')
+
+    sc.connect( 'L0_MM5', 'd', 'net5')
+    sc.connect( 'L0_MM3', 's', 'net5')
+    sc.connect( 'L1_CC4_CC6', 'cp2', 'net5')
+    sc.connect( 'L1_CC1_CC3', 'cp1', 'net5')
+
+    sc.connect( 'L0_MM9', 's', 'net6')
+    sc.connect( 'L0_MM1', 'd', 'net6')
+    sc.connect( 'L1_CC4_CC6', 'cp1', 'net6')
+    sc.connect( 'L1_CC1_CC3', 'cp2', 'net6')
+
+#    sc.connect( 'terminal Vbiasn', 'Vbiasn')
+#    sc.connect( 'I0', 'Vbiasn', 'Vbiasn')
+
+#    sc.connect( 'terminal Vbiasp1', 'Vbiasp1')
+#    sc.connect( 'I0', 'Vbiasp1', 'Vbiasp1')
+
+#    sc.connect( 'terminal Vbiasp2', 'Vbiasp2')
+#    sc.connect( 'I0', 'Vbiasp2', 'Vbiasp2')
+
+    sc.connect( 'L0_MM2', 's', 'Vinn')
+    sc.connect( 'L1_CC5_CC7', 'cn1', 'Vinn')
+#    sc.connect( 'terminal Vinn', 'Vinn')
+
+    sc.connect( 'L0_MM0', 'd', 'Vinp')
+    sc.connect( 'L1_CC5_CC7', 'cn2', 'Vinp')
+#    sc.connect( 'terminal Vinp', 'Vinp')
+
+    sc.connect( 'L0_MM7', 'd', 'Voutn')
+    sc.connect( 'L1_CC0_CC2', 'cn2', 'Voutn')
+#    sc.connect( 'I0', 'Voutn', 'Voutn')
+#    sc.connect( 'terminal Voutn', 'Voutn')
+
+    sc.connect( 'L0_MM8', 's', 'Voutp')
+    sc.connect( 'L1_CC0_CC2',  'cn1', 'Voutp')
+#    sc.connect( 'I0', 'Voutp', 'Voutp')
+#    sc.connect( 'terminal Voutp', 'Voutp')
+
+    sc.connect( 'L0_MM11', 'g', 'phi1')
+    sc.connect( 'L0_MM6', 'g', 'phi1')
+    sc.connect( 'L0_MM1', 'g', 'phi1')
+    sc.connect( 'L0_MM3', 'g', 'phi1')
+    sc.connect( 'L0_MM0', 'g', 'phi1')
+    sc.connect( 'L0_MM2', 'g', 'phi1')
+#    sc.connect( 'terminal phi1', 'phi1')
+
+    sc.connect( 'L0_MM2', 'd', 'net4')
+    sc.connect( 'L0_MM4', 'd', 'net4')
+    sc.connect( 'L1_CC4_CC6', 'cn2', 'net4')
+
+    sc.connect( 'L0_MM8', 'g', 'phi2')
+    sc.connect( 'L0_MM7', 'g', 'phi2')
+    sc.connect( 'L0_MM9', 'g', 'phi2')
+    sc.connect( 'L0_MM5', 'g', 'phi2')
+    sc.connect( 'L0_MM4', 'g', 'phi2')
+    sc.connect( 'L0_MM10', 'g', 'phi2')
+#    sc.connect( 'terminal phi2', 'phi2')
+
+#    sc.connect( 'I0', 'vdd!', 'vdd!')
+#    sc.connect( 'terminal vdd!', 'vdd!')
+
+#    sc.connect( 'terminal Id', 'Id')
+#    sc.connect( 'I0', 'Id', 'Id')
+
+    sc.connect( 'L0_MM11', 'd', 'gnd!')
+    sc.connect( 'L0_MM6', 's', 'gnd!')
+    sc.connect( 'L0_MM9', 'd', 'gnd!')
+    sc.connect( 'L0_MM5', 's', 'gnd!')
+    sc.connect( 'L0_MM4', 's', 'gnd!')
+    sc.connect( 'L0_MM10', 'd', 'gnd!')
+#    sc.connect( 'I0', 'gnd!', 'gnd!')
+#    sc.connect( 'terminal gnd!', 'gnd!')
+
+    sc.connect( 'L0_MM6', 'd', 'net11')
+    sc.connect( 'L0_MM7', 's', 'net11')
+    sc.connect( 'L1_CC1_CC3', 'cn1', 'net11')
+
+    nx = 16
+    ny = 10
+
+    sc.bbox = Rect( 0, 0, nx, ny)
+
+    s = tally.Tally()
+    r = Raster( s, sc, nx, ny)
+    r.semantic( skipTerminals=False)
+
+    for x in range(nx):
+      for y in range(ny):
+        for ri in r.ris:
+          s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+          s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+          s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+
+    #put a raft on the left and right
+    for x in [0,nx-1]:
+      for y in range(ny):
+        for ri in r.ris:
+          print( ri.ci.nm, x, y)
+          s.emit_never( ri.filled.var( r.idx( x, y)))
+
+    print( "First solve")
+    s.solve()
+    assert s.state == 'SAT'
+
+    priority_nets = ['net7','net23']
+    remaining_nets = [ n for n in r.nets.keys() if n not in priority_nets]
+
+    def chunk( it, size):
+      it = iter(it)
+      return iter( lambda: tuple(itertools.islice(it, size)), ())
+
+    groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
+
+    r.optimizeNets( [priority_nets] + groups)
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        sc.write_globalrouting_json( fp, tech)
+
+    with open( "sc_placer_out.json", "wt") as fp:
+        tech = Tech()
+        sc.dumpJson( fp, tech)
+
 if __name__ == "__main__":
 #  test_grid_hier()
 #  test_flat_hier()
 #  test_hier()
-  test_ota()
+  test_sc()
+#  test_ota()
 #  test_non_unit_pins()
 

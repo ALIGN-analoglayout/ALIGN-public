@@ -319,6 +319,7 @@ class Netlist:
     self.nets = OrderedDict()
     self.gidIndex = 0
     self.instances = OrderedDict()
+    self.wires = {}
 
   def dumpGR( self, tech, fn):
     with open( fn, "w") as fp:
@@ -360,18 +361,23 @@ class Netlist:
       fp.write( json.dumps( data, default=lambda x: encode_GR(tech,x)) + "\n")
 
   def newWire( self, netName, r, l):
-    w = Wire()
-    w.netName = netName
-    w.rect = r
-    w.layer = l
-    w.gid = self.gidIndex
-    self.gidIndex += 1
+    cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)
+    if cand not in self.wires:
+      w = Wire()
+      w.netName = netName
+      w.rect = r
+      w.layer = l
+      w.gid = self.gidIndex
+      self.gidIndex += 1
 
-    if netName not in self.nets:
-      self.nets[netName] = Net( netName)
+      if netName not in self.nets:
+        self.nets[netName] = Net( netName)
 
-    self.nets[netName].wires.append( w)
-
+      self.nets[netName].wires.append( w)
+      self.wires[cand] = w
+    else:
+      w = self.wires[cand]
+      
     return w
 
   def newGR( self, netName, r, l, w):
