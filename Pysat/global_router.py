@@ -195,6 +195,15 @@ class Grid:
 
         # check assumed mirroring about a vertical line
 
+        v0 = list(v0)
+        v1 = list(v1)
+
+        if v0[0][0] > v0[1][0]:
+          v0[0],v0[1] = v0[1],v0[0]
+
+        if v1[0][0] > v1[1][0]:
+          v1[0],v1[1] = v1[1],v1[0]
+
         # y coords the same
         assert v0[0][1] == v1[1][1] 
         assert v0[1][1] == v1[0][1] 
@@ -638,6 +647,6 @@ def test_write_globalrouting_json_symmetric():
   ex_write_globalrouting_json( ex_river_routing(1,None))
 
 if __name__ == "__main__":
-#  ex_write_globalrouting_json( ex_symmetric(1,1))
+  ex_write_globalrouting_json( ex_symmetric(1,1))
 #  test_ota()
-  test_sc()
+#  test_sc()
