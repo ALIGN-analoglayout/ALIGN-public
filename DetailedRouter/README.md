@@ -16,4 +16,7 @@ The following will run collateral generation for the three strawman processes:
 (cd DR_COLLATERAL_Generator/strawman1 && python3 ../gen.py)
 (cd DR_COLLATERAL_Generator/strawman2 && python3 ../gen.py)
 (cd DR_COLLATERAL_Generator/strawman3 && python3 ../gen.py)
+(cd DR_COLLATERAL_Generator/strawman1_ota && python3 ../gen.py)
+(cd DR_COLLATERAL_Generator/strawman2_ota && python3 ../gen.py)
+(cd DR_COLLATERAL_Generator/strawman3_ota && python3 ../gen.py)
 ````
