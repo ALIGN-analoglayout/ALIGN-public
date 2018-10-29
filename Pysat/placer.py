@@ -415,40 +415,78 @@ class Raster:
             self.s.emit_at_most_one( vector)
 
 
-    def addNetLengthConstraints( self, net_nm):
+    def addXNetLengthConstraints( self, net_nm):
       """
 Compute extent of net net_nm in X
 Returns a pair (bitvector of net extent and bitvector of tallys)
 Use tallys to constrain length
 """
 
-      bv = self.net_bvs[net_nm]
-      col_or = tally.BitVec( self.s, 'col_or_%s' % net_nm, self.nx+1)
-
       nx = self.nx
+
+      bv = self.net_bvs[net_nm]
+      col_or = tally.BitVec( self.s, 'x_col_or_%s' % net_nm, nx+1)
 
       for x in range(nx+1):
         self.s.emit_or( [ bv.var( self.idx( x, y)) for y in range(self.ny)], col_or.var( x))
 
-      lscan = tally.BitVec( self.s, 'lscan_%s' % net_nm, nx+1)
+      lscan = tally.BitVec( self.s, 'x_lscan_%s' % net_nm, nx+1)
       for x in range(nx+1):
         if x == 0:
           self.s.emit_or( [col_or.var( x)], lscan.var( x))
         else:
           self.s.emit_or( [col_or.var( x), lscan.var( x-1)], lscan.var( x))
 
-      rscan = tally.BitVec( self.s, 'rscan_%s' % net_nm, nx+1)
+      rscan = tally.BitVec( self.s, 'x_rscan_%s' % net_nm, nx+1)
       for x in range(nx+1):
         if x == 0:
           self.s.emit_or( [col_or.var( nx-x)], rscan.var( nx-x))
         else:
           self.s.emit_or( [col_or.var( nx-x), rscan.var( nx-(x-1))], rscan.var( nx-x))
 
-      extent = tally.BitVec( self.s, 'extent_%s' % net_nm, nx+1)
+      extent = tally.BitVec( self.s, 'x_extent_%s' % net_nm, nx+1)
       for x in range(nx+1):
         self.s.emit_and( [lscan.var(x), rscan.var(x)], extent.var( x))
 
       tallys = tally.BitVec( self.s, 'counts_%s' % net_nm, nx+1)
+      self.s.emit_tally( extent.vars, tallys.vars)
+
+      return extent,tallys
+
+    def addYNetLengthConstraints( self, net_nm):
+      """
+Compute extent of net net_nm in X
+Returns a pair (bitvector of net extent and bitvector of tallys)
+Use tallys to constrain length
+"""
+
+      ny = self.ny
+
+      bv = self.net_bvs[net_nm]
+      col_or = tally.BitVec( self.s, 'y_col_or_%s' % net_nm, ny+1)
+
+      for y in range(ny+1):
+        self.s.emit_or( [ bv.var( self.idx( x, y)) for x in range(self.nx)], col_or.var( y))
+
+      lscan = tally.BitVec( self.s, 'y_lscan_%s' % net_nm, ny+1)
+      for y in range(ny+1):
+        if y == 0:
+          self.s.emit_or( [col_or.var( y)], lscan.var( y))
+        else:
+          self.s.emit_or( [col_or.var( y), lscan.var( y-1)], lscan.var( y))
+
+      rscan = tally.BitVec( self.s, 'y_rscan_%s' % net_nm, ny+1)
+      for y in range(ny+1):
+        if y == 0:
+          self.s.emit_or( [col_or.var( ny-y)], rscan.var( ny-y))
+        else:
+          self.s.emit_or( [col_or.var( ny-y), rscan.var( ny-(y-1))], rscan.var( ny-y))
+
+      extent = tally.BitVec( self.s, 'y_extent_%s' % net_nm, ny+1)
+      for y in range(ny+1):
+        self.s.emit_and( [lscan.var(y), rscan.var(y)], extent.var( y))
+
+      tallys = tally.BitVec( self.s, 'y_counts_%s' % net_nm, ny+1)
       self.s.emit_tally( extent.vars, tallys.vars)
 
       return extent,tallys
@@ -473,7 +511,11 @@ Use tallys to constrain length
           self.addTerminalOverlapConstraints()
           self.xExtents = {}
           for (k,v) in self.nets.items():
-            self.xExtents[k] = self.addNetLengthConstraints( k)
+            self.xExtents[k] = self.addXNetLengthConstraints( k)
+
+#          self.yExtents = {}
+#          for (k,v) in self.nets.items():
+#            self.yExtents[k] = self.addYNetLengthConstraints( k)
 
         
     def solve( self):
@@ -503,16 +545,19 @@ Use tallys to constrain length
 
     def optimizeNets( self, priority_nets):
 
-      conf_limit = 20000000
-      prop_limit = 20000000
+      conf_limit = 50*1000*1000
+      prop_limit = 50*1000*1000
 
-      def findSmallest( net_nm, lst=[]):
+      def findSmallest( net_nm, lst=[], strict=False):
         self.s.solver.conf_budget( conf_limit)
         self.s.solver.prop_budget( prop_limit)
 
         for lim in range(self.nx,-1,-1):
           # if SAT, you can do it in < lim
-          self.s.solve_limited( [-self.xExtents[net_nm][1].var( lim)] + lst)
+          if strict:
+            self.s.solve( [-self.xExtents[net_nm][1].var( lim)] + lst)
+          else:
+            self.s.solve_limited( [-self.xExtents[net_nm][1].var( lim)] + lst)            
           if self.s.state == 'SAT':
             print( 'Can place %s with < %d x extent' % (net_nm,lim))
           elif self.s.state == 'UNKNOWN':
@@ -528,7 +573,7 @@ Use tallys to constrain length
       limits_sequential2 = []
       accum = []
       for net_nm in all_nets:
-        lim = findSmallest( net_nm, accum)
+        lim = findSmallest( net_nm, accum, strict=False)
         limits_sequential2.append( (net_nm, lim))
         if lim < self.nx-1:
           accum.append( -self.xExtents[net_nm][1].var( lim))
@@ -548,12 +593,13 @@ Use tallys to constrain length
               count += 1
         print( 'Total X length for %s nets' % tag, count)
 
-        netsOut = tally.BitVec( self.s, ('%s X' % tag), count)
-        self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count)])
+        netsOut = tally.BitVec( self.s, ('%s X' % tag), count+1)
+        self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count+1)])
 
         self.s.solver.conf_budget( conf_limit)
         self.s.solver.prop_budget( prop_limit)
 
+        result = None
         for lim in range(count-1,-1,-1):
           # if SAT, you can do it in < lim
           self.s.solve_limited( [-netsOut.var(lim)])
@@ -561,23 +607,30 @@ Use tallys to constrain length
             print( 'Can place %s nets with < %d total x extent' % (tag,lim))
           elif self.s.state == 'UNKNOWN':
             print( "Didn't wait to place %s nets with < %d total x extend" % (tag,lim))
+            result = lim + 1
             break
           else:
             print( 'Fails to place %s nets with < %d total x extend' % (tag,lim))
+            result = lim + 1
             break
         
-        self.s.emit_never( -netsOut.var(lim))
+        if result is not None and result < count+1:
+          self.s.emit_never( netsOut.var(result))
+
         self.s.solve()
         assert self.s.state == 'SAT'
 
       for (idx,lst) in enumerate(priority_nets):
         optimizeNetLength( 'priority_%d' % idx, lst)
       
+      conf_limit = 200*1000*1000
+      prop_limit = 200*1000*1000
+
       limits_sequential = []
       for net_nm in all_nets:
-        lim = findSmallest( net_nm)
+        lim = findSmallest( net_nm, strict=False)
         limits_sequential.append( (net_nm, lim))
-        if lim != self.nx-1:
+        if lim < self.nx-1:
           self.s.emit_never( self.xExtents[net_nm][1].var( lim))
 
       self.solve()
@@ -1034,8 +1087,9 @@ def test_sc():
 
     priority_nets_0 = ['net7','net23']
     priority_nets_1 = ['phi1','phi2']
-    priority_nets_set = set( priority_nets_0 + priority_nets_1)
-    remaining_nets = [ n for n in r.nets.keys() if n not in priority_nets_set]
+    power_nets = ['gnd!']
+    specified_nets = set( priority_nets_0 + priority_nets_1 + power_nets)
+    remaining_nets = [ n for n in r.nets.keys() if n not in specified_nets]
 
     def chunk( it, size):
       it = iter(it)
@@ -1043,7 +1097,7 @@ def test_sc():
 
     groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
 
-    r.optimizeNets( [priority_nets_0, priority_nets_1] + groups)
+    r.optimizeNets( [priority_nets_0, priority_nets_1] + groups + [power_nets])
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
