@@ -130,6 +130,19 @@ class Tally:
       for i in self.solver.get_model():
         self.h[i if i > 0 else -i] = i > 0
 
+  def solve_limited( self, assumptions=[]):
+    res = self.solver.solve_limited( assumptions=assumptions)
+    if res == True:
+      self.state = 'SAT'
+    elif res is None:
+      self.state = 'UNKNOWN'
+    else:
+      self.state = 'UNSAT'
+
+    if self.state == 'SAT':
+      for i in self.solver.get_model():
+        self.h[i if i > 0 else -i] = i > 0
+
   def add_var( self):
     self.nvars += 1
     return self.nvars

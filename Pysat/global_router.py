@@ -115,10 +115,15 @@ class Grid:
       assert self.s.state == 'SAT'
 
     def genMaxCapacityConstraints( self, max_capacity):
-      for x in range(self.nx):
-        for y in range(self.ny):
-          for ly in self.layers:
+      self.max_capacity_constraints = OrderedDict()
+      for ly in self.layers:
+        self.max_capacity_constraints[ly] = OrderedDict()
+        for x in range(self.nx):
+          for y in range(self.ny):
             outs_bv = tally.BitVec( self.s, 'cap_%s_%d_%d' % (ly,x,y), max_capacity+1)
+
+            self.max_capacity_constraints[ly][(x,y)] = outs_bv
+
             outs = [ outs_bv.var( i) for i in range(max_capacity+1)]
             inps = [ self.per_net_grid[k][ly].var( self.idx(x,y)) for k in self.nets.keys()]
             self.s.emit_tally( inps, outs)
@@ -142,45 +147,40 @@ class Grid:
 
         for (k,v) in self.nets.items():
             v = list(set(v))
-            if len(v) > 2:
-              print( "Clipping net %s to 2 terminals (has %d)" % (k,len(v)))
-              v = v[:2]
-            elif len(v) < 2:
-              continue
+            if len(v) < 2: continue
 
             self.routes[k] = []
 
-# step in x
-            x0,y0 = v[0]
-            x1,y1 = v[1]
+            minx = min( xy[0] for xy in v)
+            maxx = max( xy[0] for xy in v)
+            miny = min( xy[1] for xy in v)
+            maxy = max( xy[1] for xy in v)
 
-            if x0 > x1:
-                x0,y0,x1,y1 = x1,y1,x0,y0
-
-            for x in range(x0,x1+1):
+            # step in x
+            if minx < maxx:
+              for x in range(minx,maxx+1):
                 r = tally.BitVar( self.s, '%s_route_x_%d' % ( k, x))
                 self.routes[k].append( r)
 
-                if x != x0: self.emitWire( k, r, hly, x0, y0, x,  y0)
-                self.emitWire(             k, r, vly, x,  y0, x,  y1)
-                if x != x1: self.emitWire( k, r, hly, x,  y1, x1, y1)
+                self.emitWire( k, r, vly, x, miny, x, maxy)  # trunk
 
-# step in y
-            x0,y0 = v[0]
-            x1,y1 = v[1]
+                for (xx,yy) in v:  # stubs
+                  if x != xx:
+                    self.emitWire( k, r, hly, min(x,xx), yy, max(x,xx),  yy)
 
-            if y0 > y1:
-                x0,y0,x1,y1 = x1,y1,x0,y0
-
-            for y in range(y0,y1+1):
+            if miny < maxy:
+              for y in range(miny,maxy+1):
                 r = tally.BitVar( self.s, '%s_route_y_%d' % ( k, y))
                 self.routes[k].append( r)
 
-                if y != y0: self.emitWire( k, r, vly, x0, y0, x0, y)
-                self.emitWire(             k, r, hly, x0, y,  x1, y)
-                if y != y1: self.emitWire( k, r, vly, x1, y,  x1, y1)
+                self.emitWire( k, r, hly, minx, y, maxx, y)  # trunk
 
-            self.s.emit_at_least_one( [ bv.var() for bv in self.routes[k]])
+                for (xx,yy) in v:  # stubs
+                  if y != yy:
+                    self.emitWire( k, r, vly, xx, min(y,yy), xx, max(y,yy))
+
+            if self.routes[k]:
+              self.s.emit_at_least_one( [ bv.var() for bv in self.routes[k]])
 
 
     def genSymmetricRoutes( self, n0, n1):
@@ -282,6 +282,7 @@ class Grid:
         self.genSymmetricRoutes( items[0], items[1])
 
     def emitWire( self, k, r, ly, x0, y0, x1, y1):
+        print( "Call emitWire", k, ly, x0, x0, x1, y1)
         if x0 != x1:
             assert y0 == y1
             if x0 > x1: x0,x1 = x1,x0
@@ -553,10 +554,36 @@ def test_sc():
     for term in placer_results['terminals']:
       g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
 
-    g.semantic( max_capacity=3)
+    max_capacity=3
+    g.semantic( max_capacity=max_capacity)
     g.s.solve()
     assert g.s.state == 'SAT'
 
+    all_cap_bvs = OrderedDict()
+    for (ly,v) in g.max_capacity_constraints.items():
+      count = 0
+      all_bits = []
+      for ((x,y),vv) in v.items():
+        count += sum( (1 if vv.val( i) is True else 0) for i in range(max_capacity+1))
+        all_bits += [vv.var( i) for i in range(max_capacity)]
+      print( "count:", count)
+
+      all_cap_bvs[ly] = tally.BitVec( g.s, 'all_cap_%s' % ly, count+1)
+      g.s.emit_tally( all_bits, [all_cap_bvs[ly].var( i) for i in range(count+1)])
+
+    
+    for (ly,v) in all_cap_bvs.items():
+      for lim in range( v.n-1, -1, -1):
+        print( "Trying to do with <", lim, "in layer", ly)
+        g.s.solve( [-v.var( lim)])
+        if g.s.state == 'UNSAT':
+          print( "Can't do with <", lim, "in layer", ly)
+          if lim < v.n-1:
+            g.s.emit_never( v.var( lim+1))
+          break
+        else:
+          print( "Can do with <", lim, "in layer", ly)
+          
     g.cleanAntennas()
 
     g.print_routes()

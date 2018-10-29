@@ -10,6 +10,7 @@ ROUTERVOL=routerStrawman
 SKIPROUTER=NO
 SKIPGENERATE=NO
 SKIPVIEWER=NO
+SHOWGLOBALROUTES=""
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -64,6 +65,10 @@ case $key in
     SKIPVIEWER=YES
     shift # past argument
     ;;
+    -sgr|--show_global_routes)
+    SHOWGLOBALROUTES=" --show_global_routes"
+    shift # past value
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
@@ -96,7 +101,7 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 	docker volume rm ${INPUTVOL}
     fi
     docker volume rm ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign --route${SHOWGLOBALROUTES}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then

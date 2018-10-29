@@ -282,7 +282,7 @@ class CellTemplate:
             r = inst.transformation.hitRect( inst.template.bbox)
             for (k,v) in inst.template.terminals.items():
               for term in v:
-                nm = self.nm + '/' + inst.nm + '/' + k + ':' + inst.fa_map[k]
+                nm = inst.fa_map[k] + ':' + inst.nm + '/' + k
                 terminals.append( Terminal( nm, "metal1", inst.transformation.hitRect( term).canonical()))
 
         grGrid = []
@@ -502,34 +502,41 @@ Use tallys to constrain length
 
 
     def optimizeNets( self, priority_nets):
+
+      conf_limit = 20000000
+      prop_limit = 20000000
+
       def findSmallest( net_nm, lst=[]):
+        self.s.solver.conf_budget( conf_limit)
+        self.s.solver.prop_budget( prop_limit)
+
         for lim in range(self.nx,-1,-1):
           # if SAT, you can do it in < lim
-          self.s.solve( [-self.xExtents[net_nm][1].var( lim)] + lst)
+          self.s.solve_limited( [-self.xExtents[net_nm][1].var( lim)] + lst)
           if self.s.state == 'SAT':
-            print( 'Can route %s with < %d x extent' % (net_nm,lim))
+            print( 'Can place %s with < %d x extent' % (net_nm,lim))
+          elif self.s.state == 'UNKNOWN':
+            print( "Didn't wait to place %s with < %d x extent" % (net_nm,lim))
+            return lim+1
           else:
-            print( 'Fails to route %s with < %d x extend' % (net_nm,lim))
-            return lim
+            print( 'Fails to place %s with < %d x extent' % (net_nm,lim))
+            return lim+1
 
 
       all_nets = [ x for lst in priority_nets for x in lst]
 
-      limits_independent = []
-      for net_nm in all_nets:
-        lim = findSmallest( net_nm)
-        limits_independent.append( (net_nm, lim))
-
       limits_sequential2 = []
       accum = []
       for net_nm in all_nets:
-        lim = findSmallest( net_nm, accum) + 1
+        lim = findSmallest( net_nm, accum)
         limits_sequential2.append( (net_nm, lim))
         if lim < self.nx-1:
           accum.append( -self.xExtents[net_nm][1].var( lim))
 
       self.s.solve( accum)
       assert self.s.state == 'SAT'
+
+
 
       def optimizeNetLength( tag, nets):
         count = 0
@@ -544,13 +551,19 @@ Use tallys to constrain length
         netsOut = tally.BitVec( self.s, ('%s X' % tag), count)
         self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count)])
 
+        self.s.solver.conf_budget( conf_limit)
+        self.s.solver.prop_budget( prop_limit)
+
         for lim in range(count-1,-1,-1):
           # if SAT, you can do it in < lim
-          self.s.solve( [-netsOut.var(lim)])
+          self.s.solve_limited( [-netsOut.var(lim)])
           if self.s.state == 'SAT':
-            print( 'Can route %s nets with < %d total x extent' % (tag,lim))
+            print( 'Can place %s nets with < %d total x extent' % (tag,lim))
+          elif self.s.state == 'UNKNOWN':
+            print( "Didn't wait to place %s nets with < %d total x extend" % (tag,lim))
+            break
           else:
-            print( 'Fails to route %s nets with < %d total x extend' % (tag,lim))
+            print( 'Fails to place %s nets with < %d total x extend' % (tag,lim))
             break
         
         self.s.emit_never( -netsOut.var(lim))
@@ -564,12 +577,11 @@ Use tallys to constrain length
       for net_nm in all_nets:
         lim = findSmallest( net_nm)
         limits_sequential.append( (net_nm, lim))
-        if lim != self.nx:
-          self.s.emit_never( self.xExtents[net_nm][1].var( lim+1))
+        if lim != self.nx-1:
+          self.s.emit_never( self.xExtents[net_nm][1].var( lim))
 
       self.solve()
 
-      print( 'independent', limits_independent)
       print( 'sequential2', limits_sequential2)
       print( 'sequential', limits_sequential)
 
@@ -987,7 +999,7 @@ def test_sc():
     sc.connect( 'L0_MM7', 's', 'net11')
     sc.connect( 'L1_CC1_CC3', 'cn1', 'net11')
 
-    nx = 16
+    nx = 14
     ny = 10
 
     sc.bbox = Rect( 0, 0, nx, ny)
@@ -999,9 +1011,15 @@ def test_sc():
     for x in range(nx):
       for y in range(ny):
         for ri in r.ris:
-          s.emit_never( ri.anchorMX.var( r.idx( x,y)))
-          s.emit_never( ri.anchorMY.var( r.idx( x,y)))
-          s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          if x % 2 == 1:
+            s.emit_never( ri.anchor.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          else:
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+#            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
 
     #put a raft on the left and right
     for x in [0,nx-1]:
@@ -1014,8 +1032,10 @@ def test_sc():
     s.solve()
     assert s.state == 'SAT'
 
-    priority_nets = ['net7','net23']
-    remaining_nets = [ n for n in r.nets.keys() if n not in priority_nets]
+    priority_nets_0 = ['net7','net23']
+    priority_nets_1 = ['phi1','phi2']
+    priority_nets_set = set( priority_nets_0 + priority_nets_1)
+    remaining_nets = [ n for n in r.nets.keys() if n not in priority_nets_set]
 
     def chunk( it, size):
       it = iter(it)
@@ -1023,7 +1043,7 @@ def test_sc():
 
     groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
 
-    r.optimizeNets( [priority_nets] + groups)
+    r.optimizeNets( [priority_nets_0, priority_nets_1] + groups)
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
