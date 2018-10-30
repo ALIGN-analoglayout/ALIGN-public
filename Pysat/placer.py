@@ -1122,7 +1122,7 @@ if __name__ == "__main__":
 #  test_grid_hier()
 #  test_flat_hier()
 #  test_hier()
-  test_sc()
-#  test_ota()
+#  test_sc()
+  test_ota()
 #  test_non_unit_pins()
 

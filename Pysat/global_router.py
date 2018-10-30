@@ -648,5 +648,5 @@ def test_write_globalrouting_json_symmetric():
 
 if __name__ == "__main__":
 #  ex_write_globalrouting_json( ex_symmetric(1,1))
-#  test_ota()
-  test_sc()
+  test_ota()
+#  test_sc()
