@@ -37,7 +37,7 @@ This was tried using WSL (Windows Subsystem for Linux) on a Win 10 Pro machine. 
 
 The docker build command is:
 ````bash
-docker build -f Dockerfile.build.python -t with_python .
+docker build -f Dockerfile.build.python -t with_python_protobuf .
 ````
 
 To run a python example, try:
