@@ -37,11 +37,11 @@ This was tried using WSL (Windows Subsystem for Linux) on a Win 10 Pro machine. 
 
 The docker build command is:
 ````bash
-docker build -f Dockerfile.build.python -t with_python_protobuf .
+docker build -f Dockerfile.build.python -t with_python .
 ````
 
 To run a python example, try:
 ```bash
 tar cvf - src | docker run --rm --mount source=srcVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
-docker run --rm --mount source=srcVol,target=/vol -t with_python_protobuf bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
+docker run --rm --mount source=srcVol,target=/vol -t with_python bash -c "source /sympy/bin/activate && cd /vol/src/call-c-from-python  && python setup.py build && python setup.py install && pytest"
 ````
