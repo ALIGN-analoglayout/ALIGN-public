@@ -2,7 +2,7 @@
 
 Currently reads a JSON file named /public/INPUT/mydesign_dr_globalrouting.json (need to change this.)
 
-To build in docker, build upon "with_python_protobuf" (see the Build/ subdirectory):
+To build in docker, build upon "with_python" (see the Build/ subdirectory):
 
 ````bash
 docker build -t viewer_image .
@@ -10,7 +10,7 @@ docker build -t viewer_image .
 
 To run using docker, try:
 ````bash
-docker run -d -p 8000:8000 viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
+docker run -p 8000:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 ````
 Then connect your browser (Chrome) to the server using localhost:8000.
 If you want to use a different port number modify the docker command line argument.
