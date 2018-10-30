@@ -513,9 +513,9 @@ Use tallys to constrain length
           for (k,v) in self.nets.items():
             self.xExtents[k] = self.addXNetLengthConstraints( k)
 
-#          self.yExtents = {}
-#          for (k,v) in self.nets.items():
-#            self.yExtents[k] = self.addYNetLengthConstraints( k)
+          self.yExtents = {}
+          for (k,v) in self.nets.items():
+            self.yExtents[k] = self.addYNetLengthConstraints( k)
 
         
     def solve( self):
@@ -548,40 +548,44 @@ Use tallys to constrain length
       conf_limit = 50*1000*1000
       prop_limit = 50*1000*1000
 
-      def findSmallest( net_nm, lst=[], strict=False):
+      def findSmallestX( net_nm, lst=[], strict=False):
         self.s.solver.conf_budget( conf_limit)
         self.s.solver.prop_budget( prop_limit)
 
         for lim in range(self.nx,-1,-1):
-          # if SAT, you can do it in < lim
           if strict:
             self.s.solve( [-self.xExtents[net_nm][1].var( lim)] + lst)
           else:
             self.s.solve_limited( [-self.xExtents[net_nm][1].var( lim)] + lst)            
           if self.s.state == 'SAT':
-            print( 'Can place %s with < %d x extent' % (net_nm,lim))
+            print( 'Can place with %s < %d x extent' % (net_nm,lim))
           elif self.s.state == 'UNKNOWN':
-            print( "Didn't wait to place %s with < %d x extent" % (net_nm,lim))
+            print( "Didn't wait to place with %s < %d x extent" % (net_nm,lim))
             return lim+1
           else:
-            print( 'Fails to place %s with < %d x extent' % (net_nm,lim))
+            print( 'Fails to place with %s < %d x extent' % (net_nm,lim))
+            return lim+1
+
+      def findSmallestY( net_nm, lst=[], strict=False):
+        self.s.solver.conf_budget( conf_limit)
+        self.s.solver.prop_budget( prop_limit)
+
+        for lim in range(self.ny,-1,-1):
+          if strict:
+            self.s.solve( [-self.yExtents[net_nm][1].var( lim)] + lst)
+          else:
+            self.s.solve_limited( [-self.yExtents[net_nm][1].var( lim)] + lst)            
+          if self.s.state == 'SAT':
+            print( 'Can place with %s < %d y extent' % (net_nm,lim))
+          elif self.s.state == 'UNKNOWN':
+            print( "Didn't wait to place with %s < %d y extent" % (net_nm,lim))
+            return lim+1
+          else:
+            print( 'Fails to place with %s < %d y extent' % (net_nm,lim))
             return lim+1
 
 
       all_nets = [ x for lst in priority_nets for x in lst]
-
-      limits_sequential2 = []
-      accum = []
-      for net_nm in all_nets:
-        lim = findSmallest( net_nm, accum, strict=False)
-        limits_sequential2.append( (net_nm, lim))
-        if lim < self.nx-1:
-          accum.append( -self.xExtents[net_nm][1].var( lim))
-
-      self.s.solve( accum)
-      assert self.s.state == 'SAT'
-
-
 
       def optimizeNetLength( tag, nets):
         count = 0
@@ -589,9 +593,11 @@ Use tallys to constrain length
         for net_nm in nets:
           for x in range(self.nx):
             netsInp.append( self.xExtents[net_nm][0].var( x))
-            if self.xExtents[net_nm][0].val( x) is True:
-              count += 1
-        print( 'Total X length for %s nets' % tag, count)
+            if self.xExtents[net_nm][0].val( x) is True: count += 1
+          for y in range(self.ny):              
+            netsInp.append( self.xExtents[net_nm][0].var( y))
+            if self.yExtents[net_nm][0].val( y) is True: count += 1
+        print( 'Total X and Y length for %s nets' % tag, count)
 
         netsOut = tally.BitVec( self.s, ('%s X' % tag), count+1)
         self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count+1)])
@@ -604,13 +610,13 @@ Use tallys to constrain length
           # if SAT, you can do it in < lim
           self.s.solve_limited( [-netsOut.var(lim)])
           if self.s.state == 'SAT':
-            print( 'Can place %s nets with < %d total x extent' % (tag,lim))
+            print( 'Can place with %s nets < %d total xy extent' % (tag,lim))
           elif self.s.state == 'UNKNOWN':
-            print( "Didn't wait to place %s nets with < %d total x extend" % (tag,lim))
+            print( "Didn't wait to place with %s nets < %d total xy extent" % (tag,lim))
             result = lim + 1
             break
           else:
-            print( 'Fails to place %s nets with < %d total x extend' % (tag,lim))
+            print( 'Fails to place with %s nets < %d total xy extent' % (tag,lim))
             result = lim + 1
             break
         
@@ -628,14 +634,20 @@ Use tallys to constrain length
 
       limits_sequential = []
       for net_nm in all_nets:
-        lim = findSmallest( net_nm, strict=False)
-        limits_sequential.append( (net_nm, lim))
+        lim = findSmallestX( net_nm, strict=False)
         if lim < self.nx-1:
           self.s.emit_never( self.xExtents[net_nm][1].var( lim))
+        limx = lim
+
+        lim = findSmallestY( net_nm, strict=False)
+        if lim < self.nx-1:
+          self.s.emit_never( self.yExtents[net_nm][1].var( lim))
+        limy = lim
+
+        limits_sequential.append( (net_nm, limx, limy))
 
       self.solve()
 
-      print( 'sequential2', limits_sequential2)
       print( 'sequential', limits_sequential)
 
 
@@ -1052,8 +1064,8 @@ def test_sc():
     sc.connect( 'L0_MM7', 's', 'net11')
     sc.connect( 'L1_CC1_CC3', 'cn1', 'net11')
 
-    nx = 14
-    ny = 10
+    nx = 16
+    ny = 12
 
     sc.bbox = Rect( 0, 0, nx, ny)
 
@@ -1071,7 +1083,6 @@ def test_sc():
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
           else:
             s.emit_never( ri.anchorMX.var( r.idx( x,y)))
-#            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
 
     #put a raft on the left and right
