@@ -10,17 +10,14 @@ docker build -t viewer_image .
 
 To run using docker, try:
 ````bash
-docker run -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
+docker run -d -p 8000:8000 viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 ````
 Then connect your browser (Chrome) to the server using localhost:8000.
-If you want to use a different port number (not 8000), you can either start the server on a different port:
-````bash
-docker run -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server 8081"
-````
-or map the ports using a docker command line argument.
+If you want to use a different port number modify the docker command line argument.
 ````bash
 docker run -p 8081:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate; cd /public; python -m http.server"
 ````
+Then connect your browser (Chrome) to the server using localhost:8081.
 
 This runs with the example JSON file.
 To mount a different JSON, mount a Docker volume on top of /public/INPUT.
@@ -35,4 +32,4 @@ cd larger_example
 tar cvf - mydesign_dr_globalrouting.json | docker run --mount source=myJSONVol,target=/vol -i ubuntu bash -c "cd /vol; tar xvf -"
 ````
 
-Use docker stop and docker rm to remove these servers when you are done.
+Use `docker stop` and `docker rm` to remove these servers when you are done.
