@@ -5,6 +5,8 @@ import json
 from collections import OrderedDict
 import itertools
 
+from transformation import Rect, Transformation, Tech
+
 """
 Placer problem:
 There is an ADT grid.
@@ -79,92 +81,6 @@ or like this (3 adjacent N rows not in grid):
 +---v---++---v---+
 """
 
-class Tech:
-# Mock the tech file to temporarily simplify integration
-  def __init__( self):
-      self.halfXADTGrid = 1
-      self.halfYADTGrid = 1
-      self.pitchPoly   = 720
-      self.pitchDG     = 720
-      self.verticalMetals = ["metal1","metal3","metal5"]
-      self.horizontalMetals = ["metal2","metal4"]
-
-class Rect:
-  def __init__( self, llx=None, lly=None, urx=None, ury=None):
-      self.llx = llx
-      self.lly = lly
-      self.urx = urx
-      self.ury = ury
-
-  def canonical( self):
-      [llx,lly,urx,ury] = self.toList()
-      if llx > urx: llx,urx = urx,llx
-      if lly > ury: lly,ury = ury,lly
-      return Rect( llx,lly,urx,ury)
-
-  def toList( self):
-      return [self.llx, self.lly, self.urx, self.ury]
-
-  def __repr__( self):
-    return str(self.toList())
-
-class Transformation:
-    def __init__( self, oX=0, oY=0, sX=1, sY=1):
-        self.oX = oX
-        self.oY = oY
-        self.sX = sX
-        self.sY = sY
-
-    def hit( self, p):
-        x,y = p
-        return self.sX * x + self.oX, self.sY * y + self.oY
-
-    def hitRect( self, r):
-        llx,lly = self.hit( (r.llx, r.lly))
-        urx,ury = self.hit( (r.urx, r.ury))
-        return Rect( llx, lly, urx, ury)
-
-    @staticmethod
-    def mult( A, B):
-        # A.sX 0    A.oX     B.sX 0    B.oX
-        # 0    A.sY A.oY     0    B.sY B.oY
-        # 0    0    1        0    0    1
-        C = Transformation()
-        C.sX = A.sX * B.sX
-        C.sY = A.sY * B.sY
-        C.oX = A.sX * B.oX + A.oX
-        C.oY = A.sY * B.oY + A.oY
-        return C
-
-    def preMult( self, A):
-      return self.__class__.mult( A, self)
-
-    def postMult( self, A):
-      return self.__class__.mult( self, A)
-
-def test_transformation_hit0():
-    t = Transformation( 0, 10)
-    assert (0,10) == t.hit( (0,0))
-
-def test_transformation_hit1():
-    t = Transformation( 0, 10, 1, -1)
-    assert (0,0) == t.hit( (0,10))
-
-def test_transformation_Mult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (Transformation.mult( b, a)).hit( (0,0))
-
-def test_transformation_preMult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (a.preMult(b)).hit( (0,0))
-
-def test_transformation_postMult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (b.postMult(a)).hit( (0,0))
-
 class Terminal:
   def __init__( self, nm, layer, r):
     self.nm = nm
@@ -172,20 +88,17 @@ class Terminal:
     self.r = r
 
 def encode_T( tech, obj):
+  globalTrans = Transformation( 0, 0, tech.pitchPoly*tech.halfXADTGrid*2, tech.pitchDG*tech.halfYADTGrid*2)
+
   if isinstance(obj, Rect):
-    r = Rect()
-    r.llx = tech.pitchPoly*tech.halfXADTGrid*2*obj.llx
-    r.urx = tech.pitchPoly*tech.halfXADTGrid*2*obj.urx
-    r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.lly
-    r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.ury 
-    return r.toList()
+    return globalTrans.hitRect( obj).toList()
   elif isinstance(obj, Terminal):
     if obj.layer == 'metal1':
-      r = Rect()
-      r.llx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.llx - 200
-      r.urx = tech.pitchPoly*tech.halfXADTGrid*2*obj.r.urx + 200
-      r.lly = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.lly + 360
-      r.ury = tech.pitchDG  *tech.halfYADTGrid*2*obj.r.ury - 360
+      r = globalTrans.hitRect( obj.r)
+      r.llx -= 200
+      r.urx += 200
+      r.lly += 360
+      r.ury -= 360
       return { "netName" : obj.nm, "layer" : obj.layer, "rect" : r.toList()}
     else:
       raise TypeError(repr(obj) + (" is not JSON serializable. Unknown terminal layer %s" % obj.layer))
@@ -233,10 +146,17 @@ class CellTemplate:
                               "layer": "metal1",
                               "rect": term.toList()})
 
+
+
       for (k,ci) in self.instances.items():
         for (net_nm,term_lst) in ci.template.terminals.items():
           for term in term_lst:
-            r = ci.transformation.hitRect( term).canonical()
+            tr = ci.transformation
+            r = tr.hitRect( term).canonical()
+
+            assert self.bbox.llx <= r.llx and r.urx <= self.bbox.urx, (self.bbox, k, net_nm, r, term, tr)
+            assert self.bbox.lly <= r.lly and r.ury <= self.bbox.ury, (self.bbox, k, net_nm, r, term, tr)
+
             terminals.append( { "hier_name": k + '/' + net_nm,
                                 "net_name": ci.fa_map[net_nm],
                                 "layer": "metal1",
@@ -258,6 +178,12 @@ class CellTemplate:
 
     def addTerminal( self, nm, r):
         if nm not in self.terminals: self.terminals[nm] = []
+
+        assert self.bbox.llx <= r.llx
+        assert self.bbox.lly <= r.lly
+        assert r.urx <= self.bbox.urx
+        assert r.ury <= self.bbox.ury
+
         assert r.llx == r.urx
         assert r.lly < r.ury
         self.terminals[nm].append( r)
@@ -595,7 +521,7 @@ Use tallys to constrain length
             netsInp.append( self.xExtents[net_nm][0].var( x))
             if self.xExtents[net_nm][0].val( x) is True: count += 1
           for y in range(self.ny):              
-            netsInp.append( self.xExtents[net_nm][0].var( y))
+            netsInp.append( self.yExtents[net_nm][0].var( y))
             if self.yExtents[net_nm][0].val( y) is True: count += 1
         print( 'Total X and Y length for %s nets' % tag, count)
 
@@ -626,6 +552,22 @@ Use tallys to constrain length
         self.s.solve()
         assert self.s.state == 'SAT'
 
+        # diagnositcs
+        sum = 0
+        for net_nm in nets:
+          xcount = 0
+          for x in range(self.nx):
+            if self.xExtents[net_nm][0].val(x):
+              xcount += 1
+          ycount = 0
+          for y in range(self.ny):
+            if self.yExtents[net_nm][0].val(y):
+              ycount += 1
+          print( tag, net_nm, xcount, ycount)
+          sum += xcount + ycount
+        print( tag, "total", sum)
+
+
       for (idx,lst) in enumerate(priority_nets):
         optimizeNetLength( 'priority_%d' % idx, lst)
       
@@ -640,7 +582,7 @@ Use tallys to constrain length
         limx = lim
 
         lim = findSmallestY( net_nm, strict=False)
-        if lim < self.nx-1:
+        if lim < self.ny-1:
           self.s.emit_never( self.yExtents[net_nm][1].var( lim))
         limy = lim
 
@@ -899,8 +841,125 @@ def test_ota():
  
     ota.connect('L1_MM4_MM3','d1','net1')
 
-    nx = 13
-    ny = 6
+    nx = 8
+    ny = 12
+
+    ota.bbox = Rect( 0, 0, nx, ny)
+
+    s = tally.Tally()
+    r = Raster( s, ota, nx, ny)
+    r.semantic()
+
+    for x in range(nx):
+      for y in range(ny):
+        for ri in r.ris:
+          if y % 2 == 1:
+            s.emit_never( ri.anchor.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          else:
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+
+    #put a raft on the left and right
+    for x in [0,nx-1]:
+      for y in range(ny):
+        for ri in r.ris:
+          print( ri.ci.nm, x, y)
+          s.emit_never( ri.filled.var( r.idx( x, y)))
+
+    s.solve()
+    assert s.state == 'SAT'
+
+    priority0_nets = ['net6', 'Voutn', 'Voutp', 'net12', 'net13']
+    priority1_nets = ['Vbiasn', 'Vbiasp1', 'Vbiasp2']
+    mentioned_nets = set( priority0_nets + priority1_nets)
+    other_nets = [ n for n in r.nets.keys() if n not in mentioned_nets]
+    r.optimizeNets( [priority0_nets,priority1_nets,other_nets])
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        ota.write_globalrouting_json( fp, tech)
+
+    with open( "ota_placer_out.json", "wt") as fp:
+        tech = Tech()
+        ota.dumpJson( fp, tech)
+
+def test_ota_bigger():
+
+    ndual = CellLeaf( "ndual", Rect(0,0,10,4))
+    ndual.addTerminal( "d1", Rect(0,0,0,4))
+    ndual.addTerminal( "g1", Rect(2,0,2,4))
+    ndual.addTerminal( "s1", Rect(4,0,4,4))
+    ndual.addTerminal( "s2", Rect(6,0,6,4))
+    ndual.addTerminal( "g2", Rect(8,0,8,4))
+    ndual.addTerminal( "d2", Rect(10,0,10,4))
+
+    ndualss = CellLeaf( "ndualss", Rect(0,0,8,4))
+    ndualss.addTerminal( "d1", Rect(0,0,0,4))
+    ndualss.addTerminal( "g1", Rect(2,0,2,4))
+    ndualss.addTerminal( "s",  Rect(4,0,4,4))
+    ndualss.addTerminal( "g2", Rect(6,0,6,4))
+    ndualss.addTerminal( "d2", Rect(8,0,8,4))
+
+    ncap = CellLeaf( "ncap", Rect(0,0,8,4))
+    ncap.addTerminal( "d1", Rect(0,0,0,4))
+    ncap.addTerminal( "s",  Rect(4,0,4,4))
+    ncap.addTerminal( "d2", Rect(8,0,8,4))
+
+    ota = CellHier( "ota")
+
+    ota.addInstance( CellInstance( "L1_MM4_MM3", ncap))
+    ota.addInstance( CellInstance( "L1_MM1_MM0", ndualss))
+
+    ota.addInstance( CellInstance( "L1_MM9_MM8", ndual))
+    ota.addInstance( CellInstance( "L1_MM7_MM6", ndual))
+    ota.addInstance( CellInstance( "L1_MM10_MM2", ndual))
+
+    ota.connect('L1_MM1_MM0','g1','Vinp')
+
+    ota.connect('L1_MM7_MM6','s1','net13')
+    ota.connect('L1_MM9_MM8','d1','net13')
+
+    ota.connect('L1_MM7_MM6','d2','Voutp')
+    ota.connect('L1_MM10_MM2','d2','Voutp')
+
+    ota.connect('L1_MM7_MM6','d1','Voutn')
+    ota.connect('L1_MM10_MM2','d1','Voutn')
+
+    ota.connect('L1_MM10_MM2','s1','net10')
+    ota.connect('L1_MM1_MM0','d1','net10')
+
+    ota.connect('L1_MM9_MM8','s1','vdd!')
+    ota.connect('L1_MM9_MM8','s2','vdd!')
+
+    ota.connect('L1_MM10_MM2','g1','Vbiasn')
+    ota.connect('L1_MM10_MM2','g2','Vbiasn')
+
+    ota.connect('L1_MM10_MM2','s2','net11')
+    ota.connect('L1_MM1_MM0','d2','net11')
+    
+    ota.connect('L1_MM9_MM8','g1','Vbiasp2')
+    ota.connect('L1_MM9_MM8','g2','Vbiasp2')
+
+    ota.connect('L1_MM7_MM6','g1','Vbiasp1')
+    ota.connect('L1_MM7_MM6','g2','Vbiasp1')
+
+    ota.connect('L1_MM4_MM3','s','gnd!')
+
+    ota.connect('L1_MM7_MM6','s2','net12')
+    ota.connect('L1_MM9_MM8','d2','net12')
+
+    ota.connect('L1_MM1_MM0','s','net6')
+    ota.connect('L1_MM4_MM3','d2','net6')
+
+    ota.connect('L1_MM1_MM0','g2','Vinn')
+ 
+    ota.connect('L1_MM4_MM3','d1','net1')
+
+    nx = 12
+    ny = 24
 
     ota.bbox = Rect( 0, 0, nx, ny)
 
@@ -915,18 +974,32 @@ def test_ota():
           print( ri.ci.nm, x, y)
           s.emit_never( ri.filled.var( r.idx( x, y)))
 
+    for x in range(nx):
+      for y in range(ny):
+        for ri in r.ris:
+          if y % 4 != 0:
+            s.emit_never( ri.anchor.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          else:
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+
     s.solve()
     assert s.state == 'SAT'
 
-    priority_nets = ['net6', 'Vbiasn', 'Vbiasp1', 'Vbiasp2', 'Voutn', 'Voutp', 'net12', 'net13']
-    other_nets = [ n for n in r.nets.keys() if n not in priority_nets]
-    r.optimizeNets( [priority_nets,other_nets])
+    priority0_nets = ['net6', 'Voutn', 'Voutp', 'net12', 'net13']
+    priority1_nets = ['Vbiasn', 'Vbiasp1', 'Vbiasp2']
+    mentioned_nets = set( priority0_nets + priority1_nets)
+    other_nets = [ n for n in r.nets.keys() if n not in mentioned_nets]
+    r.optimizeNets( [priority0_nets,priority1_nets,other_nets])
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
         ota.write_globalrouting_json( fp, tech)
 
-    with open( "ota_placer_out.json", "wt") as fp:
+    with open( "ota_bigger_placer_out.json", "wt") as fp:
         tech = Tech()
         ota.dumpJson( fp, tech)
 
@@ -1076,7 +1149,7 @@ def test_sc():
     for x in range(nx):
       for y in range(ny):
         for ri in r.ris:
-          if x % 2 == 1:
+          if y % 2 != 0:
             s.emit_never( ri.anchor.var( r.idx( x,y)))
             s.emit_never( ri.anchorMX.var( r.idx( x,y)))
             s.emit_never( ri.anchorMY.var( r.idx( x,y)))
@@ -1118,11 +1191,23 @@ def test_sc():
         tech = Tech()
         sc.dumpJson( fp, tech)
 
+import argparse
+
 if __name__ == "__main__":
-#  test_grid_hier()
-#  test_flat_hier()
-#  test_hier()
-#  test_sc()
-  test_ota()
-#  test_non_unit_pins()
+  parser = argparse.ArgumentParser( description="Global router placer for collection of designs")
+
+  parser.add_argument( "-n", "--block_name", type=str, required=True)
+
+  args = parser.parse_args()
+
+  if args.block_name == "sc":
+    test_sc()
+  elif args.block_name == "ota":
+    test_ota()
+  elif args.block_name == "ota_bigger":
+    test_ota_bigger()
+  else:
+    assert False
+
+
 

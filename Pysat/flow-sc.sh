@@ -8,4 +8,4 @@ cd ../Cktgen
 
 docker build -t cktgen .
 
-./flow.sh -sv -s cktgen_sc_from_json.py -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota
+./flow.sh -sv -s cktgen_sc_from_json.py -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --show_global_routes

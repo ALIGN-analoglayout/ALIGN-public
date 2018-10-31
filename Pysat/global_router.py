@@ -2,25 +2,7 @@ import tally
 from collections import OrderedDict
 import json
 
-class Tech:
-# Mock the tech file to temporarily simplify integration
-  def __init__( self):
-      self.halfXGRGrid = 2
-      self.halfYGRGrid = 2
-      self.pitchPoly   = 720
-      self.pitchDG     = 720
-      self.verticalMetals = ["metal1","metal3","metal5"]
-      self.horizontalMetals = ["metal2","metal4"]
-
-class Rect:
-  def __init__( self, llx, lly, urx, ury):
-      self.llx = llx
-      self.lly = lly
-      self.urx = urx
-      self.ury = ury
-
-  def toList( self):
-      return [self.llx, self.lly, self.urx, self.ury]
+from transformation import Rect, Transformation, Tech
 
 class GR:
   def __init__( self, netName=None, layer=None, width=None, rect=None):
@@ -150,6 +132,11 @@ class Grid:
             if len(v) < 2: continue
 
             self.routes[k] = []
+
+            for xy in v:
+              assert 0 <= xy[0] < self.nx, ( k, v, self.nx, self.ny)
+              assert 0 <= xy[1] < self.ny, ( k, v, self.nx, self.ny)
+
 
             minx = min( xy[0] for xy in v)
             maxx = max( xy[0] for xy in v)
@@ -292,6 +279,12 @@ class Grid:
 
     def emitWire( self, k, r, ly, x0, y0, x1, y1):
         print( "Call emitWire", k, ly, x0, x0, x1, y1)
+
+        assert 0 <= x0 < self.nx, (x0,y0,x1,y1,self.nx,self.ny)
+        assert 0 <= x1 < self.nx, (x0,y0,x1,y1,self.nx,self.ny)
+        assert 0 <= y0 < self.ny, (x0,y0,x1,y1,self.nx,self.ny)
+        assert 0 <= y1 < self.ny, (x0,y0,x1,y1,self.nx,self.ny)
+
         if x0 != x1:
             assert y0 == y1
             if x0 > x1: x0,x1 = x1,x0
@@ -351,14 +344,41 @@ class Grid:
                                 self.wires[k][ly].append( GR( k, ly, 400, Rect( x, y0, x, y1)))
                                 y0,y1 = None,None
 
-    def write_globalrouting_json( self, fp, tech):
+    def write_globalrouting_json( self, fp, tech, placer_results=None):
         grs = []
         terminals = []
 
+        if placer_results is not None:
+          globalScale = Transformation( 0, 0, tech.halfXGRGrid*tech.pitchPoly, tech.halfYGRGrid*tech.pitchDG)
+
+          b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
+          terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
+
+          leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
+
+          for inst in placer_results['instances']:
+            leaf = leaves_map[inst['template_name']]
+            tr = inst['transformation']
+            trans = Transformation( tr['oX'], tr['oY'], tr['sX'], tr['sY'])
+            r = globalScale.hitRect( trans.hitRect( Rect( *leaf['bbox'])).canonical())
+
+            nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
+            terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
+
+          for term in placer_results['terminals']:
+            nm = term['net_name'] + ':' + term['hier_name']
+            b = globalScale.hitRect( Rect( *term['rect'])).canonical()
+            b.llx -= 200
+            b.urx += 200
+            b.lly += 360
+            b.ury -= 360
+            terminals.append( { "netName" : nm, "layer" : term['layer'], "rect" : b.toList()})
+
+
         for (k,v) in self.wires.items():
-            for (ly, vv) in v.items():
-                for gr in vv:
-                    terminals.append(gr)
+          for (ly, vv) in v.items():
+            for gr in vv:
+              terminals.append(gr)
 
         grGrid = []
         dx = tech.pitchPoly*tech.halfXGRGrid*2
@@ -509,59 +529,41 @@ def test_symmetric_unsat():
     g.s.solve()
     assert g.s.state == 'UNSAT'
 
-def test_ota():
-  with open( 'ota_placer_out.json', 'rt') as fp:
+def aux_from_json( tag, gridFactor=2):
+  with open( '%s_placer_out.json' % tag, 'rt') as fp:
     placer_results = json.load( fp)
     print( placer_results)
 
     [_,_,nx,ny] = placer_results['bbox']
 
-    # the global router grid is twice the placer (ADT) grid
-    def tr( p):
-      x,y = p
-      return x//2, y//2
-
-    # add one to round up
-    g = Grid( *tr( (nx+1, ny+1)))
-
-    for term in placer_results['terminals']:
-      g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
-
-    g.semantic( max_capacity=3)
-    g.s.solve()
-    assert g.s.state == 'SAT'
-
-    g.cleanAntennas()
-
-    g.print_routes()
-    g.print_rasters()
-    g.genWires()
-
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        g.write_globalrouting_json( fp, tech)
-
-    with open( "ota_global_router_out.json", "wt") as fp:
-        tech = Tech()      
-        g.dumpJSON( fp, tech)
-
-def test_sc():
-  with open( 'sc_placer_out.json', 'rt') as fp:
-    placer_results = json.load( fp)
-    print( placer_results)
-
-    [_,_,nx,ny] = placer_results['bbox']
+    print( 'BBOX', placer_results['bbox'])
 
     # the global router grid is twice the placer (ADT) grid
     def tr( p):
       x,y = p
-      return x//2, y//2
+      return x//gridFactor, y//gridFactor
 
-    # add one to round up
-    g = Grid( *tr( (nx+1, ny+1)))
+    def roundUp( x, f): return f*((x+f-1)//f)
+ 
+    g = Grid( *tr( (roundUp( nx, gridFactor), roundUp( ny, gridFactor))))
+
+    print( 'Grid size', g.nx, g.ny)
 
     for term in placer_results['terminals']:
-      g.addTerminal( term['net_name'], *tr( tuple(term['rect'][:2])))
+      x0,y0 = tr(tuple(term['rect'][:2]))
+      x1,y1 = tr(tuple(term['rect'][2:]))
+
+      print( term['rect'])
+      print( x0, y0, x1, y1)
+
+      assert x0 == x1
+      x = (x0 + x1)//2
+      y = (y0 + y1)//2
+
+      assert x <= g.nx
+
+      if x == g.nx: x -= 1
+      g.addTerminal( term['net_name'], x, y)
 
     max_capacity=3
     g.semantic( max_capacity=max_capacity)
@@ -601,11 +603,20 @@ def test_sc():
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
         tech = Tech()
-        g.write_globalrouting_json( fp, tech)
+        g.write_globalrouting_json( fp, tech, placer_results)
 
-    with open( "sc_global_router_out.json", "wt") as fp:
+    with open( "%s_global_router_out.json" % tag, "wt") as fp:
         tech = Tech()      
         g.dumpJSON( fp, tech)
+
+def test_ota():
+  aux_from_json( 'ota')
+
+def test_ota_bigger():
+  aux_from_json( 'ota_bigger')
+
+def test_sc():
+  aux_from_json( 'sc')
 
 def ex_backward_xy():
     halfn = 2
@@ -646,7 +657,22 @@ def test_write_globalrouting_json_symmetric():
 def test_write_globalrouting_json_symmetric():
   ex_write_globalrouting_json( ex_river_routing(1,None))
 
+import argparse
+
 if __name__ == "__main__":
-#  ex_write_globalrouting_json( ex_symmetric(1,1))
-  test_ota()
-#  test_sc()
+  parser = argparse.ArgumentParser( description="Global router placer for collection of designs")
+
+  parser.add_argument( "-n", "--block_name", type=str, required=True)
+
+  args = parser.parse_args()
+
+  if args.block_name == "sc":
+    test_sc()
+  elif args.block_name == "ota":
+    test_ota()
+  elif args.block_name == "ota_bigger":
+    test_ota_bigger()
+  elif args.block_name == "ota_symmetric":
+    ex_write_globalrouting_json( ex_symmetric(1,1))
+  else:
+    assert False
