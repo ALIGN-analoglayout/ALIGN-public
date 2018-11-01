@@ -11,6 +11,7 @@ SKIPROUTER=NO
 SKIPGENERATE=NO
 SKIPVIEWER=NO
 SHOWGLOBALROUTES=""
+SHOWMETALTEMPLATES=""
 ROUTE=" --route"
 PLACERJSON=""
 
@@ -71,6 +72,10 @@ case $key in
     SHOWGLOBALROUTES=" --show_global_routes"
     shift
     ;;
+    -smt|--show_metal_templates)
+    SHOWMETALTEMPLATES=" --show_metal_templates"
+    shift
+    ;;
     -sar|--skipactualrouting)
     ROUTE=""
     shift
@@ -113,7 +118,7 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 	docker volume rm ${INPUTVOL}
     fi
     docker volume rm ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then

@@ -7,34 +7,34 @@ vMetals = {"metal%d" % i for i in range(1,6,2)}
 metals  = ["metal%d" % i for i in range(1,6)]
 vias    = ["via%d"   % i for i in range(1,5)]
 
-def generateVia( tech, v, l, u):
-    
-    halfSpace = "%.3f" % (160/10000)
+def generateVia( tech, v, l, u, l_width, u_width, l_space, u_space):
+
+    halfSpace1 = "%.3f" % (l_space/20000)
+    halfSpace2 = "%.3f" % (u_space/20000)
     zero      = "%.3f" % (  0/10000)
-    width1    = "%.3f" % (tech['halfWidthM'+l[-1]][0]/5000)
-    width2    = "%.3f" % (tech['halfWidthM'+u[-1]][0]/5000)
+    width1    = "%.3f" % (l_width/10000)
+    width2    = "%.3f" % (u_width/10000)
 
     if   l in hMetals and u in vMetals:
         cutHeight = width1
         cutWidth = width2
 
-        x1 = halfSpace
+        x1 = halfSpace1
         y1 = zero
         x2 = zero
-        y2 = halfSpace
+        y2 = halfSpace2
     elif l in vMetals and u in hMetals:
         cutWidth = width1
         cutHeight = width2
 
-
         x1 = zero
-        y1 = halfSpace
-        x2 = halfSpace
+        y1 = halfSpace1
+        x2 = halfSpace2
         y2 = zero
     else:
         assert False
 
-    return ("""Generator name={0}_simple {{
+    return ("""Generator name={0}_{11}_{12} {{
   Layer1 value={1} {{
     x_coverage value={3}
     y_coverage value={4}
@@ -49,20 +49,37 @@ def generateVia( tech, v, l, u):
   CutHeight value={10}
   cutlayer value={0}
 }}
-""").format( v, l, u, x1, y1, x2, y2, width1, width2, cutWidth, cutHeight)
+""").format( v, l, u, x1, y1, x2, y2, width1, width2, cutWidth, cutHeight, l_width, u_width)
 
 def write_collateral( tech):
 
     triples = zip( vias,metals[:-1],metals[1:])
 
+    mts = { mt['name'] : mt for mt in tech['metalTemplates']}
+
+    widths = {}
+    spaces = {}
+    for (nm,mt) in mts.items():
+        ly = mt['layer']
+        if ly not in widths: widths[ly] = set()
+        widths[ly] = widths[ly].union( set(mt['widths']))
+        if ly not in spaces: spaces[ly] = set()
+        spaces[ly] = spaces[ly].union( set(mt['spaces']))
+
+    print( widths)
+    print( spaces)
 
     with open( "car_generators.txt", "wt") as fp:
         for (v,l,u) in triples:
-            fp.write( generateVia( tech, v, l, u))
+            l_space = min(spaces[l])
+            u_space = min(spaces[u])
+            for l_width in widths[l]:
+                for u_width in widths[u]:
+                    fp.write( generateVia( tech, v, l, u, l_width, u_width, l_space, u_space))
 
     with open( "arch.txt", "wt") as fp:
         fp.write( """Option name=gr_region_width_in_poly_pitches value={0}
-Option name=gr_region_height_in_diff_pitches value={0}
+Option name=gr_region_height_in_diff_pitches value={1}
 """.format( tech['halfXGRGrid']*2, tech['halfYGRGrid']*2))
 
     def emitLayer( fp, layer, level, types=None, pgd=None, pitch=None, cLayers=None):
