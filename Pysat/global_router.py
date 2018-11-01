@@ -607,15 +607,6 @@ def aux_from_json( tag, gridFactor=2):
         tech = Tech()      
         g.dumpJSON( fp, tech)
 
-def test_ota():
-  aux_from_json( 'ota')
-
-def test_ota_bigger():
-  aux_from_json( 'ota_bigger')
-
-def test_sc():
-  aux_from_json( 'sc')
-
 def ex_backward_xy():
     halfn = 2
     n = 2*halfn
@@ -655,6 +646,16 @@ def test_write_globalrouting_json_symmetric():
 def test_write_globalrouting_json_symmetric():
   ex_write_globalrouting_json( ex_river_routing(1,None))
 
+def test_ota():
+  aux_from_json( 'ota')
+
+def test_ota_bigger():
+  aux_from_json( 'ota_bigger')
+
+def test_sc():
+  aux_from_json( 'sc')
+
+
 import argparse
 
 if __name__ == "__main__":
@@ -664,13 +665,7 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
 
-  if args.block_name == "sc":
-    test_sc()
-  elif args.block_name == "ota":
-    test_ota()
-  elif args.block_name == "ota_bigger":
-    test_ota_bigger()
-  elif args.block_name == "ota_symmetric":
+  if args.block_name == "ota_symmetric":
     ex_write_globalrouting_json( ex_symmetric(1,1))
   else:
-    assert False
+    aux_from_json( args.block_name)
