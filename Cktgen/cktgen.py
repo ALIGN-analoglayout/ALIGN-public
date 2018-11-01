@@ -552,6 +552,11 @@ def parse_lgf( fp):
         net = m.groups()[0]
         layer = m.groups()[1]        
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
+
+        if True or layer in ["via1","via2","via3","via4"]:
+          w = netl.newWire( net, rect, layer)
+          w.gid = None
+
         continue
 
       m = p_rbrace.match( line)
