@@ -2,7 +2,7 @@
 
 docker build -t tally .
 
-docker run --rm --mount source=inputVol,target=/INPUT -it tally bash -c "source sympy/bin/activate && cd /scripts && python placer.py && python global_router.py && cp sc_placer_out.json sc_global_router_out.json /INPUT"
+docker run --rm --mount source=inputVol,target=/INPUT -it tally bash -c "source sympy/bin/activate && cd /scripts && python placer.py -n sc && python global_router.py -n sc && cp sc_placer_out.json sc_global_router_out.json /INPUT"
 
 cd ../Cktgen
 

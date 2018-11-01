@@ -358,7 +358,7 @@ class Netlist:
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
 
-      fp.write( json.dumps( data, default=lambda x: encode_GR(tech,x)) + "\n")
+      fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
   def newWire( self, netName, r, l):
     cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)

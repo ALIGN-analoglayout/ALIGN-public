@@ -349,8 +349,7 @@ class Grid:
         terminals = []
 
         if placer_results is not None:
-          globalScale = Transformation( 0, 0, tech.halfXGRGrid*tech.pitchPoly, tech.halfYGRGrid*tech.pitchDG)
-
+          globalScale = Transformation( 0, 0, 2*tech.halfXADTGrid*tech.pitchPoly, 2*tech.halfYADTGrid*tech.pitchDG)
           b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
           terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
 
@@ -374,19 +373,18 @@ class Grid:
             b.ury -= 360
             terminals.append( { "netName" : nm, "layer" : term['layer'], "rect" : b.toList()})
 
-
         for (k,v) in self.wires.items():
           for (ly, vv) in v.items():
             for gr in vv:
               terminals.append(gr)
 
         grGrid = []
-        dx = tech.pitchPoly*tech.halfXGRGrid*2
-        dy = tech.pitchDG*tech.halfYGRGrid*2
-        self.bbox = Rect( 0, 0, dx*self.nx, dy*self.ny)
-        for x in range( self.bbox.llx, self.bbox.urx, dx):
-            for y in range( self.bbox.lly, self.bbox.ury, dy):
-                grGrid.append( [x,y,x+dx,y+dy])
+        globalScale = Transformation( 0, 0, 2*tech.halfXGRGrid*tech.pitchPoly, 2*tech.halfYGRGrid*tech.pitchDG)
+        self.bbox = globalScale.hitRect( Rect( 0, 0, self.nx, self.ny))
+        for x in range( self.nx):
+          for y in range( self.ny):
+            r = globalScale.hitRect( Rect( x, y, x+1, y+1))
+            grGrid.append( r.toList())
 
         data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
