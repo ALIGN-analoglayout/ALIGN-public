@@ -328,7 +328,7 @@ class Grid:
                                 x1 = x
                             if filled and x == self.nx-1 or not filled and x1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x0, y, x1, y)))
+                                self.wires[k][ly].append( GR( k, ly, 320, Rect( x0, y, x1, y)))
                                 x0,x1 = None,None
 
                 if ly in verticalMetals:
@@ -341,7 +341,7 @@ class Grid:
                                 y1 = y
                             if filled and y == self.ny-1 or not filled and y1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x, y0, x, y1)))
+                                self.wires[k][ly].append( GR( k, ly, 320, Rect( x, y0, x, y1)))
                                 y0,y1 = None,None
 
     def write_globalrouting_json( self, fp, tech, placer_results=None):

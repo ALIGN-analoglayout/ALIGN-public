@@ -1,0 +1,210 @@
+Generator name=via1_400_640 {
+  Layer1 value=metal1 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.040
+  }
+  Layer2 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  CutWidth value=0.040
+  CutHeight value=0.064
+  cutlayer value=via1
+}
+Generator name=via1_400_320 {
+  Layer1 value=metal1 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.040
+  }
+  Layer2 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  CutWidth value=0.040
+  CutHeight value=0.032
+  cutlayer value=via1
+}
+Generator name=via2_640_640 {
+  Layer1 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  Layer2 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  CutWidth value=0.064
+  CutHeight value=0.064
+  cutlayer value=via2
+}
+Generator name=via2_640_320 {
+  Layer1 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  Layer2 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  CutWidth value=0.032
+  CutHeight value=0.064
+  cutlayer value=via2
+}
+Generator name=via2_320_640 {
+  Layer1 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  Layer2 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  CutWidth value=0.064
+  CutHeight value=0.032
+  cutlayer value=via2
+}
+Generator name=via2_320_320 {
+  Layer1 value=metal2 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  Layer2 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  CutWidth value=0.032
+  CutHeight value=0.032
+  cutlayer value=via2
+}
+Generator name=via3_640_640 {
+  Layer1 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  Layer2 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  CutWidth value=0.064
+  CutHeight value=0.064
+  cutlayer value=via3
+}
+Generator name=via3_640_320 {
+  Layer1 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  Layer2 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  CutWidth value=0.064
+  CutHeight value=0.032
+  cutlayer value=via3
+}
+Generator name=via3_320_640 {
+  Layer1 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  Layer2 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  CutWidth value=0.032
+  CutHeight value=0.064
+  cutlayer value=via3
+}
+Generator name=via3_320_320 {
+  Layer1 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  Layer2 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  CutWidth value=0.032
+  CutHeight value=0.032
+  cutlayer value=via3
+}
+Generator name=via4_640_640 {
+  Layer1 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  Layer2 value=metal5 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  CutWidth value=0.064
+  CutHeight value=0.064
+  cutlayer value=via4
+}
+Generator name=via4_640_320 {
+  Layer1 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.064
+  }
+  Layer2 value=metal5 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  CutWidth value=0.032
+  CutHeight value=0.064
+  cutlayer value=via4
+}
+Generator name=via4_320_640 {
+  Layer1 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  Layer2 value=metal5 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.064
+  }
+  CutWidth value=0.064
+  CutHeight value=0.032
+  cutlayer value=via4
+}
+Generator name=via4_320_320 {
+  Layer1 value=metal4 {
+    x_coverage value=0.016
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  Layer2 value=metal5 {
+    x_coverage value=0.000
+    y_coverage value=0.016
+    widths value=0.032
+  }
+  CutWidth value=0.032
+  CutHeight value=0.032
+  cutlayer value=via4
+}

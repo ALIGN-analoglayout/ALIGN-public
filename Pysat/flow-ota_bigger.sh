@@ -6,6 +6,7 @@ PORT=8091
 INPUTVOL=otaBiggerInputVol
 OUTPUTVOL=otaBiggerOutputVol
 NM=ota_bigger
+DR_COLLATERAL=../DetailedRouter/DR_COLLATERAL_Generator/strawman5_ota
 
 docker build -t tally .
 
@@ -15,6 +16,6 @@ cd ../Cktgen
 
 docker build -t cktgen .
 
-./flow.sh -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s cktgen_${NM}_from_json.py -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out.json
+./flow.sh -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s cktgen_${NM}_from_json.py -td ${DR_COLLATERAL} --placer_json INPUT/${NM}_placer_out.json
 
 docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
