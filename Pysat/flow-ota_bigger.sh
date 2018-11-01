@@ -1,11 +1,20 @@
 #!/bin/bash
 
+#!/bin/bash
+
+PORT=8091
+INPUTVOL=otaBiggerInputVol
+OUTPUTVOL=otaBiggerOutputVol
+NM=ota_bigger
+
 docker build -t tally .
 
-docker run --rm --mount source=inputVol,target=/INPUT -it tally bash -c "source sympy/bin/activate && cd /scripts && python placer.py -n ota_bigger && python global_router.py -n ota_bigger && cp ota_bigger_placer_out.json ota_bigger_global_router_out.json /INPUT"
+docker run --rm --mount source=${INPUTVOL},target=/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python placer.py -n ${NM} && python global_router.py -n ${NM} && cp ${NM}_placer_out.json ${NM}_global_router_out.json /INPUT"
 
 cd ../Cktgen
 
 docker build -t cktgen .
 
-./flow.sh -sv -s cktgen_ota_bigger_from_json.py -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --show_global_routes --placer_json INPUT/ota_bigger_placer_out.json
+./flow.sh -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s cktgen_${NM}_from_json.py -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out.json
+
+docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
