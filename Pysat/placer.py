@@ -959,7 +959,7 @@ def test_ota_bigger():
     ota.connect('L1_MM4_MM3','d1','net1')
 
     nx = 12
-    ny = 24
+    ny = 20
 
     ota.bbox = Rect( 0, 0, nx, ny)
 
