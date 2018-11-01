@@ -321,11 +321,13 @@ class Netlist:
     self.instances = OrderedDict()
     self.wires = {}
 
-  def dumpGR( self, tech, fn):
+  def dumpGR( self, tech, fn, cell_instances=[]):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
       grs = []
       terminals = []
+
+      print( cell_instances)
 
       wire = Wire()
       wire.netName = 'top'
@@ -341,6 +343,9 @@ class Netlist:
         wire.layer = 'cellarea'
         wire.gid = -1
         terminals.append( wire)
+
+      for ci in cell_instances:
+        terminals.append( ci)
 
       for (netName,net) in self.nets.items():
         for gr in net.grs:
@@ -561,6 +566,8 @@ def parse_lgf( fp):
 
   return netl
 
+import transformation
+
 def parse_args():
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
@@ -569,6 +576,7 @@ def parse_args():
   parser.add_argument( "--show_global_routes", action='store_true')
   parser.add_argument( "--show_metal_templates", action='store_true')
   parser.add_argument( "--consume_results", action='store_true')
+  parser.add_argument( "--placer_json", type=str, default='')
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
 
   args = parser.parse_args()
@@ -580,8 +588,31 @@ def parse_args():
     with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  
       netl = parse_lgf( fp)
 
+    placer_results = None  
+    if args.placer_json != "":
+      with open( args.placer_json, 'rt') as fp:  
+        placer_results = json.load( fp)
+
+        
+    terminals = []
+    if placer_results is not None:
+      globalScale = transformation.Transformation( 0, 0, 2*tech.halfXADTGrid*tech.pitchPoly, 2*tech.halfYADTGrid*tech.pitchDG)
+#      b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
+#      terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
+
+      leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
+
+      for inst in placer_results['instances']:
+        leaf = leaves_map[inst['template_name']]
+        tr = inst['transformation']
+        trans = transformation.Transformation( tr['oX'], tr['oY'], tr['sX'], tr['sY'])
+        r = globalScale.hitRect( trans.hitRect( Rect( *leaf['bbox'])).canonical())
+
+        nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
+        terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
+      
     netl.write_input_file( netl.nm + "_xxx.txt")
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json")
+    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals)
 
     exit()
 

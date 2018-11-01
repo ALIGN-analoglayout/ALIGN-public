@@ -12,6 +12,7 @@ SKIPGENERATE=NO
 SKIPVIEWER=NO
 SHOWGLOBALROUTES=""
 ROUTE=" --route"
+PLACERJSON=""
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -21,62 +22,67 @@ key="$1"
 case $key in
     -s|--script)
     SCRIPT="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -p|--port)
     PORT="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -td|--techdir)
     TECHDIR="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -tf|--techfile)
     TECHFILE="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -iv|--inputvolume)
     INPUTVOL="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -ov|--outputvolume)
     OUTPUTVOL="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -rv|--routervolume)
     ROUTERVOL="$2"
-    shift # past argument
-    shift # past value
+    shift
+    shift
     ;;
     -sr|--skiprouter)
     SKIPROUTER=YES
-    shift # past argument
+    shift
     ;;
     -sg|--skipgenerate)
     SKIPGENERATE=YES
-    shift # past argument
+    shift
     ;;
     -sv|--skipviewer)
     SKIPVIEWER=YES
-    shift # past argument
+    shift
     ;;
     -sgr|--show_global_routes)
     SHOWGLOBALROUTES=" --show_global_routes"
-    shift # past value
+    shift
     ;;
     -sar|--skipactualrouting)
     ROUTE=""
-    shift # past value
+    shift
+    ;;
+    -pj|--placer_json)
+    PLACERJSON=" --placer_json $2"
+    shift
+    shift
     ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
+    shift
     ;;
 esac
 done
@@ -92,6 +98,7 @@ echo ROUTERVOL = "${ROUTERVOL}"
 echo SKIPROUTER = "${SKIPROUTER}"
 echo SKIPGENERATE = "${SKIPGENERATE}"
 echo SKIPVIEWER = "${SKIPVIEWER}"
+echo PLACERJSON = "${PLACERJSON}"
 
 M_INPUT="--mount source=${INPUTVOL},target=/Cktgen/INPUT"
 M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
@@ -112,7 +119,7 @@ fi
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
 
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${PLACERJSON}"
 fi
 
 if [ ${SKIPVIEWER} = "NO" ]; then
