@@ -116,11 +116,6 @@ class UnitCell:
     @property
     def polyOffset( self): return self.polyPitch // 2
 
-    def m0x( self, x): return self.m0.value( x)
-    def m1y( self, y): return self.m1.value( y)
-    def polyy( self, y): return self.poly.value( y)
-    def diffcony( self, y): return self.diffcon.value( y)
-
     def addSegment( self, grid, netName, c, bIdx, eIdx):
         segment = grid.segment( netName, c, bIdx, eIdx)
         self.terminals.append( segment)
@@ -132,23 +127,26 @@ class UnitCell:
     def diffconSegment( self, netName, x, y0, y1): return self.addSegment( self.diffcon, netName, x, y0, y1)
 
     def unit( self, x, y):
-        uc.diffconSegment( 's',   2*x+0, 4*y+1, 4*y+3)
-        uc.polySegment(    'g',   2*x+0, 4*y+1, 4*y+3)
-        uc.polySegment(    'g',   2*x+1, 4*y+1, 4*y+3)
-        uc.diffconSegment( 'd',   2*x+2, 4*y+1, 4*y+3)
+        ny = 4
+        nx = 8
+        ncx = 2
+        uc.diffconSegment( 's',   ncx*x+0, ny*y+1, ny*y+3)
+        uc.polySegment(    'g',   ncx*x+0, ny*y+1, ny*y+3)
+        uc.polySegment(    'g',   ncx*x+1, ny*y+1, ny*y+3)
+        uc.diffconSegment( 'd',   ncx*x+2, ny*y+1, ny*y+3)
 
-        uc.m0Segment( 's', 8*x-3, 8*x+3,  4*y+1)
-        uc.m0Segment( 's', 8*x-3, 8*x+3,  4*y+3)
-        uc.m0Segment( 'g', 8*x+1, 8*x+7,  4*y+2)
-        uc.m0Segment( 'd', 8*x+5, 8*x+11, 4*y+1)
-        uc.m0Segment( 'd', 8*x+5, 8*x+11, 4*y+3)
+        uc.m0Segment( 's', nx*x-3, nx*x+3,  ny*y+1)
+        uc.m0Segment( 's', nx*x-3, nx*x+3,  ny*y+3)
+        uc.m0Segment( 'g', nx*x+1, nx*x+7,  ny*y+2)
+        uc.m0Segment( 'd', nx*x+5, nx*x+11, ny*y+1)
+        uc.m0Segment( 'd', nx*x+5, nx*x+11, ny*y+3)
 
-        uc.m0Segment( 'gnd', 8*x-1, 8*x+9, 4*y+0)
-        uc.m0Segment( 'gnd', 8*x-1, 8*x+9, 4*y+4)
+        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ny*y+0)
+        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ny*y+4)
 
-        uc.m1Segment( 's', 2*x+0, 4*y+1, 4*y+3)
-        uc.m1Segment( 'g', 2*x+1, 4*y+1, 4*y+3)
-        uc.m1Segment( 'd', 2*x+2, 4*y+1, 4*y+3)
+        uc.m1Segment( 's', ncx*x+0, ny*y+1, ny*y+3)
+        uc.m1Segment( 'g', ncx*x+1, ny*y+1, ny*y+3)
+        uc.m1Segment( 'd', ncx*x+2, ny*y+1, ny*y+3)
 
 if __name__ == "__main__":
     uc = UnitCell()
