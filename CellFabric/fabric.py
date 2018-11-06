@@ -1,10 +1,6 @@
 
 import json
-
-def write_global_routing_json( fp, terminals):
-    data = { 'bbox' : [0,0,10000,10000], 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : terminals}
-    fp.write( json.dumps( data, indent=2) + '\n')
-
+import transformation
 
 class StopPointGrid:
     def __init__( self, nm, layer, direction, *, width, pitch, offset=0):
@@ -69,6 +65,15 @@ class UnitCell:
     @property
     def diffconGridStopIndices( self): return self.diffcon.legalStopIndices
 
+    def computeBbox( self):
+        self.bbox = transformation.Rect(None,None,None,None)
+        for term in self.terminals:
+            r = transformation.Rect( *term['rect'])
+            if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
+            if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
+            if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
+            if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
+
     def __init__( self):
         self.terminals = []
 
@@ -130,23 +135,24 @@ class UnitCell:
         ny = 4
         nx = 8
         ncx = 2
-        uc.diffconSegment( 's',   ncx*x+0, ny*y+1, ny*y+3)
-        uc.polySegment(    'g',   ncx*x+0, ny*y+1, ny*y+3)
-        uc.polySegment(    'g',   ncx*x+1, ny*y+1, ny*y+3)
-        uc.diffconSegment( 'd',   ncx*x+2, ny*y+1, ny*y+3)
+        ncy = 4
+        uc.diffconSegment( 's',   ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.polySegment(    'g',   ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.polySegment(    'g',   ncx*(x+0)+1, ny*(y+0)+1, ny*(y+1)-1)
+        uc.diffconSegment( 'd',   ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
 
-        uc.m0Segment( 's', nx*x-3, nx*x+3,  ny*y+1)
-        uc.m0Segment( 's', nx*x-3, nx*x+3,  ny*y+3)
-        uc.m0Segment( 'g', nx*x+1, nx*x+7,  ny*y+2)
-        uc.m0Segment( 'd', nx*x+5, nx*x+11, ny*y+1)
-        uc.m0Segment( 'd', nx*x+5, nx*x+11, ny*y+3)
+        uc.m0Segment( 's', nx*(x+0)-3, nx*(x+0)+3, ncy*(y+0)+1)
+        uc.m0Segment( 's', nx*(x+0)-3, nx*(x+0)+3, ncy*(y+1)-1)
+        uc.m0Segment( 'g', nx*(x+0)+1, nx*(x+1)-1, ncy*(y+0)+2)
+        uc.m0Segment( 'd', nx*(x+1)-3, nx*(x+1)+3, ncy*(y+0)+1)
+        uc.m0Segment( 'd', nx*(x+1)-3, nx*(x+1)+3, ncy*(y+1)-1)
 
-        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ny*y+0)
-        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ny*y+4)
+        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ncy*(y+0)+0)
+        uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ncy*(y+1)+0)
 
-        uc.m1Segment( 's', ncx*x+0, ny*y+1, ny*y+3)
-        uc.m1Segment( 'g', ncx*x+1, ny*y+1, ny*y+3)
-        uc.m1Segment( 'd', ncx*x+2, ny*y+1, ny*y+3)
+        uc.m1Segment( 's', ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.m1Segment( 'g', ncx*(x+0)+1, ny*(y+0)+1, ny*(y+1)-1)
+        uc.m1Segment( 'd', ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
 
 if __name__ == "__main__":
     uc = UnitCell()
@@ -154,5 +160,8 @@ if __name__ == "__main__":
     for (x,y) in ( (x,y) for x in range(16) for y in range(16)):
         uc.unit( x, y)
 
+    uc.computeBbox()
+
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        write_global_routing_json( fp, uc.terminals)
+        data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
+        fp.write( json.dumps( data, indent=2) + '\n')
