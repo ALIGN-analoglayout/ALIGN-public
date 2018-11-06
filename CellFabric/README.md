@@ -1,6 +1,6 @@
 # Example Analog Leaf Cell Fabric
 
-The run:
+To run:
 
 ````
 docker build -t fabric .
