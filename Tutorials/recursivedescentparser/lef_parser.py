@@ -70,6 +70,11 @@ class LEFParser:
         if not self._accept(toktype):
             raise SyntaxError('Expected ' + toktype)
 
+    def _expect_keyword(self,str):
+        'Consume next token if it matches argument or raise SyntaxError'
+        if not self._accept_keyword(str):
+            raise SyntaxError('Expected keyword' + str)
+
     # Grammar rules follow
 
     def whole(self):
@@ -103,8 +108,7 @@ class LEFParser:
                 macroName = self.tok.value 
                 while True:
                     if self._accept_keyword( 'END'):
-                        self._expect('NAME')
-                        assert macroName == self.tok.value
+                        self._expect_keyword(macroName)
                         break
                     elif self._accept_keyword( 'ORIGIN'):
                         self._expect('NUM')
@@ -117,8 +121,7 @@ class LEFParser:
                         self._expect('SEMI')
                     elif self._accept_keyword( 'SIZE'):
                         self._expect('NUM')
-                        self._expect('NAME')
-                        assert self.tok.value == 'BY'
+                        self._expect_keyword('BY')
                         self._expect('NUM')
                         self._expect('SEMI')
                     elif self._accept_keyword( 'PIN'):
@@ -126,8 +129,7 @@ class LEFParser:
                         pinName = self.tok.value
                         while True:
                             if self._accept_keyword( 'END'):
-                                self._expect('NAME')
-                                assert self.tok.value == pinName
+                                self._expect_keyword(pinName)
                                 break
                             elif self._accept_keyword( 'DIRECTION'):
                                 self._expect('NAME')

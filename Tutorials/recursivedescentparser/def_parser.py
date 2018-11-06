@@ -51,7 +51,7 @@ class DEFParser:
     def _advance(self):
         'Advance one token ahead'
         self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
-        print( self.tok, self.nexttok)
+#        print( self.tok, self.nexttok)
 
     def _accept(self,toktype):
         'Test and consume the next token if it matches toktype'
@@ -80,6 +80,16 @@ class DEFParser:
             raise SyntaxError('Expected keyword' + str)
 
     # Grammar rules follow
+
+    def point(self):
+        self._expect( 'LPAREN')
+        self._expect( 'NUM')
+        self._expect( 'NUM')
+        self._expect( 'RPAREN')
+
+    def rect(self):
+        self.point()
+        self.point()
 
     def whole(self):
 
@@ -121,27 +131,23 @@ class DEFParser:
                     else:
                         raise SyntaxError('Expected END or MACRO keywords')
             elif self._accept_keyword( 'DIEAREA'):
-                self._expect( 'LPAREN')
-                self._expect( 'NUM')
-                self._expect( 'NUM')
-                self._expect( 'RPAREN')
-                self._expect( 'LPAREN')
-                self._expect( 'NUM')
-                self._expect( 'NUM')
-                self._expect( 'RPAREN')
+                self.rect()
                 self._expect( 'SEMI')
 
             elif self._accept_keyword( 'PINS'):
                 self._expect('NUM')
+                pinCount = int(self.tok.value)
                 self._expect('SEMI')
 
+                pins = []
                 while True:
                     if self._accept_keyword( 'END'):
-                        self._expect('NAME')
-                        assert 'PINS' == self.tok.value
+                        assert len(pins) == pinCount
+                        self._expect_keyword('PINS')
                         break
                     elif self._accept( 'MINUS'):
                         self._expect('NAME')
+                        pins.append( self.tok.value)
                         self._expect('PLUS')
                         self._expect_keyword( 'NET')
                         self._expect('NAME')
@@ -152,54 +158,45 @@ class DEFParser:
                                 while self._accept( 'PLUS'):
                                     if self._accept_keyword( 'LAYER'):
                                         self._expect('NAME')    
-                                        self._expect( 'LPAREN')
-                                        self._expect( 'NUM')
-                                        self._expect( 'NUM')
-                                        self._expect( 'RPAREN')
-                                        self._expect( 'LPAREN')
-                                        self._expect( 'NUM')
-                                        self._expect( 'NUM')
-                                        self._expect( 'RPAREN')
+                                        self.rect()
                                     elif self._accept_keyword( 'PLACED'):
-                                        self._expect( 'LPAREN')
-                                        self._expect( 'NUM')
-                                        self._expect( 'NUM')
-                                        self._expect( 'RPAREN')
+                                        self.point()
                                         self._expect( 'NAME')
                                         self._expect( 'SEMI')
                                     else:
                                         raise SyntaxError('Expected LAYER or PLACED keywords.')     
             elif self._accept_keyword( 'BLOCKAGES'):
                 self._expect('NUM')
+                blockageCount = int(self.tok.value)
                 self._expect('SEMI')
+                blockages = []
 
                 while True:
                     if self._accept_keyword( 'END'):
+                        assert len(blockages) == blockageCount
                         self._expect_keyword('BLOCKAGES')
                         break
                     elif self._accept( 'MINUS'):
                         self._expect_keyword('LAYER')
                         self._expect( 'NAME')
+                        blockages.append( self.tok.value)
                         self._expect_keyword( 'RECT')
-                        self._expect( 'LPAREN')
-                        self._expect( 'NUM')
-                        self._expect( 'NUM')
-                        self._expect( 'RPAREN')
-                        self._expect( 'LPAREN')
-                        self._expect( 'NUM')
-                        self._expect( 'NUM')
-                        self._expect( 'RPAREN')
+                        self.rect()
                         self._expect( 'SEMI')
             elif self._accept_keyword( 'NETS'):
                 self._expect('NUM')
+                netCount = int(self.tok.value)
                 self._expect('SEMI')
 
+                nets = []
                 while True:
                     if self._accept_keyword( 'END'):
+                        assert len(nets) == netCount
                         self._expect_keyword('NETS')
                         break
                     elif self._accept( 'MINUS'):
                         self._expect('NAME')
+                        nets.append( self.tok.value)
                         self._expect( 'LPAREN')
                         self._expect_keyword( 'PIN')
                         self._expect('NAME')

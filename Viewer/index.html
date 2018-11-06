@@ -45,6 +45,12 @@ function onJson( error, data) {
   d3.select("body").append("div").attr("id","netControls");
 
   var metalStack = [
+     { "layer": "diffcon", "tag": "DC",  "color": "magenta"},
+     { "layer": "poly",    "tag": "PL",  "color": "cyan"},
+     { "layer": "viad",    "tag": "vd",  "color": "black"},
+     { "layer": "viap",    "tag": "vp",  "color": "black"},
+     { "layer": "metal0",  "tag": "0",  "color": "yellow"},
+     { "layer": "via0",    "tag": "v0",  "color": "black"},
      { "layer": "metal1",  "tag": "1",  "color": "red"},
      { "layer": "via1",    "tag": "v1",  "color": "black"},
      { "layer": "metal2",  "tag": "2",  "color": "blue"},
