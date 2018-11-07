@@ -12,7 +12,7 @@ RPAREN = r'(?P<RPAREN>\))'
 MINUS = r'(?P<MINUS>\-)'
 PLUS = r'(?P<PLUS>\+)'
 NAME = r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)'
-NUM =  r'(?P<NUM>[-+]?\d*\.\d+|\d+\.?)'
+NUM =  r'(?P<NUM>[-+]?\d*\.\d+|[-+]?\d+\.?)'
 LIT =  r'(?P<LIT>\".*\")'
 WS     = r'(?P<WS>\s+)'
 

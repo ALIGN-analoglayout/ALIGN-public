@@ -8,7 +8,7 @@ import collections
 # Token specification
 SEMI = r'(?P<SEMI>;)'
 NAME = r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)'
-NUM =  r'(?P<NUM>[-+]?\d*\.\d+|\d+\.?)'
+NUM =  r'(?P<NUM>[-+]?\d*\.\d+|[-+]?\d+\.?)'
 LIT =  r'(?P<LIT>\".*\")'
 WS     = r'(?P<WS>\s+)'
 
