@@ -60,9 +60,17 @@ class UnitCell:
     def __init__( self):
         self.terminals = []
 
+        self.finsPerUnitCell = 12
+        # Must be a multiple of 2
+        assert self.finsPerUnitCell % 2 == 0
+        # Should be a multiple of 4 for maximum utilization
+        assert self.finsPerUnitCell % 4 == 0
+
+        self.m2PerUnitCell = self.finsPerUnitCell//2 + 3
+
         m2Pitch  = 720 
 
-        unitCellHeight = 5*m2Pitch
+        unitCellHeight = self.m2PerUnitCell*m2Pitch
 
         pcPitch  = unitCellHeight//2
         m1Pitch  = 720 
@@ -136,10 +144,9 @@ class UnitCell:
     def ndSegment( self, netName, x0, x1, y): return self.addSegment( self.nd, netName, y, x0, x1)
 
     def unit( self, x, y):
-        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y+3)
-        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y+2)
-        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y-2)
-        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y-3)
+        for o in range(self.finsPerUnitCell//2):
+            uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
+            uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
 
         uc.dcSegment( 's', 1*(x+0), 6*y-2, 6*y-1)
         uc.dcSegment( 's', 1*(x+0), 6*y+1, 6*y+2)
@@ -154,12 +161,11 @@ class UnitCell:
         uc.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
         uc.m1Segment( 'd', 2*(x+1)+0, 4*y-1, 4*y+1)
 
-        uc.m2Segment( 'gnd', 4*x-1, 4*(x+1)+1, 5*y-2)
-        uc.m2Segment( 's',   4*x-1, 4*(x+1)+1, 5*y-1)
-        uc.m2Segment( 'g',   4*x-1, 4*(x+1)+1, 5*y)
-        uc.m2Segment( 'd',   4*x-1, 4*(x+1)+1, 5*y+1)
-        uc.m2Segment( 'gnd', 4*x-1, 4*(x+1)+1, 5*y+2)
+        assert self.m2PerUnitCell % 2 == 1
 
+        h = self.m2PerUnitCell//2
+        for o in range(-h,h+1):
+            uc.m2Segment( '_', 4*x-1, 4*(x+1)+1, self.m2PerUnitCell*y+o)
 
 if __name__ == "__main__":
     uc = UnitCell()
