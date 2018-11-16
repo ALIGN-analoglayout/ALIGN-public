@@ -77,6 +77,14 @@ class UnitCell:
         dcWidth = 200
         plWidth = 200
 
+        ndWidth = 200
+        ndPitch = 360
+
+        stoppoint = plOffset-plWidth//2
+        self.nd = StopPointGrid( 'nd', 'ndiff', 'h', width=ndWidth, pitch=ndPitch)
+        self.nd.addGridPoint( 0,                 True)
+        self.nd.addGridPoint( dcPitch,           True)
+
         stoppoint = plOffset-plWidth//2
         self.pc = StopPointGrid( 'pc', 'polycon', 'h', width=pcWidth, pitch=pcPitch)
         self.pc.addGridPoint( 0,                 False)
@@ -85,7 +93,7 @@ class UnitCell:
         self.pc.addGridPoint( dcPitch-stoppoint, True)
         self.pc.addGridPoint( dcPitch,           False)
 
-        stoppoint = unitCellHeight-m2Pitch//2
+        stoppoint = unitCellHeight//2-m2Pitch
         self.m1 = StopPointGrid( 'm1', 'metal1', 'v', width=m1Width, pitch=m1Pitch)
         self.m1.addGridPoint( 0,                        False)
         self.m1.addGridPoint( stoppoint,                True)
@@ -125,15 +133,13 @@ class UnitCell:
     def m2Segment( self, netName, x0, x1, y): return self.addSegment( self.m2, netName, y, x0, x1)
     def plSegment( self, netName, x, y0, y1): return self.addSegment( self.pl, netName, x, y0, y1)
     def dcSegment( self, netName, x, y0, y1): return self.addSegment( self.dc, netName, x, y0, y1)
+    def ndSegment( self, netName, x0, x1, y): return self.addSegment( self.nd, netName, y, x0, x1)
 
     def unit( self, x, y):
-        ny = 4
-        nx = 8
-        nxm2 = 4
-        ncx = 2
-        ncy = 4
-
-        dcX = 1
+        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y+3)
+        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y+2)
+        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y-2)
+        uc.ndSegment( '_', 1*(x+0), 1*(x+1), 10*y-3)
 
         uc.dcSegment( 's', 1*(x+0), 6*y-2, 6*y-1)
         uc.dcSegment( 's', 1*(x+0), 6*y+1, 6*y+2)
@@ -142,15 +148,18 @@ class UnitCell:
         uc.dcSegment( 's', 1*(x+1), 6*y-2, 6*y-1)
         uc.dcSegment( 's', 1*(x+1), 6*y+1, 6*y+2)
 
-
         uc.pcSegment( 'g', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
 
-        # uc.m2Segment( 'gnd', nxm2*x-1, nxm2*x+3, ncy*(y+0)+0)
-        # uc.m2Segment( 'gnd', nxm2*x-1, nxm2*x+3, ncy*(y+1)+0)
+        uc.m1Segment( 's', 2*(x+0)+0, 4*y-1, 4*y+1)
+        uc.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
+        uc.m1Segment( 'd', 2*(x+1)+0, 4*y-1, 4*y+1)
 
-        # uc.m1Segment( 's', ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
-        # uc.m1Segment( 'g', ncx*(x+0)+1, ny*(y+0)+1, ny*(y+1)-1)
-        # uc.m1Segment( 'd', ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.m2Segment( 'gnd', 4*x-1, 4*(x+1)+1, 5*y-2)
+        uc.m2Segment( 's',   4*x-1, 4*(x+1)+1, 5*y-1)
+        uc.m2Segment( 'g',   4*x-1, 4*(x+1)+1, 5*y)
+        uc.m2Segment( 'd',   4*x-1, 4*(x+1)+1, 5*y+1)
+        uc.m2Segment( 'gnd', 4*x-1, 4*(x+1)+1, 5*y+2)
+
 
 if __name__ == "__main__":
     uc = UnitCell()
