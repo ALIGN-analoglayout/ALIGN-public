@@ -59,8 +59,6 @@ def removeDuplicates( data):
         
     terminals = []
 
-#    print( tbl)
-
     for (layer,dir) in layers:
       if layer not in tbl: continue
       (indices,kk) = indicesTbl[dir]
@@ -80,7 +78,7 @@ def removeDuplicates( data):
                 if sl.isEmpty():
                     sl.set( rect, netName)
                 elif rect[kk] <= sl.end: # continue
-                    sl.end = rect[kk+2]
+                    sl.end = max( sl.end, rect[kk+2])
 #                    assert currentNet == netName, (layer, currentNet, netName)
                 else: # gap
                     sl.emit()
