@@ -85,7 +85,7 @@ class UnitCell:
         dcWidth = 200
         plWidth = 200
 
-        ndWidth = 200
+        ndWidth = 120
         ndPitch = 360
 
         stoppoint = plOffset-plWidth//2
