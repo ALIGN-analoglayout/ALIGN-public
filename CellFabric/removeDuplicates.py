@@ -79,7 +79,7 @@ def removeDuplicates( data):
                     sl.set( rect, netName)
                 elif rect[kk] <= sl.end: # continue
                     sl.end = max( sl.end, rect[kk+2])
-#                    assert currentNet == netName, (layer, currentNet, netName)
+                    assert sl.currentNet == netName, (layer, sl.currentNet, netName)
                 else: # gap
                     sl.emit()
                     sl.set( rect, netName)
@@ -104,6 +104,6 @@ if __name__ == "__main__":
     newData = removeDuplicates( data)
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        json.dump( newData, fp)
+        json.dump( newData, fp, indent=2)
 
     

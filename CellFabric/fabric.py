@@ -118,23 +118,26 @@ class UnitCell:
         nx = 8
         ncx = 2
         ncy = 4
-        uc.dcSegment( 's', ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
+
+        (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
+
+        uc.dcSegment( ds0, ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
         uc.plSegment( 'g', ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
         uc.plSegment( 'g', ncx*(x+0)+1, ny*(y+0)+1, ny*(y+1)-1)
-        uc.dcSegment( 'd', ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.dcSegment( ds1, ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
 
-        uc.m0Segment( 's', nx*(x+0)-3, nx*(x+0)+3, ncy*(y+0)+1)
-        uc.m0Segment( 's', nx*(x+0)-3, nx*(x+0)+3, ncy*(y+1)-1)
+        uc.m0Segment( ds0, nx*(x+0)-3, nx*(x+0)+3, ncy*(y+0)+1)
+        uc.m0Segment( ds0, nx*(x+0)-3, nx*(x+0)+3, ncy*(y+1)-1)
         uc.m0Segment( 'g', nx*(x+0)+1, nx*(x+1)-1, ncy*(y+0)+2)
-        uc.m0Segment( 'd', nx*(x+1)-3, nx*(x+1)+3, ncy*(y+0)+1)
-        uc.m0Segment( 'd', nx*(x+1)-3, nx*(x+1)+3, ncy*(y+1)-1)
+        uc.m0Segment( ds1, nx*(x+1)-3, nx*(x+1)+3, ncy*(y+0)+1)
+        uc.m0Segment( ds1, nx*(x+1)-3, nx*(x+1)+3, ncy*(y+1)-1)
 
         uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ncy*(y+0)+0)
         uc.m0Segment( 'gnd', nx*x-1, nx*x+9, ncy*(y+1)+0)
 
-        uc.m1Segment( 's', ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.m1Segment( ds0, ncx*(x+0)+0, ny*(y+0)+1, ny*(y+1)-1)
         uc.m1Segment( 'g', ncx*(x+0)+1, ny*(y+0)+1, ny*(y+1)-1)
-        uc.m1Segment( 'd', ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
+        uc.m1Segment( ds1, ncx*(x+1)+0, ny*(y+0)+1, ny*(y+1)-1)
 
 if __name__ == "__main__":
     uc = UnitCell()

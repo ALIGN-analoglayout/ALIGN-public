@@ -148,18 +148,20 @@ class UnitCell:
             uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
             uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
 
-        uc.dcSegment( 's', 1*(x+0), 6*y-2, 6*y-1)
-        uc.dcSegment( 's', 1*(x+0), 6*y+1, 6*y+2)
+        (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
+
+        uc.dcSegment( ds0, 1*(x+0), 6*y-2, 6*y-1)
+        uc.dcSegment( ds0, 1*(x+0), 6*y+1, 6*y+2)
         uc.plSegment( 'g', 2*x+0,   4*y-1, 4*y+1)
         uc.plSegment( 'g', 2*x+1,   4*y-1, 4*y+1)
-        uc.dcSegment( 's', 1*(x+1), 6*y-2, 6*y-1)
-        uc.dcSegment( 's', 1*(x+1), 6*y+1, 6*y+2)
+        uc.dcSegment( ds1, 1*(x+1), 6*y-2, 6*y-1)
+        uc.dcSegment( ds1, 1*(x+1), 6*y+1, 6*y+2)
 
         uc.pcSegment( 'g', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
 
-        uc.m1Segment( 's', 2*(x+0)+0, 4*y-1, 4*y+1)
+        uc.m1Segment( ds0, 2*(x+0)+0, 4*y-1, 4*y+1)
         uc.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
-        uc.m1Segment( 'd', 2*(x+1)+0, 4*y-1, 4*y+1)
+        uc.m1Segment( ds1, 2*(x+1)+0, 4*y-1, 4*y+1)
 
         assert self.m2PerUnitCell % 2 == 1
 
