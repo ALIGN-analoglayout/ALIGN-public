@@ -76,7 +76,6 @@ def removeDuplicates(data):
             if v:
                 (rect0, _) = v[0]
                 for (rect, netName) in v[1:]:
-                    print(rect, rect0)
                     assert all(rect[i] == rect0[i] for i in indices)
 
                 s = sorted(v, key=lambda p: p[0][kk])
@@ -145,15 +144,26 @@ def test_overlapping():
             "globalRoutes": [], "globalRouteGrid": []}
     newData = removeDuplicates(data)
     assert len(newData['terminals']) == 1
+    assert newData['terminals'][0]['rect'] == [0, -50, 600, 50]
+
+
+def test_short():
+    terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+                 {'layer': 'metal2', 'netName': 'y', 'rect': [200, -50, 600, 50]}]
+    data = {"bbox": [0, -50, 600, 50], "terminals": terminals,
+            "globalRoutes": [], "globalRouteGrid": []}
+    with pytest.raises(AssertionError):
+        newData = removeDuplicates(data)
 
 
 def test_underlapping():
     terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
                  {'layer': 'metal2', 'netName': 'x', 'rect': [100, -50, 200, 50]}]
-    data = {"bbox": [0, -50, 600, 50], "terminals": terminals,
+    data = {"bbox": [0, -50, 300, 50], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
     newData = removeDuplicates(data)
     assert len(newData['terminals']) == 1
+    assert newData['terminals'][0]['rect'] == [0, -50, 300, 50]
 
 
 def test_disjoint():
