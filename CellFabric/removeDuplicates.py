@@ -38,6 +38,7 @@ def removeDuplicates(data):
 
     hLayers = {layer for (layer, dir) in layers if dir == 'h'}
     vLayers = {layer for (layer, dir) in layers if dir == 'v'}
+    layersDict = dict(layers)
 
     indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
 
@@ -48,12 +49,8 @@ def removeDuplicates(data):
         rect = d['rect']
         netName = d['netName']
 
-        if layer in hLayers:
-            c2 = rect[1]+rect[3]
-        elif layer in vLayers:
-            c2 = rect[0]+rect[2]
-        else:
-            assert layer in hLayers or layer in vLayers, layer
+        assert layer in layersDict, layer
+        c2 = sum(rect[index] for index in indicesTbl[layersDict[layer]][0])
 
         if layer not in tbl:
             tbl[layer] = {}
