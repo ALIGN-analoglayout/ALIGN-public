@@ -102,21 +102,24 @@ def removeDuplicates(data):
                 terminals.append(
                     {'layer': layer, 'netName': netName, 'rect': rect})
 
-    return {'bbox': data['bbox'], 'terminals': terminals, 'globalRoutes': data['globalRoutes'], 'globalRouteGrid': data['globalRouteGrid']}
+    return {'bbox': data['bbox'],
+            'terminals': terminals,
+            'globalRoutes': data['globalRoutes'],
+            'globalRouteGrid': data['globalRouteGrid']}
 
 
 def test_vertical():
     terminals = [{'layer': 'metal1', 'netName': 'x', 'rect': [0, 0, 100, 300]}]
     data = {"bbox": [0, 100, 0, 100], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
-    newData = removeDuplicates(data)
+    removeDuplicates(data)
 
 
 def test_horizontal():
     terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, 0, 300, 100]}]
     data = {"bbox": [0, 100, 0, 100], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
-    newData = removeDuplicates(data)
+    removeDuplicates(data)
 
 
 def test_different_widths():
@@ -125,7 +128,7 @@ def test_different_widths():
     data = {"bbox": [0, 100, 0, 100], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
     with pytest.raises(AssertionError):
-        newData = removeDuplicates(data)
+        removeDuplicates(data)
 
 
 def test_bad_layer():
@@ -134,7 +137,7 @@ def test_bad_layer():
     data = {"bbox": [0, 100, 0, 100], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
     with pytest.raises(AssertionError):
-        newData = removeDuplicates(data)
+        removeDuplicates(data)
 
 
 def test_overlapping():
@@ -153,7 +156,7 @@ def test_short():
     data = {"bbox": [0, -50, 600, 50], "terminals": terminals,
             "globalRoutes": [], "globalRouteGrid": []}
     with pytest.raises(AssertionError):
-        newData = removeDuplicates(data)
+        removeDuplicates(data)
 
 
 def test_underlapping():
