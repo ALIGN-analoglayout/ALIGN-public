@@ -4,10 +4,10 @@ import pytest
 
 
 class Scanline:
-    def __init__(self, proto, indices, kk):
+    def __init__(self, proto, indices, dIndex):
         self.proto = proto
         self.indices = indices
-        self.kk = kk
+        self.dIndex = dIndex
         self.rects = []
         self.clear()
 
@@ -21,13 +21,13 @@ class Scanline:
 
     def emit(self):
         r = self.proto[:]
-        r[self.kk] = self.start
-        r[self.kk+2] = self.end
+        r[self.dIndex] = self.start
+        r[self.dIndex+2] = self.end
         self.rects.append((r, self.currentNet))
 
     def set(self, rect, netName):
-        self.start = rect[self.kk]
-        self.end = rect[self.kk+2]
+        self.start = rect[self.dIndex]
+        self.end = rect[self.dIndex+2]
         self.currentNet = netName
 
 
@@ -50,38 +50,39 @@ def removeDuplicates(data):
         netName = d['netName']
 
         assert layer in layersDict, layer
-        c2 = sum(rect[index] for index in indicesTbl[layersDict[layer]][0])
+        twice_center = sum(rect[index]
+                           for index in indicesTbl[layersDict[layer]][0])
 
         if layer not in tbl:
             tbl[layer] = {}
-        if c2 not in tbl[layer]:
-            tbl[layer][c2] = []
+        if twice_center not in tbl[layer]:
+            tbl[layer][twice_center] = []
 
-        tbl[layer][c2].append((rect, netName))
+        tbl[layer][twice_center].append((rect, netName))
 
     terminals = []
 
     for (layer, dir) in layers:
         if layer not in tbl:
             continue
-        (indices, kk) = indicesTbl[dir]
+        (indices, dIndex) = indicesTbl[dir]
 
-        for (c2, v) in tbl[layer].items():
+        for (twice_center, v) in tbl[layer].items():
 
-            sl = Scanline(v[0][0], indices, kk)
+            sl = Scanline(v[0][0], indices, dIndex)
 
             if v:
                 (rect0, _) = v[0]
                 for (rect, netName) in v[1:]:
                     assert all(rect[i] == rect0[i] for i in indices)
 
-                s = sorted(v, key=lambda p: p[0][kk])
+                s = sorted(v, key=lambda p: p[0][dIndex])
 
                 for (rect, netName) in s:
                     if sl.isEmpty():
                         sl.set(rect, netName)
-                    elif rect[kk] <= sl.end:  # continue
-                        sl.end = max(sl.end, rect[kk+2])
+                    elif rect[dIndex] <= sl.end:  # continue
+                        sl.end = max(sl.end, rect[dIndex+2])
                         assert sl.currentNet == netName, (
                             layer, sl.currentNet, netName)
                     else:  # gap
@@ -93,7 +94,7 @@ def removeDuplicates(data):
                     sl.clear()
 
 
-#        print( layer, c2, len(v), len(sl.rects))
+#        print( layer, twice_center, len(v), len(sl.rects))
 
             for (rect, netName) in sl.rects:
                 terminals.append(
