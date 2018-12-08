@@ -152,7 +152,6 @@ def test_mirrors():
     for x in [0,nx-1]:
       for y in range(ny):
         for ri in r.ris:
-          print( "Adding raft (can't use this spot):", ri.ci.nm, x, y)
           s.emit_never( ri.filled.var( r.idx( x, y)))
 
 
@@ -249,7 +248,6 @@ def test_diffpairs():
     for x in [0,nx-1]:
       for y in range(ny):
         for ri in r.ris:
-          print( "Adding raft (can't use this spot):", ri.ci.nm, x, y)
           s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
@@ -344,7 +342,6 @@ def test_diffpairs2x():
     for x in [0,nx-1]:
       for y in range(ny):
         for ri in r.ris:
-          print( "Adding raft (can't use this spot):", ri.ci.nm, x, y)
           s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
@@ -399,6 +396,8 @@ def test_diffpairs2x():
         tech = Tech()
         dp.dumpJson( fp, tech)
 
+
+
 def test_diffpairs4x():
 
     ux = 4
@@ -440,7 +439,6 @@ def test_diffpairs4x():
     for x in [0,nx-1]:
       for y in range(ny):
         for ri in r.ris:
-          print( "Adding raft (can't use this spot):", ri.ci.nm, x, y)
           s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
@@ -496,9 +494,122 @@ def test_diffpairs4x():
         dp.dumpJson( fp, tech)
 
 
+def test_vga():
+    ux = 4
+    uy = 8
+
+    mirrors = CellLeaf( "mirrors", Rect(0,0,6*ux,4*uy))
+    mirrors.addTerminal( "out4", Rect(0,0,0,uy))
+    mirrors.addTerminal( "out2", Rect(1,0,1,uy))
+    mirrors.addTerminal( "out1a", Rect(2,0,2,uy))
+    mirrors.addTerminal( "out1b", Rect(3,0,3,uy))
+    mirrors.addTerminal( "vmirror", Rect(4,0,4,uy))
+
+    dp1 = CellLeaf( "dp1", Rect(0,0,4*ux,2*uy))
+    dp1.addTerminal( "outa", Rect(0,0,0,uy))
+    dp1.addTerminal( "outb", Rect(1,0,1,uy))
+    dp1.addTerminal( "si", Rect(2,0,2,uy))
+    dp1.addTerminal( "c", Rect(3,0,3,uy))
+
+    dp2 = CellLeaf( "dp2", Rect(0,0,4*ux,4*uy))
+    dp2.addTerminal( "outa", Rect(0,0,0,uy))
+    dp2.addTerminal( "outb", Rect(1,0,1,uy))
+    dp2.addTerminal( "si", Rect(2,0,2,uy))
+    dp2.addTerminal( "c", Rect(3,0,3,uy))
+
+    dp4 = CellLeaf( "dp4", Rect(0,0,6*ux,4*uy))
+    dp4.addTerminal( "outa", Rect(0,0,0,uy))
+    dp4.addTerminal( "outb", Rect(1,0,1,uy))
+    dp4.addTerminal( "si", Rect(2,0,2,uy))
+    dp4.addTerminal( "c", Rect(3,0,3,uy))
+
+    vga = CellHier( "vga")
+
+    vga.addAndConnect( mirrors, "m", [("out4","v4"),("out2","v2"),("out1a","v1a"),("out1b","v1b"),("vmirror","vmirror")])
+    vga.addAndConnect( dp1, "dp1a", [("outa","outa"),("outb","outb"),("si","v1a"),("c","c1a")])
+    vga.addAndConnect( dp1, "dp1b", [("outa","outa"),("outb","outb"),("si","v1b"),("c","c1b")])
+    vga.addAndConnect( dp2, "dp2", [("outa","outa"),("outb","outb"),("si","v2"),("c","c2")])
+    vga.addAndConnect( dp4, "dp4", [("outa","outa"),("outb","outb"),("si","v4"),("c","c4")])
+
+    nx = 2+6*ux
+    ny = 18*uy
+#    nx = 2+(2*4+6)*ux+4
+#    ny = 4*uy
+
+    vga.bbox = Rect( 0, 0, nx, ny)
+
+    s = tally.Tally()
+    r = Raster( s, vga, nx, ny)
+    r.semantic()
+
+    #put a raft on the left and right
+    for x in [0,nx-1]:
+      for y in range(ny):
+        for ri in r.ris:
+          s.emit_never( ri.filled.var( r.idx( x, y)))
+
+#
+# Assign common centroid placement
+#
+    places = [('s',0,3),('a',1,3),('a',2,3),('b',3,3),('b',4,3),('s',5,3),
+              ('s',0,2),('a',1,2),('a',2,2),('b',3,2),('b',4,2),('s',5,2)]
+    places_common_centroid = [ (tag,5-x,3-y) for (tag,x,y) in places]
+
+    od = OrderedDict()
+    for (tag,x,y) in places + places_common_centroid:
+        if tag not in od: od[tag] = []
+        od[tag].append( (tag,x,y))
+
+    ri_tbl = { ri.ci.nm: ri for ri in r.ris}
+    for (tag,v) in od.items():
+        for (idx,(tag,x,y)) in enumerate(v):
+            pass
+#            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+
+
+    for x in range(nx):
+      for y in range(ny):
+        for ri in r.ris:
+          if y % uy != 0:
+            s.emit_never( ri.anchor.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          else:
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+
+    s.solve()
+    assert s.state == 'SAT'
+
+    specified_nets = set()
+    remaining_nets = [ n for n in r.nets.keys() if n not in specified_nets]
+
+    def chunk( it, size):
+      it = iter(it)
+      return iter( lambda: tuple(itertools.islice(it, size)), ())
+
+    groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
+
+    if False:
+        r.optimizeNets( groups)
+    else:
+        r.solve()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        tech = Tech()
+        vga.write_globalrouting_json( fp, tech)
+
+    with open( "vga_placer_out.json", "wt") as fp:
+        tech = Tech()
+        vga.dumpJson( fp, tech)
+
+
+
+
 if __name__ == "__main__":
-#    test_vga_bigger()
+    test_vga()
 #    test_mirrors()
 #    test_diffpairs()
 #    test_diffpairs2x()
-    test_diffpairs4x()
+#    test_diffpairs4x()

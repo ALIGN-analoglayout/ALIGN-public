@@ -176,6 +176,11 @@ class CellTemplate:
     def addInstance( self, ci):
         self.instances[ci.nm] = ci
 
+    def addAndConnect( self, template, instanceName, ports):
+        self.addInstance( CellInstance( instanceName, template))
+        for (f,a) in ports:
+            self.connect( instanceName, f, a)
+
     def addTerminal( self, nm, r):
         if nm not in self.terminals: self.terminals[nm] = []
 
@@ -474,41 +479,57 @@ Use tallys to constrain length
       conf_limit = 10*50*1000*1000
       prop_limit = 10*50*1000*1000
 
-      def findSmallestX( net_nm, lst=[], strict=False):
+      def findSmallest( net_nm, n, extents, tag, lst=[], strict=False):
         self.s.solver.conf_budget( conf_limit)
         self.s.solver.prop_budget( prop_limit)
 
-        for lim in range(self.nx,-1,-1):
+        for lim in range(n,-1,-1):
           if strict:
-            self.s.solve( [-self.xExtents[net_nm][1].var( lim)] + lst)
+            self.s.solve( [-extents.var( lim)] + lst)
           else:
-            self.s.solve_limited( [-self.xExtents[net_nm][1].var( lim)] + lst)            
+            self.s.solve_limited( [-extents.var( lim)] + lst)            
           if self.s.state == 'SAT':
-            print( 'Can place with %s < %d x extent' % (net_nm,lim))
+            print( 'Can place with %s < %d %s extent' % (net_nm,lim,tag))
           elif self.s.state == 'UNKNOWN':
-            print( "Didn't wait to place with %s < %d x extent" % (net_nm,lim))
+            print( "Didn't wait to place with %s < %d %s extent" % (net_nm,lim,tag))
             return lim+1
           else:
-            print( 'Fails to place with %s < %d x extent' % (net_nm,lim))
+            print( 'Fails to place with %s < %d %s extent' % (net_nm,lim,tag))
             return lim+1
+
+      def findSmallestBisection( net_nm, n, extents, tag, lst=[], strict=False):
+        self.s.solver.conf_budget( conf_limit)
+        self.s.solver.prop_budget( prop_limit)
+
+        def aux( lo, hi):
+          # lo fails, hi might work, hi+1 for sure works
+          if lo == hi:
+            print( 'Base case: %s %d %d => returns %d' % (net_nm,lo,hi,hi+1))
+            return hi+1
+          else:
+            mid = (lo+hi+1)//2
+            print( 'General case: %s %d %d => trying %d' % (net_nm,lo,hi,mid))
+            self.s.solve( [-extents.var( mid)] + lst)            
+            if self.s.state == 'SAT':
+              print( 'Can place with %s < %d %s extent' % (net_nm,mid,tag))
+              return aux( lo, mid-1)
+            else:
+              print( 'Fails to place with %s < %d %s extent' % (net_nm,mid,tag))
+              return aux( mid, hi)
+
+        lim = aux( 0, n)
+#        alt = findSmallest( net_nm, n, extents, tag, lst, True)
+#        assert lim == alt, (lim,alt)
+        return lim
+
+
+      def findSmallestX( net_nm, lst=[], strict=False):
+#        return findSmallest( net_nm, self.nx, self.xExtents[net_nm][1], "x", lst, strict)
+        return findSmallestBisection( net_nm, self.nx, self.xExtents[net_nm][1], "x", lst, strict)
 
       def findSmallestY( net_nm, lst=[], strict=False):
-        self.s.solver.conf_budget( conf_limit)
-        self.s.solver.prop_budget( prop_limit)
-
-        for lim in range(self.ny,-1,-1):
-          if strict:
-            self.s.solve( [-self.yExtents[net_nm][1].var( lim)] + lst)
-          else:
-            self.s.solve_limited( [-self.yExtents[net_nm][1].var( lim)] + lst)            
-          if self.s.state == 'SAT':
-            print( 'Can place with %s < %d y extent' % (net_nm,lim))
-          elif self.s.state == 'UNKNOWN':
-            print( "Didn't wait to place with %s < %d y extent" % (net_nm,lim))
-            return lim+1
-          else:
-            print( 'Fails to place with %s < %d y extent' % (net_nm,lim))
-            return lim+1
+#        return findSmallest( net_nm, self.ny, self.yExtents[net_nm][1], "y", lst, strict)
+        return findSmallestBisection( net_nm, self.ny, self.yExtents[net_nm][1], "y", lst, strict)
 
 
       all_nets = [ x for lst in priority_nets for x in lst]
@@ -528,24 +549,9 @@ Use tallys to constrain length
         netsOut = tally.BitVec( self.s, ('%s X' % tag), count+1)
         self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count+1)])
 
-        self.s.solver.conf_budget( conf_limit)
-        self.s.solver.prop_budget( prop_limit)
+#        result = findSmallest( net_nm, count-1, netsOut, "total xy", [], False)
+        result = findSmallestBisection( net_nm, count-1, netsOut, "total xy", [], True)
 
-        result = None
-        for lim in range(count-1,-1,-1):
-          # if SAT, you can do it in < lim
-          self.s.solve_limited( [-netsOut.var(lim)])
-          if self.s.state == 'SAT':
-            print( 'Can place with %s nets < %d total xy extent' % (tag,lim))
-          elif self.s.state == 'UNKNOWN':
-            print( "Didn't wait to place with %s nets < %d total xy extent" % (tag,lim))
-            result = lim + 1
-            break
-          else:
-            print( 'Fails to place with %s nets < %d total xy extent' % (tag,lim))
-            result = lim + 1
-            break
-        
         if result is not None and result < count+1:
           self.s.emit_never( netsOut.var(result))
 
