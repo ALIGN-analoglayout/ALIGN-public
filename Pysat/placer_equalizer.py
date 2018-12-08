@@ -494,7 +494,7 @@ def test_diffpairs4x():
         dp.dumpJson( fp, tech)
 
 
-def test_vga():
+def test_vga(optimize=True):
     ux = 4
     uy = 8
 
@@ -531,9 +531,11 @@ def test_vga():
     vga.addAndConnect( dp2, "dp2", [("outa","outa"),("outb","outb"),("si","v2"),("c","c2")])
     vga.addAndConnect( dp4, "dp4", [("outa","outa"),("outb","outb"),("si","v4"),("c","c4")])
 
-    nx = 2+6*ux
-    ny = 18*uy
-#    nx = 2+(2*4+6)*ux+4
+#    nx = 2+6*ux
+#    ny = 16*uy
+    nx = 2+(2*6)*ux+2
+    ny = 8*uy
+#    nx = 2+(2*4+2*6)*ux+6
 #    ny = 4*uy
 
     vga.bbox = Rect( 0, 0, nx, ny)
@@ -591,7 +593,7 @@ def test_vga():
 
     groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
 
-    if False:
+    if optimize:
         r.optimizeNets( groups)
     else:
         r.solve()
@@ -605,11 +607,24 @@ def test_vga():
         vga.dumpJson( fp, tech)
 
 
-
+import argparse
 
 if __name__ == "__main__":
-    test_vga()
-#    test_mirrors()
-#    test_diffpairs()
-#    test_diffpairs2x()
-#    test_diffpairs4x()
+    parser = argparse.ArgumentParser( description="Placer equalizer")
+    parser.add_argument( "-n", "--block_name", type=str, required=True)
+    parser.add_argument( "-noopt", "--no_optimize", action='store_true')
+
+    args = parser.parse_args()
+
+    if args.block_name == "vga":
+        test_vga( not args.no_optimize)
+    elif args.block_name == "mirrors":
+        test_mirrors()
+    elif args.block_name == "diffpairs":
+        test_diffpairs()
+    elif args.block_name == "diffpairs2x":
+        test_diffpairs2x()
+    elif args.block_name == "diffpairs4x":
+        test_diffpairs4x()
+    else:
+        assert(False)
