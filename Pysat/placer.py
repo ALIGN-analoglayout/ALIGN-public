@@ -476,8 +476,8 @@ Use tallys to constrain length
 
     def optimizeNets( self, priority_nets):
 
-      conf_limit = 10*50*1000*1000
-      prop_limit = 10*50*1000*1000
+      conf_limit = 50*1000*1000
+      prop_limit = 50*1000*1000
 
       def findSmallest( net_nm, n, extents, tag, lst=[], strict=False):
         self.s.solver.conf_budget( conf_limit)

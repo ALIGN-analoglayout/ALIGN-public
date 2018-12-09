@@ -25,44 +25,36 @@ def test_vga_bigger():
 
     vga = CellHier( "vga")
 
-    vga.addInstance( CellInstance( "CM0", nmirror))
-    vga.addInstance( CellInstance( "CM1", nmirror))
-    vga.addInstance( CellInstance( "DP0", ndiffpair))
-    vga.addInstance( CellInstance( "DP1", ndiffpair))
-    vga.addInstance( CellInstance( "Ra", res))
-    vga.addInstance( CellInstance( "Rb", res))
+    vga.addInstance( CellInstance( "MCM00_MCM01", nmirror))
+    vga.addInstance( CellInstance( "MDP01_MDP00", ndiffpair))
+    vga.addInstance( CellInstance( "R1", res))
+    vga.addInstance( CellInstance( "R0", res))
+    vga.addInstance( CellInstance( "Cload1", groundedcap))
+    vga.addInstance( CellInstance( "Cload2", groundedcap))
 
-    vga.connect('CM0', 'd1', 'vmirror')
-    vga.connect('CM0', 'g1', 'vmirror')
-    vga.connect('CM0', 's', 'gnd!')
-    vga.connect('CM0', 'g2', 'vmirror')
-    vga.connect('CM0', 'd2', 'mout0')
+    vga.connect('MCM00_MCM01', 'd1', 'vmirror')
+    vga.connect('MCM00_MCM01', 'g1', 'vmirror')
+    vga.connect('MCM00_MCM01', 's', 'gnd!')
+    vga.connect('MCM00_MCM01', 'g2', 'vmirror')
+    vga.connect('MCM00_MCM01', 'd2', 'net3')
 
-    vga.connect('CM1', 'd1', 'vmirror')
-    vga.connect('CM1', 'g1', 'vmirror')
-    vga.connect('CM1', 's', 'gnd!')
-    vga.connect('CM1', 'g2', 'vmirror')
-    vga.connect('CM1', 'd2', 'mout1')
+    vga.connect('MDP01_MDP00', 'd1', 'vout1')
+    vga.connect('MDP01_MDP00', 'g1', 'vin2')
+    vga.connect('MDP01_MDP00', 's', 'net3')
+    vga.connect('MDP01_MDP00', 'g2', 'vin1')
+    vga.connect('MDP01_MDP00', 'd2', 'vout2')
 
-    vga.connect('DP0', 'd1', 'vouta')
-    vga.connect('DP0', 'g1', 'vin0a')
-    vga.connect('DP0', 's', 'mout0')
-    vga.connect('DP0', 'g2', 'vin0b')
-    vga.connect('DP0', 'd2', 'voutb')
+    vga.connect('R1', 't1', 'vdd!')
+    vga.connect('R1', 't2', 'vout1')
 
-    vga.connect('DP1', 'd1', 'vouta')
-    vga.connect('DP1', 'g1', 'vin1a')
-    vga.connect('DP1', 's', 'mout1')
-    vga.connect('DP1', 'g2', 'vin1b')
-    vga.connect('DP1', 'd2', 'voutb')
+    vga.connect('R0', 't1', 'vdd!')
+    vga.connect('R0', 't2', 'vout2')
 
-    vga.connect('Ra', 't1', 'vdd!')
-    vga.connect('Ra', 't2', 'vouta')
-    vga.connect('Rb', 't1', 'vdd!')
-    vga.connect('Rb', 't2', 'voutb')
+    vga.connect('Cload1', 't', 'vout1')
+    vga.connect('Cload2', 't', 'vout2')
 
-    nx = 10
-    ny = 24
+    nx = 12
+    ny = 30
 
     vga.bbox = Rect( 0, 0, nx, ny)
 
@@ -92,7 +84,7 @@ def test_vga_bigger():
     s.solve()
     assert s.state == 'SAT'
 
-    specified_nets = set(['vouta','voutb'])
+    specified_nets = set()
     remaining_nets = [ n for n in r.nets.keys() if n not in specified_nets]
 
     def chunk( it, size):
@@ -628,3 +620,4 @@ if __name__ == "__main__":
         test_diffpairs4x()
     else:
         assert(False)
+
