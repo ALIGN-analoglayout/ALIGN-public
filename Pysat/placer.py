@@ -325,6 +325,7 @@ class Raster:
 
         self.net_bvs = OrderedDict()
         for k in self.nets.keys():
+          print( "Building bit vectors for %s" % k)
           self.net_bvs[k] = tally.BitVec( self.s, ('net_terminal_%s' % k), (self.nx+1)*self.ny)
 
         for ri in self.ris:
@@ -549,8 +550,8 @@ Use tallys to constrain length
         netsOut = tally.BitVec( self.s, ('%s X' % tag), count+1)
         self.s.emit_tally( netsInp, [netsOut.var(x) for x in range(count+1)])
 
-#        result = findSmallest( net_nm, count-1, netsOut, "total xy", [], False)
-        result = findSmallestBisection( net_nm, count-1, netsOut, "total xy", [], True)
+#        result = findSmallest( tag, count-1, netsOut, "total xy", [], False)
+        result = findSmallestBisection( tag, count-1, netsOut, "total xy", [], True)
 
         if result is not None and result < count+1:
           self.s.emit_never( netsOut.var(result))
