@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import EventSVG from './views/EventSVG.vue'
+import EditSVG from './views/EditSVG.vue'
 
 Vue.use(Router)
 
@@ -10,8 +10,8 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'event-svg',
-      component: EventSVG
+      name: 'edit-svg',
+      component: EditSVG
     }
   ]
 })

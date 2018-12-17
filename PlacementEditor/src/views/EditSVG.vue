@@ -1,17 +1,12 @@
 <template>
   <div>
-    <h1>SVG-Based Dogbone Editor</h1>
+    <h1>SVG-Based Placment Editor</h1>
     <div>
       <button @click="getContent">Load</button>
       <button @click="postContent">Save</button>
     </div>
     <div>
-      <svg
-        :width="width"
-        :height="height"
-        @mousemove="doMove($event)"
-        @mouseup="doEnd($event)"
-      >
+      <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
         <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
           <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
             <line
@@ -21,7 +16,7 @@
               :y2="l.cy"
               stroke="black"
               stroke-dasharray="10 4"
-            />
+            ></line>
           </g>
           <g v-for="(l, idx) in vgridlines" :key="`v-${idx}`">
             <line
@@ -31,50 +26,19 @@
               :y2="l.y1"
               stroke="black"
               stroke-dasharray="10 4"
-            />
-          </g>
-          <g
-            v-for="(c, idx) in dogbones"
-            :key="`d-${idx}`"
-            :transform="`translate(${c.x0} ${c.cy})`"
-          >
-            <line
-              :x1="0"
-              :y1="0"
-              :x2="c.x1 - c.x0"
-              :y2="0"
-              :stroke="c.fill"
-              :stroke-width="c.r"
-              @mousedown="doStart($event, c, idx, 2)"
             ></line>
-            <circle
-              :r="c.r"
-              :cx="0"
-              :cy="0"
+          </g>
+          <g v-for="(c, idx) in leaves" :key="`d-${idx}`" :transform="`translate(${c.ox} ${c.oy})`">
+            <path
+              :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
+              stroke="black"
               :fill="c.fill"
-              @mousedown="doStart($event, c, idx, 0)"
-            ></circle>
-
-            <circle
-              :r="c.r"
-              :cx="c.x1 - c.x0"
-              :cy="0"
-              :fill="c.fill"
-              @mousedown="doStart($event, c, idx, 1)"
-            ></circle>
-            <g :transform="`matrix(1 0 0 -1 ${(c.x1 - c.x0) / 2} 24)`">
-              <text :x="0" :y="0" style="font: 24px sans-serif;">
-                {{ c.nm }}
-              </text>
+              @mousedown="doStart($event, c, idx, 2)"
+            ></path>
+            <g :transform="`matrix(1 0 0 -1 ${c.w / 2} 24)`">
+              <text :x="0" :y="0" style="font: 24px sans-serif;">{{ c.nm }}</text>
             </g>
           </g>
-          <!--
-            <path
-              d="M 50 50 h 50 v 50 h -50 v-50"
-              stroke="black"
-              fill="transparent"
-            ></path>
-          -->
         </g>
       </svg>
     </div>
@@ -97,8 +61,9 @@ export default {
       moving: false,
       moving_idx: undefined,
       code: undefined,
-      offset: undefined,
-      dogbones: [],
+      offx: undefined,
+      offy: undefined,
+      leaves: [],
       hgridlines: [],
       vgridlines: [],
       errors: []
@@ -109,12 +74,12 @@ export default {
     this.dogbones = []
     var nms = ['ref', '1a', '1b', '2', '4']
     for (let i = 0; i < 5; i += 1) {
-      this.dogbones.push({
-        x0: 4 * this.step,
-        x1: 8 * this.step,
-        cy: (i + 4) * this.step,
-        r: this.r,
-        fill: '#ff0000',
+      this.leaves.push({
+        w: 4 * this.step,
+        h: 1 * this.step,
+        ox: 4 * this.step,
+        oy: (i + 4) * this.step,
+        fill: '#ffe0e0',
         nm: nms[i]
       })
     }
@@ -138,7 +103,7 @@ export default {
       axios
         .get('http://localhost:5000/get')
         .then(response => {
-          this.dogbones = response['data']
+          this.leaves = response['data']
         })
         .catch(e => {
           this.errors.push(e)
@@ -146,7 +111,7 @@ export default {
     },
     postContent: function() {
       axios
-        .post('http://localhost:5000/post', this.dogbones, {
+        .post('http://localhost:5000/post', this.leaves, {
           headers: { 'Content-Type': 'application/json' }
         })
         .then(response => {
@@ -159,27 +124,23 @@ export default {
     roundNearestGrid: function(offset) {
       return Math.round(offset / this.step) * this.step
     },
+    getEventX: function(event) {
+      return event.offsetX / this.scale
+    },
+    getEventY: function(event) {
+      return (this.height - event.offsetY) / this.scale
+    },
     doMove: function(event) {
       if (this.moving) {
-        let dg = this.dogbones[this.moving_idx]
+        let dg = this.leaves[this.moving_idx]
         /*
         s 0  0      1/s 0    0       1 0 0
         0 -s h      0   -1/s h/s  =  0 1 0
         0 0  1      0   0    1       0 0 1
         */
-        // Hack to invert Y flip transformation
-        let x = event.offsetX / this.scale
-        let y = (this.height - event.offsetY) / this.scale
-
-        if (this.code == 0) {
-          dg.x0 = x
-        } else if (this.code == 1) {
-          dg.x1 = x
-        } else if (this.code == 2) {
-          let delta = dg.x1 - dg.x0
-          dg.x0 = x - this.offset
-          dg.x1 = dg.x0 + delta
-          dg.cy = y
+        if (this.code == 2) {
+          dg.ox = this.getEventX(event) - this.offx
+          dg.oy = this.getEventY(event) - this.offy
         }
       }
     },
@@ -188,36 +149,22 @@ export default {
       this.code = code
       this.moving = true
       this.moving_idx = idx
-      let dg = this.dogbones[this.moving_idx]
-      this.offset = event.offsetX / this.scale - dg.x0
+      let dg = this.leaves[this.moving_idx]
+      this.offx = this.getEventX(event) - dg.ox
+      this.offy = this.getEventY(event) - dg.oy
     },
     doEnd: function() {
       if (this.moving) {
         const e = Elastic.easeOut.config(1, 0.3)
         const t = 0.5
-        let dg = this.dogbones[this.moving_idx]
+        let dg = this.leaves[this.moving_idx]
 
-        if (this.code == 0) {
-          let targetX0 = this.roundNearestGrid(dg.x0)
+        if (this.code == 2) {
+          let targetX = this.roundNearestGrid(dg.ox)
+          let targetY = this.roundNearestGrid(dg.oy)
           TweenMax.to(dg, t, {
-            x0: targetX0,
-            ease: e
-          })
-        } else if (this.code == 1) {
-          let targetX1 = this.roundNearestGrid(dg.x1)
-          TweenMax.to(dg, t, {
-            x1: targetX1,
-            ease: e
-          })
-        } else if (this.code == 2) {
-          let delta = dg.x1 - dg.x0
-          let targetX0 = this.roundNearestGrid(dg.x0)
-          let targetX1 = targetX0 + delta
-          let targetCY = this.roundNearestGrid(dg.cy)
-          TweenMax.to(dg, t, {
-            x0: targetX0,
-            x1: targetX1,
-            cy: targetCY,
+            ox: targetX,
+            oy: targetY,
             ease: e
           })
         }

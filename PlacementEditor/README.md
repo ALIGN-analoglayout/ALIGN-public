@@ -1,4 +1,4 @@
-# LeafEditor
+# PlacementEditor
 
 ## Project setup
 ```
