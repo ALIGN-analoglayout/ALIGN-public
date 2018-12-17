@@ -219,7 +219,7 @@ import argparse
 def test_nunit():
     c = Canvas()
 
-    for (x,y) in ( (x,y) for x in range(16) for y in range(16)):
+    for (x,y) in ( (x,y) for x in range(2) for y in range(1)):
         c.nunit( x, y)
 
     c.computeBbox()
@@ -234,7 +234,7 @@ def test_nunit():
 def test_cunit():
     c = Canvas()
 
-    for (x,y) in ( (x,y) for x in range(16) for y in range(16)):
+    for (x,y) in ( (x,y) for x in range(16) for y in range(4)):
         c.cunit( x, y)
 
     c.computeBbox()

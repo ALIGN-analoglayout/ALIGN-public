@@ -28,7 +28,7 @@ def test_mirrors():
             mirrors.connect( "CM_%s_%d" % (tag,i), 'g2', 'vmirror')
             mirrors.connect( "CM_%s_%d" % (tag,i), 's2', 'gnd!')
 
-    nx = 6*ux
+    nx = 5*ux
     ny = 4*uy
 
     mirrors.bbox = Rect( 0, 0, nx, ny)
@@ -51,7 +51,7 @@ def test_mirrors():
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}
     for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
-            s.emit_always( ri_tbl["CM_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+            s.emit_always( ri_tbl["CM_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
 
     for x in range(nx):

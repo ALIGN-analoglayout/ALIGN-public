@@ -54,9 +54,8 @@
               stroke="black"
               :fill="c.fill"
               @mousedown="doStart($event, c, idx, 2)"
-              v-on:keyup.left="doKeyup($event)"
             ></path>
-            <g :transform="`matrix(1 0 0 -1 ${c.w / 2} ${c.h / 2 + 24})`">
+            <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`">
               <text :x="0" :y="0" style="font: 24px sans-serif;">
                 {{ c.nm }}
               </text>
@@ -77,11 +76,11 @@ export default {
     const height = 720
     const step = 50
     const stepsPerXStep = 4
-    const stepsPerYStep = 16
+    const stepsPerYStep = 8
     const stepx = stepsPerXStep * step
     const stepy = stepsPerYStep * step
-    let ny = 9
-    let nx = 48
+    let ny = 4
+    let nx = 6
     var scale
 
     if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
