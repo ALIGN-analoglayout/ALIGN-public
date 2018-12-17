@@ -1,6 +1,6 @@
 from placer import *
 
-def test_mirrors():
+def test_mirrors(raft=True):
 
     ux = 4
     uy = 8
@@ -28,7 +28,8 @@ def test_mirrors():
             mirrors.connect( "CM_%s_%d" % (tag,i), 'g2', 'vmirror')
             mirrors.connect( "CM_%s_%d" % (tag,i), 's2', 'gnd!')
 
-    nx = 2+6*ux
+    assert not raft
+    nx = 6*ux
     ny = 4*uy
 
     mirrors.bbox = Rect( 0, 0, nx, ny)
@@ -38,17 +39,18 @@ def test_mirrors():
     r.semantic()
 
     #put a raft on the left and right
-    for x in [0,nx-1]:
-      for y in range(ny):
-        for ri in r.ris:
-          s.emit_never( ri.filled.var( r.idx( x, y)))
+    if raft:
+        for x in [0,nx-1]:
+            for y in range(ny):
+                for ri in r.ris:
+                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 
 #
 # Assign common centroid placement
 #
-    places = [('4',1,3),('4',2,3),('4',3,3),('4',4,3),('2',1,2),('ref',2,2),('1a',3,2),('1b',4,2),('2',5,2)]
-    places_common_centroid = [ (tag,5-x,3-y) for (tag,x,y) in places]
+    places = [('4',0,3),('4',1,3),('4',2,3),('4',3,3),('2',0,2),('ref',1,2),('1a',2,2),('1b',3,2),('2',4,2)]
+    places_common_centroid = [ (tag,4-x,3-y) for (tag,x,y) in places]
 
     od = OrderedDict()
     for (tag,x,y) in places + places_common_centroid:
@@ -91,7 +93,7 @@ def test_mirrors():
 
 
 
-def test_diffpairs1x():
+def test_diffpairs1x(raft=True):
 
     ux = 4
     uy = 8
@@ -119,7 +121,8 @@ def test_diffpairs1x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 2+4*ux
+    assert not raft
+    nx = 4*ux
     ny = 2*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
@@ -128,11 +131,12 @@ def test_diffpairs1x():
     r = Raster( s, dp, nx, ny)
     r.semantic()
 
-    #put a raft on the left and right
-    for x in [0,nx-1]:
-      for y in range(ny):
-        for ri in r.ris:
-          s.emit_never( ri.filled.var( r.idx( x, y)))
+    if raft:
+        #put a raft on the left and right
+        for x in [0,nx-1]:
+            for y in range(ny):
+                for ri in r.ris:
+                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -148,7 +152,7 @@ def test_diffpairs1x():
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}
     for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
-            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
 
     for x in range(nx):
@@ -179,7 +183,7 @@ def test_diffpairs1x():
 
     dp.dump()
 
-def test_diffpairs2x():
+def test_diffpairs2x(raft=True):
 
     ux = 4
     uy = 8
@@ -207,7 +211,8 @@ def test_diffpairs2x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 2+4*ux
+    assert not raft
+    nx = 4*ux
     ny = 4*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
@@ -216,11 +221,12 @@ def test_diffpairs2x():
     r = Raster( s, dp, nx, ny)
     r.semantic()
 
-    #put a raft on the left and right
-    for x in [0,nx-1]:
-      for y in range(ny):
-        for ri in r.ris:
-          s.emit_never( ri.filled.var( r.idx( x, y)))
+    if raft:
+        #put a raft on the left and right
+        for x in [0,nx-1]:
+            for y in range(ny):
+                for ri in r.ris:
+                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -237,7 +243,7 @@ def test_diffpairs2x():
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}
     for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
-            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
 
     for x in range(nx):
@@ -268,7 +274,7 @@ def test_diffpairs2x():
 
     dp.dump()
 
-def test_diffpairs4x():
+def test_diffpairs4x(raft=True):
 
     ux = 4
     uy = 8
@@ -296,7 +302,8 @@ def test_diffpairs4x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 2+6*ux
+    assert not raft
+    nx = 6*ux
     ny = 4*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
@@ -306,10 +313,11 @@ def test_diffpairs4x():
     r.semantic()
 
     #put a raft on the left and right
-    for x in [0,nx-1]:
-      for y in range(ny):
-        for ri in r.ris:
-          s.emit_never( ri.filled.var( r.idx( x, y)))
+    if raft:
+        for x in [0,nx-1]:
+            for y in range(ny):
+                for ri in r.ris:
+                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -326,7 +334,7 @@ def test_diffpairs4x():
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}
     for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
-            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+            s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
 
     for x in range(nx):
@@ -392,6 +400,7 @@ def test_ca(optimize=True,raft=True):
             ca.connect( "CA_%s_%d" % (tag,i), 't0', t0)
             ca.connect( "CA_%s_%d" % (tag,i), 't1', t1)
 
+    assert not raft
     nx = 2*8*ux
     ny = 4*8*uy
 
@@ -595,13 +604,13 @@ if __name__ == "__main__":
     elif args.block_name == "ca":
         test_ca( not args.no_optimize, raft=not args.no_raft)
     elif args.block_name == "mirrors":
-        test_mirrors()
+        test_mirrors(raft=not args.no_raft)
     elif args.block_name == "diffpairs1x":
-        test_diffpairs1x()
+        test_diffpairs1x(raft=not args.no_raft)
     elif args.block_name == "diffpairs2x":
-        test_diffpairs2x()
+        test_diffpairs2x(raft=not args.no_raft)
     elif args.block_name == "diffpairs4x":
-        test_diffpairs4x()
+        test_diffpairs4x(raft=not args.no_raft)
     else:
         assert(False)
 
