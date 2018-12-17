@@ -1,6 +1,6 @@
 from placer import *
 
-def test_mirrors(raft=True):
+def test_mirrors():
 
     ux = 4
     uy = 8
@@ -28,7 +28,6 @@ def test_mirrors(raft=True):
             mirrors.connect( "CM_%s_%d" % (tag,i), 'g2', 'vmirror')
             mirrors.connect( "CM_%s_%d" % (tag,i), 's2', 'gnd!')
 
-    assert not raft
     nx = 6*ux
     ny = 4*uy
 
@@ -37,14 +36,6 @@ def test_mirrors(raft=True):
     s = tally.Tally()
     r = Raster( s, mirrors, nx, ny)
     r.semantic()
-
-    #put a raft on the left and right
-    if raft:
-        for x in [0,nx-1]:
-            for y in range(ny):
-                for ri in r.ris:
-                    s.emit_never( ri.filled.var( r.idx( x, y)))
-
 
 #
 # Assign common centroid placement
@@ -93,7 +84,7 @@ def test_mirrors(raft=True):
 
 
 
-def test_diffpairs1x(raft=True):
+def test_diffpairs1x():
 
     ux = 4
     uy = 8
@@ -121,7 +112,6 @@ def test_diffpairs1x(raft=True):
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    assert not raft
     nx = 4*ux
     ny = 2*uy
 
@@ -130,13 +120,6 @@ def test_diffpairs1x(raft=True):
     s = tally.Tally()
     r = Raster( s, dp, nx, ny)
     r.semantic()
-
-    if raft:
-        #put a raft on the left and right
-        for x in [0,nx-1]:
-            for y in range(ny):
-                for ri in r.ris:
-                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -183,7 +166,7 @@ def test_diffpairs1x(raft=True):
 
     dp.dump()
 
-def test_diffpairs2x(raft=True):
+def test_diffpairs2x():
 
     ux = 4
     uy = 8
@@ -211,7 +194,6 @@ def test_diffpairs2x(raft=True):
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    assert not raft
     nx = 4*ux
     ny = 4*uy
 
@@ -220,13 +202,6 @@ def test_diffpairs2x(raft=True):
     s = tally.Tally()
     r = Raster( s, dp, nx, ny)
     r.semantic()
-
-    if raft:
-        #put a raft on the left and right
-        for x in [0,nx-1]:
-            for y in range(ny):
-                for ri in r.ris:
-                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -274,7 +249,7 @@ def test_diffpairs2x(raft=True):
 
     dp.dump()
 
-def test_diffpairs4x(raft=True):
+def test_diffpairs4x():
 
     ux = 4
     uy = 8
@@ -302,7 +277,6 @@ def test_diffpairs4x(raft=True):
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    assert not raft
     nx = 6*ux
     ny = 4*uy
 
@@ -311,13 +285,6 @@ def test_diffpairs4x(raft=True):
     s = tally.Tally()
     r = Raster( s, dp, nx, ny)
     r.semantic()
-
-    #put a raft on the left and right
-    if raft:
-        for x in [0,nx-1]:
-            for y in range(ny):
-                for ri in r.ris:
-                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -365,7 +332,7 @@ def test_diffpairs4x(raft=True):
 
     dp.dump()
 
-def test_ca(optimize=True,raft=True):
+def test_ca(optimize=True):
     ux = 1
     uy = 1
 
@@ -400,7 +367,6 @@ def test_ca(optimize=True,raft=True):
             ca.connect( "CA_%s_%d" % (tag,i), 't0', t0)
             ca.connect( "CA_%s_%d" % (tag,i), 't1', t1)
 
-    assert not raft
     nx = 2*8*ux
     ny = 4*8*uy
 
@@ -410,12 +376,6 @@ def test_ca(optimize=True,raft=True):
     r = Raster( s, ca, nx, ny)
     r.semantic()
 
-    #put a raft on the left and right
-    if raft:
-        for x in [0,nx-1]:
-            for y in range(ny):
-                for ri in r.ris:
-                    s.emit_never( ri.filled.var( r.idx( x, y)))
 
 #
 # Assign common centroid placement
@@ -464,7 +424,7 @@ def test_ca(optimize=True,raft=True):
 
     ca.dump()
 
-def test_vga(optimize=True,raft=True):
+def test_vga(optimize=True):
     ux = 4
     uy = 8
 
@@ -510,8 +470,6 @@ def test_vga(optimize=True,raft=True):
     vga.addAndConnect( dp2, "dp2",  io + [("si","v2"),("c","c2")])
     vga.addAndConnect( dp4, "dp4",  io + [("si","v4"),("c","c4")])
 
-    assert not raft
-
     nx = 6*ux
     ny = 16*uy
 #    nx = (2*5)*ux
@@ -524,14 +482,6 @@ def test_vga(optimize=True,raft=True):
     s = tally.Tally()
     r = Raster( s, vga, nx, ny)
     r.semantic()
-
-    if raft:
-      #put a raft on the left and right
-      for x in [0,nx-1]:
-        for y in range(ny):
-          for ri in r.ris:
-            s.emit_never( ri.filled.var( r.idx( x, y)))
-
 
     places = [
         ('dp1b',0,14),
@@ -595,22 +545,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser( description="Placer equalizer")
     parser.add_argument( "-n", "--block_name", type=str, required=True)
     parser.add_argument( "-noopt", "--no_optimize", action='store_true')
-    parser.add_argument( "-noraft", "--no_raft", action='store_true')
 
     args = parser.parse_args()
 
     if args.block_name == "vga":
-        test_vga( not args.no_optimize, raft=not args.no_raft)
+        test_vga( not args.no_optimize)
     elif args.block_name == "ca":
-        test_ca( not args.no_optimize, raft=not args.no_raft)
+        test_ca( not args.no_optimize)
     elif args.block_name == "mirrors":
-        test_mirrors(raft=not args.no_raft)
+        test_mirrors()
     elif args.block_name == "diffpairs1x":
-        test_diffpairs1x(raft=not args.no_raft)
+        test_diffpairs1x()
     elif args.block_name == "diffpairs2x":
-        test_diffpairs2x(raft=not args.no_raft)
+        test_diffpairs2x()
     elif args.block_name == "diffpairs4x":
-        test_diffpairs4x(raft=not args.no_raft)
+        test_diffpairs4x()
     else:
         assert(False)
 
