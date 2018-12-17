@@ -7,8 +7,10 @@
     </div>
     <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
       <span>{{ c.nm }}</span> <input v-model="c.w" /> <input v-model="c.h" />
-      <input v-model="c.ox" /> <input v-model="c.oy" />
-      <input v-model="c.sx" /> <input v-model="c.sy" />
+      <input v-model="c.transformation.oX" />
+      <input v-model="c.transformation.oY" />
+      <input v-model="c.transformation.sX" />
+      <input v-model="c.transformation.sY" />
     </div>
     <div>
       <svg
@@ -41,7 +43,11 @@
           <g
             v-for="(c, idx) in leaves"
             :key="`d-${idx}`"
-            :transform="`translate(${c.ox} ${c.oy}) scale(${c.sx} ${c.sy})`"
+            :transform="
+              `translate(${c.transformation.oX} ${c.transformation.oY}) scale(${
+                c.transformation.sX
+              } ${c.transformation.sY})`
+            "
           >
             <path
               :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
@@ -50,7 +56,7 @@
               @mousedown="doStart($event, c, idx, 2)"
               v-on:keyup.left="doKeyup($event)"
             ></path>
-            <g :transform="`matrix(1 0 0 -1 ${c.w / 2} 24)`">
+            <g :transform="`matrix(1 0 0 -1 ${c.w / 2} ${c.h / 2 + 24})`">
               <text :x="0" :y="0" style="font: 24px sans-serif;">
                 {{ c.nm }}
               </text>
@@ -67,14 +73,34 @@ import axios from 'axios'
 import { Elastic, TweenMax } from 'gsap'
 export default {
   data: function() {
+    const width = 960
+    const height = 720
+    const step = 50
+    const stepsPerXStep = 4
+    const stepsPerYStep = 16
+    const stepx = stepsPerXStep * step
+    const stepy = stepsPerYStep * step
+    let ny = 9
+    let nx = 48
+    var scale
+
+    if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
+      // ny is constraining
+      nx = stepsPerYStep * Math.round((stepsPerXStep * ny * width) / height)
+      scale = height / (ny * stepy)
+    } else {
+      ny = stepsPerXStep * Math.round((stepsPerYStep * nx * height) / width)
+      scale = width / (nx * stepx)
+    }
+
     return {
-      width: 960, // 720 * 4 / 3 = 240 * 4 = 960
-      height: 720,
-      scale: 0.8, // 18*50 = 900 * 4/5 = 180*4 = 720
-      step: 50,
-      r: 20,
-      ny: 18,
-      nx: 24,
+      width: width,
+      height: height,
+      scale: scale,
+      stepx: stepx,
+      stepy: stepy,
+      ny: ny,
+      nx: nx,
       moving: false,
       moving_idx: undefined,
       code: undefined,
@@ -92,28 +118,30 @@ export default {
     var nms = ['ref', '1a', '1b', '2', '4']
     for (let i = 0; i < 5; i += 1) {
       this.leaves.push({
-        w: 4 * this.step,
-        h: 1 * this.step,
-        ox: 8 * this.step,
-        oy: (2 * i + 4) * this.step,
-        sx: -1,
-        sy: -1,
+        w: 4 * this.stepx,
+        h: 1 * this.stepy,
+        transformation: {
+          oX: 8 * this.stepx,
+          oY: (2 * i + 4) * this.stepy,
+          sX: 1,
+          sY: 1
+        },
         fill: '#ffe0e0',
         nm: nms[i]
       })
     }
     for (let i = 0; i <= this.ny; i += 1) {
       this.hgridlines.push({
-        cy: this.step * i,
+        cy: this.stepy * i,
         x0: 0,
-        x1: this.step * this.nx
+        x1: this.stepx * this.nx
       })
     }
     for (let j = 0; j <= this.nx; j += 1) {
       this.vgridlines.push({
-        cx: this.step * j,
+        cx: this.stepx * j,
         y0: 0,
-        y1: this.step * this.ny
+        y1: this.stepy * this.ny
       })
     }
   },
@@ -140,8 +168,11 @@ export default {
           this.errors.push(e)
         })
     },
-    roundNearestGrid: function(offset) {
-      return Math.round(offset / this.step) * this.step
+    roundNearestGridX: function(offset) {
+      return Math.round(offset / this.stepx) * this.stepx
+    },
+    roundNearestGridY: function(offset) {
+      return Math.round(offset / this.stepy) * this.stepy
     },
     getEventX: function(event) {
       return event.offsetX / this.scale
@@ -158,8 +189,8 @@ export default {
         0 0  1      0   0    1       0 0 1
         */
         if (this.code == 2) {
-          dg.ox = this.getEventX(event) - this.offx
-          dg.oy = this.getEventY(event) - this.offy
+          dg.transformation.oX = this.getEventX(event) - this.offx
+          dg.transformation.oY = this.getEventY(event) - this.offy
         }
       }
     },
@@ -172,8 +203,8 @@ export default {
       this.moving = true
       this.moving_idx = idx
       let dg = this.leaves[this.moving_idx]
-      this.offx = this.getEventX(event) - dg.ox
-      this.offy = this.getEventY(event) - dg.oy
+      this.offx = this.getEventX(event) - dg.transformation.oX
+      this.offy = this.getEventY(event) - dg.transformation.oY
     },
     doEnd: function() {
       if (this.moving) {
@@ -182,11 +213,11 @@ export default {
         let dg = this.leaves[this.moving_idx]
 
         if (this.code == 2) {
-          let targetX = this.roundNearestGrid(dg.ox)
-          let targetY = this.roundNearestGrid(dg.oy)
-          TweenMax.to(dg, t, {
-            ox: targetX,
-            oy: targetY,
+          let targetX = this.roundNearestGridX(dg.transformation.oX)
+          let targetY = this.roundNearestGridY(dg.transformation.oY)
+          TweenMax.to(dg.transformation, t, {
+            oX: targetX,
+            oY: targetY,
             ease: e
           })
         }

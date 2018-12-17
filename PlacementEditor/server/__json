@@ -1,43 +1,101 @@
 [
   {
-    "w": 200,
-    "h": 50,
-    "ox": 100,
-    "oy": 100,
+    "nm": "m",
     "fill": "#ffe0e0",
-    "nm": "ref",
-    "_gsTweenID": "t25"
+    "w": 1200,
+    "h": 1600,
+    "transformation": {
+      "oX": 0,
+      "oY": 1600,
+      "sX": 1,
+      "sY": 1
+    },
+    "formal_actual_map": {
+      "out4": "v4",
+      "out2": "v2",
+      "out1a": "v1a",
+      "out1b": "v1b",
+      "vmirror": "vmirror"
+    }
   },
   {
-    "w": 200,
-    "h": 50,
-    "ox": 200,
-    "oy": 250,
+    "nm": "dp1a",
     "fill": "#ffe0e0",
-    "nm": "1a"
+    "w": 800,
+    "h": 800,
+    "transformation": {
+      "oX": 0,
+      "oY": 4800,
+      "sX": 1,
+      "sY": 1
+    },
+    "formal_actual_map": {
+      "outa": "outa",
+      "outb": "outb",
+      "ina": "ina",
+      "inb": "inb",
+      "si": "v1a",
+      "c": "c1a"
+    }
   },
   {
-    "w": 200,
-    "h": 50,
-    "ox": 200,
-    "oy": 300,
+    "nm": "dp1b",
     "fill": "#ffe0e0",
-    "nm": "1b"
+    "w": 800,
+    "h": 800,
+    "transformation": {
+      "oX": 0,
+      "oY": 5600,
+      "sX": 1,
+      "sY": 1
+    },
+    "formal_actual_map": {
+      "outa": "outa",
+      "outb": "outb",
+      "ina": "ina",
+      "inb": "inb",
+      "si": "v1b",
+      "c": "c1b"
+    }
   },
   {
-    "w": 200,
-    "h": 50,
-    "ox": 200,
-    "oy": 350,
+    "nm": "dp2",
     "fill": "#ffe0e0",
-    "nm": "2"
+    "w": 800,
+    "h": 1600,
+    "transformation": {
+      "oX": 0,
+      "oY": 3200,
+      "sX": 1,
+      "sY": 1
+    },
+    "formal_actual_map": {
+      "outa": "outa",
+      "outb": "outb",
+      "ina": "ina",
+      "inb": "inb",
+      "si": "v2",
+      "c": "c2"
+    }
   },
   {
-    "w": 200,
-    "h": 50,
-    "ox": 200,
-    "oy": 400,
+    "nm": "dp4",
     "fill": "#ffe0e0",
-    "nm": "4"
+    "w": 1200,
+    "h": 1600,
+    "transformation": {
+      "oX": 0,
+      "oY": 0,
+      "sX": 1,
+      "sY": 1
+    },
+    "formal_actual_map": {
+      "outa": "outa",
+      "outb": "outb",
+      "ina": "ina",
+      "inb": "inb",
+      "si": "v4",
+      "c": "c4"
+    }
   }
 ]

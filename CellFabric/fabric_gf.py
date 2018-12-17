@@ -46,7 +46,7 @@ class StopPointGrid:
             rect = [ c0, self.value(bIdx), c1, self.value(eIdx)]
         return { 'netName' : netName, 'layer' : self.layer, 'rect' : rect}
 
-class UnitCell:
+class Canvas:
 
     def computeBbox( self):
         self.bbox = transformation.Rect(None,None,None,None)
@@ -74,6 +74,7 @@ class UnitCell:
 
         pcPitch  = unitCellHeight//2
         m1Pitch  = 720 
+        m3Pitch  = 720 
 
         plPitch  = m1Pitch
         plOffset = plPitch//2
@@ -82,6 +83,7 @@ class UnitCell:
         pcWidth = 200
         m1Width = 400
         m2Width = 400
+        m3Width = 400
         dcWidth = 200
         plWidth = 200
 
@@ -108,6 +110,13 @@ class UnitCell:
         self.m1.addGridPoint( unitCellHeight//2,        False)
         self.m1.addGridPoint( unitCellHeight-stoppoint, True)
         self.m1.addGridPoint( unitCellHeight,           False)
+
+        self.m3 = StopPointGrid( 'm3', 'metal3', 'v', width=m3Width, pitch=m3Pitch)
+        self.m3.addGridPoint( 0,                        False)
+        self.m3.addGridPoint( stoppoint,                True)
+        self.m3.addGridPoint( unitCellHeight//2,        False)
+        self.m3.addGridPoint( unitCellHeight-stoppoint, True)
+        self.m3.addGridPoint( unitCellHeight,           False)
 
         stoppoint = m1Pitch//2
         self.m2 = StopPointGrid( 'm2', 'metal2', 'h', width=m2Width, pitch=m2Pitch)
@@ -139,47 +148,112 @@ class UnitCell:
     def pcSegment( self, netName, x0, x1, y): return self.addSegment( self.pc, netName, y, x0, x1)
     def m1Segment( self, netName, x, y0, y1): return self.addSegment( self.m1, netName, x, y0, y1)
     def m2Segment( self, netName, x0, x1, y): return self.addSegment( self.m2, netName, y, x0, x1)
+    def m3Segment( self, netName, x, y0, y1): return self.addSegment( self.m3, netName, x, y0, y1)
     def plSegment( self, netName, x, y0, y1): return self.addSegment( self.pl, netName, x, y0, y1)
     def dcSegment( self, netName, x, y0, y1): return self.addSegment( self.dc, netName, x, y0, y1)
     def ndSegment( self, netName, x0, x1, y): return self.addSegment( self.nd, netName, y, x0, x1)
 
-    def unit( self, x, y):
+    def nunit( self, x, y):
         for o in range(self.finsPerUnitCell//2):
-            uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
-            uc.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
+            self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
+            self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
 
         (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
 
-        uc.dcSegment( ds0, 1*(x+0), 6*y-2, 6*y-1)
-        uc.dcSegment( ds0, 1*(x+0), 6*y+1, 6*y+2)
-        uc.plSegment( 'g', 2*x+0,   4*y-1, 4*y+1)
-        uc.plSegment( 'g', 2*x+1,   4*y-1, 4*y+1)
-        uc.dcSegment( ds1, 1*(x+1), 6*y-2, 6*y-1)
-        uc.dcSegment( ds1, 1*(x+1), 6*y+1, 6*y+2)
+        self.dcSegment( ds0, 1*(x+0), 6*y-2, 6*y-1)
+        self.dcSegment( ds0, 1*(x+0), 6*y+1, 6*y+2)
+        self.plSegment( 'g', 2*x+0,   4*y-1, 4*y+1)
+        self.plSegment( 'g', 2*x+1,   4*y-1, 4*y+1)
+        self.dcSegment( ds1, 1*(x+1), 6*y-2, 6*y-1)
+        self.dcSegment( ds1, 1*(x+1), 6*y+1, 6*y+2)
 
-        uc.pcSegment( 'g', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
+        self.pcSegment( 'g', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
 
-        uc.m1Segment( ds0, 2*(x+0)+0, 4*y-1, 4*y+1)
-        uc.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
-        uc.m1Segment( ds1, 2*(x+1)+0, 4*y-1, 4*y+1)
+        self.m1Segment( ds0, 2*(x+0)+0, 4*y-1, 4*y+1)
+        self.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
+        self.m1Segment( ds1, 2*(x+1)+0, 4*y-1, 4*y+1)
 
         assert self.m2PerUnitCell % 2 == 1
 
         h = self.m2PerUnitCell//2
         for o in range(-h,h+1):
-            uc.m2Segment( '_', 4*x-1, 4*(x+1)+1, self.m2PerUnitCell*y+o)
+            self.m2Segment( '_', 4*x-1, 4*(x+1)+1, self.m2PerUnitCell*y+o)
 
-if __name__ == "__main__":
-    uc = UnitCell()
+    def cunit( self, x, y):
+
+      if True:
+        for o in range(self.finsPerUnitCell//2):
+            self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
+            self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
+
+        self.dcSegment( 't0', 1*(x+0), 6*y-2, 6*y-1)
+        self.dcSegment( 't0', 1*(x+0), 6*y+1, 6*y+2)
+        self.plSegment( 't1', 2*x+0,   4*y-1, 4*y+1)
+        self.plSegment( 't1', 2*x+1,   4*y-1, 4*y+1)
+        self.dcSegment( 't0', 1*(x+1), 6*y-2, 6*y-1)
+        self.dcSegment( 't0', 1*(x+1), 6*y+1, 6*y+2)
+
+        self.pcSegment( 't1', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
+
+      if True:
+        self.m1Segment( 't0', 2*(x+0)+0, 4*y-1, 4*y+1)
+        self.m1Segment( 't1', 2*(x+0)+1, 4*y-1, 4*y+1)
+        self.m1Segment( 't0', 2*(x+1)+0, 4*y-1, 4*y+1)
+
+        self.m3Segment( 't0', 2*(x+0)+0, 4*y-1, 4*y+1)
+        self.m3Segment( 't1', 2*(x+0)+1, 4*y-1, 4*y+1)
+        self.m3Segment( 't0', 2*(x+1)+0, 4*y-1, 4*y+1)
+
+        assert self.m2PerUnitCell % 2 == 1
+
+        h = self.m2PerUnitCell//2
+        for o in range(-h,h+1):
+            net = 't1' if o % 2 == 0 else 't0'
+            self.m2Segment( net, 4*x-1, 4*(x+1)+1, self.m2PerUnitCell*y+o)
+
+        
+
+
+import argparse
+
+def test_nunit():
+    c = Canvas()
 
     for (x,y) in ( (x,y) for x in range(16) for y in range(16)):
-        uc.unit( x, y)
+        c.nunit( x, y)
 
-    uc.computeBbox()
+    c.computeBbox()
 
     with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        data = { 'bbox' : uc.bbox.toList(),
+        data = { 'bbox' : c.bbox.toList(),
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
-                 'terminals' : uc.terminals}
+                 'terminals' : c.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
+
+def test_cunit():
+    c = Canvas()
+
+    for (x,y) in ( (x,y) for x in range(16) for y in range(16)):
+        c.cunit( x, y)
+
+    c.computeBbox()
+
+    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+        data = { 'bbox' : c.bbox.toList(),
+                 'globalRoutes' : [],
+                 'globalRouteGrid' : [],
+                 'terminals' : c.terminals}
+        fp.write( json.dumps( data, indent=2) + '\n')
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser( description="Build test device and cap fabrics")
+    parser.add_argument( "-n", "--block_name", type=str, required=True)
+    args = parser.parse_args()
+
+    if args.block_name == "nunit":
+        test_nunit()
+    elif args.block_name == "cunit":
+        test_cunit()

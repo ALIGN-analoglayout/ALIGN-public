@@ -172,6 +172,26 @@ class CellTemplate:
 
       fp.write( json.dumps( data, indent=2) + "\n")
 
+    def dumpJson2( self, fp, tech):
+      s=50
+
+      instances = []
+      for (k,ci) in self.instances.items():
+        instances.append( { "nm": k,
+                            "fill": "#ffe0e0",
+                            "w": ci.template.bbox.urx*s,
+                            "h": ci.template.bbox.ury*s,
+                            "transformation": { "oX" : ci.transformation.oX*s,
+                                                "oY" : ci.transformation.oY*s,
+                                                "sX" : ci.transformation.sX,
+                                                "sY" : ci.transformation.sY},
+                            "formal_actual_map": ci.fa_map})
+
+
+      data = instances
+
+      fp.write( json.dumps( data, indent=2) + "\n")
+
 
     def addInstance( self, ci):
         self.instances[ci.nm] = ci
@@ -224,6 +244,20 @@ class CellTemplate:
         data = { "bbox" : self.bbox, "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
         fp.write( json.dumps( data, indent=2, default=lambda x: encode_T(tech,x)) + "\n")
+
+
+    def dump( self):
+        with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+          tech = Tech()
+          self.write_globalrouting_json( fp, tech)
+
+        with open( self.nm + "_placer_out.json", "wt") as fp:
+          tech = Tech()
+          self.dumpJson( fp, tech)
+
+        with open( self.nm + "_for_edit.json", "wt") as fp:
+          tech = Tech()
+          self.dumpJson2( fp, tech)
 
 
 class CellLeaf(CellTemplate):
@@ -1002,13 +1036,7 @@ def test_ota_bigger():
     other_nets = [ n for n in r.nets.keys() if n not in mentioned_nets]
     r.optimizeNets( [priority0_nets,priority1_nets,other_nets])
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        ota.write_globalrouting_json( fp, tech)
-
-    with open( "ota_bigger_placer_out.json", "wt") as fp:
-        tech = Tech()
-        ota.dumpJson( fp, tech)
+    ota.dump()
 
 def test_sc():
 
@@ -1190,13 +1218,7 @@ def test_sc():
 
     r.optimizeNets( [priority_nets_0, priority_nets_1] + groups + [power_nets])
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        sc.write_globalrouting_json( fp, tech)
-
-    with open( "sc_placer_out.json", "wt") as fp:
-        tech = Tech()
-        sc.dumpJson( fp, tech)
+    sc.dump()
 
 import argparse
 

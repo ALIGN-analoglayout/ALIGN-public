@@ -87,16 +87,11 @@ def test_mirrors():
 
     r.optimizeNets( groups)
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        mirrors.write_globalrouting_json( fp, tech)
-
-    with open( "mirrors_placer_out.json", "wt") as fp:
-        tech = Tech()
-        mirrors.dumpJson( fp, tech)
+    mirrors.dump()
 
 
-def test_diffpairs():
+
+def test_diffpairs1x():
 
     ux = 4
     uy = 8
@@ -108,7 +103,7 @@ def test_diffpairs():
     nunit.addTerminal( "g2", Rect(3,0,3,uy))
     nunit.addTerminal( "s2", Rect(4,0,4,uy))
 
-    dp = CellHier( "dp")
+    dp = CellHier( "dp1x")
 
     configs = [('a',2,'outa','ina','so'),('b',2,'outb','inb','so'),('s',2,'si','c','so')]
 
@@ -182,13 +177,7 @@ def test_diffpairs():
 
     r.optimizeNets( groups)
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        dp.write_globalrouting_json( fp, tech)
-
-    with open( "dp_placer_out.json", "wt") as fp:
-        tech = Tech()
-        dp.dumpJson( fp, tech)
+    dp.dump()
 
 def test_diffpairs2x():
 
@@ -202,7 +191,7 @@ def test_diffpairs2x():
     nunit.addTerminal( "g2", Rect(3,0,3,uy))
     nunit.addTerminal( "s2", Rect(4,0,4,uy))
 
-    dp = CellHier( "dp")
+    dp = CellHier( "dp2x")
 
     configs = [('a',4,'outa','ina','so'),('b',4,'outb','inb','so'),('s',4,'si','c','so')]
 
@@ -277,15 +266,7 @@ def test_diffpairs2x():
 
     r.optimizeNets( groups)
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        dp.write_globalrouting_json( fp, tech)
-
-    with open( "dp_placer_out.json", "wt") as fp:
-        tech = Tech()
-        dp.dumpJson( fp, tech)
-
-
+    dp.dump()
 
 def test_diffpairs4x():
 
@@ -299,7 +280,7 @@ def test_diffpairs4x():
     nunit.addTerminal( "g2", Rect(3,0,3,uy))
     nunit.addTerminal( "s2", Rect(4,0,4,uy))
 
-    dp = CellHier( "dp")
+    dp = CellHier( "dp4x")
 
     configs = [('a',8,'outa','ina','so'),('b',8,'outb','inb','so'),('s',8,'si','c','so')]
 
@@ -374,18 +355,110 @@ def test_diffpairs4x():
 
     r.optimizeNets( groups)
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        dp.write_globalrouting_json( fp, tech)
+    dp.dump()
 
-    with open( "dp_placer_out.json", "wt") as fp:
-        tech = Tech()
-        dp.dumpJson( fp, tech)
+def test_ca(optimize=True,raft=True):
+    ux = 1
+    uy = 1
 
+    pitch = 0.072 # um
+    cap = 0.1 # fF/um
+
+    pitches_per_ux = 4
+    pitches_per_uy = 4
+    layers = 3
+
+    cap_per_ux_uy = cap*pitch*pitches_per_ux*pitches_per_uy*layers
+
+    cap_per_unit = 8*8*cap_per_ux_uy
+
+    print( "cap_per_ux_uy: %f cap_per_unit %f" % (cap_per_ux_uy, cap_per_unit))
+
+    cunit = CellLeaf( "cunit", Rect(0,0,8*ux,8*uy))
+    for x in [0,8]:
+        for (tag,l,u) in [("t0",1,3),("t1",5,7)]:
+            cunit.addTerminal( tag, Rect(x*ux,l*uy,x*ux,u*uy))
+
+    ca = CellHier( "ca")
+
+    configs = [('c', 8, 't0','t1')]
+
+    for (tag, mult, t0, t1) in configs:
+        for i in range(mult):
+            ca.addInstance( CellInstance( "CA_%s_%d" % (tag,i), cunit))
+
+    for (tag, mult, t0, t1) in configs:
+        for i in range(mult):
+            ca.connect( "CA_%s_%d" % (tag,i), 't0', t0)
+            ca.connect( "CA_%s_%d" % (tag,i), 't1', t1)
+
+    nx = 2*8*ux
+    ny = 4*8*uy
+
+    ca.bbox = Rect( 0, 0, nx, ny)
+
+    s = tally.Tally()
+    r = Raster( s, ca, nx, ny)
+    r.semantic()
+
+    #put a raft on the left and right
+    if raft:
+        for x in [0,nx-1]:
+            for y in range(ny):
+                for ri in r.ris:
+                    s.emit_never( ri.filled.var( r.idx( x, y)))
+
+#
+# Assign common centroid placement
+#
+    places = [('s',0,3),('a',1,3),('a',2,3),('b',3,3),('b',4,3),('s',5,3),
+              ('s',0,2),('a',1,2),('a',2,2),('b',3,2),('b',4,2),('s',5,2)]
+    places_common_centroid = [ (tag,5-x,3-y) for (tag,x,y) in places]
+
+    od = OrderedDict()
+    for (tag,x,y) in places + places_common_centroid:
+        if tag not in od: od[tag] = []
+        od[tag].append( (tag,x,y))
+
+    ri_tbl = { ri.ci.nm: ri for ri in r.ris}
+    for (tag,v) in od.items():
+        for (idx,(tag,x,y)) in enumerate(v):
+            pass
+#            s.emit_always( ri_tbl["CA_%s_%i" % (tag,idx)].anchor.var( r.idx( 1+x*ux, y*uy)))
+
+
+    for x in range(nx):
+      for y in range(ny):
+        for ri in r.ris:
+          if y % uy != 0:
+            s.emit_never( ri.anchor.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+          else:
+            s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
+
+    s.solve()
+    assert s.state == 'SAT'
+
+    specified_nets = set()
+    remaining_nets = [ n for n in r.nets.keys() if n not in specified_nets]
+
+    def chunk( it, size):
+      it = iter(it)
+      return iter( lambda: tuple(itertools.islice(it, size)), ())
+
+    groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
+
+    r.optimizeNets( groups)
+
+    ca.dump()
 
 def test_vga(optimize=True,raft=True):
     ux = 4
     uy = 8
+
 
     mirrors = CellLeaf( "mirrors", Rect(0,0,6*ux,4*uy))
     mirrors.addTerminal( "out4", Rect(0,0,0,uy))
@@ -450,6 +523,24 @@ def test_vga(optimize=True,raft=True):
           for ri in r.ris:
             s.emit_never( ri.filled.var( r.idx( x, y)))
 
+
+    places = [
+        ('dp1b',0,14),
+        ('dp1a',0,12),
+        ('dp2',0,8),
+        ('m',0,4),
+        ('dp4',0,0)
+    ]
+
+    od = OrderedDict()
+    for (tag,x,y) in places:
+        assert tag not in od
+        od[tag] = (x,y)
+
+    ri_tbl = { ri.ci.nm: ri for ri in r.ris}
+    for (tag,(x,y)) in od.items():
+        s.emit_always( ri_tbl[tag].anchor.var( r.idx( x*ux, y*uy)))
+
     for x in range(nx):
       for y in range(ny):
         for ri in r.ris:
@@ -486,13 +577,7 @@ def test_vga(optimize=True,raft=True):
     else:
         r.solve()
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        vga.write_globalrouting_json( fp, tech)
-
-    with open( "vga_placer_out.json", "wt") as fp:
-        tech = Tech()
-        vga.dumpJson( fp, tech)
+    vga.dump()
 
 
 import argparse
@@ -507,10 +592,12 @@ if __name__ == "__main__":
 
     if args.block_name == "vga":
         test_vga( not args.no_optimize, raft=not args.no_raft)
+    elif args.block_name == "ca":
+        test_ca( not args.no_optimize, raft=not args.no_raft)
     elif args.block_name == "mirrors":
         test_mirrors()
-    elif args.block_name == "diffpairs":
-        test_diffpairs()
+    elif args.block_name == "diffpairs1x":
+        test_diffpairs1x()
     elif args.block_name == "diffpairs2x":
         test_diffpairs2x()
     elif args.block_name == "diffpairs4x":

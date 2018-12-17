@@ -34,7 +34,7 @@ class Scanline:
 def removeDuplicates(data):
 
     layers = [('poly', 'v'), ('ndiff', 'h'), ('pdiff', 'h'), ('polycon', 'h'),
-              ('diffcon', 'v'), ('metal0', 'h'), ('metal1', 'v'), ('metal2', 'h')]
+              ('diffcon', 'v'), ('metal0', 'h'), ('metal1', 'v'), ('metal2', 'h'),('metal3', 'v')]
 
     hLayers = {layer for (layer, dir) in layers if dir == 'h'}
     vLayers = {layer for (layer, dir) in layers if dir == 'v'}
