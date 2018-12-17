@@ -6,7 +6,12 @@
       <button @click="postContent">Save</button>
     </div>
     <div>
-      <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
+      <svg
+        :width="width"
+        :height="height"
+        @mousemove="doMove($event)"
+        @mouseup="doEnd($event)"
+      >
         <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
           <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
             <line
@@ -28,7 +33,11 @@
               stroke-dasharray="10 4"
             ></line>
           </g>
-          <g v-for="(c, idx) in leaves" :key="`d-${idx}`" :transform="`translate(${c.ox} ${c.oy})`">
+          <g
+            v-for="(c, idx) in leaves"
+            :key="`d-${idx}`"
+            :transform="`translate(${c.ox} ${c.oy})`"
+          >
             <path
               :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
               stroke="black"
@@ -36,7 +45,9 @@
               @mousedown="doStart($event, c, idx, 2)"
             ></path>
             <g :transform="`matrix(1 0 0 -1 ${c.w / 2} 24)`">
-              <text :x="0" :y="0" style="font: 24px sans-serif;">{{ c.nm }}</text>
+              <text :x="0" :y="0" style="font: 24px sans-serif;">
+                {{ c.nm }}
+              </text>
             </g>
           </g>
         </g>
