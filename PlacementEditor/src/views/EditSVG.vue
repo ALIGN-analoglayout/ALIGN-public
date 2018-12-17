@@ -1,9 +1,14 @@
 <template>
   <div>
-    <h1>SVG-Based Placment Editor</h1>
+    <h1>SVG-Based Placement Editor</h1>
     <div>
       <button @click="getContent">Load</button>
       <button @click="postContent">Save</button>
+    </div>
+    <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
+      <span>{{ c.nm }}</span> <input v-model="c.w" /> <input v-model="c.h" />
+      <input v-model="c.ox" /> <input v-model="c.oy" />
+      <input v-model="c.sx" /> <input v-model="c.sy" />
     </div>
     <div>
       <svg
@@ -36,13 +41,14 @@
           <g
             v-for="(c, idx) in leaves"
             :key="`d-${idx}`"
-            :transform="`translate(${c.ox} ${c.oy})`"
+            :transform="`translate(${c.ox} ${c.oy}) scale(${c.sx} ${c.sy})`"
           >
             <path
               :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
               stroke="black"
               :fill="c.fill"
               @mousedown="doStart($event, c, idx, 2)"
+              v-on:keyup.left="doKeyup($event)"
             ></path>
             <g :transform="`matrix(1 0 0 -1 ${c.w / 2} 24)`">
               <text :x="0" :y="0" style="font: 24px sans-serif;">
@@ -88,8 +94,10 @@ export default {
       this.leaves.push({
         w: 4 * this.step,
         h: 1 * this.step,
-        ox: 4 * this.step,
-        oy: (i + 4) * this.step,
+        ox: 8 * this.step,
+        oy: (2 * i + 4) * this.step,
+        sx: -1,
+        sy: -1,
         fill: '#ffe0e0',
         nm: nms[i]
       })
@@ -155,6 +163,9 @@ export default {
         }
       }
     },
+    doKeyup: function(event) {
+      console.log('event', event)
+    },
     doStart: function(event, c, idx, code) {
       console.log('Start: ', event, c, idx, code)
       this.code = code
@@ -188,3 +199,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.value-tbl > input {
+  width: 10ex;
+}
+.value-tbl > span {
+  width: 10ex;
+  border-right: 15ex;
+}
+</style>
