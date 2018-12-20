@@ -5,10 +5,11 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "test": "npm run lint && npm run test:unit",
+    "lint": "vue-cli-service lint",
+    "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "ajv": "^6.5.5",
     "axios": "^0.18.0",
     "gsap": "^2.0.2",
     "vue": "^2.5.17",
@@ -18,12 +19,19 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.5",
     "@vue/cli-plugin-eslint": "^3.0.5",
+    "@vue/cli-plugin-unit-jest": "^3.2.0",
     "@vue/cli-service": "^3.0.5",
     "@vue/eslint-config-prettier": "^4.0.0",
+    "@vue/test-utils": "^1.0.0-beta.27",
+    "ajv": "^6.6.2",
+    "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
+    "babel-jest": "^23.6.0",
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
+    "jest": "^23.6.0",
     "prettier": "^1.15.2",
+    "vue-jest": "^3.0.2",
     "vue-template-compiler": "^2.5.17"
   }
 }
