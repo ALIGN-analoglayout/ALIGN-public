@@ -206,44 +206,73 @@ def test_diffpairs2x():
 #
 # Assign common centroid placement
 #
-    places = [          ('a',1,3),('b',2,3),
-              ('s',0,2),('a',1,2),('b',2,2),('s',3,2)]
-    places_common_centroid = [ (tag,3-x,3-y) for (tag,x,y) in places]
+    if False:
 
-    od = OrderedDict()
-    for (tag,x,y) in places + places_common_centroid:
+      places = [          ('a',1,3),('b',2,3),
+                ('s',0,2),('a',1,2),('b',2,2),('s',3,2)]
+      places_common_centroid = [ (tag,3-x,3-y) for (tag,x,y) in places]
+
+      od = OrderedDict()
+      for (tag,x,y) in places + places_common_centroid:
         if tag not in od: od[tag] = []
         od[tag].append( (tag,x,y))
 
-    ri_tbl = { ri.ci.nm: ri for ri in r.ris}
-    for (tag,v) in od.items():
+      ri_tbl = { ri.ci.nm: ri for ri in r.ris}
+      for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
             s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
+    if True:
+      ri_tbl = { ri.ci.nm: ri for ri in r.ris}        
 
+      for (tag, mult, _, _, _) in configs:
+        assert mult % 2 == 0
+        for i in range(mult//2):
+          nm = "DP_%s_%d" % (tag,i)
+          nm_other = "DP_%s_%d" % (tag,mult//2+i)
+
+          ri = ri_tbl[nm]
+          ri_other = ri_tbl[nm_other]
+
+          for x in range(nx):
+            if x % ux != 0: continue
+            for y in range(ny):
+              if y % uy != 0: continue
+              x_other = (3-x//ux)*ux
+              y_other = (3-y//uy)*uy
+              s.emit_implies( ri.anchor.var( r.idx( x,y)), ri_other.anchor.var( r.idx( x_other, y_other)))
+            
     for x in range(nx):
       for y in range(ny):
         for ri in r.ris:
-          if y % uy != 0:
+          if y % uy != 0 or x % ux != 0: 
             s.emit_never( ri.anchor.var( r.idx( x,y)))
             s.emit_never( ri.anchorMX.var( r.idx( x,y)))
             s.emit_never( ri.anchorMY.var( r.idx( x,y)))
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
           else:
             s.emit_never( ri.anchorMX.var( r.idx( x,y)))
+            s.emit_never( ri.anchorMY.var( r.idx( x,y))) # these cells are symmetrically in x
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
 
     s.solve()
     assert s.state == 'SAT'
 
-    specified_nets = set()
+    out_nets = ["outa","outb"]
+    in_nets  = ["ina","inb"]
+    s_nets  = ["si","so"]
+    ctrl_nets = ["c"]
+
+    specified_nets = set(out_nets + in_nets + s_nets + ctrl_nets)
     remaining_nets = [ n for n in r.nets.keys() if n not in specified_nets]
 
     def chunk( it, size):
       it = iter(it)
       return iter( lambda: tuple(itertools.islice(it, size)), ())
 
-    groups = [ list(tup) for tup in chunk( remaining_nets, 6)]
+    groups = [out_nets,in_nets,s_nets,ctrl_nets] + [ list(tup) for tup in chunk( remaining_nets, 6)]
+
+    print("Groups:", groups)
 
     r.optimizeNets( groups)
 

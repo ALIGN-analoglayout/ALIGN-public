@@ -97,8 +97,8 @@ export default {
     const stepsPerYStep = 8
     const stepx = stepsPerXStep * step
     const stepy = stepsPerYStep * step
-    let ny = 20
-    let nx = 30
+    let ny = 4
+    let nx = 6
     var scale
 
     if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
@@ -203,7 +203,7 @@ export default {
       //const e = SteppedEase.ease.config(10)
       //const e = Power0.easeNone
       const e = Power2.easeInOut
-      const t = 1
+      const t = 0.6
       var tl = new TimelineLite()
       console.log(this.leaves_array.length)
       for (let i = 0; i < this.leaves_array.length - 1; i += 1) {
