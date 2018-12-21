@@ -1,24 +1,28 @@
 <template>
   <div>
     <h1>SVG-Based Placement Editor</h1>
-    <div>
-      <button @click="getContent">Load</button>
-      <button @click="postContent">Save</button>
+    <div class="load-save-buttons">
+      <button class="load-save-buttons" @click="getContent">Load</button>
+      <button class="load-save-buttons" @click="postContent">Save</button>
+      <label for="starting">Starting:</label>
+      <input id="starting" class="small-num" v-model="leaves_idx">
+      <label for="ending">Ending:</label>
+      <input id="ending" class="small-num" v-model="leaves_idx_next">
+      <button class="load-save-buttons" @click="animatePlacementChange">Animate</button>
+      <span>{{ theta }}</span>
+      <button class="load-save-buttons" @click="resetPlacementChange">Reset</button>
     </div>
     <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
-      <span>{{ c.nm }}</span> <input v-model="c.w" /> <input v-model="c.h" />
-      <input v-model="c.transformation.oX" />
-      <input v-model="c.transformation.oY" />
-      <input v-model="c.transformation.sX" />
-      <input v-model="c.transformation.sY" />
+      <span class="value-span">{{ c.nm }}</span>
+      <input v-model="c.w">
+      <input v-model="c.h">
+      <input v-model="c.transformation.oX">
+      <input v-model="c.transformation.oY">
+      <input v-model="c.transformation.sX">
+      <input v-model="c.transformation.sY">
     </div>
     <div>
-      <svg
-        :width="width"
-        :height="height"
-        @mousemove="doMove($event)"
-        @mouseup="doEnd($event)"
-      >
+      <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
         <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
           <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
             <line
@@ -48,17 +52,11 @@
                 c.transformation.sX
               } ${c.transformation.sY})`
             "
+            @mousedown="doStart($event, c, idx, 2)"
           >
-            <path
-              :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
-              stroke="black"
-              :fill="c.fill"
-              @mousedown="doStart($event, c, idx, 2)"
-            ></path>
+            <path :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`" stroke="black" :fill="c.fill"></path>
             <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`">
-              <text :x="0" :y="0" style="font: 24px sans-serif;">
-                {{ c.nm }}
-              </text>
+              <text :x="0" :y="0" style="font: 24px sans-serif;">{{ c.nm }}</text>
             </g>
           </g>
         </g>
@@ -69,7 +67,7 @@
 
 <script>
 import axios from 'axios'
-import { Elastic, TweenMax } from 'gsap'
+import { Elastic, SlowMo, SteppedEase, Power0, TweenMax } from 'gsap'
 export default {
   data: function() {
     const width = 960
@@ -105,18 +103,22 @@ export default {
       code: undefined,
       offx: undefined,
       offy: undefined,
-      leaves: [],
+      leaves_array: [],
       hgridlines: [],
       vgridlines: [],
-      errors: []
+      errors: [],
+      leaves_idx: 0,
+      leaves_idx_next: 1,
+      theta: 0.0
     }
   },
   created: function() {
     console.log('Running created...')
-    this.dogbones = []
+    this.leaves_array = []
+    this.leaves_array.push([])
     var nms = ['ref', '1a', '1b', '2', '4']
     for (let i = 0; i < 5; i += 1) {
-      this.leaves.push({
+      this.leaves_array[0].push({
         w: 4 * this.stepx,
         h: 1 * this.stepy,
         transformation: {
@@ -129,6 +131,7 @@ export default {
         nm: nms[i]
       })
     }
+    this.leaves_array.push(this.leaves_array[0])
     for (let i = 0; i <= this.ny; i += 1) {
       this.hgridlines.push({
         cy: this.stepy * i,
@@ -144,12 +147,53 @@ export default {
       })
     }
   },
+  computed: {
+    leaves: function() {
+      let sArray = this.leaves_array[this.leaves_idx]
+      if (this.theta == 0) {
+        return sArray // if we aren't animating, then the first element.
+      }
+      let cArray = sArray.map(a => ({ ...a }))
+      let eArray = this.leaves_array[this.leaves_idx_next]
+      for (let i = 0; i < sArray.length; i += 1) {
+        let cTrans = { ...cArray[i].transformation }
+        let sTrans = sArray[i].transformation
+        let eTrans = eArray[i].transformation
+        let b = this.theta
+        let a = 1 - this.theta
+
+        cTrans.oX = a * sTrans.oX + b * eTrans.oX
+        cTrans.oY = a * sTrans.oY + b * eTrans.oY
+        cTrans.sX = a * sTrans.sX + b * eTrans.sX
+        cTrans.sY = a * sTrans.sY + b * eTrans.sY
+
+        cArray[i].transformation = cTrans
+      }
+
+      return cArray
+    }
+  },
   methods: {
+    resetPlacementChange: function() {
+      this.theta = 0.0
+    },
+    animatePlacementChange: function() {
+      //const e = Elastic.easeOut.config(1, 0.3)
+      //const e = SlowMo.ease.config(0.7, 0.7, false)
+      //const e = SteppedEase.ease.config(10)
+      const e = Power0.easeNone
+
+      const t = 0.8
+      TweenMax.to(this, t, {
+        theta: 1.0,
+        ease: e
+      })
+    },
     getContent: function() {
       axios
         .get('http://localhost:5000/get')
         .then(response => {
-          this.leaves = response['data']
+          this.leaves_array = response['data']
         })
         .catch(e => {
           this.errors.push(e)
@@ -157,7 +201,7 @@ export default {
     },
     postContent: function() {
       axios
-        .post('http://localhost:5000/post', this.leaves, {
+        .post('http://localhost:5000/post', this.leaves_array, {
           headers: { 'Content-Type': 'application/json' }
         })
         .then(response => {
@@ -230,12 +274,32 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .value-tbl > input {
-  width: 10ex;
+  font-family: monospace;
+  font-size: 12pt;
+  width: 8ex;
+  text-align: right;
+  /*border-radius: 10pt;*/
 }
-.value-tbl > span {
-  width: 10ex;
-  border-right: 15ex;
+.value-span {
+  font-family: monospace;
+  padding: 2pt;
+
+  display: inline-block;
+  font-size: 12pt;
+  width: 8ex;
+  text-align: left;
+  border: 0.5px solid gray;
+}
+.load-save-buttons {
+  padding: 5pt;
+  border-radius: 5pt;
+}
+.small-num {
+  padding: 5pt;
+  font-family: monospace;
+  width: 3ex;
+  text-align: right;
 }
 </style>
