@@ -1,0 +1,32 @@
+!!python/object:networkx.classes.multigraph.MultiGraph
+_adj:
+  D:
+    M0: &id001
+      0: {weight: 1}
+  G:
+    M0: &id002
+      0: {weight: 4}
+  M0:
+    D: *id001
+    G: *id002
+    S: &id003
+      0: {weight: 2}
+  S:
+    M0: *id003
+_node: &id005
+  D: {inst_type: net, net_type: external}
+  G: {inst_type: net, net_type: external}
+  M0:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D, G, S]
+    values: [w=w1, l=l1]
+  S: {inst_type: net, net_type: external}
+adjlist_inner_dict_factory: &id004 !!python/name:__builtin__.dict ''
+adjlist_outer_dict_factory: *id004
+edge_attr_dict_factory: *id004
+edge_key_dict_factory: *id004
+graph: {}
+node_dict_factory: *id004
+nodes: !!python/object:networkx.classes.reportviews.NodeView
+  _nodes: *id005
