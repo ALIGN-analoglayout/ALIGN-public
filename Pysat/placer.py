@@ -172,7 +172,8 @@ class CellTemplate:
 
       fp.write( json.dumps( data, indent=2) + "\n")
 
-    def dumpJson2( self, fp, tech):
+
+    def buildDataForAnimation( self):
       s=50
 
       instances = []
@@ -186,12 +187,11 @@ class CellTemplate:
                                                 "sX" : ci.transformation.sX,
                                                 "sY" : ci.transformation.sY},
                             "formal_actual_map": ci.fa_map})
+      return instances
 
-
-      data = instances
-
+    def dumpJson2( self, fp, tech):
+      data = self.buildDataForAnimation()
       fp.write( json.dumps( data, indent=2) + "\n")
-
 
     def addInstance( self, ci):
         self.instances[ci.nm] = ci
@@ -351,6 +351,9 @@ class Raster:
         self.nx = nx
         self.ny = ny
 
+        self.placements_for_animation = []
+
+
     def idx( self, x, y):
         return x*self.ny + y
 
@@ -484,6 +487,11 @@ Use tallys to constrain length
             self.yExtents[k] = self.addYNetLengthConstraints( k)
 
         
+    def record( self):
+      for ri in self.ris:
+        ri.backannotatePlacement()
+      self.placements_for_animation.append( self.template.buildDataForAnimation())
+
     def solve( self):
         print( 'Solving Raster')
         self.s.solve()
@@ -508,6 +516,9 @@ Use tallys to constrain length
         for y in range(self.ny-1,-1,-1): 
             print( ''.join( [ ('1' if bv.val(self.idx(x,y)) else '0') for x in range(nx)]))
 
+
+    def dump_for_animation( self, fp):
+      fp.write( json.dumps( self.placements_for_animation, indent=2) + "\n")
 
     def optimizeNets( self, priority_nets):
 
@@ -555,6 +566,9 @@ Use tallys to constrain length
         lim = aux( 0, n)
 #        alt = findSmallest( net_nm, n, extents, tag, lst, True)
 #        assert lim == alt, (lim,alt)
+
+        self.record()
+
         return lim
 
 
@@ -632,6 +646,7 @@ Use tallys to constrain length
       self.solve()
 
       print( 'sequential', limits_sequential)
+
 
 
 

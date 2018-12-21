@@ -5,24 +5,31 @@
       <button class="load-save-buttons" @click="getContent">Load</button>
       <button class="load-save-buttons" @click="postContent">Save</button>
       <label for="starting">Starting:</label>
-      <input id="starting" class="small-num" v-model="leaves_idx">
+      <input id="starting" class="small-num" v-model="leaves_idx" />
       <label for="ending">Ending:</label>
-      <input id="ending" class="small-num" v-model="leaves_idx_next">
-      <button class="load-save-buttons" @click="animatePlacementChange">Animate</button>
-      <span>{{ theta }}</span>
-      <button class="load-save-buttons" @click="resetPlacementChange">Reset</button>
+      <input id="ending" class="small-num" v-model="leaves_idx_next" />
+      <button class="load-save-buttons" @click="animatePlacementChange">
+        Animate
+      </button>
+      <span>{{ theta.toFixed(3) }}</span>
+      <button class="load-save-buttons" @click="resetPlacementChange">
+        Reset
+      </button>
     </div>
     <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
-      <span class="value-span">{{ c.nm }}</span>
-      <input v-model="c.w">
-      <input v-model="c.h">
-      <input v-model="c.transformation.oX">
-      <input v-model="c.transformation.oY">
-      <input v-model="c.transformation.sX">
-      <input v-model="c.transformation.sY">
+      <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
+      <input v-model="c.h" /> <input v-model="c.transformation.oX" />
+      <input v-model="c.transformation.oY" />
+      <input v-model="c.transformation.sX" />
+      <input v-model="c.transformation.sY" />
     </div>
     <div>
-      <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
+      <svg
+        :width="width"
+        :height="height"
+        @mousemove="doMove($event)"
+        @mouseup="doEnd($event)"
+      >
         <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
           <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
             <line
@@ -54,9 +61,15 @@
             "
             @mousedown="doStart($event, c, idx, 2)"
           >
-            <path :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`" stroke="black" :fill="c.fill"></path>
+            <path
+              :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
+              stroke="black"
+              :fill="c.fill"
+            ></path>
             <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`">
-              <text :x="0" :y="0" style="font: 24px sans-serif;">{{ c.nm }}</text>
+              <text :x="0" :y="0" style="font: 24px sans-serif;">
+                {{ c.nm }}
+              </text>
             </g>
           </g>
         </g>
@@ -67,18 +80,25 @@
 
 <script>
 import axios from 'axios'
-import { Elastic, SlowMo, SteppedEase, Power0, TweenMax } from 'gsap'
+import {
+  Elastic,
+  /*SlowMo, SteppedEase, Power0,*/
+  Power2,
+  /*TweenMax,*/
+  TweenLite,
+  TimelineLite
+} from 'gsap'
 export default {
   data: function() {
     const width = 960
-    const height = 720
+    const height = 640
     const step = 50
     const stepsPerXStep = 4
     const stepsPerYStep = 8
     const stepx = stepsPerXStep * step
     const stepy = stepsPerYStep * step
-    let ny = 4
-    let nx = 6
+    let ny = 20
+    let nx = 30
     var scale
 
     if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
@@ -181,13 +201,19 @@ export default {
       //const e = Elastic.easeOut.config(1, 0.3)
       //const e = SlowMo.ease.config(0.7, 0.7, false)
       //const e = SteppedEase.ease.config(10)
-      const e = Power0.easeNone
-
-      const t = 0.8
-      TweenMax.to(this, t, {
-        theta: 1.0,
-        ease: e
-      })
+      //const e = Power0.easeNone
+      const e = Power2.easeInOut
+      const t = 1
+      var tl = new TimelineLite()
+      console.log(this.leaves_array.length)
+      for (let i = 0; i < this.leaves_array.length - 1; i += 1) {
+        console.log('Setting up:', i)
+        tl.set(this, { theta: 0, leaves_idx: i, leaves_idx_next: i + 1 })
+        tl.to(this, t, {
+          theta: 1.0,
+          ease: e
+        })
+      }
     },
     getContent: function() {
       axios
@@ -258,7 +284,7 @@ export default {
         if (this.code == 2) {
           let targetX = this.roundNearestGridX(dg.transformation.oX)
           let targetY = this.roundNearestGridY(dg.transformation.oY)
-          TweenMax.to(dg.transformation, t, {
+          TweenLite.to(dg.transformation, t, {
             oX: targetX,
             oY: targetY,
             ease: e

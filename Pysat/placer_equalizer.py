@@ -248,6 +248,8 @@ def test_diffpairs2x():
     r.optimizeNets( groups)
 
     dp.dump()
+    with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
 
 def test_diffpairs4x():
 
@@ -498,7 +500,8 @@ def test_vga(optimize=True):
 
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}
     for (tag,(x,y)) in od.items():
-        s.emit_always( ri_tbl[tag].anchor.var( r.idx( x*ux, y*uy)))
+        pass
+#        s.emit_always( ri_tbl[tag].anchor.var( r.idx( x*ux, y*uy)))
 
     for x in range(nx):
       for y in range(ny):
@@ -537,6 +540,8 @@ def test_vga(optimize=True):
         r.solve()
 
     vga.dump()
+    with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
 
 
 import argparse
