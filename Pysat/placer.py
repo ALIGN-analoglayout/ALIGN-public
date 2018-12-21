@@ -5,6 +5,8 @@ import json
 from collections import OrderedDict
 import itertools
 
+import re
+
 from transformation import Rect, Transformation, Tech
 
 """
@@ -176,10 +178,23 @@ class CellTemplate:
     def buildDataForAnimation( self):
       s=50
 
+      p = re.compile( "^DP_(.+)_(\d+)$")
+
+      fills = { "a": "#e0ffe0", "b": "#e0e0ff", "s": "#ffe0e0"}
+
       instances = []
+
       for (k,ci) in self.instances.items():
+        fill = "#ffe0e0"
+
+        m = p.match(k)
+        if m:
+          signal = m.groups()[0]
+          if signal in fills:
+            fill = fills[signal]
+
         instances.append( { "nm": k,
-                            "fill": "#ffe0e0",
+                            "fill": fill,
                             "w": ci.template.bbox.urx*s,
                             "h": ci.template.bbox.ury*s,
                             "transformation": { "oX" : ci.transformation.oX*s,
@@ -187,6 +202,7 @@ class CellTemplate:
                                                 "sX" : ci.transformation.sX,
                                                 "sY" : ci.transformation.sY},
                             "formal_actual_map": ci.fa_map})
+
       return instances
 
     def dumpJson2( self, fp, tech):
@@ -518,6 +534,25 @@ Use tallys to constrain length
 
 
     def dump_for_animation( self, fp):
+
+      def equal_placements( p0, p1):
+        for (c0,c1) in zip( p0, p1):
+          assert( c0['nm'] == c1['nm'])
+          t0 = c0['transformation']
+          t1 = c1['transformation']
+          if t0['oX'] != t1['oX'] or t0['oY'] != t1['oY'] or t0['sX'] != t1['sX'] or t0['sY'] != t1['sY']:
+            return False
+        return True
+
+      last_placement = None
+      lst = []
+      for placement in self.placements_for_animation:
+        if last_placement is not None and equal_placements( last_placement, placement):
+          lst.append( placement)
+        last_placement = placement
+
+      print(len(lst),len(self.placements_for_animation))
+
       fp.write( json.dumps( self.placements_for_animation, indent=2) + "\n")
 
     def optimizeNets( self, priority_nets):

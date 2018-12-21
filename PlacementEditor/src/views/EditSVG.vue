@@ -1,79 +1,98 @@
 <template>
   <div>
-    <h1>SVG-Based Placement Editor</h1>
-    <div class="load-save-buttons">
-      <button class="load-save-buttons" @click="getContent">Load</button>
-      <button class="load-save-buttons" @click="postContent">Save</button>
-      <label for="starting">Starting:</label>
-      <input id="starting" class="small-num" v-model="leaves_idx" />
-      <label for="ending">Ending:</label>
-      <input id="ending" class="small-num" v-model="leaves_idx_next" />
-      <button class="load-save-buttons" @click="animatePlacementChange">
-        Animate
-      </button>
-      <span>{{ theta.toFixed(3) }}</span>
-      <button class="load-save-buttons" @click="resetPlacementChange">
-        Reset
-      </button>
-    </div>
-    <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
-      <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
-      <input v-model="c.h" /> <input v-model="c.transformation.oX" />
-      <input v-model="c.transformation.oY" />
-      <input v-model="c.transformation.sX" />
-      <input v-model="c.transformation.sY" />
-    </div>
-    <div>
-      <svg
-        :width="width"
-        :height="height"
-        @mousemove="doMove($event)"
-        @mouseup="doEnd($event)"
-      >
-        <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
-          <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
-            <line
-              :x1="l.x0"
-              :y1="l.cy"
-              :x2="l.x1"
-              :y2="l.cy"
-              stroke="black"
-              stroke-dasharray="10 4"
-            ></line>
-          </g>
-          <g v-for="(l, idx) in vgridlines" :key="`v-${idx}`">
-            <line
-              :x1="l.cx"
-              :y1="l.y0"
-              :x2="l.cx"
-              :y2="l.y1"
-              stroke="black"
-              stroke-dasharray="10 4"
-            ></line>
-          </g>
-          <g
-            v-for="(c, idx) in leaves"
-            :key="`d-${idx}`"
-            :transform="
-              `translate(${c.transformation.oX} ${c.transformation.oY}) scale(${
-                c.transformation.sX
-              } ${c.transformation.sY})`
-            "
-            @mousedown="doStart($event, c, idx, 2)"
+    <h1>SVG-Based Placement Editor/Visualizer</h1>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12">
+          <vue-slider
+            ref="slider"
+            v-model="theta"
+            :min="0"
+            :max="1"
+            :width="'960px'"
+            :interval="0.001"
+            :speed="0"
+          ></vue-slider>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="load-save-buttons">
+            <button class="load-save-buttons" @click="getContent">Load</button>
+            <button class="load-save-buttons" @click="postContent">Save</button>
+            <label for="index">Index:</label>
+            <input id="index" class="small-num" v-model="leaves_idx" />
+            <button class="load-save-buttons" @click="animatePlacementChange">
+              Animate
+            </button>
+            <span>{{ theta_rounded }}</span>
+            <button class="load-save-buttons" @click="resetPlacementChange">
+              Reset
+            </button>
+          </div>
+          <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
+            <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
+            <input v-model="c.h" /> <input v-model="c.transformation.oX" />
+            <input v-model="c.transformation.oY" />
+            <input v-model="c.transformation.sX" />
+            <input v-model="c.transformation.sY" />
+          </div>
+        </div>
+        <div class="col-sm-5 col-sm-offset-1">
+          <svg
+            :width="width"
+            :height="height"
+            @mousemove="doMove($event)"
+            @mouseup="doEnd($event)"
           >
-            <path
-              :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
-              stroke="black"
-              :fill="c.fill"
-            ></path>
-            <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`">
-              <text :x="0" :y="0" style="font: 24px sans-serif;">
-                {{ c.nm }}
-              </text>
+            <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
+              <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
+                <line
+                  :x1="l.x0"
+                  :y1="l.cy"
+                  :x2="l.x1"
+                  :y2="l.cy"
+                  stroke="black"
+                  stroke-dasharray="10 4"
+                ></line>
+              </g>
+              <g v-for="(l, idx) in vgridlines" :key="`v-${idx}`">
+                <line
+                  :x1="l.cx"
+                  :y1="l.y0"
+                  :x2="l.cx"
+                  :y2="l.y1"
+                  stroke="black"
+                  stroke-dasharray="10 4"
+                ></line>
+              </g>
+              <g
+                v-for="(c, idx) in leaves"
+                :key="`d-${idx}`"
+                :transform="
+                  `translate(${c.transformation.oX} ${
+                    c.transformation.oY
+                  }) scale(${c.transformation.sX} ${c.transformation.sY})`
+                "
+                @mousedown="doStart($event, c, idx, 2)"
+              >
+                <path
+                  :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
+                  stroke="black"
+                  :fill="c.fill"
+                ></path>
+                <g
+                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`"
+                >
+                  <text :x="0" :y="0" style="font: 24px sans-serif;">
+                    {{ c.nm }}
+                  </text>
+                </g>
+              </g>
             </g>
-          </g>
-        </g>
-      </svg>
+          </svg>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -88,25 +107,30 @@ import {
   TweenLite,
   TimelineLite
 } from 'gsap'
+
+import vueSlider from 'vue-slider-component'
 export default {
+  components: {
+    vueSlider
+  },
   data: function() {
-    const width = 960
+    const width = 640
     const height = 640
     const step = 50
     const stepsPerXStep = 4
     const stepsPerYStep = 8
     const stepx = stepsPerXStep * step
     const stepy = stepsPerYStep * step
-    let ny = 4
+    let ny = 2
     let nx = 6
     var scale
 
     if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
       // ny is constraining
-      nx = stepsPerYStep * Math.round((stepsPerXStep * ny * width) / height)
+      //nx = stepsPerYStep * Math.round((stepsPerXStep * ny * width) / height)
       scale = height / (ny * stepy)
     } else {
-      ny = stepsPerXStep * Math.round((stepsPerYStep * nx * height) / width)
+      //ny = stepsPerXStep * Math.round((stepsPerYStep * nx * height) / width)
       scale = width / (nx * stepx)
     }
 
@@ -128,8 +152,8 @@ export default {
       vgridlines: [],
       errors: [],
       leaves_idx: 0,
-      leaves_idx_next: 1,
-      theta: 0.0
+      theta: 0.0,
+      theta_percent: 0
     }
   },
   created: function() {
@@ -168,6 +192,12 @@ export default {
     }
   },
   computed: {
+    leaves_idx_next: function() {
+      return this.leaves_idx + 1
+    },
+    theta_rounded: function() {
+      return this.theta.toFixed(3)
+    },
     leaves: function() {
       let sArray = this.leaves_array[this.leaves_idx]
       if (this.theta == 0) {
@@ -196,6 +226,7 @@ export default {
   methods: {
     resetPlacementChange: function() {
       this.theta = 0.0
+      this.leaves_idx = 0
     },
     animatePlacementChange: function() {
       //const e = Elastic.easeOut.config(1, 0.3)
@@ -203,7 +234,7 @@ export default {
       //const e = SteppedEase.ease.config(10)
       //const e = Power0.easeNone
       const e = Power2.easeInOut
-      const t = 0.6
+      const t = 1.0
       var tl = new TimelineLite()
       console.log(this.leaves_array.length)
       for (let i = 0; i < this.leaves_array.length - 1; i += 1) {
@@ -321,6 +352,9 @@ export default {
 .load-save-buttons {
   padding: 5pt;
   border-radius: 5pt;
+}
+.load-save-buttons > input {
+  width: 6ex;
 }
 .small-num {
   padding: 5pt;

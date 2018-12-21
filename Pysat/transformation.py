@@ -39,6 +39,9 @@ class Transformation:
     def __repr__( self):
       return "oX: %d oY: %d sX: %d sY: %d" % ( self.oX, self.oY, self.sX, self.sY) 
 
+    def __eq__( self, other):
+      return other is not None and self.oX == other.oX and self.oY == other.oY and self.sX == other.sX and self.sY == other.sY
+
     def plusOneIfMirrored( self):
       xx = 1 if self.sX == -1 else 0
       yy = 1 if self.sY == -1 else 0

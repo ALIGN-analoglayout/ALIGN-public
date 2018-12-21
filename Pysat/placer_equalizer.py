@@ -194,8 +194,8 @@ def test_diffpairs2x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 4*ux
-    ny = 4*uy
+    nx = 6*ux
+    ny = 2*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
 
@@ -234,13 +234,17 @@ def test_diffpairs2x():
           ri = ri_tbl[nm]
           ri_other = ri_tbl[nm_other]
 
+          assert( nx % ux == 0)
+          assert( ny % uy == 0)
+
           for x in range(nx):
             if x % ux != 0: continue
             for y in range(ny):
               if y % uy != 0: continue
-              x_other = (3-x//ux)*ux
-              y_other = (3-y//uy)*uy
-              s.emit_implies( ri.anchor.var( r.idx( x,y)), ri_other.anchor.var( r.idx( x_other, y_other)))
+              x_other = (nx//ux-1-x//ux)*ux
+              y_other = (ny//uy-1-y//uy)*uy
+              s.emit_implies( ri.anchor.var( r.idx( x,y)),
+                              ri_other.anchor.var( r.idx( x_other, y_other)))
             
     for x in range(nx):
       for y in range(ny):
@@ -252,13 +256,13 @@ def test_diffpairs2x():
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
           else:
             s.emit_never( ri.anchorMX.var( r.idx( x,y)))
-            s.emit_never( ri.anchorMY.var( r.idx( x,y))) # these cells are symmetrically in x
+#            s.emit_never( ri.anchorMY.var( r.idx( x,y))) # these cells are symmetrically in x
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
 
     s.solve()
     assert s.state == 'SAT'
 
-    out_nets = ["outa","outb"]
+    out_nets = ["outb","outa"]
     in_nets  = ["ina","inb"]
     s_nets  = ["si","so"]
     ctrl_nets = ["c"]
