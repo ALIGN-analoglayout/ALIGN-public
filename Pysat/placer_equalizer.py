@@ -206,8 +206,9 @@ def test_diffpairs2x():
 #
 # Assign common centroid placement
 #
-    if False:
+    ri_tbl = { ri.ci.nm: ri for ri in r.ris}        
 
+    if False:
       places = [          ('a',1,3),('b',2,3),
                 ('s',0,2),('a',1,2),('b',2,2),('s',3,2)]
       places_common_centroid = [ (tag,3-x,3-y) for (tag,x,y) in places]
@@ -217,13 +218,40 @@ def test_diffpairs2x():
         if tag not in od: od[tag] = []
         od[tag].append( (tag,x,y))
 
-      ri_tbl = { ri.ci.nm: ri for ri in r.ris}
       for (tag,v) in od.items():
         for (idx,(tag,x,y)) in enumerate(v):
             s.emit_always( ri_tbl["DP_%s_%i" % (tag,idx)].anchor.var( r.idx( x*ux, y*uy)))
 
     if True:
-      ri_tbl = { ri.ci.nm: ri for ri in r.ris}        
+      assert nx % ux == 0
+      assert ny % uy == 0
+
+      nny = ny//uy
+      assert nny % 2 == 0
+      cy = (nny // 2)*uy
+
+      def xys():
+        for y in range(ny-uy,-uy,-uy):
+          for x in range(0,nx,ux):
+            yield (x,y)
+
+      # lexigraphic order
+      for (tag, mult, _, _, _) in configs:
+        print( tag, mult)
+        assert mult % 2 == 0
+        for i in range(0,mult//2):
+          for j in range(i+1,mult//2):
+            nm = "DP_%s_%d" % (tag,i)
+            nm_other = "DP_%s_%d" % (tag,j)
+            ri = ri_tbl[nm]
+            ri_other = ri_tbl[nm_other]
+
+            for (ai,(ax,ay)) in enumerate( xys()):
+              for (bi,(bx,by)) in enumerate( xys()):
+                if bi <= ai:
+                  print( ai,(ax,ay), bi,(bx,by), nm, nm_other)
+                  s.emit_implies( ri.anchor.var( r.idx( ax, ay)),
+                                  -ri_other.anchor.var( r.idx( bx, by)))
 
       for (tag, mult, _, _, _) in configs:
         assert mult % 2 == 0
@@ -234,9 +262,12 @@ def test_diffpairs2x():
           ri = ri_tbl[nm]
           ri_other = ri_tbl[nm_other]
 
-          assert( nx % ux == 0)
-          assert( ny % uy == 0)
+          # disallow drivers below common centroid
+          for x in range(0,nx,ux):
+            for y in range(0,cy,uy):
+              s.emit_never( ri.anchor.var( r.idx( x,y)))
 
+          # Enforce common centroid
           for x in range(nx):
             if x % ux != 0: continue
             for y in range(ny):
@@ -259,8 +290,45 @@ def test_diffpairs2x():
 #            s.emit_never( ri.anchorMY.var( r.idx( x,y))) # these cells are symmetrically in x
             s.emit_never( ri.anchorMXY.var( r.idx( x,y)))
 
+    print( "First solve start")
     s.solve()
     assert s.state == 'SAT'
+    print( "First solve end")
+
+    if True:
+      # enumerate all solutions
+      def clauseEliminatingCurrentSolution():
+        clause = []
+        for x in range(0,nx,ux):
+          for y in range(0,ny,uy):
+            idx = r.idx( x, y)
+            for ri in r.ris:
+              val = ri.anchor.val( idx)
+              var = ri.anchor.var( idx)
+              if val is True:
+                clause.append( -var)  
+              elif val is False:
+                clause.append(  var)  
+        return clause
+
+      assumptions = []
+      r.record()
+      while s.state == 'SAT':
+        c = clauseEliminatingCurrentSolution()  
+        assumptions.append( c)
+        s.add_clause( c)
+        print( "Solve start", len(assumptions))
+        s.solve()
+        if s.state == 'SAT':
+          r.record()
+          print( "Solve end", len(assumptions))
+        else:
+          print( "Solve end (failed)", len(assumptions))
+
+      with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
+
+      exit()
 
     out_nets = ["outb","outa"]
     in_nets  = ["ina","inb"]

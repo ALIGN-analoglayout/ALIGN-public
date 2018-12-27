@@ -8,7 +8,7 @@
             ref="slider"
             v-model="theta_timeline"
             :min="0"
-            :max="leaves_array[leaves_idx].length"
+            :max="leaves_array.length - 1"
             :width="'960px'"
             :interval="0.001"
             :speed="0"
