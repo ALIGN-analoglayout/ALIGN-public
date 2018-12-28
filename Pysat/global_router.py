@@ -12,6 +12,13 @@ class GR:
     self.rect = rect
 
 def encode_GR( tech, obj):
+
+  #
+  # Very broken ---
+  #   remove *2 and //2 later
+  #
+
+
   if isinstance(obj, GR):
 # Convert global route coords to physical coords
     if obj.layer in tech.verticalMetals:
@@ -36,12 +43,14 @@ def encode_GR( tech, obj):
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
 class Grid:
-    def __init__( self, nx, ny):
+    def __init__( self, nx, ny, gridFactor):
         self.nx = nx
         self.ny = ny
+        self.gridFactor = gridFactor
         self.nets = OrderedDict()
         self.layers = ['metal2','metal3']
         self.routes = OrderedDict()
+        print( "Grid size:", self.nx, self.ny)
 
     def dumpJSON( self, fp, tech):
       wires = []
@@ -328,7 +337,7 @@ class Grid:
                                 x1 = x
                             if filled and x == self.nx-1 or not filled and x1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                self.wires[k][ly].append( GR( k, ly, 320, Rect( x0, y, x1, y)))
+                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x0, y, x1, y)))
                                 x0,x1 = None,None
 
                 if ly in verticalMetals:
@@ -341,17 +350,21 @@ class Grid:
                                 y1 = y
                             if filled and y == self.ny-1 or not filled and y1 is not None:
                                 if ly not in self.wires[k]: self.wires[k][ly] = [] 
-                                self.wires[k][ly].append( GR( k, ly, 320, Rect( x, y0, x, y1)))
+                                self.wires[k][ly].append( GR( k, ly, 400, Rect( x, y0, x, y1)))
                                 y0,y1 = None,None
 
     def write_globalrouting_json( self, fp, tech, placer_results=None):
         grs = []
         terminals = []
 
+        hack = 1 # gridFactor == 4
+
         if placer_results is not None:
-          globalScale = Transformation( 0, 0, 2*tech.halfXADTGrid*tech.pitchPoly, 2*tech.halfYADTGrid*tech.pitchDG)
+          globalScale = Transformation( 0, 0, hack*tech.halfXADTGrid*tech.pitchPoly, hack*tech.halfYADTGrid*tech.pitchDG)
           b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
           terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
+
+          print( "placer_results bbox:", b.toList())
 
           leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
 
@@ -362,6 +375,9 @@ class Grid:
             r = globalScale.hitRect( trans.hitRect( Rect( *leaf['bbox'])).canonical())
 
             nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
+
+            print( nm, r)
+
             terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
 
           for term in placer_results['terminals']:
@@ -378,16 +394,23 @@ class Grid:
             for gr in vv:
               terminals.append(gr)
 
+        # halfXGRGrid should be 2
+        # hack = 1 works if gridFactor is 2
+        # what should hack be if gridFactor is 4
+        hack = self.gridFactor // 2
+
         grGrid = []
-        globalScale = Transformation( 0, 0, 2*tech.halfXGRGrid*tech.pitchPoly, 2*tech.halfYGRGrid*tech.pitchDG)
+        globalScale = Transformation( 0, 0, hack*tech.halfXGRGrid*tech.pitchPoly, hack*tech.halfYGRGrid*tech.pitchDG)
         self.bbox = globalScale.hitRect( Rect( 0, 0, self.nx, self.ny))
         for x in range( self.nx):
           for y in range( self.ny):
             r = globalScale.hitRect( Rect( x, y, x+1, y+1))
+            print( "global route:", x, y, r)
             grGrid.append( r.toList())
 
         data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
+        print( 'Grid bbox:', data['bbox'])
         fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
 
@@ -527,85 +550,94 @@ def test_symmetric_unsat():
     g.s.solve()
     assert g.s.state == 'UNSAT'
 
-def aux_from_json( tag, gridFactor=2):
+
+import translate
+
+def aux_from_json( tag, gridFactor=4):
   with open( '%s_placer_out.json' % tag, 'rt') as fp:
     placer_results = json.load( fp)
-    print( placer_results)
 
-    [_,_,nx,ny] = placer_results['bbox']
+  # scales y and adjusts x
+  placer_results = translate.translatePlacerResults( placer_results)
 
-    print( 'BBOX', placer_results['bbox'])
+  [_,_,nx,ny] = placer_results['bbox']
+  print( "nx,ny:", nx, ny)
 
-    # the global router grid is twice the placer (ADT) grid
-    def tr( p):
-      x,y = p
-      return x//gridFactor, y//gridFactor
+  print( 'BBOX', placer_results['bbox'])
 
-    def roundUp( x, f): return f*((x+f-1)//f)
- 
-    g = Grid( *tr( (roundUp( nx, gridFactor), roundUp( ny, gridFactor))))
+  # the global router grid is twice the placer (ADT) grid
+  def tr( p):
+    x,y = p
+    return x//gridFactor, y//gridFactor
 
-    print( 'Grid size', g.nx, g.ny)
+#
+# nx,ny: 26,8 => 13,4 (gridFactor=2)
+# nx,ny: 26,8 =>  7,2 (gridFactor=4)
+#
+#
+  g = Grid( (nx+gridFactor-1) // gridFactor, (ny+gridFactor-1) // gridFactor, gridFactor)
 
-    for term in placer_results['terminals']:
-      x0,y0 = tr(tuple(term['rect'][:2]))
-      x1,y1 = tr(tuple(term['rect'][2:]))
+  print( 'Grid size', g.nx, g.ny)
 
-      print( term['rect'])
-      print( x0, y0, x1, y1)
+  for term in placer_results['terminals']:
+    x0,y0 = tr(tuple(term['rect'][:2]))
+    x1,y1 = tr(tuple(term['rect'][2:]))
 
-      assert x0 == x1
-      x = (x0 + x1)//2
-      y = (y0 + y1)//2
+    print( term['rect'])
+    print( term['net_name'], x0, y0, x1, y1)
 
-      assert x <= g.nx
+    assert x0 == x1
+    x = (x0 + x1)//2
+    y = (y0 + y1)//2
 
-      if x == g.nx: x -= 1
-      g.addTerminal( term['net_name'], x, y)
+    assert x <= g.nx, (x,g.nx)
 
-    max_capacity=3
-    g.semantic( max_capacity=max_capacity)
-    g.s.solve()
-    assert g.s.state == 'SAT'
+    if x == g.nx: x -= 1
+    g.addTerminal( term['net_name'], x, y)
 
-    all_cap_bvs = OrderedDict()
-    for (ly,v) in g.max_capacity_constraints.items():
-      count = 0
-      all_bits = []
-      for ((x,y),vv) in v.items():
-        count += sum( (1 if vv.val( i) is True else 0) for i in range(max_capacity+1))
-        all_bits += [vv.var( i) for i in range(max_capacity)]
-      print( "count:", count)
+  max_capacity=7
+  g.semantic( max_capacity=max_capacity)
+  g.s.solve()
+  assert g.s.state == 'SAT'
 
-      all_cap_bvs[ly] = tally.BitVec( g.s, 'all_cap_%s' % ly, count+1)
-      g.s.emit_tally( all_bits, [all_cap_bvs[ly].var( i) for i in range(count+1)])
+  all_cap_bvs = OrderedDict()
+  for (ly,v) in g.max_capacity_constraints.items():
+    count = 0
+    all_bits = []
+    for ((x,y),vv) in v.items():
+      count += sum( (1 if vv.val( i) is True else 0) for i in range(max_capacity+1))
+      all_bits += [vv.var( i) for i in range(max_capacity)]
+    print( "count:", count)
+
+    all_cap_bvs[ly] = tally.BitVec( g.s, 'all_cap_%s' % ly, count+1)
+    g.s.emit_tally( all_bits, [all_cap_bvs[ly].var( i) for i in range(count+1)])
 
     
-    for (ly,v) in all_cap_bvs.items():
-      for lim in range( v.n-1, -1, -1):
-        print( "Trying to do with <", lim, "in layer", ly)
-        g.s.solve( [-v.var( lim)])
-        if g.s.state == 'UNSAT':
-          print( "Can't do with <", lim, "in layer", ly)
-          if lim < v.n-1:
-            g.s.emit_never( v.var( lim+1))
-          break
-        else:
-          print( "Can do with <", lim, "in layer", ly)
+  for (ly,v) in all_cap_bvs.items():
+    for lim in range( v.n-1, -1, -1):
+      print( "Trying to do with <", lim, "in layer", ly)
+      g.s.solve( [-v.var( lim)])
+      if g.s.state == 'UNSAT':
+        print( "Can't do with <", lim, "in layer", ly)
+        if lim < v.n-1:
+          g.s.emit_never( v.var( lim+1))
+        break
+      else:
+        print( "Can do with <", lim, "in layer", ly)
           
-    g.cleanAntennas()
+  g.cleanAntennas()
 
-    g.print_routes()
-    g.print_rasters()
-    g.genWires()
+  g.print_routes()
+  g.print_rasters()
+  g.genWires()
 
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        tech = Tech()
-        g.write_globalrouting_json( fp, tech, placer_results)
+  with open( "mydesign_dr_globalrouting.json", "wt") as fp:
+    tech = Tech()
+    g.write_globalrouting_json( fp, tech, placer_results)
 
-    with open( "%s_global_router_out.json" % tag, "wt") as fp:
-        tech = Tech()      
-        g.dumpJSON( fp, tech)
+  with open( "%s_global_router_out.json" % tag, "wt") as fp:
+    tech = Tech()      
+    g.dumpJSON( fp, tech)
 
 def ex_backward_xy():
     halfn = 2

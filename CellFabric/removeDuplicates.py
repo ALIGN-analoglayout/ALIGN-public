@@ -49,7 +49,11 @@ def removeDuplicates(data):
         rect = d['rect']
         netName = d['netName']
 
-        assert layer in layersDict, layer
+#        assert layer in layersDict, layer
+        if layer not in layersDict:
+            print( "Skipping processing of unknown layer:", layer)
+            continue
+
         twice_center = sum(rect[index]
                            for index in indicesTbl[layersDict[layer]][0])
 
@@ -83,8 +87,9 @@ def removeDuplicates(data):
                         sl.set(rect, netName)
                     elif rect[dIndex] <= sl.end:  # continue
                         sl.end = max(sl.end, rect[dIndex+2])
-                        assert sl.currentNet == netName, (
-                            layer, sl.currentNet, netName)
+                        if sl.currentNet != netName:
+                            print( "Potential short:", (layer, sl.currentNet, netName))
+                        #assert sl.currentNet == netName, (layer, sl.currentNet, netName)
                     else:  # gap
                         sl.emit()
                         sl.set(rect, netName)

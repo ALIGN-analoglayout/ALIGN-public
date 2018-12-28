@@ -22,6 +22,9 @@
     "halfXGRGrid" : 3,
     "halfYGRGrid" : 3,
 
+    "halfXADTGrid" : 1,
+    "halfYADTGrid" : 1,
+
     "metalTemplates" : [
                    {
                      "layer":"metal5", "name":"m5",

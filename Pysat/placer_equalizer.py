@@ -3,7 +3,7 @@ from placer import *
 def test_mirrors():
 
     ux = 4
-    uy = 8
+    uy = 1
 
     nunit = CellLeaf( "nunit", Rect(0,0,ux,uy))
     nunit.addTerminal( "s1", Rect(0,0,0,uy))
@@ -28,8 +28,11 @@ def test_mirrors():
             mirrors.connect( "CM_%s_%d" % (tag,i), 'g2', 'vmirror')
             mirrors.connect( "CM_%s_%d" % (tag,i), 's2', 'gnd!')
 
-    nx = 5*ux
-    ny = 4*uy
+    nnx = 6
+    nny = 3
+
+    nx = nnx*ux
+    ny = nny*uy
 
     mirrors.bbox = Rect( 0, 0, nx, ny)
 
@@ -40,8 +43,10 @@ def test_mirrors():
 #
 # Assign common centroid placement
 #
-    places = [('4',0,3),('4',1,3),('4',2,3),('4',3,3),('2',0,2),('ref',1,2),('1a',2,2),('1b',3,2),('2',4,2)]
-    places_common_centroid = [ (tag,4-x,3-y) for (tag,x,y) in places]
+    places = [('4',0,2),('4',1,2), ('4',2,2),  ('4',3,2),  ('1b',4,2),('2',5,2),
+              ('2',0,1),('1a',1,1),('ref',2,1),('ref',3,1),('1a',4,1),('2',5,1)]
+    # should generalize the '1' at some point
+    places_common_centroid = [ (tag,nnx-1-x,nny-1-y) for (tag,x,y) in places if y != 1]
 
     od = OrderedDict()
     for (tag,x,y) in places + places_common_centroid:
@@ -81,13 +86,14 @@ def test_mirrors():
     r.optimizeNets( groups)
 
     mirrors.dump()
-
+    with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
 
 
 def test_diffpairs1x():
 
     ux = 4
-    uy = 8
+    uy = 1
 
     nunit = CellLeaf( "nunit", Rect(0,0,ux,uy))
     nunit.addTerminal( "s1", Rect(0,0,0,uy))
@@ -112,8 +118,11 @@ def test_diffpairs1x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 4*ux
-    ny = 2*uy
+    nnx = 6
+    nny = 1
+
+    nx = nnx*ux
+    ny = nny*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
 
@@ -124,8 +133,9 @@ def test_diffpairs1x():
 #
 # Assign common centroid placement
 #
-    places = [('a',1,1),('b',2,1),('s',3,1)]
-    places_common_centroid = [ (tag,3-x,1-y) for (tag,x,y) in places]
+    places = [('s',0,0),('a',1,0),('b',2,0)]
+    # generalize the '0' below
+    places_common_centroid = [ (tag,nnx-1-x,0) for (tag,x,y) in places]
 
     od = OrderedDict()
     for (tag,x,y) in places + places_common_centroid:
@@ -165,11 +175,15 @@ def test_diffpairs1x():
     r.optimizeNets( groups)
 
     dp.dump()
+    with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
+
+
 
 def test_diffpairs2x():
 
     ux = 4
-    uy = 8
+    uy = 1
 
     nunit = CellLeaf( "nunit", Rect(0,0,ux,uy))
     nunit.addTerminal( "s1", Rect(0,0,0,uy))
@@ -194,8 +208,11 @@ def test_diffpairs2x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 6*ux
-    ny = 2*uy
+    nnx = 6
+    nny = 2
+
+    nx = nnx*ux
+    ny = nny*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
 
@@ -208,10 +225,9 @@ def test_diffpairs2x():
 #
     ri_tbl = { ri.ci.nm: ri for ri in r.ris}        
 
-    if False:
-      places = [          ('a',1,3),('b',2,3),
-                ('s',0,2),('a',1,2),('b',2,2),('s',3,2)]
-      places_common_centroid = [ (tag,3-x,3-y) for (tag,x,y) in places]
+    if True:
+      places = [('s',0,1),('a',1,1),('a',2,1),('b',3,1),('b',4,1),('s',5,1)]
+      places_common_centroid = [ (tag,nnx-1-x,nny-1-y) for (tag,x,y) in places]
 
       od = OrderedDict()
       for (tag,x,y) in places + places_common_centroid:
@@ -295,7 +311,7 @@ def test_diffpairs2x():
     assert s.state == 'SAT'
     print( "First solve end")
 
-    if True:
+    if False:
       # enumerate all solutions
       def clauseEliminatingCurrentSolution():
         clause = []
@@ -328,8 +344,6 @@ def test_diffpairs2x():
       with open("__json","wt") as fp:
         r.dump_for_animation( fp)
 
-      exit()
-
     out_nets = ["outb","outa"]
     in_nets  = ["ina","inb"]
     s_nets  = ["si","so"]
@@ -355,7 +369,7 @@ def test_diffpairs2x():
 def test_diffpairs4x():
 
     ux = 4
-    uy = 8
+    uy = 1
 
     nunit = CellLeaf( "nunit", Rect(0,0,ux,uy))
     nunit.addTerminal( "s1", Rect(0,0,0,uy))
@@ -380,8 +394,11 @@ def test_diffpairs4x():
             dp.connect( "DP_%s_%d" % (tag,i), 'g2', g)
             dp.connect( "DP_%s_%d" % (tag,i), 's2', s)
 
-    nx = 6*ux
-    ny = 4*uy
+    nnx = 6
+    nny = 4
+
+    nx = nnx*ux
+    ny = nny*uy
 
     dp.bbox = Rect( 0, 0, nx, ny)
 
@@ -394,7 +411,7 @@ def test_diffpairs4x():
 #
     places = [('s',0,3),('a',1,3),('a',2,3),('b',3,3),('b',4,3),('s',5,3),
               ('s',0,2),('a',1,2),('a',2,2),('b',3,2),('b',4,2),('s',5,2)]
-    places_common_centroid = [ (tag,5-x,3-y) for (tag,x,y) in places]
+    places_common_centroid = [ (tag,nnx-1-x,nny-1-y) for (tag,x,y) in places]
 
     od = OrderedDict()
     for (tag,x,y) in places + places_common_centroid:
@@ -434,6 +451,9 @@ def test_diffpairs4x():
     r.optimizeNets( groups)
 
     dp.dump()
+    with open("__json","wt") as fp:
+        r.dump_for_animation( fp)
+
 
 def test_ca(optimize=True):
     ux = 1
