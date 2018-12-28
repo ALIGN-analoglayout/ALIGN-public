@@ -680,11 +680,11 @@ if __name__ == "__main__":
         test_ca( not args.no_optimize)
     elif args.block_name == "mirrors":
         test_mirrors()
-    elif args.block_name == "diffpairs1x":
+    elif args.block_name == "dp1x":
         test_diffpairs1x()
-    elif args.block_name == "diffpairs2x":
+    elif args.block_name == "dp2x":
         test_diffpairs2x()
-    elif args.block_name == "diffpairs4x":
+    elif args.block_name == "dp4x":
         test_diffpairs4x()
     else:
         assert(False)
