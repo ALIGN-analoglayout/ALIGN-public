@@ -1,42 +1,157 @@
 {
-  "nm": "dp1x",
-  "bbox": [ 0, 0, 28, 16],
+  "nm": "stack",
+  "bbox": [ 0, 0, 28, 88],
   "leaves": [
     {
       "template_name": "dp1x",
       "bbox": [ 0, 0, 28, 8],
       "terminals": [
-        {
-          "net_name": "s1",
-          "layer": "metal3",
-          "rect": [ 2, 0, 2, 8]
-        }
+        { "net_name": "c", "layer": "metal3", "rect": [ 3, 0, 3, 8]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 4, 0, 4, 8]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 8, 0, 8, 8]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 12, 0, 12, 8]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 14, 0, 14, 8]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 15, 0, 15, 8]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 16, 0, 16, 8]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 18, 0, 18, 8]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 19, 0, 19, 8]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 21, 0, 21, 8]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 23, 0, 23, 8]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 24, 0, 24, 8]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 26, 0, 26, 8]}
+      ]
+    },
+    {
+      "template_name": "dp2x",
+      "bbox": [ 0, 0, 28, 16],
+      "terminals": [
+        { "net_name": "c", "layer": "metal3", "rect": [ 3, 0, 3, 16]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 4, 0, 4, 16]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 8, 0, 8, 16]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 12, 0, 12, 16]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 14, 0, 14, 16]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 15, 0, 15, 16]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 16, 0, 16, 16]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 18, 0, 18, 16]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 19, 0, 19, 16]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 21, 0, 21, 16]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 23, 0, 23, 16]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 24, 0, 24, 16]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 26, 0, 26, 16]}
+      ]
+    },
+    {
+      "template_name": "dp4x",
+      "bbox": [ 0, 0, 28, 32],
+      "terminals": [
+        { "net_name": "c", "layer": "metal3", "rect": [ 3, 0, 3, 32]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 4, 0, 4, 32]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 8, 0, 8, 32]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 12, 0, 12, 32]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 14, 0, 14, 32]},
+        { "net_name": "outa", "layer": "metal3", "rect": [ 15, 0, 15, 32]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 16, 0, 16, 32]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 18, 0, 18, 32]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 19, 0, 19, 32]},
+        { "net_name": "inb", "layer": "metal3", "rect": [ 21, 0, 21, 32]},
+        { "net_name": "ina", "layer": "metal3", "rect": [ 23, 0, 23, 32]},
+        { "net_name": "outb", "layer": "metal3", "rect": [ 24, 0, 24, 32]},
+        { "net_name": "si", "layer": "metal3", "rect": [ 26, 0, 26, 32]}
       ]
     },
     {
       "template_name": "mirrors",
-      "bbox": [ 0, 0, 28, 8],
+      "bbox": [ 0, 0, 28, 24],
       "terminals": [
-        {
-          "net_name": "s1",
-          "layer": "metal3",
-          "rect": [ 10, 0, 10, 8]
-        }
+        { "net_name": "out2", "layer": "metal3", "rect": [ 4, 0, 4, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 7, 0, 7, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 8, 0, 8, 24]},
+        { "net_name": "out4", "layer": "metal3", "rect": [ 10, 0, 10, 24]},
+        { "net_name": "out4", "layer": "metal3", "rect": [ 11, 0, 11, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 12, 0, 12, 24]},
+        { "net_name": "out1b", "layer": "metal3", "rect": [ 13, 0, 13, 24]},
+        { "net_name": "vmirror", "layer": "metal3", "rect": [ 14, 0, 14, 24]},
+        { "net_name": "out1a", "layer": "metal3", "rect": [ 15, 0, 15, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 16, 0, 16, 24]},
+        { "net_name": "out4", "layer": "metal3", "rect": [ 17, 0, 17, 24]},
+        { "net_name": "out4", "layer": "metal3", "rect": [ 20, 0, 20, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 21, 0, 21, 24]},
+        { "net_name": "gnd!", "layer": "metal3", "rect": [ 22, 0, 22, 24]},
+        { "net_name": "out2", "layer": "metal3", "rect": [ 24, 0, 24, 24]}
       ]
     }
   ],
   "instances": [
     {
-      "instance_name": "dp1x",
+      "instance_name": "dp1x_a",
       "template_name": "dp1x",
       "transformation": {
         "oX": 0,
-        "oY": 0,
+        "oY": 80,
         "sX": 1,
         "sY": 1
       },
       "formal_actual_map": {
-        "s1": "s1"
+        "si": "out1a",
+        "c": "dp1x_a_c",
+        "outa": "outa",
+        "outb": "outb",
+        "ina": "ina",
+        "inb": "inb"
+      }
+    },
+    {
+      "instance_name": "dp1x_b",
+      "template_name": "dp1x",
+      "transformation": {
+        "oX": 0,
+        "oY": 72,
+        "sX": 1,
+        "sY": 1
+      },
+      "formal_actual_map": {
+        "si": "out1b",
+        "c": "dp1x_b_c",
+        "outa": "outa",
+        "outb": "outb",
+        "ina": "ina",
+        "inb": "inb"
+      }
+    },
+    {
+      "instance_name": "dp2x",
+      "template_name": "dp2x",
+      "transformation": {
+        "oX": 0,
+        "oY": 56,
+        "sX": 1,
+        "sY": 1
+      },
+      "formal_actual_map": {
+        "si": "out2",
+        "c": "dp2x_c",
+        "outa": "outa",
+        "outb": "outb",
+        "ina": "ina",
+        "inb": "inb"
+      }
+    },
+    {
+      "instance_name": "dp4x",
+      "template_name": "dp4x",
+      "transformation": {
+        "oX": 0,
+        "oY": 24,
+        "sX": 1,
+        "sY": 1
+      },
+      "formal_actual_map": {
+        "si": "out4",
+        "c": "dp4x_c",
+        "outa": "outa",
+        "outb": "outb",
+        "ina": "ina",
+        "inb": "inb"
       }
     },
     {
@@ -44,12 +159,17 @@
       "template_name": "mirrors",
       "transformation": {
         "oX": 0,
-        "oY": 8,
+        "oY": 0,
         "sX": 1,
         "sY": 1
       },
       "formal_actual_map": {
-        "s1": "s1"
+          "out2": "out2",
+          "gnd!": "gnd!",
+          "out4": "out4",
+          "out1a": "out1a",
+          "out1b": "out1b",
+          "vmirror": "vmirror"
       }
     }
   ]
