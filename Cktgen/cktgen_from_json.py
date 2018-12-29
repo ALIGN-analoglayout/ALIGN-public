@@ -37,9 +37,14 @@ if __name__ == "__main__":
 
     for term in leaf['terminals']:
       r = term['rect']
-      assert term['layer'] == "metal1"
-      assert r[0] == r[2]
-      adt.addM1Terminal( term['net_name'], r[0])
+      if term['layer'] == "metal1":
+        assert r[0] == r[2]
+        adt.addM1Terminal( term['net_name'], r[0])
+      elif term['layer'] == "metal3":
+        assert r[0] == r[2]
+        adt.addM3Terminal( term['net_name'], r[0])
+      else:
+        assert False, term['layer']
 
   # using half (the placer grid)    
   # HACK Dividing by 2

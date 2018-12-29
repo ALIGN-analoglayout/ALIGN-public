@@ -3,7 +3,7 @@
 PORT=8090
 INPUTVOL=equalizerInputVol
 OUTPUTVOL=equalizerOutputVol
-NM=mirrors
+NM=stack
 
 #docker build -t tally .
 

@@ -1,0 +1,56 @@
+{
+  "nm": "dp1x",
+  "bbox": [ 0, 0, 28, 16],
+  "leaves": [
+    {
+      "template_name": "dp1x",
+      "bbox": [ 0, 0, 28, 8],
+      "terminals": [
+        {
+          "net_name": "s1",
+          "layer": "metal3",
+          "rect": [ 2, 0, 2, 8]
+        }
+      ]
+    },
+    {
+      "template_name": "mirrors",
+      "bbox": [ 0, 0, 28, 8],
+      "terminals": [
+        {
+          "net_name": "s1",
+          "layer": "metal3",
+          "rect": [ 10, 0, 10, 8]
+        }
+      ]
+    }
+  ],
+  "instances": [
+    {
+      "instance_name": "dp1x",
+      "template_name": "dp1x",
+      "transformation": {
+        "oX": 0,
+        "oY": 0,
+        "sX": 1,
+        "sY": 1
+      },
+      "formal_actual_map": {
+        "s1": "s1"
+      }
+    },
+    {
+      "instance_name": "mirrors",
+      "template_name": "mirrors",
+      "transformation": {
+        "oX": 0,
+        "oY": 8,
+        "sX": 1,
+        "sY": 1
+      },
+      "formal_actual_map": {
+        "s1": "s1"
+      }
+    }
+  ]
+}

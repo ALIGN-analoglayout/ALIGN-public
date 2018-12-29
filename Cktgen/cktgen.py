@@ -40,10 +40,16 @@ class ADT:
     return w
 
   def addM1Terminal( self, netName, m1TracksOffset):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.)
+    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
 """
     xc = self.tech.pitchM1*m1TracksOffset
     return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
+
+  def addM3Terminal( self, netName, m3TracksOffset):
+    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
+"""
+    xc = self.tech.pitchM3*m3TracksOffset
+    return self.newWire( netName, Rect( xc-self.tech.halfWidthM3[0], self.bbox.lly+self.tech.halfMinETESpaceM3, xc+self.tech.halfWidthM3[0], self.bbox.ury-self.tech.halfMinETESpaceM3), "metal3")
 
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)

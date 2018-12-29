@@ -1,0 +1,15 @@
+{
+  "wires": [
+    {
+      "layer": "metal4",
+      "net_name": "s1",
+      "width": 400,
+      "rect": [
+        0,
+        1,
+        2,
+        1
+      ]
+    }
+  ]
+}

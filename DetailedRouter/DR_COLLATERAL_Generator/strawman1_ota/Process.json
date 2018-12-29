@@ -6,6 +6,7 @@
     "dgPerRow" :  4,
     "pitchPoly" : 720,
     "pitchM1" : 720,
+    "pitchM3" : 720,
 
     "halfMinETESpaceM1" : 360,
     "halfMinETESpaceM2" : 360,
