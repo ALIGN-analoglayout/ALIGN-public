@@ -176,29 +176,41 @@ class CellTemplate:
 
 
     def buildDataForAnimation( self):
-      s=50
+      sx=50
+      sy=8*50 
 
       p = re.compile( "^DP_(.+)_(\d+)$")
-
       fills = { "a": "#e0ffe0", "b": "#e0e0ff", "s": "#ffe0e0"}
 
-      instances = []
+      p2 = re.compile( "^CM_(.+)_(\d+)$")
+      fills2 = { "4": "#e0ffe0", "2": "#e0e0ff", "1a": "#ffe0e0",
+                "1b": "#e0ffff", "ref": "#ffffe0"}
 
-      for (k,ci) in self.instances.items():
-        fill = "#ffe0e0"
-
+      def getFill( k):
         m = p.match(k)
         if m:
           signal = m.groups()[0]
           if signal in fills:
-            fill = fills[signal]
+            return fills[signal]
+
+        m = p2.match(k)
+        if m:
+          signal = m.groups()[0]
+          if signal in fills2:
+            return fills2[signal]
+
+        return "#ffe0e0"
+
+      instances = []
+
+      for (k,ci) in self.instances.items():
 
         instances.append( { "nm": k,
-                            "fill": fill,
-                            "w": ci.template.bbox.urx*s,
-                            "h": ci.template.bbox.ury*s,
-                            "transformation": { "oX" : ci.transformation.oX*s,
-                                                "oY" : ci.transformation.oY*s,
+                            "fill": getFill(k),
+                            "w": ci.template.bbox.urx*sx,
+                            "h": ci.template.bbox.ury*sy,
+                            "transformation": { "oX" : ci.transformation.oX*sx,
+                                                "oY" : ci.transformation.oY*sy,
                                                 "sX" : ci.transformation.sX,
                                                 "sY" : ci.transformation.sY},
                             "formal_actual_map": ci.fa_map})

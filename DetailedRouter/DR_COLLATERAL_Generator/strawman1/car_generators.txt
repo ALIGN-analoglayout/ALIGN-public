@@ -1,4 +1,4 @@
-Generator name=via1_simple {
+Generator name=via1_400_400 {
   Layer1 value=metal1 {
     x_coverage value=0.000
     y_coverage value=0.016
@@ -13,7 +13,7 @@ Generator name=via1_simple {
   CutHeight value=0.040
   cutlayer value=via1
 }
-Generator name=via2_simple {
+Generator name=via2_400_400 {
   Layer1 value=metal2 {
     x_coverage value=0.016
     y_coverage value=0.000
@@ -28,7 +28,7 @@ Generator name=via2_simple {
   CutHeight value=0.040
   cutlayer value=via2
 }
-Generator name=via3_simple {
+Generator name=via3_400_400 {
   Layer1 value=metal3 {
     x_coverage value=0.000
     y_coverage value=0.016
@@ -43,7 +43,7 @@ Generator name=via3_simple {
   CutHeight value=0.040
   cutlayer value=via3
 }
-Generator name=via4_simple {
+Generator name=via4_400_400 {
   Layer1 value=metal4 {
     x_coverage value=0.016
     y_coverage value=0.000

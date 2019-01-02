@@ -6,9 +6,9 @@
         <div class="col-sm-12">
           <vue-slider
             ref="slider"
-            v-model="theta"
+            v-model="theta_timeline"
             :min="0"
-            :max="1"
+            :max="leaves_array.length - 1"
             :width="'960px'"
             :interval="0.001"
             :speed="0"
@@ -121,7 +121,7 @@ export default {
     const stepsPerYStep = 8
     const stepx = stepsPerXStep * step
     const stepy = stepsPerYStep * step
-    let ny = 2
+    let ny = 4
     let nx = 6
     var scale
 
@@ -192,6 +192,15 @@ export default {
     }
   },
   computed: {
+    theta_timeline: {
+      get: function() {
+        return this.theta + this.leaves_idx
+      },
+      set: function(val) {
+        this.leaves_idx = Math.trunc(val)
+        this.theta = val - this.leaves_idx
+      }
+    },
     leaves_idx_next: function() {
       return this.leaves_idx + 1
     },

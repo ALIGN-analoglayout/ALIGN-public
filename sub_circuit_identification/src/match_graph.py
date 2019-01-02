@@ -76,7 +76,7 @@ def _mapped_graph_list(G1,newlist):
         #print("Matching:",sub_block_name,G2.nodes())
         #print("circuit node",G1.nodes())
         GM = isomorphism.GraphMatcher(G1,G2,node_match=isomorphism.categorical_node_match(['inst_type'],['nmos']),
-                                      edge_match=isomorphism.categorical_edge_match(['weight'],[1]))
+                                      edge_match=isomorphism.categorical_multiedge_match(['weight'],[1]))
         if  GM.subgraph_is_isomorphic():
             #print("\n\nISOMORPHIC",sub_block_name)
             map_list=[]

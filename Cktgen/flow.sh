@@ -14,6 +14,7 @@ SHOWGLOBALROUTES=""
 SHOWMETALTEMPLATES=""
 ROUTE=" --route"
 PLACERJSON=""
+SOURCE=""
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -85,6 +86,11 @@ case $key in
     shift
     shift
     ;;
+    -src|--source)
+    SOURCE=" --source $2"
+    shift
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift
@@ -104,6 +110,7 @@ echo SKIPROUTER = "${SKIPROUTER}"
 echo SKIPGENERATE = "${SKIPGENERATE}"
 echo SKIPVIEWER = "${SKIPVIEWER}"
 echo PLACERJSON = "${PLACERJSON}"
+echo SOURCE = "${SOURCE}"
 
 M_INPUT="--mount source=${INPUTVOL},target=/Cktgen/INPUT"
 M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
@@ -118,7 +125,7 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 	docker volume rm ${INPUTVOL}
     fi
     docker volume rm ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then

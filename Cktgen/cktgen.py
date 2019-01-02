@@ -40,10 +40,16 @@ class ADT:
     return w
 
   def addM1Terminal( self, netName, m1TracksOffset):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.)
+    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
 """
     xc = self.tech.pitchM1*m1TracksOffset
     return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
+
+  def addM3Terminal( self, netName, m3TracksOffset):
+    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
+"""
+    xc = self.tech.pitchM3*m3TracksOffset
+    return self.newWire( netName, Rect( xc-self.tech.halfWidthM3[0], self.bbox.lly+self.tech.halfMinETESpaceM3, xc+self.tech.halfWidthM3[0], self.bbox.ury-self.tech.halfMinETESpaceM3), "metal3")
 
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
@@ -583,6 +589,7 @@ def parse_args():
   parser.add_argument( "--consume_results", action='store_true')
   parser.add_argument( "--placer_json", type=str, default='')
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
+  parser.add_argument( "-s", "--source", type=str, default='')
 
   args = parser.parse_args()
 
@@ -601,7 +608,7 @@ def parse_args():
         
     terminals = []
     if placer_results is not None:
-      globalScale = transformation.Transformation( 0, 0, 2*tech.halfXADTGrid*tech.pitchPoly, 2*tech.halfYADTGrid*tech.pitchDG)
+      globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
 #      b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
 #      terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
 
