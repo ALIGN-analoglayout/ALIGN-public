@@ -579,6 +579,111 @@ def parse_lgf( fp):
 
 import transformation
 
+class Scanline:
+    def __init__(self, proto, indices, dIndex):
+        self.proto = proto
+        self.indices = indices
+        self.dIndex = dIndex
+        self.rects = []
+        self.clear()
+
+    def clear(self):
+        self.start = None
+        self.end = None
+        self.currentNet = None
+
+    def isEmpty(self):
+        return self.start is None
+
+    def emit(self):
+        r = self.proto[:]
+        r[self.dIndex] = self.start
+        r[self.dIndex+2] = self.end
+        self.rects.append((r, self.currentNet))
+
+    def set(self, rect, netName):
+        self.start = rect[self.dIndex]
+        self.end = rect[self.dIndex+2]
+        self.currentNet = netName
+
+
+def removeDuplicates( data):
+
+    layers = [('metal0', 'h'), ('metal1', 'v'), ('metal2', 'h'),('metal3', 'v'),
+              ('metal4', 'h'), ('metal5', 'v'), ('metal6', 'h'),('metal7', 'v')]
+
+    hLayers = {layer for (layer, dir) in layers if dir == 'h'}
+    vLayers = {layer for (layer, dir) in layers if dir == 'v'}
+    layersDict = dict(layers)
+
+    indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
+
+    tbl = {}
+
+    for d in data:
+        layer = d['layer']
+        rect = d['rect']
+        netName = d['netName']
+
+#        assert layer in layersDict, layer
+        if layer not in layersDict:
+            print( "Skipping processing of unknown layer:", layer)
+            continue
+
+        twice_center = sum(rect[index]
+                           for index in indicesTbl[layersDict[layer]][0])
+
+        if layer not in tbl:
+            tbl[layer] = {}
+        if twice_center not in tbl[layer]:
+            tbl[layer][twice_center] = []
+
+        tbl[layer][twice_center].append((rect, netName))
+
+    terminals = []
+
+    for (layer, dir) in layers:
+        if layer not in tbl:
+            continue
+        (indices, dIndex) = indicesTbl[dir]
+
+        for (twice_center, v) in tbl[layer].items():
+
+            sl = Scanline(v[0][0], indices, dIndex)
+
+            if v:
+                (rect0, _) = v[0]
+                for (rect, netName) in v[1:]:
+                    assert all(rect[i] == rect0[i] for i in indices)
+
+                s = sorted(v, key=lambda p: p[0][dIndex])
+
+                for (rect, netName) in s:
+                    if sl.isEmpty():
+                        sl.set(rect, netName)
+                    elif rect[dIndex] <= sl.end:  # continue
+                        sl.end = max(sl.end, rect[dIndex+2])
+                        if sl.currentNet != netName:
+                            print( "Potential short:", (layer, sl.currentNet, netName))
+                        #assert sl.currentNet == netName, (layer, sl.currentNet, netName)
+                    else:  # gap
+                        sl.emit()
+                        sl.set(rect, netName)
+
+                if not sl.isEmpty():
+                    sl.emit()
+                    sl.clear()
+
+
+#        print( layer, twice_center, len(v), len(sl.rects))
+
+            for (rect, netName) in sl.rects:
+                terminals.append(
+                    {'layer': layer, 'netName': netName, 'rect': rect})
+
+    return terminals
+
+
 def parse_args():
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
@@ -623,8 +728,55 @@ def parse_args():
         nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
         terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
       
+    leaf = {}
+    leaf['template_name'] = netl.nm
+
+    shrinkX = 720
+    shrinkY = 720
+    
+    bbox = netl.bbox
+    assert bbox.llx == 0
+    assert bbox.lly == 0
+    assert bbox.urx % shrinkX == 0
+    assert bbox.ury % shrinkY == 0
+
+    leaf['bbox'] = [ bbox.llx // shrinkX, bbox.lly // shrinkY, bbox.urx // shrinkX, bbox.ury // shrinkY]
+
+    leaf['terminals'] = []
+
+    p = re.compile('^MTI_.*$')
+
+    for (k,wire) in netl.wires.items():
+      if wire.layer == "metal3":
+        # need to deal with offset
+        rect = wire.rect
+        
+        if p.match(wire.netName): continue
+
+        assert (rect.llx+200) % shrinkX == 0
+        assert rect.lly % shrinkY == 360, (rect.lly, rect.lly % shrinkY)
+        assert (rect.urx-200) % shrinkX == 0
+        assert rect.ury % shrinkY == 360, (rect.ury, rect.ury % shrinkY)
+
+        cx = (rect.urx + rect.llx) // (2*shrinkX)
+        y0 = (rect.lly - 360) // shrinkY
+        y1 = (rect.ury - 360) // shrinkY
+
+        print( wire, cx, y0, y1)
+
+        leaf['terminals'].append({
+          "netName": wire.netName,
+          "layer": wire.layer,
+          "rect": [ cx, y0, cx, y1]
+        })
+
+    leaf['terminals'] = removeDuplicates(leaf['terminals'])
+
     netl.write_input_file( netl.nm + "_xxx.txt")
     netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals)
+
+    with open( "INPUT/interface.json", "wt") as fp:
+      fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
     exit()
 

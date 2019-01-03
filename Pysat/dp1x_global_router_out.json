@@ -76,6 +76,73 @@
         6,
         1
       ]
+    }, 
+
+    {
+      "layer": "metal3",
+      "net_name": "ina",
+      "width": 400,
+      "rect": [
+        3,
+        0,
+        3,
+        1
+      ]
+    },
+    {
+      "layer": "metal3",
+      "net_name": "inb",
+      "width": 400,
+      "rect": [
+        3,
+        0,
+        3,
+        1
+      ]
+    },
+    {
+      "layer": "metal3",
+      "net_name": "outa",
+      "width": 400,
+      "rect": [
+        1,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "layer": "metal3",
+      "net_name": "outb",
+      "width": 400,
+      "rect": [
+        1,
+        0,
+        1,
+        1
+      ]
+    },
+    {
+      "layer": "metal3",
+      "net_name": "outa",
+      "width": 400,
+      "rect": [
+        5,
+        0,
+        5,
+        1
+      ]
+    },
+    {
+      "layer": "metal3",
+      "net_name": "outb",
+      "width": 400,
+      "rect": [
+        5,
+        0,
+        5,
+        1
+      ]
     }
   ]
 }
