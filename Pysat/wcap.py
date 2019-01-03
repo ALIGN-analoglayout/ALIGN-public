@@ -42,7 +42,7 @@ def main():
   cunit_width_narrower = 14
   cunit_height = 16
 
-  n_side_cols = 0
+  n_side_cols = 1
   n_top_rows = 0
 
   c_place['leaves'].append(
@@ -50,8 +50,8 @@ def main():
       "template_name" : "cunit",
       "bbox": [ 0, 0, cunit_width, cunit_height],
       "terminals": [
-        { "net_name": "tp", "layer": "metal3", "rect": [ 1, 0, 1, cunit_height]},
-        { "net_name": "tn", "layer": "metal3", "rect": [ 2, 0, 2, cunit_height]}
+        { "net_name": "tp", "layer": "metal3", "rect": [ 1, 1, 1, cunit_height-1]},
+        { "net_name": "tn", "layer": "metal3", "rect": [ 2, 1, 2, cunit_height-1]}
       ]
     }
     )
@@ -61,8 +61,8 @@ def main():
       "template_name" : "cunit_narrower",
       "bbox": [ 0, 0, cunit_width_narrower, cunit_height],
       "terminals": [
-        { "net_name": "tp", "layer": "metal3", "rect": [ 1, 0, 1, cunit_height]},
-        { "net_name": "tn", "layer": "metal3", "rect": [ 2, 0, 2, cunit_height]}
+        { "net_name": "tp", "layer": "metal3", "rect": [ 1, 1, 1, cunit_height-1]},
+        { "net_name": "tn", "layer": "metal3", "rect": [ 2, 1, 2, cunit_height-1]}
       ]
     }
     )
@@ -74,22 +74,27 @@ def main():
   for inst in c_place['instances']:
     inst['transformation']['oX'] += cunit_width*n_side_cols
 
-  y_offset = 8
+  y_offset = 8+16
 
-  def tup(ix, iy ,side):
+  def tup( ix, iy, side):
     assert side in ['l','r'], side
     idx = ix+iy + (0 if side == 'l' else 1)
     i_nm = "cpl_%s_%d_%d" % (side,ix,iy)
+
+# Make common centroid
+
+# bp 3   an 3   
+# ap 2   bn 2
+# bn 1   ap 1
+# an 0   bp 0
+
+    suffix = "_n" if idx % 4 in [0,1] else "_p"
     if idx % 2 == 0:
-      return ( i_nm, "outa", "cpla")
+      return ( i_nm, "outa", "cpla" + suffix)
     else:
-      return ( i_nm, "outb", "cplb")
+      return ( i_nm, "outb", "cplb" + suffix)
 
-
-  
-
-
-  for (ix,iy) in ( (x,y) for y in range(5) for x in range(n_side_cols)):
+  for (ix,iy) in ( (x,y) for y in range(4) for x in range(n_side_cols)):
     (i_nm, tp, tn) = tup( ix, iy, 'l')
     c_place['instances'].append({
       "instance_name": i_nm,
@@ -141,7 +146,7 @@ def main():
 
   print( "xs:", xs)
 
-  for net in ["cpla","cplb"]:
+  for net in ["cpla_p","cplb_p","cpla_n","cplb_n"]:
 
     for x in xs:
       c_route['wires'].append({
