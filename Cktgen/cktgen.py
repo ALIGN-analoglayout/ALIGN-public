@@ -237,6 +237,9 @@ class ADNetlist:
       netl.instances[v.instanceName] = v.bbox
 
       for w in v.template.terminals:
+        if w.netName not in v.formalActualMap:
+          print( "Converting disconnected net to !kor", w.netName)
+
         a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
         if True or a not in ["vcc","vss"]:
           netl.newWire( a, v.hit( w.rect), w.layer)
@@ -430,7 +433,7 @@ Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=i,o
-Option name=nets_not_to_route value=ALS_KOR_DO_NOT_ROUTE,vss,vcc
+Option name=nets_not_to_route value=!kor,vss,vcc
 
 # debug options
 Option name=create_fake_global_routes            value={2}
@@ -623,7 +626,7 @@ def removeDuplicates( data):
     for d in data:
         layer = d['layer']
         rect = d['rect']
-        netName = d['netName']
+        netName = d['net_name']
 
 #        assert layer in layersDict, layer
         if layer not in layersDict:
@@ -679,7 +682,7 @@ def removeDuplicates( data):
 
             for (rect, netName) in sl.rects:
                 terminals.append(
-                    {'layer': layer, 'netName': netName, 'rect': rect})
+                    {'layer': layer, 'net_name': netName, 'rect': rect})
 
     return terminals
 
@@ -729,7 +732,12 @@ def parse_args():
         terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
       
     leaf = {}
-    leaf['template_name'] = netl.nm
+
+    design_name = netl.nm
+    if args.source != "":
+      design_name = args.source
+
+    leaf['template_name'] = design_name
 
     shrinkX = 720
     shrinkY = 720
@@ -765,7 +773,7 @@ def parse_args():
         print( wire, cx, y0, y1)
 
         leaf['terminals'].append({
-          "netName": wire.netName,
+          "net_name": wire.netName,
           "layer": wire.layer,
           "rect": [ cx, y0, cx, y1]
         })
@@ -775,7 +783,11 @@ def parse_args():
     netl.write_input_file( netl.nm + "_xxx.txt")
     netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals)
 
-    with open( "INPUT/interface.json", "wt") as fp:
+    interface_fn = "INPUT/interface.json"
+    if args.source != '':
+      interface_fn = "INPUT/" + args.source + "_interface.json"
+
+    with open( interface_fn, "wt") as fp:
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
     exit()

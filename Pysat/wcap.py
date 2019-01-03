@@ -14,6 +14,23 @@ def dump( fn, j):
 def main():
   s_place = load( "stack_placer_out_scaled.json")
 
+  dp1x_interface = load( "dp1x_interface.json")['leaves'][0]
+  dp2x_interface = load( "dp2x_interface.json")['leaves'][0]
+  dp4x_interface = load( "dp4x_interface.json")['leaves'][0]
+  mirrors_interface = load( "mirrors_interface.json")['leaves'][0]
+
+  
+  leaves = s_place['leaves']
+
+  leaves_tbl = { leaf['template_name']: leaf for leaf in leaves}
+
+  new_leaves = [ leaves_tbl['dp1x'],
+                 dp2x_interface,
+                 dp4x_interface,
+                 mirrors_interface]
+
+  s_place['leaves'] = new_leaves
+
   s_route = load( "stack_global_router_out.json")
 
   c_place = deepcopy(s_place)
