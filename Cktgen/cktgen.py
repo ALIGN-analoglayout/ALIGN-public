@@ -45,11 +45,32 @@ class ADT:
     xc = self.tech.pitchM1*m1TracksOffset
     return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
 
-  def addM3Terminal( self, netName, m3TracksOffset):
+  def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
     """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
 """
-    xc = self.tech.pitchM3*m3TracksOffset
-    return self.newWire( netName, Rect( xc-self.tech.halfWidthM3[0], self.bbox.lly+self.tech.halfMinETESpaceM3, xc+self.tech.halfWidthM3[0], self.bbox.ury-self.tech.halfMinETESpaceM3), "metal3")
+    assert m3TracksOffset is None or rect is None
+    assert m3TracksOffset is not None or rect is not None
+
+    if m3TracksOffset is not None:
+      xc = self.tech.pitchM3*m3TracksOffset
+
+      y0 = self.bbox.lly+self.tech.halfMinETESpaceM3
+      y1 = self.bbox.ury-self.tech.halfMinETESpaceM3
+
+    if rect is not None:
+      assert rect[0] == rect[2]
+
+      xc = self.tech.pitchM3*rect[0]
+
+      # HACK: need to use the correct stopping point grid (assuming M2 and M3 pitches are the same.)
+      # expand from abstract grid
+      y0 = self.tech.pitchM3*rect[1]-self.tech.halfMinETESpaceM3
+      y1 = self.tech.pitchM3*rect[3]+self.tech.halfMinETESpaceM3
+
+    x0 = xc-self.tech.halfWidthM3[0]
+    x1 = xc+self.tech.halfWidthM3[0]
+
+    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
 
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
@@ -762,15 +783,14 @@ def parse_args():
         if p.match(wire.netName): continue
 
         assert (rect.llx+200) % shrinkX == 0
-        assert rect.lly % shrinkY == 360, (rect.lly, rect.lly % shrinkY)
+        assert rect.lly % shrinkY == 360, (rect.lly, rect.lly % shrinkY, wire)
         assert (rect.urx-200) % shrinkX == 0
-        assert rect.ury % shrinkY == 360, (rect.ury, rect.ury % shrinkY)
+        assert rect.ury % shrinkY == 360, (rect.ury, rect.ury % shrinkY, wire)
 
         cx = (rect.urx + rect.llx) // (2*shrinkX)
-        y0 = (rect.lly - 360) // shrinkY
+        # shrink to abstract grid
+        y0 = (rect.lly + 360) // shrinkY
         y1 = (rect.ury - 360) // shrinkY
-
-        print( wire, cx, y0, y1)
 
         leaf['terminals'].append({
           "net_name": wire.netName,
