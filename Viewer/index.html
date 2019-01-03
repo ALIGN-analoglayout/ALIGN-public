@@ -13,9 +13,25 @@
 
 <script>
 
+// check if there is a parameter (use that for the file name)
+
+var params = new URLSearchParams( location.search)
+var design = "mydesign";
+if ( params.has("design")) {
+  design = params.get("design");
+}
+var filename = "INPUT/" + design + "_dr_globalrouting.json";  
+
+console.log(design);
+console.log(filename);
+
 // Hack to keep the json file from being cached
 var timestamp = Date.now();
-d3.json("INPUT/mydesign_dr_globalrouting.json" + "?_=" + timestamp, onJson);
+filename = filename  + "?_=" + timestamp;
+
+console.log(filename)
+
+d3.json( filename, onJson);
 
 function onJson( error, data) {
 
@@ -63,6 +79,8 @@ function onJson( error, data) {
      { "layer": "metal4",  "tag": "4",  "color": "green"},
      { "layer": "via4",    "tag": "v4",  "color": "black"},
      { "layer": "metal5",  "tag": "5",  "color": "orange"},
+     { "layer": "via5",    "tag": "v5",  "color": "black"},
+     { "layer": "metal6",  "tag": "6",  "color": "purple"},
      { "layer": "cellarea", "tag": "C",  "color": colorbrewer.Reds[3][0]},
      { "layer": "diearea", "tag": "D",  "color": colorbrewer.Greens[3][0]},
      { "layer": "nwell", "tag": "NW",  "color": colorbrewer.Greens[3][0]}
