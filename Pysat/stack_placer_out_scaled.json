@@ -1,6 +1,6 @@
 {
   "nm": "stack",
-  "bbox": [ 0, 0, 28, 88],
+  "bbox": [ 0, 0, 32, 88],
   "leaves": [
     {
       "template_name": "dp1x",
@@ -86,7 +86,7 @@
       "instance_name": "dp1x_a",
       "template_name": "dp1x",
       "transformation": {
-        "oX": 0,
+        "oX": 2,
         "oY": 80,
         "sX": 1,
         "sY": 1
@@ -104,7 +104,7 @@
       "instance_name": "dp1x_b",
       "template_name": "dp1x",
       "transformation": {
-        "oX": 0,
+        "oX": 2,
         "oY": 72,
         "sX": 1,
         "sY": 1
@@ -122,7 +122,7 @@
       "instance_name": "dp2x",
       "template_name": "dp2x",
       "transformation": {
-        "oX": 0,
+        "oX": 2,
         "oY": 56,
         "sX": 1,
         "sY": 1
@@ -140,7 +140,7 @@
       "instance_name": "dp4x",
       "template_name": "dp4x",
       "transformation": {
-        "oX": 0,
+        "oX": 2,
         "oY": 24,
         "sX": 1,
         "sY": 1
@@ -158,7 +158,7 @@
       "instance_name": "mirrors",
       "template_name": "mirrors",
       "transformation": {
-        "oX": 0,
+        "oX": 2,
         "oY": 0,
         "sX": 1,
         "sY": 1

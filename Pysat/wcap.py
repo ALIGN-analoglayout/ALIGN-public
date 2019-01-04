@@ -58,8 +58,10 @@ def main():
     }
     )
 
+  stack_x_offset = cunit_width*n_side_cols
+
   # bump bounding box: one col on both sides
-  c_place['bbox'][2] += 2*cunit_width*n_side_cols
+  c_place['bbox'][2] += 2*stack_x_offset
 
   metal2_kors = []
   b = c_place['bbox']
@@ -77,7 +79,7 @@ def main():
 
   # shift stack
   for inst in c_place['instances']:
-    inst['transformation']['oX'] += cunit_width*n_side_cols
+    inst['transformation']['oX'] += stack_x_offset
 
   y_offset = 8+16
 
@@ -150,7 +152,7 @@ def main():
 
   xs = [ 4*i+3 for i in range(n_side_cols)]
   if xs:
-    pair_sum = 2*xs[-1] + 7 + 1
+    pair_sum = 2*xs[-1] + 8 + 1
     xs = xs + list( pair_sum - i for i in reversed(xs))
 
   print( "xs:", xs)
@@ -178,7 +180,7 @@ def main():
       if wire['layer'] == "metal4":
         if xs:
           wire['rect'][0] -= 4*n_side_cols-2
-          wire['rect'][2] += 4*n_side_cols-2
+          wire['rect'][2] += 4*n_side_cols-2 + 1
 
 
   dump( "wcap_placer_out_scaled.json", c_place)
