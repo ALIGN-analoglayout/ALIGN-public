@@ -99,6 +99,758 @@
             7
           ]
         }
+      ],
+      "layout": [
+        {
+          "layer": "via2",
+          "net_name": "c",
+          "rect": [
+            1960,
+            2680,
+            2360,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "ina",
+          "rect": [
+            9160,
+            1960,
+            9560,
+            2360
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "inb",
+          "rect": [
+            10600,
+            3400,
+            11000,
+            3800
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "outa",
+          "rect": [
+            3400,
+            520,
+            3800,
+            920
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "outa",
+          "rect": [
+            14920,
+            520,
+            15320,
+            920
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "outb",
+          "rect": [
+            4840,
+            4120,
+            5240,
+            4520
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "outb",
+          "rect": [
+            16360,
+            4120,
+            16760,
+            4520
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "si",
+          "rect": [
+            1240,
+            4840,
+            1640,
+            5240
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "si",
+          "rect": [
+            18520,
+            4840,
+            18920,
+            5240
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "c",
+          "rect": [
+            1960,
+            2680,
+            2360,
+            3080
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "c",
+          "rect": [
+            3400,
+            2680,
+            3800,
+            3080
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "c",
+          "rect": [
+            16360,
+            2680,
+            16760,
+            3080
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "c",
+          "rect": [
+            17800,
+            2680,
+            18200,
+            3080
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "ina",
+          "rect": [
+            4840,
+            1960,
+            5240,
+            2360
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "ina",
+          "rect": [
+            6280,
+            1960,
+            6680,
+            2360
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "ina",
+          "rect": [
+            13480,
+            1960,
+            13880,
+            2360
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "ina",
+          "rect": [
+            14920,
+            1960,
+            15320,
+            2360
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "inb",
+          "rect": [
+            7720,
+            3400,
+            8120,
+            3800
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "inb",
+          "rect": [
+            9160,
+            3400,
+            9560,
+            3800
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "inb",
+          "rect": [
+            10600,
+            3400,
+            11000,
+            3800
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "inb",
+          "rect": [
+            12040,
+            3400,
+            12440,
+            3800
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "outa",
+          "rect": [
+            5560,
+            520,
+            5960,
+            920
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "outa",
+          "rect": [
+            14200,
+            520,
+            14600,
+            920
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "outb",
+          "rect": [
+            8440,
+            4120,
+            8840,
+            4520
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "outb",
+          "rect": [
+            11320,
+            4120,
+            11720,
+            4520
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "si",
+          "rect": [
+            2680,
+            4840,
+            3080,
+            5240
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "si",
+          "rect": [
+            17080,
+            4840,
+            17480,
+            5240
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            1240,
+            1240,
+            1640,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            4120,
+            1240,
+            4520,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            7000,
+            1240,
+            7400,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            9880,
+            1240,
+            10280,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            12760,
+            1240,
+            13160,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            15640,
+            1240,
+            16040,
+            1640
+          ]
+        },
+        {
+          "layer": "via1",
+          "net_name": "so",
+          "rect": [
+            18520,
+            1240,
+            18920,
+            1640
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "c",
+          "rect": [
+            17800,
+            360,
+            18200,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "c",
+          "rect": [
+            16360,
+            360,
+            16760,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "c",
+          "rect": [
+            3400,
+            360,
+            3800,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "c",
+          "rect": [
+            1960,
+            360,
+            2360,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "ina",
+          "rect": [
+            14920,
+            360,
+            15320,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "ina",
+          "rect": [
+            13480,
+            360,
+            13880,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "ina",
+          "rect": [
+            6280,
+            360,
+            6680,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "ina",
+          "rect": [
+            4840,
+            360,
+            5240,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "inb",
+          "rect": [
+            12040,
+            360,
+            12440,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "inb",
+          "rect": [
+            10600,
+            360,
+            11000,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "inb",
+          "rect": [
+            9160,
+            360,
+            9560,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "inb",
+          "rect": [
+            7720,
+            360,
+            8120,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "outa",
+          "rect": [
+            14200,
+            360,
+            14600,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "outa",
+          "rect": [
+            5560,
+            360,
+            5960,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "outb",
+          "rect": [
+            11320,
+            360,
+            11720,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "outb",
+          "rect": [
+            8440,
+            360,
+            8840,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "si",
+          "rect": [
+            17080,
+            360,
+            17480,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "si",
+          "rect": [
+            2680,
+            360,
+            3080,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            18520,
+            360,
+            18920,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            1240,
+            360,
+            1640,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            9880,
+            360,
+            10280,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            15640,
+            360,
+            16040,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            12760,
+            360,
+            13160,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            7000,
+            360,
+            7400,
+            5400
+          ]
+        },
+        {
+          "layer": "metal1",
+          "net_name": "so",
+          "rect": [
+            4120,
+            360,
+            4520,
+            5400
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            1800,
+            2680,
+            18360,
+            3080
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            4680,
+            1960,
+            15480,
+            2360
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            7560,
+            3400,
+            12600,
+            3800
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            3240,
+            520,
+            15480,
+            920
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            4680,
+            4120,
+            16920,
+            4520
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "si",
+          "rect": [
+            1080,
+            4840,
+            19080,
+            5240
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            1080,
+            1240,
+            19080,
+            1640
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "c",
+          "rect": [
+            1960,
+            360,
+            2360,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "ina",
+          "rect": [
+            9160,
+            360,
+            9560,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "inb",
+          "rect": [
+            10600,
+            360,
+            11000,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            14920,
+            360,
+            15320,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            3400,
+            360,
+            3800,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            16360,
+            360,
+            16760,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            4840,
+            360,
+            5240,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            18520,
+            360,
+            18920,
+            5400
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            1240,
+            360,
+            1640,
+            5400
+          ]
+        }
       ]
     }
   ]
