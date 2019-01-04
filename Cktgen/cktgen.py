@@ -242,9 +242,13 @@ class ADNetlist:
     self.nm = nm
     self.instances = OrderedDict()
     self.nets = OrderedDict()
+    self.ports = []
 
   def addInstance( self, i):
     self.instances[i.instanceName] = i
+
+  def addPort( self, p):
+    self.ports.append( p)
 
   def connect( self, instanceName, f, a):
     if a not in self.nets:
@@ -264,8 +268,16 @@ class ADNetlist:
         a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
         if True or a not in ["vcc","vss"]:
           netl.newWire( a, v.hit( w.rect), w.layer)
-          print( "genNetlist", w)
+          print( "genNetlist", w, v.hit( w.rect))
 
+    for p in self.ports:
+      print( "Port", p)
+      r = p['rect']
+      ly = p['layer']
+      if ly in ["metal1","metal3","metal5"]:
+        netl.newWire( p['net_name'], Rect( r[0]*720-200, r[1]*720-360, r[2]*720+200, r[3]*720+360), ly)
+      if ly in ["metal2","metal4","metal6"]:
+        netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
 
 class Rect:
   def __init__( self, llx, lly, urx=None, ury=None):
@@ -636,6 +648,8 @@ def removeDuplicates( data):
     layers = [('metal0', 'h'), ('metal1', 'v'), ('metal2', 'h'),('metal3', 'v'),
               ('metal4', 'h'), ('metal5', 'v'), ('metal6', 'h'),('metal7', 'v')]
 
+    viaLayers = {'via0','via1','via2','via3','via4','via5','via6'}
+
     hLayers = {layer for (layer, dir) in layers if dir == 'h'}
     vLayers = {layer for (layer, dir) in layers if dir == 'v'}
     layersDict = dict(layers)
@@ -644,27 +658,48 @@ def removeDuplicates( data):
 
     tbl = {}
 
+    tblVia = {}
+
     for d in data:
         layer = d['layer']
         rect = d['rect']
         netName = d['net_name']
 
-#        assert layer in layersDict, layer
-        if layer not in layersDict:
+        if layer in viaLayers:
+          twice_centers = ( rect[0]+rect[2], rect[1]+rect[3])
+          if layer not in tblVia:
+            tblVia[layer] = {}
+          if twice_centers not in tblVia[layer]:
+            tblVia[layer][twice_centers] = []
+          tblVia[layer][twice_centers].append((rect, netName))
+        elif layer not in layersDict:
+          if layer not in ["nwell"]:
             print( "Skipping processing of unknown layer:", layer)
-            continue
-
-        twice_center = sum(rect[index]
-                           for index in indicesTbl[layersDict[layer]][0])
-
-        if layer not in tbl:
+        else:
+          twice_center = sum(rect[index] for index in indicesTbl[layersDict[layer]][0])
+          if layer not in tbl:
             tbl[layer] = {}
-        if twice_center not in tbl[layer]:
+          if twice_center not in tbl[layer]:
             tbl[layer][twice_center] = []
-
-        tbl[layer][twice_center].append((rect, netName))
+          tbl[layer][twice_center].append((rect, netName))
 
     terminals = []
+
+    for layer in viaLayers:
+      if layer not in tblVia:
+        continue
+
+      for (k,v) in tblVia[layer].items():
+        assert len(v) >= 0
+        for p in v[1:]:
+          if p[0] != v[0][0]:
+            print( "Via rectangles with same center differ:", layer, k, v)
+          if p[1] != v[0][1]:
+            print( "Via nets with same center differ:", layer, k, v)
+
+        # only the first one
+        for p in v[:1]:
+          terminals.append({'layer': layer, 'net_name': p[1], 'rect': p[0]})
 
     for (layer, dir) in layers:
         if layer not in tbl:
@@ -772,15 +807,23 @@ def parse_args():
     leaf['bbox'] = [ bbox.llx // shrinkX, bbox.lly // shrinkY, bbox.urx // shrinkX, bbox.ury // shrinkY]
 
     leaf['terminals'] = []
+    leaf['layout'] = []
 
-    p = re.compile('^MTI_.*$')
+    p = re.compile('^MTI_.*|^.*_gr$')
 
     for (k,wire) in netl.wires.items():
-      if wire.layer == "metal3":
+      if p.match(wire.netName): continue
+
+      rect = wire.rect
+
+      leaf['layout'].append( {
+        "net_name": wire.netName,
+        "layer": wire.layer,
+        "rect": rect.toList()
+      })
+
+      if wire.layer in ["metal3","metal5"]:
         # need to deal with offset
-        rect = wire.rect
-        
-        if p.match(wire.netName): continue
 
         assert (rect.llx+200) % shrinkX == 0
         assert rect.lly % shrinkY == 360, (rect.lly, rect.lly % shrinkY, wire)
@@ -799,6 +842,7 @@ def parse_args():
         })
 
     leaf['terminals'] = removeDuplicates(leaf['terminals'])
+    leaf['layout'] = removeDuplicates(leaf['layout'])
 
     netl.write_input_file( netl.nm + "_xxx.txt")
     netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals)

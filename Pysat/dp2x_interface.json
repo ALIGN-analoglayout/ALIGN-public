@@ -1,0 +1,85 @@
+{
+  "leaves": [
+    {
+      "template_name": "dp2x",
+      "bbox": [
+        0,
+        0,
+        28,
+        16
+      ],
+      "terminals": [
+        {
+          "layer": "metal3",
+          "net_name": "c",
+          "rect": [
+            3,
+            3,
+            3,
+            12
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "ina",
+          "rect": [
+            12,
+            3,
+            12,
+            13
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "inb",
+          "rect": [
+            16,
+            2,
+            16,
+            13
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            14,
+            4,
+            14,
+            11
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            15,
+            5,
+            15,
+            10
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            24,
+            2,
+            24,
+            12
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            4,
+            2,
+            4,
+            12
+          ]
+        }
+      ]
+    }
+  ]
+}

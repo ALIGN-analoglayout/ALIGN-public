@@ -216,17 +216,6 @@
       ]
     },
     {
-      "layer": "metal3",
-      "net_name": "c",
-      "width": 400,
-      "rect": [
-        6,
-        0,
-        6,
-        7
-      ]
-    },
-    {
       "layer": "metal2",
       "net_name": "si",
       "width": 400,

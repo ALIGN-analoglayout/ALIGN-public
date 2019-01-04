@@ -13,37 +13,28 @@ def dump( fn, j):
 
 def main():
   s_place = load( "stack_placer_out_scaled.json")
+  s_route = load( "stack_global_router_out.json")
+  c_place = deepcopy(s_place)
+  c_route = deepcopy(s_route)
 
   dp1x_interface = load( "dp1x_interface.json")['leaves'][0]
   dp2x_interface = load( "dp2x_interface.json")['leaves'][0]
   dp4x_interface = load( "dp4x_interface.json")['leaves'][0]
   mirrors_interface = load( "mirrors_interface.json")['leaves'][0]
 
-  
-  leaves = s_place['leaves']
-
-  leaves_tbl = { leaf['template_name']: leaf for leaf in leaves}
-
-  new_leaves = [ leaves_tbl['dp1x'],
+  new_leaves = [ dp1x_interface,
                  dp2x_interface,
                  dp4x_interface,
                  mirrors_interface]
 
-  s_place['leaves'] = new_leaves
-
-  s_route = load( "stack_global_router_out.json")
-
-  c_place = deepcopy(s_place)
-  c_route = deepcopy(s_route)
-
   c_place['nm'] = "wcap"
+  c_place['leaves'] = new_leaves
 
   cunit_width = 16
   cunit_width_narrower = 14
   cunit_height = 16
 
   n_side_cols = 1
-  n_top_rows = 0
 
   c_place['leaves'].append(
     {
@@ -70,6 +61,20 @@ def main():
   # bump bounding box: one col on both sides
   c_place['bbox'][2] += 2*cunit_width*n_side_cols
 
+  metal2_kors = []
+  b = c_place['bbox']
+  print( b)
+  for y in range(b[1]+1,b[3]):
+    x0 = b[0]+1
+    x1 = b[2]-1
+    metal2_kors.append( {
+      'net_name': '!kor',
+      'layer': 'metal2',
+      'rect': [x0,y,x1,y]
+    })
+
+  c_place['ports'] = metal2_kors
+
   # shift stack
   for inst in c_place['instances']:
     inst['transformation']['oX'] += cunit_width*n_side_cols
@@ -78,8 +83,12 @@ def main():
 
   def tup( ix, iy, side):
     assert side in ['l','r'], side
-    idx = ix+iy + (0 if side == 'l' else 1)
+
+    idx = ix+iy
     i_nm = "cpl_%s_%d_%d" % (side,ix,iy)
+
+    if side == 'r':
+      idx = n_side_cols*4-1 - idx
 
 # Make common centroid
 
@@ -153,7 +162,7 @@ def main():
         "layer": "metal5",
         "net_name": net,
         "width": 400,
-        "rect": [x,0,x,tbin]
+        "rect": [x,8,x,tbin]
       })
     if xs:
       c_route['wires'].append({
@@ -170,18 +179,6 @@ def main():
         if xs:
           wire['rect'][0] -= 4*n_side_cols-2
           wire['rect'][2] += 4*n_side_cols-2
-      if wire['layer'] == "metal5":
-        wire['rect'][1] = 2
-
-  # add another
-  for net in ["outa","outb"]:
-    if xs:
-      c_route['wires'].append({
-        "layer": "metal4",
-        "net_name": net,
-        "width": 400,
-        "rect": [xs[0],2,xs[-1],2]
-      })
 
 
   dump( "wcap_placer_out_scaled.json", c_place)

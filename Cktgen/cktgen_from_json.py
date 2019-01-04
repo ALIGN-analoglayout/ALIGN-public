@@ -70,6 +70,11 @@ if __name__ == "__main__":
     for (f,a) in inst['formal_actual_map'].items():
       adnetl.connect( iN, f, a)
 
+  if 'ports' in placer_results:  
+    ports = placer_results['ports']
+    for p in ports:
+      adnetl.addPort( p)
+
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:

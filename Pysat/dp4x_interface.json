@@ -1,0 +1,145 @@
+{
+  "leaves": [
+    {
+      "template_name": "dp4x",
+      "bbox": [
+        0,
+        0,
+        28,
+        32
+      ],
+      "terminals": [
+        {
+          "layer": "metal3",
+          "net_name": "c",
+          "rect": [
+            3,
+            8,
+            3,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "ina",
+          "rect": [
+            15,
+            4,
+            15,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "inb",
+          "rect": [
+            12,
+            4,
+            12,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            14,
+            13,
+            14,
+            22
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            8,
+            4,
+            8,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outa",
+          "rect": [
+            22,
+            4,
+            22,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            13,
+            10,
+            13,
+            19
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            6,
+            4,
+            6,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "outb",
+          "rect": [
+            23,
+            4,
+            23,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            27,
+            4,
+            27,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "si",
+          "rect": [
+            1,
+            4,
+            1,
+            28
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "so",
+          "rect": [
+            19,
+            3,
+            19,
+            29
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "so",
+          "rect": [
+            10,
+            3,
+            10,
+            29
+          ]
+        }
+      ]
+    }
+  ]
+}

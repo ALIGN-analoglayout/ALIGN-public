@@ -1,0 +1,165 @@
+{
+  "leaves": [
+    {
+      "template_name": "mirrors",
+      "bbox": [
+        0,
+        0,
+        28,
+        24
+      ],
+      "terminals": [
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            22,
+            3,
+            22,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            16,
+            3,
+            16,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            21,
+            3,
+            21,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            8,
+            3,
+            8,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            12,
+            3,
+            12,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "gnd!",
+          "rect": [
+            7,
+            3,
+            7,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out1a",
+          "rect": [
+            15,
+            7,
+            15,
+            16
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out1b",
+          "rect": [
+            13,
+            5,
+            13,
+            17
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out2",
+          "rect": [
+            24,
+            3,
+            24,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out2",
+          "rect": [
+            4,
+            3,
+            4,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out4",
+          "rect": [
+            20,
+            3,
+            20,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out4",
+          "rect": [
+            10,
+            3,
+            10,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out4",
+          "rect": [
+            17,
+            3,
+            17,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "out4",
+          "rect": [
+            11,
+            3,
+            11,
+            20
+          ]
+        },
+        {
+          "layer": "metal3",
+          "net_name": "vmirror",
+          "rect": [
+            14,
+            2,
+            14,
+            21
+          ]
+        }
+      ]
+    }
+  ]
+}
