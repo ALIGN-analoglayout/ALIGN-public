@@ -46,7 +46,7 @@ class ADT:
     return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
 
   def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
-    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
+    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
 """
     assert m3TracksOffset is None or rect is None
     assert m3TracksOffset is not None or rect is not None
@@ -71,6 +71,33 @@ class ADT:
     x1 = xc+self.tech.halfWidthM3[0]
 
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
+
+  def addM5Terminal( self, netName, m5TracksOffset=None, rect=None):
+    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
+"""
+    assert m5TracksOffset is None or rect is None
+    assert m5TracksOffset is not None or rect is not None
+
+    if m5TracksOffset is not None:
+      xc = self.tech.pitchM5*m5TracksOffset
+
+      y0 = self.bbox.lly+self.tech.halfMinETESpaceM5
+      y1 = self.bbox.ury-self.tech.halfMinETESpaceM5
+
+    if rect is not None:
+      assert rect[0] == rect[2]
+
+      xc = self.tech.pitchM5*rect[0]
+
+      # HACK: need to use the correct stopping point grid (assuming M4 and M5 pitches are the same.)
+      # expand from abstract grid
+      y0 = self.tech.pitchM5*rect[1]-self.tech.halfMinETESpaceM5
+      y1 = self.tech.pitchM5*rect[3]+self.tech.halfMinETESpaceM5
+
+    x0 = xc-self.tech.halfWidthM5[0]
+    x1 = xc+self.tech.halfWidthM5[0]
+
+    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal5")
 
   def __repr__( self):
     return self.nm + "," + str(self.bbox) + "," + str(self.terminals)
@@ -363,7 +390,7 @@ class Netlist:
     self.instances = OrderedDict()
     self.wires = {}
 
-  def dumpGR( self, tech, fn, cell_instances=[]):
+  def dumpGR( self, tech, fn, cell_instances=[], no_grid=False):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
       grs = []
@@ -396,11 +423,15 @@ class Netlist:
           terminals.append( wire)
 
       grGrid = []
-      dx = tech.pitchPoly*tech.halfXGRGrid*2
-      dy = tech.pitchDG*tech.halfYGRGrid*2
-      for x in range( self.bbox.llx, self.bbox.urx, dx):
-        for y in range( self.bbox.lly, self.bbox.ury, dy):
-          grGrid.append( [x,y,x+dx,y+dy])
+      if not no_grid:
+        dx = tech.pitchPoly*tech.halfXGRGrid*2
+        dy = tech.pitchDG*tech.halfYGRGrid*2
+        for x in range( self.bbox.llx, self.bbox.urx, dx):
+          for y in range( self.bbox.lly, self.bbox.ury, dy):
+            grGrid.append( [x,y,x+dx,y+dy])
+      else:
+        grGrid.append( self.bbox.toList())
+            
 
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
@@ -754,6 +785,7 @@ def parse_args():
   parser.add_argument( "--placer_json", type=str, default='')
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
   parser.add_argument( "-s", "--source", type=str, default='')
+  parser.add_argument( "--small", action='store_true')
 
   args = parser.parse_args()
 
@@ -845,7 +877,8 @@ def parse_args():
     leaf['layout'] = removeDuplicates(leaf['layout'])
 
     netl.write_input_file( netl.nm + "_xxx.txt")
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals)
+
+    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
 
     interface_fn = "INPUT/interface.json"
     if args.source != '':

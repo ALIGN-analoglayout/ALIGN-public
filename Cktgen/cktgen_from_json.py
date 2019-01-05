@@ -43,6 +43,9 @@ if __name__ == "__main__":
       elif term['layer'] == "metal3":
         assert r[0] == r[2]
         adt.addM3Terminal( term['net_name'], rect=r)
+      elif term['layer'] == "metal5":
+        assert r[0] == r[2]
+        adt.addM5Terminal( term['net_name'], rect=r)
       else:
         assert False, term['layer']
 

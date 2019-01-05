@@ -15,6 +15,7 @@ SHOWMETALTEMPLATES=""
 ROUTE=" --route"
 PLACERJSON=""
 SOURCE=""
+SMALL=""
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -91,6 +92,11 @@ case $key in
     shift
     shift
     ;;
+    --small)
+    SMALL=" --small"
+    shift
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift
@@ -111,6 +117,7 @@ echo SKIPGENERATE = "${SKIPGENERATE}"
 echo SKIPVIEWER = "${SKIPVIEWER}"
 echo PLACERJSON = "${PLACERJSON}"
 echo SOURCE = "${SOURCE}"
+echo SMALL = "${SMALL}"
 
 M_INPUT="--mount source=${INPUTVOL},target=/Cktgen/INPUT"
 M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
@@ -125,13 +132,13 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 	docker volume rm ${INPUTVOL}
     fi
     docker volume rm ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
 
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
 fi
 
 if [ ${SKIPVIEWER} = "NO" ]; then

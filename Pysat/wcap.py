@@ -31,7 +31,6 @@ def main():
   c_place['leaves'] = new_leaves
 
   cunit_width = 16
-  cunit_width_narrower = 14
   cunit_height = 16
 
   n_side_cols = 1
@@ -40,17 +39,6 @@ def main():
     {
       "template_name" : "cunit",
       "bbox": [ 0, 0, cunit_width, cunit_height],
-      "terminals": [
-        { "net_name": "tp", "layer": "metal3", "rect": [ 1, 1, 1, cunit_height-1]},
-        { "net_name": "tn", "layer": "metal3", "rect": [ 2, 1, 2, cunit_height-1]}
-      ]
-    }
-    )
-
-  c_place['leaves'].append(
-    {
-      "template_name" : "cunit_narrower",
-      "bbox": [ 0, 0, cunit_width_narrower, cunit_height],
       "terminals": [
         { "net_name": "tp", "layer": "metal3", "rect": [ 1, 1, 1, cunit_height-1]},
         { "net_name": "tn", "layer": "metal3", "rect": [ 2, 1, 2, cunit_height-1]}
