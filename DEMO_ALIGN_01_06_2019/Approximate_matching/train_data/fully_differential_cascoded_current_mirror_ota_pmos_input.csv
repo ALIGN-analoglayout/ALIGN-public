@@ -1,0 +1,16 @@
+vbiasn,1,net,internal,0,0,0,0
+vbiasp,1,net,internal,0,0,0,0
+id,0,net,internal,0,0,0,0
+vdd!,0,net,internal,0,0,0,0
+v1,0,Vsource,0,2,3,1,NULL
+voutp,1,net,internal,0,0,0,0
+m11,1,nmos,0,3,7,nfin=25,NULL
+0,0,net,internal,0,0,0,0
+net08,1,net,internal,0,0,0,0
+i10,0,Isource,0,2,3,6,NULL
+vbiasp1,1,net,internal,0,0,0,0
+vbiasn1,0,net,internal,0,0,0,0
+v2,0,Vsource,0,2,3,7,NULL
+net09,1,net,internal,0,0,0,0
+voutn,1,net,internal,0,0,0,0
+i0,1,DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic,0,8,25,L,

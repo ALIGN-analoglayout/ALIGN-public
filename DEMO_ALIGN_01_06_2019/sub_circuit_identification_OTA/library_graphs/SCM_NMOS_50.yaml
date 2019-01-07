@@ -1,0 +1,397 @@
+!!python/object:networkx.classes.multigraph.MultiGraph
+_adj:
+  D1:
+    MM0: &id001
+      0: {weight: 4}
+    MM1: &id002
+      0: {weight: 4}
+    MM16: &id004
+      0: {weight: 1}
+      1: {weight: 4}
+    MM17: &id005
+      0: {weight: 1}
+      1: {weight: 4}
+    MM18: &id006
+      0: {weight: 4}
+    MM19: &id007
+      0: {weight: 4}
+    MM2: &id008
+      0: {weight: 4}
+    MM20: &id009
+      0: {weight: 4}
+    MM21: &id010
+      0: {weight: 4}
+    MM22: &id012
+      0: {weight: 4}
+    MM23: &id014
+      0: {weight: 4}
+    MM3: &id015
+      0: {weight: 4}
+    MM30: &id017
+      0: {weight: 4}
+    MM31: &id018
+      0: {weight: 4}
+    MM32: &id019
+      0: {weight: 4}
+    MM35: &id020
+      0: {weight: 4}
+    MM36: &id022
+      0: {weight: 4}
+    MM37: &id024
+      0: {weight: 4}
+    MM4: &id026
+      0: {weight: 4}
+    MM5: &id027
+      0: {weight: 4}
+    MM6: &id029
+      0: {weight: 4}
+    MM7: &id031
+      0: {weight: 4}
+    MM8: &id032
+      0: {weight: 4}
+    MM9: &id034
+      0: {weight: 4}
+  D2:
+    MM1: &id003
+      0: {weight: 1}
+    MM21: &id011
+      0: {weight: 1}
+    MM22: &id013
+      0: {weight: 1}
+    MM3: &id016
+      0: {weight: 1}
+    MM35: &id021
+      0: {weight: 1}
+    MM36: &id023
+      0: {weight: 1}
+    MM37: &id025
+      0: {weight: 1}
+    MM5: &id028
+      0: {weight: 1}
+    MM6: &id030
+      0: {weight: 1}
+    MM8: &id033
+      0: {weight: 1}
+  MM0:
+    D1: *id001
+    S: &id035
+      0: {weight: 2}
+    net09: &id069
+      0: {weight: 1}
+  MM1:
+    D1: *id002
+    D2: *id003
+    net09: &id070
+      0: {weight: 2}
+  MM16:
+    D1: *id004
+    net042: &id065
+      0: {weight: 2}
+  MM17:
+    D1: *id005
+    net047: &id067
+      0: {weight: 2}
+  MM18:
+    D1: *id006
+    S: &id036
+      0: {weight: 2}
+    net042: &id066
+      0: {weight: 1}
+  MM19:
+    D1: *id007
+    S: &id037
+      0: {weight: 2}
+    net047: &id068
+      0: {weight: 1}
+  MM2:
+    D1: *id008
+    S: &id038
+      0: {weight: 2}
+    net015: &id047
+      0: {weight: 1}
+  MM20:
+    D1: *id009
+    S: &id039
+      0: {weight: 2}
+    net026: &id055
+      0: {weight: 1}
+  MM21:
+    D1: *id010
+    D2: *id011
+    net026: &id056
+      0: {weight: 2}
+  MM22:
+    D1: *id012
+    D2: *id013
+    net029: &id057
+      0: {weight: 2}
+  MM23:
+    D1: *id014
+    S: &id040
+      0: {weight: 2}
+    net029: &id058
+      0: {weight: 1}
+  MM3:
+    D1: *id015
+    D2: *id016
+    net015: &id048
+      0: {weight: 2}
+  MM30:
+    D1: *id017
+    S: &id041
+      0: {weight: 2}
+    net039: &id063
+      0: {weight: 1}
+  MM31:
+    D1: *id018
+    S: &id042
+      0: {weight: 2}
+    net036: &id061
+      0: {weight: 1}
+  MM32:
+    D1: *id019
+    S: &id043
+      0: {weight: 2}
+    net033: &id059
+      0: {weight: 1}
+  MM35:
+    D1: *id020
+    D2: *id021
+    net039: &id064
+      0: {weight: 2}
+  MM36:
+    D1: *id022
+    D2: *id023
+    net036: &id062
+      0: {weight: 2}
+  MM37:
+    D1: *id024
+    D2: *id025
+    net033: &id060
+      0: {weight: 2}
+  MM4:
+    D1: *id026
+    S: &id044
+      0: {weight: 2}
+    net018: &id049
+      0: {weight: 1}
+  MM5:
+    D1: *id027
+    D2: *id028
+    net018: &id050
+      0: {weight: 2}
+  MM6:
+    D1: *id029
+    D2: *id030
+    net021: &id051
+      0: {weight: 2}
+  MM7:
+    D1: *id031
+    S: &id045
+      0: {weight: 2}
+    net021: &id052
+      0: {weight: 1}
+  MM8:
+    D1: *id032
+    D2: *id033
+    net023: &id053
+      0: {weight: 2}
+  MM9:
+    D1: *id034
+    S: &id046
+      0: {weight: 2}
+    net023: &id054
+      0: {weight: 1}
+  S:
+    MM0: *id035
+    MM18: *id036
+    MM19: *id037
+    MM2: *id038
+    MM20: *id039
+    MM23: *id040
+    MM30: *id041
+    MM31: *id042
+    MM32: *id043
+    MM4: *id044
+    MM7: *id045
+    MM9: *id046
+  net015:
+    MM2: *id047
+    MM3: *id048
+  net018:
+    MM4: *id049
+    MM5: *id050
+  net021:
+    MM6: *id051
+    MM7: *id052
+  net023:
+    MM8: *id053
+    MM9: *id054
+  net026:
+    MM20: *id055
+    MM21: *id056
+  net029:
+    MM22: *id057
+    MM23: *id058
+  net033:
+    MM32: *id059
+    MM37: *id060
+  net036:
+    MM31: *id061
+    MM36: *id062
+  net039:
+    MM30: *id063
+    MM35: *id064
+  net042:
+    MM16: *id065
+    MM18: *id066
+  net047:
+    MM17: *id067
+    MM19: *id068
+  net09:
+    MM0: *id069
+    MM1: *id070
+_node: &id072
+  D1: {inst_type: net, net_type: external}
+  D2: {inst_type: net, net_type: external}
+  MM0:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net09, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM1:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net09]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM16:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D1, D1, net042]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM17:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D1, D1, net047]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM18:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net042, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM19:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net047, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM2:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net015, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM20:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net026, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM21:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net026]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM22:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net029]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM23:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net029, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM3:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net015]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM30:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net039, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM31:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net036, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM32:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net033, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM35:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net039]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM36:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net036]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM37:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net033]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM4:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net018, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM5:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net018]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM6:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net021]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM7:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net021, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM8:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [D2, D1, net023]
+    values: [w=270.0n, l=20n, nfin=10]
+  MM9:
+    edge_weight: [1, 4, 2]
+    inst_type: nmos
+    ports: [net023, D1, S]
+    values: [w=270.0n, l=20n, nfin=10]
+  S: {inst_type: net, net_type: external}
+  net015: {inst_type: net, net_type: internal}
+  net018: {inst_type: net, net_type: internal}
+  net021: {inst_type: net, net_type: internal}
+  net023: {inst_type: net, net_type: internal}
+  net026: {inst_type: net, net_type: internal}
+  net029: {inst_type: net, net_type: internal}
+  net033: {inst_type: net, net_type: internal}
+  net036: {inst_type: net, net_type: internal}
+  net039: {inst_type: net, net_type: internal}
+  net042: {inst_type: net, net_type: internal}
+  net047: {inst_type: net, net_type: internal}
+  net09: {inst_type: net, net_type: internal}
+adjlist_inner_dict_factory: &id071 !!python/name:__builtin__.dict ''
+adjlist_outer_dict_factory: *id071
+edge_attr_dict_factory: *id071
+edge_key_dict_factory: *id071
+graph: {}
+node_dict_factory: *id071
+nodes: !!python/object:networkx.classes.reportviews.NodeView
+  _nodes: *id072

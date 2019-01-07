@@ -1,0 +1,315 @@
+&id049 !!python/object:networkx.classes.multigraph.MultiGraph
+_adj:
+  '0':
+    v1: &id005
+      0: {weight: 2}
+    v2: &id006
+      0: {weight: 2}
+  i0:
+    id: &id001
+      0: {weight: 5}
+    net08: &id003
+      0: {weight: 0}
+    net09: &id004
+      0: {weight: 0}
+    vbiasn: &id007
+      0: {weight: 4}
+    vbiasp: &id011
+      0: {weight: 4}
+    vbiasp1: &id012
+      0: {weight: 4}
+    voutn: &id016
+      0: {weight: 2}
+    voutp: &id017
+      0: {weight: 2}
+  i10:
+    id: &id002
+      0: {weight: 2}
+    vdd!: &id013
+      0: {weight: 1}
+  id:
+    i0: *id001
+    i10: *id002
+  m11:
+    vbiasn: &id008
+      0: {weight: 1}
+    vbiasn1: &id009
+      0: {weight: 4}
+    vdd!: &id014
+      0: {weight: 2}
+  net08:
+    i0: *id003
+  net09:
+    i0: *id004
+  v1:
+    '0': *id005
+    vdd!: &id015
+      0: {weight: 1}
+  v2:
+    '0': *id006
+    vbiasn1: &id010
+      0: {weight: 1}
+  vbiasn:
+    i0: *id007
+    m11: *id008
+  vbiasn1:
+    m11: *id009
+    v2: *id010
+  vbiasp:
+    i0: *id011
+  vbiasp1:
+    i0: *id012
+  vdd!:
+    i10: *id013
+    m11: *id014
+    v1: *id015
+  voutn:
+    i0: *id016
+  voutp:
+    i0: *id017
+_node:
+  '0': {inst_type: net, net_type: internal}
+  i0:
+    edge_weight: [4, 4, 4, 0, 0, 2, 2, 5]
+    inst_type: DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+    ports: [vbiasn, vbiasp, vbiasp1, net08, net09, voutn, voutp, id]
+    sub_graph: &id048 !!python/object:networkx.classes.multigraph.MultiGraph
+      _adj:
+        '0':
+          mcm: &id018
+            0: {weight: 4}
+          mcmt: &id020
+            0: {weight: 4}
+        id:
+          mcm: &id019
+            0: {weight: 1}
+            1: {weight: 2}
+          mcmt: &id021
+            0: {weight: 2}
+        mcm:
+          '0': *id018
+          id: *id019
+        mcmt:
+          '0': *id020
+          id: *id021
+          net10: &id028
+            0: {weight: 1}
+        mdp:
+          net10: &id029
+            0: {weight: 4}
+          net8: &id031
+            0: {weight: 1}
+          vinp: &id042
+            0: {weight: 2}
+        mdpn:
+          net014: &id024
+            0: {weight: 1}
+          net10: &id030
+            0: {weight: 4}
+          vinn: &id041
+            0: {weight: 2}
+        mload:
+          net012: &id022
+            0: {weight: 1}
+          vbiasp1: &id037
+            0: {weight: 2}
+          vdd!: &id039
+            0: {weight: 4}
+        mloadn:
+          net06: &id026
+            0: {weight: 1}
+          vbiasp1: &id038
+            0: {weight: 2}
+          vdd!: &id040
+            0: {weight: 4}
+        mn_cascode:
+          net014: &id025
+            0: {weight: 4}
+          vbiasn: &id033
+            0: {weight: 2}
+          voutp: &id045
+            0: {weight: 1}
+        mn_cascoden:
+          net8: &id032
+            0: {weight: 4}
+          vbiasn: &id034
+            0: {weight: 2}
+          voutn: &id043
+            0: {weight: 1}
+        mp_cascode:
+          net012: &id023
+            0: {weight: 4}
+          vbiasp: &id035
+            0: {weight: 2}
+          voutp: &id046
+            0: {weight: 1}
+        mp_cascoden:
+          net06: &id027
+            0: {weight: 4}
+          vbiasp: &id036
+            0: {weight: 2}
+          voutn: &id044
+            0: {weight: 1}
+        net012:
+          mload: *id022
+          mp_cascode: *id023
+        net014:
+          mdpn: *id024
+          mn_cascode: *id025
+        net06:
+          mloadn: *id026
+          mp_cascoden: *id027
+        net10:
+          mcmt: *id028
+          mdp: *id029
+          mdpn: *id030
+        net8:
+          mdp: *id031
+          mn_cascoden: *id032
+        vbiasn:
+          mn_cascode: *id033
+          mn_cascoden: *id034
+        vbiasp:
+          mp_cascode: *id035
+          mp_cascoden: *id036
+        vbiasp1:
+          mload: *id037
+          mloadn: *id038
+        vdd!:
+          mload: *id039
+          mloadn: *id040
+        vinn:
+          mdpn: *id041
+        vinp:
+          mdp: *id042
+        voutn:
+          mn_cascoden: *id043
+          mp_cascoden: *id044
+        voutp:
+          mn_cascode: *id045
+          mp_cascode: *id046
+      _node:
+        '0': {inst_type: net, net_type: internal}
+        id: {inst_type: net, net_type: external}
+        mcm:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [id, id, '0']
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        mcmt:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [net10, id, '0']
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=50]
+        mdp:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [net8, vinp, net10]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=75]
+        mdpn:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [net014, vinn, net10]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=75]
+        mload:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [net012, vbiasp1, vdd!]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        mloadn:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [net06, vbiasp1, vdd!]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        mn_cascode:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [voutp, vbiasn, net014]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=25]
+        mn_cascoden:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [voutn, vbiasn, net8]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=25]
+        mp_cascode:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [voutp, vbiasp, net012]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=15]
+        mp_cascoden:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [voutn, vbiasp, net06]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=15]
+        net012: {inst_type: net, net_type: internal}
+        net014: {inst_type: net, net_type: internal}
+        net06: {inst_type: net, net_type: internal}
+        net10: {inst_type: net, net_type: internal}
+        net8: {inst_type: net, net_type: internal}
+        vbiasn: {inst_type: net, net_type: external}
+        vbiasp: {inst_type: net, net_type: external}
+        vbiasp1: {inst_type: net, net_type: external}
+        vdd!: {inst_type: net, net_type: internal}
+        vinn: {inst_type: net, net_type: internal}
+        vinp: {inst_type: net, net_type: internal}
+        voutn: {inst_type: net, net_type: external}
+        voutp: {inst_type: net, net_type: external}
+      adjlist_inner_dict_factory: &id047 !!python/name:builtins.dict ''
+      adjlist_outer_dict_factory: *id047
+      edge_attr_dict_factory: *id047
+      edge_key_dict_factory: *id047
+      graph: {}
+      node_dict_factory: *id047
+      root_graph: *id048
+    values: 'NULL'
+  i10:
+    edge_weight: [1, 2]
+    inst_type: Isource
+    ports: [vdd!, id]
+    sub_graph: 'NULL'
+    values: DC=10e-6
+  id: {inst_type: net, net_type: internal}
+  m11:
+    edge_weight: [1, 2, 4]
+    inst_type: nmos
+    ports: [vbiasn, vdd!, vbiasn1]
+    sub_graph: 'NULL'
+    values: [w=270e-9, l=20e-9, nfin=25]
+  net08: {inst_type: net, net_type: internal}
+  net09: {inst_type: net, net_type: internal}
+  v1:
+    edge_weight: [1, 2]
+    inst_type: Vsource
+    ports: [vdd!, '0']
+    sub_graph: 'NULL'
+    values: DC=1
+  v2:
+    edge_weight: [1, 2]
+    inst_type: Vsource
+    ports: [vbiasn1, '0']
+    sub_graph: 'NULL'
+    values: DC=0.7
+  vbiasn: {inst_type: net, net_type: internal}
+  vbiasn1: {inst_type: net, net_type: internal}
+  vbiasp: {inst_type: net, net_type: internal}
+  vbiasp1: {inst_type: net, net_type: internal}
+  vdd!: {inst_type: net, net_type: internal}
+  voutn: {inst_type: net, net_type: internal}
+  voutp: {inst_type: net, net_type: internal}
+adjlist_inner_dict_factory: *id047
+adjlist_outer_dict_factory: *id047
+edge_attr_dict_factory: *id047
+edge_key_dict_factory: *id047
+graph: {}
+node_dict_factory: *id047
+root_graph: *id049

@@ -1,0 +1,322 @@
+{
+  "terminals": [
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        660, 
+        1440, 
+        780
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -780, 
+        1440, 
+        -660
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        1020, 
+        1440, 
+        1140
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -1140, 
+        1440, 
+        -1020
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        1380, 
+        1440, 
+        1500
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -1500, 
+        1440, 
+        -1380
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        1740, 
+        1440, 
+        1860
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -1860, 
+        1440, 
+        -1740
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        2100, 
+        1440, 
+        2220
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -2220, 
+        1440, 
+        -2100
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        2460, 
+        1440, 
+        2580
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "ndiff", 
+      "rect": [
+        0, 
+        -2580, 
+        1440, 
+        -2460
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "diffcon", 
+      "rect": [
+        -100, 
+        -2880, 
+        100, 
+        -360
+      ], 
+      "netName": "s"
+    }, 
+    {
+      "layer": "diffcon", 
+      "rect": [
+        -100, 
+        360, 
+        100, 
+        2880
+      ], 
+      "netName": "s"
+    }, 
+    {
+      "layer": "poly", 
+      "rect": [
+        260, 
+        -2880, 
+        460, 
+        2880
+      ], 
+      "netName": "g"
+    }, 
+    {
+      "layer": "poly", 
+      "rect": [
+        980, 
+        -2880, 
+        1180, 
+        2880
+      ], 
+      "netName": "g"
+    }, 
+    {
+      "layer": "diffcon", 
+      "rect": [
+        1340, 
+        -2880, 
+        1540, 
+        -360
+      ], 
+      "netName": "d"
+    }, 
+    {
+      "layer": "diffcon", 
+      "rect": [
+        1340, 
+        360, 
+        1540, 
+        2880
+      ], 
+      "netName": "d"
+    }, 
+    {
+      "layer": "polycon", 
+      "rect": [
+        260, 
+        -100, 
+        1180, 
+        100
+      ], 
+      "netName": "g"
+    }, 
+    {
+      "layer": "metal1", 
+      "rect": [
+        -200, 
+        -2520, 
+        200, 
+        2520
+      ], 
+      "netName": "s"
+    }, 
+    {
+      "layer": "metal1", 
+      "rect": [
+        520, 
+        -2520, 
+        920, 
+        2520
+      ], 
+      "netName": "g"
+    }, 
+    {
+      "layer": "metal1", 
+      "rect": [
+        1240, 
+        -2520, 
+        1640, 
+        2520
+      ], 
+      "netName": "d"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        -3080, 
+        1800, 
+        -2680
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        -2360, 
+        1800, 
+        -1960
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        -1640, 
+        1800, 
+        -1240
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        -920, 
+        1800, 
+        -520
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        -200, 
+        1800, 
+        200
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        520, 
+        1800, 
+        920
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        1240, 
+        1800, 
+        1640
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        1960, 
+        1800, 
+        2360
+      ], 
+      "netName": "_"
+    }, 
+    {
+      "layer": "metal2", 
+      "rect": [
+        -360, 
+        2680, 
+        1800, 
+        3080
+      ], 
+      "netName": "_"
+    }
+  ], 
+  "globalRoutes": [], 
+  "bbox": [
+    -360, 
+    -3080, 
+    1800, 
+    3080
+  ], 
+  "globalRouteGrid": []
+}

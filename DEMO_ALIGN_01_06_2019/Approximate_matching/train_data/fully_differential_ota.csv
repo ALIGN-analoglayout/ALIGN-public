@@ -1,0 +1,14 @@
+m11,1,nmos,0,3,7,nfin=25,NULL
+v2,0,Vsource,0,2,3,1,NULL
+id,0,net,internal,0,0,0,0
+vdd!,0,net,internal,0,0,0,0
+net08,1,net,internal,0,0,0,0
+voutp,1,net,internal,0,0,0,0
+i10,0,Isource,0,2,3,6,NULL
+i0,1,DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic,0,6,9,L,
+vg,1,net,internal,0,0,0,0
+net09,1,net,internal,0,0,0,0
+v1,0,Vsource,0,2,3,5,NULL
+0,0,net,internal,0,0,0,0
+vbias,0,net,internal,0,0,0,0
+voutn,1,net,internal,0,0,0,0

@@ -1,0 +1,246 @@
+&id037 !!python/object:networkx.classes.multigraph.MultiGraph
+_adj:
+  '0':
+    v1: &id007
+      0: {weight: 2}
+    v2: &id008
+      0: {weight: 2}
+    v3: &id009
+      0: {weight: 2}
+  i0:
+    id: &id001
+      0: {weight: 5}
+    net08: &id003
+      0: {weight: 0}
+    net09: &id005
+      0: {weight: 0}
+    vout: &id018
+      0: {weight: 2}
+  i10:
+    id: &id002
+      0: {weight: 2}
+    vdd!: &id010
+      0: {weight: 1}
+  id:
+    i0: *id001
+    i10: *id002
+  m11:
+    net08: &id004
+      0: {weight: 1}
+    vdd!: &id011
+      0: {weight: 2}
+    vinn: &id014
+      0: {weight: 4}
+  m12:
+    net09: &id006
+      0: {weight: 1}
+    vdd!: &id012
+      0: {weight: 2}
+    vinp: &id016
+      0: {weight: 4}
+  net08:
+    i0: *id003
+    m11: *id004
+  net09:
+    i0: *id005
+    m12: *id006
+  v1:
+    '0': *id007
+    vdd!: &id013
+      0: {weight: 1}
+  v2:
+    '0': *id008
+    vinn: &id015
+      0: {weight: 1}
+  v3:
+    '0': *id009
+    vinp: &id017
+      0: {weight: 1}
+  vdd!:
+    i10: *id010
+    m11: *id011
+    m12: *id012
+    v1: *id013
+  vinn:
+    m11: *id014
+    v2: *id015
+  vinp:
+    m12: *id016
+    v3: *id017
+  vout:
+    i0: *id018
+_node:
+  '0': {inst_type: net, net_type: internal}
+  i0:
+    edge_weight: [0, 0, 2, 5]
+    inst_type: DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+    ports: [net08, net09, vout, id]
+    sub_graph: &id036 !!python/object:networkx.classes.multigraph.MultiGraph
+      _adj:
+        '0':
+          mcm: &id019
+            0: {weight: 4}
+          mcmt: &id021
+            0: {weight: 4}
+        id:
+          mcm: &id020
+            0: {weight: 1}
+            1: {weight: 2}
+          mcmt: &id022
+            0: {weight: 2}
+        mcm:
+          '0': *id019
+          id: *id020
+        mcmt:
+          '0': *id021
+          id: *id022
+          net10: &id023
+            0: {weight: 1}
+        mdp:
+          net10: &id024
+            0: {weight: 4}
+          netse: &id026
+            0: {weight: 1}
+          vinp: &id032
+            0: {weight: 2}
+        mdpn:
+          net10: &id025
+            0: {weight: 4}
+          vinn: &id031
+            0: {weight: 2}
+          vout: &id033
+            0: {weight: 1}
+        mload:
+          netse: &id027
+            0: {weight: 2}
+          vdd!: &id029
+            0: {weight: 4}
+          vout: &id034
+            0: {weight: 1}
+        mloadn:
+          netse: &id028
+            0: {weight: 1}
+            1: {weight: 2}
+          vdd!: &id030
+            0: {weight: 4}
+        net10:
+          mcmt: *id023
+          mdp: *id024
+          mdpn: *id025
+        netse:
+          mdp: *id026
+          mload: *id027
+          mloadn: *id028
+        vdd!:
+          mload: *id029
+          mloadn: *id030
+        vinn:
+          mdpn: *id031
+        vinp:
+          mdp: *id032
+        vout:
+          mdpn: *id033
+          mload: *id034
+      _node:
+        '0': {inst_type: net, net_type: internal}
+        id: {inst_type: net, net_type: external}
+        mcm:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [id, id, '0']
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        mcmt:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [net10, id, '0']
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=50]
+        mdp:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [netse, vinp, net10]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=75]
+        mdpn:
+          edge_weight: [1, 2, 4]
+          inst_type: nmos
+          ports: [vout, vinn, net10]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=75]
+        mload:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [vout, netse, vdd!]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        mloadn:
+          edge_weight: [1, 2, 4]
+          inst_type: pmos
+          ports: [netse, netse, vdd!]
+          sub_graph: 'NULL'
+          values: [w=270e-9, l=20e-9, nfin=10]
+        net10: {inst_type: net, net_type: internal}
+        netse: {inst_type: net, net_type: internal}
+        vdd!: {inst_type: net, net_type: internal}
+        vinn: {inst_type: net, net_type: internal}
+        vinp: {inst_type: net, net_type: internal}
+        vout: {inst_type: net, net_type: external}
+      adjlist_inner_dict_factory: &id035 !!python/name:builtins.dict ''
+      adjlist_outer_dict_factory: *id035
+      edge_attr_dict_factory: *id035
+      edge_key_dict_factory: *id035
+      graph: {}
+      node_dict_factory: *id035
+      root_graph: *id036
+    values: 'NULL'
+  i10:
+    edge_weight: [1, 2]
+    inst_type: Isource
+    ports: [vdd!, id]
+    sub_graph: 'NULL'
+    values: DC=10e-6
+  id: {inst_type: net, net_type: internal}
+  m11:
+    edge_weight: [1, 2, 4]
+    inst_type: nmos
+    ports: [net08, vdd!, vinn]
+    sub_graph: 'NULL'
+    values: [w=270e-9, l=20e-9, nfin=25]
+  m12:
+    edge_weight: [1, 2, 4]
+    inst_type: nmos
+    ports: [net09, vdd!, vinp]
+    sub_graph: 'NULL'
+    values: [w=270e-9, l=20e-9, nfin=25]
+  net08: {inst_type: net, net_type: internal}
+  net09: {inst_type: net, net_type: internal}
+  v1:
+    edge_weight: [1, 2]
+    inst_type: Vsource
+    ports: [vdd!, '0']
+    sub_graph: 'NULL'
+    values: DC=1
+  v2:
+    edge_weight: [1, 2]
+    inst_type: Vsource
+    ports: [vinn, '0']
+    sub_graph: 'NULL'
+    values: DC=0.5
+  v3:
+    edge_weight: [1, 2]
+    inst_type: Vsource
+    ports: [vinp, '0']
+    sub_graph: 'NULL'
+    values: DC=0.5
+  vdd!: {inst_type: net, net_type: internal}
+  vinn: {inst_type: net, net_type: internal}
+  vinp: {inst_type: net, net_type: internal}
+  vout: {inst_type: net, net_type: internal}
+adjlist_inner_dict_factory: *id035
+adjlist_outer_dict_factory: *id035
+edge_attr_dict_factory: *id035
+edge_key_dict_factory: *id035
+graph: {}
+node_dict_factory: *id035
+root_graph: *id037
