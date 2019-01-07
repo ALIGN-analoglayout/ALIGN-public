@@ -19,27 +19,77 @@ def main():
   lane_width = lane_interface['bbox'][2]
   lane_height = lane_interface['bbox'][3]
 
-  t_place = {}
-  t_place['nm'] = "top"
-  t_place['bbox'] = [0,0,n_lanes*lane_width,lane_height]
-  t_place['leaves'] = [ lane_interface]
+  place = {}
+  place['nm'] = "top"
+  place['bbox'] = [0,0,n_lanes*lane_width,lane_height]
+  place['leaves'] = [ lane_interface]
 
-  t_place['instances'] = []
+  place['instances'] = []
+
+  route = { "wires": []}
 
   for i in range(n_lanes):
     i_nm = "lane_%d" % i
 
-    t_place['instances'].append( {
+    fa_map = {
+      "sda_outa": "lane_%d_sda_outa" % i,
+      "sda_outb": "lane_%d_sda_outb" % i
+    }
+
+    # lane_0/diff_r_ina <-> lane_1/sda_out_outa
+    # lane_1/diff_r_ina <-> lane_2/sda_out_outa
+    # lane_2/diff_r_ina <-> lane_3/sda_out_outa
+
+
+    # lane_0/sda_out_outa <-> lane_1/diff_l_ina
+    # lane_1/sda_out_outa <-> lane_2/diff_l_ina
+    # lane_2/sda_out_outa <-> lane_3/diff_l_ina
+
+    if i < 3:
+      fa_map["diff_r_ina"] = "lane_%d_sda_outa" % (i+1)
+      fa_map["diff_r_inb"] = "lane_%d_sda_outb" % (i+1)
+
+    if i > 0:
+      fa_map["diff_l_ina"] = "lane_%d_sda_outa" % (i-1)
+      fa_map["diff_l_inb"] = "lane_%d_sda_outb" % (i-1)
+
+    place['instances'].append( {
       "instance_name": i_nm,
       "template_name": "lane",
       "transformation": { "oX": lane_width*i, "oY": 0, "sX": 1, "sY": 1},
-      "formal_actual_map": {
-      }
+      "formal_actual_map": fa_map
     })
 
-  t_route = load( "top_global_router_out.json")
 
-  dump( "top_placer_out_scaled.json", t_place)
+    ry = 22
+
+    rx0 = (i * lane_width + lane_width // 2) // 4
+    rx1 = (i * lane_width + lane_width // 2) // 4
+
+    if i < 3:
+      rx1 += 25 #lane_width // 8
+    else:
+      rx1 += 2
+    if i > 0:
+      rx0 -= 25 #lane_width // 8
+    else:
+      rx0 -= 2
+
+    for net in ["outa","outb"]:
+      net_nm = "lane_%d_sda_%s" % (i,net)
+
+      route['wires'].append( {
+        "net_name": net_nm,
+        "layer": "metal4",
+        "width": 400,
+        "rect": [rx0,ry,rx1,ry]
+      })
+
+
+
+  dump( "top_placer_out_scaled.json", place)
+  dump( "top_global_router_out.json", route)
+
 
 if __name__ == "__main__":
   main()

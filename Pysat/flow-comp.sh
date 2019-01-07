@@ -3,7 +3,7 @@
 PORT=8090
 INPUTVOL=equalizerInputVol
 OUTPUTVOL=equalizerOutputVol
-NM=top
+NM=comp
 
 #docker build -t tally .
 
@@ -16,6 +16,6 @@ cd ../Cktgen
 docker build -t cktgen .
 
 # -sar -sgr -smt 
-./flow.sh -sgr -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s cktgen_from_json.py -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json --small
+./flow.sh -sar -sgr -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s cktgen_from_json.py -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
 
 docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"

@@ -586,8 +586,10 @@ def parse_lgf( fp):
         layer = m.groups()[3]        
         rect = Rect( int(m.groups()[4]), int(m.groups()[5]), int(m.groups()[6]), int(m.groups()[7]))
 
-        w = netl.newWire( net, rect, layer)
-        w.gid = gid
+        # hack to get rid of large global routing visualization grid
+        if layer != "nwell":
+          w = netl.newWire( net, rect, layer)
+          w.gid = gid
 
         continue
 
@@ -599,8 +601,10 @@ def parse_lgf( fp):
         gid = m.groups()[7]
         if gid is not None: gid = int(gid)
 
-        w = netl.newWire( net, rect, layer)
-        w.gid = gid
+        # hack to get rid of large global routing visualization grid
+        if layer != "nwell":
+          w = netl.newWire( net, rect, layer)
+          w.gid = gid
 
         continue
 
