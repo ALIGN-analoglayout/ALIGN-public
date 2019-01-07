@@ -14,7 +14,7 @@ docker build -t darpaalign/placement_editor_server .
 To run:
 ```
 docker run -p 5000:5000 -d darpaalign/placement_editor_server bash -c "source sympy/bin/activate && cd public && python server.py"
-docker run -p 8086:8086 -d darpaalign/placement_editor_client bash -c "source sympy/bin/activate && cd public && python -m http.server 8086"
+docker run -p 8086:8000 -d darpaalign/placement_editor_client bash -c "source sympy/bin/activate && cd public && python -m http.server"
 ```
 Then connect to `localhost:8086`
 
