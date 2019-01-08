@@ -36,16 +36,7 @@ def main():
       "sda_outb": "lane_%d_sda_outb" % i
     }
 
-    # lane_0/diff_r_ina <-> lane_1/sda_out_outa
-    # lane_1/diff_r_ina <-> lane_2/sda_out_outa
-    # lane_2/diff_r_ina <-> lane_3/sda_out_outa
-
-
-    # lane_0/sda_out_outa <-> lane_1/diff_l_ina
-    # lane_1/sda_out_outa <-> lane_2/diff_l_ina
-    # lane_2/sda_out_outa <-> lane_3/diff_l_ina
-
-    if i < 3:
+    if i < n_lanes-1:
       fa_map["diff_r_ina"] = "lane_%d_sda_outa" % (i+1)
       fa_map["diff_r_inb"] = "lane_%d_sda_outb" % (i+1)
 
@@ -66,12 +57,12 @@ def main():
     rx0 = (i * lane_width + lane_width // 2) // 4
     rx1 = (i * lane_width + lane_width // 2) // 4
 
-    if i < 3:
-      rx1 += 25 #lane_width // 8
+    if i < n_lanes-1:
+      rx1 += 25 #lane_width // 8 ish
     else:
       rx1 += 2
     if i > 0:
-      rx0 -= 25 #lane_width // 8
+      rx0 -= 25 #lane_width // 8 ish
     else:
       rx0 -= 2
 
@@ -84,8 +75,6 @@ def main():
         "width": 400,
         "rect": [rx0,ry,rx1,ry]
       })
-
-
 
   dump( "top_placer_out_scaled.json", place)
   dump( "top_global_router_out.json", route)
