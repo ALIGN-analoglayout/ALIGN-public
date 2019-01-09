@@ -45,6 +45,24 @@ class ADT:
     xc = self.tech.pitchM1*m1TracksOffset
     return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
 
+  def addM2Terminal( self, netName, rect):
+    """Add a m2 terminal (horizontal) that corresponds to rect
+"""
+
+    assert rect[1] == rect[3]
+
+    yc = self.tech.pitchM3*rect[1]
+
+    # HACK: need to use the correct stopping point grid (assuming M2 and M3 pitches are the same.)
+    # expand from abstract grid
+    x0 = self.tech.pitchM3*rect[0]-self.tech.halfMinETESpaceM2
+    x1 = self.tech.pitchM3*rect[2]+self.tech.halfMinETESpaceM2
+
+    y0 = yc-self.tech.halfWidthM2[0]
+    y1 = yc+self.tech.halfWidthM2[0]
+
+    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal2")
+
   def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
     """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
 """
@@ -71,6 +89,24 @@ class ADT:
     x1 = xc+self.tech.halfWidthM3[0]
 
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
+
+  def addM4Terminal( self, netName, rect):
+    """Add a m4 terminal (horizontal) that corresponds to rect
+"""
+
+    assert rect[1] == rect[3]
+
+    yc = self.tech.pitchM3*rect[1]
+
+    # HACK: need to use the correct stopping point grid (assuming M4 and M5 pitches are the same.)
+    # expand from abstract grid
+    x0 = self.tech.pitchM5*rect[0]-self.tech.halfMinETESpaceM4
+    x1 = self.tech.pitchM5*rect[2]+self.tech.halfMinETESpaceM4
+
+    y0 = yc-self.tech.halfWidthM4[0]
+    y1 = yc+self.tech.halfWidthM4[0]
+
+    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal4")
 
   def addM5Terminal( self, netName, m5TracksOffset=None, rect=None):
     """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
@@ -875,6 +911,25 @@ def parse_args():
           "net_name": wire.netName,
           "layer": wire.layer,
           "rect": [ cx, y0, cx, y1]
+        })
+
+      if wire.layer in ["metal2","metal4"]:
+        # need to deal with offset
+
+        assert (rect.lly+200) % shrinkY == 0
+        assert rect.llx % shrinkX == 360, (rect.llx, rect.llx % shrinkX, wire)
+        assert (rect.ury-200) % shrinkY == 0
+        assert rect.urx % shrinkX == 360, (rect.urx, rect.urx % shrinkX, wire)
+
+        cy = (rect.ury + rect.lly) // (2*shrinkY)
+        # shrink to abstract grid
+        x0 = (rect.llx + 360) // shrinkX
+        x1 = (rect.urx - 360) // shrinkX
+
+        leaf['terminals'].append({
+          "net_name": wire.netName,
+          "layer": wire.layer,
+          "rect": [ x0, cy, x1, cy]
         })
 
     leaf['terminals'] = removeDuplicates(leaf['terminals'])

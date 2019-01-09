@@ -63,7 +63,11 @@ def main():
       'rect': [x0,y,x1,y]
     })
 
-  c_place['ports'] = metal2_kors
+#
+# Disable for now
+#
+#  c_place['ports'] = metal2_kors
+  c_place['ports'] = []
 
   # shift stack
   for inst in c_place['instances']:

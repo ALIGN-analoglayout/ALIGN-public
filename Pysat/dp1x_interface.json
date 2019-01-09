@@ -10,6 +10,76 @@
       ],
       "terminals": [
         {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            3,
+            4,
+            25,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            7,
+            3,
+            21,
+            3
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            11,
+            5,
+            17,
+            5
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            5,
+            1,
+            21,
+            1
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            7,
+            6,
+            23,
+            6
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "si",
+          "rect": [
+            2,
+            7,
+            26,
+            7
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            2,
+            2,
+            26,
+            2
+          ]
+        },
+        {
           "layer": "metal3",
           "net_name": "c",
           "rect": [

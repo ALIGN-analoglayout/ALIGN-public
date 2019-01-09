@@ -10,6 +10,146 @@
       ],
       "terminals": [
         {
+          "layer": "metal2",
+          "net_name": "gnd!",
+          "rect": [
+            2,
+            20,
+            26,
+            20
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "gnd!",
+          "rect": [
+            2,
+            4,
+            26,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "gnd!",
+          "rect": [
+            2,
+            11,
+            26,
+            11
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out1a",
+          "rect": [
+            8,
+            12,
+            20,
+            12
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out1b",
+          "rect": [
+            13,
+            17,
+            20,
+            17
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out1b",
+          "rect": [
+            8,
+            6,
+            13,
+            6
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out4",
+          "rect": [
+            4,
+            19,
+            20,
+            19
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out2",
+          "rect": [
+            23,
+            19,
+            25,
+            19
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out2",
+          "rect": [
+            3,
+            5,
+            5,
+            5
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out2",
+          "rect": [
+            4,
+            10,
+            24,
+            10
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "out4",
+          "rect": [
+            10,
+            7,
+            24,
+            7
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "vmirror",
+          "rect": [
+            3,
+            13,
+            25,
+            13
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "vmirror",
+          "rect": [
+            3,
+            3,
+            25,
+            3
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "vmirror",
+          "rect": [
+            3,
+            21,
+            25,
+            21
+          ]
+        },
+        {
           "layer": "metal3",
           "net_name": "gnd!",
           "rect": [
@@ -162,6 +302,366 @@
       ],
       "layout": [
         {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            4840,
+            2680,
+            5240,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            4840,
+            7720,
+            5240,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            4840,
+            14200,
+            5240,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            5560,
+            2680,
+            5960,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            5560,
+            7720,
+            5960,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            5560,
+            14200,
+            5960,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            8440,
+            2680,
+            8840,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            8440,
+            7720,
+            8840,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            8440,
+            14200,
+            8840,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            11320,
+            2680,
+            11720,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            11320,
+            7720,
+            11720,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            11320,
+            14200,
+            11720,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            14920,
+            2680,
+            15320,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            14920,
+            7720,
+            15320,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            14920,
+            14200,
+            15320,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            15640,
+            2680,
+            16040,
+            3080
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            15640,
+            7720,
+            16040,
+            8120
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "gnd!",
+          "rect": [
+            15640,
+            14200,
+            16040,
+            14600
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out1a",
+          "rect": [
+            10600,
+            8440,
+            11000,
+            8840
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out1b",
+          "rect": [
+            9160,
+            4120,
+            9560,
+            4520
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out1b",
+          "rect": [
+            9160,
+            12040,
+            9560,
+            12440
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out2",
+          "rect": [
+            2680,
+            3400,
+            3080,
+            3800
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out2",
+          "rect": [
+            2680,
+            7000,
+            3080,
+            7400
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out2",
+          "rect": [
+            17080,
+            7000,
+            17480,
+            7400
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out2",
+          "rect": [
+            17080,
+            13480,
+            17480,
+            13880
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            7000,
+            4840,
+            7400,
+            5240
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            7000,
+            13480,
+            7400,
+            13880
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            7720,
+            4840,
+            8120,
+            5240
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            7720,
+            13480,
+            8120,
+            13880
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            12040,
+            4840,
+            12440,
+            5240
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            12040,
+            13480,
+            12440,
+            13880
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            14200,
+            4840,
+            14600,
+            5240
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "out4",
+          "rect": [
+            14200,
+            13480,
+            14600,
+            13880
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "vmirror",
+          "rect": [
+            9880,
+            1960,
+            10280,
+            2360
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "vmirror",
+          "rect": [
+            9880,
+            9160,
+            10280,
+            9560
+          ]
+        },
+        {
+          "layer": "via2",
+          "net_name": "vmirror",
+          "rect": [
+            9880,
+            14920,
+            10280,
+            15320
+          ]
+        },
+        {
           "layer": "via1",
           "net_name": "gnd!",
           "rect": [
@@ -908,366 +1408,6 @@
             17800,
             14920,
             18200,
-            15320
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            4840,
-            2680,
-            5240,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            4840,
-            7720,
-            5240,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            4840,
-            14200,
-            5240,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            5560,
-            2680,
-            5960,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            5560,
-            7720,
-            5960,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            5560,
-            14200,
-            5960,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            8440,
-            2680,
-            8840,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            8440,
-            7720,
-            8840,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            8440,
-            14200,
-            8840,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            11320,
-            2680,
-            11720,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            11320,
-            7720,
-            11720,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            11320,
-            14200,
-            11720,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            14920,
-            2680,
-            15320,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            14920,
-            7720,
-            15320,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            14920,
-            14200,
-            15320,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            15640,
-            2680,
-            16040,
-            3080
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            15640,
-            7720,
-            16040,
-            8120
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "gnd!",
-          "rect": [
-            15640,
-            14200,
-            16040,
-            14600
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out1a",
-          "rect": [
-            10600,
-            8440,
-            11000,
-            8840
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out1b",
-          "rect": [
-            9160,
-            4120,
-            9560,
-            4520
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out1b",
-          "rect": [
-            9160,
-            12040,
-            9560,
-            12440
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out2",
-          "rect": [
-            2680,
-            3400,
-            3080,
-            3800
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out2",
-          "rect": [
-            2680,
-            7000,
-            3080,
-            7400
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out2",
-          "rect": [
-            17080,
-            7000,
-            17480,
-            7400
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out2",
-          "rect": [
-            17080,
-            13480,
-            17480,
-            13880
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            7000,
-            4840,
-            7400,
-            5240
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            7000,
-            13480,
-            7400,
-            13880
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            7720,
-            4840,
-            8120,
-            5240
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            7720,
-            13480,
-            8120,
-            13880
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            12040,
-            4840,
-            12440,
-            5240
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            12040,
-            13480,
-            12440,
-            13880
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            14200,
-            4840,
-            14600,
-            5240
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "out4",
-          "rect": [
-            14200,
-            13480,
-            14600,
-            13880
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "vmirror",
-          "rect": [
-            9880,
-            1960,
-            10280,
-            2360
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "vmirror",
-          "rect": [
-            9880,
-            9160,
-            10280,
-            9560
-          ]
-        },
-        {
-          "layer": "via2",
-          "net_name": "vmirror",
-          "rect": [
-            9880,
-            14920,
-            10280,
             15320
           ]
         },

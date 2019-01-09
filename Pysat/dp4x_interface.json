@@ -10,6 +10,296 @@
       ],
       "terminals": [
         {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            3,
+            4,
+            5,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            7,
+            4,
+            13,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            15,
+            4,
+            21,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            23,
+            4,
+            25,
+            4
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            3,
+            28,
+            5,
+            28
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            7,
+            28,
+            13,
+            28
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            15,
+            28,
+            21,
+            28
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            23,
+            28,
+            25,
+            28
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            3,
+            20,
+            5,
+            20
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            7,
+            20,
+            13,
+            20
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            23,
+            20,
+            25,
+            20
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "c",
+          "rect": [
+            3,
+            12,
+            25,
+            12
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "ina",
+          "rect": [
+            13,
+            11,
+            21,
+            11
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            7,
+            15,
+            15,
+            15
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "inb",
+          "rect": [
+            14,
+            21,
+            21,
+            21
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            14,
+            13,
+            20,
+            13
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            8,
+            27,
+            12,
+            27
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            5,
+            6,
+            21,
+            6
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outa",
+          "rect": [
+            5,
+            22,
+            21,
+            22
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            8,
+            5,
+            12,
+            5
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            7,
+            10,
+            23,
+            10
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            7,
+            26,
+            23,
+            26
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "outb",
+          "rect": [
+            12,
+            17,
+            20,
+            17
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "si",
+          "rect": [
+            2,
+            23,
+            26,
+            23
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "si",
+          "rect": [
+            2,
+            9,
+            26,
+            9
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            2,
+            14,
+            26,
+            14
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            2,
+            3,
+            26,
+            3
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            2,
+            29,
+            26,
+            29
+          ]
+        },
+        {
+          "layer": "metal2",
+          "net_name": "so",
+          "rect": [
+            2,
+            19,
+            26,
+            19
+          ]
+        },
+        {
           "layer": "metal3",
           "net_name": "c",
           "rect": [

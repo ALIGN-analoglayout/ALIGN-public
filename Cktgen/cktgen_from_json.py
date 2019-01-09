@@ -40,9 +40,15 @@ if __name__ == "__main__":
       if term['layer'] == "metal1":
         assert r[0] == r[2]
         adt.addM1Terminal( term['net_name'], r[0])
+      elif term['layer'] == "metal2":
+        assert r[1] == r[3]
+        adt.addM2Terminal( term['net_name'], rect=r)
       elif term['layer'] == "metal3":
         assert r[0] == r[2]
         adt.addM3Terminal( term['net_name'], rect=r)
+      elif term['layer'] == "metal4":
+        assert r[1] == r[3]
+        adt.addM4Terminal( term['net_name'], rect=r)
       elif term['layer'] == "metal5":
         assert r[0] == r[2]
         adt.addM5Terminal( term['net_name'], rect=r)
