@@ -1,28 +1,18 @@
 #include <nlohmann/json.hpp>
-#include <gtest/gtest.h>
+//#include <gtest/gtest.h>
 
 #include <iostream>
 #include <fstream>
 
 using namespace nlohmann;
 
-namespace {
-
-  TEST( JSONTestcase, Equals) {
+int main() {
     std::filebuf fb;
     if ( fb.open( "mydesign_dr_globalrouting.json", std::ios::in)) {
       std::istream is(&fb);
       json j;
       is >> j;
       fb.close();
-
-      EXPECT_TRUE( j.size() == 4);
-
-      EXPECT_TRUE( j.find("bbox") != j.end());
-      EXPECT_TRUE( j.find("globalRoutes") != j.end());
-      EXPECT_TRUE( j.find("globalRouteGrid") != j.end());
-      EXPECT_TRUE( j.find("terminals") != j.end());
-
 
       {
 	json rect = *(j.find("bbox")); 
@@ -56,8 +46,8 @@ namespace {
 
     } else {
       std::cerr << "Failed to open file." << std::endl;
-      EXPECT_TRUE( 0);
     }
-  }
 
+    return 0;
 }
+
