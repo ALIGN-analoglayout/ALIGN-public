@@ -106,6 +106,12 @@ def main():
         formal_name = "cpl%s_%s" % (net,ty)
         wcap_fa_map[formal_name] = actual_name
 
+    if p[0] == "m":
+      wcap_fa_map["ina"] = "comp_outa"
+      wcap_fa_map["inb"] = "comp_outb"
+    else:
+      wcap_fa_map["ina"] = "diff_%s_outa" % p[0]
+      wcap_fa_map["inb"] = "diff_%s_outb" % p[0]
 
     place['instances'].append( {
       "instance_name": "wcap_%s" % p[0],
@@ -120,16 +126,16 @@ def main():
     if t_nm == "comp":
       fa_map = {
         "sda_outa": "sda_outa",
-        "sda_outb": "sda_outb"#,
-#        "outa": "comp_outa",
-#        "outb": "comp_outb"
+        "sda_outb": "sda_outb",
+        "outa": "comp_outa",
+        "outb": "comp_outb"
       }
     else:
       fa_map = {
         "ina": "diff_%s_ina" % p[0],
-        "inb": "diff_%s_inb" % p[0]#,
-#        "outa": "diff_%s_outa" % p[0],
-#        "outb": "diff_%s_outa" % p[0]
+        "inb": "diff_%s_inb" % p[0],
+        "outa": "diff_%s_outa" % p[0],
+        "outb": "diff_%s_outb" % p[0]
       }
 
     place['instances'].append( {

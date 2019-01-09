@@ -53,6 +53,11 @@ def main():
     }
   )
 
+  place['ports'] = [
+    { "net_name": "outa", "layer": "metal5", "rect": [ 31, 7*cunit_height+1, 31, 8*cunit_height-1]},
+    { "net_name": "outb", "layer": "metal5", "rect": [ 33, 7*cunit_height+1, 33, 8*cunit_height-1]}
+  ]
+
   place['instances'] = []
 
   place['instances'].append( {

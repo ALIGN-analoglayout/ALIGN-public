@@ -40,7 +40,9 @@ def main():
 
   place['ports'] = [
     { "net_name": "ina", "layer": "metal3", "rect": [ 1, 5*cunit_height+1, 1, 6*cunit_height-1]},
-    { "net_name": "inb", "layer": "metal3", "rect": [ 2, 5*cunit_height+1, 2, 6*cunit_height-1]}
+    { "net_name": "inb", "layer": "metal3", "rect": [ 2, 5*cunit_height+1, 2, 6*cunit_height-1]},
+    { "net_name": "outa", "layer": "metal5", "rect": [ 31, 7*cunit_height+1, 31, 8*cunit_height-1]},
+    { "net_name": "outb", "layer": "metal5", "rect": [ 33, 7*cunit_height+1, 33, 8*cunit_height-1]}
   ]
 
   place['instances'] = []
