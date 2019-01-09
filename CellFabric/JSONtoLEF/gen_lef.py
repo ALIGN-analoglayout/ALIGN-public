@@ -31,8 +31,7 @@ if __name__ == "__main__":
 
     fp.write( "  OBS\n")
     for obj in j['terminals']:
-      if "ported" not in obj:
-
+      if "ported" not in obj and obj['layer'] not in ["via1","via2"]:
         fp.write( "    LAYER %s ;\n" % obj['layer'])
         fp.write( "      RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
     fp.write( "  END\n")    
