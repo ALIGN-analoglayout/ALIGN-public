@@ -112,14 +112,19 @@ bgnstr 118 12 3 13 5 58 118 12 3 13 12 43
 
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
 
+    def scale(x): return x*4
+    def s(r,p):
+        return scale(r[p[0]]),scale(r[p[1]])
+
     for obj in j['terminals']:
         if obj['layer'] in ["via1","via2"]: continue
         fp.write( "    boundary\n")
         fp.write( "        layer %s\n" % gds_layer_tbl[obj['layer']])
         fp.write( "        datatype 0\n")
-        fp.write( "        xy 5")
+        fp.write( "        xy %d"% len(ordering))
         for p in ordering:
-            fp.write( " %d %d" % (obj['rect'][p[0]],obj['rect'][p[1]]))
+            fp.write( " %d %d" % s( obj['rect'], p))
+
         fp.write( "\n")
         fp.write( "        endel\n")
 
@@ -128,8 +133,9 @@ bgnstr 118 12 3 13 5 58 118 12 3 13 12 43
  
     for obj in j['terminals']:
         if obj['layer'] not in ["via1","via2"]: continue
-        xc = (obj['rect'][0]+obj['rect'][2])//2
-        yc = (obj['rect'][1]+obj['rect'][3])//2
+        r = list(map( scale, obj['rect']))
+        xc = (r[0]+r[2])//2
+        yc = (r[1]+r[3])//2
 
         fp.write( "    sref\n")
         fp.write( "        sname \"%s\"\n" % via_tbl[obj['layer']])
@@ -139,9 +145,9 @@ bgnstr 118 12 3 13 5 58 118 12 3 13 12 43
     fp.write( "    boundary\n")
     fp.write( "        layer 235\n")
     fp.write( "        datatype 5\n")
-    fp.write( "        xy 5")
+    fp.write( "        xy %d" % len(ordering))
     for p in ordering:
-        fp.write( " %d %d" % (j['bbox'][p[0]],j['bbox'][p[1]]))
+        fp.write( " %d %d" % s( j['bbox'], p))
     fp.write( "\n")
     fp.write( "        propattr 126\n")
     fp.write( "        propvalue \"oaBoundary:pr\"\n")
