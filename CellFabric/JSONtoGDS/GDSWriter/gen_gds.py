@@ -123,7 +123,6 @@ if __name__ == "__main__":
 
     w.gds_write_endstr()
 
-
     w.gds_write_bgnstr()
     w.gds_write_strname( macro_name)
 
@@ -133,11 +132,12 @@ if __name__ == "__main__":
     if args.exclude_pattern != '':
       pat = re.compile( args.exclude_pattern)
 
-    for obj in j['terminals']:
-        if obj['layer'] in ["via1","via2"]: continue
+    via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
 
-        if pat:
-          if pat.match( obj['netName']): continue
+# non-vias
+    for obj in j['terminals']:
+        if obj['layer'] in via_tbl: continue
+        if pat and pat.match( obj['netName']): continue
 
         w.gds_write_boundary()
         w.gds_write_layer( gds_layer_tbl[obj['layer']])
@@ -147,10 +147,12 @@ if __name__ == "__main__":
 
         w.gds_write_endel()
 
-    via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
- 
+
+# vias 
     for obj in j['terminals']:
-        if obj['layer'] not in ["via1","via2"]: continue
+        if obj['layer'] not in via_tbl: continue
+        if pat and pat.match( obj['netName']): continue
+
         r = list(map( scale, obj['rect']))
         xc = (r[0]+r[2])//2
         yc = (r[1]+r[3])//2
