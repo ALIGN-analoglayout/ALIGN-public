@@ -1,0 +1,7 @@
+*~
+build/
+cython_interface/
+gdswriter.cpp
+*.so
+*.gds
+
