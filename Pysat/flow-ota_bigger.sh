@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
-
 PORT=8091
 INPUTVOL=otaBiggerInputVol
 OUTPUTVOL=otaBiggerOutputVol
