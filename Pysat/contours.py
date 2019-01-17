@@ -1,21 +1,26 @@
 from itertools import product
-import argparse
+
+def contours( n, c, s):
+  tl = [ list(range(-s,s+1))] * n
+  def ok( t):
+    return all( abs(x-y) <= c for (x,y) in zip(t[1:],t[:-1]))
+  return [ t for t in product( *tl) if ok(t)]
+
 
 if __name__ == "__main__":
+  import argparse
 
-    parser = argparse.ArgumentParser( description="Generate all discrete contours.")
-    parser.add_argument( "-n", "--num_points", type=int, default=4)
-    parser.add_argument( "-c", "--curvature_limit", type=int, default=1)
-    parser.add_argument( "-s", "--num_slopes", type=int, default=1)
+  parser = argparse.ArgumentParser( description="Generate all discrete contours.")
+  parser.add_argument( "-n", "--num_points", type=int, default=4)
+  parser.add_argument( "-c", "--curvature_limit", type=int, default=1)
+  parser.add_argument( "-s", "--num_slopes", type=int, default=1)
 
-    args = parser.parse_args()
+  args = parser.parse_args()
 
-    tl = [ list(range(-args.num_slopes,args.num_slopes+1))] * args.num_points
-    
-    def ok( t):
-        return all( abs(x-y) <= args.curvature_limit for (x,y) in zip(t[1:],t[:-1]))
+  ll = contours( args.num_points, args.curvature_limit, args.num_slopes)
 
-    ll = [ t for t in product( *tl) if ok(t)]
+  print(ll)
+  print(len(ll))
 
-    print(ll)
-    print(len(ll))
+
+
