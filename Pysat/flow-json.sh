@@ -4,7 +4,7 @@ NM=comp
 PORT=8090
 INPUTVOL=equalizerInputVol
 OUTPUTVOL=equalizerOutputVol
-ROUTE=" --route"
+ROUTE=""
 SHOWGLOBALROUTES=""
 SMALL=""
 POSITIONAL=()
@@ -38,7 +38,7 @@ case $key in
     shift
     ;;
     -sar|--skipactualrouting)
-    ROUTE=""
+    ROUTE=" -sar"
     shift
     ;;
     --small)
