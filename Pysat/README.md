@@ -4,37 +4,32 @@
 docker build -t tally .
 ````
 
-# End to End flow
-The runs the OTA example, complete through placement, global routing, and then detailed routing.
+# Equalizer Design Example
+To run the complete equalizer design example, try:
 ````
-./flow.sh
-
-docker run --mount source=inputVol,target=/public/INPUT --rm -d -p 8085:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+./bottom-up.sh
 ````
-Then visit `localhost:8085`
+Then visit `localhost:8090`
+
+Or do the individual stages, for example:
+````
+./flow-dp1x.sh
+````
+or 
+````
+python top.py
+./flow-top.sh
+````
 
 
-# Test
+# Test (tally.py)
 
 ````
-docker run -it tally bash -c "source sympy/bin/activate && cd /scripts && pytest -- tally.py euler.py global_router.py"
+docker run -it tally bash -c "source sympy/bin/activate && cd /scripts && pytest -- tally.py"
 ````
 
-# Coverage
+# Coverage (tally.py)
 ````
-docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && cd /scripts && pytest --cov=tally --cov=euler --cov=global_router -rs -- tally.py euler.py global_router.py && coverage html && cd htmlcov && python -m http.server"
+docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && cd /scripts && pytest --cov=tally --cov=euler --cov=global_router -rs -- tally.py && coverage html && cd htmlcov && python -m http.server"
 ````
 Then visit `localhost:8083` in your brower.
-
-# Include slow tests
-````
-docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && cd /scripts && pytest --cov=tally --cov=euler --cov=global_router --runslow --duration=3 -- tally.py euler.py global_router.py && coverage html && cd htmlcov && python -m http.server"
-````
-
-# Show global routes
-````
-docker run --rm --mount source=inputVol,target=/INPUT -it tally bash -c "source sympy/bin/activate && cd /scripts && python global_router.py && cp mydesign_dr_globalrouting.json /INPUT"
-
-docker run --mount source=inputVol,target=/public/INPUT --rm -d -p 8085:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
-````
-Then visit `localhost:8085`
