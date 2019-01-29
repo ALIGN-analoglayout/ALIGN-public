@@ -8,8 +8,7 @@ done
 
 for i in ctle wcap comp diff lane top
 do
-    python ${i}.py
-    ./flow-${i}.sh
+    ./flow-${i}.sh --script ${i}.py
     docker run --mount source=equalizerInputVol,target=/INPUT ubuntu bash -c "cd /INPUT && tar cvf - ${i}_interface.json" | tar xvf -
 done
 
