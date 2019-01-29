@@ -210,11 +210,6 @@ class Tally:
       elif len(inps) == 1:
         if len(outs) > 0:
           self.emit_equiv( inps[0], outs[0])
-        elif len(inps) == 2:
-          if len(outs) > 0:
-            self.emit_or( inps, outs[0])
-          if len(outs) > 1:
-            self.emit_and( inps, outs[1])
         break
       else:           
         if len(outs) < len(inps):
@@ -250,6 +245,17 @@ def test_one_variable_contradiction():
   s.solve()
   assert s.state == 'UNSAT'
 
+def test_one_variable_contradiction_limited():
+  s = Tally()
+  mgr = VarMgr( s)
+  a_bv = mgr.add_var( BitVar( s, 'a'))
+  assert 'BitVar[a]' == str(a_bv)
+  a = a_bv.var()
+  s.emit_never( a)
+  s.emit_always( a)
+  s.solve_limited()
+  assert s.state == 'UNSAT'
+
 def test_one_variable_T():
   s = Tally()
   mgr = VarMgr( s)
@@ -265,6 +271,15 @@ def test_one_variable_F():
   a = mgr.add_var( BitVar( s, 'a')).var()
   s.emit_never( a)
   s.solve()
+  assert s.state == 'SAT'
+  assert not mgr.nm_map['a'].val()
+    
+def test_one_variable_F_limited():
+  s = Tally()
+  mgr = VarMgr( s)
+  a = mgr.add_var( BitVar( s, 'a')).var()
+  s.emit_never( a)
+  s.solve_limited()
   assert s.state == 'SAT'
   assert not mgr.nm_map['a'].val()
     
@@ -370,6 +385,9 @@ def test_bit_vec():
   s.solve()
   assert s.state == 'SAT'
   assert '011' == mgr.nm_map['a'].val()
+  assert mgr.nm_map['a'].val(0) is False
+  assert mgr.nm_map['a'].val(1) is True
+  assert mgr.nm_map['a'].val(2) is True
 
 def test_tally_zero_inputs():
   s = Tally()
