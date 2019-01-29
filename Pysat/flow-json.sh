@@ -61,7 +61,7 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 #docker build -t tally .
-if [ ${SCRIPT} != "" ]; then
+if [ "${SCRIPT}" != "" ]; then
 
   docker run --rm --mount source=${INPUTVOL},target=/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && cp /INPUT/\*_interface.json . && python ${SCRIPT}.py && cp ${NM}_placer_out.json ${NM}_global_router_out.json /INPUT"
 
@@ -69,7 +69,7 @@ else
 
 tar cvf - ${NM}_placer_out_scaled.json ${NM}_global_router_out.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
 
-if
+fi
 
 cd ../Cktgen
 
