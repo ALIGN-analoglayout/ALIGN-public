@@ -63,8 +63,8 @@
                      "widths":[400,400],
                      "spaces":[320],
                      "colors":[],
-                     "stops":[720],
-	             "stop_offset":360
+                     "stops":[640,640,640,960],
+	             "stop_offset":480
                   }
     ]
 }
