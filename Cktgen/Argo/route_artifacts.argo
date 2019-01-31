@@ -1,0 +1,324 @@
+#
+# Build two volumes
+#   route-input:  used to store the input circuit only (becomes an artifact)
+#   viewer-input: used as a stage for the HTML viewer to run continuously (allowing for
+#                 files to change
+#      create_volume.sh script available
+#
+# Start a load-circuit container so that you can push the circuit 
+#   argo submit route.argo --entrypoint load-circuit --name load-circuit
+#
+# Start a viewer  (Port 8001 is used by ArgoUI)
+#   argo submit route.argo --entrypoint view --name view-artifacts
+#   kubectl port-forward <view-pod> 8002:8000 >& /dev/null &
+#
+# Run the flow (over and over with different generators)
+#   kubectl cp <gen_example.py> load-input:/Cktgen/INPUT/cktgen_input.py
+#   argo submit --watch route_artifacts.argo
+
+# Visit http://localhost:8001  to view flow execution
+# Visit http://localhost:8002  to view routed circuit
+# Visit http://localhost:9000  to view artifact database (Minio)
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: analog-router-
+spec:
+  entrypoint: analog-router
+  arguments:
+    parameters:
+    - name: td
+      value: strawman1
+    - name: show-global-routes
+      value: "--show_global_routes"
+    - name: show-metal-templates
+      value: "--show_metal_templates"
+    - name: placer-json
+      value: ""
+    - name: small
+      value: "--small"
+  volumes:
+  - name: route-input
+    persistentVolumeClaim:
+      claimName: route-input
+  - name: viewer-input
+    persistentVolumeClaim:
+      claimName: viewer-input
+
+  templates:
+  - name: analog-router
+    steps:
+    - - name: dr-artifact
+        template: dr-artifact
+        arguments:
+          artifacts:
+          - name: dr-artifact-in
+            path: /tmp/DR_COLLATERAL
+            s3:
+              bucket: my-bucket
+              endpoint: argo-artifacts.default:9000
+              insecure: true
+              key: "DR_COLLATERAL/{{workflow.parameters.td}}.tgz"
+              accessKeySecret:
+                name: argo-artifacts
+                key: accesskey
+              secretKeySecret:
+                name: argo-artifacts
+                key: secretkey
+    - - name: transfer-input
+        template: transfer-input
+    - - name: generate
+        template: generate
+        arguments:
+          artifacts:
+          - name: dr-collateral
+            from: "{{steps.dr-artifact.outputs.artifacts.dr-collateral}}"
+          - name: circuit-artifact
+            from: "{{steps.transfer-input.outputs.artifacts.circuit-artifact}}"
+          parameters:
+          - name: show-global-routes
+            value: "{{workflow.parameters.show-global-routes}}"
+          - name: show-metal-templates
+            value: "{{workflow.parameters.show-metal-templates}}"
+          - name: placer-json
+            value: "{{workflow.parameters.placer-json}}"
+          - name: small
+            value: "{{workflow.parameters.small}}"
+    - - name: route
+        template: route
+        arguments:
+          artifacts:
+          - name: dr-collateral
+            from: "{{steps.dr-artifact.outputs.artifacts.dr-collateral}}"
+          - name: router-input
+            from: "{{steps.generate.outputs.artifacts.router-input}}"
+    - - name: consume
+        template: consume
+        arguments:
+          artifacts:
+          - name: dr-collateral
+            from: "{{steps.dr-artifact.outputs.artifacts.dr-collateral}}"
+          - name: router-input
+            from: "{{steps.generate.outputs.artifacts.router-input}}"
+          - name: router-output
+            from: "{{steps.route.outputs.artifacts.router-output}}"
+          parameters:
+          - name: placer-json
+            value: "{{workflow.parameters.placer-json}}"
+          - name: small
+            value: "{{workflow.parameters.small}}"
+    - - name: view-fill
+        template: view-fill
+        arguments:
+          artifacts:
+          - name: dr-collateral
+            from: "{{steps.dr-artifact.outputs.artifacts.dr-collateral}}"
+          - name: router-input
+            from: "{{steps.generate.outputs.artifacts.router-input}}"
+          - name: router-output
+            from: "{{steps.route.outputs.artifacts.router-output}}"
+          - name: full-output
+            from: "{{steps.consume.outputs.artifacts.full-output}}"
+        
+
+  - name: dr-artifact
+    inputs:
+      artifacts:
+      - name: global-dr-artifact
+        path: /tmp/DR_COLLATERAL
+        s3:
+          bucket: my-bucket
+          endpoint: argo-artifacts.default:9000
+          insecure: true
+          key: "DR_COLLATERAL/{{workflow.parameters.td}}.tgz"
+          accessKeySecret:
+            name: argo-artifacts
+            key: accesskey
+          secretKeySecret:
+            name: argo-artifacts
+            key: secretkey
+      parameters:
+      - name: dr
+        value: strawman1
+    container:
+      image: strawmen:latest
+      imagePullPolicy: IfNotPresent
+      command: [sh, -c]
+      args: ["echo 'Transferring DR collateral for {{workflow.parameters.td}}'"]
+
+    outputs:
+      artifacts:
+      - name: dr-collateral
+        path: /tmp/DR_COLLATERAL
+
+  - name: transfer-input
+    # This is useful to push an input file for the router into a volume and output as an artifact
+    # It transforms a volume into an artifact for the flow
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      command: [bash, -c]
+      args: ["echo 'Transferring circuit' `cat /Cktgen/INPUT/desc.txt` to circuit-artifact"]
+      volumeMounts:
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+    outputs:
+      artifacts:
+      - name: circuit-artifact
+        path: /Cktgen/INPUT
+
+  - name: generate
+    inputs:
+      artifacts:
+      - name: dr-collateral
+        path: /Cktgen/DR_COLLATERAL
+      - name: circuit-artifact
+        path: /Cktgen/INPUT
+      parameters:
+      - name: show-global-routes
+        value: "--show_global_routes"
+      - name: show-metal-templates
+        value: "--show_metal_templates"
+      - name: placer-json
+        value: ""
+      - name: small
+        value: "--small"
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      # We copy the cktgen_input.py from a mounted volume to allow for changing the input circuit
+      command: [bash, -c]
+      args: ["source /sympy/bin/activate; cd /Cktgen && cp INPUT/cktgen_input.py . && \
+             python cktgen_input.py -n mydesign \
+             {{inputs.parameters.show-global-routes}} \
+             {{inputs.parameters.show-metal-templates}} \
+             {{inputs.parameters.small}} \
+             {{inputs.parameters.placer-json}}" ]
+    outputs:
+      artifacts:
+      - name: router-input
+        path: /Cktgen/INPUT/
+
+  - name: route
+    inputs:
+      artifacts:
+      - name: dr-collateral
+        path: /Cktgen/DR_COLLATERAL
+      - name: router-input
+        path: /Cktgen/INPUT
+        
+    container:
+      image: darpaalign/detailed_router:latest
+      imagePullPolicy: IfNotPresent
+      command: [bash, -c]
+      args: ["cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"]
+    outputs:
+      artifacts:
+      - name: router-output
+        path: /Cktgen/out
+
+  - name: consume
+    inputs:
+      artifacts:
+      - name: dr-collateral
+        path: /Cktgen/DR_COLLATERAL
+      - name: router-input
+        path: /Cktgen/INPUT
+      - name: router-output
+        path: /Cktgen/out
+      parameters:
+      - name: placer-json
+        value: ""
+      - name: small
+        value: "--small"
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      # We copy the cktgen_input.py from a mounted volume to allow for changing the input circuit
+      command: [bash, -c]
+      args: ["source /sympy/bin/activate; cd /Cktgen && cp INPUT/cktgen_input.py . && \
+             python cktgen_input.py --consume_results -n mydesign \
+             {{inputs.parameters.small}} \
+             {{inputs.parameters.placer-json}}" ]
+    outputs:
+      artifacts:
+      - name: full-output
+        path: /Cktgen/INPUT
+
+# These templates are useful for debug / viewing of results
+
+  - name: view-fill
+    inputs:
+      artifacts:
+      - name: dr-collateral
+        path: /Cktgen/DR_COLLATERAL
+      - name: router-input
+        path: /Cktgen/INPUT
+      - name: router-output
+        path: /Cktgen/out
+      - name: full-output
+        path: /Cktgen/OUTPUT
+    container:
+      image: viewer_image:latest
+      imagePullPolicy: IfNotPresent
+      command: [/bin/bash, -c]
+      args: ["cp /Cktgen/OUTPUT/* /public/INPUT/; \
+              mkdir -p /public/INPUT/archive ; \
+              cp -r /Cktgen/ /public/INPUT/archive; "]
+      volumeMounts:
+      - name: viewer-input
+        mountPath: /public/INPUT
+
+  - name: view-artifacts
+    container:
+      image: viewer_image:latest
+      imagePullPolicy: IfNotPresent
+      command: [/bin/bash, -c]
+      args: ["source /sympy/bin/activate && cd /public && python -m http.server"]
+      volumeMounts:
+      - name: viewer-input
+        mountPath: /public/INPUT
+
+  - name: load-circuit
+    # This is useful for debugging and for changing the circuit input as it mounts final volume
+    # It does not complete so that it stays up.
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      command: [bash, -c]
+      args: ["tail -f /dev/null"]
+      volumeMounts:
+      volumeMounts:
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+      - name: viewer-input
+        mountPath: /public/INPUT
+        
+  - name: drfill
+    inputs:
+      parameters:
+      - name: dr
+        value: strawman1
+    container:
+      image: strawmen:latest
+      imagePullPolicy: IfNotPresent
+      command: [sh, -c]
+      args: ["mkdir /tmp/DR_COLLATERAL; \
+              cp /DR_SET/{{inputs.parameters.dr}}/* /tmp/DR_COLLATERAL; \
+              touch /tmp/DR_COLLATERAL/{{inputs.parameters.dr}}.txt" ]
+    outputs:
+      artifacts:
+      - name: global-dr-artifact
+        path: /tmp/DR_COLLATERAL/
+        s3:
+          bucket: my-bucket
+          endpoint: argo-artifacts.default:9000
+          insecure: true
+          key: "DR_COLLATERAL/{{workflow.parameters.td}}.tgz"
+          accessKeySecret:
+            name: argo-artifacts
+            key: accesskey
+          secretKeySecret:
+            name: argo-artifacts
+            key: secretkey

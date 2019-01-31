@@ -1,0 +1,187 @@
+#
+# Build the DR volume with the rules you want:
+#   Need to create volumes and volume-claims for dr-collateral, route-input, route-output
+#      create_volume.sh script available
+#
+# Start a load container so that you can push the circuit generator you want and debug
+#   argo submit route.argo --entrypoint load --name load
+#
+# Start a viewer  (Port 8001 is used by ArgoUI)
+# Start a viewer
+#   argo submit route.argo --entrypoint view --name view
+#   kubectl port-forward <view-pod> 8002:8000
+#
+# Run the flow drfill/generator/router (over and over with different generators)
+#   kubectl cp <gen_example.py> load:/Cktgen/INPUT/cktgen_input.py
+#   argo submit --watch route.argo
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: analog-router-
+spec:
+  entrypoint: analog-router
+  arguments:
+    parameters:
+    - name: td
+      value: strawman1
+    - name: show-global-routes
+      value: "--show_global_routes"
+    - name: show-metal-templates
+      value: "--show_metal_templates"
+    - name: placer-json
+      value: ""
+    - name: small
+      value: "--small"
+  volumes:
+  - name: dr-collateral
+    persistentVolumeClaim:
+      claimName: dr-collateral
+  - name: route-input
+    persistentVolumeClaim:
+      claimName: route-input
+  - name: route-output
+    persistentVolumeClaim:
+      claimName: route-output
+
+  templates:
+  - name: analog-router
+    steps:
+    - - name: drfill
+        template: drfill
+        arguments:
+          parameters:
+          - name: td
+            value: "{{workflow.parameters.td}}"
+    - - name: generate
+        template: generate
+        arguments:
+          parameters:
+          - name: show-global-routes
+            value: "{{workflow.parameters.show-global-routes}}"
+          - name: show-metal-templates
+            value: "{{workflow.parameters.show-metal-templates}}"
+          - name: placer-json
+            value: "{{workflow.parameters.placer-json}}"
+          - name: small
+            value: "{{workflow.parameters.small}}"
+    - - name: route
+        template: route
+    - - name: consume
+        template: consume
+        arguments:
+          parameters:
+          - name: placer-json
+            value: "{{workflow.parameters.placer-json}}"
+          - name: small
+            value: "{{workflow.parameters.small}}"
+        
+  - name: drfill
+    inputs:
+      parameters:
+      - name: dr
+        value: strawman1
+    container:
+      image: strawmen:latest
+      imagePullPolicy: IfNotPresent
+      command: [sh, -c]
+      args: ["cp /DR_SET/{{inputs.parameters.dr}}/* /mnt/DR_COLLATERAL; \
+              touch /mnt/DR_COLLATERAL/{{inputs.parameters.dr}}.txt" ]
+      volumeMounts:
+      - name: dr-collateral
+        mountPath: /mnt/DR_COLLATERAL
+
+  - name: generate
+    inputs:
+      parameters:
+      - name: show-global-routes
+        value: "--show_global_routes"
+      - name: show-metal-templates
+        value: "--show_metal_templates"
+      - name: placer-json
+        value: ""
+      - name: small
+        value: "--small"
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      # We copy the cktgen_input.py from a mounted volume to allow for changing the input circuit
+      command: [bash, -c]
+      args: ["source /sympy/bin/activate; cd /Cktgen && cp INPUT/cktgen_input.py . && \
+             python cktgen_input.py -n mydesign \
+             {{inputs.parameters.show-global-routes}} \
+             {{inputs.parameters.show-metal-templates}} \
+             {{inputs.parameters.small}} \
+             {{inputs.parameters.placer-json}}" ]
+      volumeMounts:
+      - name: dr-collateral
+        mountPath: /Cktgen/DR_COLLATERAL
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+      - name: route-output
+        mountPath: /Cktgen/out
+
+  - name: route
+    container:
+      image: darpaalign/detailed_router:latest
+      imagePullPolicy: IfNotPresent
+      command: [bash, -c]
+      args: ["cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"]
+      volumeMounts:
+      - name: dr-collateral
+        mountPath: /Cktgen/DR_COLLATERAL
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+      - name: route-output
+        mountPath: /Cktgen/out
+
+  - name: consume
+    inputs:
+      parameters:
+      - name: placer-json
+        value: ""
+      - name: small
+        value: "--small"
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      # We copy the cktgen_input.py from a mounted volume to allow for changing the input circuit
+      command: [bash, -c]
+      args: ["source /sympy/bin/activate; cd /Cktgen && cp INPUT/cktgen_input.py . && \
+             python cktgen_input.py --consume_results -n mydesign \
+             {{inputs.parameters.small}} \
+             {{inputs.parameters.placer-json}}" ]
+      volumeMounts:
+      - name: dr-collateral
+        mountPath: /Cktgen/DR_COLLATERAL
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+      - name: route-output
+        mountPath: /Cktgen/out
+
+# These templates are useful for debug / viewing of results
+  - name: load
+    # This is useful for debugging and for changing the circuit input as it mounts all volumes
+    # It does not complete so that it stays up.
+    container:
+      image: cktgen:latest
+      imagePullPolicy: IfNotPresent
+      command: [bash, -c]
+      args: ["tail -f /dev/null"]
+      volumeMounts:
+      - name: dr-collateral
+        mountPath: /Cktgen/DR_COLLATERAL
+      - name: route-input
+        mountPath: /Cktgen/INPUT
+      - name: route-output
+        mountPath: /Cktgen/out
+
+  - name: view
+    container:
+      image: viewer_image:latest
+      imagePullPolicy: IfNotPresent
+      command: [/bin/bash, -c]
+      args: ["source /sympy/bin/activate && cd /public && python -m http.server"]
+      volumeMounts:
+      - name: route-input
+        mountPath: /public/INPUT
