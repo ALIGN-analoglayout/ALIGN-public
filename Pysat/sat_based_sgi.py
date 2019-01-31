@@ -21,14 +21,6 @@ def sat_subgraph_monomorphism( g, h):
     s = tally.Tally()
     mgr = tally.VarMgr( s)
 
-    gtbl = {}
-    for (idx,n) in enumerate(g.nodes):
-        gtbl[n] = idx
-
-    htbl = {}
-    for (idx,n) in enumerate(h.nodes):
-        htbl[n] = idx
-
     lst = []
     for n in h.nodes:
         lst.append( mgr.add_var( tally.BitVec( s, str(n), len(g.nodes))))
@@ -42,19 +34,12 @@ def sat_subgraph_monomorphism( g, h):
 
     for eg in g.edges:
         # if eg in g.edges, then map(eg) must be in h.edges
-        ug = gtbl[eg[0]]
-        vg = gtbl[eg[1]]
-
         lits = []
         for eh in h.edges:
-            uh = htbl[eh[0]]
-            vh = htbl[eh[1]]
-
             lits.append( s.add_var())
-            s.emit_and( [ lst[uh].vars[ug], lst[vh].vars[vg]], lits[-1])
+            s.emit_and( [ lst[eh[0]].vars[eg[0]], lst[eh[1]].vars[eg[1]]], lits[-1])
             lits.append( s.add_var())
-            s.emit_and( [ lst[vh].vars[ug], lst[uh].vars[vg]], lits[-1])
-            
+            s.emit_and( [ lst[eh[1]].vars[eg[0]], lst[eh[0]].vars[eg[1]]], lits[-1])
         s.add_clause( lits)
 
     s.solve()
