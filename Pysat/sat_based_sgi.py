@@ -24,13 +24,13 @@ def sat_subgraph_monomorphism( g, h):
     lst = []
     for n in h.nodes:
         lst.append( mgr.add_var( tally.BitVec( s, str(n), len(g.nodes))))
-        s.emit_exactly_one( lst[-1].vars)
+        s.emit_at_most_one( lst[-1].vars)
 
     for (idx,n) in enumerate(g.nodes):
         l = []
         for bv in lst:
             l.append( bv.vars[idx])
-        s.emit_at_most_one( l)
+        s.emit_exactly_one( l)
 
     for eg in g.edges:
         # if eg in g.edges, then map(eg) must be in h.edges
@@ -57,6 +57,16 @@ def test_ssm():
     h = nx.Graph()
     h.add_nodes_from( [0, 1, 2])
     h.add_edges_from( [(0,1),(0,2),(1,2)])
+
+    assert sat_subgraph_monomorphism(g,h)
+
+def test_ssm_mirrors():
+    g = nx.Graph()
+    g.add_nodes_from( [0])
+    g.add_edges_from( [])
+    h = nx.Graph()
+    h.add_nodes_from( [0, 1, 2, 3, 4, 5, 6, 7, 8])
+    h.add_edges_from( [(0,5),(0,6),(0,7),(0,8),(1,5),(1,6),(1,7),(1,8),(2,6),(3,7),(4,8)])
 
     assert sat_subgraph_monomorphism(g,h)
 
