@@ -48,6 +48,15 @@ def sat_subgraph_monomorphism( g, h):
         for bv in lst:
             print( bv.val())
 
+        for (idx,bv) in enumerate(lst):
+            res = None
+            for i in range(len(h.nodes)):
+                if bv.val(i):
+                    res = i
+            if res is not None:
+                print( idx, res)
+
+
     return s.state == 'SAT'
 
 def test_ssm():
@@ -120,3 +129,28 @@ def test_networkx_sgi_mirrors2():
     h = gen_mirror_bank2( 19)
     m = networkx.algorithms.isomorphism.GraphMatcher( g, h)
     assert m.subgraph_is_isomorphic()
+
+def test_pickled_files():
+    g = nx.read_gpickle( "__G1")
+    h = nx.read_gpickle( "__G2")
+
+    def abstract_graph( g):
+        tbl = {}
+        for (idx,n) in enumerate(g.nodes):
+            tbl[n] = idx
+
+        gg = nx.Graph()
+        gg.add_nodes_from( range(len(g.nodes)))
+
+        es = set( (tbl[e[0]],tbl[e[1]]) for e in g.edges)
+        gg.add_edges_from( list(es))
+        return gg
+
+    gg = abstract_graph( g)
+    hh = abstract_graph( h)
+
+    print( len(g.nodes), len(g.edges), len(gg.edges))
+    print( len(h.nodes), len(h.edges), len(hh.edges))
+
+
+    assert sat_subgraph_monomorphism(gg,hh)
