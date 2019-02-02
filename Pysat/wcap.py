@@ -1,15 +1,6 @@
 
-import json
+from hier_design import load, dump
 from copy import deepcopy
-
-def load( fn):
-  with open( fn, "rt") as fp:
-    j = json.load( fp)
-  return j
-
-def dump( fn, j):
-  with open( fn, "wt") as fp:
-    fp.write( json.dumps( j, indent=2) + '\n')
 
 def main():
   s_place = load( "stack_placer_out_scaled.json")

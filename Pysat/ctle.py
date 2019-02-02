@@ -1,14 +1,5 @@
 
-import json
-
-def load( fn):
-  with open( fn, "rt") as fp:
-    j = json.load( fp)
-  return j
-
-def dump( fn, j):
-  with open( fn, "wt") as fp:
-    fp.write( json.dumps( j, indent=2) + '\n')
+from hier_design import load, dump
 
 def main():
 
