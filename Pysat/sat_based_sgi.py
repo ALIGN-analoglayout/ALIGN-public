@@ -13,6 +13,22 @@ def test_monomorphic_but_not_isomorphic():
     m = networkx.algorithms.isomorphism.GraphMatcher( g, h)
     assert not m.subgraph_is_isomorphic()
 
+def check_monomorphism( g, h, pi):
+    # h is a subgraph of g
+    assert len(pi) is len(h.nodes)
+
+    g_edges = { (e[0],e[1]) for e in g.edges}
+
+    # every edge in h should "map" to an edge in g
+    res = True
+    for e in h.edges:
+        u = pi[e[0]]
+        v = pi[e[1]]
+        if (u,v) not in g_edges and (v,u) not in g_edges:
+            res = False
+
+    return res
+
 def sat_subgraph_monomorphism( g, h):
     # h is a subgraph g
     # each vertex in h maps to some vertex in g
@@ -48,18 +64,19 @@ def sat_subgraph_monomorphism( g, h):
         for bv in lst:
             print( bv.val())
 
-    if False:
         res_tbl = []
 
         for (idx,n) in enumerate(h.nodes):
             res = None
             for (jdx,bv) in enumerate(lst):
-                if bv.val[idx]:
+                if bv.val(idx):
                     res = jdx
             assert res is not None
             res_tbl.append( res)
 
         print( res_tbl)
+
+        assert check_monomorphism( g, h, res_tbl)
 
 
     return s.state == 'SAT'
@@ -157,7 +174,6 @@ def test_pickled_files():
     print( len(g.nodes), len(g.edges), len(gg.edges))
     print( len(h.nodes), len(h.edges), len(hh.edges))
 
-
     assert sat_subgraph_monomorphism(gg,hh)
 
 def xxx_test_pickled_files_nx():
@@ -181,6 +197,8 @@ def xxx_test_pickled_files_nx():
 
     print( len(g.nodes), len(g.edges), len(gg.edges))
 
-
     m = networkx.algorithms.isomorphism.GraphMatcher( g, h)
     assert m.subgraph_is_isomorphic()
+
+if __name__ == "__main__":
+    test_pickled_files()

@@ -9,7 +9,9 @@ FROM pysat as tally
 RUN \
     mkdir -p /scripts
 
-ADD *.py __G1 __G2 /scripts/
+ADD __G1 __G2 /scripts/
+
+ADD *.py /scripts/
 
 
 
