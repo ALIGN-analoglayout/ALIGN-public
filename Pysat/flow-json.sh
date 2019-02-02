@@ -60,15 +60,18 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-#docker build -t tally .
+if [ -f "INPUT/${NM}_global_router_out.json" ]; then
+    tar cvf - INPUT/${NM}_global_router_out.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+fi	
+
+if [ -f "INPUT/${NM}_placer_out_scaled.json" ]; then
+    tar cvf - INPUT/${NM}_placer_out_scaled.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+fi	
+
 if [ "${SCRIPT}" != "" ]; then
+  docker build -t tally .
 
-  docker run --rm --mount source=${INPUTVOL},target=/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && cp /INPUT/{\*_interface,\*_placer_out_scaled,\*_global_router_out}.json . && python ${SCRIPT}.py && cp ${NM}_placer_out_scaled.json ${NM}_global_router_out.json /INPUT"
-
-else
-
-  tar cvf - ${NM}_placer_out_scaled.json ${NM}_global_router_out.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
-
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT}.py"
 fi
 
 cd ../Cktgen
