@@ -50,7 +50,6 @@ case $key in
     --small)
     SMALL=" --small"
     shift
-    shift
     ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
@@ -59,19 +58,25 @@ case $key in
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
+echo "SCRIPT=${SCRIPT}"
+echo "INPUTVOL=${INPUTVOL}"
+echo "OUTPUTVOL=${OUTPUTVOL}"
+echo "BLOCK=${BLOCK}"
 
 if [ -f "INPUT/${NM}_global_router_out.json" ]; then
-    tar cvf - INPUT/${NM}_global_router_out.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+    (cd INPUT && tar cvf - ${NM}_global_router_out.json) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
 fi	
 
 if [ -f "INPUT/${NM}_placer_out_scaled.json" ]; then
-    tar cvf - INPUT/${NM}_placer_out_scaled.json | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+    (cd INPUT && tar cvf - ${NM}_placer_out_scaled.json) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
 fi	
 
 if [ "${SCRIPT}" != "" ]; then
+  echo "Running python script ${SCRIPT} in container tally with volume ${INPUTVOL} mounted at /scripts/INPUT"
+
   docker build -t tally .
 
-  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT}.py"
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
 fi
 
 cd ../Cktgen
