@@ -1,4 +1,4 @@
-[Dependency]
+## Dependencies
 
 - Python 3.6
 - networkx
@@ -10,14 +10,22 @@
     https://pyspice.fabrice-salvaire.fr/
     GPLv3
 
+To install:
+````
+pip install networkx
+pip install wheel pyspice
+````
 
-[Example Run]
+## Run example
+
+````
 cd ./sandbox
 python ../src/python/cgraph.py ../../Database/netlists_wo_sizing/gondi_jssc2007_ctle.sp --plot --with_label --dir_graph_out=./
 python ../src/python/cgraph.py ../../Database/netlists_wo_sizing/gondi_jssc2007_ctle.sp --plot --with_label --dir_graph_out=./ --add_edge_annotation
+````
 
-
-[List of Circuit Classes to Cover]
+## List of Circuit Classes to Cover
+````
 Serial IO (embedded clock architecture)
     TX
         LE/FFE
@@ -118,4 +126,4 @@ Sensors
         Resistor+opamp
     Voltage
         Ring-osc based
-
+````
