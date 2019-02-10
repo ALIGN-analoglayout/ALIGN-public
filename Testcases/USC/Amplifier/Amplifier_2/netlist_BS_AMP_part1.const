@@ -1,0 +1,5 @@
+CritNet(net39, mid)
+MatchBlock(MN3_MN0, MN1_MN2)
+SymmBlock( {RR0, RR9} , MN1_MN2 )
+CritNet(ON, min)
+CritNet(OP, min)

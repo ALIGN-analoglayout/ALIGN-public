@@ -1,0 +1,68 @@
+** Generated for: hspiceD
+** Generated on: Aug 30 07:11:40 2018
+** Design library name: pcell
+** Design cell name: switched_capacitor_filter_tamu
+** Design view name: schematic
+.GLOBAL vdd!
+.PARAM c1=5p c2=10p c3=10p ca=10p idc=20u vbiasn=0.55 vbiasp1=0.7 vbiasp2=0.4 
++	vcm=0.4 vdd=1 _gpar0=1 vnac=-0.5 vpac=0.5
+
+
+.TEMP 25.0
+.OPTION
++    ARTIST=2
++    INGOLD=2
++    PARHIER=LOCAL
++    PSF=2
+
+** Library name: pcell
+** Cell name: cascode_current_mirror_ota
+** View name: schematic
+.subckt cascode_current_mirror_ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp
+m10 voutn vbiasn net10 0 nmos_rvt w=135e-9 l=20e-9 nfin=5
+m4 net1 net1 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
+m3 net6 net1 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
+m2 voutp vbiasn net11 0 nmos_rvt w=135e-9 l=20e-9 nfin=5
+m1 net10 vinp net6 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
+m0 net11 vinn net6 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
+m9 net13 vbiasp2 vdd! vdd! pmos_rvt w=81e-9 l=20e-9 nfin=3
+m8 net12 vbiasp2 vdd! vdd! pmos_rvt w=81e-9 l=20e-9 nfin=3
+m7 voutn vbiasp1 net13 net13 pmos_rvt w=135e-9 l=20e-9 nfin=5
+m6 voutp vbiasp1 net12 net12 pmos_rvt w=135e-9 l=20e-9 nfin=5
+i3 vdd! net1 DC=idc
+.ends cascode_current_mirror_ota
+** End of subcircuit definition.
+
+** Library name: pcell
+** Cell name: switched_capacitor_filter_tamu
+** View name: schematic
+v5 vdd! 0 DC=vdd
+v4 vinp 0 DC=vcm AC vpac
+v3 vinn 0 DC=vcm AC vnac
+v2 vbiasp2 0 DC=vbiasp2
+v1 vbiasp1 0 DC=vbiasp1
+v0 vbiasn 0 DC=vbiasn
+xi0 vbiasn vbiasp1 vbiasp2 net23 net7 voutn voutp cascode_current_mirror_ota
+c7 net7 vinp c1
+c6 net5 net4 c2
+c5 net23 vinn c1
+c4 net6 net3 c2
+c3 net6 net12 c3
+c2 net7 voutn ca
+c1 net5 net11 c3
+c0 net23 voutp ca
+m11 0 phi1 net12 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m10 0 phi2 net3 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m9 0 phi2 net6 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m8 net12 phi2 voutp 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m7 voutn phi2 net11 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m6 net11 phi1 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m5 net5 phi2 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m4 net4 phi2 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m3 net7 phi1 net5 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m2 net4 phi1 vinn 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m1 net6 phi1 net23 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+m0 vinp phi1 net3 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+v7 phi2 0 PULSE _gpar0 0 0 20e-9
+v6 phi1 0 PULSE 0 _gpar0 0 20e-9
+.END

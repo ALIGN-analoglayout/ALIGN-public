@@ -1,0 +1,59 @@
+#UMN blocks 1.0
+# Created : August 31 19:15:43
+# User : madhu028@umn.edu
+# Platform : Linux
+
+NumNets : 15
+NumPins : 26
+
+Vinp : 2
+L1_MM1_MM0 G1
+terminal Vinp
+net13 : 2
+L1_MM7_MM6 S1
+L1_MM9_MM8 D1
+Voutp : 3
+L1_MM7_MM6 D2
+L1_MM10_MM2 D2
+terminal Voutp
+Voutn : 3
+L1_MM7_MM6 D1
+L1_MM10_MM2 D1
+terminal Voutn
+net10 : 2
+L1_MM10_MM2 S1
+L1_MM1_MM0 D1
+vdd! : 3
+terminal vdd!
+L1_MM9_MM8 S1
+L1_MM9_MM8 S2
+Vbiasn : 3
+L1_MM10_MM2 G1
+L1_MM10_MM2 G2
+terminal Vbiasn
+net11 : 2
+L1_MM10_MM2 S2
+L1_MM1_MM0 D2
+Vbiasp2 : 3
+L1_MM9_MM8 G1
+L1_MM9_MM8 G2
+terminal Vbiasp2
+Vbiasp1 : 3
+L1_MM7_MM6 G1
+L1_MM7_MM6 G2
+terminal Vbiasp1
+gnd! : 2
+L1_MM4_MM3 S
+terminal gnd!
+net12 : 2
+L1_MM7_MM6 S2
+L1_MM9_MM8 D2
+net6 : 2
+L1_MM1_MM0 S
+L1_MM4_MM3 D2
+Vinn : 2
+L1_MM1_MM0 G2
+terminal Vinn
+net1 : 2
+L1_MM4_MM3 D1
+terminal Id

@@ -1,0 +1,79 @@
+// Generated for: spectre
+// Generated on: Nov  8 14:55:46 2018
+// Design library name: EnergyHarvesting
+// Design cell name: Comp
+// Design view name: schematic
+simulator lang=spectre
+global 0
+
+// Library name: DC_converter
+// Cell name: NOR
+// View name: schematic
+subckt NOR GND VDD VIN1 VIN2 VOUT
+    M0 (VOUT VIN1 GND GND) nch l=60n w=150.0n m=1 nf=1 sd=200n \
+        ad=2.625e-14 as=2.625e-14 pd=650.0n ps=650.0n nrd=0.666667 \
+        nrs=0.666667 sa=175.00n sb=175.00n sca=0 scb=0 scc=0
+    M1 (VOUT VIN2 GND GND) nch l=60n w=150.0n m=1 nf=1 sd=200n \
+        ad=2.625e-14 as=2.625e-14 pd=650.0n ps=650.0n nrd=0.666667 \
+        nrs=0.666667 sa=175.00n sb=175.00n sca=0 scb=0 scc=0
+    M3 (VOUT VIN1 net14 VDD) pch l=60n w=600n m=1 nf=1 sd=200n ad=1.05e-13 \
+        as=1.05e-13 pd=1.55u ps=1.55u nrd=0.166667 nrs=0.166667 sa=175.00n \
+        sb=175.00n sca=0 scb=0 scc=0
+    M2 (net14 VIN2 VDD VDD) pch l=60n w=600n m=1 nf=1 sd=200n ad=1.05e-13 \
+        as=1.05e-13 pd=1.55u ps=1.55u nrd=0.166667 nrs=0.166667 sa=175.00n \
+        sb=175.00n sca=0 scb=0 scc=0
+ends NOR
+// End of subcircuit definition.
+
+// Library name: EnergyHarvesting
+// Cell name: Comp
+// View name: schematic
+M2 (OUT OUTP net021 VDD) pch l=60n w=3u m=1 nf=1 sd=200n ad=5.25e-13 \
+        as=5.25e-13 pd=6.35u ps=6.35u nrd=0.0333333 nrs=0.0333333 \
+        sa=175.00n sb=175.00n sca=0 scb=0 scc=0
+M4 (OUTP OUT net020 VDD) pch l=60n w=3u m=1 nf=1 sd=200n ad=5.25e-13 \
+        as=5.25e-13 pd=6.35u ps=6.35u nrd=0.0333333 nrs=0.0333333 \
+        sa=175.00n sb=175.00n sca=0 scb=0 scc=0
+M3 (net023 CLK VDD VDD) pch l=60n w=300n m=1 nf=1 sd=200n ad=5.25e-14 \
+        as=5.25e-14 pd=950.0n ps=950.0n nrd=0.333333 nrs=0.333333 \
+        sa=175.00n sb=175.00n sca=0 scb=0 scc=0
+I1 (GND VDD OUT Q QB) NOR
+I0 (GND VDD OUTP QB Q) NOR
+M0 (net020 VINP net023 VDD) pch_25 l=20u w=400n m=1 nf=1 sd=310.0n \
+        ad=9.2e-14 as=9.2e-14 pd=1.26u ps=1.26u nrd=0.3875 nrs=0.3875 \
+        sa=230.0n sb=230.0n sca=0 scb=0 scc=0
+M1 (net021 VINN net023 VDD) pch_25 l=20u w=400n m=1 nf=1 sd=310.0n \
+        ad=9.2e-14 as=9.2e-14 pd=1.26u ps=1.26u nrd=0.3875 nrs=0.3875 \
+        sa=230.0n sb=230.0n sca=0 scb=0 scc=0
+M12 (net021 CLK GND GND) nch l=60n w=120.0n m=1 nf=1 sd=350.0n ad=3.45e-14 \
+        as=3.45e-14 pd=800n ps=800n nrd=1.45833 nrs=1.45833 sa=100n \
+        sb=100n sca=0 scb=0 scc=0
+M11 (net020 CLK GND GND) nch l=60n w=120.0n m=1 nf=1 sd=350.0n ad=3.45e-14 \
+        as=3.45e-14 pd=800n ps=800n nrd=1.45833 nrs=1.45833 sa=100n \
+        sb=100n sca=0 scb=0 scc=0
+M10 (net020 CLK net021 GND) nch l=60n w=120.0n m=1 nf=1 sd=350.0n \
+        ad=3.45e-14 as=3.45e-14 pd=800n ps=800n nrd=1.45833 nrs=1.45833 \
+        sa=100n sb=100n sca=0 scb=0 scc=0
+M9 (OUT CLK GND GND) nch l=60n w=200n m=1 nf=1 sd=200n ad=3.5e-14 \
+        as=3.5e-14 pd=750n ps=750n nrd=0.5 nrs=0.5 sa=175n sb=175n sca=0 \
+        scb=0 scc=0
+M6 (OUT OUTP GND GND) nch l=60n w=200n m=1 nf=1 sd=200n ad=3.5e-14 \
+        as=3.5e-14 pd=750n ps=750n nrd=0.5 nrs=0.5 sa=175n sb=175n sca=0 \
+        scb=0 scc=0
+M7 (OUTP OUT GND GND) nch l=60n w=200n m=1 nf=1 sd=200n ad=3.5e-14 \
+        as=3.5e-14 pd=750n ps=750n nrd=0.5 nrs=0.5 sa=175n sb=175n sca=0 \
+        scb=0 scc=0
+M8 (OUTP CLK GND GND) nch l=60n w=200n m=1 nf=1 sd=200n ad=3.5e-14 \
+        as=3.5e-14 pd=750n ps=750n nrd=0.5 nrs=0.5 sa=175n sb=175n sca=0 \
+        scb=0 scc=0
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
+    tnom=27 scalem=1.0 scale=1.0 gmin=1e-12 rforce=1 maxnotes=5 maxwarns=5 \
+    digits=5 cols=80 pivrel=1e-3 sensfile="../psf/sens.output" \
+    checklimitdest=psf 
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts  where=rawfile
+saveOptions options save=allpub

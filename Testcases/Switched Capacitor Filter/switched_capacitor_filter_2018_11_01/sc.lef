@@ -1,0 +1,597 @@
+VERSION 5.7 ;
+BUSBITCHARS "[]" ;
+DIVIDERCHAR "/" ;
+
+MACRO CMC_NMOS_X40
+  ORIGIN 0 0 ;
+  FOREIGN CMC_NMOS_X40 0 0 ;
+  SIZE 0.324 BY 1.188 ;
+  PIN D1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0 0.063 1.089 ;
+    END
+  END D1
+  PIN S1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.027 0.117 1.107 ;
+    END
+  END S1
+  PIN S2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.207 0.027 0.225 1.107 ;
+    END
+  END S2
+  PIN D2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 0 0.279 1.089 ;
+    END
+  END D2
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 1.137 0.261 1.155 ;
+    END
+  END G
+END CMC_NMOS_X40
+
+MACRO CMC_PMOS_X40
+  ORIGIN 0 0 ;
+  FOREIGN CMC_PMOS_X40 0 0 ;
+  SIZE 0.324 BY 1.188 ;
+  PIN D1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0.027 0.063 1.089 ;
+    END
+  END D1
+  PIN S1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.045 0.117 1.107 ;
+    END
+  END S1
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 1.137 0.261 1.155 ;
+    END
+  END G
+  PIN D2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 0.027 0.279 1.089 ;
+    END
+  END D2
+  PIN S2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.207 1.089 0.225 1.107 ;
+    END
+  END S2
+END CMC_PMOS_X40
+
+MACRO CMC_PMOS_X70
+  ORIGIN 0 0 ;
+  FOREIGN CMC_PMOS_X70 0 0 ;
+  SIZE 0.324 BY 1.998 ;
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 1.947 0.261 1.965 ;
+    END
+  END G
+  PIN S1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.027 0.117 1.917 ;
+    END
+  END S1
+  PIN D1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0.027 0.063 1.917 ;
+    END
+  END D1
+  PIN D2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 0.027 0.279 1.917 ;
+    END
+  END D2
+  PIN S2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.207 0.027 0.225 1.917 ;
+    END
+  END S2
+END CMC_PMOS_X70
+
+MACRO DP_NMOS_X50
+  ORIGIN 0 0 ;
+  FOREIGN DP_NMOS_X50 0 0 ;
+  SIZE 0.324 BY 1.476 ;
+  PIN D2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 0.029 0.279 1.37 ;
+    END
+  END D2
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.182 0.225 0.2 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.146 0.225 0.164 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.11 0.225 0.128 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.074 0.225 0.092 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.038 0.225 0.056 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.254 0.225 0.272 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.218 0.225 0.236 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.29 0.225 0.308 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.326 0.225 0.344 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.362 0.225 0.38 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.398 0.225 0.416 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.434 0.225 0.452 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.47 0.225 0.488 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.506 0.225 0.524 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.542 0.225 0.56 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.578 0.225 0.596 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.65 0.225 0.668 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.614 0.225 0.632 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.722 0.225 0.74 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.686 0.225 0.704 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.794 0.225 0.812 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.866 0.225 0.884 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.938 0.225 0.956 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.974 0.225 0.992 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.01 0.225 1.028 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.046 0.225 1.064 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.082 0.225 1.1 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.118 0.225 1.136 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.154 0.225 1.172 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.19 0.225 1.208 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.226 0.225 1.244 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.262 0.225 1.28 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.207 0.029 0.225 1.406 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.298 0.225 1.316 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.37 0.225 1.388 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.029 0.117 1.406 ;
+    END
+  END S
+  PIN D1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0.029 0.063 1.37 ;
+    END
+  END D1
+  PIN G1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 1.436 0.081 1.476 ;
+    END
+  END G1
+  PIN G2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.243 1.436 0.261 1.476 ;
+    END
+  END G2
+END DP_NMOS_X50
+
+MACRO SCM_NMOS_X50
+  ORIGIN 0 0 ;
+  FOREIGN SCM_NMOS_X50 0 0 ;
+  SIZE 0.324 BY 1.476 ;
+  PIN D1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 1.436 0.063 1.454 ;
+    END
+  END D1
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.182 0.225 0.2 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.146 0.225 0.164 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.11 0.225 0.128 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.074 0.225 0.092 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.038 0.225 0.056 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.254 0.225 0.272 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.218 0.225 0.236 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.29 0.225 0.308 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.326 0.225 0.344 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.362 0.225 0.38 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.398 0.225 0.416 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.434 0.225 0.452 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.47 0.225 0.488 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.506 0.225 0.524 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.542 0.225 0.56 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.578 0.225 0.596 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.65 0.225 0.668 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.614 0.225 0.632 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.722 0.225 0.74 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.686 0.225 0.704 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.794 0.225 0.812 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.866 0.225 0.884 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.938 0.225 0.956 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0.974 0.225 0.992 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.01 0.225 1.028 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.046 0.225 1.064 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.082 0.225 1.1 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.118 0.225 1.136 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.154 0.225 1.172 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.19 0.225 1.208 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.226 0.225 1.244 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.262 0.225 1.28 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.207 1.388 0.225 1.406 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.298 0.225 1.316 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.37 0.225 1.388 ;
+    END
+    PORT
+      LAYER M1 ;
+        RECT 0.099 1.388 0.117 1.406 ;
+    END
+  END S
+  PIN D2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 1.388 0.279 1.406 ;
+    END
+  END D2
+END SCM_NMOS_X50
+
+MACRO matching_cap_X1
+  ORIGIN 0 0 ;
+  FOREIGN matching_cap_X1 0 0 ;
+  SIZE 0.324 BY 0.4 ;
+  PIN CN1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.054 0.038 0.072 0.338 ;
+    END
+  END CN1
+  PIN CN2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.108 0.038 0.126 0.338 ;
+    END
+  END CN2
+  PIN CP1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.2 0.038 0.218 0.338 ;
+    END
+  END CP1
+  PIN CP2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.261 0.038 0.279 0.338 ;
+    END
+  END CP2
+END matching_cap_X1
+
+MACRO nmos_rvt
+  ORIGIN 0 0 ;
+  FOREIGN nmos_rvt 0 0 ;
+  SIZE 0.162 BY 0.351 ;
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0 0.063 0.261 ;
+    END
+  END D
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0 0.117 0.261 ;
+    END
+  END S
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 0.307 0.081 0.351 ;
+    END
+  END G
+END nmos_rvt
+
+MACRO pmos_rvt
+  ORIGIN 0 0 ;
+  FOREIGN pmos_rvt 0 0 ;
+  SIZE 0.162 BY 0.351 ;
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.045 0 0.063 0.261 ;
+    END
+  END D
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.099 0 0.117 0.261 ;
+    END
+  END S
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M1 ;
+        RECT 0.063 0.307 0.081 0.351 ;
+    END
+  END G
+END pmos_rvt
+
+END LIBRARY

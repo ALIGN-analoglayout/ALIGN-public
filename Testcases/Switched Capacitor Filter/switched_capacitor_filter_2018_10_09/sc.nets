@@ -1,0 +1,102 @@
+#UMN nets 1.0
+# Created      : August 31 19:15:43
+# User         : madhu028@umn.edu
+# Platform     : Linux
+
+NumNets : 20
+NumPins : 61
+
+net23 : 4
+L1_CC5_CC7 : CP1
+L1_CC0_CC2 : CP1
+L0_MM1 : S
+I0 : Vinn
+net3 : 3
+L0_MM0 : S
+L0_MM10 : S
+L1_CC4_CC6 : CN1
+net12 : 3
+L0_MM11 : S
+L0_MM8 : D
+L1_CC1_CC3 : CN2
+net7 : 4
+L0_MM3 : D
+L1_CC5_CC7 : CP2
+L1_CC0_CC2 : CP2
+I0 : Vinp
+net5 : 4
+L0_MM5 : D
+L0_MM3 : S
+L1_CC4_CC6 : CP2
+L1_CC1_CC3 : CP1
+net6 : 4
+L0_MM9 : S
+L0_MM1 : D
+L1_CC4_CC6 : CP1
+L1_CC1_CC3 : CP2
+Vbiasn : 2
+terminal Vbiasn
+I0 : Vbiasn
+Vbiasp1 : 2
+terminal Vbiasp1
+I0 : Vbiasp1
+Vbiasp2 : 2
+terminal Vbiasp2
+I0 : Vbiasp2
+Vinn : 3
+L0_MM2 : S
+L1_CC5_CC7 : CN1
+terminal Vinn
+Vinp : 3
+L0_MM0 : D
+L1_CC5_CC7 : CN2
+terminal Vinp
+Voutn : 4
+L0_MM7 : D
+L1_CC0_CC2 : CN2
+I0 : Voutn
+terminal Voutn
+Voutp : 4
+L0_MM8 : S
+L1_CC0_CC2 :  CN1
+I0 : Voutp
+terminal Voutp
+phi1 : 7
+L0_MM11 : G
+L0_MM6 : G
+L0_MM1 : G
+L0_MM3 : G
+L0_MM0 : G
+L0_MM2 : G
+terminal phi1
+net4 : 3
+L0_MM2 : D
+L0_MM4 : D
+L1_CC4_CC6 : CN2
+phi2 : 7
+L0_MM8 : G
+L0_MM7 : G
+L0_MM9 : G
+L0_MM5 : G
+L0_MM4 : G
+L0_MM10 : G
+terminal phi2
+vdd! : 2
+I0 : vdd!
+terminal vdd!
+Id : 2
+terminal Id
+I0 : Id
+gnd! : 7
+L0_MM11 : D
+L0_MM6 : S
+L0_MM9 : D
+L0_MM5 : S
+L0_MM4 : S
+L0_MM10 : D
+I0 : gnd!
+terminal gnd!
+net11 : 3
+L0_MM6 : D
+L0_MM7 : S
+L1_CC1_CC3 :CN1
