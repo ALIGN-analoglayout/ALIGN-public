@@ -2,7 +2,7 @@ import tally
 from collections import OrderedDict
 import json
 
-from transformation import Rect, Transformation, Tech
+from cktgen.transformation import Rect, Transformation, Tech
 
 class GR:
   def __init__( self, netName=None, layer=None, width=None, rect=None):

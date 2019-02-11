@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-setup(name='satplacer',
+setup(name='cktgen',
       version='0.1',
-      description='Simple SAT-based Placer',
+      description='Generate collateral for detailed router',
       url='ALIGN-analoglayout/ALIGN.git',
       author='Steven Burns',
       author_email='steven.m.burns@intel.com',
       license='MIT',
-      packages=['satplacer'],
+      packages=find_packages(),
       zip_safe=False)

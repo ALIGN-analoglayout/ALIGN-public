@@ -2,3 +2,4 @@ INPUT/
 .cache/
 __pycache__/
 *~
+cktgen/cktgen.egg-info/

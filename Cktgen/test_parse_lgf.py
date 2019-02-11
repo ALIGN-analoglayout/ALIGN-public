@@ -1,12 +1,8 @@
-from cktgen import *
+from cktgen.cktgen import *
 
-import techfile
 import io
 import pathlib
 
-import pytest
-
-@pytest.fixture(scope="module")
 def get_tech():
     with io.StringIO("""{
     "pitchDG" : 720,
@@ -34,43 +30,50 @@ def get_tech():
                      "layer":"metal5", "name":"m5",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[720],
+                     "stop_offset":[360]
                   },
                    {
                      "layer":"metal4", "name":"m4",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[720],
+                     "stop_offset":[360]
                   },
                   {
                      "layer":"metal3", "name":"m3",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[720],
+                     "stop_offset":[360]
                   },
                   {
                      "layer":"metal2", "name":"m2",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[720],
+                     "stop_offset":[360]
                   },
                   {
                      "layer":"metal1", "name":"m1",
                      "widths":[400,400],
                      "spaces":[320],
-                     "colors":[]
+                     "colors":[],
+                     "stops":[720],
+                     "stop_offset":[360]
                   }
     ]
 }
 """) as fp:
-        print("Reading techfile")
-        tech = techfile.TechFile( fp)
-        yield tech
-        print("Closing techfile")
+        return techfile.TechFile( fp)
 
-def test_A(get_tech):
+def test_A():
 
-    tech = get_tech
+    tech = get_tech()
 
     with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
@@ -971,9 +974,9 @@ Wire net=z layer=nwell rect=47520:47520:51840:51840
 """) as fp:
         netl = parse_lgf( fp)
 
-def test_AA(get_tech):
+def test_AA():
 
-    tech = get_tech
+    tech = get_tech()
 
     with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
@@ -994,9 +997,9 @@ Wire net=i1 layer=metal2 rect=1960:43560:2360:47160
         assert r.urx == 2360
         assert r.ury == 51480
 
-def test_AB(get_tech):
+def test_AB():
 
-    tech = get_tech
+    tech = get_tech()
 
     with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
@@ -1010,8 +1013,8 @@ Wire net=i1 layer=metal2 rect=1960:43560:2360:47160
 
 
 
-def test_B(get_tech):
-    tech = get_tech
+def test_B():
+    tech = get_tech()
 
     with io.StringIO("""Cell mydesign bbox=0:0:43200:43200
 
@@ -1193,8 +1196,8 @@ Wire net=z layer=nwell rect=38880:38880:43200:43200
 """) as fp:
         netl = parse_lgf( fp)
 
-def test_BA(get_tech):
-    tech = get_tech
+def test_BA():
+    tech = get_tech()
 
     with io.StringIO("""Cell mydesign bbox=0:1:2:3
 
