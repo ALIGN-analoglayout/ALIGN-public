@@ -2,7 +2,7 @@
 sc_block.v : block level netlist for switched capacitor  
 &nbsp;&nbsp;&nbsp;This netlist contains two modules which need to be placed and routed hierarchicaly.  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.switched_capacitor_filter : top level module , corresponding constraint are there in switched_capacitor_filter.const  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.cascode_current_mirror_ota : sub module , corresponding constraint are there in cascode_current_mirror_ota.const  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.telescopic_ota : sub module , corresponding constraint are there in telescopic_ota.const  
         
 sc.lef : lef file with block dimensions and pin locations
 
