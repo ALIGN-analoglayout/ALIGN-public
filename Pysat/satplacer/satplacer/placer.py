@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from . import tally
+from tally import tally
 import json
 from collections import OrderedDict
 import itertools

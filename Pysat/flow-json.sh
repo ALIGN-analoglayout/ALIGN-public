@@ -72,9 +72,9 @@ if [ -f "INPUT/${NM}_placer_out_scaled.json" ]; then
 fi	
 
 if [ "${SCRIPT}" != "" ]; then
-  echo "Running python script ${SCRIPT} in container tally with volume ${INPUTVOL} mounted at /scripts/INPUT"
+  echo "Running python script ${SCRIPT} in container satplacer with volume ${INPUTVOL} mounted at /scripts/INPUT"
 
-  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
 fi
 
 cd ../Cktgen

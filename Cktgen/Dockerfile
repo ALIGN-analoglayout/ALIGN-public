@@ -1,4 +1,4 @@
-FROM pysat as cktgen
+FROM tally as cktgen
 
 ADD cktgen/ /cktgen/
 
