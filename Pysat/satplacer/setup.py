@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='satplacer',
       version='0.1',
@@ -7,5 +7,5 @@ setup(name='satplacer',
       author='Steven Burns',
       author_email='steven.m.burns@intel.com',
       license='MIT',
-      packages=['satplacer'],
+      packages=find_packages(),
       zip_safe=False)

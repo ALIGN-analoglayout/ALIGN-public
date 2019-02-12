@@ -1,4 +1,4 @@
-from cktgen.cktgen import *
+from .cktgen import *
 
 import json
 
