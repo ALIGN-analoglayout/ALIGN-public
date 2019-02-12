@@ -3,3 +3,4 @@
 .coverage
 htmlcov/
 satplacer/satplacer.egg-info/
+tally/tally.egg-info/

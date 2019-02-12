@@ -2,8 +2,10 @@
 
 ````
 docker build -f Dockerfile.tally -t tally .
-(cd ../Cktgen; docker build -t cktgen .)
-docker build -t satplacer .
+````
+This is different. You need to have the build context be the parent directory because we are doing a `pip install` for the `../Cktgen` directory.
+````
+docker build -f ./Dockerfile -t satplacer ..
 ````
 
 # Equalizer Design Example
@@ -35,11 +37,3 @@ docker run -it tally bash -c "source /sympy/bin/activate && pytest -- /sympy/lib
 docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && pytest --cov=tally -rs -- ../sympy/lib/python3.6/site-packages/tally/tally.py && coverage html && cd htmlcov && python -m http.server"
 ````
 Then visit `localhost:8083` in your brower.
-
-# Experiment with SAT-based Subgraph Isomorphism (monomorphism)
-
-````
-docker build -f Dockerfile-sgi -t sgi .
-
-docker run --rm -it sgi bash -c "source /sympy/bin/activate && cd /scripts && pytest -- sat_based_sgi.py"
-````

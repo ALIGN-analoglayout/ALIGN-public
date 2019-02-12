@@ -1,4 +1,4 @@
-FROM tally as cktgen
+FROM with_python as cktgen
 
 ADD cktgen/ /cktgen/
 

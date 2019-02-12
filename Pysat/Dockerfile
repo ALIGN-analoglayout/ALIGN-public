@@ -1,15 +1,16 @@
-FROM cktgen as satplacer
+FROM tally as satplacer
 
 RUN \
     mkdir -p /scripts
 
-ADD satplacer/ /satplacer/
+ADD Pysat/satplacer/ /satplacer/
+ADD Cktgen/cktgen/ /cktgen/
 
 RUN \
-    bash -c "source sympy/bin/activate && cd /satplacer/ && pip install ." && \
-    rm -r /satplacer
+    bash -c "source sympy/bin/activate && cd /satplacer/ && pip install . && cd /cktgen && pip install ." && \
+    rm -r /satplacer /cktgen
 
-ADD *.py /scripts/
+ADD Pysat/*.py /scripts/
 
 
 
