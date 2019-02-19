@@ -141,7 +141,12 @@ class Canvas:
         self.dc.addGridPoint( unitCellHeight,              False)
 
     def addSegment( self, grid, netName, c, bIdx, eIdx):
-        segment = grid.segment( netName, c, bIdx, eIdx)
+        def f( idx):
+            if type(idx) is tuple:
+                return idx[1] + grid.n*idx[0]
+            else:
+                return idx
+        segment = grid.segment( netName, c, f(bIdx), f(eIdx))
         self.terminals.append( segment)
         return segment
         
@@ -160,18 +165,23 @@ class Canvas:
 
         (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
 
-        self.dcSegment( ds0, 1*(x+0), 6*y-2, 6*y-1)
-        self.dcSegment( ds0, 1*(x+0), 6*y+1, 6*y+2)
-        self.plSegment( 'g', 2*x+0,   4*y-1, 4*y+1)
-        self.plSegment( 'g', 2*x+1,   4*y-1, 4*y+1)
-        self.dcSegment( ds1, 1*(x+1), 6*y-2, 6*y-1)
-        self.dcSegment( ds1, 1*(x+1), 6*y+1, 6*y+2)
+        assert self.dc.n == 6
+        assert self.pl.n == 4
+        assert self.pc.n == 4
+        assert self.m1.n == 4
 
-        self.pcSegment( 'g', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
+        self.dcSegment( ds0, 1*(x+0), (y,-2), (y,-1))
+        self.dcSegment( ds0, 1*(x+0), (y, 1), (y, 2))
+        self.plSegment( 'g', 2*x+0,   (y,-1), (y, 1))
+        self.plSegment( 'g', 2*x+1,   (y,-1), (y, 1))
+        self.dcSegment( ds1, 1*(x+1), (y,-2), (y,-1))
+        self.dcSegment( ds1, 1*(x+1), (y, 1), (y, 2))
 
-        self.m1Segment( ds0, 2*(x+0)+0, 4*y-1, 4*y+1)
-        self.m1Segment( 'g', 2*(x+0)+1, 4*y-1, 4*y+1)
-        self.m1Segment( ds1, 2*(x+1)+0, 4*y-1, 4*y+1)
+        self.pcSegment( 'g', (x, 1), ((x+1),-1), 2*y+0)
+
+        self.m1Segment( ds0, 2*(x+0)+0, (y,-1), (y, 1))
+        self.m1Segment( 'g', 2*(x+0)+1, (y,-1), (y, 1))
+        self.m1Segment( ds1, 2*(x+1)+0, (y,-1), (y, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
