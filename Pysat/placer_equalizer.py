@@ -1,4 +1,4 @@
-from placer import *
+from satplacer.placer import *
 
 def test_mirrors():
 
@@ -134,8 +134,6 @@ def test_diffpairs1x():
 # Assign common centroid placement
 #
     places = [('s',0,0),('a',1,0),('b',2,0)]
-    # generalize the '0' below
-    places_common_centroid = [ (tag,nnx-1-x,0) for (tag,x,y) in places]
 
     od = OrderedDict()
     for (tag,x,y) in places + places_common_centroid:

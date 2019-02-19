@@ -1,4 +1,4 @@
-from cktgen import *
+from cktgen.cktgen import *
 import json
 
 if __name__ == "__main__":

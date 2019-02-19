@@ -1,0 +1,25 @@
+FROM with_python as tally
+
+RUN \
+    apt-get install zlib1g-dev && \
+    bash -c "source sympy/bin/activate && pip install --upgrade pip && pip install --upgrade wheel && pip install python-sat"
+
+ADD tally/ /tally/
+
+RUN \
+    bash -c "source sympy/bin/activate && cd /tally/ && pip install ." && \
+    rm -r /tally
+
+
+
+
+
+
+
+
+
+
+
+
+
+

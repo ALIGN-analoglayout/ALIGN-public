@@ -1,21 +1,16 @@
-FROM with_python as pysat
-
-RUN \
-    apt-get install zlib1g-dev && \
-    bash -c "source sympy/bin/activate && pip install --upgrade pip && pip install --upgrade wheel && pip install python-sat"
-
-FROM pysat as tally
+FROM tally as satplacer
 
 RUN \
     mkdir -p /scripts
 
-ADD __G1 __G2 /scripts/
+ADD Pysat/satplacer/ /satplacer/
+ADD Cktgen/cktgen/ /cktgen/
 
-ADD *.py /scripts/
+RUN \
+    bash -c "source sympy/bin/activate && cd /satplacer/ && pip install . && cd /cktgen && pip install ." && \
+    rm -r /satplacer /cktgen
 
-
-
-
+ADD Pysat/*.py /scripts/
 
 
 

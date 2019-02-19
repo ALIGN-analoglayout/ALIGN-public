@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 import json
 
-import techfile
+from . import techfile
 
 class ADT:
   def __init__( self, tech, nm, npp=10, nr=1):
@@ -684,7 +684,7 @@ def parse_lgf( fp):
 
   return netl
 
-import transformation
+from . import transformation
 
 class Scanline:
     def __init__(self, proto, indices, dIndex):

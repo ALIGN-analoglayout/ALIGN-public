@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-import tally
+from tally import tally
 import json
 from collections import OrderedDict
 import itertools
 
 import re
 
-from transformation import Rect, Transformation, Tech
+from cktgen.transformation import Rect, Transformation, Tech
 
 """
 Placer problem:
