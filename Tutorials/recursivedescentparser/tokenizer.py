@@ -1,18 +1,16 @@
-# example.py
-#
-# Example of a tokenizer
 
 import re
 from collections import namedtuple
 
-NAME = r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)'
-NUM  = r'(?P<NUM>\d+)'
-PLUS = r'(?P<PLUS>\+)'
-TIMES = r'(?P<TIMES>\*)'
-EQ    = r'(?P<EQ>=)'
-WS    = r'(?P<WS>\s+)'
+pats = []
+pats.append( r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)')
+pats.append( r'(?P<NUM>\d+)')
+pats.append( r'(?P<PLUS>\+)')
+pats.append( r'(?P<TIMES>\*)')
+pats.append( r'(?P<EQ>=)')
+pats.append( r'(?P<WS>\s+)')
 
-master_pat = re.compile('|'.join([NAME, NUM, PLUS, TIMES, EQ, WS]))
+master_pat = re.compile('|'.join(pats))
 
 Token = namedtuple('Token', ['type','value'])
 

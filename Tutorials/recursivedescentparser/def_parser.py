@@ -6,17 +6,18 @@ import re
 import collections
 
 # Token specification
-SEMI = r'(?P<SEMI>;)'
-LPAREN = r'(?P<LPAREN>\()'
-RPAREN = r'(?P<RPAREN>\))'
-MINUS = r'(?P<MINUS>\-)'
-PLUS = r'(?P<PLUS>\+)'
-NAME = r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)'
-NUM =  r'(?P<NUM>[-+]?\d*\.\d+|[-+]?\d+\.?)'
-LIT =  r'(?P<LIT>\".*\")'
-WS     = r'(?P<WS>\s+)'
+pats = []
+pats.append( r'(?P<SEMI>;)')
+pats.append( r'(?P<LPAREN>\()')
+pats.append( r'(?P<RPAREN>\))')
+pats.append( r'(?P<MINUS>\-)')
+pats.append( r'(?P<PLUS>\+)')
+pats.append( r'(?P<NAME>[a-zA-Z_][a-zA-Z_0-9]*)')
+pats.append( r'(?P<NUM>[-+]?\d*\.\d+|[-+]?\d+\.?)')
+pats.append( r'(?P<LIT>\".*\")')
+pats.append( r'(?P<WS>\s+)')
 
-master_pat = re.compile('|'.join([SEMI,LPAREN,RPAREN,MINUS,PLUS,NAME,NUM,LIT,WS]))
+master_pat = re.compile('|'.join(pats))
 
 # Tokenizer
 Token = collections.namedtuple('Token', ['type','value'])
