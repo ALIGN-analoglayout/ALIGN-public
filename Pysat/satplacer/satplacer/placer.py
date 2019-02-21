@@ -176,8 +176,8 @@ class CellTemplate:
 
 
     def buildDataForAnimation( self):
-      sx=50
-      sy=8*50 
+      sx=50*4
+      sy=120*4
 
       p = re.compile( "^DP_(.+)_(\d+)$")
       fills = { "a": "#e0ffe0", "b": "#e0e0ff", "s": "#ffe0e0"}
