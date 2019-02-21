@@ -82,11 +82,29 @@
                   :fill="c.fill"
                 ></path>
                 <g
-                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 48} ${c.h / 2 + 0})`"
+                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`"
                 >
-                  <text :x="0" :y="0" style="font: 24px sans-serif;">
+                  <text :x="0" :y="80" style="font: 48px sans-serif;">
                     {{ c.nm }}
                   </text>
+                  <g transform="matrix(0 -1 1 0 30 0)">
+                    <text :x="0" :y="0" style="font: 36px sans-serif;">
+                      {{
+                        c.hasOwnProperty('formal_actual_map')
+                          ? c.formal_actual_map.d
+                          : 'no_map'
+                      }}
+                    </text>
+                  </g>
+                  <g transform="matrix(0 -1 1 0 170 0)">
+                    <text :x="0" :y="0" style="font: 36px sans-serif;">
+                      {{
+                        c.hasOwnProperty('formal_actual_map')
+                          ? c.formal_actual_map.s
+                          : 'no_map'
+                      }}
+                    </text>
+                  </g>
                 </g>
               </g>
             </g>
@@ -116,21 +134,21 @@ export default {
   data: function() {
     const width = 640
     const height = 640
-    const step = 50
-    const stepsPerXStep = 4
-    const stepsPerYStep = 8
-    const stepx = stepsPerXStep * step
-    const stepy = stepsPerYStep * step
-    let ny = 4
+    //const step = 50
+    //const stepsPerXStep = 4
+    //const stepsPerYStep = 8
+    //const stepx = stepsPerXStep * step
+    //const stepy = stepsPerYStep * step
+    const stepx = 50 * 4
+    const stepy = 120 * 4
+    let ny = 3
     let nx = 6
     var scale
 
-    if (stepsPerYStep * ny * width > stepsPerXStep * nx * height) {
+    if (stepy * ny * width > stepx * nx * height) {
       // ny is constraining
-      //nx = stepsPerYStep * Math.round((stepsPerXStep * ny * width) / height)
       scale = height / (ny * stepy)
     } else {
-      //ny = stepsPerXStep * Math.round((stepsPerYStep * nx * height) / width)
       scale = width / (nx * stepx)
     }
 
