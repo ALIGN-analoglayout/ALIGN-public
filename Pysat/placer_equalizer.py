@@ -136,7 +136,7 @@ def test_diffpairs1x():
     places = [('s',0,0),('a',1,0),('b',2,0)]
 
     od = OrderedDict()
-    for (tag,x,y) in places + places_common_centroid:
+    for (tag,x,y) in places:
         if tag not in od: od[tag] = []
         od[tag].append( (tag,x,y))
 
