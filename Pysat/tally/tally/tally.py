@@ -483,3 +483,41 @@ def test_tally_6_2a():
   print( [ mgr.nm_map[nm].val() for nm in nms])
   assert     mgr.nm_map['aa'].val()
   assert     mgr.nm_map['bb'].val()
+
+def test_hard_limited():
+  s = Tally()
+  mgr = VarMgr(s)
+  m = 100
+  n = 100
+  rows = [ [ s.add_var() for j in range(n)] for i in range(m)]
+
+  cols = []
+  for idx in range(n):
+    l = []
+    for row in rows:
+      l.append( row[idx])
+    cols.append(l)
+ 
+  def less_eq( limit, vecs):
+    for vec in vecs:
+      tmp = [ s.add_var() for i in range(limit+1)]
+      s.emit_tally( vec, tmp)
+      s.emit_never( tmp[-1])
+
+  def greater_eq( limit, vecs):
+    for vec in vecs:
+      tmp = [ s.add_var() for i in range(limit)]
+      s.emit_tally( vec, tmp)
+      s.emit_always( tmp[-1])
+
+  less_eq( 3, rows)
+  greater_eq( 7, cols)
+
+  s.solver.conf_budget(1000)
+  s.solver.prop_budget(1000)
+  s.solve_limited()
+  assert s.state == 'UNKNOWN'
+
+if __name__ == "__main__":
+  test_hard_limited()
+  
