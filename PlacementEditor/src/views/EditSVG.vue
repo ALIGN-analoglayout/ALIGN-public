@@ -21,23 +21,30 @@
             <button class="load-save-buttons" @click="getContent">Load</button>
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
-            <input id="index" class="small-num" v-model="leaves_idx">
-            <button class="load-save-buttons" @click="animatePlacementChange">Animate</button>
+            <input id="index" class="small-num" v-model="leaves_idx" />
+            <button class="load-save-buttons" @click="animatePlacementChange">
+              Animate
+            </button>
             <span>{{ theta_rounded }}</span>
-            <button class="load-save-buttons" @click="resetPlacementChange">Reset</button>
+            <button class="load-save-buttons" @click="resetPlacementChange">
+              Reset
+            </button>
           </div>
           <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
-            <span class="value-span">{{ c.nm }}</span>
-            <input v-model="c.w">
-            <input v-model="c.h">
-            <input v-model="c.transformation.oX">
-            <input v-model="c.transformation.oY">
-            <input v-model="c.transformation.sX">
-            <input v-model="c.transformation.sY">
+            <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
+            <input v-model="c.h" /> <input v-model="c.transformation.oX" />
+            <input v-model="c.transformation.oY" />
+            <input v-model="c.transformation.sX" />
+            <input v-model="c.transformation.sY" />
           </div>
         </div>
         <div class="col-sm-5 col-sm-offset-1">
-          <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
+          <svg
+            :width="width"
+            :height="height"
+            @mousemove="doMove($event)"
+            @mouseup="doEnd($event)"
+          >
             <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
               <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
                 <line
@@ -74,23 +81,27 @@
                   stroke="black"
                   :fill="c.fill"
                 ></path>
-                <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`">
-                  <text :x="0" :y="80" style="font: 48px sans-serif;">{{ c.nm }}</text>
+                <g
+                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`"
+                >
+                  <text :x="0" :y="80" style="font: 48px sans-serif;">
+                    {{ c.nm }}
+                  </text>
                   <g transform="matrix(0 -1 1 0 30 0)">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
-                      c.hasOwnProperty('formal_actual_map')
-                      ? c.formal_actual_map.d
-                      : 'no_map'
+                        c.hasOwnProperty('formal_actual_map')
+                          ? c.formal_actual_map.d
+                          : 'no_map'
                       }}
                     </text>
                   </g>
                   <g transform="matrix(0 -1 1 0 170 0)">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
-                      c.hasOwnProperty('formal_actual_map')
-                      ? c.formal_actual_map.s
-                      : 'no_map'
+                        c.hasOwnProperty('formal_actual_map')
+                          ? c.formal_actual_map.s
+                          : 'no_map'
                       }}
                     </text>
                   </g>
@@ -123,23 +134,14 @@ export default {
   data: function() {
     const width = 640
     const height = 640
-    //const step = 50
-    //const stepsPerXStep = 4
-    //const stepsPerYStep = 8
-    //const stepx = stepsPerXStep * step
-    //const stepy = stepsPerYStep * step
-    const stepx = undefined // 50 * 4
-    const stepy = undefined // 120 * 4
-    let ny = undefined // 3
-    let nx = undefined // 6
 
     return {
       width: width,
       height: height,
-      stepx: stepx,
-      stepy: stepy,
-      ny: ny,
-      nx: nx,
+      stepx: undefined,
+      stepy: undefined,
+      ny: undefined,
+      nx: undefined,
       moving: false,
       moving_idx: undefined,
       code: undefined,
@@ -153,32 +155,6 @@ export default {
       theta: 0.0,
       theta_percent: 0
     }
-  },
-  created: function() {
-    /*
-    console.log('Running created...')
-    this.leaves_array = []
-    this.leaves_array.push([])
-    var nms = ['ref', '1a', '1b', '2', '4']
-    for (let i = 0; i < 5; i += 1) {
-      this.leaves_array[0].push({
-        w: 4 * this.stepx,
-        h: 1 * this.stepy,
-        transformation: {
-          oX: 8 * this.stepx,
-          oY: (2 * i + 4) * this.stepy,
-          sX: 1,
-          sY: 1
-        },
-        fill: '#ffe0e0',
-        nm: nms[i]
-      })
-    }
-    // make second copy so animation works
-    this.leaves_array.push(this.leaves_array[0])
-    this.setupGridlines()
-
-    */
   },
   computed: {
     scale: function() {
