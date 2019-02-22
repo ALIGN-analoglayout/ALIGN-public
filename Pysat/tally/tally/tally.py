@@ -487,8 +487,8 @@ def test_tally_6_2a():
 def test_hard_limited():
   s = Tally()
   mgr = VarMgr(s)
-  m = 100
-  n = 100
+  m = 15
+  n = 15
   rows = [ [ s.add_var() for j in range(n)] for i in range(m)]
 
   cols = []
@@ -510,14 +510,10 @@ def test_hard_limited():
       s.emit_tally( vec, tmp)
       s.emit_always( tmp[-1])
 
-  less_eq( 3, rows)
-  greater_eq( 7, cols)
+  less_eq( 1, rows)
+  greater_eq( 2, cols)
 
   s.solver.conf_budget(1000)
   s.solver.prop_budget(1000)
   s.solve_limited()
   assert s.state == 'UNKNOWN'
-
-if __name__ == "__main__":
-  test_hard_limited()
-  
