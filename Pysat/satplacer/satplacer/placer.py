@@ -108,9 +108,11 @@ def encode_T( tech, obj):
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
 class CellTemplate:
-    def __init__( self, nm):
+    def __init__( self, nm, sx=50, sy=50*8): # equalizer defaults
         self.nm = nm
         self.terminals = OrderedDict()
+        self.sx = sx
+        self.sy = sy
         
     def dumpJson( self, fp, tech):
       collect_templates = {}
@@ -176,8 +178,8 @@ class CellTemplate:
 
 
     def buildDataForAnimation( self):
-      sx=50*4
-      sy=120*4
+      sx=self.sx
+      sy=self.sy
 
       p = re.compile( "^DP_(.+)_(\d+)$")
       fills = { "a": "#e0ffe0", "b": "#e0e0ff", "s": "#ffe0e0"}
@@ -553,19 +555,31 @@ Use tallys to constrain length
           t0 = c0['transformation']
           t1 = c1['transformation']
           if t0['oX'] != t1['oX'] or t0['oY'] != t1['oY'] or t0['sX'] != t1['sX'] or t0['sY'] != t1['sY']:
+            print( "Placements differ", t0, t1)
             return False
         return True
 
       last_placement = None
       lst = []
       for placement in self.placements_for_animation:
-        if last_placement is not None and equal_placements( last_placement, placement):
+        if last_placement is None or not equal_placements( last_placement, placement):
           lst.append( placement)
         last_placement = placement
 
       print(len(lst),len(self.placements_for_animation))
 
-      fp.write( json.dumps( self.placements_for_animation, indent=2) + "\n")
+      if len(lst) == 1:
+        # make sure there are at least two
+        lst.append( lst[0])
+
+      top = { "stepx": self.template.sx,
+              "stepy": self.template.sy,
+              "nx": self.nx,
+              "ny": self.ny,
+              "placements_for_animation": lst
+            }
+
+      fp.write( json.dumps( top, indent=2) + "\n")
 
     def optimizeNets( self, priority_nets):
 
