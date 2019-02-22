@@ -21,30 +21,23 @@
             <button class="load-save-buttons" @click="getContent">Load</button>
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
-            <input id="index" class="small-num" v-model="leaves_idx" />
-            <button class="load-save-buttons" @click="animatePlacementChange">
-              Animate
-            </button>
+            <input id="index" class="small-num" v-model="leaves_idx">
+            <button class="load-save-buttons" @click="animatePlacementChange">Animate</button>
             <span>{{ theta_rounded }}</span>
-            <button class="load-save-buttons" @click="resetPlacementChange">
-              Reset
-            </button>
+            <button class="load-save-buttons" @click="resetPlacementChange">Reset</button>
           </div>
           <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
-            <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
-            <input v-model="c.h" /> <input v-model="c.transformation.oX" />
-            <input v-model="c.transformation.oY" />
-            <input v-model="c.transformation.sX" />
-            <input v-model="c.transformation.sY" />
+            <span class="value-span">{{ c.nm }}</span>
+            <input v-model="c.w">
+            <input v-model="c.h">
+            <input v-model="c.transformation.oX">
+            <input v-model="c.transformation.oY">
+            <input v-model="c.transformation.sX">
+            <input v-model="c.transformation.sY">
           </div>
         </div>
         <div class="col-sm-5 col-sm-offset-1">
-          <svg
-            :width="width"
-            :height="height"
-            @mousemove="doMove($event)"
-            @mouseup="doEnd($event)"
-          >
+          <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
             <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
               <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
                 <line
@@ -81,27 +74,23 @@
                   stroke="black"
                   :fill="c.fill"
                 ></path>
-                <g
-                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`"
-                >
-                  <text :x="0" :y="80" style="font: 48px sans-serif;">
-                    {{ c.nm }}
-                  </text>
+                <g :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`">
+                  <text :x="0" :y="80" style="font: 48px sans-serif;">{{ c.nm }}</text>
                   <g transform="matrix(0 -1 1 0 30 0)">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
-                        c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.d
-                          : 'no_map'
+                      c.hasOwnProperty('formal_actual_map')
+                      ? c.formal_actual_map.d
+                      : 'no_map'
                       }}
                     </text>
                   </g>
                   <g transform="matrix(0 -1 1 0 170 0)">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
-                        c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.s
-                          : 'no_map'
+                      c.hasOwnProperty('formal_actual_map')
+                      ? c.formal_actual_map.s
+                      : 'no_map'
                       }}
                     </text>
                   </g>
@@ -139,23 +128,14 @@ export default {
     //const stepsPerYStep = 8
     //const stepx = stepsPerXStep * step
     //const stepy = stepsPerYStep * step
-    const stepx = 50 * 4
-    const stepy = 120 * 4
-    let ny = 3
-    let nx = 6
-    var scale
-
-    if (stepy * ny * width > stepx * nx * height) {
-      // ny is constraining
-      scale = height / (ny * stepy)
-    } else {
-      scale = width / (nx * stepx)
-    }
+    const stepx = undefined // 50 * 4
+    const stepy = undefined // 120 * 4
+    let ny = undefined // 3
+    let nx = undefined // 6
 
     return {
       width: width,
       height: height,
-      scale: scale,
       stepx: stepx,
       stepy: stepy,
       ny: ny,
@@ -175,6 +155,7 @@ export default {
     }
   },
   created: function() {
+    /*
     console.log('Running created...')
     this.leaves_array = []
     this.leaves_array.push([])
@@ -193,23 +174,24 @@ export default {
         nm: nms[i]
       })
     }
+    // make second copy so animation works
     this.leaves_array.push(this.leaves_array[0])
-    for (let i = 0; i <= this.ny; i += 1) {
-      this.hgridlines.push({
-        cy: this.stepy * i,
-        x0: 0,
-        x1: this.stepx * this.nx
-      })
-    }
-    for (let j = 0; j <= this.nx; j += 1) {
-      this.vgridlines.push({
-        cx: this.stepx * j,
-        y0: 0,
-        y1: this.stepy * this.ny
-      })
-    }
+    this.setupGridlines()
+
+    */
   },
   computed: {
+    scale: function() {
+      if (
+        this.stepy * this.ny * this.width >
+        this.stepx * this.nx * this.height
+      ) {
+        // ny is constraining
+        return this.height / (this.ny * this.stepy)
+      } else {
+        return this.width / (this.nx * this.stepx)
+      }
+    },
     theta_timeline: {
       get: function() {
         return this.theta + this.leaves_idx
@@ -251,6 +233,22 @@ export default {
     }
   },
   methods: {
+    setupGridlines: function() {
+      for (let i = 0; i <= this.ny; i += 1) {
+        this.hgridlines.push({
+          cy: this.stepy * i,
+          x0: 0,
+          x1: this.stepx * this.nx
+        })
+      }
+      for (let j = 0; j <= this.nx; j += 1) {
+        this.vgridlines.push({
+          cx: this.stepx * j,
+          y0: 0,
+          y1: this.stepy * this.ny
+        })
+      }
+    },
     resetPlacementChange: function() {
       this.theta = 0.0
       this.leaves_idx = 0
@@ -277,15 +275,28 @@ export default {
       axios
         .get('http://localhost:5000/get')
         .then(response => {
-          this.leaves_array = response['data']
+          let r = response['data']
+          this.leaves_array = r['placements_for_animation']
+          this.nx = r['nx']
+          this.ny = r['ny']
+          this.stepx = r['stepx']
+          this.stepy = r['stepy']
+          this.setupGridlines()
         })
         .catch(e => {
           this.errors.push(e)
         })
     },
     postContent: function() {
+      let r = {
+        placements_for_animation: this.leaves_array,
+        nx: this.nx,
+        ny: this.ny,
+        stepx: this.stepx,
+        stepy: this.stepy
+      }
       axios
-        .post('http://localhost:5000/post', this.leaves_array, {
+        .post('http://localhost:5000/post', r, {
           headers: { 'Content-Type': 'application/json' }
         })
         .then(response => {
