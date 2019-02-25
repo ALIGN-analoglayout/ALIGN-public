@@ -867,35 +867,6 @@ def parse_args():
 
     leaf['template_name'] = design_name
 
-    shrinkX = 720
-    shrinkY = 720
-    
-    bbox = netl.bbox
-    assert bbox.llx == 0
-    assert bbox.lly == 0
-    assert bbox.urx % shrinkX == 0
-    assert bbox.ury % shrinkY == 0
-
-    leaf['bbox'] = [ bbox.llx // shrinkX, bbox.lly // shrinkY, bbox.urx // shrinkX, bbox.ury // shrinkY]
-
-    leaf['terminals'] = []
-    leaf['layout'] = []
-
-    p = re.compile('^MTI_.*|^.*_gr$')
-
-    layout = []
-    for (k,wire) in netl.wires.items():
-      if p.match(wire.netName): continue
-
-      layout.append( {
-        "net_name": wire.netName,
-        "layer": wire.layer,
-        "rect": wire.rect.toList()
-      })
-      
-    layout = removeDuplicates(layout)
-
-
 #
 # A lot to do here. This should be moved to the technology file
 #
@@ -926,28 +897,57 @@ def parse_args():
       assert len(mt.stops) == 1
       return mt.stop_offset
 
-    for obj in layout:
-# hack: convert back to wire form
-      wire = Wire()
-      wire.netName = obj['net_name']
-      wire.rect = Rect( *obj['rect'])
-      wire.layer = obj['layer']
 
+#
+# Use metal1 and metal2 for bbox grid
+#
+    shrinkX = pgd_pitch(layer2MetalTemplate['metal1'])
+    shrinkY = pgd_pitch(layer2MetalTemplate['metal2'])
+    
+    bbox = netl.bbox
+    assert bbox.llx == 0
+    assert bbox.lly == 0
+    assert bbox.urx % shrinkX == 0
+    assert bbox.ury % shrinkY == 0
+
+    leaf['bbox'] = [ bbox.llx // shrinkX, bbox.lly // shrinkY, bbox.urx // shrinkX, bbox.ury // shrinkY]
+
+    leaf['terminals'] = []
+    leaf['layout'] = []
+
+    p = re.compile('^MTI_.*|^.*_gr$')
+
+#
+# Need to do this first since via enclosure don't necessary land on the stopping point grid
+#
+    layout = []
+    for (_,wire) in netl.wires.items():
       if p.match(wire.netName): continue
+      layout.append( {
+        "net_name": wire.netName,
+        "layer": wire.layer,
+        "rect": wire.rect.toList()
+      })
+    layout = removeDuplicates(layout)
 
-      rect = wire.rect
+    for obj in layout:
+      netName = obj['net_name']
+      rect = Rect( *obj['rect'])
+      layer = obj['layer']
 
-      if wire.layer in ["metal3","metal5","metal7"]:
-        mt = layer2MetalTemplate[wire.layer]
+      if p.match(netName): continue
+
+      if layer in ["metal3","metal5","metal7"]:
+        mt = layer2MetalTemplate[layer]
         halfWidth = pgd_width(mt) // 2
         pgdPitch = pgd_pitch(mt)
         ogdPitch = ogd_pitch(mt)
         ogdOffset = ogd_offset(mt)
 
         assert (rect.llx+halfWidth) % pgdPitch == 0
-        assert rect.lly % ogdPitch == ogdOffset, (rect.lly, rect.lly % ogdPitch, wire)
+        assert rect.lly % ogdPitch == ogdOffset, (rect.lly, rect.lly % ogdPitch)
         assert (rect.urx-halfWidth) % pgdPitch == 0
-        assert rect.ury % ogdPitch == ogdOffset, (rect.ury, rect.ury % ogdPitch, wire)
+        assert rect.ury % ogdPitch == ogdOffset, (rect.ury, rect.ury % ogdPitch)
 
         cx = (rect.urx + rect.llx) // (2*pgdPitch)
         # shrink to abstract grid
@@ -955,22 +955,22 @@ def parse_args():
         y1 = (rect.ury - ogdOffset) // ogdPitch
 
         leaf['terminals'].append({
-          "net_name": wire.netName,
-          "layer": wire.layer,
+          "net_name": netName,
+          "layer": layer,
           "rect": [ cx, y0, cx, y1]
         })
 
-      if wire.layer in ["metal2","metal4","metal6"]:
-        mt = layer2MetalTemplate[wire.layer]
+      if layer in ["metal2","metal4","metal6"]:
+        mt = layer2MetalTemplate[layer]
         halfWidth = pgd_width(mt) // 2
         pgdPitch = pgd_pitch(mt)
         ogdPitch = ogd_pitch(mt)
         ogdOffset = ogd_offset(mt)
 
         assert (rect.lly+halfWidth) % pgdPitch == 0
-        assert rect.llx % ogdPitch == ogdOffset, (rect.llx, rect.llx % ogdPitch, wire)
+        assert rect.llx % ogdPitch == ogdOffset, (rect.llx, rect.llx % ogdPitch)
         assert (rect.ury-halfWidth) % pgdPitch == 0
-        assert rect.urx % ogdPitch == ogdOffset, (rect.urx, rect.urx % ogdPitch, wire)
+        assert rect.urx % ogdPitch == ogdOffset, (rect.urx, rect.urx % ogdPitch)
 
         cy = (rect.ury + rect.lly) // (2*pgdPitch)
         # shrink to abstract grid
@@ -978,8 +978,8 @@ def parse_args():
         x1 = (rect.urx - ogdOffset) // ogdPitch
 
         leaf['terminals'].append({
-          "net_name": wire.netName,
-          "layer": wire.layer,
+          "net_name": netName,
+          "layer": layer,
           "rect": [ x0, cy, x1, cy]
         })
 
