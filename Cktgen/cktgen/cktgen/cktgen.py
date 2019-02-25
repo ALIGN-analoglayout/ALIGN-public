@@ -940,25 +940,7 @@ def parse_args():
       rect = wire.rect
 
       if wire.layer in ["metal3","metal5"]:
-        halfWidth = 200
-        halfPitch = 360
-        if wire.layer in ["metal5"]:
-          halfWidth = 300
-          halfPitch = 540
-          shrinkX = 1080
-          shrinkY = 1080
-        else:
-          shrinkX = 720
-          shrinkY = 720
-        ogdOffset = halfPitch
-
         mt = layer2Template[wire.layer]
-        assert halfWidth == pgd_width(mt) // 2
-        assert halfPitch == pgd_pitch(mt) // 2
-        assert shrinkX == pgd_pitch(mt)
-        assert shrinkY == ogd_pitch(mt)
-        assert ogdOffset == ogd_offset(mt)
-
         halfWidth = pgd_width(mt) // 2
         halfPitch = pgd_pitch(mt) // 2
         shrinkX = pgd_pitch(mt)
@@ -982,26 +964,7 @@ def parse_args():
         })
 
       if wire.layer in ["metal2","metal4"]:
-        # need to deal with offset
-        halfWidth = 200
-        halfPitch = 360
-        if wire.layer in ["metal4"]:
-          halfWidth = 300
-          halfPitch = 540
-          shrinkX = 1080
-          shrinkY = 1080
-        else:
-          shrinkX = 720
-          shrinkY = 720
-        ogdOffset = halfPitch
-
         mt = layer2Template[wire.layer]
-        assert halfWidth == pgd_width(mt) // 2
-        assert halfPitch == pgd_pitch(mt) // 2
-        assert shrinkY == pgd_pitch(mt)
-        assert shrinkX == ogd_pitch(mt)
-        assert ogdOffset == ogd_offset(mt)
-
         halfWidth = pgd_width(mt) // 2
         halfPitch = pgd_pitch(mt) // 2
         shrinkY = pgd_pitch(mt)
