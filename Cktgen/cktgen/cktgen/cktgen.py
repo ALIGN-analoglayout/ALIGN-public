@@ -883,29 +883,91 @@ def parse_args():
 
     p = re.compile('^MTI_.*|^.*_gr$')
 
+    layout = []
     for (k,wire) in netl.wires.items():
+      if p.match(wire.netName): continue
+
+      layout.append( {
+        "net_name": wire.netName,
+        "layer": wire.layer,
+        "rect": wire.rect.toList()
+      })
+      
+    layout = removeDuplicates(layout)
+
+
+#
+# A lot to do here. This should be moved to the technology file
+#
+#
+# First assume there is only one metal template per layer
+# And only one wire width and space
+#
+    layer2MetalTemplate = {}
+    for obj in tech.metalTemplates:
+      assert obj.layer not in layer2MetalTemplate
+      layer2MetalTemplate[obj.layer] = obj
+
+    def pgd_pitch(mt):
+      assert len(mt.widths) == 2 and len(mt.spaces) == 1
+      assert mt.widths[0] == mt.widths[1]
+      return mt.widths[0] + mt.spaces[0]
+
+    def pgd_width(mt):
+      assert len(mt.widths) == 2 and len(mt.spaces) == 1
+      assert mt.widths[0] == mt.widths[1]
+      return mt.widths[0] + mt.spaces[0]
+
+    def ogd_pitch(mt):
+      assert len(mt.stops) == 1
+      return mt.stops[0]
+
+    def ogd_offset(mt):
+      assert len(mt.stops) == 1
+      return mt.stop_offset
+
+    exit()
+
+    for obj in layout:
+# hack: convert back to wire form
+      wire = Wire()
+      wire.netName = obj['net_name']
+      wire.rect = Rect( *obj['rect'])
+      wire.layer = obj['layer']
+
       if p.match(wire.netName): continue
 
       rect = wire.rect
 
-      leaf['layout'].append( {
-        "net_name": wire.netName,
-        "layer": wire.layer,
-        "rect": rect.toList()
-      })
-
       if wire.layer in ["metal3","metal5"]:
-        # need to deal with offset
+        halfWidth = 200
+        halfPitch = 360
+        if wire.layer in ["metal5"]:
+          halfWidth = 300
+          halfPitch = 540
+          shrinkX = 1080
+          shrinkY = 1080
+        else:
+          shrinkX = 720
+          shrinkY = 720
+        ogdOffset = halfPitch
 
-        assert (rect.llx+200) % shrinkX == 0
-        assert rect.lly % shrinkY == 360, (rect.lly, rect.lly % shrinkY, wire)
-        assert (rect.urx-200) % shrinkX == 0
-        assert rect.ury % shrinkY == 360, (rect.ury, rect.ury % shrinkY, wire)
+#        mt = layer2Template[wire.layer]
+#        halfWidth = pgd_width(mt) // 2
+#        halfPitch = pgd_pitch(mt) // 2
+#        shrinkX = pgd_pitch(mt)
+#        shrinkY = ogd_pitch(mt)
+#        ogdOffset = ogd_offset(mt)
+
+        assert (rect.llx+halfWidth) % shrinkX == 0
+        assert rect.lly % shrinkY == ogdOffset, (rect.lly, rect.lly % shrinkY, wire)
+        assert (rect.urx-halfWidth) % shrinkX == 0
+        assert rect.ury % shrinkY == ogdOffset, (rect.ury, rect.ury % shrinkY, wire)
 
         cx = (rect.urx + rect.llx) // (2*shrinkX)
         # shrink to abstract grid
-        y0 = (rect.lly + 360) // shrinkY
-        y1 = (rect.ury - 360) // shrinkY
+        y0 = (rect.lly + ogdOffset) // shrinkY
+        y1 = (rect.ury - ogdOffset) // shrinkY
 
         leaf['terminals'].append({
           "net_name": wire.netName,
@@ -915,16 +977,34 @@ def parse_args():
 
       if wire.layer in ["metal2","metal4"]:
         # need to deal with offset
+        halfWidth = 200
+        halfPitch = 360
+        if wire.layer in ["metal4"]:
+          halfWidth = 300
+          halfPitch = 540
+          shrinkX = 1080
+          shrinkY = 1080
+        else:
+          shrinkX = 720
+          shrinkY = 720
+        ogdOffset = halfPitch
 
-        assert (rect.lly+200) % shrinkY == 0
-        assert rect.llx % shrinkX == 360, (rect.llx, rect.llx % shrinkX, wire)
-        assert (rect.ury-200) % shrinkY == 0
-        assert rect.urx % shrinkX == 360, (rect.urx, rect.urx % shrinkX, wire)
+#        mt = layer2Template[wire.layer]
+#        halfWidth = pgd_width(mt) // 2
+#        halfPitch = pgd_pitch(mt) // 2
+#        shrinkY = pgd_pitch(mt)
+#        shrinkX = ogd_pitch(mt)
+#        ogdOffset = ogd_offset(mt)
+
+        assert (rect.lly+halfWidth) % shrinkY == 0, (rect,rect.lly,halfWidth,shrinkY,wire)
+        assert rect.llx % shrinkX == ogdOffset, (rect.llx, rect.llx % shrinkX, wire)
+        assert (rect.ury-halfWidth) % shrinkY == 0
+        assert rect.urx % shrinkX == ogdOffset, (rect.urx, rect.urx % shrinkX, wire)
 
         cy = (rect.ury + rect.lly) // (2*shrinkY)
         # shrink to abstract grid
-        x0 = (rect.llx + 360) // shrinkX
-        x1 = (rect.urx - 360) // shrinkX
+        x0 = (rect.llx + ogdOffset) // shrinkX
+        x1 = (rect.urx - ogdOffset) // shrinkX
 
         leaf['terminals'].append({
           "net_name": wire.netName,
@@ -933,7 +1013,7 @@ def parse_args():
         })
 
     leaf['terminals'] = removeDuplicates(leaf['terminals'])
-    leaf['layout'] = removeDuplicates(leaf['layout'])
+    leaf['layout'] = layout
 
     netl.write_input_file( netl.nm + "_xxx.txt")
 
