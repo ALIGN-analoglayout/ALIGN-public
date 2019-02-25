@@ -916,7 +916,7 @@ def parse_args():
     def pgd_width(mt):
       assert len(mt.widths) == 2 and len(mt.spaces) == 1
       assert mt.widths[0] == mt.widths[1]
-      return mt.widths[0] + mt.spaces[0]
+      return mt.widths[0]
 
     def ogd_pitch(mt):
       assert len(mt.stops) == 1
@@ -925,8 +925,6 @@ def parse_args():
     def ogd_offset(mt):
       assert len(mt.stops) == 1
       return mt.stop_offset
-
-    exit()
 
     for obj in layout:
 # hack: convert back to wire form
@@ -939,23 +937,22 @@ def parse_args():
 
       rect = wire.rect
 
-      if wire.layer in ["metal3","metal5"]:
-        mt = layer2Template[wire.layer]
+      if wire.layer in ["metal3","metal5","metal7"]:
+        mt = layer2MetalTemplate[wire.layer]
         halfWidth = pgd_width(mt) // 2
-        halfPitch = pgd_pitch(mt) // 2
-        shrinkX = pgd_pitch(mt)
-        shrinkY = ogd_pitch(mt)
+        pgdPitch = pgd_pitch(mt)
+        ogdPitch = ogd_pitch(mt)
         ogdOffset = ogd_offset(mt)
 
-        assert (rect.llx+halfWidth) % shrinkX == 0
-        assert rect.lly % shrinkY == ogdOffset, (rect.lly, rect.lly % shrinkY, wire)
-        assert (rect.urx-halfWidth) % shrinkX == 0
-        assert rect.ury % shrinkY == ogdOffset, (rect.ury, rect.ury % shrinkY, wire)
+        assert (rect.llx+halfWidth) % pgdPitch == 0
+        assert rect.lly % ogdPitch == ogdOffset, (rect.lly, rect.lly % ogdPitch, wire)
+        assert (rect.urx-halfWidth) % pgdPitch == 0
+        assert rect.ury % ogdPitch == ogdOffset, (rect.ury, rect.ury % ogdPitch, wire)
 
-        cx = (rect.urx + rect.llx) // (2*shrinkX)
+        cx = (rect.urx + rect.llx) // (2*pgdPitch)
         # shrink to abstract grid
-        y0 = (rect.lly + ogdOffset) // shrinkY
-        y1 = (rect.ury - ogdOffset) // shrinkY
+        y0 = (rect.lly + ogdOffset) // ogdPitch
+        y1 = (rect.ury - ogdOffset) // ogdPitch
 
         leaf['terminals'].append({
           "net_name": wire.netName,
@@ -963,23 +960,22 @@ def parse_args():
           "rect": [ cx, y0, cx, y1]
         })
 
-      if wire.layer in ["metal2","metal4"]:
-        mt = layer2Template[wire.layer]
+      if wire.layer in ["metal2","metal4","metal6"]:
+        mt = layer2MetalTemplate[wire.layer]
         halfWidth = pgd_width(mt) // 2
-        halfPitch = pgd_pitch(mt) // 2
-        shrinkY = pgd_pitch(mt)
-        shrinkX = ogd_pitch(mt)
+        pgdPitch = pgd_pitch(mt)
+        ogdPitch = ogd_pitch(mt)
         ogdOffset = ogd_offset(mt)
 
-        assert (rect.lly+halfWidth) % shrinkY == 0
-        assert rect.llx % shrinkX == ogdOffset, (rect.llx, rect.llx % shrinkX, wire)
-        assert (rect.ury-halfWidth) % shrinkY == 0
-        assert rect.urx % shrinkX == ogdOffset, (rect.urx, rect.urx % shrinkX, wire)
+        assert (rect.lly+halfWidth) % pgdPitch == 0
+        assert rect.llx % ogdPitch == ogdOffset, (rect.llx, rect.llx % ogdPitch, wire)
+        assert (rect.ury-halfWidth) % pgdPitch == 0
+        assert rect.urx % ogdPitch == ogdOffset, (rect.urx, rect.urx % ogdPitch, wire)
 
-        cy = (rect.ury + rect.lly) // (2*shrinkY)
+        cy = (rect.ury + rect.lly) // (2*pgdPitch)
         # shrink to abstract grid
-        x0 = (rect.llx + ogdOffset) // shrinkX
-        x1 = (rect.urx - ogdOffset) // shrinkX
+        x0 = (rect.llx + ogdOffset) // ogdPitch
+        x1 = (rect.urx - ogdOffset) // ogdPitch
 
         leaf['terminals'].append({
           "net_name": wire.netName,
