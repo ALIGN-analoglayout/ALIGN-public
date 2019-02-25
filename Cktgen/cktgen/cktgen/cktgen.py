@@ -952,12 +952,18 @@ def parse_args():
           shrinkY = 720
         ogdOffset = halfPitch
 
-#        mt = layer2Template[wire.layer]
-#        halfWidth = pgd_width(mt) // 2
-#        halfPitch = pgd_pitch(mt) // 2
-#        shrinkX = pgd_pitch(mt)
-#        shrinkY = ogd_pitch(mt)
-#        ogdOffset = ogd_offset(mt)
+        mt = layer2Template[wire.layer]
+        assert halfWidth == pgd_width(mt) // 2
+        assert halfPitch == pgd_pitch(mt) // 2
+        assert shrinkX == pgd_pitch(mt)
+        assert shrinkY == ogd_pitch(mt)
+        assert ogdOffset == ogd_offset(mt)
+
+        halfWidth = pgd_width(mt) // 2
+        halfPitch = pgd_pitch(mt) // 2
+        shrinkX = pgd_pitch(mt)
+        shrinkY = ogd_pitch(mt)
+        ogdOffset = ogd_offset(mt)
 
         assert (rect.llx+halfWidth) % shrinkX == 0
         assert rect.lly % shrinkY == ogdOffset, (rect.lly, rect.lly % shrinkY, wire)
@@ -989,14 +995,20 @@ def parse_args():
           shrinkY = 720
         ogdOffset = halfPitch
 
-#        mt = layer2Template[wire.layer]
-#        halfWidth = pgd_width(mt) // 2
-#        halfPitch = pgd_pitch(mt) // 2
-#        shrinkY = pgd_pitch(mt)
-#        shrinkX = ogd_pitch(mt)
-#        ogdOffset = ogd_offset(mt)
+        mt = layer2Template[wire.layer]
+        assert halfWidth == pgd_width(mt) // 2
+        assert halfPitch == pgd_pitch(mt) // 2
+        assert shrinkY == pgd_pitch(mt)
+        assert shrinkX == ogd_pitch(mt)
+        assert ogdOffset == ogd_offset(mt)
 
-        assert (rect.lly+halfWidth) % shrinkY == 0, (rect,rect.lly,halfWidth,shrinkY,wire)
+        halfWidth = pgd_width(mt) // 2
+        halfPitch = pgd_pitch(mt) // 2
+        shrinkY = pgd_pitch(mt)
+        shrinkX = ogd_pitch(mt)
+        ogdOffset = ogd_offset(mt)
+
+        assert (rect.lly+halfWidth) % shrinkY == 0
         assert rect.llx % shrinkX == ogdOffset, (rect.llx, rect.llx % shrinkX, wire)
         assert (rect.ury-halfWidth) % shrinkY == 0
         assert rect.urx % shrinkX == ogdOffset, (rect.urx, rect.urx % shrinkX, wire)
