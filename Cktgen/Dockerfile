@@ -6,7 +6,7 @@ RUN \
   bash -c "source sympy/bin/activate && cd /cktgen && pip install ." && \
   rm -rf /cktgen 
 
-
+ADD *.py /Cktgen/
 
 
 
