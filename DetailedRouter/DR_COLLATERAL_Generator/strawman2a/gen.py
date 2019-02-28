@@ -120,8 +120,8 @@ def write_collateral( tech):
 # metal2: pgd is horizontal, ogd is vertical => pgd pitch = ogd pitch
 # metal3: pgd is vertical, ogd is horizontal 
 #
-            l_space = min(spaces[l]) if pgd_pitch[l] == ogd_pitch[l] else 0
-            u_space = min(spaces[u]) if pgd_pitch[u] == ogd_pitch[u] else 0
+            l_space = min(spaces[l]) if pgd_pitch[u] == ogd_pitch[l] else 0
+            u_space = min(spaces[u]) if pgd_pitch[l] == ogd_pitch[u] else 0
 
 #            l_space = min(spaces[l])
 #            u_space = min(spaces[u])

@@ -1,0 +1,13 @@
+FROM ubuntu:18.04 as magicfromsourcepackages
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && apt-get install -yq g++ build-essential m4 csh libx11-dev libncurses-dev tcl-dev tk-dev blt-dev
+
+
+FROM magicfromsourcepackages as magicfromsouce
+
+RUN \
+    apt-get install -yq git && \
+    git clone git://opencircuitdesign.com/magic-8.2 && \
+    cd magic-8.2 && ./configure && make && make install

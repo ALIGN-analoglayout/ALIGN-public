@@ -96,7 +96,7 @@
                       }}
                     </text>
                   </g>
-                  <g transform="matrix(0 -1 1 0 170 0)">
+                  <g :transform="`matrix(0 -1 1 0 ${c.w - 30} 0)`">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
                         c.hasOwnProperty('formal_actual_map')
