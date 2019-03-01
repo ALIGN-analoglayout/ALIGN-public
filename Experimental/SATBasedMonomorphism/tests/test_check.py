@@ -1,7 +1,7 @@
 import networkx as nx
 import networkx.algorithms.isomorphism
 
-from sgi.sgi import *
+from sgi import *
 
 def test_check_monomorphism_succeeds():
     g = nx.Graph()
