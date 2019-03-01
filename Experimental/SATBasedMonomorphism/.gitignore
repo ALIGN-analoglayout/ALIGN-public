@@ -1,0 +1,6 @@
+.coverage
+.eggs/
+htmlcov/
+junit.xml
+*.egg-info/
+*~
