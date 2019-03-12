@@ -1,0 +1,111 @@
+.SUBCKT inv_1x IN OUT vm vp
+*.PININFO IN:I OUT:O vm:B vp:B
+MT2 OUT IN vm vm nfet W=210.0n L=60n M=1 NF=1 
+MT1 OUT IN vp vp pfet W=410.0n L=60n M=1 NF=1 
+.ENDS
+
+.SUBCKT opamp5 gnda ib10u ic im ip om on op vdda1p2
+*.PININFO gnda:I ib10u:I ic:I im:I ip:I on:I vdda1p2:I om:O op:O
+MT57 vdda1p2 vbb vdda1p2 vdda1p2 lvtpfet W=20u L=5u M=6 NF=2 
+MT75 vdda1p2 vbp vdda1p2 vdda1p2 lvtpfet W=20u L=5u M=6 NF=2 
+MT72 net0116 vbp net0116 vbb lvtpfet W=10u L=180.0n M=1 NF=1 
+MT76 net0117 vbp net0117 vbb lvtpfet W=10u L=180.0n M=1 NF=1 
+MT64 net0136 vbp net0123 vbb lvtpfet W=20u L=180.0n M=4 NF=2 
+MT69 cnp vbp net0117 vbb lvtpfet W=10u L=180.0n M=1 NF=1 
+MT70 cnm vbp net0116 vbb lvtpfet W=10u L=180.0n M=1 NF=1 
+MT26 net085 vbp net058 vbb lvtpfet W=20u L=180.0n M=8 NF=2 
+MT78<1> vdda1p2 vbp net0139<0> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT78<2> vdda1p2 vbp net0139<1> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT78<3> vdda1p2 vbp net0139<2> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT78<4> vdda1p2 vbp net0139<3> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT78<5> vdda1p2 vbp net0139<4> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT78<6> vdda1p2 vbp net0139<5> vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT23 net60 vbp net061 vbb lvtpfet W=20u L=180.0n M=60 NF=2 
+MT27 vbp vbp net057 vbb lvtpfet W=20u L=180.0n M=1 NF=2 
+MT19 net030 vbp net062 vbb lvtpfet W=20u L=180.0n M=41 NF=2 
+MT24 net63 vbp net060 vbb lvtpfet W=20u L=180.0n M=60 NF=2 
+MT44 net0121 net70 gnda gnda nfet W=10u L=500n M=6 NF=2 
+MT43 net0122 net0135 gnda gnda nfet W=10u L=500n M=6 NF=2 
+MT45 net0137 net70 gnda gnda nfet W=10u L=500n M=6 NF=2 
+MT16 net072 net073 gnda gnda nfet W=10u L=500n M=6 NF=2 
+MT17 net088 net70 gnda gnda nfet W=10u L=500n M=6 NF=2 
+MT10 net81 net0135 gnda gnda nfet W=10u L=500n M=24 NF=2 
+MT8 net78 net0135 gnda gnda nfet W=10u L=500n M=24 NF=2 
+MT68 vdda1p2 vbp vdda1p2 vbb pfet W=10u L=600n M=1 NF=1 
+MT71 vdda1p2 vbp vdda1p2 vbb pfet W=10u L=600n M=1 NF=1 
+MT73<1> net0139<0> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT73<2> net0139<1> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT73<3> net0139<2> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT73<4> net0139<3> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT73<5> net0139<4> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT73<6> net0139<5> vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT59 net0123 vbp vdda1p2 vbb pfet W=20u L=600n M=4 NF=2 
+MT62 net0116 vbp vdda1p2 vbb pfet W=10u L=600n M=1 NF=1 
+MT50 net058 vbp vdda1p2 vbb pfet W=20u L=600n M=8 NF=2 
+MT49 net060 vbp vdda1p2 vbb pfet W=20u L=600n M=60 NF=2 
+MT61 net0117 vbp vdda1p2 vbb pfet W=10u L=600n M=1 NF=1 
+MT22 net057 vbp vdda1p2 vbb pfet W=20u L=600n M=1 NF=2 
+MT46 net062 vbp vdda1p2 vbb pfet W=20u L=600n M=41 NF=2 
+MT48 net061 vbp vdda1p2 vbb pfet W=20u L=600n M=60 NF=2 
+MT63 net0135 im net0136 bbi lvtpfet W=25.0u L=500.0n M=1 NF=5 
+MT60 net0135 ip net0136 bbi lvtpfet W=25.0u L=500.0n M=1 NF=5 
+MT55 vbb vbb vdda1p2 vdda1p2 lvtpfet W=5u L=500n M=1 NF=1 
+MT41 bbi bbi net030 net030 lvtpfet W=10u L=500.0n M=1 NF=4 
+MT4 cnm im net030 bbi lvtpfet W=50u L=500.0n M=5 NF=10 
+MT3 cnp ip net030 bbi lvtpfet W=50u L=500.0n M=5 NF=10 
+MT53 bbi bbi gbi gnda natnfet W=40u L=300n M=1 NF=8 
+MT15 vdda1p2 net63 op gnda natnfet W=160.00000u L=300n M=96 NF=16 
+MT11 vdda1p2 net60 om gnda natnfet W=160.00000u L=300n M=96 NF=16 
+RR3 net036 net056 r=295.1807 
+RR2 net039 net029 r=295.1807 
+RR1 net69 op r=3.791667K 
+RR0 net69 om r=3.791667K 
+MT66 net056 net70 net0121 gnda natnfet W=10u L=500n M=4 NF=2 
+MT65 net0135 net0135 net0122 gnda natnfet W=10u L=500n M=4 NF=2 
+MT67 net029 net70 net0137 gnda natnfet W=10u L=500n M=4 NF=2 
+MT32 net073 net073 net072 gnda natnfet W=10u L=500n M=4 NF=2 
+MT35 net056 net0135 net78 gnda natnfet W=10u L=500n M=16 NF=2 
+MT34 net029 net0135 net81 gnda natnfet W=10u L=500n M=16 NF=2 
+MT33 net70 net70 net088 gnda natnfet W=10u L=500n M=4 NF=2 
+MT37 vbb net0110 gnda gnda nfet W=10u L=1.25u M=1 NF=2 
+MT31 gbi net0110 gnda gnda nfet W=10u L=1.25u M=2 NF=2 
+MT20 net0110 net0110 gnda gnda nfet W=10u L=1.25u M=1 NF=2 
+MT21 vbp net0110 gnda gnda nfet W=10u L=1.25u M=1 NF=2 
+MT14 net073 ic net085 bbi lvtpfet W=50u L=750.0n M=1 NF=10 
+MT13 net70 net69 net085 bbi lvtpfet W=50u L=750.0n M=1 NF=10 
+MT29 net029 gbi cnp bbi lvtpfet W=40u L=200.0n M=5 NF=8 
+MT28 net056 gbi cnm bbi lvtpfet W=40u L=200.0n M=5 NF=8 
+MT9 op net029 gnda gnda nfet W=10u L=100n M=160 NF=2 
+MT6 om net056 gnda gnda nfet W=10u L=100n M=160 NF=2 
+MT5 net63 net029 gnda gnda nfet W=10u L=100n M=30 NF=2 
+MT12 net60 net056 gnda gnda nfet W=10u L=100n M=30 NF=2 
+CC12<1> net039 net63 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC12<2> net039 net63 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC12<3> net039 net63 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC12<4> net039 net63 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC2 net69 op 360fF $SUB=gnda w=17.4u l=13.25u botlev=1 toplev=5 setind=-1.0
+CC3 net69 om 360fF $SUB=gnda w=17.4u l=13.25u botlev=1 toplev=5 setind=-1.0
+CC11<1> net036 net60 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC11<2> net036 net60 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC11<3> net036 net60 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+CC11<4> net036 net60 360fF $SUB=gnda w=14.65u l=14.5u botlev=1 toplev=5 
++ setind=-1.0
+MT74 gnda onb gnda gnda nfet W=2u L=60n M=1 NF=1 
+MT56 gnda onb gnda gnda nfet W=2u L=60n M=1 NF=1 
+MT42 gnda onb net60 gnda nfet W=2u L=60n M=1 NF=1 
+MT40 net63 onb gnda gnda nfet W=2u L=60n M=1 NF=1 
+MT39 gnda onb net056 gnda nfet W=5u L=60n M=1 NF=1 
+MT38 net029 onb gnda gnda nfet W=5u L=60n M=1 NF=1 
+MT54 gnda onb net0110 gnda nfet W=5u L=60n M=1 NF=1 
+MT58 vbp on vdda1p2 vdda1p2 pfet W=2.5u L=60n M=1 NF=1 
+MT30 ib10u onb net0110 vdda1p2 pfet W=2.5u L=60n M=1 NF=1 
+XI2 on onb gnda vdda1p2 inv_1x
+.ENDS
+
