@@ -12,11 +12,14 @@ import os,glob
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import itertools as it
+from graphviz import Graph
+from graphviz import Source
 from networkx.algorithms import bipartite
 from itertools import combinations 
 
 
 from BasicElement import BasicElement
+os.environ["PATH"] += os.pathsep + 'C:/ProgramData/Anaconda3/Library/bin/graphviz'
 
 class spiceParser:
     def __init__(self, netlistPath):
