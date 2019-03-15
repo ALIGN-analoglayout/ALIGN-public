@@ -188,6 +188,9 @@ class CellTemplate:
       fills2 = { "4": "#e0ffe0", "2": "#e0e0ff", "1a": "#ffe0e0",
                 "1b": "#e0ffff", "ref": "#ffffe0"}
 
+      p3 = re.compile( "^mn(\d+)_(\d+)$")
+      fills3 = { "23": "#e0ffe0", "22": "#e0e0ff", "2": "#ffffe0", "41": "#e0ffff"}
+
       def getFill( k):
         m = p.match(k)
         if m:
@@ -201,7 +204,17 @@ class CellTemplate:
           if signal in fills2:
             return fills2[signal]
 
+        m = p3.match(k)
+        if m:
+          print("MATCH",k)
+          signal = m.groups()[0]
+          if signal in fills3:
+            return fills3[signal]
+
         return "#ffe0e0"
+
+      print( f"sx:{sx} sy:{sy}")
+
 
       instances = []
 
