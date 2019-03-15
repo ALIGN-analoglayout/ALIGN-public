@@ -13,22 +13,13 @@ import os,sys
 import pickle
 from merge_nodes import merge_nodes
 from util import max_connectivity,plt_graph
-import logging
 
-logging.basicConfig(filename='logfile.log', level=logging.DEBUG)
 #%%
 def traverse_hier_in_graph(G,hier_graph_dict):
     for node,attr in G.nodes(data=True):
         if "sub_graph" in attr and not (attr["sub_graph"] == "NULL") :
-            logging.info("Traversing sub graph: "+attr["inst_type"] )
-            sub_ports=[]
-            for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
-                if 'net_type' in sub_attr:
-                    if sub_attr['net_type']=="external":
-                        sub_ports.append(sub_node)
-
             hier_graph_dict[attr["inst_type"]]={"graph":attr["sub_graph"],
-                                               "ports": sub_ports
+                                               "ports":attr["ports"]
                                                }
             traverse_hier_in_graph(attr["sub_graph"],hier_graph_dict)            
             #plt_graph(attr["sub_graph"],attr["inst_type"])
@@ -43,13 +34,8 @@ def read_inputs(file):
         if 'source' in attr['inst_type']:
             for source_nets in hier_graph.neighbors(node):
                 top_ports.append(source_nets)
-        elif 'net_type' in attr:
-            if attr['net_type']=="external":
-                top_ports.append(node)
     top_ports=list(set(top_ports))                       
-
-    logging.info("READING top circuit graph: " )
-    hier_graph_dict[file.split('/')[-1].split('.')[0]]={"graph":hier_graph,
+    hier_graph_dict["top"]={"graph":hier_graph,
                            "ports":top_ports
                            }
     traverse_hier_in_graph(hier_graph,hier_graph_dict)
@@ -81,19 +67,18 @@ def read_lib(lib_dir_path):
 #%%
 #print(newlist)
 def _mapped_graph_list(G1,newlist):
-    logging.info("Matching circuit Graph from library elements")
     mapped_graph_list={}
 
     for lib_ele in newlist:
         G2=lib_ele['lib_graph']
         sub_block_name=lib_ele['name']
         #print("Matching:",sub_block_name)
-        logging.info("Matching library element: "+sub_block_name+ ": "+ str( ' '.join(G2.nodes())))
-        logging.info("Circuit node: "+str( ' '.join(G1.nodes())))
+        #print("Matching:",sub_block_name,G2.nodes())
+        #print("circuit node",G1.nodes())
         GM = isomorphism.GraphMatcher(G1,G2,node_match=isomorphism.categorical_node_match(['inst_type'],['nmos']),
-                                      edge_match=isomorphism.categorical_edge_match(['weight'],[1]))
+                                      edge_match=isomorphism.categorical_multiedge_match(['weight'],[1]))
         if  GM.subgraph_is_isomorphic():
-            logging.info("ISOMORPHIC : "+sub_block_name)
+            #print("\n\nISOMORPHIC",sub_block_name)
             map_list=[]
             for Gsub in GM.subgraph_isomorphisms_iter():
                 map_list.append(Gsub)
@@ -148,29 +133,18 @@ def reduce_graph(G1,mapped_graph_list,liblist):
 if __name__ == '__main__':
     circuit_graph_dir = "circuit_graphs/"
     circuit_graph = os.listdir(circuit_graph_dir)
-    if not circuit_graph:
-        print("no graphs found, please run 'python ./src/read_netlist.py --file <netlist_name> --subckt  <ckt_name>'")
-    elif len(circuit_graph)>1:
-        print("\nmore than one graphs in available in dir please use'rm ./circuit_graphs/*'")
+    if len(circuit_graph)>1:
+        print("\nmore than one graphs in available in dir please run 'clean'")
         exit(0)
-
     circuit_graph=circuit_graph[0]
     input_circuit_file = circuit_graph_dir+circuit_graph
-    logging.info("READING input circuit graph: "+input_circuit_file )
-    input_graph_dict=read_inputs(input_circuit_file)
-    logging.info("READING successful" )
-
     library_dir_path= "library_graphs/"
-    logging.info("READING input library graph: "+ library_dir_path )
-    newlist = read_lib(library_dir_path)
-    logging.info("READING successful" )
 
+    input_graph_dict=read_inputs(input_circuit_file)
+    newlist=read_lib(library_dir_path)
     updated_circuit_list=[]
     for circuit_name, circuit in input_graph_dict.items():
-        logging.info("MATCHING in circuit: "+ circuit_name)
         G1=circuit["graph"]
-        
-        logging.info("no of nodes: "+str(len(circuit["graph"].nodes())))
         mapped_graph_list=_mapped_graph_list(G1,newlist)
         #for key,value in mapped_graph_list.items():
         #    print("match",key)
@@ -181,7 +155,7 @@ if __name__ == '__main__':
         # Create top ports by removing sources from top
         updated_circuit_list.extend(updated_circuit)
 
-        print(circuit["ports"])
+
             
         updated_circuit_list.append ({"name":circuit_name,"lib_graph":Grest,"ports":circuit["ports"], "size":len(Grest.nodes())})
     plt_graph(Grest,"Final reduced graph") 

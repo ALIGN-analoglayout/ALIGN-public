@@ -141,10 +141,7 @@ if __name__ == '__main__':
         #print("ports_match:",members["ports_match"])
         #inoutpin = members["ports_match"].keys()
         #print(members.keys())
-        if "ports" in members.keys():
-            inoutpin = members["ports"]
-        else:
-            inoutpin = []
+        inoutpin = members["ports"]
         #print("inout pins:",inoutpin)
         wv = writeVerilog(graph, name , inoutpin )
         wv.print_module(verilog_fp)

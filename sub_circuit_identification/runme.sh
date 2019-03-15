@@ -11,7 +11,8 @@ python ./src/read_library.py
 ## READ input netlist 
 ## Reads inputs netlist of spice format (".sp") from input_circuit folder
 ## User need to keep his spice netlist in this directory : switched_cap_filter.sp
-python ./src/read_netlist.py
+python ./src/read_netlist.py --dir input_circuit --file switched_cap_filter.sp --subckt DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+#python ./src/read_netlist.py --dir input_circuit --file switched_cap_filter.sp
 # the output is stored in circuit_graph directory in yaml format
 
 # <Place holder for generate LEF>

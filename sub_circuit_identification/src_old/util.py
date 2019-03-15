@@ -40,9 +40,8 @@ def plt_graph(subgraph,sub_block_name):
     nx.draw(copy_graph,with_labels=True,pos=nx.spring_layout(copy_graph))
     plt.title(Title, fontsize=20)
     #fig.savefig(Title+'.png', dpi=fig.dpi)
-    
-    #plt.show()
-    #plt.show(block=False)
-    #plt.pause(0.3) # pause how many seconds
-    #plt.close()
+
+    plt.show(block=False)
+    plt.pause(0.3) # pause how many seconds
+    plt.close()
     
