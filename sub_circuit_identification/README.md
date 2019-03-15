@@ -1,6 +1,6 @@
 # subckt identification
 
-# Run a C++-based test using docker
+# Create a Docker image 
 docker build -t topology .
 
 # Run a Python-based test using docker
