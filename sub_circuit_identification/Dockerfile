@@ -9,7 +9,7 @@ RUN \
 FROM with_python as topology
  
 RUN \
-    bash -c "source sympy/bin/activate && pip install matplotlib"
+    bash -c "source sympy/bin/activate && pip install matplotlib && pip install pyyaml"
 RUN \
     mkdir -p /DEMO \
     rm  /DEMO/ \
