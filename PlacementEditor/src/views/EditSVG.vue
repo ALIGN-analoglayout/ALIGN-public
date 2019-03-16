@@ -14,6 +14,39 @@
             :speed="0"
           ></vue-slider>
         </div>
+        <div class="col-sm-12">
+          <vue-slider
+            ref="scale_factor"
+            v-model="scale_factor"
+            :min="0.5"
+            :max="8"
+            :width="'960px'"
+            :interval="0.001"
+            :speed="0"
+          ></vue-slider>
+        </div>
+        <div class="col-sm-12">
+          <vue-slider
+            ref="sch"
+            v-model="sch"
+            :min="-1"
+            :max="1"
+            :width="'960px'"
+            :interval="0.001"
+            :speed="0"
+          ></vue-slider>
+        </div>
+        <div class="col-sm-12">
+          <vue-slider
+            ref="scv"
+            v-model="scv"
+            :min="-1"
+            :max="1"
+            :width="'960px'"
+            :interval="0.001"
+            :speed="0"
+          ></vue-slider>
+        </div>
       </div>
       <div class="row">
         <div class="col-sm-6">
@@ -22,12 +55,6 @@
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
             <input id="index" class="small-num" v-model="leaves_idx" />
-            <label for="scale">Scale:</label>
-            <input id="scale" class="small-num" v-model="scale_factor" />
-            <label for="sch">ScrollH:</label>
-            <input id="sch" class="small-num" v-model="sch" />
-            <label for="scv">ScrollV:</label>
-            <input id="scv" class="small-num" v-model="scv" />
             <button class="load-save-buttons" @click="animatePlacementChange">
               Animate
             </button>
@@ -242,6 +269,9 @@ export default {
     resetPlacementChange: function() {
       this.theta = 0.0
       this.leaves_idx = 0
+      this.scale_factor = 1
+      this.sch = 0
+      this.scv = 0
     },
     animatePlacementChange: function() {
       //const e = Elastic.easeOut.config(1, 0.3)
