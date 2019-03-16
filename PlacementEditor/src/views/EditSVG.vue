@@ -22,6 +22,12 @@
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
             <input id="index" class="small-num" v-model="leaves_idx" />
+            <label for="scale">Scale:</label>
+            <input id="scale" class="small-num" v-model="scale_factor" />
+            <label for="sch">ScrollH:</label>
+            <input id="sch" class="small-num" v-model="sch" />
+            <label for="scv">ScrollV:</label>
+            <input id="scv" class="small-num" v-model="scv" />
             <button class="load-save-buttons" @click="animatePlacementChange">
               Animate
             </button>
@@ -45,7 +51,12 @@
             @mousemove="doMove($event)"
             @mouseup="doEnd($event)"
           >
-            <g :transform="`matrix(${scale} 0 0 ${-scale} 0 ${height})`">
+            <g
+              :transform="
+                `matrix(${scale} 0 0 ${-scale} ${sch * width} ${(1 - scv) *
+                  height})`
+              "
+            >
               <g v-for="(l, idx) in hgridlines" :key="`h-${idx}`">
                 <line
                   :x1="l.x0"
@@ -81,17 +92,17 @@
                   stroke="black"
                   :fill="c.fill"
                 ></path>
-                <g
-                  :transform="`matrix(1 0 0 -1 ${c.w / 2 - 96} ${c.h / 2 + 0})`"
-                >
-                  <text :x="0" :y="80" style="font: 48px sans-serif;">
-                    {{ c.nm }}
-                  </text>
-                  <g transform="matrix(0 -1 1 0 30 0)">
+                <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2 + 0})`">
+                  <g transform="`matrix(1 0 0 1 0 0)`">
+                    <text :x="40" :y="100" style="font: 48px sans-serif;">
+                      {{ c.nm }}
+                    </text>
+                  </g>
+                  <g transform="matrix(0 -1 1 0 45 0)">
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
                         c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.d
+                          ? c.formal_actual_map.s
                           : 'no_map'
                       }}
                     </text>
@@ -100,7 +111,7 @@
                     <text :x="0" :y="0" style="font: 36px sans-serif;">
                       {{
                         c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.s
+                          ? c.formal_actual_map.d
                           : 'no_map'
                       }}
                     </text>
@@ -153,7 +164,10 @@ export default {
       errors: [],
       leaves_idx: 0,
       theta: 0.0,
-      theta_percent: 0
+      theta_percent: 0,
+      scale_factor: 1,
+      sch: 0,
+      scv: 0
     }
   },
   computed: {
@@ -163,9 +177,9 @@ export default {
         this.stepx * this.nx * this.height
       ) {
         // ny is constraining
-        return this.height / (this.ny * this.stepy)
+        return (this.scale_factor * this.height) / (this.ny * this.stepy)
       } else {
-        return this.width / (this.nx * this.stepx)
+        return (this.scale_factor * this.width) / (this.nx * this.stepx)
       }
     },
     theta_timeline: {
