@@ -71,7 +71,7 @@
             <input v-model="c.transformation.sY" />
           </div>
         </div>
-        <div class="col-sm-5 col-sm-offset-1">
+        <div class="col-sm-6">
           <svg
             :width="width"
             :height="height"
