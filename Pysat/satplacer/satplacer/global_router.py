@@ -551,7 +551,7 @@ def test_symmetric_unsat():
     assert g.s.state == 'UNSAT'
 
 
-import translate
+from . import translate
 
 def aux_from_json( tag, gridFactor=4):
   with open( '%s_placer_out.json' % tag, 'rt') as fp:
