@@ -12,6 +12,7 @@ WORKDIR /app
 COPY package*.json ./
 
 RUN \
+  if [ "$http_proxy" != "" ] ; then npm config set proxy $http_proxy ; fi && \
   npm install
 
 COPY . .
