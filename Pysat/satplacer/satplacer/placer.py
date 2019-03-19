@@ -222,6 +222,7 @@ class CellTemplate:
 
         instances.append( { "nm": k,
                             "fill": getFill(k),
+                            "template_name": ci.template.nm,
                             "w": ci.template.bbox.urx*sx,
                             "h": ci.template.bbox.ury*sy,
                             "transformation": { "oX" : ci.transformation.oX*sx,
@@ -585,10 +586,34 @@ Use tallys to constrain length
         # make sure there are at least two
         lst.append( lst[0])
 
+      leaf_tbl = { ci.template.nm : ci.template for (k,ci) in self.template.instances.items()}
+
+#
+# FIXME!
+# This code is duplicated in the placer.json dumping code
+#
+      leaves = []
+      for (nm,template) in leaf_tbl.items():
+        tmp = {}
+        tmp['template_name'] = template.nm
+        tmp['bbox'] = template.bbox.toList()
+        terms = []
+        for (nm,term) in template.terminals.items():
+          for term1 in term:
+            temp = {}
+            temp['net_nm'] = nm
+            temp['layer'] = "metal1"
+            temp['rect'] = term1.toList()
+          terms.append(temp)
+        tmp['terminals'] = terms
+
+        leaves.append( tmp)
+
       top = { "stepx": self.template.sx,
               "stepy": self.template.sy,
               "nx": self.nx,
               "ny": self.ny,
+              "leaves": leaves,
               "placements_for_animation": lst
             }
 
