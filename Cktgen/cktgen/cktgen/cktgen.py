@@ -39,11 +39,34 @@ class ADT:
     self.terminals.append( w)
     return w
 
-  def addM1Terminal( self, netName, m1TracksOffset):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell.) [SMB: Should generalized the y extent at some point].
+  def addM1Terminal( self, netName, m1TracksOffset=None, rect=None, leaf_bbox=None):
+    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
 """
-    xc = self.tech.pitchM1*m1TracksOffset
-    return self.newWire( netName, Rect( xc-self.tech.halfWidthM1[0], self.bbox.lly+self.tech.halfMinETESpaceM1, xc+self.tech.halfWidthM1[0], self.bbox.ury-self.tech.halfMinETESpaceM1), "metal1")
+    assert m1TracksOffset is None or rect is None
+    assert m1TracksOffset is not None or rect is not None
+
+    if m1TracksOffset is not None:
+      xc = self.tech.pitchM1*m1TracksOffset
+
+      y0 = self.bbox.lly+self.tech.halfMinETESpaceM1
+      y1 = self.bbox.ury-self.tech.halfMinETESpaceM1
+
+    if rect is not None:
+      assert rect[0] == rect[2]
+      assert leaf_bbox is not None
+
+      xc = self.tech.pitchM1*rect[0]
+
+      # HACK: This is different than the other odd layers
+      # We are using the "placer" level abstraction --- Needs to eventually change
+      height_fraction = (self.bbox.ury-self.bbox.lly) // leaf_bbox[3]
+      y0 = height_fraction*rect[1]+self.tech.halfMinETESpaceM1
+      y1 = height_fraction*rect[3]-self.tech.halfMinETESpaceM1
+
+    x0 = xc-self.tech.halfWidthM1[0]
+    x1 = xc+self.tech.halfWidthM1[0]
+
+    return self.newWire( netName, Rect( x0, y0, x1, y1), "metal1")
 
   def addM2Terminal( self, netName, rect):
     """Add a m2 terminal (horizontal) that corresponds to rect

@@ -40,7 +40,7 @@ if __name__ == "__main__":
       r = term['rect']
       if term['layer'] == "metal1":
         assert r[0] == r[2]
-        adt.addM1Terminal( term['net_name'], r[0])
+        adt.addM1Terminal( term['net_name'], rect=r, leaf_bbox=leaf_bbox)
       elif term['layer'] == "metal2":
         assert r[1] == r[3]
         adt.addM2Terminal( term['net_name'], rect=r)
