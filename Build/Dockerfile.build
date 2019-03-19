@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 as can_build
 
-RUN apt-get update && apt-get install -yq curl g++ git build-essential && apt-get clean
+RUN apt-get update && apt-get install -yq curl g++ git build-essential lcov && apt-get clean
 
 FROM can_build as with_googletest
 
