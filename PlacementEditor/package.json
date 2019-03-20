@@ -7,7 +7,11 @@
     "build": "vue-cli-service build",
     "test": "npm run lint && npm run test:unit",
     "lint": "vue-cli-service lint",
-    "test:unit": "vue-cli-service test:unit"
+    "test:unit": "vue-cli-service test:unit",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "test": "src/views/__tests__/*.spec.js"
   },
   "dependencies": {
     "axios": "^0.18.0",

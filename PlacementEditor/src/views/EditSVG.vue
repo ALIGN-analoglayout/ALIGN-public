@@ -49,7 +49,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-12">
           <div class="load-save-buttons">
             <button class="load-save-buttons" @click="getContent">Load</button>
             <button class="load-save-buttons" @click="postContent">Save</button>
@@ -63,15 +63,19 @@
               Reset
             </button>
           </div>
-          <div class="value-tbl" v-for="(c, idx) in leaves" :key="`i-${idx}`">
+          <!---
+          <div class="value-tbl" v-for="(c, idx) in instances" :key="`i-${idx}`">
             <span class="value-span">{{ c.nm }}</span> <input v-model="c.w" />
             <input v-model="c.h" /> <input v-model="c.transformation.oX" />
             <input v-model="c.transformation.oY" />
             <input v-model="c.transformation.sX" />
             <input v-model="c.transformation.sY" />
           </div>
+          --->
         </div>
-        <div class="col-sm-6">
+      </div>
+      <div class="row">
+        <div class="col-sm-12">
           <svg
             :width="width"
             :height="height"
@@ -105,7 +109,7 @@
                 ></line>
               </g>
               <g
-                v-for="(c, idx) in leaves"
+                v-for="(c, idx) in instances"
                 :key="`d-${idx}`"
                 :transform="
                   `translate(${c.transformation.oX} ${
@@ -115,11 +119,14 @@
                 @mousedown="doStart($event, c, idx, 2)"
               >
                 <path
-                  :d="
-                    `M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h} M 0 ${c.h /
-                      5} L ${c.w / 5} 0`
-                  "
+                  :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
                   stroke="black"
+                  :fill="c.fill"
+                ></path>
+                <path
+                  :d="`M 0 ${c.h / 5} L ${c.w / 5} 0`"
+                  stroke="black"
+                  stroke-width="2"
                   :fill="c.fill"
                 ></path>
                 <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2 + 0})`">
@@ -173,8 +180,8 @@ export default {
     vueSlider
   },
   data: function() {
-    const width = 640
-    const height = 640
+    const width = 960
+    const height = 960
 
     return {
       width: width,
@@ -227,7 +234,7 @@ export default {
     theta_rounded: function() {
       return this.theta.toFixed(3)
     },
-    leaves: function() {
+    instances: function() {
       let sArray = this.leaves_array[this.leaves_idx]
       if (this.theta == 0) {
         return sArray // if we aren't animating, then the first element.
@@ -304,6 +311,8 @@ export default {
           this.ny = r['ny']
           this.stepx = r['stepx']
           this.stepy = r['stepy']
+          this.leaf_templates = r['leaves']
+          console.log(this.leaf_templates)
           this.setupGridlines()
         })
         .catch(e => {
@@ -316,7 +325,8 @@ export default {
         nx: this.nx,
         ny: this.ny,
         stepx: this.stepx,
-        stepy: this.stepy
+        stepy: this.stepy,
+        leaves: this.leaf_templates
       }
       axios
         .post('http://localhost:5000/post', r, {
@@ -343,7 +353,7 @@ export default {
     },
     doMove: function(event) {
       if (this.moving) {
-        let dg = this.leaves[this.moving_idx]
+        let dg = this.instances[this.moving_idx]
         /*
         s 0  0      1/s 0    0       1 0 0
         0 -s h      0   -1/s h/s  =  0 1 0
@@ -363,7 +373,7 @@ export default {
       this.code = code
       this.moving = true
       this.moving_idx = idx
-      let dg = this.leaves[this.moving_idx]
+      let dg = this.instances[this.moving_idx]
       this.offx = this.getEventX(event) - dg.transformation.oX
       this.offy = this.getEventY(event) - dg.transformation.oY
     },
@@ -371,7 +381,7 @@ export default {
       if (this.moving) {
         const e = Elastic.easeOut.config(1, 0.3)
         const t = 0.5
-        let dg = this.leaves[this.moving_idx]
+        let dg = this.instances[this.moving_idx]
 
         if (this.code == 2) {
           let targetX = this.roundNearestGridX(dg.transformation.oX)

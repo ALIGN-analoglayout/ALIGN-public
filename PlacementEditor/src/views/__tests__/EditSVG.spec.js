@@ -10,4 +10,9 @@ describe('EditSVG.vue', () => {
     const wrapper = shallowMount(EditSVG)
     expect(wrapper.text()).toContain('Load')
   })
+
+  test('Renders save button', () => {
+    const wrapper = shallowMount(EditSVG)
+    expect(wrapper.text()).toContain('Save')
+  })
 })
