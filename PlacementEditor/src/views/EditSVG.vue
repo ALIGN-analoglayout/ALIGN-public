@@ -54,14 +54,10 @@
             <button class="load-save-buttons" @click="getContent">Load</button>
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
-            <input id="index" class="small-num" v-model="leaves_idx" />
-            <button class="load-save-buttons" @click="animatePlacementChange">
-              Animate
-            </button>
+            <input id="index" class="small-num" v-model="leaves_idx">
+            <button class="load-save-buttons" @click="animatePlacementChange">Animate</button>
             <span>{{ theta_rounded }}</span>
-            <button class="load-save-buttons" @click="resetPlacementChange">
-              Reset
-            </button>
+            <button class="load-save-buttons" @click="resetPlacementChange">Reset</button>
           </div>
           <!---
           <div class="value-tbl" v-for="(c, idx) in instances" :key="`i-${idx}`">
@@ -76,12 +72,7 @@
       </div>
       <div class="row">
         <div class="col-sm-12">
-          <svg
-            :width="width"
-            :height="height"
-            @mousemove="doMove($event)"
-            @mouseup="doEnd($event)"
-          >
+          <svg :width="width" :height="height" @mousemove="doMove($event)" @mouseup="doEnd($event)">
             <g
               :transform="
                 `matrix(${scale} 0 0 ${-scale} ${sch * width} ${(1 - scv) *
@@ -131,27 +122,14 @@
                 ></path>
                 <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2 + 0})`">
                   <g transform="`matrix(1 0 0 1 0 0)`">
-                    <text :x="40" :y="100" style="font: 48px sans-serif;">
-                      {{ c.nm }}
-                    </text>
+                    <text :x="40" :y="100" style="font: 48px sans-serif;">{{ c.nm }}</text>
                   </g>
-                  <g transform="matrix(0 -1 1 0 45 0)">
-                    <text :x="0" :y="0" style="font: 36px sans-serif;">
-                      {{
-                        c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.s
-                          : 'no_map'
-                      }}
-                    </text>
-                  </g>
-                  <g :transform="`matrix(0 -1 1 0 ${c.w - 30} 0)`">
-                    <text :x="0" :y="0" style="font: 36px sans-serif;">
-                      {{
-                        c.hasOwnProperty('formal_actual_map')
-                          ? c.formal_actual_map.d
-                          : 'no_map'
-                      }}
-                    </text>
+                  <g
+                    v-for="(term, idx1) in terminalList(c)"
+                    :key="`t-${idx}-${idx1}`"
+                    :transform="`matrix(0 -1 1 0 ${term.ox} ${term.oy})`"
+                  >
+                    <text :x="0" :y="0" style="font: 36px sans-serif;">{{ term.nm }}</text>
                   </g>
                 </g>
               </g>
@@ -260,6 +238,40 @@ export default {
     }
   },
   methods: {
+    simpleTerminalList: function(c) {
+      var d = c.hasOwnProperty('formal_actual_map')
+        ? c.formal_actual_map.d
+        : 'no_map'
+      var s = c.hasOwnProperty('formal_actual_map')
+        ? c.formal_actual_map.s
+        : 'no_map'
+      return [{ nm: s, ox: 45, oy: 0 }, { nm: d, ox: c.w - 30, oy: 0 }]
+    },
+    terminalList: function(c) {
+      //return this.simpleTerminalList(c)
+      if (this.hasOwnProperty('leaf_templates')) {
+        var leaf = this.leaf_tbl[c.template_name]
+        var result = leaf.terminals.map(function(term) {
+          var actual = c.hasOwnProperty('formal_actual_map')
+            ? c.formal_actual_map[term.net_nm]
+            : 'no_map'
+          var ox = 0
+          if (term.rect[0] == 0) {
+            ox = 25
+          } else if (term.rect[0] == leaf.bbox[2]) {
+            ox = c.w - 25
+          } else {
+            var shift = 25
+            ox = shift + ((-2 * shift + c.w) * term.rect[0]) / leaf.bbox[2]
+          }
+          return { nm: actual, ox: ox, oy: 0 }
+        })
+        console.log(result)
+        return result
+      } else {
+        return []
+      }
+    },
     setupGridlines: function() {
       for (let i = 0; i <= this.ny; i += 1) {
         this.hgridlines.push({
@@ -312,6 +324,12 @@ export default {
           this.stepx = r['stepx']
           this.stepy = r['stepy']
           this.leaf_templates = r['leaves']
+          this.leaf_tbl = {}
+          for (let i = 0; i < this.leaf_templates.length; i += 1) {
+            this.leaf_tbl[
+              this.leaf_templates[i].template_name
+            ] = this.leaf_templates[i]
+          }
           console.log(this.leaf_templates)
           this.setupGridlines()
         })
