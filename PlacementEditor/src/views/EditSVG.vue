@@ -115,7 +115,10 @@
                 @mousedown="doStart($event, c, idx, 2)"
               >
                 <path
-                  :d="`M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h}`"
+                  :d="
+                    `M 0 0 h ${c.w} v ${c.h} h ${-c.w} v ${-c.h} M 0 ${c.h /
+                      5} L ${c.w / 5} 0`
+                  "
                   stroke="black"
                   :fill="c.fill"
                 ></path>
