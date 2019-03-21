@@ -280,8 +280,7 @@ export default {
     semiPerimeter: function(actual) {
       let pins = this.netlist[actual]
       let bbox = [undefined, undefined, undefined, undefined]
-      for (let idx in pins) {
-        let o = pins[idx]
+      for (let o of pins) {
         let v = this.terminalLocation(o.instance, o.terminal)
         if (bbox[0] == undefined || v.x < bbox[0]) {
           bbox[0] = v.x
@@ -320,18 +319,16 @@ export default {
     },
     setupLeaves: function() {
       var leaf_tbl = {}
-      for (let i = 0; i < this.leaf_templates.length; i += 1) {
-        leaf_tbl[this.leaf_templates[i].template_name] = this.leaf_templates[i]
+      for (let t of this.leaf_templates) {
+        leaf_tbl[t.template_name] = t
       }
       return leaf_tbl
     },
     setupNetlist: function() {
       var netlist = {}
-      for (let i = 0; i < this.instances.length; i += 1) {
-        var c = this.instances[i]
+      for (let c of this.instances) {
         var leaf = this.leaf_tbl[c.template_name]
-        for (let j = 0; j < leaf.terminals.length; j += 1) {
-          var term = leaf.terminals[j]
+        for (let term of leaf.terminals) {
           var actual = c.formal_actual_map[term.net_nm]
           if (!netlist.hasOwnProperty(actual)) {
             netlist[actual] = []
