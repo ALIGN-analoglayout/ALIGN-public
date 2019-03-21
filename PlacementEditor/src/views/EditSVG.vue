@@ -62,6 +62,7 @@
             <button class="load-save-buttons" @click="resetPlacementChange">
               Reset
             </button>
+            <span>Total wire length: {{ totalSemiPerimeter() }}</span>
           </div>
           <!---
           <div class="value-tbl" v-for="(c, idx) in instances" :key="`i-${idx}`">
@@ -132,8 +133,9 @@
                 <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2})`">
                   <g transform="`matrix(1 0 0 1 0 0)`">
                     <text
-                      :x="c.w / 2.0 - 60"
+                      :x="c.w / 2.0"
                       :y="100"
+                      text-anchor="middle"
                       style="font: 36px sans-serif;"
                     >
                       {{ c.nm }}
@@ -144,7 +146,7 @@
                     :key="`t-${idx}-${idx1}`"
                     :transform="`matrix(0 -1 1 0 ${term.ox} ${term.oy})`"
                   >
-                    <text :x="0" :y="0" style="font: 36px sans-serif;">
+                    <text text-anchor="middle" style="font: 36px sans-serif;">
                       {{ term.nm }}
                     </text>
                   </g>
@@ -157,6 +159,15 @@
                   stroke-width="2"
                   fill="none"
                 ></path>
+                <g
+                  :transform="
+                    `matrix(1 0 0 -1 ${netlist[k].data.bbox[0]} ${
+                      netlist[k].data.bbox[1]
+                    })`
+                  "
+                >
+                  <text style="font: 48px sans-serif;">{{ k }}</text>
+                </g>
               </g>
             </g>
           </svg>
@@ -265,6 +276,18 @@ export default {
     }
   },
   methods: {
+    totalSemiPerimeter: function() {
+      let sum = 0
+      if (this.netlist != undefined) {
+        for (let k in this.netlist) {
+          let net = this.netlist[k]
+          if (net.hasOwnProperty('data')) {
+            sum += net.data.semiPerimeter
+          }
+        }
+      }
+      return sum
+    },
     bboxToPath: function(bbox) {
       return `M ${bbox[0]} ${bbox[1]} H ${bbox[2]} V ${bbox[3]} H ${bbox[0]} Z`
     },
@@ -278,7 +301,7 @@ export default {
       return { x: nx, y: ny }
     },
     semiPerimeter: function(actual) {
-      let pins = this.netlist[actual]
+      let pins = this.netlist[actual].pins
       let bbox = [undefined, undefined, undefined, undefined]
       for (let o of pins) {
         let v = this.terminalLocation(o.instance, o.terminal)
@@ -296,7 +319,9 @@ export default {
         }
       }
       let sp = bbox[2] - bbox[0] + bbox[3] - bbox[1]
-      return { semiPerimeter: sp, bbox: bbox }
+      let result = { semiPerimeter: sp, bbox: bbox }
+      this.netlist[actual].data = result
+      return result
     },
     terminalList: function(c) {
       if (this.hasOwnProperty('leaf_templates')) {
@@ -331,9 +356,9 @@ export default {
         for (let term of leaf.terminals) {
           var actual = c.formal_actual_map[term.net_nm]
           if (!netlist.hasOwnProperty(actual)) {
-            netlist[actual] = []
+            netlist[actual] = { pins: [] }
           }
-          netlist[actual].push({
+          netlist[actual].pins.push({
             instance: c,
             terminal: term
           })
