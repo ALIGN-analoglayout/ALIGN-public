@@ -29,7 +29,7 @@
           <vue-slider
             ref="sch"
             v-model="sch"
-            :min="-1"
+            :min="1 - scale_factor"
             :max="1"
             :width="'960px'"
             :interval="0.001"
@@ -40,7 +40,7 @@
           <vue-slider
             ref="scv"
             v-model="scv"
-            :min="-1"
+            :min="1 - scale_factor"
             :max="1"
             :width="'960px'"
             :interval="0.001"
@@ -129,9 +129,13 @@
                   stroke-width="2"
                   :fill="c.fill"
                 ></path>
-                <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2 + 0})`">
+                <g :transform="`matrix(1 0 0 -1 0 ${c.h / 2})`">
                   <g transform="`matrix(1 0 0 1 0 0)`">
-                    <text :x="40" :y="100" style="font: 48px sans-serif;">
+                    <text
+                      :x="c.w / 2.0 - 60"
+                      :y="100"
+                      style="font: 36px sans-serif;"
+                    >
                       {{ c.nm }}
                     </text>
                   </g>
