@@ -150,7 +150,7 @@
                   </g>
                 </g>
               </g>
-              <g v-for="(v, k) in netlist" :id="`net-${k}`">
+              <g v-for="(v, k) in netlist" :key="`net-${k}`">
                 <path
                   :d="bboxToPath(semiPerimeter(k).bbox)"
                   stroke="blue"
