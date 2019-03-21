@@ -265,7 +265,9 @@ export default {
           var shift = 25
           var ox =
             1.5 * shift + ((-2 * shift + c.w) * term.rect[0]) / leaf.bbox[2]
-          return { nm: actual, ox: ox, oy: 0 }
+          var oy =
+            (c.h * (term.rect[1] + term.rect[3])) / (leaf.bbox[3] * 2) - c.h / 2
+          return { nm: actual, ox: ox, oy: oy }
         })
         console.log(result)
         return result
