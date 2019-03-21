@@ -150,6 +150,14 @@
                   </g>
                 </g>
               </g>
+              <g v-for="(v, k) in netlist" :id="`net-${k}`">
+                <path
+                  :d="bboxToPath(semiPerimeter(k).bbox)"
+                  stroke="blue"
+                  stroke-width="2"
+                  fill="none"
+                ></path>
+              </g>
             </g>
           </svg>
         </div>
@@ -199,7 +207,9 @@ export default {
       theta_percent: 0,
       scale_factor: 1,
       sch: 0,
-      scv: 0
+      scv: 0,
+      netlist: undefined,
+      leaf_tbl: undefined
     }
   },
   computed: {
@@ -255,6 +265,40 @@ export default {
     }
   },
   methods: {
+    bboxToPath: function(bbox) {
+      return `M ${bbox[0]} ${bbox[1]} H ${bbox[2]} V ${bbox[3]} H ${bbox[0]} Z`
+    },
+    terminalLocation: function(c, term) {
+      var template = this.leaf_tbl[c.template_name]
+      var x = (((term.rect[0] + term.rect[2]) / 2) * c.w) / template.bbox[2]
+      var y = (((term.rect[1] + term.rect[3]) / 2) * c.h) / template.bbox[3]
+      var t = c.transformation
+      var nx = t.sX * x + t.oX
+      var ny = t.sY * y + t.oY
+      return { x: nx, y: ny }
+    },
+    semiPerimeter: function(actual) {
+      let pins = this.netlist[actual]
+      let bbox = [undefined, undefined, undefined, undefined]
+      for (let idx in pins) {
+        let o = pins[idx]
+        let v = this.terminalLocation(o.instance, o.terminal)
+        if (bbox[0] == undefined || v.x < bbox[0]) {
+          bbox[0] = v.x
+        }
+        if (bbox[2] == undefined || v.x > bbox[2]) {
+          bbox[2] = v.x
+        }
+        if (bbox[1] == undefined || v.y < bbox[1]) {
+          bbox[1] = v.y
+        }
+        if (bbox[3] == undefined || v.y > bbox[3]) {
+          bbox[3] = v.y
+        }
+      }
+      let sp = bbox[2] - bbox[0] + bbox[3] - bbox[1]
+      return { semiPerimeter: sp, bbox: bbox }
+    },
     terminalList: function(c) {
       if (this.hasOwnProperty('leaf_templates')) {
         var leaf = this.leaf_tbl[c.template_name]
@@ -269,11 +313,37 @@ export default {
             (c.h * (term.rect[1] + term.rect[3])) / (leaf.bbox[3] * 2) - c.h / 2
           return { nm: actual, ox: ox, oy: oy }
         })
-        console.log(result)
         return result
       } else {
         return []
       }
+    },
+    setupLeaves: function() {
+      var leaf_tbl = {}
+      for (let i = 0; i < this.leaf_templates.length; i += 1) {
+        leaf_tbl[this.leaf_templates[i].template_name] = this.leaf_templates[i]
+      }
+      return leaf_tbl
+    },
+    setupNetlist: function() {
+      var netlist = {}
+      for (let i = 0; i < this.instances.length; i += 1) {
+        var c = this.instances[i]
+        var leaf = this.leaf_tbl[c.template_name]
+        for (let j = 0; j < leaf.terminals.length; j += 1) {
+          var term = leaf.terminals[j]
+          var actual = c.formal_actual_map[term.net_nm]
+          if (!netlist.hasOwnProperty(actual)) {
+            netlist[actual] = []
+          }
+          netlist[actual].push({
+            instance: c,
+            terminal: term
+          })
+        }
+      }
+
+      return netlist
     },
     setupGridlines: function() {
       for (let i = 0; i <= this.ny; i += 1) {
@@ -312,7 +382,7 @@ export default {
         tl.set(this, { theta: 0, leaves_idx: i, leaves_idx_next: i + 1 })
         tl.to(this, t, {
           theta: 1.0,
-          ease: e
+          ease: e ///
         })
       }
     },
@@ -327,13 +397,8 @@ export default {
           this.stepx = r['stepx']
           this.stepy = r['stepy']
           this.leaf_templates = r['leaves']
-          this.leaf_tbl = {}
-          for (let i = 0; i < this.leaf_templates.length; i += 1) {
-            this.leaf_tbl[
-              this.leaf_templates[i].template_name
-            ] = this.leaf_templates[i]
-          }
-          console.log(this.leaf_templates)
+          this.leaf_tbl = this.setupLeaves()
+          this.netlist = this.setupNetlist()
           this.setupGridlines()
         })
         .catch(e => {
