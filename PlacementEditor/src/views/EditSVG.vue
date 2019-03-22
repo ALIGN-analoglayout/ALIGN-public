@@ -8,7 +8,7 @@
             ref="slider"
             v-model="theta_timeline"
             :min="0"
-            :max="leaves_array.length - 1"
+            :max="instances_array.length - 1"
             :width="'960px'"
             :interval="0.001"
             :speed="0"
@@ -54,7 +54,7 @@
             <button class="load-save-buttons" @click="getContent">Load</button>
             <button class="load-save-buttons" @click="postContent">Save</button>
             <label for="index">Index:</label>
-            <input id="index" class="small-num" v-model="leaves_idx" />
+            <input id="index" class="small-num" v-model="animation_idx" />
             <button class="load-save-buttons" @click="animatePlacementChange">
               Animate
             </button>
@@ -156,7 +156,7 @@
                 <path
                   :d="bboxToPath(semiPerimeter(k).bbox)"
                   stroke="blue"
-                  stroke-width="2"
+                  stroke-width="5"
                   fill="none"
                 ></path>
                 <g
@@ -166,7 +166,7 @@
                     })`
                   "
                 >
-                  <text style="font: 48px sans-serif;">{{ k }}</text>
+                  <text style="font: 96px sans-serif;">{{ k }}</text>
                 </g>
               </g>
             </g>
@@ -209,11 +209,11 @@ export default {
       code: undefined,
       offx: undefined,
       offy: undefined,
-      leaves_array: [],
+      instances_array: [],
       hgridlines: [],
       vgridlines: [],
       errors: [],
-      leaves_idx: 0,
+      animation_idx: 0,
       theta: 0.0,
       theta_percent: 0,
       scale_factor: 1,
@@ -237,26 +237,26 @@ export default {
     },
     theta_timeline: {
       get: function() {
-        return this.theta + this.leaves_idx
+        return this.theta + this.animation_idx
       },
       set: function(val) {
-        this.leaves_idx = Math.trunc(val)
-        this.theta = val - this.leaves_idx
+        this.animation_idx = Math.trunc(val)
+        this.theta = val - this.animation_idx
       }
     },
-    leaves_idx_next: function() {
-      return this.leaves_idx + 1
+    animation_idx_next: function() {
+      return this.animation_idx + 1
     },
     theta_rounded: function() {
       return this.theta.toFixed(3)
     },
     instances: function() {
-      let sArray = this.leaves_array[this.leaves_idx]
+      let sArray = this.instances_array[this.animation_idx]
       if (this.theta == 0) {
         return sArray // if we aren't animating, then the first element.
       }
       let cArray = sArray.map(a => ({ ...a }))
-      let eArray = this.leaves_array[this.leaves_idx_next]
+      let eArray = this.instances_array[this.animation_idx_next]
       for (let i = 0; i < sArray.length; i += 1) {
         let cTrans = { ...cArray[i].transformation }
         let sTrans = sArray[i].transformation
@@ -385,7 +385,7 @@ export default {
     },
     resetPlacementChange: function() {
       this.theta = 0.0
-      this.leaves_idx = 0
+      this.animation_idx = 0
       this.scale_factor = 1
       this.sch = 0
       this.scv = 0
@@ -398,10 +398,10 @@ export default {
       const e = Power2.easeInOut
       const t = 1.0
       var tl = new TimelineLite()
-      console.log(this.leaves_array.length)
-      for (let i = 0; i < this.leaves_array.length - 1; i += 1) {
+      console.log(this.instances_array.length)
+      for (let i = 0; i < this.instances_array.length - 1; i += 1) {
         console.log('Setting up:', i)
-        tl.set(this, { theta: 0, leaves_idx: i, leaves_idx_next: i + 1 })
+        tl.set(this, { theta: 0, animation_idx: i, animation_idx_next: i + 1 })
         tl.to(this, t, {
           theta: 1.0,
           ease: e ///
@@ -413,7 +413,7 @@ export default {
         .get('http://localhost:5000/get')
         .then(response => {
           let r = response['data']
-          this.leaves_array = r['placements_for_animation']
+          this.instances_array = r['placements_for_animation']
           this.nx = r['nx']
           this.ny = r['ny']
           this.stepx = r['stepx']
@@ -429,7 +429,7 @@ export default {
     },
     postContent: function() {
       let r = {
-        placements_for_animation: this.leaves_array,
+        placements_for_animation: this.instances_array,
         nx: this.nx,
         ny: this.ny,
         stepx: this.stepx,
