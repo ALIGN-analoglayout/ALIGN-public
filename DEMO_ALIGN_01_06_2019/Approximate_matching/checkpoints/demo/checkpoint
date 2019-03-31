@@ -1,6 +1,0 @@
-model_checkpoint_path: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-510"
-all_model_checkpoint_paths: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-490"
-all_model_checkpoint_paths: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-495"
-all_model_checkpoint_paths: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-500"
-all_model_checkpoint_paths: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-505"
-all_model_checkpoint_paths: "/home/aksharma/Desktop/ALIGN-master/Approximate_matching/src/../checkpoints/demo/model-510"
