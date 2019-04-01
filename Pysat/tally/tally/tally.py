@@ -1,11 +1,5 @@
-#!/usr/bin/env python
 
-import re
-import os
-import sys
-import io
-import gzip
-
+from collections import defaultdict
 import pysat.solvers
 
 class BitVar:
@@ -104,12 +98,10 @@ class VarMgr:
     self.s = s
     self.nm_map = {}
 
-  def add_var( self, v):  
+  def add_var( self, v):
     if v.nm not in self.nm_map:
         self.nm_map[v.nm] = v
     return v
- 
-from collections import defaultdict
 
 class Tally:
   def __init__( self):
@@ -119,9 +111,9 @@ class Tally:
     self.state = 'UNKNOWN'
     self.solver = pysat.solvers.Glucose4()
 
-  def solve( self, assumptions=[]):
-    res = self.solver.solve( assumptions=assumptions)
-    if res == True:
+  def solve( self, assumptions=None):
+    res = self.solver.solve( assumptions=assumptions if assumptions is not None else [])
+    if res is True:
       self.state = 'SAT'
     else:
       self.state = 'UNSAT'
@@ -130,9 +122,9 @@ class Tally:
       for i in self.solver.get_model():
         self.h[i if i > 0 else -i] = i > 0
 
-  def solve_limited( self, assumptions=[]):
-    res = self.solver.solve_limited( assumptions=assumptions)
-    if res == True:
+  def solve_limited( self, assumptions=None):
+    res = self.solver.solve_limited( assumptions=assumptions if assumptions is not None else [])
+    if res is True:
       self.state = 'SAT'
     elif res is None:
       self.state = 'UNKNOWN'
@@ -151,8 +143,8 @@ class Tally:
     self.solver.add_clause( cl)
 
   def emit_or_aux( self, a, z):
-# a0 | a1 | ... => z 
-# z => a0 | a1 | ... 
+# a0 | a1 | ... => z
+# z => a0 | a1 | ...
     self.add_clause( [Tally.neg(z)] + a)
     for l in a:
        self.add_clause( [Tally.neg(l) , z])
@@ -180,25 +172,62 @@ class Tally:
     self.add_clause( [Tally.neg(z)])
 
   def emit_at_most_one( self, inps):
-#
-#    for x in inps:
-#       for y in inps:
-#          if x < y:
-#            self.add_clause( [ Tally.neg(x), Tally.neg(y)])
     outs = [ self.add_var(), self.add_var()]
     self.emit_tally( inps, outs)
     self.emit_never( outs[1])
 
+  def emit_at_most_one_alt( self, inps):
+    for x in inps:
+       for y in inps:
+          if x < y:
+            self.add_clause( [ Tally.neg(x), Tally.neg(y)])
+
   def emit_at_least_one( self, inps):
-#    self.add_clause( inps)
     outs = [ self.add_var()]
     self.emit_tally( inps, outs)
     self.emit_always( outs[0])
 
+  def emit_at_least_one_alt( self, inps):
+    self.add_clause( inps)
 
   def emit_exactly_one( self, inps):
     self.emit_at_most_one( inps)
     self.emit_at_least_one( inps)
+
+  def emit_xor( self, a, z):
+    self.emit_symmetric( list(range(1,len(a)+1,2)), a, z)
+
+  def emit_symmetric( self, lst, a, z):
+    outs = [self.add_var() for i in range(len(a))]
+    self.emit_tally( a, outs)
+
+    toOr = []
+    for i in lst:
+      tmp = self.add_var()
+      if i == 0:
+        if len(outs) > 0:
+          self.emit_and( [Tally.neg(outs[i])], tmp)
+        else:
+          self.emit_always( tmp)
+      elif i < len(a):
+        self.emit_and( [outs[i-1],Tally.neg(outs[i])], tmp)
+      else:
+        self.emit_equiv( outs[i-1], tmp)
+      toOr.append( tmp)
+
+    self.emit_or( toOr, z)
+
+
+  def emit_majority( self, a, z):
+    outs = [self.add_var() for i in range(len(a))]
+    self.emit_tally( a, outs)
+
+    mid = (len(a)+1)//2
+    if mid > 0:
+      self.emit_equiv( outs[mid-1], z)
+    else:
+      self.emit_always( z)
+
 
   def emit_tally( self, inps, outs):
     for o in outs[len(inps):]:
@@ -211,7 +240,7 @@ class Tally:
         if len(outs) > 0:
           self.emit_equiv( inps[0], outs[0])
         break
-      else:           
+      else:
         if len(outs) < len(inps):
           outs0,outs1 = outs[:],[]
         else:
@@ -219,7 +248,7 @@ class Tally:
         sub_outs = [ self.add_var() for out in outs0]
         sub_ands = [ self.add_var() for out in sub_outs[:-1]]
         assert len(sub_outs) == len(sub_ands) + 1
-        # zip autotruncates 
+        # zip autotruncates
         for (x,z) in zip(sub_outs, sub_ands + outs1):
           self.emit_and( [ x, inps[-1]], z)
         assert 1 + len(sub_ands) == len(sub_outs)
@@ -233,287 +262,3 @@ class Tally:
   @staticmethod
   def neg( var):
     return -var
-
-def test_one_variable_contradiction():
-  s = Tally()
-  mgr = VarMgr( s)
-  a_bv = mgr.add_var( BitVar( s, 'a'))
-  assert 'BitVar[a]' == str(a_bv)
-  a = a_bv.var()
-  s.emit_never( a)
-  s.emit_always( a)
-  s.solve()
-  assert s.state == 'UNSAT'
-
-def test_one_variable_contradiction_limited():
-  s = Tally()
-  mgr = VarMgr( s)
-  a_bv = mgr.add_var( BitVar( s, 'a'))
-  assert 'BitVar[a]' == str(a_bv)
-  a = a_bv.var()
-  s.emit_never( a)
-  s.emit_always( a)
-  s.solve_limited()
-  assert s.state == 'UNSAT'
-
-def test_one_variable_T():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( BitVar( s, 'a')).var()
-  s.emit_always( a)
-  s.solve()
-  assert s.state == 'SAT'
-  assert mgr.nm_map['a'].val()
-
-def test_one_variable_F():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( BitVar( s, 'a')).var()
-  s.emit_never( a)
-  s.solve()
-  assert s.state == 'SAT'
-  assert not mgr.nm_map['a'].val()
-    
-def test_one_variable_F_limited():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( BitVar( s, 'a')).var()
-  s.emit_never( a)
-  s.solve_limited()
-  assert s.state == 'SAT'
-  assert not mgr.nm_map['a'].val()
-    
-def test_implies():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b']
-  [a,b] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_implies( a, b)
-  s.solve(assumptions=[ a, b])
-  assert s.state == 'SAT'
-  s.solve(assumptions=[-a,-b])
-  assert s.state == 'SAT'
-  s.solve(assumptions=[-a, b])
-  assert s.state == 'SAT'
-  s.solve(assumptions=[ a,-b])
-  assert s.state == 'UNSAT'
-
-def test_iff():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b']
-  [a,b] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_iff( a, b)
-  s.solve(assumptions=[ a, b])
-  assert s.state == 'SAT'
-  s.solve(assumptions=[-a,-b])
-  assert s.state == 'SAT'
-  s.solve(assumptions=[-a, b])
-  assert s.state == 'UNSAT'
-  s.solve(assumptions=[ a,-b])
-  assert s.state == 'UNSAT'
-
-    
-def test_enum_var():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( EnumVar( s, 'a', ['one','two','three']))
-  assert "EnumVar[a]['one', 'two', 'three']" == str(a)
-  s.emit_always( a.var( 'one'))
-  s.solve()
-  assert s.state == 'SAT'
-  assert 'one' == mgr.nm_map['a'].val()
-    
-def test_possibly_unknown_enum_var():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( PossiblyUnknownEnumVar( s, 'a', ['one','two','three']))
-  s.emit_never( a.var( 'one'))
-  s.emit_never( a.var( 'two'))
-  s.emit_never( a.var( 'three'))
-  s.solve()
-  assert s.state == 'SAT'
-  assert '<UNKNOWN>' == mgr.nm_map['a'].val()
-    
-def test_possibly_unknown_enum_vara():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( PossiblyUnknownEnumVar( s, 'a', ['one','two','three']))
-  assert "PossiblyUnknownEnumVar[a]['one', 'two', 'three']" == str(a)
-  s.emit_never( a.var( 'one'))
-  s.emit_never( a.var( 'two'))
-  s.emit_always( a.var( 'three'))
-  s.solve()
-  assert s.state == 'SAT'
-  assert 'three' == mgr.nm_map['a'].val()
-    
-def test_tally_more_outs():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b','aa','bb','cc']
-  [a,b,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a,b],[aa,bb,cc])
-  s.emit_always( a)
-  s.emit_always( b)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert mgr.nm_map['aa'].val()
-  assert mgr.nm_map['bb'].val()
-  assert not mgr.nm_map['cc'].val()
-
-def test_power_set_enum_var():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( PowerSetEnumVar( s, 'a', ['one','two','three']))
-  assert "PowerSetEnumVar[a]['one', 'two', 'three']" == str(a)
-  s.emit_never( a.var( 'one'))
-  s.emit_always( a.var( 'two'))
-  s.emit_always( a.var( 'three'))
-  s.solve()
-  assert s.state == 'SAT'
-  assert 'two,three' == mgr.nm_map['a'].val()
-
-def test_bit_vec():
-  s = Tally()
-  mgr = VarMgr( s)
-  a = mgr.add_var( BitVec( s, 'a', 3))
-  assert 'BitVec[a,3]' == str(a)
-  s.emit_never( a.var( 0))
-  s.emit_always( a.var( 1))
-  s.emit_always( a.var( 2))
-  s.solve()
-  assert s.state == 'SAT'
-  assert '011' == mgr.nm_map['a'].val()
-  assert mgr.nm_map['a'].val(0) is False
-  assert mgr.nm_map['a'].val(1) is True
-  assert mgr.nm_map['a'].val(2) is True
-
-def test_tally_zero_inputs():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['aa','bb','cc']
-  [aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [],[aa,bb,cc])
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert not mgr.nm_map['aa'].val()
-  assert not mgr.nm_map['bb'].val()
-  assert not mgr.nm_map['cc'].val()
-
-def test_tally_one_input():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','aa','bb','cc']
-  [a,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a],[aa,bb,cc])
-  s.emit_always( a)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert     mgr.nm_map['aa'].val()
-  assert not mgr.nm_map['bb'].val()
-  assert not mgr.nm_map['cc'].val()
-
-def test_tally_3():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b','c','aa','bb','cc']
-  [a,b,c,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a,b,c],[aa,bb,cc])
-  s.emit_never( a)
-  s.emit_always( b)
-  s.emit_always( c)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert mgr.nm_map['aa'].val()
-  assert mgr.nm_map['bb'].val()
-  assert not mgr.nm_map['cc'].val()
-
-def test_tally_3a():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b','c','aa','bb','cc']
-  [a,b,c,aa,bb,cc] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a,b,c],[aa,bb,cc])
-  s.emit_never( a)
-  s.emit_never( b)
-  s.emit_never( c)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert not mgr.nm_map['aa'].val()
-  assert not mgr.nm_map['bb'].val()
-  assert not mgr.nm_map['cc'].val()
-
-def test_tally_6_2():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b','c','d','e','f','aa','bb']
-  [a,b,c,d,e,f,aa,bb] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a,b,c,d,e,f],[aa,bb])
-  s.emit_never( a)
-  s.emit_never( b)
-  s.emit_never( c)
-  s.emit_always( d)
-  s.emit_never( e)
-  s.emit_never( f)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert     mgr.nm_map['aa'].val()
-  assert not mgr.nm_map['bb'].val()
-
-def test_tally_6_2a():
-  s = Tally()
-  mgr = VarMgr( s)
-  nms = ['a','b','c','d','e','f','aa','bb']
-  [a,b,c,d,e,f,aa,bb] = [ mgr.add_var( BitVar( s, nm)).var() for nm in nms]
-  s.emit_tally( [a,b,c,d,e,f],[aa,bb])
-  s.emit_never( a)
-  s.emit_always( b)
-  s.emit_never( c)
-  s.emit_always( d)
-  s.emit_never( e)
-  s.emit_always( f)
-  s.solve()
-  assert s.state == 'SAT'
-  print( [ mgr.nm_map[nm].val() for nm in nms])
-  assert     mgr.nm_map['aa'].val()
-  assert     mgr.nm_map['bb'].val()
-
-def test_hard_limited():
-  s = Tally()
-  mgr = VarMgr(s)
-  m = 15
-  n = 15
-  rows = [ [ s.add_var() for j in range(n)] for i in range(m)]
-
-  cols = []
-  for idx in range(n):
-    l = []
-    for row in rows:
-      l.append( row[idx])
-    cols.append(l)
- 
-  def less_eq( limit, vecs):
-    for vec in vecs:
-      tmp = [ s.add_var() for i in range(limit+1)]
-      s.emit_tally( vec, tmp)
-      s.emit_never( tmp[-1])
-
-  def greater_eq( limit, vecs):
-    for vec in vecs:
-      tmp = [ s.add_var() for i in range(limit)]
-      s.emit_tally( vec, tmp)
-      s.emit_always( tmp[-1])
-
-  less_eq( 1, rows)
-  greater_eq( 2, cols)
-
-  s.solver.conf_budget(1000)
-  s.solver.prop_budget(1000)
-  s.solve_limited()
-  assert s.state == 'UNKNOWN'

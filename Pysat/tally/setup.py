@@ -8,4 +8,6 @@ setup(name='tally',
       author_email='steven.m.burns@intel.com',
       license='MIT',
       packages=find_packages(),
+      setup_requires=["pytest-runner"],
+      tests_require=["pytest"],
       zip_safe=False)
