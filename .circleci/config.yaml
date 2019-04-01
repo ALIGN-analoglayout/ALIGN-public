@@ -1,0 +1,30 @@
+version: 2
+
+
+jobs:
+  build:
+    docker:
+      - image: docker:18.06.3-ce-git
+
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run: |
+          cd Pysat
+          docker build -f Dockerfile.tally -t stevenmburns/tally_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+
+      - run: |
+          docker run -e CODACY_PROJECT_TOKEN -e CIRCLE_SHA1 --name coverage-container --mount source=coverageVol,target=/coverage-reports stevenmburns/pysat_image:2019mar14 bash -c "source /general/bin/activate && python-codacy-coverage -r coverage-reports/tally/coverage.xml -c $CIRCLE_SHA1 -d /"
+
+      - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
+
+      - store_test_results:
+          path: test-reports
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_artifacts:
+          path: coverage-reports
