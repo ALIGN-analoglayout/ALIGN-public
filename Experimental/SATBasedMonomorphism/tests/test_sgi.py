@@ -58,7 +58,7 @@ def gen_mirror_bank( nmirrors):
     h = nx.Graph()
 
     node_count = 1 + 2 * (1 + nmirrors)
-    
+
     h.add_nodes_from( list(range(node_count)))
 
     device_offset = 1 + 1 + nmirrors
@@ -68,14 +68,14 @@ def gen_mirror_bank( nmirrors):
     # mirrors
     for i in range(nmirrors):
         h.add_edges_from( [(0,device_offset+1+i),(1,device_offset+1+i),(2+i,device_offset+1+i)])
-        
+
     return h
 
 def gen_mirror_bank2( nmirrors):
     h = nx.Graph()
 
     node_count = 1 + 4 * (1 + nmirrors)
-    
+
     h.add_nodes_from( list(range(node_count)))
 
     device_offset = 1 + 2 * (1 + nmirrors)
@@ -90,7 +90,7 @@ def gen_mirror_bank2( nmirrors):
                            (3+2*i,device_offset+2*(1+i)),
                            (3+2*i,device_offset+2*(1+i)+1),
                            (4+2*i,device_offset+2*(1+i)+1)])
-        
+
     return h
 
 def test_ssm_mirrors():

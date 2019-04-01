@@ -2,11 +2,11 @@
 
 First build the `tally` image in `Pysat/`
 
-````
+```bash
 docker build -t sgi .
 
 docker run --rm -it sgi bash -c "source /sympy/bin/activate && cd /scripts && pytest -- sat_based_sgi.py"
-````
+```
 
 ## Encoding for Monomorphism
 As far as I understand it, the graph monomorphism identification problem is to find a mapping p for the vertices in graph G'=(V',E') to the vertices in another graph G=(V,E) such that for every edge {u',v'} in E', the edge {p(u'),p(v')} is in E.
@@ -33,7 +33,7 @@ We need to introduce 2*|E|*|E'| new SAT variables to encode the AND terms.
 
 ## Encoding for Subgraph Isomorphism
 The subgraph isomorphism problem is somewhat different. We still need a mapping, but every edge incident on the edges to mapped vertices must also be present in the subgraph (E'). So how about this encoding:
-```
+```bash
 isMapped(i) = OR_j p(i,j)
 for each e=(u,v) in E
     ~isMapped(u) OR ~isMapped(v) OR OR_[(u',v') in E'] (p(u,u') AND p(v,v') OR p(v,u') AND p(u,v'))

@@ -1,11 +1,10 @@
-FROM tally as sgi
+FROM stevenmburns/tally_image as sgi_image
+
+COPY . /sgi/
 
 RUN \
-    mkdir -p /scripts
+    bash -c "source general/bin/activate && cd /sgi/ && pip install ."
 
-ADD __G1 __G2 /scripts/
-
-ADD sat_based_sgi.py /scripts/
 
 
 
