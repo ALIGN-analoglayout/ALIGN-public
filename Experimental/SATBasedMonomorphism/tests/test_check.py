@@ -1,5 +1,4 @@
 import networkx as nx
-import networkx.algorithms.isomorphism
 
 from sgi import *
 
