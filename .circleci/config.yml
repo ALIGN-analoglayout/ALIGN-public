@@ -1,0 +1,37 @@
+version: 2
+
+
+jobs:
+  build:
+    docker:
+      - image: docker:18.06.3-ce-git
+
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run: |
+          docker build -t stevenmburns/tally_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+
+      - run: |
+          docker build -f Dockerfile.sgi -t stevenmburns/sgi_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+
+      - run: |
+          docker build -f Dockerfile.enumerate -t stevenmburns/enumerate_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/enumerate_image bash -c "source /general/bin/activate && cd enumerate && coverage run --source=enumerate,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/enumerate && cp /enumerate/junit.xml /test-reports/enumerate && mkdir /coverage-reports/enumerate && cp -r /enumerate/coverage.xml /enumerate/htmlcov /coverage-reports/enumerate"
+
+      - run: |
+          docker run -e CODACY_PROJECT_TOKEN -e CIRCLE_SHA1 --name coverage-container --mount source=coverageVol,target=/coverage-reports stevenmburns/sgi_image bash -c "source /general/bin/activate && python-codacy-coverage -r coverage-reports/tally/coverage.xml -r coverage-reports/sgi/coverage.xml -r coverage-reports/enumerate/coverage.xml -c $CIRCLE_SHA1 -d /"
+
+      - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
+
+      - store_test_results:
+          path: test-reports
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_artifacts:
+          path: coverage-reports
