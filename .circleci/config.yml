@@ -73,10 +73,11 @@ workflows:
       - start
       - build:
           requires:
-            - build
+            - start
       - build-js:
           requires:
-            - build
+            - start
       - finish:
           requires:
             - build
+            - build.js	    
