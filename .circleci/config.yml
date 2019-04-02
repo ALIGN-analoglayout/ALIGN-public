@@ -17,8 +17,13 @@ jobs:
 
       - run: |
           cd Experimental/SATBasedMonomorphism
-          docker build -f Dockerfile -t sgi_image .
+          docker build -t sgi_image .
           docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+
+      - run: |
+          cd PlacementEditor
+          docker build -t pe_image .
+          docker run --mount source=testVol,target=/test-reports pe_image bash -c "npm run test && mkdir /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
