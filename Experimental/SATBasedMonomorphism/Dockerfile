@@ -1,4 +1,4 @@
-FROM stevenmburns/tally_image as sgi_image
+FROM tally_image as sgi_image
 
 COPY . /sgi/
 
