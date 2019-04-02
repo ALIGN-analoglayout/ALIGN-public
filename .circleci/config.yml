@@ -6,12 +6,20 @@ executors:
       - image: docker:18.06.3-ce-git
     working_directory: /work/workspace
 
-jobs:
-  build:
-    executor: docker-executor
+  ubuntu-executor:
+    docker:
+      - image: ubuntu:18.04
+    working_directory: /work/workspace
 
+jobs:
+  start:
+    executor: ubuntu-executor
     steps:
       - checkout
+
+  build:
+    executor: docker-executor
+    steps:
       - setup_remote_docker
 
       - run: |
@@ -31,6 +39,23 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
+  build-js:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - run: |
+          cd PlacementEditor
+          docker build -t pe_image .
+          docker run --mount source=testVol,target=/test-reports pe_image bash -c "npm run test && mkdir /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
+
+      - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
+
+
+  finish:
+    executor: ubuntu-executor
+
+    steps:
       - store_test_results:
           path: test-reports
 
@@ -45,4 +70,13 @@ workflows:
 
   full:
     jobs:
-      - build
+      - start
+      - build:
+          requires:
+            - build
+      - build-js:
+          requires:
+            - build
+      - finish:
+          requires:
+            - build
