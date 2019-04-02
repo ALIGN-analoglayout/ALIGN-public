@@ -22,8 +22,8 @@ jobs:
 
       - run: |
           cd PlacementEditor
-	  docker build -t pe_image .
-	  docker run --mount source=testVol,target=/test-reports pe_image bash -c "npm run test && mkdir /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
+          docker build -t pe_image .
+          docker run --mount source=testVol,target=/test-reports pe_image bash -c "npm run test && mkdir /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
