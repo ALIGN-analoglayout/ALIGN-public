@@ -84,7 +84,7 @@ jobs:
 
 
   finish:
-    executor: ubuntu-executor
+    executor: git-executor
 
     steps:
       - attach_workspace:
