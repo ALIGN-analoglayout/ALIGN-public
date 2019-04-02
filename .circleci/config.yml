@@ -80,4 +80,4 @@ workflows:
       - finish:
           requires:
             - build
-            - build.js	    
+            - build-js
