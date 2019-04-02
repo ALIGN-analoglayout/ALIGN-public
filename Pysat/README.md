@@ -1,11 +1,11 @@
 # Build
 
 ````
-docker build -f Dockerfile.tally -t tally .
+docker build -f Dockerfile.tally -t tally_image .
 ````
 This is different. You need to have the build context be the parent directory because we are doing a `pip install` for the `../Cktgen` directory.
 ````
-docker build -f ./Dockerfile -t satplacer ..
+docker build -f ./Dockerfile -t satplacer_image ..
 ````
 
 # Equalizer Design Example
@@ -29,11 +29,11 @@ python top.py
 # Test (tally.py)
 
 ````
-docker run -it tally bash -c "source /sympy/bin/activate && pytest -- /sympy/lib/python3.6/site-packages/tally/tally.py"
+docker run -it tally_image bash -c "source /general/bin/activate && cd tally && python setup.py test"
 ````
 
 # Coverage (tally.py)
 ````
-docker run -p8083:8000 -it tally bash -c "source sympy/bin/activate && pytest --cov=tally -rs -- ../sympy/lib/python3.6/site-packages/tally/tally.py && coverage html && cd htmlcov && python -m http.server"
+docker run -p8099:8000 -it tally_image bash -c "source general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && cd htmlcov && python -m http.server"
 ````
-Then visit `localhost:8083` in your brower.
+Then visit `localhost:8099` in your brower.

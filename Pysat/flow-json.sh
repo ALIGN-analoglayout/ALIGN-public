@@ -74,7 +74,7 @@ fi
 if [ "${SCRIPT}" != "" ]; then
   echo "Running python script ${SCRIPT} in container satplacer with volume ${INPUTVOL} mounted at /scripts/INPUT"
 
-  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
 fi
 
 cd ../Cktgen

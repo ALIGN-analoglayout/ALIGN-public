@@ -12,13 +12,13 @@ jobs:
 
       - run: |
           cd Pysat
-          docker build -f Dockerfile.tally -t stevenmburns/tally_image .
-          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+          docker build -f Dockerfile.tally -t tally_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
 
       - run: |
           cd Experimental/SATBasedMonomorphism
-          docker build -f Dockerfile -t stevenmburns/sgi_image .
-          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports stevenmburns/sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+          docker build -f Dockerfile -t sgi_image .
+          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
