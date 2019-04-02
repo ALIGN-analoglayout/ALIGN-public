@@ -20,12 +20,22 @@ jobs:
   start:
     executor: git-executor
     steps:
+      - attach_workspace:
+          at: /work/workspace
       - checkout
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
 
   build:
     executor: docker-executor
     steps:
       - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
 
       - run: |
           cd Pysat
@@ -39,10 +49,19 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
+
   build-js:
     executor: docker-executor
     steps:
       - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
 
       - run: |
           cd PlacementEditor
@@ -51,11 +70,18 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
 
   finish:
     executor: ubuntu-executor
 
     steps:
+      - attach_workspace:
+          at: /work/workspace
+
       - store_test_results:
           path: test-reports
 
