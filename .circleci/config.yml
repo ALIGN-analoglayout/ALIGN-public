@@ -35,7 +35,9 @@ jobs:
       - run: |
           cd Pysat
           docker build -f Dockerfile.tally -t tally_image .
-          docker run tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally && cd / && tar cvf - coverage-reports test-reports" | tar xvf -
+          docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+	  docker cp tally_container:coverage-reports .
+	  docker cp tally_container:test-reports .
 
       - persist_to_workspace:
           root: /work/workspace
@@ -46,7 +48,10 @@ jobs:
       - run: |
           cd Experimental/SATBasedMonomorphism
           docker build -t sgi_image .
-          docker run sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi && cd / && tar cvf - coverage-reports test-reports" | tar xvf -
+          docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+
+	  docker cp sgi_container:coverage-reports .
+	  docker cp sgi_container:test-reports .
 
       - persist_to_workspace:
           root: /work/workspace
@@ -66,7 +71,8 @@ jobs:
       - run: |
           cd PlacementEditor
           docker build -t pe_image .
-          docker run pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor && cd / && tar cvf - test-reports" | tar xvf -
+          docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
+	  docker cp pe_container:test-reports .
 
       - persist_to_workspace:
           root: /work/workspace
