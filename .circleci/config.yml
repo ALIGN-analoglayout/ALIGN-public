@@ -49,11 +49,15 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
-      - run: ls -ltr `pwd`
+      - run: ls -Rl `pwd`/coverage-reports `pwd`/test-reports
 
       - persist_to_workspace:
           root: /work/workspace
-          paths: .
+          paths:
+            - test-reports/tally
+            - coverage-reports/tally
+            - test-reports/sgi
+            - coverage-reports/sgi
 
 
   build-js:
@@ -64,7 +68,6 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-
       - run: |
           cd PlacementEditor
           docker build -t pe_image .
@@ -72,11 +75,12 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
-      - run: ls -ltr `pwd`
+      - run: ls -Rl `pwd`/coverage-reports `pwd`/test-reports
 
       - persist_to_workspace:
           root: /work/workspace
-          paths: .
+          paths:
+            - test-reports/PlacementEditor
 
 
   finish:
@@ -86,7 +90,7 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-      - run: ls -ltr `pwd`
+      - run: ls -Rl `pwd`/coverage-reports `pwd`/test-reports
 
       - store_test_results:
           path: test-reports
