@@ -49,6 +49,8 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
+      - run: ls -ltr `pwd`
+
       - persist_to_workspace:
           root: /work/workspace
           paths: .
@@ -70,6 +72,8 @@ jobs:
 
       - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
 
+      - run: ls -ltr `pwd`
+
       - persist_to_workspace:
           root: /work/workspace
           paths: .
@@ -81,6 +85,8 @@ jobs:
     steps:
       - attach_workspace:
           at: /work/workspace
+
+      - run: ls -ltr `pwd`
 
       - store_test_results:
           path: test-reports
