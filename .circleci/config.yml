@@ -1,10 +1,14 @@
-version: 2
+version: 2.1
 
+executors:
+  docker-executor:
+    docker:
+      - image: docker:18.06.3-ce-git
+    working_directory: /work/workspace
 
 jobs:
   build:
-    docker:
-      - image: docker:18.06.3-ce-git
+    executor: docker-executor
 
     steps:
       - checkout
@@ -35,3 +39,10 @@ jobs:
 
       - store_artifacts:
           path: coverage-reports
+
+workflows:
+  version: 2.1
+
+  full:
+    jobs:
+      - build
