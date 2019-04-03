@@ -23,14 +23,13 @@ jobs:
           paths: .
 
 
-  build:
+  build-tally:
     executor: docker-executor
     steps:
       - setup_remote_docker
 
       - attach_workspace:
           at: /work/workspace
-
 
       - run: |
           cd Pysat
@@ -46,7 +45,16 @@ jobs:
             - test-reports/tally
             - coverage-reports/tally
 
+  build-sgi:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
       - run: |
+          (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
           cd Experimental/SATBasedMonomorphism
           docker build -t sgi_image .
           docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
@@ -62,7 +70,7 @@ jobs:
             - coverage-reports/sgi
 
 
-  build-js:
+  build-PlacementEditor:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -105,13 +113,17 @@ workflows:
   full:
     jobs:
       - start
-      - build:
+      - build-tally:
           requires:
             - start
-      - build-js:
+      - build-sgi:
+          requires:
+            - start
+      - build-PlacementEditor:
           requires:
             - start
       - finish:
           requires:
-            - build
-            - build-js
+            - build-tally
+            - build-sgi
+            - build-PlacementEditor
