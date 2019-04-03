@@ -1,11 +1,4 @@
-FROM ubuntu:18.04
-
-RUN \
-  apt-get update && apt-get install -y nodejs npm curl python make build-essential && rm -rf /var/lib/apt/lists/*
-
-RUN \
-  npm install -g npm@latest && \
-  npm install -g http-server
+FROM darpaalign/nodejs_ubuntu:02Apr19
 
 WORKDIR /app
 

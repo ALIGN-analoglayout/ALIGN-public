@@ -1,31 +1,94 @@
-version: 2
+version: 2.1
 
-
-jobs:
-  build:
+executors:
+  docker-executor:
     docker:
       - image: docker:18.06.3-ce-git
+    working_directory: /work/workspace
 
+  git-executor:
+    docker:
+      - image: alpine/git
+    working_directory: /work/workspace
+
+jobs:
+  start:
+    executor: git-executor
     steps:
+      - attach_workspace:
+          at: /work/workspace
       - checkout
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
+
+  build:
+    executor: docker-executor
+    steps:
       - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
 
       - run: |
           cd Pysat
           docker build -f Dockerfile.tally -t tally_image .
-          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+          docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
+          docker cp tally_container:coverage-reports /work/workspace
+          docker cp tally_container:test-reports /work/workspace
+          docker rm tally_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/tally
+            - coverage-reports/tally
 
       - run: |
           cd Experimental/SATBasedMonomorphism
           docker build -t sgi_image .
-          docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+          docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
+
+          docker cp sgi_container:coverage-reports /work/workspace
+          docker cp sgi_container:test-reports /work/workspace
+          docker rm sgi_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/sgi
+            - coverage-reports/sgi
+
+
+  build-js:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
 
       - run: |
           cd PlacementEditor
           docker build -t pe_image .
-          docker run --mount source=testVol,target=/test-reports pe_image bash -c "npm run test && mkdir /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
+          docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
+          docker cp pe_container:test-reports /work/workspace
+          docker rm pe_container
 
-      - run: docker run --mount source=testVol,target=/test-reports --mount source=coverageVol,target=/coverage-reports ubuntu bash -c "tar cvf - coverage-reports test-reports" | tar xvf -
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/PlacementEditor
+
+
+  finish:
+    executor: git-executor
+
+    steps:
+      - attach_workspace:
+          at: /work/workspace
 
       - store_test_results:
           path: test-reports
@@ -35,3 +98,20 @@ jobs:
 
       - store_artifacts:
           path: coverage-reports
+
+workflows:
+  version: 2.1
+
+  full:
+    jobs:
+      - start
+      - build:
+          requires:
+            - start
+      - build-js:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build
+            - build-js

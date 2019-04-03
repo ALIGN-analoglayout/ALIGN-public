@@ -1,5 +1,11 @@
 # PlacementEditor
 
+Since it takes a while to build a nodejs image, we can this on docker hub:
+```bash
+docker build -f Dockerfile.nodejs_ubuntu -t darpaalign/nodejs_ubuntu:02Apr19 .
+docker push darpaalign/nodejs_ubuntu:02Apr19
+```
+
 To build an example docker image of the client:
 ```bash
 docker build -t darpaalign/placement_editor_client .
