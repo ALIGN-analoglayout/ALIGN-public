@@ -1,10 +1,9 @@
-FROM with_python as cktgen
+FROM stevenmburns/pysat_image:2019mar14 as cktgen
 
 ADD cktgen/ /cktgen/
 
 RUN \
-  bash -c "source sympy/bin/activate && cd /cktgen && pip install ." && \
-  rm -rf /cktgen 
+  bash -c "source general/bin/activate && cd /cktgen && pip install ."
 
 ADD *.py /Cktgen/
 
