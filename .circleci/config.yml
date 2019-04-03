@@ -36,8 +36,9 @@ jobs:
           cd Pysat
           docker build -f Dockerfile.tally -t tally_image .
           docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
-          docker cp tally_container:coverage-reports .
-          docker cp tally_container:test-reports .
+          docker cp tally_container:coverage-reports /work/workspace
+          docker cp tally_container:test-reports /work/workspace
+	  docker rm tally_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -50,8 +51,9 @@ jobs:
           docker build -t sgi_image .
           docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
 
-          docker cp sgi_container:coverage-reports .
-          docker cp sgi_container:test-reports .
+          docker cp sgi_container:coverage-reports /work/workspace
+          docker cp sgi_container:test-reports /work/workspace
+	  docker rm sgi_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -72,7 +74,8 @@ jobs:
           cd PlacementEditor
           docker build -t pe_image .
           docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
-          docker cp pe_container:test-reports .
+          docker cp pe_container:test-reports /work/workspace
+	  docker rm pe_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -86,8 +89,6 @@ jobs:
     steps:
       - attach_workspace:
           at: /work/workspace
-
-      - run: ls -Rl `pwd`/coverage-reports `pwd`/test-reports
 
       - store_test_results:
           path: test-reports
