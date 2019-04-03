@@ -38,7 +38,7 @@ jobs:
           docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
           docker cp tally_container:coverage-reports /work/workspace
           docker cp tally_container:test-reports /work/workspace
-	  docker rm tally_container
+          docker rm tally_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -53,7 +53,7 @@ jobs:
 
           docker cp sgi_container:coverage-reports /work/workspace
           docker cp sgi_container:test-reports /work/workspace
-	  docker rm sgi_container
+          docker rm sgi_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -75,7 +75,7 @@ jobs:
           docker build -t pe_image .
           docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
           docker cp pe_container:test-reports /work/workspace
-	  docker rm pe_container
+          docker rm pe_container
 
       - persist_to_workspace:
           root: /work/workspace
