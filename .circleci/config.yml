@@ -54,7 +54,7 @@ jobs:
           at: /work/workspace
 
       - run: |
-          (cd Pysat; docker build -t tally_image .)
+          (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
           cd Experimental/SATBasedMonomorphism
           docker build -t sgi_image .
           docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
