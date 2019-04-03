@@ -132,7 +132,7 @@ jobs:
           cd Cktgen
           docker build -t cktgen_image .
 
-          docker run --name cktgen_container cktgen_image bash -c "source sympy/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/cktgen && cp /DEMO/src/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/cktgen"
+          docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/cktgen && cp /DEMO/src/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/cktgen"
 
           docker cp cktgen_container:coverage-reports /work/workspace
           docker cp cktgen_container:test-reports /work/workspace
