@@ -70,6 +70,31 @@ jobs:
             - coverage-reports/sgi
 
 
+  build-sci:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd sub_circuit_identification
+          docker build -t topology .
+
+          docker run --name sci_container topology bash -c "source sympy/bin/activate && cd DEMO/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /DEMO/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/sci"
+
+          docker cp sci_container:coverage-reports /work/workspace
+          docker cp sci_container:test-reports /work/workspace
+          docker rm sci_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/sci
+            - coverage-reports/sci
+
+
   build-PlacementEditor:
     executor: docker-executor
     steps:
@@ -122,8 +147,12 @@ workflows:
       - build-PlacementEditor:
           requires:
             - start
+      - build-sci:
+          requires:
+            - start
       - finish:
           requires:
             - build-tally
             - build-sgi
             - build-PlacementEditor
+            - build-sci
