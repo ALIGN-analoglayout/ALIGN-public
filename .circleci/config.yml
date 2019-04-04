@@ -132,7 +132,7 @@ jobs:
           cd Cktgen
           docker build -t cktgen_image .
 
-          docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/cktgen && cp /cktgen/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /cktgen/coverage.xml /cktgen/htmlcov /coverage-reports/cktgen"
+          docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cktgen && cp /cktgen/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /cktgen/coverage.xml /cktgen/htmlcov /coverage-reports/cktgen"
           cd -
 
           docker cp cktgen_container:coverage-reports .
@@ -159,7 +159,7 @@ jobs:
           cd Pysat
           docker build -t satplacer_image -f ./Dockerfile ..
 
-          docker run --name satplacer_container satplacer_image bash -c "source general/bin/activate && cd satplacer && coverage run --source=satplacer,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/satplacer && cp /satplacer/junit.xml /test-reports/satplacer && mkdir -p /coverage-reports/satplacer && cp -r /satplacer/coverage.xml /satplacer/htmlcov /coverage-reports/satplacer"
+          docker run --name satplacer_container satplacer_image bash -c "source general/bin/activate && cd satplacer && coverage run --source=satplacer,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/satplacer && cp /satplacer/junit.xml /test-reports/satplacer && mkdir -p /coverage-reports/satplacer && cp -r /satplacer/coverage.xml /satplacer/htmlcov /coverage-reports/satplacer"
           cd -
 
           docker cp satplacer_container:coverage-reports .
