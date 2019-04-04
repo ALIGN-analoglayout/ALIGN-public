@@ -84,7 +84,7 @@ jobs:
           cd sub_circuit_identification
           docker build -t topology .
 
-          docker run --name sci_container topology bash -c "source sympy/bin/activate && cd DEMO/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /DEMO/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/sci"
+          docker run --name sci_container topology bash -c "source sympy/bin/activate && cd DEMO/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sci && cp /DEMO/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/sci"
           cd -
 
           docker cp sci_container:coverage-reports .
