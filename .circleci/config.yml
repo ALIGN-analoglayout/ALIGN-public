@@ -35,7 +35,7 @@ jobs:
           cd Pysat
           docker build -f Dockerfile.tally -t tally_image .
           docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
-	  cd -
+          cd -
           docker cp tally_container:coverage-reports .
           docker cp tally_container:test-reports .
           docker rm tally_container
@@ -59,7 +59,7 @@ jobs:
           cd Experimental/SATBasedMonomorphism
           docker build -t sgi_image .
           docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
-	  cd -
+          cd -
 
           docker cp sgi_container:coverage-reports .
           docker cp sgi_container:test-reports .
@@ -85,7 +85,7 @@ jobs:
           docker build -t topology .
 
           docker run --name sci_container topology bash -c "source sympy/bin/activate && cd DEMO/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /DEMO/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/sci"
-	  cd -
+          cd -
 
           docker cp sci_container:coverage-reports .
           docker cp sci_container:test-reports .
@@ -110,7 +110,7 @@ jobs:
           docker build -t pdk_image .
 
           docker run --name pdk_container pdk_image bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
-	  cd -
+          cd -
 
           docker cp pdk_container:test-reports .
           docker rm pdk_container
@@ -133,7 +133,7 @@ jobs:
           cd PlacementEditor
           docker build -t pe_image .
           docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
-	  cd -
+          cd -
           docker cp pe_container:test-reports .
           docker rm pe_container
 
