@@ -1,12 +1,12 @@
 # Build
 
-````
+```bash
 docker build -f Dockerfile.tally -t tally_image .
-````
+```
 This is different. You need to have the build context be the parent directory because we are doing a `pip install` for the `../Cktgen` directory.
-````
+```bash
 docker build -f ./Dockerfile -t satplacer_image ..
-````
+```
 
 # Equalizer Design Example
 To run the complete equalizer design example, try:
