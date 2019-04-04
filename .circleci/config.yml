@@ -133,9 +133,10 @@ jobs:
           docker build -t cktgen_image .
 
           docker run --name cktgen_container cktgen_image bash -c "source general/bin/activate && cd cktgen && coverage run --source=cktgen,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/cktgen && cp /cktgen/junit.xml /test-reports/cktgen && mkdir -p /coverage-reports/cktgen && cp -r /cktgen/coverage.xml /cktgen/htmlcov /coverage-reports/cktgen"
+          cd -
 
-          docker cp cktgen_container:coverage-reports /work/workspace
-          docker cp cktgen_container:test-reports /work/workspace
+          docker cp cktgen_container:coverage-reports .
+          docker cp cktgen_container:test-reports .
           docker rm cktgen_container
 
       - persist_to_workspace:
@@ -143,6 +144,34 @@ jobs:
           paths:
             - test-reports/cktgen
             - coverage-reports/cktgen
+
+
+  build-satplacer:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
+          cd Pysat
+# This is funny (we need both Cktgen/cktgen and Pysat/satplacer so we use the parent directory as context)
+          docker build -t satplacer_image -f ./Dockerfile ..
+
+          docker run --name satplacer_container satplacer_image bash -c "source general/bin/activate && cd satplacer && coverage run --source=satplacer,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/satplacer && cp /satplacer/junit.xml /test-reports/satplacer && mkdir -p /coverage-reports/satplacer && cp -r /satplacer/coverage.xml /satplacer/htmlcov /coverage-reports/satplacer"
+          cd -
+
+          docker cp satplacer_container:coverage-reports .
+          docker cp satplacer_container:test-reports .
+          docker rm satplacer_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/satplacer
+            - coverage-reports/satplacer
 
 
   build-PlacementEditor:
@@ -204,6 +233,9 @@ workflows:
       - build-cktgen:
           requires:
             - start
+      - build-satplacer:
+          requires:
+            - start
       - build-pdk:
           requires:
             - start
@@ -215,3 +247,4 @@ workflows:
             - build-sci
             - build-cktgen
             - build-pdk
+            - build-satplacer

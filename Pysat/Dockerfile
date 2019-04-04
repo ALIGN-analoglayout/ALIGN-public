@@ -7,8 +7,7 @@ ADD Pysat/satplacer/ /satplacer/
 ADD Cktgen/cktgen/ /cktgen/
 
 RUN \
-    bash -c "source general/bin/activate && cd /satplacer/ && pip install . && cd /cktgen && pip install ." && \
-    rm -r /satplacer /cktgen
+    bash -c "source general/bin/activate && cd /satplacer/ && pip install . && cd /cktgen && pip install ." 
 
 ADD Pysat/*.py /scripts/
 
