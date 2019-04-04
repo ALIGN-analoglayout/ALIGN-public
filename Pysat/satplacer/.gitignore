@@ -1,0 +1,6 @@
+coverage.xml
+junit.xml
+*~
+*.json
+tests/*.json
+.eggs/
