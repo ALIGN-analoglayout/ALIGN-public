@@ -157,7 +157,6 @@ jobs:
       - run: |
           (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
           cd Pysat
-# This is funny (we need both Cktgen/cktgen and Pysat/satplacer so we use the parent directory as context)
           docker build -t satplacer_image -f ./Dockerfile ..
 
           docker run --name satplacer_container satplacer_image bash -c "source general/bin/activate && cd satplacer && coverage run --source=satplacer,tests setup.py test && coverage html && coverage xml && mkdir -p /test-reports/satplacer && cp /satplacer/junit.xml /test-reports/satplacer && mkdir -p /coverage-reports/satplacer && cp -r /satplacer/coverage.xml /satplacer/htmlcov /coverage-reports/satplacer"
