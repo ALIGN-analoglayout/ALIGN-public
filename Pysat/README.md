@@ -1,7 +1,6 @@
 # SAT based routines for placement and routing (also includes the equalizer design)
 
 ## Build
-
 ```bash
 docker build -f Dockerfile.tally -t tally_image .
 ```
