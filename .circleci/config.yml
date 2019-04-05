@@ -206,8 +206,10 @@ jobs:
       - run: |
           docker volume create dr-collateral
           (cd DetailedRouter/DR_COLLATERAL_Generator/strawman1 && tar -cvf - .) | docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL/ && tar -xvf -"
-      - run: |
+
           docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /CktGen/DR_COLLATERAL"
+      - run: |
+          docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /CktGen/"
 
 
   finish:
