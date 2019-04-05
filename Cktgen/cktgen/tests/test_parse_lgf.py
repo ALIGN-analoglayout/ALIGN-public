@@ -32,7 +32,7 @@ def get_tech():
                      "spaces":[320],
                      "colors":[],
                      "stops":[720],
-                     "stop_offset":[360]
+                     "stop_offset":360
                   },
                    {
                      "layer":"metal4", "name":"m4",
@@ -40,7 +40,7 @@ def get_tech():
                      "spaces":[320],
                      "colors":[],
                      "stops":[720],
-                     "stop_offset":[360]
+                     "stop_offset":360
                   },
                   {
                      "layer":"metal3", "name":"m3",
@@ -48,7 +48,7 @@ def get_tech():
                      "spaces":[320],
                      "colors":[],
                      "stops":[720],
-                     "stop_offset":[360]
+                     "stop_offset":360
                   },
                   {
                      "layer":"metal2", "name":"m2",
@@ -56,7 +56,7 @@ def get_tech():
                      "spaces":[320],
                      "colors":[],
                      "stops":[720],
-                     "stop_offset":[360]
+                     "stop_offset":360
                   },
                   {
                      "layer":"metal1", "name":"m1",
@@ -64,7 +64,7 @@ def get_tech():
                      "spaces":[320],
                      "colors":[],
                      "stops":[720],
-                     "stop_offset":[360]
+                     "stop_offset":360
                   }
     ]
 }
@@ -74,6 +74,8 @@ def get_tech():
 def test_A():
 
     tech = get_tech()
+    tech.write_files( ".", "tf", [0,0,1000,1000])
+    
 
     with io.StringIO("""Cell mydesign bbox=0:0:51840:51840
 
