@@ -1,7 +1,7 @@
-from hypothesis import given, example
+from hypothesis import given
 import hypothesis.strategies as st
 
-from cktgen.transformation import Tech, Rect, Transformation
+from cktgen.transformation import Rect, Transformation
 
 @given(st.tuples(st.integers(), st.integers()))
 def test_transformation_hit(p):
