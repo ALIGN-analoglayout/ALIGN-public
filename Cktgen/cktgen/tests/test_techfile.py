@@ -1,6 +1,5 @@
 
 from cktgen.techfile import MetalTemplate, TechFile
-from cktgen.transformation import Rect
 
 def test_MetalTemplate():
     mti0 = MetalTemplate( layer="metal1", name="m1", widths=[200,200], spaces=[200], colors=[], stops=[100], stop_offset=50)

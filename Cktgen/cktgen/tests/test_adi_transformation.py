@@ -34,7 +34,7 @@ def test_preMult0():
 
 def test_repr():
   a = ADITransform()
-  assert a == eval(repr(a))
+  assert a == eval(repr(a)) # nosec
 
 def test_copy():
   a = ADITransform()

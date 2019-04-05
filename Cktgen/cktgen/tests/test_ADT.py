@@ -5,7 +5,6 @@ from cktgen.cktgen import ADT, Rect
 import pytest
 
 import io
-import pathlib
 
 def get_tech():
     with io.StringIO("""{
