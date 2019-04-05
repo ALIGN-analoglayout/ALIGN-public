@@ -264,5 +264,7 @@ workflows:
 
   end_to_end:
     jobs:
-      - mono_end_to_end
+      - mono_end_to_end:
+          requires:
+            - start
       
