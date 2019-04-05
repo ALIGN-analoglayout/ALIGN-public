@@ -194,6 +194,20 @@ jobs:
           paths:
             - test-reports/PlacementEditor
 
+  mono_end_to_end:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker volume create dr-collateral
+          (cd DetailedRouter/DR_COLLATERAL_Generator/strawman1 && tar -cvf - .) | docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL/ && tar -cvf -"
+
+          docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /CktGen/DR_COLLATERAL"
+
 
   finish:
     executor: git-executor
@@ -247,3 +261,8 @@ workflows:
             - build-cktgen
             - build-pdk
             - build-satplacer
+
+  end_to_end:
+    jobs:
+      - mono_end_to_end
+      
