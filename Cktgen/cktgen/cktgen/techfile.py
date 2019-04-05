@@ -13,7 +13,7 @@ class MetalTemplate:
     self.stop_offset = stop_offset
 
   def __eq__( self, that):
-    return self.layer == that.layer and self.name == that.name and self.widths == that.widths and self.spaces == that.spaces and self.colors == that.colors
+    return self.layer == that.layer and self.name == that.name and self.widths == that.widths and self.spaces == that.spaces and self.colors == that.colors and self.stops == that.stops and self.stop_offset == that.stop_offset
 
   def __str__( self):
     result = "MetalTemplate layer=%s name=%s widths=%s spaces=%s" % ( self.layer, self.name, (",".join( str(i) for i in self.widths)), (",".join( str(i) for i in self.spaces)))
