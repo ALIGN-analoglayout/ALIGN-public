@@ -201,11 +201,12 @@ jobs:
 
       - attach_workspace:
           at: /work/workspace
+      - run: pwd; ls -l
 
       - run: |
           docker volume create dr-collateral
-          (cd DetailedRouter/DR_COLLATERAL_Generator/strawman1 && tar -cvf - .) | docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL/ && tar -cvf -"
-
+          (cd DetailedRouter/DR_COLLATERAL_Generator/strawman1 && tar -cvf - .) | docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL/ && tar -xvf -"
+      - run: |
           docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /CktGen/DR_COLLATERAL"
 
 
@@ -227,40 +228,6 @@ jobs:
 
 workflows:
   version: 2.1
-
-  full:
-    jobs:
-      - start
-      - build-tally:
-          requires:
-            - start
-      - build-sgi:
-          requires:
-            - start
-      - build-PlacementEditor:
-          requires:
-            - start
-      - build-sci:
-          requires:
-            - start
-      - build-cktgen:
-          requires:
-            - start
-      - build-satplacer:
-          requires:
-            - start
-      - build-pdk:
-          requires:
-            - start
-      - finish:
-          requires:
-            - build-tally
-            - build-sgi
-            - build-PlacementEditor
-            - build-sci
-            - build-cktgen
-            - build-pdk
-            - build-satplacer
 
   end_to_end:
     jobs:
