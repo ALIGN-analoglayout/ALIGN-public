@@ -210,7 +210,7 @@ jobs:
           docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /Cktgen/DR_COLLATERAL"
       - run: |
           docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /Cktgen/DR_COLLATERAL"
-      -run: |
+      - run: |
           docker volume create inputVol
           docker volume create outputVol
           cd Cktgen
