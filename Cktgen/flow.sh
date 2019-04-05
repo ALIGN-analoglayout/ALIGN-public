@@ -132,13 +132,13 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 	docker volume rm ${INPUTVOL}
     fi
     docker volume rm ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
 
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /sympy/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
 fi
 
 if [ ${SKIPVIEWER} = "NO" ]; then

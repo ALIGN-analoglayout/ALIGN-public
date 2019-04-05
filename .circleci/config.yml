@@ -205,20 +205,25 @@ jobs:
 
       - run: |
           docker volume create dr-collateral
-          (cd DetailedRouter/DR_COLLATERAL_Generator/strawman1 && tar -cvf - .) | docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL/ && tar -xvf -"
-
-          docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /Cktgen/DR_COLLATERAL"
-      - run: |
-          docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL -i ubuntu bash -c "ls /Cktgen/DR_COLLATERAL"
-      - run: |
           docker volume create inputVol
           docker volume create outputVol
+
+      - run: |
+          cd Build
+          docker build . -f Dockerfile.build.python -t with_python
+
+      - run: |
           cd Cktgen
           docker build . -t cktgen
+
       - run: |
-          docker run --rm --mount source=dr-collateral,target=/Cktgen/DR_COLLATERAL --mount source=inputVol,target=/Cktgen/INPUT --mount source=outputVol,target=/Cktgen/out cktgen  bash -c "source /sympy/bin/activate; cd /Cktgen && cp INPUT/cktgen_input.py && python cktgen_input.py -n mydesign --route --show-global-routes --show-metal-tempates --small --placer-json cktgen_input.py"
+          cd Viewer
+          docker build . -t viewer_image
+
       - run: |
-          docker run --rm --mount source=inputVol,target=/Cktgen/INPUT -i ubuntu bash -c "ls /Cktgen/INPUT
+          cd Pysat
+          ./flow-dp1x.sh
+
 
   finish:
     executor: git-executor
