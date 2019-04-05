@@ -243,8 +243,12 @@ class ADITransform:
     self.xScale = sX
     self.yScale = sY
 
+  def __eq__( self, other):
+    return self.xOffset == other.xOffset and self.yOffset == other.yOffset and self.xScale == other.xScale and self.yScale == other.yScale
+
+
   def __repr__( self):
-    return "xo yo xs ys: %d %d %d %d" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)
+    return "ADITransform(oX=%d, oY=%d, sX=%d, sY=%d)" % ( self.xOffset, self.yOffset, self.xScale, self.yScale)
 
   def copy( self):
     R = ADITransform()
