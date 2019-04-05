@@ -224,7 +224,7 @@ jobs:
           cd Pysat
           pwd
           ls -l ./flow-dp1x.sh
-          bash ./flow-dp1x.sh
+          /bin/bash ./flow-dp1x.sh
 
 
   finish:
