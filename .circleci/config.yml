@@ -221,7 +221,7 @@ jobs:
           docker build . -t viewer_image
 
       - run: |
-          apt-get install bash
+          apk add bash
           cd Pysat
           pwd
           ls -l ./flow-dp1x.sh
