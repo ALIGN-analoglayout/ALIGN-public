@@ -199,11 +199,11 @@ jobs:
     steps:
       - attach_workspace:
           at: /work/workspace
-      - run: |
-          docker save -o /work/workspace/detailed_router.img darpaalign/detailed_router:latest
-          pwd; ls -l
           
       - setup_remote_docker
+
+      - run: |
+          docker save -o /work/workspace/detailed_router.img darpaalign/detailed_router:latest
 
       - run: pwd; ls -l
 
