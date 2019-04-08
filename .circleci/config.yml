@@ -203,10 +203,8 @@ jobs:
       - setup_remote_docker
 
       - run: |
-          docker save -o /work/workspace/detailed_router.img darpaalign/detailed_router:latest
-
-      - run: pwd; ls -l
-
+          docker login -u $DOCKER_USER -p $DOCKER_PASS
+          
       - run: |
           docker volume create dr-collateral
           docker volume create inputVol
