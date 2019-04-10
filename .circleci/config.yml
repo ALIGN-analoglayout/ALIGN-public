@@ -241,7 +241,6 @@ jobs:
           path: out/
           path: INPUT/
 
-
   finish:
     executor: git-executor
 
