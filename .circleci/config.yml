@@ -203,7 +203,7 @@ jobs:
       - setup_remote_docker
 
       - run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           
       - run: |
           docker volume create dr-collateral
