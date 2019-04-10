@@ -231,8 +231,10 @@ jobs:
           pwd
           ls -l ./flow-dp1x.sh
           /bin/bash ./flow-dp1x.sh
-	  docker ps -a
-	  
+          export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
+          echo $container
+          docker cp $container:/Cktgen/out .
+          
 
       - store_test_results:
           path: out/mydesign.lgf
