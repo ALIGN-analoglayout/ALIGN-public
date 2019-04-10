@@ -209,6 +209,9 @@ jobs:
           docker volume create dr-collateral
           docker volume create inputVol
           docker volume create outputVol
+          docker volume create equalizerInputVol
+          docker volume create equalizerOutputVol
+          docker volume create routerStrawman
 
       - run: |
           cd Build
