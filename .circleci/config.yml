@@ -236,9 +236,11 @@ jobs:
           export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
           echo $container
           docker cp $container:/Cktgen/out .
+          docker cp $container:/Cktgen/INPUT .
+	  ls -l out
+	  ls -l INPUT
           
-
-      - store_test_results:
+      - store_artifacts:
           path: out/mydesign.lgf
 
 
