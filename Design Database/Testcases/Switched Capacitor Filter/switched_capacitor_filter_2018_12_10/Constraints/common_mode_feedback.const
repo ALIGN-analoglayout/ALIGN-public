@@ -1,0 +1,4 @@
+MatchBlock(CC10, CC11)
+SymmNet( {Va,L0_MM0/S,Va} , {Vb,L0_MM2/D,Vb})
+SymmNet( {net1,L0_MM0/D,L0_MM1/D,CC10/PLUS} , {net2,L0_MM2/S,L0_MM3/S,CC11/MINUS})
+

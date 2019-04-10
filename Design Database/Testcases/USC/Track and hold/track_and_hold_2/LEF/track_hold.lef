@@ -1,0 +1,168 @@
+VERSION 5.7 ;
+BUSBITCHARS "[]" ;
+DIVIDERCHAR "/" ;
+
+MACRO Cap_30f_1x3
+  ORIGIN 0 0 ;
+  FOREIGN Cap_30f_1x3 0 0 ;
+  SIZE 6.75 BY 2.214 ;
+  PIN PLUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 2.196 6.75 2.214 ;
+    END
+  END PLUS
+  PIN MINUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0 6.75 0.018 ;
+    END
+  END MINUS
+  OBS
+      LAYER M1 ;
+        RECT 0 0 6.75 2.214 ;
+      END
+  OBS
+      LAYER M2 ;
+        RECT 0.018 0.018 6.732 2.196 ;
+      END
+  OBS
+      LAYER M3 ;
+        RECT 0 0 6.75 2.214 ;
+      END
+END Cap_30f_1x3
+
+MACRO Cap_30f_3x1
+  ORIGIN 0 0 ;
+  FOREIGN Cap_30f_3x1 0 0 ;
+  SIZE 2.214 BY 6.75 ;
+  PIN PLUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0 0.018 6.75 ;
+    END
+  END PLUS
+  PIN MINUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 2.196 0 2.214 6.75 ;
+    END
+  END MINUS
+  OBS
+      LAYER M1 ;
+        RECT 0 0 2.214 6.75 ;
+      END
+  OBS
+      LAYER M2 ;
+        RECT 0.018 0.018 2.196 6.732 ;
+      END
+  OBS
+      LAYER M3 ;
+        RECT 0 0 2.214 6.75 ;
+      END
+END Cap_30f_3x1
+
+MACRO Cap_30f_1x1
+  ORIGIN 0 0 ;
+  FOREIGN Cap_30f_1x1 0 0 ;
+  SIZE 3.87 BY 3.87 ;
+  PIN PLUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 3.852 3.87 3.87 ;
+    END
+  END PLUS
+  PIN MINUS
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0 3.87 0.018 ;
+    END
+  END MINUS
+  OBS
+      LAYER M1 ;
+        RECT 0 0 3.87 3.87 ;
+      END
+  OBS
+      LAYER M2 ;
+        RECT 0.018 0.018 3.852 3.852 ;
+      END
+  OBS
+      LAYER M3 ;
+        RECT 0 0 3.87 3.87 ;
+      END
+END Cap_30f_1x1
+
+MACRO Switch_NMOS_16x8
+  ORIGIN 0 0 ;
+  FOREIGN Switch_NMOS_16x8 0 0 ;
+  SIZE 0.864 BY 1.296 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0.064 0.864 0.082 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0.128 0.864 0.146 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0 0.864 0.018 ;
+    END
+  END G
+  
+END Switch_NMOS_16x8
+
+MACRO Switch_PMOS_16x8
+  ORIGIN 0 0 ;
+  FOREIGN Switch_PMOS_16x8 0 0 ;
+  SIZE 0.864 BY 1.296 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0.064 0.864 0.082 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0.128 0.864 0.146 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0 0 0.864 0.018 ;
+    END
+  END G
+  
+END Switch_PMOS_16x8
+
