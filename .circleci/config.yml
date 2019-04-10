@@ -234,12 +234,12 @@ jobs:
 
       - run: |
           export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
-          docker cp $container:/Cktgen/out .
-          docker cp $container:/Cktgen/INPUT .
+          mkdir results
+          docker cp $container:/Cktgen/out results
+          docker cp $container:/Cktgen/INPUT results
           
       - store_artifacts:
-          path: out/
-          path: INPUT/
+          path: results
 
   finish:
     executor: git-executor
