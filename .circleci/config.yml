@@ -237,8 +237,8 @@ jobs:
           echo $container
           docker cp $container:/Cktgen/out .
           docker cp $container:/Cktgen/INPUT .
-	  ls -l out
-	  ls -l INPUT
+          ls -l out
+          ls -l INPUT
           
       - store_artifacts:
           path: out/mydesign.lgf
