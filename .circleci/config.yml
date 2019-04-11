@@ -206,10 +206,6 @@ jobs:
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           
       - run: |
-          cd Viewer
-          docker build . -t viewer_image
-
-      - run: |
           docker volume create dr-collateral
           docker volume create inputVol
           docker volume create outputVol
@@ -220,6 +216,10 @@ jobs:
       - run: |
           cd Build
           docker build . -f Dockerfile.build.python -t with_python
+
+      - run: |
+          cd Viewer
+          docker build . -t viewer_image
 
       - run: |
           cd Cktgen
