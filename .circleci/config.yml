@@ -194,6 +194,50 @@ jobs:
           paths:
             - test-reports/PlacementEditor
 
+  mono_end_to_end:
+    executor: docker-executor
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+          
+      - setup_remote_docker
+
+      - run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          
+      - run: |
+          docker volume create dr-collateral
+          docker volume create inputVol
+          docker volume create outputVol
+          docker volume create equalizerInputVol
+          docker volume create equalizerOutputVol
+          docker volume create routerStrawman
+
+      - run: |
+          cd Build
+          docker build . -f Dockerfile.build.python -t with_python
+
+      - run: |
+          cd Viewer
+          docker build . -t viewer_image
+
+      - run: |
+          cd Cktgen
+          docker build . -t cktgen
+
+      - run: |
+          apk add bash
+          cd Pysat
+          /bin/bash ./flow-dp1x.sh
+
+      - run: |
+          export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
+          mkdir results
+          docker cp $container:/Cktgen/out results
+          docker cp $container:/Cktgen/INPUT results
+          
+      - store_artifacts:
+          path: results
 
   finish:
     executor: git-executor
@@ -216,34 +260,41 @@ workflows:
 
   full:
     jobs:
-      - start
+      - start 
       - build-tally:
           requires:
-            - start
+            - start 
       - build-sgi:
           requires:
-            - start
+            - start 
       - build-PlacementEditor:
           requires:
-            - start
+            - start 
       - build-sci:
           requires:
-            - start
+            - start 
       - build-cktgen:
           requires:
-            - start
+            - start 
       - build-satplacer:
           requires:
-            - start
+            - start 
       - build-pdk:
           requires:
-            - start
+            - start 
       - finish:
           requires:
-            - build-tally
-            - build-sgi
-            - build-PlacementEditor
-            - build-sci
-            - build-cktgen
-            - build-pdk
+            - build-tally 
+            - build-sgi 
+            - build-PlacementEditor 
+            - build-sci 
+            - build-cktgen 
+            - build-pdk 
             - build-satplacer
+
+  end_to_end:
+    jobs:
+      - start
+      - mono_end_to_end:
+          requires:
+            - start
