@@ -228,7 +228,7 @@ jobs:
       - run: |
           apk add bash
           cd Pysat
-          /bin/bash ./flow-dp1x.sh
+          /bin/bash ./bottom-up.sh
 
       - run: |
           export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
