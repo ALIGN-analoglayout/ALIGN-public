@@ -224,12 +224,6 @@ jobs:
           mkdir test-reports
           echo '<testsuite errors="0" failures="0" name="bottom" skipped="0" tests="11" time="0.125">' > test-reports/t.result
 
-      - run: |
-          docker run --mount source=equalizerInputVol,target=/INPUT --mount source=equalizerOutputVol,target=/OUTPUT --name copyOutput ubuntu
-          mkdir results
-          docker cp copyOutput:/INPUT results
-          docker cp copyOutput:/OUTPUT results
-
       - store_artifacts:
           path: results
 
