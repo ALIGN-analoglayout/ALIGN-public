@@ -228,6 +228,7 @@ jobs:
           /bin/bash ./flow-dp1x.sh
           mkdir -p ../test-reports/global
           echo '<testsuite errors="0" failures="0" name="bottom" skipped="0" tests="11" time="0.125">' > ../test-reports/global/results.xml
+          echo '</testsuite>' >> ../test-reports/global/results.xml
 
       - store_artifacts:
           path: results
