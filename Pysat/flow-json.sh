@@ -74,7 +74,7 @@ fi
 if [ "${SCRIPT}" != "" ]; then
   echo "Running python script ${SCRIPT} in container satplacer with volume ${INPUTVOL} mounted at /scripts/INPUT"
 
-  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source sympy/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source /general/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
 fi
 
 cd ../Cktgen
@@ -82,4 +82,4 @@ cd ../Cktgen
 # -sar -sgr -smt 
 ./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
 
-docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+# docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
