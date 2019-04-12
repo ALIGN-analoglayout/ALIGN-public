@@ -85,9 +85,10 @@ fi
 cd ../Cktgen
 
 # -sar -sgr -smt 
-./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
+STARTVIEWER=${STARTVIEWER} ./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
 
-if [ ${STARTVIEWER} = "YES" ]; then
-
-    docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
-fi
+# DAK: the viewer is startable by flow.sh
+#if [ ${STARTVIEWER} = "YES" ]; then
+#    echo "trying to start viewer"
+#    docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+#fi
