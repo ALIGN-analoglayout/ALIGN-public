@@ -2,9 +2,11 @@
 
 for i in dp1x dp2x dp4x mirrors
 do
-    ./flow-${i}.sh
+#    ./flow-${i}.sh
+    ./flow-dp1x.sh
 done
 
+exit 0
 #
 # Copy stack
 #
