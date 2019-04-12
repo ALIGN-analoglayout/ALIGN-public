@@ -219,17 +219,22 @@ jobs:
 
       - run: |
           cd Pysat
-          docker build . -t satplacer_image
+          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
           apk add bash
           cd Pysat
           /bin/bash ./flow-dp1x.sh
           mkdir -p ../test-reports/global
-          echo '<testsuite errors="0" failures="0" name="bottom" skipped="0" tests="11" time="0.125">' > ../test-reports/global/results.xml
+          echo '<?xml version="1.0" encoding="utf-8"?>' > ../test-reports/global/results.xml
+          echo '<testsuite name="routers" tests="1" failures="0" time="0.125">' >> ../test-reports/global/results.xml
+          echo '<testcase classname="lksjdf" errors="0" failures="0" name="bottom" skipped="0" tests="11" time="0.125">' >> ../test-reports/global/results.xml
+          echo '</testcase>' >> ../test-reports/global/results.xml
+          echo '</testsuite>' >> ../test-reports/global/results.xml
 
       - store_artifacts:
-          path: results
+          path: test-reports
 
       - store_test_results:
           path: test-reports
