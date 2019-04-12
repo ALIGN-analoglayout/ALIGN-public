@@ -227,6 +227,9 @@ jobs:
       - store_artifacts:
           path: results
 
+      - store_test_results:
+          path: test-reports
+
   finish:
     executor: git-executor
 
