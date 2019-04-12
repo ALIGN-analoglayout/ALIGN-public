@@ -261,7 +261,7 @@ workflows:
   full:
     jobs:
       - start:
-        type: approval
+          type: approval
       - build-tally:
           requires:
             - start 
