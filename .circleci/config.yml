@@ -230,12 +230,6 @@ jobs:
           cd Pysat
           /bin/bash ./bottom-up.sh
 
-      - run: |
-          export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
-          mkdir results
-          docker cp $container:/Cktgen/out results
-          docker cp $container:/Cktgen/INPUT results
-          
       - store_artifacts:
           path: results
 
