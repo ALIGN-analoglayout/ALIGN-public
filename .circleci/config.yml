@@ -219,7 +219,8 @@ jobs:
 
       - run: |
           cd Pysat
-          docker build . -t satplacer_image
+          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
           apk add bash
