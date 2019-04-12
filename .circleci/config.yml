@@ -214,14 +214,6 @@ jobs:
           docker volume create routerStrawman
 
       - run: |
-          cd Build
-          docker build . -f Dockerfile.build.python -t with_python
-
-      - run: |
-          cd Viewer
-          docker build . -t viewer_image
-
-      - run: |
           cd Cktgen
           docker build . -t cktgen
 
