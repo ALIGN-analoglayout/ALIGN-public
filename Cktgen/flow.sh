@@ -124,19 +124,19 @@ M_INPUT_VIEWER="--mount source=${INPUTVOL},target=/public/INPUT"
 M_out="--mount source=${OUTPUTVOL},target=/Cktgen/out"
 M_DR_COLLATERAL="--mount source=${ROUTERVOL},target=/Cktgen/DR_COLLATERAL"
 
-docker volume rm ${ROUTERVOL}
+docker volume rm -f ${ROUTERVOL}
 (cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
 
 if [ ${SKIPGENERATE} = "NO" ]; then
     if [ ${SKIPVIEWER} = "NO" ]; then
-	docker volume rm ${INPUTVOL}
+	docker volume rm -f ${INPUTVOL}
     fi
-    docker volume rm ${OUTPUTVOL}
+    docker volume rm -f ${OUTPUTVOL}
     docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
-    docker run ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
 
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
 fi
