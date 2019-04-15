@@ -27,7 +27,6 @@ python top.py
 ```
 
 ## Test (tally.py)
-
 ```bash
 docker run -it tally_image bash -c "source /general/bin/activate && cd tally && python setup.py test"
 ```
