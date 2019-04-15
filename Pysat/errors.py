@@ -64,10 +64,6 @@ def main():
         print ("\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"0\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests))
         for i in range(1, len(sys.argv)):
             test = sys.argv[i]
-            res = rollup_test(test)
-            fatals += res[1]
-            errors += res[2]
-            warnings += res[3]
             print ("\t\t<testcase classname=\"%s\" name=\"%s\"> </testcase>" % (test, test))
         print ("\t</testsuite>")
         print ("</testsuites>")
