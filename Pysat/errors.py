@@ -41,7 +41,7 @@ def rollup_test (test):
                     if key == 'warning': warnings += 1
                 line = fp.readline ()
     else:
-        print "Could not open %s" %fn
+        print("Could not open %s" % fn)
         fatals += 1
 #    print "Returning %d %d %d" %( fatals, errors, warnings)
     return test, fatals, errors, warnings
@@ -60,17 +60,17 @@ def main():
             errors += res[2]
             warnings += res[3]
 
-        print "<testsuites name=\"End-to-end tests\" tests=\"%d\" failures=\"%d\">" %(num_tests, fatals + errors)
-        print "\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"0\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests)
+        print ("<testsuites name=\"End-to-end tests\" tests=\"%d\" failures=\"%d\">" %(num_tests, fatals + errors))
+        print ("\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"0\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests))
         for i in range(1, len(sys.argv)):
             test = sys.argv[i]
             res = rollup_test(test)
             fatals += res[1]
             errors += res[2]
             warnings += res[3]
-            print "\t\t<testcase classname=\"%s\" name=\"%s\"> </testcase>" % (test, test)
-        print "\t</testsuite>"
-        print "</testsuites>"
+            print ("\t\t<testcase classname=\"%s\" name=\"%s\"> </testcase>" % (test, test))
+        print ("\t</testsuite>")
+        print ("</testsuites>")
     
 if __name__ == "__main__":
     main()
