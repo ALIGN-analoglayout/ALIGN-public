@@ -223,6 +223,9 @@ jobs:
           docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
+          docker run --rm --mount source=equalizerInputVol,target=/scripts/INPUT -i ubuntu -c "ls -l /scripts/INPUT"
+
+      - run: |
           apk add bash python3
           cd Pysat
           /bin/bash ./bottom-up.sh
