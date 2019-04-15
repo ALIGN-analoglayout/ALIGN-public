@@ -2,7 +2,7 @@
 
 for i in dp1x dp2x dp4x mirrors
 do
-    ./flow-${i}.sh
+    ./flow-${i}.sh | tee -a ${i}.log
 done
 
 #
@@ -12,12 +12,7 @@ done
 
 for i in ctle wcap comp diff lane top
 do
-    ./flow-${i}.sh --script ${i}.py
+    ./flow-${i}.sh --script ${i}.py | tee -a ${i}.log
 done
 
-
-
-
-
-
-
+python3 errors.py dp1x dp2x dp4x mirrors ctle wcap comp diff lane top > bottom-up.test_result
