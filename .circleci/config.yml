@@ -223,7 +223,7 @@ jobs:
           docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
-          apk add bash
+          apk add bash python3
           cd Pysat
           /bin/bash ./bottom-up.sh
           mkdir -p ../test-reports/bottom-up
