@@ -6,6 +6,7 @@ rx_dict = {
     'fatal' : re.compile(r'-FATAL-'),
     'warning' : re.compile(r'-ISSUE-'),
     'error' : re.compile(r'-ERROR-'),
+    'time' : re.compile(r'Total time:\s*(\d*\.\d+|\d+)'),
     'all' : re.compile(r'All ISSUE messages:') # Start of error summary in file
     }
 
@@ -18,8 +19,9 @@ def parse_line (line):
    
 
 def rollup_test (test):
-    test = sys.argv[1]
     fn = test + ".log"
+    completed = False
+    timing = 0.0
     fatals = 0
     errors = 0
     warnings = 0
@@ -39,32 +41,39 @@ def rollup_test (test):
                         errors += 1
 #                        print "ERROR %s %d" % (test, line)
                     if key == 'warning': warnings += 1
+                    if key == 'time':
+                        completed = True
+                        timing = float(match.group(1))
                 line = fp.readline ()
     else:
-        print("Could not open %s" % fn)
         fatals += 1
-#    print "Returning %d %d %d" %( fatals, errors, warnings)
-    return test, fatals, errors, warnings
+    return test, completed, fatals, errors, warnings, timing
 
 def main():
     testsuite = "bottom-up"
+    completed = 0
     fatals = 0
     errors = 0
     warnings = 0
+    totTiming = 0.0
     if len(sys.argv) > 1:
         num_tests = len(sys.argv)-1
         for i in range(1, len(sys.argv)):
             test = sys.argv[i]
             res = rollup_test(test)
-            fatals += res[1]
-            errors += res[2]
-            warnings += res[3]
+            completed += res[1]
+            fatals += res[2]
+            errors += res[3]
+            warnings += res[4]
+            totTiming += res[5]
 
         print ("<testsuites name=\"End-to-end tests\" tests=\"%d\" failures=\"%d\">" %(num_tests, fatals + errors))
-        print ("\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"0\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests))
+        print ("\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"%d\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests-completed, num_tests))
         for i in range(1, len(sys.argv)):
             test = sys.argv[i]
-            print ("\t\t<testcase classname=\"%s\" name=\"%s\"> </testcase>" % (test, test))
+            res = rollup_test(test)
+            timing = res[5]
+            print ("\t\t<testcase classname=\"%s\" name=\"%s\" time=\"%f\"> </testcase>" % (test, test,timing))
         print ("\t</testsuite>")
         print ("</testsuites>")
     
