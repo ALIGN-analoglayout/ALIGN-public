@@ -28,7 +28,6 @@ def rollup_test (test):
     if os.path.isfile(fn):
         with open (fn, "rt") as fp:
             line = fp.readline ()
-            rx = re.compile
             accumulate = False
             while line:
                 key,match = parse_line(line)
