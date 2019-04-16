@@ -1,0 +1,437 @@
+{
+  "stepx": 50,
+  "stepy": 400,
+  "nx": 24,
+  "ny": 1,
+  "leaves": [
+    {
+      "template_name": "nunit",
+      "bbox": [
+        0,
+        0,
+        4,
+        1
+      ],
+      "terminals": [
+        {
+          "net_nm": "s1",
+          "layer": "metal1",
+          "rect": [
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "net_nm": "g1",
+          "layer": "metal1",
+          "rect": [
+            1,
+            0,
+            1,
+            1
+          ]
+        },
+        {
+          "net_nm": "d",
+          "layer": "metal1",
+          "rect": [
+            2,
+            0,
+            2,
+            1
+          ]
+        },
+        {
+          "net_nm": "g2",
+          "layer": "metal1",
+          "rect": [
+            3,
+            0,
+            3,
+            1
+          ]
+        },
+        {
+          "net_nm": "s2",
+          "layer": "metal1",
+          "rect": [
+            4,
+            0,
+            4,
+            1
+          ]
+        }
+      ]
+    }
+  ],
+  "placements_for_animation": [
+    [
+      {
+        "nm": "DP_a_0",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 200,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_a_1",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 1000,
+          "oY": 0,
+          "sX": -1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_0",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 400,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_1",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 600,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_0",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 0,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_1",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 1200,
+          "oY": 0,
+          "sX": -1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      }
+    ],
+    [
+      {
+        "nm": "DP_a_0",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 200,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_a_1",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 600,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_0",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 400,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_1",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 800,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_0",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 0,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_1",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 1200,
+          "oY": 0,
+          "sX": -1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      }
+    ],
+    [
+      {
+        "nm": "DP_a_0",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 200,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_a_1",
+        "fill": "#e0ffe0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 800,
+          "oY": 0,
+          "sX": -1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "ina",
+          "d": "outa",
+          "g2": "ina",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_0",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 400,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_b_1",
+        "fill": "#e0e0ff",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 800,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "inb",
+          "d": "outb",
+          "g2": "inb",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_0",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 0,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      },
+      {
+        "nm": "DP_s_1",
+        "fill": "#ffe0e0",
+        "template_name": "nunit",
+        "w": 200,
+        "h": 400,
+        "transformation": {
+          "oX": 1000,
+          "oY": 0,
+          "sX": 1,
+          "sY": 1
+        },
+        "formal_actual_map": {
+          "s1": "so",
+          "g1": "c",
+          "d": "si",
+          "g2": "c",
+          "s2": "so"
+        }
+      }
+    ]
+  ]
+}
