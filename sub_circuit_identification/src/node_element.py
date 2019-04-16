@@ -31,6 +31,7 @@ class advancedNode:
     >>> advancedNode(subckt) 
 
     """
+
     def __init__(self, subckt):
         self.ports = subckt["ports"]
         self.nodes = subckt["nodes"]
@@ -85,22 +86,26 @@ class advancedNode:
         self._node_graph()
         self._match_graph()
         self._show_circuit_graph()
-        return {'inst': subckt['inst'],
-                'inst_type': self.inst_type,
-                'ports': self.ports,
-                'node_graph': self.node_graph
-                }
+        return {
+            'inst': subckt['inst'],
+            'inst_type': self.inst_type,
+            'ports': self.ports,
+            'node_graph': self.node_graph
+        }
 
 
 name = "current_mirror"
-nodes = [
-        {'inst': 'M3', 'inst_type': 'nmos',
-         'ports': ['net7', 'net5', '0', '0'],
-         'values': ['w=w', 'l=90n']},
-        {'inst': 'M4', 'inst_type': 'nmos',
-         'ports': ['net5', 'net5', '0', '0'],
-         'values': ['w=w', 'l=90n']}
-        ]
+nodes = [{
+    'inst': 'M3',
+    'inst_type': 'nmos',
+    'ports': ['net7', 'net5', '0', '0'],
+    'values': ['w=w', 'l=90n']
+}, {
+    'inst': 'M4',
+    'inst_type': 'nmos',
+    'ports': ['net5', 'net5', '0', '0'],
+    'values': ['w=w', 'l=90n']
+}]
 ports = ['net7', 'net5', '0']
 subckt = {'inst': "x0", "inst_type": name, "ports": ports, "nodes": nodes}
 x1 = advancedNode(subckt)
