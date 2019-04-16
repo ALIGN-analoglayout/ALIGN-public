@@ -214,30 +214,26 @@ jobs:
           docker volume create routerStrawman
 
       - run: |
-          cd Build
-          docker build . -f Dockerfile.build.python -t with_python
-
-      - run: |
-          cd Viewer
-          docker build . -t viewer_image
-
-      - run: |
           cd Cktgen
           docker build . -t cktgen
 
       - run: |
-          apk add bash
           cd Pysat
-          /bin/bash ./bottom-up.sh
+          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
-          export container=`docker ps -a -q -f "ancestor=darpaalign/detailed_router"`
-          mkdir results
-          docker cp $container:/Cktgen/out results
-          docker cp $container:/Cktgen/INPUT results
-          
+          apk add bash python3
+          cd Pysat
+          /bin/bash ./bottom-up.sh
+          mkdir -p ../test-reports/bottom-up
+          cp bottom-up.test_result ../test-reports/bottom-up/results.xml
+
       - store_artifacts:
-          path: results
+          path: test-reports
+
+      - store_test_results:
+          path: test-reports
 
   finish:
     executor: git-executor
@@ -260,7 +256,7 @@ workflows:
 
   full:
     jobs:
-      - start 
+      - start
       - build-tally:
           requires:
             - start 

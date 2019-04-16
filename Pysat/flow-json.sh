@@ -8,7 +8,7 @@ ROUTE=""
 SHOWGLOBALROUTES=""
 SMALL=""
 SCRIPT=""
-SKIPVIEWER="YES"
+STARTVIEWER="NO"
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -48,8 +48,8 @@ case $key in
     ROUTE=" -sar"
     shift
     ;;
-    -sv|--skipviewer)
-    SKIPVIEWER="YES"
+    -sv|--startviewer)
+    STARTVIEWER="YES"
     shift
     ;;
     --small)
@@ -79,15 +79,17 @@ fi
 if [ "${SCRIPT}" != "" ]; then
   echo "Running python script ${SCRIPT} in container satplacer with volume ${INPUTVOL} mounted at /scripts/INPUT"
 
-  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source /general/bin/activate && cd /scripts && python ${SCRIPT} && ls -ltr INPUT"
+  (tar cvf - *.py) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+  docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source /general/bin/activate && cd /scripts && python INPUT/${SCRIPT} && ls -ltr INPUT"
 fi
 
 cd ../Cktgen
 
 # -sar -sgr -smt 
-./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -sv -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
+STARTVIEWER=${STARTVIEWER} ./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
 
-if [ ${SKIPVIEWER} = "NO" ]; then
-
-    docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
-fi
+# DAK: the viewer is startable by flow.sh
+#if [ ${STARTVIEWER} = "YES" ]; then
+#    echo "trying to start viewer"
+#    docker run --mount source=${INPUTVOL},target=/public/INPUT --rm -d -p ${PORT}:8000 viewer_image bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+#fi
