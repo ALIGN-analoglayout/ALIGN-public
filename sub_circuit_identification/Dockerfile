@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -yq pkg-config python3 python3-pip python3
 
 RUN \
     python3 -m venv sympy && \
-    bash -c "source sympy/bin/activate; pip install pytest sympy networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml"
+    bash -c "source sympy/bin/activate; pip install --upgrade pip && pip install wheel && pip install pytest sympy networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml"
 
 FROM with_python as topology
  
