@@ -10,7 +10,7 @@
 *.EQUATION
 *.SCALE METER
 *.MEGA
-.PARAM
+*.PARAM
 
 
 

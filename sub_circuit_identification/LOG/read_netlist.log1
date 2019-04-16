@@ -1,0 +1,85 @@
+INFO:root:Input file: ota.sp
+INFO:root:READING files in dir: input_circuit
+INFO:root:READ file: input_circuit/ota.sp
+INFO:root:creating an instance of SpiceParser
+INFO:root:File exist: input_circuit/ota.sp
+INFO:root:started reading subckt: .subckt DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic vbiasnd vinn vinp voutn voutp id
+
+INFO:root:FOUND transistor
+INFO:root:Finished reading subckt: DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+INFO:root:started reading subckt: .subckt cascode_current_mirror_ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp
+
+INFO:root:FOUND subckt instance: DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:FOUND transistor
+INFO:root:Finished reading subckt: cascode_current_mirror_ota
+INFO:root:Flaten circuit:cascode_current_mirror_ota 
+INFO:root:flattening the circuits below: cascode_current_mirror_ota
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+INFO:root:net lies in top level net in: xi0 net_name: voutn
+INFO:root:net lies in top level net in: xi0 net_name: voutp
+INFO:root:Net internal to subckt
+INFO:root:flattening the circuits below: DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: xi0|m11, type: nmos
+INFO:root:Total no of nodes in design DC_converter_2018_11_09_ASAP7_current_mirror_ota_schematic = 1
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m4, type: nmos
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m3, type: nmos
+INFO:root:net lies in top level net in: m10 net_name: voutn
+INFO:root:net lies in top level net in: m10 net_name: vbiasn
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m10, type: nmos
+INFO:root:net lies in top level net in: m2 net_name: voutp
+INFO:root:net lies in top level net in: m2 net_name: vbiasn
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m2, type: nmos
+INFO:root:net lies in top level net in: m6 net_name: voutp
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m6, type: pmos
+INFO:root:net lies in top level net in: m7 net_name: voutn
+INFO:root:Net internal to subckt
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m7, type: pmos
+INFO:root:Net internal to subckt
+INFO:root:net lies in top level net in: m8 net_name: vbiasp1
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m8, type: pmos
+INFO:root:Net internal to subckt
+INFO:root:net lies in top level net in: m9 net_name: vbiasp1
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m9, type: pmos
+INFO:root:Net internal to subckt
+INFO:root:net lies in top level net in: m0 net_name: vinn
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m0, type: nmos
+INFO:root:Net internal to subckt
+INFO:root:net lies in top level net in: m1 net_name: vinp
+INFO:root:Net internal to subckt
+DEBUG:root:Node name: m1, type: nmos
+INFO:root:Total no of nodes in design cascode_current_mirror_ota = 11
+INFO:root:Creating bipartitie graph with Total no of devices 11
+INFO:root:Saving graph: ota
+DEBUG:matplotlib.axes._base:update_title_pos
+DEBUG:matplotlib.font_manager:findfont: Matching :family=sans-serif:style=normal:variant=normal:weight=normal:stretch=normal:size=20.0 to DejaVu Sans ('/home/kunal001/anaconda3/lib/python3.6/site-packages/matplotlib/mpl-data/fonts/ttf/DejaVuSans.ttf') with score of 0.050000.
+DEBUG:matplotlib.axes._base:update_title_pos
+DEBUG:matplotlib.axes._base:update_title_pos
+DEBUG:matplotlib.axes._base:update_title_pos
