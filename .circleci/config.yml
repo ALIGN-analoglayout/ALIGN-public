@@ -268,8 +268,8 @@ jobs:
           apk add bash python3 pytest
           cd Pysat/flow
           pytest
-          mkdir -p ../test-reports/regression
-          cp junit.xml ../test-reports/regression/results.xml
+          mkdir -p ../../test-reports/regression
+          cp junit.xml ../../test-reports/regression/results.xml
 
 
       - store_artifacts:
@@ -334,8 +334,7 @@ workflows:
 
   end_to_end:
     jobs:
-      - start:
-          type: approval
+      - start
       - mono_end_to_end:
           requires:
             - start

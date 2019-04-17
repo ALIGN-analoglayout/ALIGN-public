@@ -126,6 +126,10 @@ M_DR_COLLATERAL="--mount source=${ROUTERVOL},target=/Cktgen/DR_COLLATERAL"
 
 docker volume rm -f ${ROUTERVOL}
 (cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to create DR_COLLATERAL"
+    exit $?
+fi
 
 if [ ${SKIPGENERATE} = "NO" ]; then
     docker volume rm -f ${OUTPUTVOL}

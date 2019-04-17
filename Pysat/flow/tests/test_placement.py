@@ -12,6 +12,18 @@ def placement_flow (test):
   print (lines)
   assert completed & (fatals + errors == 0)
 
-# def test_ctle_flow ():
-#   placement_flow("ctle")
+def test_ctle_flow ():
+  placement_flow("ctle")
 
+def test_wcap_flow ():
+  placement_flow("wcap")
+
+def test_diff_flow ():
+  placement_flow("diff")
+
+def test_lane_flow ():
+  placement_flow("lane")
+
+def test_top_flow ():
+  placement_flow("top")
+  

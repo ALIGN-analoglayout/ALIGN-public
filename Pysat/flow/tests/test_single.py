@@ -12,12 +12,13 @@ def single_flow (test):
 def test_dp1x_flow ():
   single_flow("dp1x")
 
-# def test_dp2x_flow ():
-#   single_flow("dp2x")
+def test_dp2x_flow ():
+  single_flow("dp2x")
 
-# def test_dp4x_flow ():
-#   single_flow("dp4x")
+def test_dp4x_flow ():
+  single_flow("dp4x")
 
-# def test_mirrors_flow ():
-#   single_flow("mirrors")
+def test_mirrors_flow ():
+  single_flow("mirrors")
+
 

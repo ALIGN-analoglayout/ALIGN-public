@@ -16,6 +16,7 @@ def parse_line (line):
         if match:
             return key, match
     return None,None
+   
 
 def scan_output (lines):
     completed = False
@@ -35,3 +36,57 @@ def scan_output (lines):
                 completed = True
                 timing = float(match.group(1))
     return completed, fatals, errors, warnings, timing
+
+def rollup_test (test):
+    fn = test + ".log"
+    completed = False
+    timing = 0.0
+    fatals = 0
+    errors = 0
+    warnings = 0
+    if os.path.isfile(fn):
+        lines = []
+        with open (fn, "rt") as fp:
+            line = fp.readline ()
+            lines += line
+            accumulate = False
+            while line:
+                line = fp.readline ()
+                lines += line
+        completed, fatals, errors, warnings, timing = scan_output(lines)
+        return test, completed, fatals, errors, warnings, timing
+                
+    else:
+        fatals += 1
+    return test, completed, fatals, errors, warnings, timing
+
+def main ():
+    testsuite = "bottom-up"
+    completed = 0
+    fatals = 0
+    errors = 0
+    warnings = 0
+    totTiming = 0.0
+    if len(sys.argv) > 1:
+        num_tests = len(sys.argv)-1
+        for i in range(1, len(sys.argv)):
+            test = sys.argv[i]
+            res = rollup_test(test)
+            completed += res[1]
+            fatals += res[2]
+            errors += res[3]
+            warnings += res[4]
+            totTiming += res[5]
+
+        print ("<testsuites name=\"End-to-end tests\" tests=\"%d\" failures=\"%d\">" %(num_tests, fatals + errors))
+        print ("\t<testsuite name=\"%s\" errors=\"%d\" failures=\"%d\" skipped=\"%d\" tests=\"%d\">" % (testsuite, errors, fatals, num_tests-completed, num_tests))
+        for i in range(1, len(sys.argv)):
+            test = sys.argv[i]
+            res = rollup_test(test)
+            timing = res[5]
+            print ("\t\t<testcase classname=\"%s\" name=\"%s\" time=\"%f\"> </testcase>" % (test, test,timing))
+        print ("\t</testsuite>")
+        print ("</testsuites>")
+    
+if __name__ == "__main__":
+    main()
