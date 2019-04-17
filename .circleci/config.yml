@@ -1,4 +1,4 @@
-version: 2.1
+ version: 2.1
 
 executors:
   docker-executor:
@@ -235,6 +235,27 @@ jobs:
       - store_test_results:
           path: test-reports
 
+  mono_end_to_end:
+    executor: docker-executor
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+          
+      - setup_remote_docker
+
+      - run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          
+      - run: |
+          docker volume create dr-collateral
+          docker volume create inputVol
+          docker volume create outputVol
+          docker volume create equalizerInputVol
+          docker volume create equalizerOutputVol
+          docker volume create routerStrawman
+
+
+
   finish:
     executor: git-executor
 
@@ -256,7 +277,8 @@ workflows:
 
   full:
     jobs:
-      - start
+      - start:
+          type: approval
       - build-tally:
           requires:
             - start 
@@ -290,7 +312,8 @@ workflows:
 
   end_to_end:
     jobs:
-      - start
+      - start:
+          type: approval
       - mono_end_to_end:
           requires:
             - start
