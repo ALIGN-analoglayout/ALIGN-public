@@ -37,6 +37,9 @@ def test_ctle_flow ():
 def test_wcap_flow ():
   placement_flow("wcap")
 
+def test_comp_flow ():
+  placement_flow("comp")
+
 def test_diff_flow ():
   placement_flow("diff")
 
