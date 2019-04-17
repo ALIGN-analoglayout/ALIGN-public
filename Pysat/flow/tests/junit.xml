@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?><testsuite errors="0" failures="1" name="pytest" skips="0" tests="1" time="0.162"><testcase classname="tests.test_single" file="tests/test_single.py" line="12" name="test_dp1x_flow" time="0.0720112323761"><failure message="CalledProcessError: Command &apos;./flow-json.sh -n dp1x&apos; returned non-zero exit status 127">def test_dp1x_flow ():
+&gt;     single_flow(&quot;dp1x&quot;)
+
+test_single.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_single.py:5: in single_flow
+    output = subprocess.check_output(&apos;./flow-json.sh -n %s&apos; % test, shell=True,cwd=&apos;..&apos;)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+popenargs = (&apos;./flow-json.sh -n dp1x&apos;,), kwargs = {&apos;cwd&apos;: &apos;..&apos;, &apos;shell&apos;: True}
+process = &lt;subprocess.Popen object at 0x7f8586187590&gt;, output = &apos;&apos;, unused_err = None, retcode = 127
+cmd = &apos;./flow-json.sh -n dp1x&apos;
+
+    def check_output(*popenargs, **kwargs):
+        r&quot;&quot;&quot;Run command with arguments and return its output as a byte string.
+    
+        If the exit code was non-zero it raises a CalledProcessError.  The
+        CalledProcessError object will have the return code in the returncode
+        attribute and output in the output attribute.
+    
+        The arguments are the same as for the Popen constructor.  Example:
+    
+        &gt;&gt;&gt; check_output([&quot;ls&quot;, &quot;-l&quot;, &quot;/dev/null&quot;])
+        &apos;crw-rw-rw- 1 root root 1, 3 Oct 18  2007 /dev/null\n&apos;
+    
+        The stdout argument is not allowed as it is used internally.
+        To capture standard error in the result, use stderr=STDOUT.
+    
+        &gt;&gt;&gt; check_output([&quot;/bin/sh&quot;, &quot;-c&quot;,
+        ...               &quot;ls -l non_existent_file ; exit 0&quot;],
+        ...              stderr=STDOUT)
+        &apos;ls: non_existent_file: No such file or directory\n&apos;
+        &quot;&quot;&quot;
+        if &apos;stdout&apos; in kwargs:
+            raise ValueError(&apos;stdout argument not allowed, it will be overridden.&apos;)
+        process = Popen(stdout=PIPE, *popenargs, **kwargs)
+        output, unused_err = process.communicate()
+        retcode = process.poll()
+        if retcode:
+            cmd = kwargs.get(&quot;args&quot;)
+            if cmd is None:
+                cmd = popenargs[0]
+&gt;           raise CalledProcessError(retcode, cmd, output=output)
+E           CalledProcessError: Command &apos;./flow-json.sh -n dp1x&apos; returned non-zero exit status 127
+
+/usr/lib/python2.7/subprocess.py:223: CalledProcessError</failure><system-err>/bin/sh: 1: ./flow-json.sh: not found
+</system-err></testcase></testsuite>

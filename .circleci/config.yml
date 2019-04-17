@@ -235,7 +235,7 @@ jobs:
       - store_test_results:
           path: test-reports
 
-  mono_end_to_end:
+  multi_end_to_end:
     executor: docker-executor
     steps:
       - attach_workspace:
@@ -254,6 +254,20 @@ jobs:
           docker volume create equalizerOutputVol
           docker volume create routerStrawman
 
+      - run: |
+          cd Cktgen
+          docker build . -t cktgen
+
+      - run: |
+          cd Pysat
+          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.pysat -t satplacer_image .
+
+      - run: |
+          apk update
+          apk add bash python3 pytest
+          cd Pysat/flow
+          pytest
 
 
   finish:
