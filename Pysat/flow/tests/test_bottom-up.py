@@ -2,16 +2,17 @@ import subprocess
 from errors import scan_output
 
 def single_flow (test):
-  output = subprocess.check_output('./flow-json.sh -n %s' % test, shell=True,cwd='..')
+  output = subprocess.check_output(['./flow-json.sh', '-n',  test], cwd='..')
   lines = output.decode("utf-8").split('\n')
 
   completed, fatals, errors, warnings, timing = scan_output (lines)
-  print ("Test %s has %d fatals, %d errors %d warnings in %f time" % (test, fatals, errors, warnings, timing))
+  print ("Test %s has %d fatals, %d errors %d warnings in %f time" %
+         (test, fatals, errors, warnings, timing))
   assert completed & (fatals + errors == 0)
 
 def placement_flow (test):
-  output = subprocess.check_output('./flow-json.sh -n %s --script %s.py' % (test, test),
-                                   shell=True,cwd='..')
+  scr = "--script %s.py" % test
+  output = subprocess.check_output(['./flow-json.sh', '-n', test, scr], cwd='..')
   lines = output.decode("utf-8").split('\n')
 
   completed, fatals, errors, warnings, timing = scan_output (lines)
