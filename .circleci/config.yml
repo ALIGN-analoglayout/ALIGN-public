@@ -264,6 +264,12 @@ jobs:
           docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
+          docker run --mount source=equalizerInputVol,target=/INPUT --name copy_container ubuntu
+          cd INPUT
+          docker cp stack_global_router_out.json copy_container:/INPUT/
+          docker cp  stack_placer_out_scaled.json copy_container:/INPUT/
+
+      - run: |
           apk update
           apk add bash python3 pytest
           cd Pysat/flow
