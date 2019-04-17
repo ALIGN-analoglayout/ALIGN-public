@@ -268,7 +268,15 @@ jobs:
           apk add bash python3 pytest
           cd Pysat/flow
           pytest
+          mkdir -p ../test-reports/regression
+          cp junit.xml ../test-reports/regression/results.xml
 
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_test_results:
+          path: test-reports
 
   finish:
     executor: git-executor
