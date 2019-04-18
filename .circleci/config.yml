@@ -220,7 +220,7 @@ jobs:
       - run: |
           cd Pysat
           docker build -f Dockerfile.tally -t tally_image .
-          docker build -f Dockerfile -t satplacer_image ..
+          docker build -f Dockerfile.pysat -t satplacer_image .
 
       - run: |
           apk add bash python3
@@ -305,7 +305,8 @@ workflows:
 
   full:
     jobs:
-      - start
+      - start:
+          type: approval 
       - build-tally:
           requires:
             - start 
