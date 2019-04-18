@@ -46,6 +46,7 @@ jobs:
             - test-reports/tally
             - coverage-reports/tally
 
+
   build-sgi:
     executor: docker-executor
     steps:
@@ -97,6 +98,7 @@ jobs:
             - test-reports/sci
             - coverage-reports/sci
 
+
   build-pdk:
     executor: docker-executor
     steps:
@@ -119,6 +121,7 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/pdk
+
 
   build-cktgen:
     executor: docker-executor
@@ -194,6 +197,7 @@ jobs:
           paths:
             - test-reports/PlacementEditor
 
+
   mono_end_to_end:
     executor: docker-executor
     steps:
@@ -234,6 +238,7 @@ jobs:
 
       - store_test_results:
           path: test-reports
+
 
   multi_end_to_end:
     executor: docker-executor
@@ -284,6 +289,7 @@ jobs:
       - store_test_results:
           path: test-reports
 
+
   finish:
     executor: git-executor
 
@@ -300,13 +306,13 @@ jobs:
       - store_artifacts:
           path: coverage-reports
 
+
 workflows:
   version: 2.1
 
   full:
     jobs:
-      - start:
-          type: approval
+      - start
       - build-tally:
           requires:
             - start 
@@ -342,7 +348,6 @@ workflows:
     jobs:
       - start
       - mono_end_to_end:
-          type: approval
           requires:
             - start
       - multi_end_to_end:
