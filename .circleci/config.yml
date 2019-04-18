@@ -33,7 +33,7 @@ jobs:
 
       - run: |
           cd Pysat
-          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.tally -t tally  .
           docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
           cd -
           docker cp tally_container:coverage-reports .
@@ -306,7 +306,7 @@ workflows:
   full:
     jobs:
       - start:
-          type: approval 
+          type: approval
       - build-tally:
           requires:
             - start 
@@ -342,6 +342,7 @@ workflows:
     jobs:
       - start
       - mono_end_to_end:
+          type: approval
           requires:
             - start
       - multi_end_to_end:
