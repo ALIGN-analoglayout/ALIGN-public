@@ -15,4 +15,4 @@ do
     ./flow-${i}.sh --script ${i}.py > ${i}.log
 done
 
-python3 errors.py dp1x dp2x dp4x mirrors ctle wcap comp diff lane top > bottom-up.test_result
+python3 flow/tests/errors.py dp1x dp2x dp4x mirrors ctle wcap comp diff lane top > bottom-up.test_result

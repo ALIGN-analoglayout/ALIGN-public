@@ -33,7 +33,7 @@ jobs:
 
       - run: |
           cd Pysat
-          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.tally -t tally_image  .
           docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
           cd -
           docker cp tally_container:coverage-reports .
@@ -45,6 +45,7 @@ jobs:
           paths:
             - test-reports/tally
             - coverage-reports/tally
+
 
   build-sgi:
     executor: docker-executor
@@ -97,6 +98,7 @@ jobs:
             - test-reports/sci
             - coverage-reports/sci
 
+
   build-pdk:
     executor: docker-executor
     steps:
@@ -119,6 +121,7 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/pdk
+
 
   build-cktgen:
     executor: docker-executor
@@ -194,6 +197,7 @@ jobs:
           paths:
             - test-reports/PlacementEditor
 
+
   mono_end_to_end:
     executor: docker-executor
     steps:
@@ -235,6 +239,57 @@ jobs:
       - store_test_results:
           path: test-reports
 
+
+  multi_end_to_end:
+    executor: docker-executor
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+          
+      - setup_remote_docker
+
+      - run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          
+      - run: |
+          docker volume create dr-collateral
+          docker volume create inputVol
+          docker volume create outputVol
+          docker volume create equalizerInputVol
+          docker volume create equalizerOutputVol
+          docker volume create routerStrawman
+
+      - run: |
+          cd Cktgen
+          docker build . -t cktgen
+
+      - run: |
+          cd Pysat
+          docker build -f Dockerfile.tally -t tally_image .
+          docker build -f Dockerfile.pysat -t satplacer_image .
+
+      - run: |
+          docker run --mount source=equalizerInputVol,target=/INPUT --name copy_container ubuntu
+          cd Pysat/INPUT
+          docker cp stack_global_router_out.json copy_container:/INPUT/
+          docker cp  stack_placer_out_scaled.json copy_container:/INPUT/
+
+      - run: |
+          apk update
+          apk add bash python3 pytest
+          cd Pysat/flow
+          pytest
+          mkdir -p ../../test-reports/regression
+          cp junit.xml ../../test-reports/regression/results.xml
+
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_test_results:
+          path: test-reports
+
+
   finish:
     executor: git-executor
 
@@ -250,6 +305,7 @@ jobs:
 
       - store_artifacts:
           path: coverage-reports
+
 
 workflows:
   version: 2.1
@@ -292,5 +348,8 @@ workflows:
     jobs:
       - start
       - mono_end_to_end:
+          requires:
+            - start
+      - multi_end_to_end:
           requires:
             - start

@@ -70,23 +70,43 @@ echo "BLOCK=${BLOCK}"
 
 if [ -f "INPUT/${NM}_global_router_out.json" ]; then
     (cd INPUT && tar cvf - ${NM}_global_router_out.json) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to store global router INPUT"
+	exit $?
+    fi
 fi	
 
 if [ -f "INPUT/${NM}_placer_out_scaled.json" ]; then
     (cd INPUT && tar cvf - ${NM}_placer_out_scaled.json) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to store ${NM}_placer_out_scaled.json in INPUT"
+	exit $?
+    fi
 fi	
 
 if [ "${SCRIPT}" != "" ]; then
   echo "Running python script ${SCRIPT} in container satplacer with volume ${INPUTVOL} mounted at /scripts/INPUT"
 
   (tar cvf - *.py) | docker run --rm --mount source=${INPUTVOL},target=/INPUT -i ubuntu /bin/bash -c "cd /INPUT && tar xvf -"
+  if [ $? -ne 0 ]; then
+      echo "ERROR: Failed to store placer script INPUT"
+      exit $?
+  fi
   docker run --rm --mount source=${INPUTVOL},target=/scripts/INPUT satplacer_image bash -c "source /general/bin/activate && cd /scripts && python INPUT/${SCRIPT} && ls -ltr INPUT"
+  if [ $? -ne 0 ]; then
+      echo "ERROR: Failed to run satplacer"
+      exit $?
+  fi
 fi
 
 cd ../Cktgen
 
 # -sar -sgr -smt 
 STARTVIEWER=${STARTVIEWER} ./flow.sh ${SMALL}${SHOWGLOBALROUTES}${ROUTE} -p ${PORT} -iv ${INPUTVOL} -ov ${OUTPUTVOL} -s "-m cktgen.cktgen_from_json" -src ${NM} -td ../DetailedRouter/DR_COLLATERAL_Generator/strawman1_ota --placer_json INPUT/${NM}_placer_out_scaled.json
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to run core routing flow"
+    exit $?
+fi
 
 # DAK: the viewer is startable by flow.sh
 #if [ ${STARTVIEWER} = "YES" ]; then

@@ -18,6 +18,25 @@ def parse_line (line):
     return None,None
    
 
+def scan_output (lines):
+    completed = False
+    timing = 0.0
+    fatals = 0
+    errors = 0
+    warnings = 0
+    accumulate = False
+    for line in lines:
+        key,match = parse_line(line)
+        if key == 'all':         accumulate = True
+        if accumulate:
+            if key == 'fatal':   fatals += 1
+            if key == 'error':   errors += 1
+            if key == 'warning': warnings += 1
+            if key == 'time':
+                completed = True
+                timing = float(match.group(1))
+    return completed, fatals, errors, warnings, timing
+
 def rollup_test (test):
     fn = test + ".log"
     completed = False
@@ -26,29 +45,22 @@ def rollup_test (test):
     errors = 0
     warnings = 0
     if os.path.isfile(fn):
+        lines = []
         with open (fn, "rt") as fp:
             line = fp.readline ()
+            lines += line
             accumulate = False
             while line:
-                key,match = parse_line(line)
-                if key == 'all':         accumulate = True
-                if accumulate:
-                    if key == 'fatal':
-                        fatals += 1
-#                        print "FATAL %s %d" % (test, line)
-                    if key == 'error':
-                        errors += 1
-#                        print "ERROR %s %d" % (test, line)
-                    if key == 'warning': warnings += 1
-                    if key == 'time':
-                        completed = True
-                        timing = float(match.group(1))
                 line = fp.readline ()
+                lines += line
+        completed, fatals, errors, warnings, timing = scan_output(lines)
+        return test, completed, fatals, errors, warnings, timing
+                
     else:
         fatals += 1
     return test, completed, fatals, errors, warnings, timing
 
-def main():
+def main ():
     testsuite = "bottom-up"
     completed = 0
     fatals = 0

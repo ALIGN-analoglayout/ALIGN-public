@@ -126,18 +126,37 @@ M_DR_COLLATERAL="--mount source=${ROUTERVOL},target=/Cktgen/DR_COLLATERAL"
 
 docker volume rm -f ${ROUTERVOL}
 (cd ${TECHDIR} && tar cvf - .) | docker run --rm ${M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to create DR_COLLATERAL"
+    exit $?
+fi
 
 if [ ${SKIPGENERATE} = "NO" ]; then
     docker volume rm -f ${OUTPUTVOL}
     docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to run Cktgen"
+	exit $?
+    fi
 fi
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
-
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to run detailed_router"
+	exit $?
+    fi
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to run Cktgen (consume)"
+	exit $?
+    fi
 fi
 
 if [[ -v STARTVIEWER ]] && [[ ${STARTVIEWER} = "YES" ]]; then
     docker run --rm ${M_INPUT_VIEWER} -p${PORT}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"
+    if [ $? -ne 0 ]; then
+	echo "ERROR: Failed to run viewer_image"
+	exit $?
+    fi
 fi

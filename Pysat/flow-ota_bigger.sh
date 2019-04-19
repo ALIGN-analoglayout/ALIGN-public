@@ -8,7 +8,7 @@ DR_COLLATERAL=../DetailedRouter/DR_COLLATERAL_Generator/strawman5_ota
 
 docker build -t tally .
 
-docker run --rm --mount source=${INPUTVOL},target=/INPUT tally bash -c "source sympy/bin/activate && cd /scripts && python placer.py -n ${NM} && python global_router.py -n ${NM} && cp ${NM}_placer_out.json ${NM}_global_router_out.json /INPUT"
+docker run --rm --mount source=${INPUTVOL},target=/INPUT tally bash -c "source general/bin/activate && cd /scripts && cp ../satplacer/satplacer/*.py . && python placer.py -n ${NM} && python global_router.py -n ${NM} && cp ${NM}_placer_out.json ${NM}_global_router_out.json /INPUT"
 
 cd ../Cktgen
 
