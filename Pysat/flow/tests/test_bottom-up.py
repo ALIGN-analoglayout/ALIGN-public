@@ -1,8 +1,8 @@
-import subprocess
+import subprocess   #nosec
 from errors import scan_output
 
 def single_flow (test):
-  output = subprocess.check_output(['./flow-json.sh', '-n',  test], cwd='..')
+  output = subprocess.check_output(['./flow-json.sh', '-n',  test], cwd='..')  #nosec
   lines = output.decode("utf-8").split('\n')
 
   completed, fatals, errors, warnings, timing = scan_output (lines)
@@ -12,7 +12,7 @@ def single_flow (test):
 
 def placement_flow (test):
   scr = "%s.py" % test
-  output = subprocess.check_output(['./flow-json.sh', '-n', test, '--script', scr], cwd='..')
+  output = subprocess.check_output(['./flow-json.sh', '-n', test, '--script', scr], cwd='..')  #nosec
   lines = output.decode("utf-8").split('\n')
 
   completed, fatals, errors, warnings, timing = scan_output (lines)
