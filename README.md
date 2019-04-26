@@ -6,9 +6,7 @@
 
 # Design Flow 
 ```bash
-Continuous Integration using circleci to integrate code from multiple developers. 
-Each checkin is verified automatically before merging.
-Code coverage and quality checks are done.
+Continuous Integration using circleci to integrate code from multiple developers. Each checkin is verified automatically before merging. Code coverage and quality checks are done.
 
 ```
 ## Design database:
@@ -21,8 +19,7 @@ Code coverage and quality checks are done.
 
 * Sub_circuit_identification: Reading and annotating netlist
 ```bash
-Generates a verilog file for input circuit
-Generates input for parametric cell generator
+Generates a verilog file for input circuit. It also generates input for parametric cell generator
 ```
 * Constraints: JSON format (manual)
 
