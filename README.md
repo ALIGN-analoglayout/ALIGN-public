@@ -31,12 +31,14 @@
 * PDK_Abstraction: JSON file format
 * CellFabric: Parametric cell generation
 ```bash
-Creation of LEF and GDS for cells based on PDK data ( private github)
+  - Creation of LEF and GDS for cells based on PDK data ( private github)
+  - The sizing is parameterized based on sizing in input netlist.
 ```
 ## Placement and Routing :  
 * PlacemenEditor: 
 ```bash
-View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
+  - View and edit placements of leaf cells. 
+  - Shows bounding box of all wires while moving around a particular leaf.
 ```
 * Cktgen: Intel detail router example
 ```bash
