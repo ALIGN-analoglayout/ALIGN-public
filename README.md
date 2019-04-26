@@ -22,7 +22,8 @@ Continuous Integration (CI) using circleci
 
 * Sub_circuit_identification: Reading and annotating netlist
 ```bash
-Creates a verilog file and a parametric lef generator
+Generates a verilog file for input circuit
+Generates input for parametric cell generator
 ```
 * Constraints: JSON format (manual)
 
@@ -34,7 +35,10 @@ Creates a verilog file and a parametric lef generator
 Creation of LEF and GDS for cells based on PDK data ( private github)
 ```
 ## Placement and Routing :  
-* PlacemenEditor: View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
+* PlacemenEditor: 
+```bash
+View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
+```
 * Cktgen: Intel detail router example
 ```bash
 Setup and run Intel’s detailed router. 
