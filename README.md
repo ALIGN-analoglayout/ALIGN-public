@@ -6,8 +6,8 @@
 
 # Design Flow 
 ```bash
-Continuous Integration (CI) using circleci to integrate code from multiple developers. 
-Each checkin is verified automatically before integrating it to master build.
+Continuous Integration using circleci to integrate code from multiple developers. 
+Each checkin is verified automatically before merging.
 Code coverage and quality checks are done.
 
 ```
