@@ -24,14 +24,15 @@ Continuous Integration (CI) using circleci
 ```bash
 Creates a verilog file and a parametric lef generator
 ```
-* Constraints: manual in JSON format 
+* Constraints: JSON format (manual)
 
 ## PDK abstraction: (Some parts are private)
 
 * PDK_Abstraction: JSON file format
 * Cell fabric: Parametric cell generation
+```bash
 Creation of LEF and GDS for cells based on PDK data ( private github)
-
+```
 ## Placement and Routing :  
 * PlacemenEditor: View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
 * Cktgen: Intel detail router example
