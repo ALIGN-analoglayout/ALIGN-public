@@ -10,7 +10,7 @@
   - Circleci to integrate code from multiple developers. 
   - Each checkin is verified automatically.
   - Code coverage and quality checks are done before merging.
-
+  - Cross platform using Docker.
 ```
 ## Design database:
  * Contains example circuits with netlist, schematic
