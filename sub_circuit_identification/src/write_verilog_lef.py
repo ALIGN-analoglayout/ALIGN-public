@@ -18,6 +18,7 @@ from read_lef import read_lef
 
 class WriteVerilog:
     """ write hierarchical verilog file """
+
     def __init__(self, circuit_graph, circuit_name, inout_pin_names):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
@@ -117,9 +118,9 @@ def print_header(fp, filename):
 def generate_lef(fp, name, size, available_block_lef, unit_size=10):
     """ Creates a shell script to generate parameterized lef"""
     #print(name,size)
-    for param,value in size.items():
+    for param, value in size.items():
         if 'fin' in param.lower():
-            size = int(value)*2
+            size = int(value) * 2
             logging.info('Generating lef for: %s %i', name, size)
             no_units = ceil(size / unit_size)
             square_x = ceil(sqrt(no_units))
@@ -127,32 +128,33 @@ def generate_lef(fp, name, size, available_block_lef, unit_size=10):
                 square_x += 1
             xval = str(square_x)
             yval = str(int(no_units / square_x))
-            block_name = name + "_n" + str(unit_size) + "_X" + xval + "_Y" + yval
+            block_name = name + "_n" + str(
+                unit_size) + "_X" + xval + "_Y" + yval
             if block_name in available_block_lef:
                 return block_name
             logging.info("Generating parametric lef of: %s", block_name)
-            fp.write("\npython fabric_" + name + ".py " + " -b " + block_name + " -n " +
-                     str(unit_size) + " -X " + xval + " -Y " + yval)
+            fp.write("\npython fabric_" + name + ".py " + " -b " + block_name +
+                     " -n " + str(unit_size) + " -X " + xval + " -Y " + yval)
         elif 'cap' in param.lower():
             size = int(value)
-            cap_unit_size=unit_size
-            block_name = name+'_'+str(value)+'f'
-            unit_block_name =param+'_'+str(cap_unit_size)+'f' 
+            cap_unit_size = unit_size
+            block_name = name + '_' + str(value) + 'f'
+            unit_block_name = param + '_' + str(cap_unit_size) + 'f'
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', name, size)
-            fp.write("\npython fabric_" + name + ".py " + " -b " + unit_block_name + " -n " + str(cap_unit_size))
+            fp.write("\npython fabric_" + name + ".py " + " -b " +
+                     unit_block_name + " -n " + str(cap_unit_size))
         elif 'res' in param.lower():
             size = int(value)
-            res_unit_size=30*unit_size
-            height=ceil(sqrt(size/res_unit_size))
-            block_name = name+'_'+str(size)
+            res_unit_size = 30 * unit_size
+            height = ceil(sqrt(size / res_unit_size))
+            block_name = name + '_' + str(size)
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', block_name, size)
-            fp.write("\npython fabric_" + name + ".py " + " -b " + block_name + " -n " + str(height) + " -r "+ str(size)) 
-
-
+            fp.write("\npython fabric_" + name + ".py " + " -b " + block_name +
+                     " -n " + str(height) + " -r " + str(size))
 
     return block_name
 
@@ -218,7 +220,8 @@ if __name__ == '__main__':
                 ALL_LEF.append(block_name)
                 graph.nodes[node]['inst_type'] = block_name
             else:
-                logging.info("ERROR:No physical information found for: %s", name)
+                logging.info("ERROR:No physical information found for: %s",
+                             name)
 
         if name in ALL_LEF:
             continue

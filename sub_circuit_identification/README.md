@@ -8,12 +8,13 @@ docker build -t topology .
 ## Run a Python-based test using docker
 
 ```bash
-docker run --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO && source runme.sh"
+docker run --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO && ./runme.sh ota"
 ```
 
 ## Direct run on terminal
 ```bash
-source ./runme.sh
+chmod +x runme.sh
+./runme.sh ota
 ```
 
 ## Run unit tests in container

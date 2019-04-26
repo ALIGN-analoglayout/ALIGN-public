@@ -7,12 +7,14 @@ Created on Wed Oct 10 13:18:49 2018
 #%% creating basic element
 import logging
 
+
 class BasicElement:
     """
     Defines the basic elements of spice file
     e.g: a resistor, inductor
     It also defines the weight on each port of device
     """
+
     def __init__(self, line):
         line = line.replace(')', "").replace('(', "")
         self.line = line
@@ -66,6 +68,7 @@ class BasicElement:
             "edge_weight": edge_weight,
             "values": parse_value(value)
         }
+
     def v_source(self):
         """v_source: v1 vbiasp1 0 DC=vbiasp1
              The assumption is 2 port network
@@ -134,18 +137,21 @@ class BasicElement:
             "values": parse_value(value)
         }
 
+
 def parse_value(all_param):
-    device_param_list ={}
+    """ parse the value parameters for each block and returns a dict"""
+    device_param_list = {}
     for idx, unique_param in enumerate(all_param):
         if '=' in unique_param:
-            [param, value] = unique_param.split('=');
+            [param, value] = unique_param.split('=')
             if not param:
-                param=all_param[idx-1]
+                param = all_param[idx - 1]
             if not value:
-                value = all_param[idx+1]
-            logging.info('Found device values: %s, value:%s', param, value);
+                value = all_param[idx + 1]
+            logging.info('Found device values: %s, value:%s', param, value)
             device_param_list[param] = value
     return device_param_list
+
 
 def _parse_inst(line):
     """ PARSE instance lines"""
@@ -161,29 +167,29 @@ def _parse_inst(line):
             or line.strip().lower().startswith('n') \
             or line.strip().lower().startswith('p') \
             or line.strip().lower().startswith('t'):
-        logging.debug('FOUND transistor : %s',line.strip())
+        logging.debug('FOUND transistor : %s', line.strip())
         device = element.transistor()
     elif line.strip().lower().startswith('v'):
-        logging.debug('FOUND v_source: %s',line.strip())
+        logging.debug('FOUND v_source: %s', line.strip())
         device = element.v_source()
     elif line.strip().lower().startswith('e'):
-        logging.debug('FOUND vcvs_source: %s',line.strip())
+        logging.debug('FOUND vcvs_source: %s', line.strip())
         device = element.vcvs_source()
     elif line.strip().startswith('i'):
-        logging.debug('FOUND i_source: %s',line.strip())
+        logging.debug('FOUND i_source: %s', line.strip())
         device = element.i_source()
     elif line.strip().lower().startswith('c'):
-        logging.debug('FOUND cap: %s',line.strip())
+        logging.debug('FOUND cap: %s', line.strip())
         device = element.capacitor()
     elif line.strip().lower().startswith('r'):
-        logging.debug('FOUND resistor: %s',line.strip())
+        logging.debug('FOUND resistor: %s', line.strip())
         device = element.resistor()
     elif line.strip().lower().startswith('l'):
         logging.debug("inductance: %s", line.strip())
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
             or line.strip().startswith('I'):
-        device_param_list ={}
+        device_param_list = {}
 
         if ' / ' in line:
             line = line.replace(' / ', ' ')
@@ -191,35 +197,36 @@ def _parse_inst(line):
             line = line.replace('(', ' ').replace(')', ' ')
         else:
             all_nodes = line.strip().split()
-            hier_nodes =[]
+            hier_nodes = []
             for idx, unique_param in enumerate(all_nodes):
                 if '=' in unique_param:
-                    [param, value] = unique_param.split('=');
+                    [param, value] = unique_param.split('=')
                     if not param:
-                        param=all_param[idx-1]
-                        del(hier_nodes[-1])
+                        param = all_param[idx - 1]
+                        del (hier_nodes[-1])
                     if not value:
-                        value = all_param[idx+1]
+                        value = all_param[idx + 1]
                         pass
-                    logging.info('Found subckt parameter values: %s, value:%s', param, value);
+                    logging.info('Found subckt parameter values: %s, value:%s',
+                                 param, value)
                     device_param_list[param] = value
 
                 else:
                     hier_nodes.append(unique_param)
-
 
         device = {
             "inst": hier_nodes[0][0:],
             "inst_type": hier_nodes[-1],
             "ports": hier_nodes[1:-1],
             "edge_weight": list(range(len(hier_nodes[1:-1]))),
-            "values": device_param_list 
+            "values": device_param_list
         }
         logging.debug('FOUND subckt instance: %s, type %s ', device["inst"],
-                device["inst_type"] )
+                      device["inst_type"])
 
     if device:
-        if '=' in device["inst"] or '=' in device["inst_type"] or '=' in ' '.join(device["ports"]):
+        if '=' in device["inst"] or '=' in device[
+                "inst_type"] or '=' in ' '.join(device["ports"]):
             device = None
             logging.error("RECHECK unidentified Device: %s", line)
     else:
