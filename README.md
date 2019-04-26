@@ -32,13 +32,15 @@ Continuous Integration (CI) using circleci
 * Cell fabric: 
 Creation of LEF and GDS for cells based on PDK data ( private github)
 
-## PlacementEditor:  
-* View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
+## Placement and Routing :  
+* PlacemenEditor: View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
 * Cktgen: Intel detail router example
-* Setup and run Intel’s detailed router. Takes leaf cell placement and global routing information and setups up the detailed routing task.
+```bash
+Setup and run Intel’s detailed router. Takes leaf cell placement and global routing information and setups up the detailed routing task.
+```
 ## Viewer :
-* GDS viewer KLayout: https://github.com/KLayout/klayout
-* Final results from JSON file
+* GDS output: KLayout: https://github.com/KLayout/klayout
+* JSON output: Layout viewer from JSON file
 
 ## Tutorials: Not exhaustive (WIP)
 
