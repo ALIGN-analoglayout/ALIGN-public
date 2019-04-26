@@ -6,7 +6,9 @@
 
 # Design Flow 
 ```bash
-Continuous Integration using circleci to integrate code from multiple developers. Each checkin is verified automatically before merging. Code coverage and quality checks are done.
+  - Continuous Integration using circleci to integrate code from multiple developers. 
+  - Each checkin is verified automatically before merging.
+  - Code coverage and quality checks are done.
 
 ```
 ## Design database:
@@ -19,14 +21,15 @@ Continuous Integration using circleci to integrate code from multiple developers
 
 * Sub_circuit_identification: Reading and annotating netlist
 ```bash
-Generates a verilog file for input circuit. It also generates input for parametric cell generator
+  - Generates a verilog file for input circuit. 
+  - Generates input for parametric cell generator
 ```
 * Constraints: JSON format (manual)
 
 ## PDK abstraction: (Some parts are private)
 
 * PDK_Abstraction: JSON file format
-* Cell fabric: Parametric cell generation
+* CellFabric: Parametric cell generation
 ```bash
 Creation of LEF and GDS for cells based on PDK data ( private github)
 ```
@@ -37,8 +40,8 @@ View and edit placements of leaf cells. Shows bounding box of all wires while mo
 ```
 * Cktgen: Intel detail router example
 ```bash
-Setup and run Intel’s detailed router. 
-Takes leaf cell placement and global routing information and setups up the detailed routing task.
+  - Takes leaf cell placement and global routing information and setups up the detailed routing task.
+  - Run Intel’s detailed router. 
 ```
 ## Viewer :
 * GDS output: KLayout: https://github.com/KLayout/klayout
@@ -49,9 +52,9 @@ Takes leaf cell placement and global routing information and setups up the detai
 ## Miscellaneous 
 ```bash
 PySat : 
-SAT-based toolkit
-SAT-based leaf cell placer
-SAT-based global router 
-Full design example for equalizer
+  - SAT-based toolkit
+  - SAT-based leaf cell placer
+  - SAT-based global router 
+  - Full design example for equalizer
 ```
 
