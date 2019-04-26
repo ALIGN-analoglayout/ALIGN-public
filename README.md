@@ -8,7 +8,7 @@
 ## Continuous Integration
 ```bash
   - Circleci to integrate code from multiple developers. 
-  - Each checkin is verified automatically .
+  - Each checkin is verified automatically.
   - Code coverage and quality checks are done before merging.
 
 ```
@@ -25,7 +25,7 @@
 * Sub_circuit_identification: Reading and annotating netlist
 ```bash
   - Generates a verilog file for input circuit. 
-  - Generates input for parametric cell generator
+  - Generates input for parametric cell generator.
 ```
 * Constraints: JSON format (manual)
 
@@ -34,7 +34,7 @@
 * PDK_Abstraction: JSON file format
 * CellFabric: Parametric cell generation
 ```bash
-  - Creation of LEF and GDS for cells based on PDK data ( private github)
+  - Creation of LEF and GDS for cells based on PDK data ( private github).
   - The sizing is parameterized based on sizing in input netlist.
 ```
 ## Placement and Routing :  
