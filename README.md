@@ -38,21 +38,19 @@ View and edit placements of leaf cells. Shows bounding box of all wires while mo
 Cktgen: Intel detail router example
 Setup and run Intel’s detailed router. Takes leaf cell placement and global routing information and setups up the detailed routing task.
 ```
-## Viewer : 
+## Viewer :
+```bash
 GDS viewer KLayout: https://github.com/KLayout/klayout
 Final results from JSON file
+```
 ## Tutorials: Not exhaustive (WIP)
 
 ## Miscellaneous 
 ```bash
 PySat : 
-
 SAT-based toolkit
-
 SAT-based leaf cell placer
-
 SAT-based global router 
-
 Full design example for equalizer
 ```
 
