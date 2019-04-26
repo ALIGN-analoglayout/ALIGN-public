@@ -22,7 +22,7 @@ Continuous Integration (CI) using circleci
 
 * Sub_circuit_identification: Reading and annotating netlist
 ```bash
-* Creates a verilog file and a parametric lef generator
+Creates a verilog file and a parametric lef generator
 ```
 * Constraints: manual in JSON format 
 
