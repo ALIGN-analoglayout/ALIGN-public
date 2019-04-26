@@ -13,18 +13,18 @@ A sample process technology is included as well.
 Continuous Integration (CI) using circleci
 ## Design database:
 ## Build : 
-```bash
+
 * Docker setup initialization for c++/python
 * Code coverage check setup example
-```
+
 
 ## Sub_circuit_identification :
-```bash
-Reading and annotating netlist
-Creates a verilog file and a parametric lef generator
-Constraints: manual 
-JSON template 
-```
+
+* Reading and annotating netlist
+* Creates a verilog file and a parametric lef generator
+* Constraints: manual 
+* JSON template 
+
 
 ## PDK abstraction: (Some parts are private)
 ```bash
