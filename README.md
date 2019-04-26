@@ -18,25 +18,26 @@ Continuous Integration (CI) using circleci
 * Code coverage check setup example
 
 
-## Sub_circuit_identification :
+## Circuit Annotation :
 
-* Reading and annotating netlist
+* Sub_circuit_identification: Reading and annotating netlist
+```bash
 * Creates a verilog file and a parametric lef generator
-* Constraints: manual 
-* JSON template 
-
+```
+* Constraints: manual in JSON format 
 
 ## PDK abstraction: (Some parts are private)
 
-* JSON file 
-* Cell fabric: 
+* PDK_Abstraction: JSON file format
+* Cell fabric: Parametric cell generation
 Creation of LEF and GDS for cells based on PDK data ( private github)
 
 ## Placement and Routing :  
 * PlacemenEditor: View and edit placements of leaf cells. Shows bounding box of all wires while moving around a particular leaf.
 * Cktgen: Intel detail router example
 ```bash
-Setup and run Intel’s detailed router. Takes leaf cell placement and global routing information and setups up the detailed routing task.
+Setup and run Intel’s detailed router. 
+Takes leaf cell placement and global routing information and setups up the detailed routing task.
 ```
 ## Viewer :
 * GDS output: KLayout: https://github.com/KLayout/klayout
