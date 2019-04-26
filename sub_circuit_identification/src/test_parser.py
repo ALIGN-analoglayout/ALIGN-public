@@ -1,15 +1,15 @@
 import networkx as nx
 
-from read_netlist import spiceParser
+from read_netlist import SpiceParser
 
 
 def test_parser1():
-    sp = spiceParser("test1.sp")
+    sp = SpiceParser("test1.sp")
     g = sp.sp_parser()
-    assert len(g.nodes()) == 8
+    assert len(g.nodes()) == 10
 
 
 def test_parser2():
-    sp = spiceParser("test2.sp")
+    sp = SpiceParser("test2.sp")
     g = sp.sp_parser()
-    assert len(g.nodes()) == 10
+    assert len(g.nodes()) == 12

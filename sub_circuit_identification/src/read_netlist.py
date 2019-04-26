@@ -252,10 +252,10 @@ class SpiceParser:
 
     def _parse_param(self, line, fp_l):
         """Reads and store all parameters"""
+        param_list = {}
         while 'param' in line.strip() or '+' in line.strip():
             #logging.info("param: %s", line)
             all_param = line.strip().split()
-            param_list = {}
             for idx, individual_param in enumerate(all_param):
                 if '=' in individual_param:
                     [param, value] = individual_param.split('=')
