@@ -14,8 +14,8 @@ Continuous Integration (CI) using circleci
 ## Design database:
 ## Build : 
 ```bash
-Docker setup initialization for c++/python
-Code coverage check setup example
+* Docker setup initialization for c++/python
+* Code coverage check setup example
 ```
 
 ## Sub_circuit_identification :
