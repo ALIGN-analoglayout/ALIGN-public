@@ -37,7 +37,6 @@ class SpiceParser:
         self.top_insts = []
 
     def sp_parser(self):
-
         """Parse the defined file line wise"""
         if not os.path.isfile(self.netlist):
             print("File doesn't exist")
@@ -96,8 +95,9 @@ class SpiceParser:
                     elements["nodes"], subckt_ports)
                 self.subckts[subckt_name]['node_graph'] = subckt_graph
                 logging.info("Saving graph: %s", subckt_name)
-                _show_circuit_graph(subckt_name, subckt_graph, "./library_graph_images/")
-                _write_circuit_graph(subckt_name, subckt_graph, "./library_graphs/")
+                #_show_circuit_graph(subckt_name, subckt_graph, "./library_graph_images/")
+                _write_circuit_graph(subckt_name, subckt_graph,
+                                     "./library_graphs/")
                 fp_l.close()
 
     def _merge_stacked_transistor(self, ckt_graph):
@@ -106,7 +106,8 @@ class SpiceParser:
             if "net" in ckt_graph.nodes[node]["inst_type"]:
                 #print(ckt_graph.nodes(node))
                 if ckt_graph.edges[node]["weight"] >= 4:
-                    print("gate net in graph ", node, ckt_graph.neighbors(node))
+                    print("gate net in graph ", node,
+                          ckt_graph.neighbors(node))
 
     def _parse_subckt_info(self, line, fp_l):
         """ Read subckt line """
@@ -125,8 +126,8 @@ class SpiceParser:
     def _parse_subckt(self, line, fp_l):
         """ Read all lines in subckt"""
         insts = []
-        while not (line.lower().startswith('end') or
-                   line.lower().startswith('.end')):
+        while not (line.lower().startswith('end')
+                   or line.lower().startswith('.end')):
             if any(c in line.lower() for c in ("//", '*')):
                 line = fp_l.readline()
                 pass
@@ -179,7 +180,6 @@ class SpiceParser:
                 node["ports"] = modified_ports
                 self.flat_design.append(node)
 
-
     def _create_bipartite_circuit_graph(self, all_nodes, inout_ports):
         logging.info("Creating bipartitie graph with Total no of devices %i",
                      len(all_nodes))
@@ -210,11 +210,11 @@ class SpiceParser:
                                                net_type="internal")
                 elif circuit_graph.has_edge(node["inst"], net):
                     node_name = node["inst"]
-                    edge_wt += circuit_graph.get_edge_data(node_name, net)['weight']
+                    edge_wt += circuit_graph.get_edge_data(node_name,
+                                                           net)['weight']
                 circuit_graph.add_edge(node["inst"], net, weight=edge_wt)
                 wt_index += 1
         return circuit_graph
-
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%LIBRARY%%%%%%%%%%%%%%%%%%%%
@@ -228,10 +228,10 @@ if __name__ == '__main__':
                         help='relative directory path')
     ARGS = PARSER.parse_args()
     LIB_DIR = ARGS.dir
-    for file in os.listdir(LIB_DIR):
-        if file.endswith(".sp"):
-            fp = os.path.join(LIB_DIR, file)
+    for lib_file in os.listdir(LIB_DIR):
+        if lib_file.endswith(".sp"):
+            fp = os.path.join(LIB_DIR, lib_file)
             print("Reading library file: ", fp)
             sp = SpiceParser(fp)
             sp.sp_parser()
-    print("Reading Library Successful")
+    print("Reading Library Successful. Graphs are stored in library_graphs")

@@ -35,17 +35,18 @@ class SpiceParser:
         self.netlist = netlistPath
         self.subckts = {}
         self.circuit_graph = nx.Graph()
-        self.params = []
+        self.params = {}
         self._global = []
         self.option = []
         self.top_insts = []
         self.include = []
         self.top_ckt_name = top_ckt_name
         self.flat = flat
+        self.next_line = None
+        self.prev_line = None
         logging.info('creating an instance of SpiceParser')
 
     def sp_parser(self):
-
         """Parse the defined file line wise"""
 
         if not os.path.isfile(self.netlist):
@@ -53,11 +54,9 @@ class SpiceParser:
         else:
             logging.info("File exist: %s", self.netlist)
             fp_l = open(self.netlist, "r")
-            line = fp_l.readline()
+            line = self.get_next_line(fp_l, 1)
             while ".END" not in line:
                 # if "**" in line.lower(): pass
-                while line.strip().endswith('\\'):
-                    line += fp_l.readline().strip()
                 if any(c in line.lower() for c in ("//", "**")):
                     #line = fp_l.readline()
                     pass
@@ -67,32 +66,35 @@ class SpiceParser:
                     self._parse_global(line, fp_l)
                 elif ".temp" in line.lower():
                     temp_line = line
+                    logging.info("Temp line: %s", temp_line)
                 elif ".option" in line.lower():
                     self._parse_option(line, fp_l)
                 elif "subckt" in line.lower():
                     self._parse_subckt_info(line, fp_l)
-                elif ".param" in line.lower():
-                    self._parse_param(line, fp_l)
                 elif "include" in line.lower() or "info" in line.lower():
                     self._parse_include(line, fp_l)
-                    line = fp_l.readline()
-                    continue
-
+                    #line = fp_l.readline()
+                    #continue
+                elif "param" in line.lower():
+                    check_param = self._parse_param(line, fp_l)
+                    if check_param:
+                        if self.params:
+                            self.params.update(check_param)
+                        else:
+                            self.params = check_param
                 else:
                     parsed_inst = _parse_inst(line)
                     if parsed_inst:
                         self.top_insts.append(parsed_inst)
-                line = fp_l.readline()
+                line = self.get_next_line(fp_l, 1)
                 if not line:
                     break
             print("INFO: PARSING INPUT NETLIST FILE DONE")
             if self.params:
-                #self.params.remove('+')
-                self.params = filter(lambda a: a != '+', self.params)
-                #logging.info(" ".join(self.params))
+                for param, value in self.params.items():
+                    logging.info('Found top_param: %s, value:%s', param, value)
             elif self.option:
                 self.option = filter(lambda a: a != '+', self.option)
-                #logging.info(" ".join(self.option))
             elif self._global:
                 self._global = filter(lambda a: a != '+', self._global)
 
@@ -113,8 +115,8 @@ class SpiceParser:
                     elif self.subckts.keys():
                         self.top_ckt_name = list(self.top_ckt_name())[0]
                         logging.info(
-                            'No top instances found. Picking 1st cirucit as top: %s'
-                            , self.top_ckt_name)
+                            'No top instances found. Picking 1st cirucit as top: %s',
+                            self.top_ckt_name)
                     else:
                         logging.info(
                             'No subckt found in design. Please check file format'
@@ -122,124 +124,231 @@ class SpiceParser:
                         return 0
                 else:
                     logging.info(
-                        'Instances found at top, creating a dummy __top__ subckt'
-                    )
+                        'Instances found at top, creating a dummy subckt: %s',
+                        top)
+                    if self.params:
+                        for index, node in enumerate(self.top_insts):
+                            if "values" in node.keys():
+                                #print(node)
+                                for param, value in node["values"].items():
+                                    if value in self.params:
+                                        self.top_insts[index]["values"][
+                                            param] = self.params[value]
+                                        logging.info(
+                                            'assigning top parameter %s value %s to node: %s',
+                                            param, self.params[value],
+                                            node["inst"])
+                            else:
+                                logging.error("No sizing info found: %s",
+                                              node["inst"])
+
                     self.top_ckt_name = top
                     self.subckts[self.top_ckt_name] = {
                         "ports": ["gnd!", "vdd"],
-                        "nodes": self.top_insts
+                        "nodes": self.top_insts,
+                        "params": self.params
                     }
 
-                logging.info("List of subckts in design: %s", " ".join(self.subckts))
+                logging.info("List of subckts in design: %s \n",
+                             " ".join(self.subckts))
+                logging.info(
+                    "###################PARSING DONE #################### \n")
+
+            ## remove source from tesbench circuit
+            self._remove_source()
 
             if self.flat:
-                logging.info("Flaten circuit:%s ", self.top_ckt_name)
+                logging.info("Flatten circuit: %s ", self.top_ckt_name)
                 design = self._flatten_circuit(self.top_ckt_name)
             else:
                 design = self._hier_circuit(self.top_ckt_name)
 
             subckt_ports = self.subckts[self.top_ckt_name]["ports"]
+            logging.info(
+                "\n################### FINAL CIRCUIT AFTER initialization#################### \n"
+            )
+            logging.info("DISPLAYING  circuit")
+            for node in design:
+                logging.info(node)
 
+            logging.info(
+                "################### CREATING BIPARTITE GRAPH #################### \n"
+            )
             self.circuit_graph = self._create_bipartite_circuit_graph(
                 design, subckt_ports)
             #self._show_circuit_graph("circuit", self.circuit_graph,"./circuit_graph_images/")
             return self.circuit_graph
 
+    def _remove_source(self):
+        no_of_source = 0
+        source_ports = []
+        reduced_subckt = []
+        for ckt_name, elements in self.subckts.items():
+            reduced_subckt = [
+                node for node in elements["nodes"]
+                if 'source' not in node["inst_type"]
+            ]
+            no_of_source += len(
+                self.subckts[ckt_name]["nodes"]) - len(reduced_subckt)
+            self.subckts[ckt_name]["nodes"] = reduced_subckt
+
+        logging.error('REMOVED %i sources from circuit.\n', no_of_source)
+
+    def get_next_line(self, file_pointer, line_type):
+        if line_type == 1:
+            self.prev_line = self.next_line
+            self.next_line = file_pointer.readline()
+            self.next_line = self.next_line.replace('(', '').replace(')', '')
+            while self.next_line.strip().endswith('\\'):
+                self.next_line += file_pointer.readline().strip()
+            #print("Read line:",self.next_line)
+        elif line_type == -1:
+            self.next_line = self.prev_line
+            #print("Fixing line pointer:")
+        elif line_type == 0:
+            self.next_line = self.next_line
+        return self.next_line
+
     def _parse_subckt_info(self, line, fp_l):
         """ Read subckt line """
-        logging.info('started reading subckt: %s', line)
+        logging.info('started reading subckt: %s', line.strip())
         subckt_nodes = line.strip().split()
         subckt_name = subckt_nodes[1]
-        line = fp_l.readline()
-        while line.strip().endswith('\\'):
-            line += fp_l.readline().strip()
+        line = self.get_next_line(fp_l, 1)
+        nodes, params = self._parse_subckt(line, fp_l)
         self.subckts[subckt_name] = {
             "ports": subckt_nodes[2:],
-            "nodes": self._parse_subckt(line, fp_l)
+            "nodes": nodes,
+            "params": params
         }
-        logging.info('Finished reading subckt: %s', subckt_name)
+        logging.info('Finished reading subckt: %s\n', subckt_name)
 
     def _parse_subckt(self, line, fp_l):
         """ Read all lines in subckt"""
         insts = []
-        while not (line.lower().startswith('end') or
-                   line.lower().startswith('.end')):
+        subckt_param_all = {}
+        while not (line.lower().startswith('end')
+                   or line.lower().startswith('.end')):
             if any(c in line.lower() for c in ("//", '*')):
-                line = fp_l.readline()
+                line = self.get_next_line(fp_l, 1)
                 pass
-            node1 = _parse_inst(line)
-            if node1:
-                insts.append(node1)
-            line = fp_l.readline()
+            elif 'param' in line.lower():
+                subckt_param = self._parse_param(line, fp_l)
+                if subckt_param:
+                    if subckt_param_all:
+                        subckt_param_all.update(subckt_param)
+                    else:
+                        subckt_param_all = subckt_param
+                    #for param,value in subckt_param.items():
+                    #    logging.info('Found subckt param: %s, value:%s', param, value);
+                line = self.get_next_line(fp_l, 0)
+            else:
+                node1 = _parse_inst(line)
+                if node1:
+                    insts.append(node1)
+                line = self.get_next_line(fp_l, 1)
 
-            while line.strip().endswith('\\'):
-                line += fp_l.readline().strip()
-
-        return insts
+        return insts, subckt_param_all
 
     def _parse_param(self, line, fp_l):
         """Reads and store all parameters"""
-        while line.strip():
-            logging.info("param: %s", line)
-            self.params += line.strip().split()
-            line = fp_l.readline()
+        param_list = {}
+        while 'param' in line.strip() or '+' in line.strip():
+            #logging.info("param: %s", line)
+            all_param = line.strip().split()
+            for idx, individual_param in enumerate(all_param):
+                if '=' in individual_param:
+                    [param, value] = individual_param.split('=')
+                    if not param:
+                        param = all_param[idx - 1]
+                    if not value:
+                        value = all_param[idx + 1]
+                    logging.info('Found parameters: %s, value:%s', param,
+                                 value)
+                    param_list[param] = value
+            line = self.get_next_line(fp_l, 1)
+        return param_list
 
     def _parse_global(self, line, fp_l):
         """ Read all global lines"""
         while line.strip():
             logging.info("global: %s", line)
             self._global += line.strip().split()
-            line = fp_l.readline()
+            line = self.get_next_line(fp_l, 1)
 
     def _parse_include(self, line, fp_l):
         logging.info("include: %s", line)
         self.include.append(line.strip())
-        line = fp_l.readline()
+        line = self.get_next_line(fp_l, 1)
 
     def _parse_option(self, line, fp_l):
         while line.strip():
             logging.info("option: %s", line)
             self.option += line.strip().split()
-            line = fp_l.readline()
+            line = self.get_next_line(fp_l, 1)
 
-
-
-    def _flatten_circuit(self, subckt_name, subckt_inst="", connected_nets=""):
+    def _flatten_circuit(self,
+                         subckt_name,
+                         subckt_inst="",
+                         connected_nets="",
+                         inherited_param={}):
         flatdesign = []
-        logging.info("flattening the circuits below: %s", subckt_name)
+        logging.info("flattening the circuits below: %s, %s, %s,%s",
+                     subckt_name, subckt_inst, connected_nets, inherited_param)
+        ### node is not local copy and modifying it modifies dictionary
         for node in self.subckts[subckt_name]["nodes"]:
+            logging.info("checking nets of node: %s ports:%s", node["inst"],
+                         ' '.join(node["ports"]))
             modified_ports = []
             for net_name in node["ports"]:
                 if net_name not in self.subckts[subckt_name]["ports"]:
-                    logging.info("Net internal to subckt")
                     net_name = subckt_inst + net_name
+                    logging.info("Net internal to subckt %s: %s", subckt_name,
+                                 net_name)
                 elif connected_nets:
-                    logging.info("Net is part of higher level subckt")
                     net_name = connected_nets[self.subckts[subckt_name]
                                               ["ports"].index(net_name)]
+                    logging.info("Net is part of higher level subckt: %s",
+                                 net_name)
                 else:
-                    logging.info("net lies in top level net in: %s net_name: %s",
-                                 node["inst"], net_name)
+                    logging.info(
+                        "net lies in top level net in: %s net_name: %s",
+                        node["inst"], net_name)
                 modified_ports.append(net_name)
+            values = node["values"].copy()
+            if inherited_param:
+                if "values" in node.keys():
+                    for param, value in node["values"].items():
+                        logging.info("checking parameter: %s= %s", param,
+                                     value)
+                        if value in inherited_param.keys():
+                            #print(node)
+                            values[param] = inherited_param[value]
+                            logging.info(
+                                'assigning inherited parameter:(name)  %s (value) %s to device: %s',
+                                param, inherited_param[value], node["inst"])
+                        else:
+                            values[param] = value
 
             if node["inst_type"] in self.subckts:
 
                 flatdesign.extend(
                     self._flatten_circuit(node["inst_type"],
                                           subckt_inst + node["inst"] + '|',
-                                          list(modified_ports)))
+                                          list(modified_ports), values))
             else:
+                #print("FLAT NODE:", subckt_inst + node["inst"],modified_ports)
                 flat_node = {
                     "inst": subckt_inst + node["inst"],
                     "inst_type": node["inst_type"],
                     "ports": modified_ports,
-                    "values": node["values"],
+                    "values": values,
                     "edge_weight": node["edge_weight"]
                 }
 
                 flatdesign.append(flat_node)
-                logging.debug("Node name: %s, type: %s", flat_node["inst"],
-                              flat_node["inst_type"])
+                logging.debug("Updated Node name: %s, type: %s",
+                              flat_node["inst"], flat_node["inst_type"])
 
         logging.info("Total no of nodes in design %s = %i", subckt_name,
                      len(flatdesign))
@@ -273,22 +382,30 @@ class SpiceParser:
                 subgraph = self._create_bipartite_circuit_graph(
                     node["hier_nodes"],
                     self.subckts[node["inst_type"]]["ports"])
+                logging.info("Creating sub-hierarchy for node:%s", node)
             else:
                 subgraph = None
+            logging.info("Reading node: %s", node)
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
                                    ports=node['ports'],
                                    edge_weight=node['edge_weight'],
                                    values=node['values'],
                                    sub_graph=subgraph)
-            wt_index = 0
-            for net in node["ports"]:
+            ##### ASSIGNING EDGE WEIGHTS ######
+            #wt_index = 0
+            for wt_index, net in enumerate(node["ports"]):
                 #if net not in ["0", "vdd!", "gnd!"]:
                 if "edge_weight" in node.keys():
                     edge_wt = node["edge_weight"][wt_index]
+                    logging.info("Using existing weights %s for net:%s",
+                                 edge_wt, net)
                 else:
                     edge_wt = 2 ^ wt_index
+                    logging.error("no existing weights using dummy weights:%s",
+                                  edge_wt)
                 if net not in circuit_graph:
+                    logging.info("Adding net node:%s", net)
                     if net in inout_ports:
                         circuit_graph.add_node(net,
                                                inst_type="net",
@@ -299,11 +416,22 @@ class SpiceParser:
                                                net_type="internal")
                 elif circuit_graph.has_edge(node["inst"], net):
                     node_name = node["inst"]
-                    edge_wt += circuit_graph.get_edge_data(node_name, net)['weight']
+                    edge_wt = edge_wt + circuit_graph.get_edge_data(
+                        node_name, net)['weight']
+                    logging.info(
+                        "Multiple connection b/w net and node:%s, %s. new weight: %s",
+                        net, node_name, edge_wt)
+                else:
+                    logging.info("New connection found b/w nod %s, and net %s",
+                                 node["inst"], net)
                 circuit_graph.add_edge(node["inst"], net, weight=edge_wt)
-                wt_index += 1
-        return circuit_graph
+                logging.info("added edge with weight:%s", edge_wt)
 
+        logging.info(
+            "Created bipartitie graph with Total no of Nodes: %i edges: %i",
+            len(circuit_graph), circuit_graph.number_of_edges())
+        #print(circuit_graph.node['xM03|MN0']["ports"])
+        return circuit_graph
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%MAIN%%%%%%%%%%%%%%%%%%%%
@@ -345,19 +473,21 @@ if __name__ == '__main__':
     NETLIST_FILES = os.listdir(NETLIST_DIR)
     if not NETLIST_FILES:
         print("No spice files found in input_circuit directory. exiting")
-        logging.info("No spice files found in input_circuit directory. exiting")
+        logging.info(
+            "No spice files found in input_circuit directory. exiting")
         exit(0)
     elif ARGS.file:
         logging.info("Input file: %s", ARGS.file)
         NETLIST_FILES = [ARGS.file]
     for netlist in NETLIST_FILES:
-        print(netlist)
+        print("Reading netlist file:", netlist)
         #name = "switched_cap_filter"
         if netlist.endswith('sp') or netlist.endswith('cdl') or ARGS.file:
             logging.info("READING files in dir: %s", NETLIST_DIR)
-            logging.info("READ file: %s/%s flat=%i", NETLIST_DIR, netlist, ARGS.flat)
-            if ARGS.subckt and ARGS.flat ==0:
-                logging.info("Reading subckt %s as flat",ARGS.subckt)
+            logging.info("READ file: %s/%s flat=%i", NETLIST_DIR, netlist,
+                         ARGS.flat)
+            if ARGS.subckt and ARGS.flat == 0:
+                logging.info("Reading subckt %s as flat", ARGS.subckt)
                 sp = SpiceParser(NETLIST_DIR + '/' + netlist,
                                  ARGS.subckt,
                                  flat=ARGS.flat)
@@ -370,11 +500,13 @@ if __name__ == '__main__':
                 sp = SpiceParser(NETLIST_DIR + '/' + netlist)
 
             final_circuit_graph = sp.sp_parser()
+            #print(final_circuit_graph.node['xM03|MN0']["ports"])
             if final_circuit_graph:
                 ckt_name = netlist.split('.')[0]
                 logging.info("Saving graph: %s", ckt_name)
-                _show_circuit_graph(ckt_name, final_circuit_graph,"./circuit_graph_images/")
-                #_show_bipartite_circuit_graph( netlist.split('.')[0],final_circuit_graph, "./circuit_graphs/")
-                _write_circuit_graph(ckt_name, final_circuit_graph, "./circuit_graphs/")
+                #_show_circuit_graph(ckt_name, final_circuit_graph,"./circuit_graph_images/")
+                #_show_bipartite_circuit_graph( ckt_name, final_circuit_graph, "./circuit_graphs/")
+                _write_circuit_graph(ckt_name, final_circuit_graph,
+                                     "./circuit_graphs/")
         else:
             print("Not a valid file type (.sp/cdl).Skipping this file")

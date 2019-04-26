@@ -35,10 +35,14 @@ M1 (D2 G S2 0) NMOS_VTL w=w l=90n
 CC1 PLUS MINUS cap 60f
 .ends Cap
 
-.subckt DiodeConnected_NMOS D S
+.subckt DCL D S
 M0 (D D S 0) NMOS_VTL w=w l=90n
 .ends DiodeConnected_NMOS
 
 .subckt DiodeConnected_PMOS D S
 M0 (D D S 0) PMOS_VTL w=w l=90n
 .ends DiodeConnected_PMOS
+
+.subckt Res PLUS MINUS
+RR1 PLUS MINUS res 10k
+.ends Res

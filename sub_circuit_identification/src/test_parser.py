@@ -2,6 +2,7 @@ import networkx as nx
 
 from read_netlist import SpiceParser
 
+
 def test_parser1():
     sp = SpiceParser("test1.sp")
     g = sp.sp_parser()

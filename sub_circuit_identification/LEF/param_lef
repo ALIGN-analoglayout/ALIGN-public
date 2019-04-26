@@ -1,10 +1,10 @@
 CMC_NMOS
 CMC_PMOS
-Cap
 DP_NMOS
-DiodeConnected_NMOS
-DiodeConnected_PMOS
 SCM_NMOS
+CMC_PMOS_S
 Switch_NMOS
 Switch_PMOS
-CMC_PMOS_SC
+DiodeConnected_NMOS
+Cap
+Res

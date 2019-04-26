@@ -1,5 +1,13 @@
 #!/bin/bash
-
+if [ $# -eq 0 ]; then
+    echo "please provide a design name"
+    exit 1
+else
+    echo "Start annotating DESIGN Name : $1"
+    DESIGN=$1
+fi
+# cleaning all files
+rm -rf ./circuit_graphs/* LOG/* ./results/*.p library_graphs/* 
 ## READ LIBRARY 
 ## Reads inputs netlist of spice format (".sp") from basic_library folder
 ## There is basic template of libraries which we provide: basic_template.sp
@@ -10,8 +18,8 @@ python ./src/read_library.py --dir basic_library
 ## READ input netlist 
 ## Reads inputs netlist of spice format (".sp") from input_circuit folder
 ## User need to keep his spice netlist in this directory : switched_cap_filter.sp
-python ./src/read_netlist.py --dir input_circuit -f ota.sp -s cascode_current_mirror_ota -flat 1
-#python ./src/read_netlist.py --dir input_circuit --file switched_cap_filter.sp
+SPICE_FILE="$DESIGN.sp"
+python ./src/read_netlist.py --dir input_circuit -f $SPICE_FILE
 # the output is stored in circuit_graph directory in yaml format
 
 ## MATCH GRAPH
@@ -20,6 +28,8 @@ python ./src/read_netlist.py --dir input_circuit -f ota.sp -s cascode_current_mi
 python ./src/match_graph.py
 #store the matches and reduced graph in pickle binary format 
 
-## GENERATE VERILOG , unit_size 10
+## GENERATE VERILOG
 python ./src/write_verilog_lef.py -U 10 
 #store output in verilog format in results dir
+
+#python ./src/write_constraints.py
