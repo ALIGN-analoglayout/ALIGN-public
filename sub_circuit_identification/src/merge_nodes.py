@@ -6,6 +6,7 @@ Created on Thu Nov 29 22:19:39 2018
 """
 import networkx as nx
 from networkx.algorithms import isomorphism
+import re
 
 
 def merge_nodes(G, hier_type, argv, matched_ports):
@@ -23,7 +24,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     new_node = ""
     ports = {}
     subgraph = nx.Graph()
-    all_values = []
+    max_value = {}
     for node in argv:
         new_node += '_' + node
         subgraph.add_node(node,
@@ -31,7 +32,10 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=G.nodes[node]['values'])
-        all_values.extend(G.nodes[node]['values'])
+
+        #max_value.extend(G.nodes[node]['values'])
+        max_value=merged_value(max_value, G.nodes[node]['values'])
+        #if max_value.values()
         #print(G.nodes[node])
         nbr = G.neighbors(node)
         for ele in nbr:
@@ -53,8 +57,10 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     G.add_node(new_node,
                inst_type=hier_type,
                ports_match=matched_ports,
-               values=all_values)
-
+               values=max_value)
+    #print("max_value",max_value)
+    #if [val for val in max_value.values() if isinstance(val, str)]
+    #    print("wrong value type",new_node)
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(argv):
             del ports[pins]
@@ -90,3 +96,67 @@ def merge_nodes(G, hier_type, argv, matched_ports):
         print("isomorphism check fail")
 
     return G, subgraph
+
+def merged_value(values1, values2):
+    if [param for param in values1.keys() if 'fin' in param.lower()]:
+        value = {'nfin' : find_max_transistor_size(values1, values2)}
+    elif [param for param in values2.keys() if 'r' in param.lower()]:
+        value = {'res' : calc_res(values2)}
+    elif [param for param in values2.keys() if 'c' in param.lower()]:
+        value = {'cap' : calc_cap(values2)}
+    else:
+        value = {'nfin' : calc_total_fin(values2)}
+    return value
+
+
+def find_max_transistor_size(values1, values2):
+    val_1 = calc_total_fin(values1)
+    val_2 = calc_total_fin(values1)
+    return max(val_1,val_2)
+    
+def calc_total_fin(values):
+    total_fin=1
+    #print(values)
+    for param, value in values.items():
+        if 'fin' in param:
+            total_fin = total_fin*int(value)
+        elif 'nf' in param:
+            total_fin = total_fin*int(value)
+        elif 'M' in param:
+            total_fin = total_fin*int(value)
+    #print("total fin", total_fin)
+    return total_fin 
+
+def calc_res(values):
+    total_res = 1
+    for param, value in values.items():
+        if 'r' in param:
+            if 'k' in value.lower():
+                value=float(re.sub("[^0-9]", "", value))
+                value = value*1000
+            elif 'm' in value.lower():
+                value=float(re.sub("[^0-9]", "", value))
+                value = value*1E6
+            else:
+                value=float(re.sub("[^0-9]", "", value))
+    return value
+
+
+def calc_cap(values):
+    total_res = 1
+    for param, value in values.items():
+        if 'c' in param:
+            if 'pf' in value.lower():
+                value=float(re.sub("[^0-9]", "", value))
+                value = value*1E-12
+            elif 'nf' in value.lower():
+                value=float(re.sub("[^0-9]", "", value))
+                value = value*1E-9
+            elif 'f' in value.lower():
+                #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
+                value=float(re.sub("[^0-9]", "", value))
+                value = value*1e-15
+            else:
+                value=float(value)
+            value =value*1e15
+    return value

@@ -96,7 +96,7 @@ class SpiceParser:
                     elements["nodes"], subckt_ports)
                 self.subckts[subckt_name]['node_graph'] = subckt_graph
                 logging.info("Saving graph: %s", subckt_name)
-                _show_circuit_graph(subckt_name, subckt_graph, "./library_graph_images/")
+                #_show_circuit_graph(subckt_name, subckt_graph, "./library_graph_images/")
                 _write_circuit_graph(subckt_name, subckt_graph, "./library_graphs/")
                 fp_l.close()
 
@@ -228,10 +228,10 @@ if __name__ == '__main__':
                         help='relative directory path')
     ARGS = PARSER.parse_args()
     LIB_DIR = ARGS.dir
-    for file in os.listdir(LIB_DIR):
-        if file.endswith(".sp"):
-            fp = os.path.join(LIB_DIR, file)
+    for lib_file in os.listdir(LIB_DIR):
+        if lib_file.endswith(".sp"):
+            fp = os.path.join(LIB_DIR, lib_file)
             print("Reading library file: ", fp)
             sp = SpiceParser(fp)
             sp.sp_parser()
-    print("Reading Library Successful")
+    print("Reading Library Successful. Graphs are stored in library_graphs")

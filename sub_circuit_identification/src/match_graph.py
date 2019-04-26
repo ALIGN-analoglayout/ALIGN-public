@@ -7,11 +7,11 @@ Created on Fri Nov  2 21:33:22 2018
 #%%
 import os
 import logging
-import pickle
+import pickle,re
 import networkx as nx
 from networkx.algorithms import isomorphism
 
-from merge_nodes import merge_nodes
+from merge_nodes import merge_nodes, merged_value
 from util import max_connectivity, plt_graph
 
 if not os.path.exists("./LOG"):
@@ -42,7 +42,7 @@ def traverse_hier_in_graph(G, hier_graph_dict):
 def read_inputs(file):
     hier_graph_dict = {}
     hier_graph = nx.read_yaml(file)
-    plt_graph(hier_graph, "Original_graph")
+    #plt_graph(hier_graph, "Original_graph")
     top_ports = []
     for node, attr in hier_graph.nodes(data=True):
         if 'source' in attr['inst_type']:
@@ -67,11 +67,11 @@ def read_lib(lib_dir_path):
     library_dir_path = lib_dir_path
     lib_files = os.listdir(library_dir_path)
     if os.path.isfile("dont_use_cells.txt"):
-        print("Reading Dont Use cells: dont_use_cells.txt")
+        logging.info("Reading Dont Use cells: dont_use_cells.txt")
         with open('dont_use_cells.txt') as f:
             dont_use_library = f.read().splitlines()
     else:
-        print("no dont use list defined")
+        logging.info("no dont use list defined")
 
     library = []
     for sub_block_name in lib_files:
@@ -173,12 +173,15 @@ def reduce_graph(G1, mapped_graph_list, liblist):
                         remove_these_nodes[0]]["inst_type"] = sub_block_name
                     G1.nodes[
                         remove_these_nodes[0]]["ports_match"] = matched_ports
+                    G1.nodes[
+                        remove_these_nodes[0]]["values"] =  merged_value({},
+                            G1.nodes[remove_these_nodes[0]]["values"])
+                    #print("updated values",G1.nodes[remove_these_nodes[0]]["values"] )
 
                 else:
                     reduced_graph, subgraph = merge_nodes(
                         G1, sub_block_name, remove_these_nodes, matched_ports)
-                    #plt_graph(reduced_graph,"reduced_graph")
-                    plt_graph(subgraph, sub_block_name)
+                    #plt_graph(subgraph, sub_block_name)
                     logging.info('Calling recursive for bock: ' +
                                  sub_block_name)
                     mapped_subgraph_list = _mapped_graph_list(
@@ -196,7 +199,71 @@ def reduce_graph(G1, mapped_graph_list, liblist):
                         "size": len(subgraph.nodes())
                     })
                     #updated_circuit.append ({"name":sub_block_name,"lib_graph":subgraph,"ports_match":matched_ports,"size":len(subgraph.nodes())})
+
+                #if [val for val in up.values() if isinstance(val, str)]:
+                #    print("wrong value type",new_node)
     return updated_circuit, G1
+
+def preprocess_stack(G):
+    logging.info("START reducing  stacks in graph: ")
+    no_of_stacking=0
+    logging.debug("initial size of graph:%s",len(G))
+    #print("all matches found")
+    remove_nodes =[]
+    modified_edges ={}
+    modified_nodes ={}
+    for node, attr in G.nodes(data=True):
+        if 'mos' in attr["inst_type"]:
+            for net in G.neighbors(node):
+                edge_wt = G.get_edge_data(node, net)['weight']
+                if edge_wt == 2 and len(list( G.neighbors(net)))==2:
+                    for next_node in G.neighbors(net):
+                        if not next_node == node and G.node[next_node]["inst_type"] == G.node[node]["inst_type"] and G.get_edge_data(next_node, net)['weight'] ==1 :
+                            common_nets = set(G.neighbors(node) ) & set(G.neighbors(next_node))
+                            drain_net = str(set(G.neighbors(node) ) - common_nets)
+                            source_net = list(set(G.neighbors(next_node)) - common_nets)[0]
+                            #print ("Gate node: ",str(net),node,next_node,list(G.neighbors(node)),set(G.neighbors(next_node)), list(common_nets),drain_net, source_net)
+                            if len(common_nets)==2:
+                                common_nets.remove(net)
+                                gate_net =list(common_nets)[0]
+                                #print(common_nets,  G.get_edge_data(node, gate_net)['weight'])
+                                ## greater than symbol to accomodate shorted gate drain
+                                if G.get_edge_data(node, gate_net)['weight'] >=4 and G.get_edge_data(next_node, gate_net)['weight'] >=4:
+                                    #print("Found Two singly connected nodes",node, next_node)
+                                    lequivalent = 0
+                                    #print(G.node[next_node]["values"])
+                                    for param,value in G.node[next_node]["values"].items():
+                                        if 'l' == param:
+                                            #print("param1",node,param,value)
+                                            lequivalent = float(value.replace('u',''))
+                                    for param,value in G.node[node]["values"].items():
+                                        if 'l' == param:
+                                            #print("param2",node,param,value)
+                                            #lequivalent +=float(re.sub("[^0-9]", "", value))
+                                            lequivalent +=float(value.replace('u',''))
+                                            #G.node[node]["values"][param]=str(lequivalent)
+                                            modified_nodes[node]=str(lequivalent)
+                                            #print("updating node",node)
+                                    #print("lequivalent",lequivalent)
+                                    remove_nodes.append(net)
+                                    modified_edges[node]=[source_net,G[next_node][source_net]["weight"]]
+                                    #G.add_edge(node, source_net, weight=G[next_node][source_net]["weight"])
+                                    remove_nodes.append(next_node)
+    for node,attr in modified_edges.items():
+        #print(node,attr)
+        G.add_edge(node, attr[0],weight=attr[1])
+
+    for node,attr in modified_nodes.items():
+        #print(attr)
+        G.node[node]["values"]['l']= attr
+
+    for node in remove_nodes:
+        G.remove_node(node)
+
+    logging.debug("reduced_size after resolving stacked transistor:%s",len(G))
+    logging.debug("\n######################START CREATING HIERARCHY##########################\n")
+    return G 
+
 
 
 if __name__ == '__main__':
@@ -209,7 +276,6 @@ if __name__ == '__main__':
             "\nmore than one graphs in available in dir please use'rm ./circuit_graphs/*'"
         )
         exit(0)
-
     CIRCUIT_GRAPH = CIRCUIT_GRAPH[0]
     INPUT_CKT_FILE = CIRCUIT_GRAPH_DIR + CIRCUIT_GRAPH
     logging.info("READING input circuit graph: %s", INPUT_CKT_FILE)
@@ -227,15 +293,12 @@ if __name__ == '__main__':
         G1 = circuit["graph"]
 
         logging.info("no of nodes: %s", str(len(circuit["graph"].nodes())))
+        reduced_graph = preprocess_stack(G1)
         mapped_graph_list = _mapped_graph_list(G1, LIB_LIST)
         updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, LIB_LIST)
 
-        #rest_nodes= [x for x,y in Grest.nodes(data=True) if 'mos' in y['inst_type']]
-        #print('Reduced netlist elements in block:',circuit_name,' : ',  Grest.nodes())
         # Create top ports by removing sources from top
         UPDATED_CIRCUIT_LIST.extend(updated_circuit)
-
-        #print(circuit["ports"])
 
         UPDATED_CIRCUIT_LIST.append({
             "name": circuit_name,
@@ -244,10 +307,8 @@ if __name__ == '__main__':
             "size": len(Grest.nodes())
         })
 
-    plt_graph(Grest, "Final reduced graph")
+    #plt_graph(Grest, "Final reduced graph")
 
-    #for element in reduced_circuit:
-    #    print("\nName: nodes",element["name"],element["ports_match"],element["lib_graph"].nodes())
     if not os.path.exists("results"):
         os.mkdir("results")
     with open('results/' + CIRCUIT_GRAPH[:-5] + '.p', 'wb') as handle:

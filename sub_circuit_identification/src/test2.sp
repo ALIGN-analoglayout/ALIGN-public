@@ -30,7 +30,7 @@
 * View Name:    schematic
 ************************************************************************
 
-.SUBCKT test2 Vbias Vin Vout
+.SUBCKT 1_CS_inductive_load Vbias Vin Vout
 *.PININFO Vbias:I Vin:I Vout:O
 LL0 vdd! Vout 2m $[LP]
 MM0 Vout net5 gnd! gnd! nmos_rvt w=27n l=20n nfin=1

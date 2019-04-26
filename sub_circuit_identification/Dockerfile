@@ -10,11 +10,7 @@ FROM with_python as topology
  
 RUN \
     mkdir -p /DEMO \
-    rm  /DEMO/ \
-    mkdir -p /DEMO/src \
-    mkdir -p /DEMO/circuit_graphs \
-    mkdir -p /DEMO/library_graphs \
-    mkdir -p results
+    rm  /DEMO/
 
 COPY . /DEMO/
 
