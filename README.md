@@ -5,12 +5,16 @@
  
 
 # Design Flow 
-Continuous Integration (CI) using circleci
+```bash
+Continuous Integration (CI) using circleci to integrate code from multiple developers. 
+Each checkin is verified automatically before integrating it to master build.
+Code coverage and quality checks are done.
+
+```
 ## Design database:
 ## Build : 
 
 * Docker setup initialization for c++/python
-* Code coverage check setup example
 
 
 ## Circuit Annotation :
