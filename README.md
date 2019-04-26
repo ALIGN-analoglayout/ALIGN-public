@@ -8,8 +8,8 @@
 ## Continuous Integration
 ```bash
   - Circleci to integrate code from multiple developers. 
-  - Each checkin is verified automatically before merging.
-  - Code coverage and quality checks are done.
+  - Each checkin is verified automatically .
+  - Code coverage and quality checks are done before merging.
 
 ```
 ## Design database:
