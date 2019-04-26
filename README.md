@@ -12,6 +12,8 @@
 
 ```
 ## Design database:
+ * Contains example circuits with netlist, schematic
+ 
 ## Build : 
 
 * Docker setup initialization for c++/python
