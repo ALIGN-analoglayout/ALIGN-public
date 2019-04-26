@@ -38,8 +38,8 @@ Creation of LEF and GDS for cells based on PDK data ( private github)
 * Setup and run Intel’s detailed router. Takes leaf cell placement and global routing information and setups up the detailed routing task.
 ## Viewer :
 * GDS viewer KLayout: https://github.com/KLayout/klayout
-Final results from JSON file
-* 
+* Final results from JSON file
+
 ## Tutorials: Not exhaustive (WIP)
 
 ## Miscellaneous 
