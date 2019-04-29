@@ -1,4 +1,4 @@
-Non-overlapping Clock Generator
+Fully differential telescopic OTA
 
 Files present:
 
@@ -6,8 +6,9 @@ Files present:
 
 2. Schematic
 
-3. Layout
+3. Testbench
+
 
 To be added:
 
-- Testbench
+- Layout
