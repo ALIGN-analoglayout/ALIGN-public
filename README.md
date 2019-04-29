@@ -37,7 +37,12 @@
   - Creation of LEF and GDS for cells based on PDK data ( private github).
   - The sizing is parameterized based on sizing in input netlist.
 ```
-## Placement and Routing :  
+## Placement and Routing : 
+* PlaceRouteHierFlow:
+```bash
+Hierarchical placement and router.
+Final output is stored in gds format
+```
 * PlacemenEditor: 
 ```bash
   - View and edit placements of leaf cells. 
