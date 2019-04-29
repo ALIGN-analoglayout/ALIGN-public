@@ -22,8 +22,8 @@ def convert_GDSjson_GDStxt (name, oname):
     ofile = open (oname, 'wb')
 
     def oprint (*args):
-        for i in range(len(args)):
-            print (args[i], file=ofile, end='')
+        for i, arg in enumerate(args):
+            print (arg, file=ofile, end='')
             if i < len(args) - 1: print (' ', file=ofile, end='')
         print('', file=ofile)
                

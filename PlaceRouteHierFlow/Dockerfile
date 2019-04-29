@@ -8,5 +8,7 @@ RUN \
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
 
+WORKDIR /PlaceRouteHierFlow
+
 RUN \
-    cd /PlaceRouteHierFlow && make
+    make
