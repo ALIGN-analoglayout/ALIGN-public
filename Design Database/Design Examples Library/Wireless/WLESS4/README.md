@@ -1,4 +1,4 @@
-Charge pump circuit used in a LDO
+Oscillator circuit
 
 Files present:
 

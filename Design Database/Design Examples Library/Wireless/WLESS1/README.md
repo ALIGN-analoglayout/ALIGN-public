@@ -1,4 +1,4 @@
-Charge pump circuit used in a LDO
+Low noise amplifier used in an RF Transceiver
 
 Files present:
 

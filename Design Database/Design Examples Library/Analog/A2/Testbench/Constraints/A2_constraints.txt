@@ -1,0 +1,11 @@
+Constraints for the comparator circuit
+
+Initial pre-amplifier stage
+- matching between the differential pair and current mirror
+- symmetry
+
+Decision making stage
+- symmetry
+
+Output buffer
+- None

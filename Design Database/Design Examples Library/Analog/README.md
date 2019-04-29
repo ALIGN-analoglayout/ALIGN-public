@@ -7,3 +7,5 @@ A2 : Comparator (not clocked)
 A3 : Comparator (clocked)
 
 A4 : Non-overlapping clock generator
+
+A5 : Fully differential telescopic OTA
