@@ -1,0 +1,25 @@
+CC = g++ -w -Wall -std=c++11 -g -O3 -lm -ldl -m64
+
+SOURCE_GDSW = ../GDSWriter
+
+main: main.o capplacer.o GdsReader.o GdsDriver.o GdsWriter.o
+	$(CC) main.o capplacer.o GdsReader.o GdsDriver.o GdsWriter.o -o main
+
+main.o: main.cpp capplacer.h
+	$(CC) -c main.cpp
+
+capplacer.o: capplacer.cpp capplacer.h $(SOURCE_GDSW)/GdsDriver.h $(SOURCE_GDSW)/GdsReader.h $(SOURCE_GDSW)/String.h $(SOURCE_GDSW)/GdsRecords.h $(SOURCE_GDSW)/GdsWriter.h
+	$(CC) -c capplacer.cpp
+
+GdsReader.o:  $(SOURCE_GDSW)/GdsReader.h $(SOURCE_GDSW)/String.h $(SOURCE_GDSW)/GdsRecords.h
+	$(CC) -c $(SOURCE_GDSW)/GdsReader.cpp
+
+GdsDriver.o:  $(SOURCE_GDSW)/GdsDriver.h $(SOURCE_GDSW)/GdsReader.h $(SOURCE_GDSW)/String.h $(SOURCE_GDSW)/GdsRecords.h
+	$(CC) -c $(SOURCE_GDSW)/GdsDriver.cpp
+
+GdsWriter.o:  $(SOURCE_GDSW)/GdsWriter.h $(SOURCE_GDSW)/String.h
+	$(CC) -c $(SOURCE_GDSW)/GdsWriter.cpp
+
+clean:
+	rm -rf *.o
+

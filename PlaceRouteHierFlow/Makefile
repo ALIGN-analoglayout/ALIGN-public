@@ -1,0 +1,51 @@
+
+MAKE=make
+LDFLAGS="-Wl,--no-as-needed -ldl"
+# To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
+LP_DIR?=/usr/local/lib/lpsolve
+SOURCE_LP= $(LP_DIR)/lp_solve_5.5
+
+CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP)
+
+#CC=g++ -w -Wall -std=c++11 -g -DRFLAG
+
+#SOURCE=./
+PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/readfile.o
+PnRDB_path=PnRDB
+placer_path=placer
+Capplacer_path=cap_placer
+Capplacer_objs=cap_placer/capplacer.o
+router_path=router
+placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o
+router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o 
+
+all: subsystem main.o tester
+
+tester:	$(OBJECTS)
+	#$(CC) -o tester $(PnRDB_objs) $(placer_objs) $(router_objs)  main.o -ldl
+	$(CC) -o tester $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -ldl
+
+subsystem:
+
+	$(MAKE) -C $(PnRDB_path);
+	$(MAKE) -C $(placer_path);
+	$(MAKE) -C $(router_path);
+	$(MAKE) -C $(Capplacer_path);
+        
+main.o:
+	$(CC) -c main.cpp
+
+clean:
+	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o $(Capplacer_path)/*.o tester $(router_path)/*.o $(router_path)/steiner tester.log *.pl *.plt *gds all_*
+
+#main.o:		main.cpp datatype.h readfile.h PnRdatabase.h
+#		$(CC) -c main.cpp  
+#
+#readfile.o :    readfile.cpp readfile.h
+#		$(CC) -c readfile.cpp 
+#
+#PnRdatabase.o:	PnRdatabase.h readfile.h datatype.h 
+#		$(CC) -c PnRdatabase.cpp
+#
+#clean:		
+#		/bin/rm -f *.o
