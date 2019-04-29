@@ -38,7 +38,7 @@
   - The sizing is parameterized based on sizing in input netlist.
 ```
 ## Placement and Routing : 
-* PlaceRouteHierFlow:
+* PlaceRouteHierFlow: (private)
 ```bash
 Hierarchical placement and router.
 Final output is stored in gds format
