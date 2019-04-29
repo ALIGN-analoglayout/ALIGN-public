@@ -207,7 +207,7 @@ jobs:
 
       - run: |
           cd Build
-          docker build -f Dockerfile.build -t with_protobuf
+          docker build -f Dockerfile.build -t with_protobuf .
 
       - run: |
           cd PlaceRouteHierFlow
