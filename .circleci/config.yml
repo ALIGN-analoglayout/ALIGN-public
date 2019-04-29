@@ -196,7 +196,39 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/PlacementEditor
+            
+  build-PlaceRouteHierFlow:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
 
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd PlaceRouteHierFlow
+          docker build -t placeroute_image .
+          docker volume create placerInputVol
+          docker volume create placerOutputVol
+          
+      - run: |
+          cd PlaceRouteHierFlow
+          ./run_in_docker.sh
+          
+  build-GDSConv:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd GDSConv
+          docker build -t gds_image .
+          
+      - run: |
+          docker run --rm -ti gds_image /bin/bash -c "cd /GDSConv && pytest"
 
   mono_end_to_end:
     executor: docker-executor
@@ -320,6 +352,12 @@ workflows:
           requires:
             - start 
       - build-PlacementEditor:
+          requires:
+            - start 
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start 
+      - build-GDSConv:
           requires:
             - start 
       - build-sci:
