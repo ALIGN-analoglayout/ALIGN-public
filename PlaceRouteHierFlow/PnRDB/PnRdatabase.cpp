@@ -2792,6 +2792,7 @@ void PnRdatabase::PrintDesignRuleData() {
 //           } else if( edb.record_list[i].compare("UNITS")==0  ) {
 //               real8_idx++;
 //           } else if( edb.record_list[i].compare("BGNSTR")==0  ) {
+//               T_llx=INT_MAX; T_lly=INT_MAX; T_urx=INT_MIN; int T_ury=INT_MIN;
 //               gw.gds_write_bgnstr(); 
 //               gw.gds_flush(); int2_idx++;
 //           } else if( edb.record_list[i].compare("STRNAME")==0  ) {
