@@ -4,7 +4,6 @@
 
 from __future__ import print_function
 from gdsii import tags, types
-from gdsii.record import Record
 import sys
 import re
 

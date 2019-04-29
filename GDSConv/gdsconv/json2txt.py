@@ -8,9 +8,6 @@
 from __future__ import print_function
 
 import json
-
-from gdsii import types
-from gdsii.record import Record
 import sys
 
 def quote (s): return '\"' + s + '\"'

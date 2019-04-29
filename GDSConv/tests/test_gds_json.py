@@ -1,8 +1,5 @@
-import pytest
 import filecmp
 
-from gdsconv.txt2json import convert_GDStxt_GDSjson
-from gdsconv.json2txt import convert_GDSjson_GDStxt
 from gdsconv.gds2json import convert_GDS_GDSjson
 from gdsconv.json2gds import convert_GDSjson_GDS
 

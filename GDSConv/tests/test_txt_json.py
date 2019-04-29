@@ -1,4 +1,3 @@
-import pytest
 import filecmp
 
 from gdsconv.txt2json import convert_GDStxt_GDSjson

@@ -217,6 +217,7 @@ jobs:
           
       - run: |
           cd PlaceRouteHierFlow
+          apk add bash
           ./run_in_docker.sh
           
   build-GDSConv:
