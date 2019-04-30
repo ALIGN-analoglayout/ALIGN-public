@@ -1,6 +1,5 @@
-import networkx as nx
 
-from basic_element import BasicElement, _parse_inst
+from basic_element import _parse_inst
 
 def test_blank():
     be = _parse_inst("")
