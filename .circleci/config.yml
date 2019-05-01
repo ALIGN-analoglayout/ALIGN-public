@@ -148,6 +148,31 @@ jobs:
             - test-reports/cktgen
             - coverage-reports/cktgen
 
+  build-cellfabric:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd CellFabric
+          docker build -t cellfabric_image .
+
+          docker run --name cellfabric_container cellfabric_image bash -c "source general/bin/activate && cd src && coverage run --source=primitives,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cellfabric && cp /src/junit.xml /test-reports/cellfabric && mkdir -p /coverage-reports/cellfabric && cp -r /src/coverage.xml /src/htmlcov /coverage-reports/cellfabric"
+          cd -
+
+          docker cp cellfabric_container:coverage-reports .
+          docker cp cellfabric_container:test-reports .
+          docker rm cellfabric_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/cellfabric
+            - coverage-reports/cellfabric
+
 
   build-satplacer:
     executor: docker-executor
@@ -328,6 +353,9 @@ workflows:
       - build-cktgen:
           requires:
             - start 
+      - build-cellfabric:
+          requires:
+            - start 
       - build-satplacer:
           requires:
             - start 
@@ -340,6 +368,7 @@ workflows:
             - build-sgi 
             - build-PlacementEditor 
             - build-sci 
+            - build-cellfabric
             - build-cktgen 
             - build-pdk 
             - build-satplacer
