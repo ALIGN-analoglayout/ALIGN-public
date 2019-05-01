@@ -1,6 +1,6 @@
 
 import json
-import transformation
+from . import transformation
 
 class StopPointGrid:
     def __init__( self, nm, layer, direction, *, width, pitch, offset=0):
@@ -30,9 +30,10 @@ class StopPointGrid:
     def value( self, idx):
         whole = idx // self.n
         fract = idx % self.n
-        while fract < 0:
-            whole -= 1
-            fract += self.n
+        assert fract >= 0
+#        while fract < 0:
+#            whole -= 1
+#            fract += self.n
         assert fract in self.legalStopIndices
         return whole * self.grid[-1] + self.grid[fract]
 
@@ -196,23 +197,28 @@ class Canvas:
             self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y+(2+o))
             self.ndSegment( '_', 1*(x+0), 1*(x+1), 2*self.m2PerUnitCell*y-(2+o))
 
-        self.dcSegment( 't0', 1*(x+0), 6*y-2, 6*y-1)
-        self.dcSegment( 't0', 1*(x+0), 6*y+1, 6*y+2)
-        self.plSegment( 't1', 2*x+0,   4*y-1, 4*y+1)
-        self.plSegment( 't1', 2*x+1,   4*y-1, 4*y+1)
-        self.dcSegment( 't0', 1*(x+1), 6*y-2, 6*y-1)
-        self.dcSegment( 't0', 1*(x+1), 6*y+1, 6*y+2)
+        assert self.dc.n == 6
+        assert self.pl.n == 4
+        assert self.pc.n == 4
+        assert self.m1.n == 4
 
-        self.pcSegment( 't1', 4*(x+0)+1, 4*(x+1)-1, 2*y+0)
+        self.dcSegment( 't0', 1*(x+0), (y,-2), (y,-1))
+        self.dcSegment( 't0', 1*(x+0), (y, 1), (y, 2))
+        self.plSegment( 't1', 2*x+0,   (y,-1), (y, 1))
+        self.plSegment( 't1', 2*x+1,   (y,-1), (y, 1))
+        self.dcSegment( 't0', 1*(x+1), (y,-2), (y,-1))
+        self.dcSegment( 't0', 1*(x+1), (y, 1), (y, 2))
+
+        self.pcSegment( 't1', (x+0, 1), (x+1,-1), 2*y+0)
 
       if True:
-        self.m1Segment( 't0', 2*(x+0)+0, 4*y-1, 4*y+1)
-        self.m1Segment( 't1', 2*(x+0)+1, 4*y-1, 4*y+1)
-        self.m1Segment( 't0', 2*(x+1)+0, 4*y-1, 4*y+1)
+        self.m1Segment( 't0', 2*(x+0)+0, (y,-1), (y, 1))
+        self.m1Segment( 't1', 2*(x+0)+1, (y,-1), (y, 1))
+        self.m1Segment( 't0', 2*(x+1)+0, (y,-1), (y, 1))
 
-        self.m3Segment( 't0', 2*(x+0)+0, 4*y-1, 4*y+1)
-        self.m3Segment( 't1', 2*(x+0)+1, 4*y-1, 4*y+1)
-        self.m3Segment( 't0', 2*(x+1)+0, 4*y-1, 4*y+1)
+        self.m3Segment( 't0', 2*(x+0)+0, (y,-1), (y, 1))
+        self.m3Segment( 't1', 2*(x+0)+1, (y,-1), (y, 1))
+        self.m3Segment( 't0', 2*(x+1)+0, (y,-1), (y, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
@@ -220,50 +226,3 @@ class Canvas:
         for o in range(-h,h+1):
             net = 't1' if o % 2 == 0 else 't0'
             self.m2Segment( net, 4*x-1, 4*(x+1)+1, self.m2PerUnitCell*y+o)
-
-        
-
-
-import argparse
-
-def test_nunit():
-    c = Canvas()
-
-    for (x,y) in ( (x,y) for x in range(2) for y in range(1)):
-        c.nunit( x, y)
-
-    c.computeBbox()
-
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        data = { 'bbox' : c.bbox.toList(),
-                 'globalRoutes' : [],
-                 'globalRouteGrid' : [],
-                 'terminals' : c.terminals}
-        fp.write( json.dumps( data, indent=2) + '\n')
-
-def test_cunit():
-    c = Canvas()
-
-    for (x,y) in ( (x,y) for x in range(16) for y in range(4)):
-        c.cunit( x, y)
-
-    c.computeBbox()
-
-    with open( "mydesign_dr_globalrouting.json", "wt") as fp:
-        data = { 'bbox' : c.bbox.toList(),
-                 'globalRoutes' : [],
-                 'globalRouteGrid' : [],
-                 'terminals' : c.terminals}
-        fp.write( json.dumps( data, indent=2) + '\n')
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser( description="Build test device and cap fabrics")
-    parser.add_argument( "-n", "--block_name", type=str, required=True)
-    args = parser.parse_args()
-
-    if args.block_name == "nunit":
-        test_nunit()
-    elif args.block_name == "cunit":
-        test_cunit()
