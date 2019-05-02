@@ -210,6 +210,7 @@ class PnRdatabase
     void PrintHierTree();
     bool ReadMap(string fpath, string mapname); // read gds data from map file
     bool ReadDesignRule(string drfile); //  read design rule data from design rule file
+    bool HardDesignRule(); // hard-code design rules
 	//+Jinhyun	
 	PnRDB::designRule getDesignRule(){ return drData;};	
     //added by yg
