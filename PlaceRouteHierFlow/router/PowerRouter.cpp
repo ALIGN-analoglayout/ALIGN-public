@@ -1075,11 +1075,11 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
 
   for(int i=0;i<PowerNets.size();i++){
       
-      int index;
+      int index=-1;
       for(int j=0;j<node.PowerNets.size();j++){
            if(PowerNets[i].netName == node.PowerNets[j].name){index = j; break;}
          }
-      
+      if (index!=-1) {
       for(int j=0;j<PowerNets[i].path_metal.size();j++){
           PnRDB::Metal temp_metal;
           ConvertToMetalPnRDB_Placed_Placed(temp_metal,PowerNets[i].path_metal[j]);
@@ -1091,7 +1091,7 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
            ConvertToViaPnRDB_Placed_Placed(temp_via,PowerNets[i].path_via[j]);
            node.PowerNets[index].path_via.push_back(temp_via);
          }
-
+      }
      }
 
 };

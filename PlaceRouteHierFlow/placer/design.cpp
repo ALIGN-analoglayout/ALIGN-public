@@ -523,7 +523,7 @@ void design::readBlockFile(string blockfile) {
   p=&p_temp;
   
   placerDB::point p1,p2,p3,p4;
-  int blockNo, terminalNo;
+  int blockNo=0, terminalNo=0;
   while(!fin.eof()) {
     getline(fin, def);
     if((found=def.find("NumHardRectilinearBlocks"))!=string::npos) {

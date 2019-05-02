@@ -381,7 +381,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
   if(this->drc_info.Metal_info.at(mdx).direct==0) { // if vertical layer
     int curlayer_unit=this->x_unit.at(mdx); // current layer direction: vertical
     int nexlayer_unit; // neighboring layer direction: horizontal
-    int gLLx, gLLy, gURx, gURy;
+    int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLx= curlayer_unit * (int)floor(double(pLLx)/curlayer_unit);  // X lower boudary
     gLLx-=curlayer_unit*offset;
     gURx= curlayer_unit * (int)ceil(double(pURx)/curlayer_unit);  // X upper boudary
@@ -429,7 +429,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
   } else if (this->drc_info.Metal_info.at(mdx).direct==1) { // if horizontal layer
     int curlayer_unit=this->y_unit.at(mdx); // current layer direction: horizontal
     int nexlayer_unit; // neighboring layer direction: vertical
-    int gLLx, gLLy, gURx, gURy;
+    int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLy= curlayer_unit * (int)floor(double(pLLy)/curlayer_unit);  // Y lower boudary
     gLLy-=curlayer_unit*offset;
     gURy= curlayer_unit * (int)ceil(double(pURy)/curlayer_unit);  // Y upper boudary
@@ -483,7 +483,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
   if(this->drc_info.Metal_info.at(mdx).direct==0) { // if vertical layer
     int curlayer_unit=this->x_unit.at(mdx); // current layer direction: vertical
     int nexlayer_unit; // neighboring layer direction: horizontal
-    int gLLx, gLLy, gURx, gURy;
+    int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLx= curlayer_unit * (int)ceil(double(pLLx)/curlayer_unit);  // X lower boudary
     gURx= curlayer_unit * (int)floor(double(pURx)/curlayer_unit); // X upper boudary
     if(mdx==0) { // if lowest layer
@@ -525,7 +525,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
   } else if (this->drc_info.Metal_info.at(mdx).direct==1) { // if horizontal layer
     int curlayer_unit=this->y_unit.at(mdx); // current layer direction: horizontal
     int nexlayer_unit; // neighboring layer direction: vertical
-    int gLLx, gLLy, gURx, gURy;
+    int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLy= curlayer_unit * (int)ceil(double(pLLy)/curlayer_unit);  // Y lower boudary
     gURy= curlayer_unit * (int)floor(double(pURy)/curlayer_unit);  // Y upper boudary
     if(mdx==0) { // if lowest layer
