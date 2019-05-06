@@ -1,21 +1,6 @@
-FROM with_python as fabric
+FROM stevenmburns/pysat_image:2019mar14 as cktgen
+
+COPY . /src/
 
 RUN \
-    mkdir -p /scripts
-
-ADD *.py /scripts/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  bash -c "source general/bin/activate && cd /src && pip install ."
