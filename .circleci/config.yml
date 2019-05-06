@@ -233,7 +233,14 @@ jobs:
           docker build -t gds_image .
           
       - run: |
-          docker run --rm -ti gds_image /bin/bash -c "cd /GDSConv && pytest"
+          docker run --rm --name run_gds -ti gds_image /bin/bash -c "cd /GDSConv && pytest"
+          mkdir gds-test-reports
+          docker cp run_gds:/GDSConv/junit.xml gds-test-reports
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - gds-test-reports
 
   mono_end_to_end:
     executor: docker-executor
