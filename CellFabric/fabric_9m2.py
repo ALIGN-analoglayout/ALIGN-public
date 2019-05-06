@@ -77,7 +77,7 @@ class Canvas:
 
         pcPitch  = 720
         m1Pitch  = 720 
-        m3Pitch  = 720 
+#        m3Pitch  = 720 
 
         plPitch  = m1Pitch
         plOffset = plPitch//2
@@ -86,7 +86,7 @@ class Canvas:
         pcWidth = 200
         m1Width = 400
         m2Width = 400
-        m3Width = 400
+#        m3Width = 400
         dcWidth = 200
         plWidth = 200
 
@@ -144,7 +144,7 @@ class Canvas:
 
     def addSegment( self, grid, netName, c, bIdx, eIdx):
         def f( idx):
-            if type(idx) is tuple:
+            if isinstance(idx) is tuple:
                 return idx[1] + grid.n*idx[0]
             else:
                 return idx
