@@ -10,7 +10,7 @@ import re
 def show_data(tag_type, data):
     """Shows data in a human-readable format."""
     if tag_type == types.ASCII:
-        return '"%s"' % data[1:-1].encode() # TODO escape
+        return '"%s"' % data[1:-1]
     elif tag_type == types.BITARRAY:
         return int(data)
     elif tag_type == types.REAL8:
@@ -39,7 +39,7 @@ def convert_GDStxt_GDSjson (name, oname):
     levelTag = [""] * 256
     rexp = re.compile(r'^(?P<tag>[^:]+)(:\s*(?P<rest>.*))?$')
     lineno = 1
-    ofile = open (oname, 'wb')
+    ofile = open (oname, 'wt')
 
     def indent (l):
         while l > 0:
@@ -52,7 +52,7 @@ def convert_GDStxt_GDSjson (name, oname):
         indent(level)
         for i in s:          print (i, end='', file=ofile)
         
-    with open (name, 'rb') as ifile:
+    with open (name, 'rt') as ifile:
         indentPrint(level, first, '{')
         for line in ifile:
             stripped = line.strip()

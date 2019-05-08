@@ -20,7 +20,7 @@ def unbracket (l):    return str(l)[1:-1]
 def quote (s):        return '\"' + s + '\"'
 
 def convert_GDSjson_GDS (name, oname):
-    ifile = open (name, 'rb')
+    ifile = open (name, 'rt')
     ofile = open (oname, 'wb')
     
     def store_data (tag_name, idata):

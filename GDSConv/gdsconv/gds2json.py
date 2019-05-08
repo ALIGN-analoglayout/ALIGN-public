@@ -32,7 +32,7 @@ def isElement (e):
 def convert_GDS_GDSjson (name, oname):
     level = 0
 
-    ofile = open (oname, 'wb')
+    ofile = open (oname, 'wt')
     def indent (l):
         while l > 0:
             print("    ", end='', file=ofile)

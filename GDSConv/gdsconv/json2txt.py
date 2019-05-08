@@ -19,7 +19,7 @@ def unbracket (name):
     return str(name)[1:-1]
 
 def convert_GDSjson_GDStxt (name, oname):
-    ofile = open (oname, 'wb')
+    ofile = open (oname, 'wt')
 
     def oprint (*args):
         for i, arg in enumerate(args):
@@ -27,7 +27,7 @@ def convert_GDSjson_GDStxt (name, oname):
             if i < len(args) - 1: print (' ', file=ofile, end='')
         print('', file=ofile)
                
-    with open (name, 'rb') as a_file:
+    with open (name, 'rt') as a_file:
         data = json.load (a_file)
         oprint ("HEADER:", bracket(data['header']))
         for lib in data['bgnlib']:
