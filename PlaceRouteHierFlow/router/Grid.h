@@ -35,6 +35,7 @@ class Grid {
     RouterDB::point UR; // Upper-right point of working die
     RouterDB::point GridLL; // Lower-left point of actual grid
     RouterDB::point GridUR; // Upper-right point of actual grid
+    std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> > vertices_total_map; // improve runtime of up/down edges - [wbxu: 20190505]
     //RouterDB::point LL_graph; //LL for create graph
     //RouterDB:;point UR_graph; //UR for create graph
     //vector<RouterDB::SinkData> Source; //what is the correct defination of Source and Dest?
@@ -50,8 +51,8 @@ class Grid {
     Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale);
 
     Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector<RouterDB::Metal>& glb_path, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset);
-    void ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<RouterDB::vertex>& new_vertices, std::map<int, int>& old2new, std::map<int, int>& new2old, std::vector<int>& old_source, std::vector<int>& old_dest, std::vector<int>& new_source, std::vector<int>& new_dest, std::vector<int>& new_start, std::vector<int>& new_end, int LLx, int LLy, int URx, int URy);
-    void CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::point AreaLL, RouterDB::point AreaUR, std::vector<RouterDB::vertex>& fake_vertices_total, std::vector<int>& fake_Start_index_metal_vertices, std::vector<int>& fake_End_index_metal_vertices);
+    void ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<RouterDB::vertex>& new_vertices, std::map<int, int>& old2new, std::map<int, int>& new2old, std::vector<int>& old_source, std::vector<int>& old_dest, std::vector<int>& new_source, std::vector<int>& new_dest, std::vector<int>& new_start, std::vector<int>& new_end, int LLx, int LLy, int URx, int URy, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& new_vertices_map );
+    void CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::point AreaLL, RouterDB::point AreaUR, std::vector<RouterDB::vertex>& fake_vertices_total, std::vector<int>& fake_Start_index_metal_vertices, std::vector<int>& fake_End_index_metal_vertices, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& fake_vertices_total_map);
     void GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, int offset, RouterDB::point& gLL, RouterDB::point& gUR, int Lmetal, int Hmetal);
     void CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> >& Vset, std::vector< std::set<RouterDB::point, RouterDB::pointYXComp> >& Hset, int mdx, int pLLx, int pLLy, int pURx, int pURy, int Lmetal, int Hmetal);
 

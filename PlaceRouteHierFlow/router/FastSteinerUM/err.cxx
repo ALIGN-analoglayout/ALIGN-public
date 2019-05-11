@@ -11,7 +11,7 @@ namespace fastSteiner
 */
 
 void  err_msg(
-char* msg
+const char* msg
 )
 {
   fprintf(stderr, "%s\n", msg);
@@ -23,7 +23,7 @@ char* msg
 */
 
 void  err_exit(
-char* msg
+const char* msg
 )
 {
   fprintf(stderr, "%s\n", msg);

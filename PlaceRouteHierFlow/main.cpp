@@ -66,6 +66,7 @@ int main(int argc, char** argv ){
     std::cout<<"Checkpoint : before route"<<std::endl;
     DB.PrintHierNode(current_node);
     //    DB.WriteGDS(current_node, true, false, false, false, current_node.name+"_PL", drcInfo); //block net powernet powergrid
+    DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL", drcInfo); //block net powernet powergrid
 
     Router curr_route;
 
@@ -76,6 +77,7 @@ int main(int argc, char** argv ){
     DB.PrintHierNode(current_node);
 
     //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_GR", drcInfo);
+    DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR", drcInfo);
 
     // Detail Routing
     std::cout<<"Checkpoint : detail route"<<std::endl;
@@ -84,6 +86,7 @@ int main(int argc, char** argv ){
     DB.PrintHierNode(current_node);
 
     //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_DR", drcInfo);
+    DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR", drcInfo);
 
     if(current_node.isTop){
       std::cout<<"Checkpoint : Starting Power Grid Creation"<<std::endl;
@@ -91,16 +94,19 @@ int main(int argc, char** argv ){
       std::cout<<"Checkpoint : End Power Grid Creation"<<std::endl;
 
       //      DB.WriteGDS(current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
+      DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
       
       std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
       curr_route.RouteWork(3, current_node, drcInfo, 0, 6, binary_directory);
       std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
 
       //      DB.WriteGDS(current_node, true, false, true, true, current_node.name+"_PR", drcInfo);
+      DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR", drcInfo);
       
       }
   
     //    DB.WriteGDS(current_node, true, true, true, true, current_node.name, drcInfo);
+    DB.WriteJSON (current_node, true, true, true, true, current_node.name, drcInfo);
     // Update node
     DB.CheckinHierNode(idx, current_node);
     //return 0;

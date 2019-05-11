@@ -221,8 +221,8 @@ int  main
       printf( "%ld (%f, %f) -> (%f, %f)   %f\n",
               i, //parent[i], 
               pt[i].x, pt[i].y,
-              pt[parent[i]].x, pt[parent[i]].y);//,
-              //dist( pt[i], pt[parent[i]] ) );
+              pt[parent[i]].x, pt[parent[i]].y,
+	      dist( pt[i], pt[parent[i]] ) );
     }
   }  
 

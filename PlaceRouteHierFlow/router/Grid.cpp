@@ -25,6 +25,7 @@ Grid::Grid(const Grid& other) {
   this->highest_metal=other.highest_metal;
   this->grid_scale=other.grid_scale;
   this->layerNo=other.layerNo;
+  this->vertices_total_map=other.vertices_total_map;
 }
 
 
@@ -53,6 +54,7 @@ Grid& Grid::operator= (const Grid& other) {
   this->highest_metal=other.highest_metal;
   this->grid_scale=other.grid_scale;
   this->layerNo=other.layerNo;
+  this->vertices_total_map=other.vertices_total_map;
   return *this;
 }
 
@@ -89,6 +91,8 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
   this->y_unit.resize(this->layerNo, 0);
   this->x_min.resize(this->layerNo, 0);
   this->y_min.resize(this->layerNo, 0);
+  this->vertices_total_map.clear();
+  this->vertices_total_map.resize(this->layerNo); // improve runtime of up/down edges - [wbxu: 20190505]
   // 3. Calculate grid unit and min length for each layer
   for(int i=0;i<this->layerNo;i++) {
     //this->Start_index_metal_vertices.at(i)=0;
@@ -147,7 +151,8 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
   std::vector<RouterDB::vertex> fake_vertices_total; // vertex total list
   std::vector<int> fake_Start_index_metal_vertices(this->layerNo, 0); // starting index in list for each metal layer
   std::vector<int> fake_End_index_metal_vertices(this->layerNo, -1); // ending index in list for each metal layer
-  CreateGridCoreFunc(this->lowest_metal, this->highest_metal, false, this->GridLL, this->GridUR, fake_vertices_total, fake_Start_index_metal_vertices, fake_End_index_metal_vertices);
+  std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> > fake_vertices_total_map(this->layerNo); // improve runtime of up/down edges - [wbxu: 20190505]
+  CreateGridCoreFunc(this->lowest_metal, this->highest_metal, false, this->GridLL, this->GridUR, fake_vertices_total, fake_Start_index_metal_vertices, fake_End_index_metal_vertices, fake_vertices_total_map);
   // 6. activate vertices according to global routes and block pins
   for(std::vector<RouterDB::vertex>::iterator it=fake_vertices_total.begin(); it!=fake_vertices_total.end();++it) {
     int mm=it->metal;
@@ -161,10 +166,10 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
     }
   }
   // 7. create real grids
-  ReduceGrid(fake_vertices_total, this->vertices_total,fake_total2graph, fake_graph2total, fake_old_source, fake_old_dest, fake_new_source, fake_new_dest, this->Start_index_metal_vertices, this->End_index_metal_vertices, this->GridLL.x, this->GridLL.y, this->GridUR.x, this->GridUR.y);
+  ReduceGrid(fake_vertices_total, this->vertices_total,fake_total2graph, fake_graph2total, fake_old_source, fake_old_dest, fake_new_source, fake_new_dest, this->Start_index_metal_vertices, this->End_index_metal_vertices, this->GridLL.x, this->GridLL.y, this->GridUR.x, this->GridUR.y, this->vertices_total_map);
 }
 
-void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<RouterDB::vertex>& new_vertices, std::map<int, int>& old2new, std::map<int, int>& new2old, std::vector<int>& old_source, std::vector<int>& old_dest, std::vector<int>& new_source, std::vector<int>& new_dest, std::vector<int>& new_start, std::vector<int>& new_end, int LLx, int LLy, int URx, int URy) {
+void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<RouterDB::vertex>& new_vertices, std::map<int, int>& old2new, std::map<int, int>& new2old, std::vector<int>& old_source, std::vector<int>& old_dest, std::vector<int>& new_source, std::vector<int>& new_dest, std::vector<int>& new_start, std::vector<int>& new_end, int LLx, int LLy, int URx, int URy, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& new_vertices_map) {
   new_vertices.clear(); old2new.clear(); new2old.clear();
   new_source.clear(); new_dest.clear();
   new_start.clear(); new_start.resize(this->layerNo, 0);
@@ -181,8 +186,13 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
   }
   // b. update index within vertex and start/end flag of new list
   std::vector<int> tmpv; int tmpi;
+  RouterDB::point tmpp;
   int preMetal=-2;
   for(int i=0;i<(int)new_vertices.size();i++) {
+    tmpp.x=new_vertices.at(i).x; tmpp.y=new_vertices.at(i).y;
+    if(new_vertices.at(i).metal>=0) {
+    new_vertices_map.at(new_vertices.at(i).metal).insert( std::pair<RouterDB::point, int>(tmpp, i) ); // improve runtime of up/down edges - [wbxu: 20190505]
+    }
     if(preMetal!=new_vertices.at(i).metal) {
       new_start.at( new_vertices.at(i).metal )=i;
       new_end.at( new_vertices.at(i).metal )=i;
@@ -227,12 +237,13 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
   }
 }
 
-void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::point AreaLL, RouterDB::point AreaUR, std::vector<RouterDB::vertex>& fake_vertices_total, std::vector<int>& fake_Start_index_metal_vertices, std::vector<int>& fake_End_index_metal_vertices) {
+void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::point AreaLL, RouterDB::point AreaUR, std::vector<RouterDB::vertex>& fake_vertices_total, std::vector<int>& fake_Start_index_metal_vertices, std::vector<int>& fake_End_index_metal_vertices, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& fake_vertices_total_map) {
   fake_vertices_total.clear();
   fake_Start_index_metal_vertices.clear(); 
   fake_Start_index_metal_vertices.resize(this->layerNo, 0);
   fake_End_index_metal_vertices.clear();
   fake_End_index_metal_vertices.resize(this->layerNo, -1);
+  RouterDB::point tmpp; // improve runtime of up/down edges - [wbxu: 20190505]
   // a. create grids
   for(int i=Lmetal; i<=Hmetal; i++) {
     fake_Start_index_metal_vertices.at(i)=fake_vertices_total.size();
@@ -274,6 +285,7 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
             }
           }
           if(!pmark) {continue;}
+          tmpp.x=X; tmpp.y=Y; // improve runtime of up/down edges - [wbxu: 20190505]
           tmpv.y=Y;
           tmpv.x=X;
           tmpv.metal=i;
@@ -295,6 +307,7 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
             fake_vertices_total.at(w).north.push_back(tmpv.index);
           }
           fake_vertices_total.push_back(tmpv);
+          fake_vertices_total_map.at(i).insert( std::pair<RouterDB::point, int>(tmpp, fake_vertices_total.size()-1) ); // improve runtime of up/down edges - [wbxu: 20190505]
         }
       }
     } else if (this->drc_info.Metal_info.at(i).direct==1) { // if horizontal layer
@@ -335,6 +348,7 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
             }
           }
           if(!pmark) {continue;}
+          tmpp.x=X; tmpp.y=Y; // improve runtime of up/down edges - [wbxu: 20190505]
           tmpv.y=Y;
           tmpv.x=X;
           tmpv.metal=i;
@@ -356,6 +370,7 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
             fake_vertices_total.at(w).east.push_back(tmpv.index);
           }
           fake_vertices_total.push_back(tmpv);
+          fake_vertices_total_map.at(i).insert( std::pair<RouterDB::point, int>(tmpp, fake_vertices_total.size()-1) ); // improve runtime of up/down edges - [wbxu: 20190505]
         }
       }
     } else {
@@ -364,15 +379,24 @@ void Grid::CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::poin
     fake_End_index_metal_vertices.at(i)=fake_vertices_total.size()-1;
   } 
   // b. Add up/down infom for grid points
+  std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=Lmetal; k<Hmetal; k++) {
     for(int i=fake_Start_index_metal_vertices.at(k);i<=fake_End_index_metal_vertices.at(k);i++) {
-      for(int j=fake_Start_index_metal_vertices.at(k+1);j<=fake_End_index_metal_vertices.at(k+1);j++) {
-        if(fake_vertices_total[j].x==fake_vertices_total[i].x and fake_vertices_total[j].y==fake_vertices_total[i].y ) {
-          fake_vertices_total[j].down=i;
-          fake_vertices_total[i].up=j;
-          break;
-        }
+      // improve runtime of up/down edges - [wbxu: 20190505]
+      tmpp.x=fake_vertices_total[i].x;
+      tmpp.y=fake_vertices_total[i].y;
+      mit=fake_vertices_total_map.at(k+1).find(tmpp);
+      if(mit!=fake_vertices_total_map.at(k+1).end()) {
+        fake_vertices_total[i].up=mit->second;
+        fake_vertices_total[mit->second].down=i;
       }
+      //for(int j=fake_Start_index_metal_vertices.at(k+1);j<=fake_End_index_metal_vertices.at(k+1);j++) {
+      //  if(fake_vertices_total[j].x==fake_vertices_total[i].x and fake_vertices_total[j].y==fake_vertices_total[i].y ) {
+      //    fake_vertices_total[j].down=i;
+      //    fake_vertices_total[i].up=j;
+      //    break;
+      //  }
+      //}
     }
   }
 }
@@ -590,6 +614,8 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
   this->y_unit.resize(this->layerNo, 0);
   this->x_min.resize(this->layerNo, 0);
   this->y_min.resize(this->layerNo, 0);
+  this->vertices_total_map.clear();
+  this->vertices_total_map.resize(this->layerNo); // improve runtime of up/down edges - [wbxu: 20190505]
   // 3. Calculate grid unit and min length for each layer
   for(int i=0;i<this->layerNo;i++) {
     //this->Start_index_metal_vertices.at(i)=0;
@@ -609,7 +635,9 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
   }
   // 4. Create grid points
   bool Power = false;
+  RouterDB::point tmpp; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int i=this->lowest_metal; i<=this->highest_metal; i++) {
+    std::cout<<"Create grid on layer "<<i<<std::endl;
     this->Start_index_metal_vertices.at(i)=this->vertices_total.size();
     if(drc_info.Metal_info.at(i).direct==0) { // if vertical layer
       int curlayer_unit=x_unit.at(i); // current layer direction: vertical
@@ -650,6 +678,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
             }
           }
           if(!pmark) {continue;}
+          tmpp.x=X; tmpp.y=Y; // improve runtime of up/down edges - [wbxu: 20190505]
           tmpv.y=Y;
           tmpv.x=X;
           tmpv.metal=i;
@@ -676,6 +705,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
             this->vertices_total.at(w).north.push_back(tmpv.index);
           }
           this->vertices_total.push_back(tmpv);
+          this->vertices_total_map.at(i).insert( std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size()-1) ); // improve runtime of up/down edges - [wbxu: 20190505]
         }
       }
     } else if (drc_info.Metal_info.at(i).direct==1) { // if horizontal layer
@@ -717,6 +747,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
             }
           }
           if(!pmark) {continue;}
+          tmpp.x=X; tmpp.y=Y; // improve runtime of up/down edges - [wbxu: 20190505]
           tmpv.y=Y;
           tmpv.x=X;
           tmpv.metal=i;
@@ -743,6 +774,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
             this->vertices_total.at(w).east.push_back(tmpv.index);
           }
           this->vertices_total.push_back(tmpv);
+          this->vertices_total_map.at(i).insert( std::pair<RouterDB::point, int>(tmpp, this->vertices_total.size()-1) ); // improve runtime of up/down edges - [wbxu: 20190505]
         }
       }
     } else {
@@ -751,15 +783,25 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
     this->End_index_metal_vertices.at(i)=vertices_total.size()-1;
   } 
   // 5. Add up/down infom for grid points
+  std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=this->lowest_metal; k<this->highest_metal; k++) {
+    std::cout<<"Add up down edges for grid layer "<<k<<std::endl;
     for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
-      for(int j=this->Start_index_metal_vertices.at(k+1);j<=this->End_index_metal_vertices.at(k+1);j++) {
-        if(this->vertices_total[j].x==this->vertices_total[i].x and this->vertices_total[j].y==this->vertices_total[i].y ) {
-          this->vertices_total[j].down=i;
-          this->vertices_total[i].up=j;
-          break;
-        }
+      // improve runtime of up/down edges - [wbxu: 20190505]
+      tmpp.x=this->vertices_total[i].x;
+      tmpp.y=this->vertices_total[i].y;
+      mit=this->vertices_total_map.at(k+1).find(tmpp);
+      if(mit!=this->vertices_total_map.at(k+1).end()) {
+        this->vertices_total[i].up=mit->second;
+        this->vertices_total[mit->second].down=i;
       }
+      //for(int j=this->Start_index_metal_vertices.at(k+1);j<=this->End_index_metal_vertices.at(k+1);j++) {
+      //  if(this->vertices_total[j].x==this->vertices_total[i].x and this->vertices_total[j].y==this->vertices_total[i].y ) {
+      //    this->vertices_total[j].down=i;
+      //    this->vertices_total[i].up=j;
+      //    break;
+      //  }
+      //}
     }
   }
   //CheckVerticesTotal();
@@ -821,15 +863,26 @@ void Grid::InactiveGlobalInternalMetal(std::vector<RouterDB::Block>& Blocks) {
     }
   }  
   // 3. inactive grid poins in collected list
+  RouterDB::point tmpp;
+  std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=this->lowest_metal; k<=this->highest_metal; k++) {
-    for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
-      for(int j=0;j<plist.at(k).size();j++) {
-        if(plist.at(k).at(j).x==this->vertices_total[i].x and plist.at(k).at(j).y==this->vertices_total[i].y ) {
-          this->vertices_total[i].active=false;
-          break;
-        }
+    // improve runtime of up/down edges - [wbxu: 20190505]
+    for(int j=0;j<plist.at(k).size();j++) {
+      tmpp.x=plist.at(k).at(j).x;
+      tmpp.y=plist.at(k).at(j).y;
+      mit=this->vertices_total_map.at(k).find(tmpp);
+      if(mit!=this->vertices_total_map.at(k).end()) {
+        this->vertices_total[mit->second].active=false;
       }
     }
+    //for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
+    //  for(int j=0;j<plist.at(k).size();j++) {
+    //    if(plist.at(k).at(j).x==this->vertices_total[i].x and plist.at(k).at(j).y==this->vertices_total[i].y ) {
+    //      this->vertices_total[i].active=false;
+    //      break;
+    //    }
+    //  }
+    //}
   }
 }
 

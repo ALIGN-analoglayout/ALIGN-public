@@ -217,8 +217,8 @@ void GlobalRouter::listSegments(std::string binaryDIR) {
       }
       myfile.close();
       system(string_steiner.c_str());
-      system("/usr/bin/cat vals >> all_vals");
-      system("/usr/bin/cat output.txt >> all_output.txt");
+      system("/bin/cat vals >> all_vals");
+      system("/bin/cat output.txt >> all_output.txt");
       input.open("vals");
       input>>this->Nets.at(i).numSeg;
       for(int a =0;a<(int)this->Nets.at(i).numSeg;a++) {

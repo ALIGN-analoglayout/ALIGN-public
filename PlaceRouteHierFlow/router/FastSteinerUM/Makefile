@@ -1,6 +1,8 @@
 .SUFFIXES:      .o .cxx
 
-CC	= g++ 
+
+CPPFLAGS	?= -Wall $(DBG_FLAGS)
+CC		= g++ $(CPPFLAGS)
 #CC	= g++ -pg
 #CC	= purify g++
 
@@ -8,33 +10,29 @@ CC	= g++
 #DBG_FLAGS  = -DDEBUG -g
 #DBG_FLAGS  = -DDEBUG -DDEBUG2
 #DBG_FLAGS  = -DDEBUG -DDEBUG2 -g
-CFLAGS	= -Wall $(DBG_FLAGS)
-LIBS	= -lm 
+LIBS	= -lm libsteiner.a
 
-SRCS0	= main.cxx unixtimer.cxx err.cxx random.cxx\
+SRCS0	= unixtimer.cxx err.cxx random.cxx\
           neighbors.cxx heap.cxx mst2.cxx\
           stnr1.cxx triples.cxx
 OBJS0	= $(SRCS0:.cxx=.o) 
-MAIN0	= steiner
 
-SRCS1	= gen.cxx
-OBJS1	= $(SRCS1:.cxx=.o) 
-MAIN1	= gen
-
-new:    clean steiner gen
+new:    steiner gen
 
 .cxx.o:
 	$(CC) $(INCLUDES) -c $*.cxx
 
-steiner: 	${OBJS0}
-	$(CC) -o ${MAIN0} ${OBJS0} $(LIBS)
+steiner: 	 main.o libsteiner.a
+	$(CC) -o $@ $?
 
-gen: 	${OBJS1}
-	$(CC) -o ${MAIN1} ${OBJS1} $(LIBS)
+gen:	gen.o libsteiner.a
+	$(CC) -o $@ $?
+
+libsteiner.a:	${OBJS0}
+	ar  -r -o $@ $?
 
 clean:
-	rm -f *.o
-	rm -f ${MAIN0}
-	rm -f ${MAIN1}
+	rm -f *.o *.a
+	rm -f gen steiner
 	rm -f core
 

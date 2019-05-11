@@ -10,8 +10,8 @@ CC     = g++ -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -I$(SOURCE_LP)
 #GDSWriter
 ###SOURCE_GDSW = ./GDSWriter
 
-OBJS0	= main.o unixtimer.o err.o random.o neighbors.o heap.o mst2.o stnr1.o triples.o 
-MAIN0	= steiner
+#OBJS0	= main.o unixtimer.o err.o random.o neighbors.o heap.o mst2.o stnr1.o triples.o 
+#MAIN0	= steiner
 
 #Source code
 SOURCE_CODE = .
@@ -39,7 +39,8 @@ SOURCE_CODE_PnRDB = ../PnRDB
 ###
 
 #########2333333
-all: RawRouter.o Grid.o Graph.o GlobalRouter.o DetailRouter.o PowerRouter.o Router.o .cxx.o steiner
+all: RawRouter.o Grid.o Graph.o GlobalRouter.o DetailRouter.o PowerRouter.o Router.o
+	$(MAKE) -C FastSteinerUM
 
 RawRouter.o: $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h 
 	$(CC) -c $(SOURCE_CODE)/RawRouter.cpp
@@ -64,15 +65,7 @@ Router.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CO
 
 #########
 
-INCLUDES = FastSteinerUM/*.cxx
-
-.cxx.o:
-	$(CC) $(INCLUDES) -c
-
-#system call steiner executable
-steiner: 	${OBJS0}
-	$(CC) -o ${MAIN0} ${OBJS0}
-
 clean:
-	rm -f  *.o *_exe steiner run.log ./Debug/*.txt output.txt vals ./GDS_To_ASCII/*.txt 
+	rm -f  *.o *_exe run.log ./Debug/*.txt output.txt vals ./GDS_To_ASCII/*.txt
+	make -C FastSteinerUM clean
 

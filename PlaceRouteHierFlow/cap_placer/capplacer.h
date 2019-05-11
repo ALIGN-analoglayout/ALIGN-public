@@ -265,7 +265,12 @@ class Placer_Router_Cap
     void PrintPlacer_Router_Cap(string outfile);
     void GetPhsicalInfo_router();
     void cal_offset();
+    void fillPathBoundingBox (int *x, int* y,
+			      pair<double,double> &start,
+			      pair<double,double> &end,
+			      double width);
     //    void WriteGDS(string fpath, string unit_capacitor, string final_gds);
+    void WriteJSON (string fpath, string unit_capacitor, string final_gds);
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
     //    void GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury);
     int found_neighbor(int j, net& pos, connection_set& temp_set);

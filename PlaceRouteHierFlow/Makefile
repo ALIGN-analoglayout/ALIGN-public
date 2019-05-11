@@ -10,6 +10,7 @@ CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP)
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 
 #SOURCE=./
+JSON?=/opt/json
 PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/readfile.o
 PnRDB_path=PnRDB
 placer_path=placer
@@ -21,22 +22,22 @@ router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o r
 
 all: subsystem main.o tester
 
-tester:	$(OBJECTS)
-	#$(CC) -o tester $(PnRDB_objs) $(placer_objs) $(router_objs)  main.o -ldl
+tester::
 	$(CC) -o tester $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -ldl
 
 subsystem:
-
 	$(MAKE) -C $(PnRDB_path);
 	$(MAKE) -C $(placer_path);
 	$(MAKE) -C $(router_path);
 	$(MAKE) -C $(Capplacer_path);
-        
-main.o:
-	$(CC) -c main.cpp
+
+main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_path)/Placer.h $(router_path)/Router.h $(Capplacer_path)/capplacer.h
+	$(CC) -c main.cpp -I$(JSON)/include
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o $(Capplacer_path)/*.o tester $(router_path)/*.o $(router_path)/steiner tester.log *.pl *.plt *gds all_*
+	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o tester tester.log *.pl *.plt *gds all_*
+	make -C $(router_path) clean
+	make -C $(Capplacer_path) clean
 
 #main.o:		main.cpp datatype.h readfile.h PnRdatabase.h
 #		$(CC) -c main.cpp  

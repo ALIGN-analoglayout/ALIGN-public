@@ -1,5 +1,14 @@
 #include "capplacer.h"
+#include <iomanip>
+#include <nlohmann/json.hpp>
+
 using namespace std;
+using namespace nlohmann;
+
+// These are in PnRDB
+extern unsigned short JSON_Presentation (int font, int vp, int hp);
+extern unsigned short JSON_STrans (bool reflect, bool abs_angle, bool abs_mag);
+extern json JSON_TimeTime ();
 
 Placer_Router_Cap::Placer_Router_Cap(){
   unit_cap_demension.first = 4428;
@@ -158,6 +167,7 @@ Placer_Router_Cap::Placer_Router_Cap(vector<int> & ki, vector<pair<string, strin
   GetPhsicalInfo_router();
   cal_offset();
   //  WriteGDS(fpath ,unit_capacitor, final_gds);
+  WriteJSON (fpath ,unit_capacitor, final_gds);
   PrintPlacer_Router_Cap(outfile);
 }
 
@@ -2075,6 +2085,680 @@ void Placer_Router_Cap::GetPhsicalInfo_router(){
               }
          }
 
+}
+
+extern
+void JSONReaderWrite_subcells (string GDSData, long int& rndnum,
+			       vector<string>& strBlocks, vector<int>& llx, vector<int>& lly,
+			       vector<int>& urx, vector<int>& ury, json& mjsonStrAry);
+
+void
+Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
+					pair<double,double> &start,
+					pair<double,double> &end,
+					double width) {
+    if (start.first == end.first) {
+	// NO offset for Failure2
+	if (start.second < end.second) {
+	    x[0] = start.first - width + offset_x;
+	    x[1] = end.first - width + offset_x;
+	    x[2] = end.first + width + offset_x;
+	    x[3] = start.first + width +offset_x;
+	    x[4] = x[0];
+             
+	    y[0] = start.second + offset_y;
+	    y[1] = end.second + offset_y;
+	    y[2] = end.second + offset_y;
+	    y[3] = start.second + offset_y;
+	    y[4] = y[0];
+	} else {
+	    x[0] = end.first - width + offset_x;
+	    x[1] = start.first - width + offset_x;
+	    x[2] = start.first + width + offset_x;
+	    x[3] = end.first + width + offset_x;
+	    x[4] = x[0];
+             
+	    y[0] = end.second + offset_y;
+	    y[1] = start.second + offset_y;
+	    y[2] = start.second + offset_y;
+	    y[3] = end.second + offset_y;
+	    y[4] = y[0];
+	}
+    } else {
+	if (start.first < end.first){
+	    x[0] = start.first + offset_x;
+	    x[1] = start.first + offset_x;
+	    x[2] = end.first + offset_x;
+	    x[3] = end.first + offset_x;
+	    x[4] = x[0];
+             
+	    y[0] = start.second - width + offset_y;
+	    y[1] = start.second + width + offset_y;
+	    y[2] = end.second + width + offset_y;
+	    y[3] = end.second - width + offset_y;
+	    y[4] = y[0];
+
+	} else {
+	    x[0] = end.first + offset_x;
+	    x[1] = end.first + offset_x;
+	    x[2] = start.first + offset_x;
+	    x[3] = start.first + offset_x;
+	    x[4] = x[0];
+             
+	    y[0] = end.second - width + offset_y;
+	    y[1] = end.second + width + offset_y;
+	    y[2] = start.second + width + offset_y;
+	    y[3] = start.second - width + offset_y;
+	    y[4] = y[0];
+	}
+    }
+}
+
+// DAK: Fills a contact with a 4 point rectangle
+void
+fillContact (PnRDB::contact& con, int* x, int*y) {
+    for (int i = 0; i < 4; i++) {
+	PnRDB::point temp_point;
+	temp_point.x = x[i];
+	temp_point.y = y[i];
+	con.originBox.polygon.push_back (temp_point);
+	switch (i) {
+	case 0: con.originBox.LL = temp_point; break;
+	case 1: con.originBox.UL = temp_point; break;
+	case 2: con.originBox.UR = temp_point; break;
+	case 3: con.originBox.LR = temp_point; break;
+	}
+    }
+    con.originCenter.x = (x[0]+x[2])/2;
+    con.originCenter.y = (y[0]+y[2])/2;
+}
+
+void
+Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_gds) {
+    //begin to write JSON file from unit capacitor to final capacitor file
+    string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
+    string topGDS_loc = final_gds+".gds";
+    string TopCellName = final_gds;
+
+    std::ofstream jsonStream;
+    jsonStream.open (topGDS_loc + ".json");
+    json jsonTop;
+
+    jsonTop["header"] = 600;
+    json jsonLibAry = json::array();
+    json jsonLib;
+    jsonLib["time"] = JSON_TimeTime();
+    // DAK Overwrite to match
+    jsonLib["time"] = {2019, 4, 24, 9, 46, 15, 2019, 4, 24, 9, 46, 15};
+    jsonLib["units"] = {0.00025, 2.5e-10};
+    jsonLib["libname"] = "test";
+
+    long int randnum = 111;
+    //what is this
+    vector<string> uniGDS;
+    for(int i=0;i<1;i++){
+	uniGDS.push_back(gds_unit_capacitor);
+    }
+
+    json jsonStrAry = json::array();
+
+    vector<string> strBlocks;
+    vector<int> llx, lly, urx, ury;
+    map<string,int> gdsMap2strBlock;
+    long int rndnum=111;
+    vector<string> strBlocks_Top;
+    int idx=0;
+    //writing unit capacitors??? confirm with jinhyun
+    std::cout << "GDS CAP SUBCELL read of " << gds_unit_capacitor << std::endl;
+
+    for(int i=0;i<uniGDS.size();i++) {
+	json js;
+	cout << "CAP GDS: Using JSON for subcells for now" << endl;
+	JSONReaderWrite_subcells (gds_unit_capacitor, rndnum, strBlocks, llx,lly,urx,ury, js);
+	for (json::iterator str = js.begin(); str != js.end(); ++str) {
+	    jsonStrAry.push_back (*str);
+	}
+
+	if (strBlocks.size())
+	    strBlocks_Top.push_back(strBlocks.back());
+	else
+	    std::cout << "ERROR: NO blocks returned from parsing " << gds_unit_capacitor << endl;
+	gdsMap2strBlock.insert(make_pair(gds_unit_capacitor,idx));
+	idx++;
+    }
+    //writing metals
+    int x[5], y[5];
+
+    json jsonStr;
+    jsonLib["time"] = JSON_TimeTime();
+    // DAK: Hack to match
+    jsonStr["time"] = {2019, 4, 24, 9, 46, 15, 2019, 4, 24, 9, 46, 15};
+    jsonStr["strname"] = TopCellName.c_str();
+    json jsonElements = json::array();
+
+    // DAK: These should be defined in a method that can load this map from a file / PDK
+    string MaskID_M1 = "19";
+    string MaskID_V1 = "21";
+    string MaskID_M2 = "20";
+    string MaskID_V2 = "25";
+    string MaskID_M3 = "30";
+    string MaskID_V3 = "35";
+    string MaskID_M4 = "40";
+    string MaskID_V4 = "45";
+    string MaskID_M5 = "50";
+    string MaskID_V5 = "55";
+    string MaskID_M6 = "60";
+    string MaskID_V6 = "65";
+    string MaskID_M7 = "70";
+    string MaskID_V7 = "75";
+
+    int width = metal_width[0];
+    int Min_x = INT_MAX;
+    int Min_y = INT_MAX;
+    int Max_x = INT_MIN;
+    int Max_y = INT_MIN;
+    //for positive nets
+
+    for(int i=0; i< Nets_pos.size(); i++){//for each net
+	PnRDB::pin temp_Pins;
+	for(int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
+	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
+				 Nets_pos[i].end_conection_coord[j], width);
+            
+	    if(x[0]<Min_x){Min_x = x[0];}
+	    if(x[2]>Max_x){Max_x = x[2];}
+	    if(y[0]<Min_y){Min_y = y[0];}
+	    if(y[2]>Max_y){Max_y = y[2];}
+
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+            
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+
+	    json bound;
+	    bound["type"] = "boundary";
+	    bound["datatype"] = 0;
+	    json xy = json::array();
+	    for (size_t i = 0; i < 5; i++) {
+		xy.push_back (x[i]);
+		xy.push_back (y[i]);
+	    }
+	    bound["xy"] = xy;
+
+	    temp_contact.metal = Nets_pos[i].metal[j];
+      
+	    if (Nets_pos[i].metal[j] == "M1"){
+		bound["layer"] = stoi(MaskID_M1);
+	    } else if(Nets_pos[i].metal[j] == "M2"){	
+		bound["layer"] = stoi(MaskID_M2);
+	    } else if(Nets_pos[i].metal[j] == "M3"){	
+		bound["layer"] = stoi(MaskID_M3);
+	    } else if(Nets_pos[i].metal[j] == "M4"){	
+		bound["layer"] = stoi(MaskID_M4);
+	    } else if(Nets_pos[i].metal[j] == "M5"){	
+		bound["layer"] = stoi(MaskID_M5);
+	    } else if(Nets_pos[i].metal[j] == "M6"){	
+		bound["layer"] = stoi(MaskID_M6);
+	    } else if(Nets_pos[i].metal[j] == "M7"){	
+		bound["layer"] = stoi(MaskID_M7);
+	    }
+
+	    jsonElements.push_back (bound);
+
+	    if (Nets_pos[i].Is_pin[j] == 1) {
+		temp_Pins.name = Nets_pos[i].name;
+		temp_Pins.pinContacts.push_back(temp_contact);
+	    }
+	    CheckOutBlock.interMetals.push_back(temp_contact);
+	}   
+	CheckOutBlock.blockPins.push_back(temp_Pins);
+    }
+  
+    //for neg nets
+    for(int i =0; i < Nets_neg.size(); i++) {//for each net
+	PnRDB::pin temp_Pins_neg;
+	for(int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
+	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
+				 Nets_neg[i].end_conection_coord[j], width);
+
+	    if(x[0]<Min_x) Min_x = x[0];
+	    if(x[2]>Max_x) Max_x = x[2];
+	    if(y[0]<Min_y) Min_y = y[0];
+	    if(y[2]>Max_y) Max_y = y[2];
+
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+
+	    json bound;
+	    bound["type"] = "boundary";
+	    bound["datatype"] = 0;
+	    json xy = json::array();
+	    for (size_t i = 0; i < 5; i++) {
+		xy.push_back (x[i]);
+		xy.push_back (y[i]);
+	    }
+	    bound["xy"] = xy;
+
+	    temp_contact.metal = Nets_neg[i].metal[j];
+
+	    if (Nets_neg[i].metal[j] == "M1") {
+		bound["layer"] = stoi(MaskID_M1);
+	    } else if (Nets_neg[i].metal[j] == "M2") {
+		bound["layer"] = stoi(MaskID_M2);
+	    } else if (Nets_neg[i].metal[j] == "M3") {	
+		bound["layer"] = stoi(MaskID_M3);
+	    } else if (Nets_neg[i].metal[j] == "M4") {	
+		bound["layer"] = stoi(MaskID_M4);
+	    } else if (Nets_neg[i].metal[j] == "M5") {	
+		bound["layer"] = stoi(MaskID_M5);
+	    } else if (Nets_neg[i].metal[j] == "M6") {
+		bound["layer"] = stoi(MaskID_M6);
+	    } else if (Nets_neg[i].metal[j] == "M7") {
+		bound["layer"] = stoi(MaskID_M7);
+	    }
+
+	    jsonElements.push_back (bound);
+	    if (Nets_neg[i].Is_pin[j] == 1) {
+		temp_Pins_neg.name = Nets_neg[i].name;
+		temp_Pins_neg.pinContacts.push_back(temp_contact);
+	    }
+	    CheckOutBlock.interMetals.push_back(temp_contact);
+	}
+	CheckOutBlock.blockPins.push_back(temp_Pins_neg);
+    }
+  
+    //wirting vias
+    //for positive net
+    width = via_width[0];
+    for(int i=0;i<Nets_pos.size();i++){
+	for(int j=0;j<Nets_pos[i].via.size();j++){//the size of via needs to be modified according to different PDK
+ 
+	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
+	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
+	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
+	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
+	    x[4]=x[0];
+        
+	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
+	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
+	    y[2]=Nets_pos[i].via[j].second + width+offset_y;
+	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
+	    y[4]=y[0];
+        
+
+	    if(x[0]<Min_x){Min_x = x[0];}
+	    if(x[2]>Max_x){Max_x = x[2];}
+	    if(y[0]<Min_y){Min_y = y[0];}
+	    if(y[2]>Max_y){Max_y = y[2];}
+
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+    
+	    PnRDB::Via temp_via;
+	    PnRDB::contact upper_contact;
+	    PnRDB::contact lower_contact;
+	    upper_contact.placedCenter = temp_contact.placedCenter;
+	    lower_contact.placedCenter = temp_contact.placedCenter;
+
+	    PnRDB::contact h_contact;
+	    h_contact.originBox.LL = temp_contact.originBox.LL;
+	    h_contact.originBox.UL = temp_contact.originBox.UL;
+	    h_contact.originBox.UR = temp_contact.originBox.UR;
+	    h_contact.originBox.LR = temp_contact.originBox.LR;
+	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
+
+	    PnRDB::contact v_contact;
+	    v_contact.originBox.LL = temp_contact.originBox.LL;
+	    v_contact.originBox.UL = temp_contact.originBox.UL;
+	    v_contact.originBox.UR = temp_contact.originBox.UR;
+	    v_contact.originBox.LR = temp_contact.originBox.LR;
+	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
+
+
+	    json bound;
+	    bound["type"] = "boundary";
+	    bound["datatype"] = 0;
+	    json xy = json::array();
+	    for (size_t i = 0; i < 5; i++) {
+		xy.push_back (x[i]);
+		xy.push_back (y[i]);
+	    }
+	    bound["xy"] = xy;
+
+	    if(Nets_pos[i].via_metal[j].compare("M1")==0){
+
+		bound["layer"] = stoi(MaskID_V1);
+		temp_contact.metal = "V1";
+		lower_contact.metal = "M1";
+		upper_contact.metal = "M2";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 0;
+	    }else if(Nets_pos[i].via_metal[j].compare("M2")==0){
+
+		bound["layer"] = stoi(MaskID_V2);
+		temp_contact.metal = "V2";
+		lower_contact.metal = "M2";
+		upper_contact.metal = "M3";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 1;
+	    }else if(Nets_pos[i].via_metal[j].compare("M3")==0){
+
+		bound["layer"] = stoi(MaskID_V3);
+		temp_contact.metal = "V3";
+		lower_contact.metal = "M3";
+		upper_contact.metal = "M4";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 2;
+	    }else if(Nets_pos[i].via_metal[j].compare("M4")==0){
+
+		bound["layer"] = stoi(MaskID_V4);
+		temp_contact.metal = "V4";
+		lower_contact.metal = "M4";
+		upper_contact.metal = "M5";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 3;
+	    }else if(Nets_pos[i].via_metal[j].compare("M5")==0){
+
+		bound["layer"] = stoi(MaskID_V5);
+		temp_contact.metal = "V5";
+		lower_contact.metal = "M5";
+		upper_contact.metal = "M6";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 4;
+	    }else if(Nets_pos[i].via_metal[j].compare("M6")==0){
+
+		bound["layer"] = stoi(MaskID_V6);
+		temp_contact.metal = "V6";
+		lower_contact.metal = "M6";
+		upper_contact.metal = "M7";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 5;
+	    }else if(Nets_pos[i].via_metal[j].compare("M7")==0){
+
+		bound["layer"] = stoi(MaskID_V7);
+		temp_contact.metal = "V7";
+		lower_contact.metal = "M7";
+		upper_contact.metal = "M8";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 6;
+	    }
+
+	    jsonElements.push_back (bound);
+	
+	    temp_via.placedpos = temp_contact.originCenter;
+	    temp_via.ViaRect = temp_contact;
+	    temp_via.LowerMetalRect = lower_contact;
+	    temp_via.UpperMetalRect = upper_contact;
+	    CheckOutBlock.interVias.push_back(temp_via);
+	}
+    }
+    
+    //for negative net
+    for(int i=0;i<Nets_neg.size();i++){
+	for(int j=0;j<Nets_neg[i].via.size();j++){//the size of via needs to be modified according to different PDK
+ 
+	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
+	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
+	    x[2]=Nets_neg[i].via[j].first + width+offset_x;
+	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
+	    x[4]=x[0];
+        
+	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
+	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
+	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
+	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
+	    y[4]=y[0];
+        
+	    if(x[0]<Min_x){Min_x = x[0];}
+	    if(x[2]>Max_x){Max_x = x[2];}
+	    if(y[0]<Min_y){Min_y = y[0];}
+	    if(y[2]>Max_y){Max_y = y[2];}
+
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+
+	    PnRDB::Via temp_via;
+	    PnRDB::contact upper_contact;
+	    PnRDB::contact lower_contact;
+	    upper_contact.placedCenter = temp_contact.placedCenter;
+	    lower_contact.placedCenter = temp_contact.placedCenter;
+
+	    PnRDB::contact h_contact;
+	    h_contact.originBox.LL = temp_contact.originBox.LL;
+	    h_contact.originBox.UL = temp_contact.originBox.UL;
+	    h_contact.originBox.UR = temp_contact.originBox.UR;
+	    h_contact.originBox.LR = temp_contact.originBox.LR;
+	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
+
+	    PnRDB::contact v_contact;
+	    v_contact.originBox.LL = temp_contact.originBox.LL;
+	    v_contact.originBox.UL = temp_contact.originBox.UL;
+	    v_contact.originBox.UR = temp_contact.originBox.UR;
+	    v_contact.originBox.LR = temp_contact.originBox.LR;
+	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
+
+	    json bound;
+	    bound["type"] = "boundary";
+	    bound["datatype"] = 0;
+	    json xy = json::array();
+	    for (size_t i = 0; i < 5; i++) {
+		xy.push_back (x[i]);
+		xy.push_back (y[i]);
+	    }
+	    bound["xy"] = xy;
+
+	    if(Nets_neg[i].via_metal[j].compare("M1")==0){
+
+		bound["layer"] = stoi(MaskID_V1);
+		temp_contact.metal = "V1";
+		lower_contact.metal = "M1";
+		upper_contact.metal = "M2";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 0;
+	    }else if(Nets_neg[i].via_metal[j].compare("M2")==0){
+
+		bound["layer"] = stoi(MaskID_V2);
+		temp_contact.metal = "V2";
+		lower_contact.metal = "M2";
+		upper_contact.metal = "M3";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 1;
+	    }else if(Nets_neg[i].via_metal[j].compare("M3")==0){
+
+		bound["layer"] = stoi(MaskID_V3);
+		temp_contact.metal = "V3";
+		lower_contact.metal = "M3";
+		upper_contact.metal = "M4";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 2;
+	    }else if(Nets_neg[i].via_metal[j].compare("M4")==0){
+
+		bound["layer"] = stoi(MaskID_V4);
+		temp_contact.metal = "V4";
+		lower_contact.metal = "M4";
+		upper_contact.metal = "M5";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 3;
+	    }else if(Nets_neg[i].via_metal[j].compare("M5")==0){
+
+		bound["layer"] = stoi(MaskID_V5);
+		temp_contact.metal = "V5";
+		lower_contact.metal = "M5";
+		upper_contact.metal = "M6";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 4;
+	    }else if(Nets_neg[i].via_metal[j].compare("M6")==0){
+
+		bound["layer"] = stoi(MaskID_V6);
+		temp_contact.metal = "V6";
+		lower_contact.metal = "M6";
+		upper_contact.metal = "M7";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 5;
+	    }else if(Nets_neg[i].via_metal[j].compare("M7")==0){
+
+		bound["layer"] = stoi(MaskID_V7);
+		temp_contact.metal = "V7";
+		lower_contact.metal = "M7";
+		upper_contact.metal = "M8";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 6;
+	    }
+
+	    jsonElements.push_back (bound);
+	 
+	    temp_via.placedpos = temp_contact.originCenter;
+	    temp_via.ViaRect = temp_contact;
+	    temp_via.LowerMetalRect = lower_contact;
+	    temp_via.UpperMetalRect = upper_contact;
+	    CheckOutBlock.interVias.push_back(temp_via);
+	}
+    }
+    CheckOutBlock.orient = PnRDB::Omark(0); //need modify
+  
+    for(int i= 0; i<Caps.size();i++){
+	x[0]=Caps[i].x - unit_cap_demension.first/2+offset_x;
+	x[1]=Caps[i].x - unit_cap_demension.first/2+offset_x;
+	x[2]=Caps[i].x + unit_cap_demension.first/2+offset_x;
+	x[3]=Caps[i].x + unit_cap_demension.first/2+offset_x;
+	x[4]=x[0];
+       
+	y[0]=Caps[i].y - unit_cap_demension.second/2+offset_y;
+	y[1]=Caps[i].y + unit_cap_demension.second/2+offset_y;
+	y[2]=Caps[i].y + unit_cap_demension.second/2+offset_y;
+	y[3]=Caps[i].y - unit_cap_demension.second/2+offset_y;
+	y[4]=y[0];
+     
+
+	if(x[0]<Min_x){Min_x = x[0];}
+	if(x[2]>Max_x){Max_x = x[2];}
+	if(y[0]<Min_y){Min_y = y[0];}
+	if(y[2]>Max_y){Max_y = y[2];}
+ 
+	PnRDB::contact temp_contact;
+	fillContact (temp_contact, x, y);
+
+	temp_contact.metal = "M1";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+	temp_contact.metal = "M2";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+	temp_contact.metal = "M3";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+    }
+
+    CheckOutBlock.gdsFile = topGDS_loc;
+    PnRDB::point temp_point;
+    temp_point.x = Min_x;
+    temp_point.y = Min_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.LL = temp_point;
+    temp_point.x = Min_x;
+    temp_point.y = Max_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.UL = temp_point;
+    temp_point.x = Max_x;
+    temp_point.y = Max_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.UR = temp_point;
+    temp_point.x = Max_x;
+    temp_point.y = Min_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.LR = temp_point;
+    CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
+    CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
+    CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
+    CheckOutBlock.height = CheckOutBlock.originBox.UR.y-CheckOutBlock.originBox.LL.y;
+  
+    //wirte orientation for each cap
+    for(int i=0;i<Caps.size();i++){
+
+	json sref;
+	sref["type"] = "sref";
+	if (strBlocks_Top.size())
+	    sref["sname"] = strBlocks_Top[0].c_str();
+	else
+	    cout << "ERROR: no block found to output from subcells" << endl;
+	sref["strans"] = 0;
+	sref["angle"] = 0.0;
+	x[0]=2*(Caps[i].x-unit_cap_demension.first/2+offset_x);
+	y[0]=2*(Caps[i].y-unit_cap_demension.second/2+offset_y);
+     
+	json xy = json::array();
+	xy.push_back (x[0]);
+	xy.push_back (y[0]);
+	sref["xy"] = xy;
+	jsonElements.push_back (sref);
+    }
+
+    jsonStr["elements"] = jsonElements;
+    jsonStrAry.push_back (jsonStr);
+    jsonLib["bgnstr"] = jsonStrAry;
+
+    jsonLibAry.push_back(jsonLib);
+    jsonTop["bgnlib"] = jsonLibAry;
+    jsonStream << std::setw(4) << jsonTop;
+    jsonStream.close();
+    std::cout << "CAP GDS JSON FINALIZE " <<  unit_capacitor << std::endl;
 }
 
 // void Placer_Router_Cap::GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury)
