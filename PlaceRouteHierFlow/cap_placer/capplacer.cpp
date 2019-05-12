@@ -166,241 +166,562 @@ Placer_Router_Cap::Placer_Router_Cap(vector<int> & ki, vector<pair<string, strin
   Router_Cap(ki,cap_pin);
   GetPhsicalInfo_router();
   cal_offset();
-  //  WriteGDS(fpath ,unit_capacitor, final_gds);
+  ExtractData(fpath ,unit_capacitor, final_gds);
   WriteJSON (fpath ,unit_capacitor, final_gds);
   PrintPlacer_Router_Cap(outfile);
 }
 
-void Placer_Router_Cap::cal_offset(){
+// DAK: General methods needed for layer mapping:  we should be using
+// stoi(PnRDatabase::DRC_info.MaskID_Metal[layer])
+int
+getLayerMask (const std::string & layer) {
+    // DAK: These should be defined in a method that can load this map from a file / PDK
+    string MaskID_M1 = "19";
+    string MaskID_V1 = "21";
+    string MaskID_M2 = "20";
+    string MaskID_V2 = "25";
+    string MaskID_M3 = "30";
+    string MaskID_V3 = "35";
+    string MaskID_M4 = "40";
+    string MaskID_V4 = "45";
+    string MaskID_M5 = "50";
+    string MaskID_V5 = "55";
+    string MaskID_M6 = "60";
+    string MaskID_V6 = "65";
+    string MaskID_M7 = "70";
+    string MaskID_V7 = "75";
 
-  int x[5], y[5];
-  int width = metal_width[0];
-  int Min_x = INT_MAX;
-  int Min_y = INT_MAX;
-  int Max_x = INT_MIN;
-  int Max_y = INT_MIN;
-  //for positive nets
+    int mask = -1;
+
+    if (layer == "M1")		mask = stoi(MaskID_M1);
+    else if (layer == "M2")   	mask = stoi(MaskID_M2);
+    else if (layer == "M3")   	mask = stoi(MaskID_M3);
+    else if (layer == "M4")   	mask = stoi(MaskID_M4);
+    else if (layer == "M5")   	mask = stoi(MaskID_M5);
+    else if (layer == "M6")   	mask = stoi(MaskID_M6);
+    else if ( layer == "M7")  	mask = stoi(MaskID_M7);
+    return mask;
+}
+int
+getLayerViaMask (const std::string & layer) {
+    // DAK: These should be defined in a method that can load this map from a file / PDK
+    string MaskID_M1 = "19";
+    string MaskID_V1 = "21";
+    string MaskID_M2 = "20";
+    string MaskID_V2 = "25";
+    string MaskID_M3 = "30";
+    string MaskID_V3 = "35";
+    string MaskID_M4 = "40";
+    string MaskID_V4 = "45";
+    string MaskID_M5 = "50";
+    string MaskID_V5 = "55";
+    string MaskID_M6 = "60";
+    string MaskID_V6 = "65";
+    string MaskID_M7 = "70";
+    string MaskID_V7 = "75";
+
+    int mask = -1;
+
+    if (layer == "M1")    	mask = stoi(MaskID_V1);
+    else if (layer == "M2")	mask = stoi(MaskID_V2);
+    else if (layer == "M3")	mask = stoi(MaskID_V3);
+    else if (layer == "M4")	mask = stoi(MaskID_V4);
+    else if (layer == "M5")	mask = stoi(MaskID_V5);
+    else if (layer == "M6")	mask = stoi(MaskID_V6);
+    else if (layer == "M7")	mask = stoi(MaskID_V7);
+    return mask;
+}
+
+// DAK: Fills a contact with a 4 point rectangle
+void
+fillContact (PnRDB::contact& con, int* x, int*y) {
+    for (int i = 0; i < 4; i++) {
+	PnRDB::point temp_point;
+	temp_point.x = x[i];
+	temp_point.y = y[i];
+	con.originBox.polygon.push_back (temp_point);
+	switch (i) {
+	case 0: con.originBox.LL = temp_point; break;
+	case 1: con.originBox.UL = temp_point; break;
+	case 2: con.originBox.UR = temp_point; break;
+	case 3: con.originBox.LR = temp_point; break;
+	}
+    }
+    con.originCenter.x = (x[0]+x[2])/2;
+    con.originCenter.y = (y[0]+y[2])/2;
+}
+
+void
+Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string final_gds) {
+    string topGDS_loc = final_gds+".gds";
+    //writing metals
+    int x[5], y[5];
   
-  for(int i=0; i< Nets_pos.size(); i++){//for each net
-      for(int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
-          if(Nets_pos[i].start_conection_coord[j].first == Nets_pos[i].end_conection_coord[j].first){//distance need to be modified then
-             if(Nets_pos[i].start_conection_coord[j].second<Nets_pos[i].end_conection_coord[j].second){
-                x[0]= Nets_pos[i].start_conection_coord[j].first-width;
-                x[1]= Nets_pos[i].end_conection_coord[j].first-width;
-                x[2]= Nets_pos[i].end_conection_coord[j].first+width;
-                x[3]= Nets_pos[i].start_conection_coord[j].first+width;
-                x[4]= x[0];
-             
-                y[0]= Nets_pos[i].start_conection_coord[j].second;
-                y[1]= Nets_pos[i].end_conection_coord[j].second;
-                y[2]= Nets_pos[i].end_conection_coord[j].second;
-                y[3]= Nets_pos[i].start_conection_coord[j].second;
-                y[4]=y[0];
-                
-               }else{
+    int width = metal_width[0];
+    int Min_x = INT_MAX;
+    int Min_y = INT_MAX;
+    int Max_x = INT_MIN;
+    int Max_y = INT_MIN;
+    //for positive nets
+  
+    for (int i = 0; i < Nets_pos.size(); i++) {//for each net
+	PnRDB::pin temp_Pins;
+	for (int j = 0; j < Nets_pos[i].start_conection_coord.size(); j++) { //for segment
+	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
+				 Nets_pos[i].end_conection_coord[j], width);
+	    if (x[0]<Min_x) Min_x = x[0];
+	    if (x[2]>Max_x) Max_x = x[2];
+	    if (y[0]<Min_y) Min_y = y[0];
+	    if (y[2]>Max_y) Max_y = y[2];
 
-                x[0]= Nets_pos[i].end_conection_coord[j].first-width;
-                x[1]= Nets_pos[i].start_conection_coord[j].first-width;
-                x[2]= Nets_pos[i].start_conection_coord[j].first+width;
-                x[3]= Nets_pos[i].end_conection_coord[j].first+width;
-                x[4]= x[0];
-             
-                y[0]= Nets_pos[i].end_conection_coord[j].second;
-                y[1]= Nets_pos[i].start_conection_coord[j].second;
-                y[2]= Nets_pos[i].start_conection_coord[j].second;
-                y[3]= Nets_pos[i].end_conection_coord[j].second;
-                y[4]=y[0];
+	    PnRDB::contact temp_contact;
+            fillContact (temp_contact, x, y);
 
-               }
-          }else{
-             if(Nets_pos[i].start_conection_coord[j].first<Nets_pos[i].end_conection_coord[j].first){
-
-                x[0]= Nets_pos[i].start_conection_coord[j].first;
-                x[1]= Nets_pos[i].start_conection_coord[j].first;
-                x[2]= Nets_pos[i].end_conection_coord[j].first;
-                x[3]= Nets_pos[i].end_conection_coord[j].first;
-                x[4]= x[0];
-             
-                y[0]= Nets_pos[i].start_conection_coord[j].second-width;
-                y[1]= Nets_pos[i].start_conection_coord[j].second+width;
-                y[2]= Nets_pos[i].end_conection_coord[j].second+width;
-                y[3]= Nets_pos[i].end_conection_coord[j].second-width;
-                y[4]=y[0];
-
-               }else{
-    
-                x[0]= Nets_pos[i].end_conection_coord[j].first;
-                x[1]= Nets_pos[i].end_conection_coord[j].first;
-                x[2]= Nets_pos[i].start_conection_coord[j].first;
-                x[3]= Nets_pos[i].start_conection_coord[j].first;
-                x[4]= x[0];
-             
-                y[0]= Nets_pos[i].end_conection_coord[j].second-width;
-                y[1]= Nets_pos[i].end_conection_coord[j].second+width;
-                y[2]= Nets_pos[i].start_conection_coord[j].second+width;
-                y[3]= Nets_pos[i].start_conection_coord[j].second-width;
-                y[4]=y[0];
-       
-               }
-            }
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+	    temp_contact.metal = Nets_pos[i].metal[j];
+	    if (Nets_pos[i].Is_pin[j] == 1) {
+		temp_Pins.name = Nets_pos[i].name;
+		temp_Pins.pinContacts.push_back(temp_contact);
+	    }
+	    CheckOutBlock.interMetals.push_back(temp_contact);
+	}   
+	CheckOutBlock.blockPins.push_back(temp_Pins);
+    }
+  
+    //for neg nets
+    for (int i = 0; i < Nets_neg.size(); i++) {//for each net
+	PnRDB::pin temp_Pins_neg;
+	for (int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
+	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
+				 Nets_neg[i].end_conection_coord[j], width);
             
-            if(x[0]<Min_x){Min_x = x[0];}
-            if(x[2]>Max_x){Max_x = x[2];}
-            if(y[0]<Min_y){Min_y = y[0];}
-            if(y[2]>Max_y){Max_y = y[2];}
+            if (x[0]<Min_x) Min_x = x[0];
+            if (x[2]>Max_x) Max_x = x[2];
+            if (y[0]<Min_y) Min_y = y[0];
+            if (y[2]>Max_y) Max_y = y[2];
 
-        }
-     }
+            PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+            temp_contact.metal = Nets_neg[i].metal[j];
+	    if (Nets_neg[i].Is_pin[j] == 1) {
+                temp_Pins_neg.name = Nets_neg[i].name;
+                temp_Pins_neg.pinContacts.push_back(temp_contact);
+	    }
+	    CheckOutBlock.interMetals.push_back(temp_contact);
+	}
+	CheckOutBlock.blockPins.push_back(temp_Pins_neg);
+    }
   
+    //wirting vias
+    //for positive net
+    width = via_width[0];
+    for (int i = 0; i < Nets_pos.size(); i++) {
+	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+ 	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
+	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
+	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
+	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
+	    x[4]=x[0];
+        
+	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
+	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
+	    y[2]=Nets_pos[i].via[j].second + width+offset_y;
+	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
+	    y[4]=y[0];
+        
+	    if (x[0]<Min_x) Min_x = x[0];
+	    if (x[2]>Max_x) Max_x = x[2];
+	    if (y[0]<Min_y) Min_y = y[0];
+	    if (y[2]>Max_y) Max_y = y[2];
 
-  
-  //for neg nets
-  for(int i=0; i< Nets_neg.size(); i++){//for each net
-      for(int j=0; j< Nets_neg[i].start_conection_coord.size();j++){ //for segment
-          if(Nets_neg[i].start_conection_coord[j].first == Nets_neg[i].end_conection_coord[j].first){//distance need to be modified then
-             if(Nets_neg[i].start_conection_coord[j].second<Nets_neg[i].end_conection_coord[j].second){
-                x[0]= Nets_neg[i].start_conection_coord[j].first-width;
-                x[1]= Nets_neg[i].end_conection_coord[j].first-width;
-                x[2]= Nets_neg[i].end_conection_coord[j].first+width;
-                x[3]= Nets_neg[i].start_conection_coord[j].first+width;
-                x[4]= x[0];
-             
-                y[0]= Nets_neg[i].start_conection_coord[j].second;
-                y[1]= Nets_neg[i].end_conection_coord[j].second;
-                y[2]= Nets_neg[i].end_conection_coord[j].second;
-                y[3]= Nets_neg[i].start_conection_coord[j].second;
-                y[4]=y[0];
-                
-               }else{
-
-                x[0]= Nets_neg[i].end_conection_coord[j].first-width;
-                x[1]= Nets_neg[i].start_conection_coord[j].first-width;
-                x[2]= Nets_neg[i].start_conection_coord[j].first+width;
-                x[3]= Nets_neg[i].end_conection_coord[j].first+width;
-                x[4]= x[0];
-             
-                y[0]= Nets_neg[i].end_conection_coord[j].second;
-                y[1]= Nets_neg[i].start_conection_coord[j].second;
-                y[2]= Nets_neg[i].start_conection_coord[j].second;
-                y[3]= Nets_neg[i].end_conection_coord[j].second;
-                y[4]=y[0];
-
-               }
-          }else{
-             if(Nets_neg[i].start_conection_coord[j].first<Nets_neg[i].end_conection_coord[j].first){
-
-                x[0]= Nets_neg[i].start_conection_coord[j].first;
-                x[1]= Nets_neg[i].start_conection_coord[j].first;
-                x[2]= Nets_neg[i].end_conection_coord[j].first;
-                x[3]= Nets_neg[i].end_conection_coord[j].first;
-                x[4]= x[0];
-             
-                y[0]= Nets_neg[i].start_conection_coord[j].second-width;
-                y[1]= Nets_neg[i].start_conection_coord[j].second+width;
-                y[2]= Nets_neg[i].end_conection_coord[j].second+width;
-                y[3]= Nets_neg[i].end_conection_coord[j].second-width;
-                y[4]=y[0];
-
-               }else{
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
     
-                x[0]= Nets_neg[i].end_conection_coord[j].first;
-                x[1]= Nets_neg[i].end_conection_coord[j].first;
-                x[2]= Nets_neg[i].start_conection_coord[j].first;
-                x[3]= Nets_neg[i].start_conection_coord[j].first;
-                x[4]= x[0];
-             
-                y[0]= Nets_neg[i].end_conection_coord[j].second-width;
-                y[1]= Nets_neg[i].end_conection_coord[j].second+width;
-                y[2]= Nets_neg[i].start_conection_coord[j].second+width;
-                y[3]= Nets_neg[i].start_conection_coord[j].second-width;
-                y[4]=y[0];
-       
-               }
-            }
+	    PnRDB::Via temp_via;
+	    PnRDB::contact upper_contact;
+	    PnRDB::contact lower_contact;
+	    upper_contact.placedCenter = temp_contact.placedCenter;
+	    lower_contact.placedCenter = temp_contact.placedCenter;
 
-            if(x[0]<Min_x){Min_x = x[0];}
-            if(x[2]>Max_x){Max_x = x[2];}
-            if(y[0]<Min_y){Min_y = y[0];}
-            if(y[2]>Max_y){Max_y = y[2];}
+	    PnRDB::contact h_contact;
+	    h_contact.originBox.LL = temp_contact.originBox.LL;
+	    h_contact.originBox.UL = temp_contact.originBox.UL;
+	    h_contact.originBox.UR = temp_contact.originBox.UR;
+	    h_contact.originBox.LR = temp_contact.originBox.LR;
+	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
 
-        }
-     }
-  
-  //wirting vias
-  //for positive net
-  width = via_width[0];
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].via.size();j++){//the size of via needs to be modified according to different PDK
- 
-        x[0]=Nets_pos[i].via[j].first - width;
-        x[1]=Nets_pos[i].via[j].first - width;
-        x[2]=Nets_pos[i].via[j].first + width;
-        x[3]=Nets_pos[i].via[j].first + width;
-        x[4]=x[0];
-        
-        y[0]=Nets_pos[i].via[j].second - width;
-        y[1]=Nets_pos[i].via[j].second + width;
-        y[2]=Nets_pos[i].via[j].second + width;
-        y[3]=Nets_pos[i].via[j].second - width;
-        y[4]=y[0];
+	    PnRDB::contact v_contact;
+	    v_contact.originBox.LL = temp_contact.originBox.LL;
+	    v_contact.originBox.UL = temp_contact.originBox.UL;
+	    v_contact.originBox.UR = temp_contact.originBox.UR;
+	    v_contact.originBox.LR = temp_contact.originBox.LR;
+	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
 
-        if(x[0]<Min_x){Min_x = x[0];}
-        if(x[2]>Max_x){Max_x = x[2];}
-        if(y[0]<Min_y){Min_y = y[0];}
-        if(y[2]>Max_y){Max_y = y[2];}
-        
-       }
+	    if (Nets_pos[i].via_metal[j].compare("M1") == 0) {
+		temp_contact.metal = "V1";
+		lower_contact.metal = "M1";
+		upper_contact.metal = "M2";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 0;
+	    } else if (Nets_pos[i].via_metal[j].compare("M2") == 0) {
+		temp_contact.metal = "V2";
+		lower_contact.metal = "M2";
+		upper_contact.metal = "M3";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 1;
+	    } else if (Nets_pos[i].via_metal[j].compare("M3") == 0) {
+		temp_contact.metal = "V3";
+		lower_contact.metal = "M3";
+		upper_contact.metal = "M4";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 2;
+	    } else if (Nets_pos[i].via_metal[j].compare("M4") == 0) {
+		temp_contact.metal = "V4";
+		lower_contact.metal = "M4";
+		upper_contact.metal = "M5";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 3;
+	    } else if (Nets_pos[i].via_metal[j].compare("M5") == 0) {
+		temp_contact.metal = "V5";
+		lower_contact.metal = "M5";
+		upper_contact.metal = "M6";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 4;
+	    } else if (Nets_pos[i].via_metal[j].compare("M6") == 0) {
+           
+		temp_contact.metal = "V6";
+		lower_contact.metal = "M6";
+		upper_contact.metal = "M7";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 5;
+	    } else if (Nets_pos[i].via_metal[j].compare("M7") == 0) {
+		temp_contact.metal = "V7";
+		lower_contact.metal = "M7";
+		upper_contact.metal = "M8";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 6;
+	    }
+	    temp_via.placedpos = temp_contact.originCenter;
+	    temp_via.ViaRect = temp_contact;
+	    temp_via.LowerMetalRect = lower_contact;
+	    temp_via.UpperMetalRect = upper_contact;
+	    CheckOutBlock.interVias.push_back(temp_via);
+	}
     }
     
     //for negative net
-  for(int i=0;i<Nets_neg.size();i++){
-     for(int j=0;j<Nets_neg[i].via.size();j++){//the size of via needs to be modified according to different PDK
+    for (int i = 0; i < Nets_neg.size(); i++) {
+	for (int j = 0; j <Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
+	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
+	    x[2]=Nets_neg[i].via[j].first + width+offset_x;
+	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
+	    x[4]=x[0];
+        
+	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
+	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
+	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
+	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
+	    y[4]=y[0];
+        
+	    if (x[0]<Min_x) Min_x = x[0];
+	    if (x[2]>Max_x) Max_x = x[2];
+	    if (y[0]<Min_y) Min_y = y[0];
+	    if (y[2]>Max_y) Max_y = y[2];
+
+	    PnRDB::contact temp_contact;
+	    fillContact (temp_contact, x, y);
+
+	    for (int i = 0; i < 5; i++) {
+		x[i] *= 2;
+		y[i] *= 2;
+	    }
+
+	    PnRDB::Via temp_via;
+	    PnRDB::contact upper_contact;
+	    PnRDB::contact lower_contact;
+	    upper_contact.placedCenter = temp_contact.placedCenter;
+	    lower_contact.placedCenter = temp_contact.placedCenter;
+
+	    PnRDB::contact h_contact;
+	    h_contact.originBox.LL = temp_contact.originBox.LL;
+	    h_contact.originBox.UL = temp_contact.originBox.UL;
+	    h_contact.originBox.UR = temp_contact.originBox.UR;
+	    h_contact.originBox.LR = temp_contact.originBox.LR;
+	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
+	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
+	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
+
+	    PnRDB::contact v_contact;
+	    v_contact.originBox.LL = temp_contact.originBox.LL;
+	    v_contact.originBox.UL = temp_contact.originBox.UL;
+	    v_contact.originBox.UR = temp_contact.originBox.UR;
+	    v_contact.originBox.LR = temp_contact.originBox.LR;
+	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
+	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
+	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
+
+	    if (Nets_neg[i].via_metal[j].compare("M1") == 0) {
+		temp_contact.metal = "V1";
+		lower_contact.metal = "M1";
+		upper_contact.metal = "M2";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 0;
+	    } else if (Nets_neg[i].via_metal[j].compare("M2") == 0) {
+		temp_contact.metal = "V2";
+		lower_contact.metal = "M2";
+		upper_contact.metal = "M3";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 1;
+	    } else if (Nets_neg[i].via_metal[j].compare("M3") == 0) {
+		temp_contact.metal = "V3";
+		lower_contact.metal = "M3";
+		upper_contact.metal = "M4";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 2;
+	    } else if (Nets_neg[i].via_metal[j].compare("M4") == 0) {
+		temp_contact.metal = "V4";
+		lower_contact.metal = "M4";
+		upper_contact.metal = "M5";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 3;
+	    } else if (Nets_neg[i].via_metal[j].compare("M5") == 0) {
+		temp_contact.metal = "V5";
+		lower_contact.metal = "M5";
+		upper_contact.metal = "M6";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 4;
+	    } else if (Nets_neg[i].via_metal[j].compare("M6") == 0) {
+		temp_contact.metal = "V6";
+		lower_contact.metal = "M6";
+		upper_contact.metal = "M7";
+		lower_contact.originBox = h_contact.originBox;
+		upper_contact.originBox = v_contact.originBox;
+		temp_via.model_index = 5;
+	    } else if (Nets_neg[i].via_metal[j].compare("M7") == 0) {
+		temp_contact.metal = "V7";
+		lower_contact.metal = "M7";
+		upper_contact.metal = "M8";
+		lower_contact.originBox = v_contact.originBox;
+		upper_contact.originBox = h_contact.originBox;
+		temp_via.model_index = 6;
+	    }
+	    temp_via.placedpos = temp_contact.originCenter;
+	    temp_via.ViaRect = temp_contact;
+	    temp_via.LowerMetalRect = lower_contact;
+	    temp_via.UpperMetalRect = upper_contact;
+	    CheckOutBlock.interVias.push_back(temp_via);
+	}
+    }
+    CheckOutBlock.orient = PnRDB::Omark(0); //need modify
+  
+    for (int i = 0; i < Caps.size(); i++) {
+	x[0]=Caps[i].x - unit_cap_demension.first/2+offset_x;
+	x[1]=Caps[i].x - unit_cap_demension.first/2+offset_x;
+	x[2]=Caps[i].x + unit_cap_demension.first/2+offset_x;
+	x[3]=Caps[i].x + unit_cap_demension.first/2+offset_x;
+	x[4]=x[0];
+       
+	y[0]=Caps[i].y - unit_cap_demension.second/2+offset_y;
+	y[1]=Caps[i].y + unit_cap_demension.second/2+offset_y;
+	y[2]=Caps[i].y + unit_cap_demension.second/2+offset_y;
+	y[3]=Caps[i].y - unit_cap_demension.second/2+offset_y;
+	y[4]=y[0];
+     
+	if (x[0]<Min_x) Min_x = x[0];
+	if (x[2]>Max_x) Max_x = x[2];
+	if (y[0]<Min_y) Min_y = y[0];
+	if (y[2]>Max_y) Max_y = y[2];
  
-        x[0]=Nets_neg[i].via[j].first - width;
-        x[1]=Nets_neg[i].via[j].first - width;
-        x[2]=Nets_neg[i].via[j].first + width;
-        x[3]=Nets_neg[i].via[j].first + width;
-        x[4]=x[0];
-        
-        y[0]=Nets_neg[i].via[j].second - width;
-        y[1]=Nets_neg[i].via[j].second + width;
-        y[2]=Nets_neg[i].via[j].second + width;
-        y[3]=Nets_neg[i].via[j].second - width;
-        y[4]=y[0];
-        
-
-        if(x[0]<Min_x){Min_x = x[0];}
-        if(x[2]>Max_x){Max_x = x[2];}
-        if(y[0]<Min_y){Min_y = y[0];}
-        if(y[2]>Max_y){Max_y = y[2];}
-
+	PnRDB::point temp_point;
+	PnRDB::contact temp_contact;
+	fillContact (temp_contact, x, y);
       
-       }
+	temp_contact.metal = "M1";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+	temp_contact.metal = "M2";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+	temp_contact.metal = "M3";
+	CheckOutBlock.interMetals.push_back(temp_contact);
+    }
+
+    CheckOutBlock.gdsFile = topGDS_loc;
+    PnRDB::point temp_point;
+    temp_point.x = Min_x;
+    temp_point.y = Min_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.LL = temp_point;
+    temp_point.x = Min_x;
+    temp_point.y = Max_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.UL = temp_point;
+    temp_point.x = Max_x;
+    temp_point.y = Max_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.UR = temp_point;
+    temp_point.x = Max_x;
+    temp_point.y = Min_y;
+    CheckOutBlock.originBox.polygon.push_back(temp_point);
+    CheckOutBlock.originBox.LR = temp_point;
+    CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
+    CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
+    CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
+    CheckOutBlock.height = CheckOutBlock.originBox.UR.y-CheckOutBlock.originBox.LL.y;
+}
+
+void
+Placer_Router_Cap::cal_offset() {
+    int x[5], y[5];
+    int sx[5], sy[5];
+    int width = metal_width[0];
+    int Min_x = INT_MAX;
+    int Min_y = INT_MAX;
+    int Max_x = INT_MIN;
+    int Max_y = INT_MIN;
+    //for positive nets
+    // vector<pair<double,double> f, s;  int width
+  
+    for (int i = 0; i< Nets_pos.size(); i++) {//for each net
+	for (int j = 0; j< Nets_pos[i].start_conection_coord.size();j++) { //for segment
+	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
+				 Nets_pos[i].end_conection_coord[j], width);
+
+            if (x[0] < Min_x) Min_x = x[0];
+            if (x[2] > Max_x) Max_x = x[2];
+            if (y[0] < Min_y) Min_y = y[0];
+            if (y[2] > Max_y) Max_y = y[2];
+        }
     }
   
-  for(int i= 0; i<Caps.size();i++){
-      x[0]=Caps[i].x - unit_cap_demension.first/2;
-      x[1]=Caps[i].x - unit_cap_demension.first/2;
-      x[2]=Caps[i].x + unit_cap_demension.first/2;
-      x[3]=Caps[i].x + unit_cap_demension.first/2;
-      x[4]=x[0];
-       
-      y[0]=Caps[i].y - unit_cap_demension.second/2;
-      y[1]=Caps[i].y + unit_cap_demension.second/2;
-      y[2]=Caps[i].y + unit_cap_demension.second/2;
-      y[3]=Caps[i].y - unit_cap_demension.second/2;
-      y[4]=y[0];
+    //for neg nets
+    for (int i = 0; i <  Nets_neg.size(); i++) {//for each net
+	for (int j = 0; j <  Nets_neg[i].start_conection_coord.size();j++) { //for segment
+	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
+				 Nets_neg[i].end_conection_coord[j], width);
 
-      if(x[0]<Min_x){Min_x = x[0];}
-      if(x[2]>Max_x){Max_x = x[2];}
-      if(y[0]<Min_y){Min_y = y[0];}
-      if(y[2]>Max_y){Max_y = y[2];}
-
-     }
+            if (x[0] < Min_x) Min_x = x[0];
+            if (x[2] > Max_x) Max_x = x[2];
+            if (y[0] < Min_y) Min_y = y[0];
+            if (y[2] > Max_y) Max_y = y[2];
+        }
+    }
   
-  offset_x = 0-Min_x;
-  offset_y = 0-Min_y;
+    //wirting vias
+    //for positive net
+    width  =  via_width[0];
+    for (int i = 0; i < Nets_pos.size(); i++) {
+	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+	    x[0] = Nets_pos[i].via[j].first - width;
+	    x[1] = Nets_pos[i].via[j].first - width;
+	    x[2] = Nets_pos[i].via[j].first + width;
+	    x[3] = Nets_pos[i].via[j].first + width;
+	    x[4] = x[0];
+        
+	    y[0] = Nets_pos[i].via[j].second - width;
+	    y[1] = Nets_pos[i].via[j].second + width;
+	    y[2] = Nets_pos[i].via[j].second + width;
+	    y[3] = Nets_pos[i].via[j].second - width;
+	    y[4] = y[0];
 
+	    if (x[0] < Min_x) Min_x = x[0];
+	    if (x[2] > Max_x) Max_x = x[2];
+	    if (y[0] < Min_y) Min_y = y[0];
+	    if (y[2] > Max_y) Max_y = y[2];
+	}
+    }
+    
+    //for negative net
+    for (int i = 0;i < Nets_neg.size(); i++) {
+	for (int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+ 
+	    x[0] = Nets_neg[i].via[j].first - width;
+	    x[1] = Nets_neg[i].via[j].first - width;
+	    x[2] = Nets_neg[i].via[j].first + width;
+	    x[3] = Nets_neg[i].via[j].first + width;
+	    x[4] = x[0];
+        
+	    y[0] = Nets_neg[i].via[j].second - width;
+	    y[1] = Nets_neg[i].via[j].second + width;
+	    y[2] = Nets_neg[i].via[j].second + width;
+	    y[3] = Nets_neg[i].via[j].second - width;
+	    y[4] = y[0];
+        
+	    if (x[0] < Min_x) Min_x = x[0];
+	    if (x[2] > Max_x) Max_x = x[2];
+	    if (y[0] < Min_y) Min_y = y[0];
+	    if (y[2] > Max_y) Max_y = y[2];
+	}
+    }
+  
+    for (int i = 0; i < Caps.size(); i++) {
+	x[0] = Caps[i].x - unit_cap_demension.first/2;
+	x[1] = Caps[i].x - unit_cap_demension.first/2;
+	x[2] = Caps[i].x + unit_cap_demension.first/2;
+	x[3] = Caps[i].x + unit_cap_demension.first/2;
+	x[4] = x[0];
+       
+	y[0] = Caps[i].y - unit_cap_demension.second/2;
+	y[1] = Caps[i].y + unit_cap_demension.second/2;
+	y[2] = Caps[i].y + unit_cap_demension.second/2;
+	y[3] = Caps[i].y - unit_cap_demension.second/2;
+	y[4] = y[0];
+
+	if (x[0] < Min_x) Min_x = x[0];
+	if (x[2] > Max_x) Max_x = x[2];
+	if (y[0] < Min_y) Min_y = y[0];
+	if (y[2] > Max_y) Max_y = y[2];
+    }
+  
+    offset_x = 0-Min_x;
+    offset_y = 0-Min_y;
 }
 
 void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<string, string> > & cap_pin){
@@ -2154,27 +2475,8 @@ Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
     }
 }
 
-// DAK: Fills a contact with a 4 point rectangle
 void
-fillContact (PnRDB::contact& con, int* x, int*y) {
-    for (int i = 0; i < 4; i++) {
-	PnRDB::point temp_point;
-	temp_point.x = x[i];
-	temp_point.y = y[i];
-	con.originBox.polygon.push_back (temp_point);
-	switch (i) {
-	case 0: con.originBox.LL = temp_point; break;
-	case 1: con.originBox.UL = temp_point; break;
-	case 2: con.originBox.UR = temp_point; break;
-	case 3: con.originBox.LR = temp_point; break;
-	}
-    }
-    con.originCenter.x = (x[0]+x[2])/2;
-    con.originCenter.y = (y[0]+y[2])/2;
-}
-
-void
-Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_gds) {
+Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_gds) {
     //begin to write JSON file from unit capacitor to final capacitor file
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = final_gds+".gds";
@@ -2236,22 +2538,6 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
     jsonStr["strname"] = TopCellName.c_str();
     json jsonElements = json::array();
 
-    // DAK: These should be defined in a method that can load this map from a file / PDK
-    string MaskID_M1 = "19";
-    string MaskID_V1 = "21";
-    string MaskID_M2 = "20";
-    string MaskID_V2 = "25";
-    string MaskID_M3 = "30";
-    string MaskID_V3 = "35";
-    string MaskID_M4 = "40";
-    string MaskID_V4 = "45";
-    string MaskID_M5 = "50";
-    string MaskID_V5 = "55";
-    string MaskID_M6 = "60";
-    string MaskID_V6 = "65";
-    string MaskID_M7 = "70";
-    string MaskID_V7 = "75";
-
     int width = metal_width[0];
     int Min_x = INT_MAX;
     int Min_y = INT_MAX;
@@ -2260,19 +2546,15 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
     //for positive nets
 
     for(int i=0; i< Nets_pos.size(); i++){//for each net
-	PnRDB::pin temp_Pins;
 	for(int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
             
-	    if(x[0]<Min_x){Min_x = x[0];}
-	    if(x[2]>Max_x){Max_x = x[2];}
-	    if(y[0]<Min_y){Min_y = y[0];}
-	    if(y[2]>Max_y){Max_y = y[2];}
+	    if(x[0]<Min_x) {Min_x = x[0];}
+	    if(x[2]>Max_x) {Max_x = x[2];}
+	    if(y[0]<Min_y) {Min_y = y[0];}
+	    if(y[2]>Max_y) {Max_y = y[2];}
 
-	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
-            
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= 2;
 		y[i] *= 2;
@@ -2287,39 +2569,13 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 		xy.push_back (y[i]);
 	    }
 	    bound["xy"] = xy;
-
-	    temp_contact.metal = Nets_pos[i].metal[j];
-      
-	    if (Nets_pos[i].metal[j] == "M1"){
-		bound["layer"] = stoi(MaskID_M1);
-	    } else if(Nets_pos[i].metal[j] == "M2"){	
-		bound["layer"] = stoi(MaskID_M2);
-	    } else if(Nets_pos[i].metal[j] == "M3"){	
-		bound["layer"] = stoi(MaskID_M3);
-	    } else if(Nets_pos[i].metal[j] == "M4"){	
-		bound["layer"] = stoi(MaskID_M4);
-	    } else if(Nets_pos[i].metal[j] == "M5"){	
-		bound["layer"] = stoi(MaskID_M5);
-	    } else if(Nets_pos[i].metal[j] == "M6"){	
-		bound["layer"] = stoi(MaskID_M6);
-	    } else if(Nets_pos[i].metal[j] == "M7"){	
-		bound["layer"] = stoi(MaskID_M7);
-	    }
-
+	    bound["layer"] = getLayerMask (Nets_pos[i].metal[j]);
 	    jsonElements.push_back (bound);
-
-	    if (Nets_pos[i].Is_pin[j] == 1) {
-		temp_Pins.name = Nets_pos[i].name;
-		temp_Pins.pinContacts.push_back(temp_contact);
-	    }
-	    CheckOutBlock.interMetals.push_back(temp_contact);
 	}   
-	CheckOutBlock.blockPins.push_back(temp_Pins);
     }
   
     //for neg nets
     for(int i =0; i < Nets_neg.size(); i++) {//for each net
-	PnRDB::pin temp_Pins_neg;
 	for(int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
@@ -2329,9 +2585,6 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 	    if(y[0]<Min_y) Min_y = y[0];
 	    if(y[2]>Max_y) Max_y = y[2];
 
-	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
-
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= 2;
 		y[i] *= 2;
@@ -2346,42 +2599,17 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 		xy.push_back (y[i]);
 	    }
 	    bound["xy"] = xy;
-
-	    temp_contact.metal = Nets_neg[i].metal[j];
-
-	    if (Nets_neg[i].metal[j] == "M1") {
-		bound["layer"] = stoi(MaskID_M1);
-	    } else if (Nets_neg[i].metal[j] == "M2") {
-		bound["layer"] = stoi(MaskID_M2);
-	    } else if (Nets_neg[i].metal[j] == "M3") {	
-		bound["layer"] = stoi(MaskID_M3);
-	    } else if (Nets_neg[i].metal[j] == "M4") {	
-		bound["layer"] = stoi(MaskID_M4);
-	    } else if (Nets_neg[i].metal[j] == "M5") {	
-		bound["layer"] = stoi(MaskID_M5);
-	    } else if (Nets_neg[i].metal[j] == "M6") {
-		bound["layer"] = stoi(MaskID_M6);
-	    } else if (Nets_neg[i].metal[j] == "M7") {
-		bound["layer"] = stoi(MaskID_M7);
-	    }
-
+	    bound["layer"] = getLayerMask (Nets_neg[i].metal[j]);
 	    jsonElements.push_back (bound);
-	    if (Nets_neg[i].Is_pin[j] == 1) {
-		temp_Pins_neg.name = Nets_neg[i].name;
-		temp_Pins_neg.pinContacts.push_back(temp_contact);
-	    }
-	    CheckOutBlock.interMetals.push_back(temp_contact);
 	}
-	CheckOutBlock.blockPins.push_back(temp_Pins_neg);
     }
   
     //wirting vias
     //for positive net
     width = via_width[0];
-    for(int i=0;i<Nets_pos.size();i++){
-	for(int j=0;j<Nets_pos[i].via.size();j++){//the size of via needs to be modified according to different PDK
- 
-	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
+    for (int i = 0; i < Nets_pos.size(); i++) {
+	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+ 	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
 	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
@@ -2393,55 +2621,16 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-
-	    if(x[0]<Min_x){Min_x = x[0];}
-	    if(x[2]>Max_x){Max_x = x[2];}
-	    if(y[0]<Min_y){Min_y = y[0];}
-	    if(y[2]>Max_y){Max_y = y[2];}
-
-	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
+	    if (x[0]<Min_x) {Min_x = x[0];}
+	    if (x[2]>Max_x) {Max_x = x[2];}
+	    if (y[0]<Min_y) {Min_y = y[0];}
+	    if (y[2]>Max_y) {Max_y = y[2];}
 
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= 2;
 		y[i] *= 2;
 	    }
     
-	    PnRDB::Via temp_via;
-	    PnRDB::contact upper_contact;
-	    PnRDB::contact lower_contact;
-	    upper_contact.placedCenter = temp_contact.placedCenter;
-	    lower_contact.placedCenter = temp_contact.placedCenter;
-
-	    PnRDB::contact h_contact;
-	    h_contact.originBox.LL = temp_contact.originBox.LL;
-	    h_contact.originBox.UL = temp_contact.originBox.UL;
-	    h_contact.originBox.UR = temp_contact.originBox.UR;
-	    h_contact.originBox.LR = temp_contact.originBox.LR;
-	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
-	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
-	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
-	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
-
-	    PnRDB::contact v_contact;
-	    v_contact.originBox.LL = temp_contact.originBox.LL;
-	    v_contact.originBox.UL = temp_contact.originBox.UL;
-	    v_contact.originBox.UR = temp_contact.originBox.UR;
-	    v_contact.originBox.LR = temp_contact.originBox.LR;
-	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
-	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
-	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
-	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
-
-
 	    json bound;
 	    bound["type"] = "boundary";
 	    bound["datatype"] = 0;
@@ -2451,85 +2640,14 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 		xy.push_back (y[i]);
 	    }
 	    bound["xy"] = xy;
-
-	    if(Nets_pos[i].via_metal[j].compare("M1")==0){
-
-		bound["layer"] = stoi(MaskID_V1);
-		temp_contact.metal = "V1";
-		lower_contact.metal = "M1";
-		upper_contact.metal = "M2";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 0;
-	    }else if(Nets_pos[i].via_metal[j].compare("M2")==0){
-
-		bound["layer"] = stoi(MaskID_V2);
-		temp_contact.metal = "V2";
-		lower_contact.metal = "M2";
-		upper_contact.metal = "M3";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 1;
-	    }else if(Nets_pos[i].via_metal[j].compare("M3")==0){
-
-		bound["layer"] = stoi(MaskID_V3);
-		temp_contact.metal = "V3";
-		lower_contact.metal = "M3";
-		upper_contact.metal = "M4";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 2;
-	    }else if(Nets_pos[i].via_metal[j].compare("M4")==0){
-
-		bound["layer"] = stoi(MaskID_V4);
-		temp_contact.metal = "V4";
-		lower_contact.metal = "M4";
-		upper_contact.metal = "M5";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 3;
-	    }else if(Nets_pos[i].via_metal[j].compare("M5")==0){
-
-		bound["layer"] = stoi(MaskID_V5);
-		temp_contact.metal = "V5";
-		lower_contact.metal = "M5";
-		upper_contact.metal = "M6";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 4;
-	    }else if(Nets_pos[i].via_metal[j].compare("M6")==0){
-
-		bound["layer"] = stoi(MaskID_V6);
-		temp_contact.metal = "V6";
-		lower_contact.metal = "M6";
-		upper_contact.metal = "M7";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 5;
-	    }else if(Nets_pos[i].via_metal[j].compare("M7")==0){
-
-		bound["layer"] = stoi(MaskID_V7);
-		temp_contact.metal = "V7";
-		lower_contact.metal = "M7";
-		upper_contact.metal = "M8";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 6;
-	    }
-
+	    bound["layer"] = getLayerViaMask (Nets_pos[i].via_metal[j]);
 	    jsonElements.push_back (bound);
-	
-	    temp_via.placedpos = temp_contact.originCenter;
-	    temp_via.ViaRect = temp_contact;
-	    temp_via.LowerMetalRect = lower_contact;
-	    temp_via.UpperMetalRect = upper_contact;
-	    CheckOutBlock.interVias.push_back(temp_via);
 	}
     }
     
     //for negative net
-    for(int i=0;i<Nets_neg.size();i++){
-	for(int j=0;j<Nets_neg[i].via.size();j++){//the size of via needs to be modified according to different PDK
+    for (int i = 0; i < Nets_neg.size(); i++) {
+	for (int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
  
 	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
 	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
@@ -2543,52 +2661,15 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-	    if(x[0]<Min_x){Min_x = x[0];}
-	    if(x[2]>Max_x){Max_x = x[2];}
-	    if(y[0]<Min_y){Min_y = y[0];}
-	    if(y[2]>Max_y){Max_y = y[2];}
-
-	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
+	    if (x[0]<Min_x) Min_x = x[0];
+	    if (x[2]>Max_x) Max_x = x[2];
+	    if (y[0]<Min_y) Min_y = y[0];
+	    if (y[2]>Max_y) Max_y = y[2];
 
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= 2;
 		y[i] *= 2;
 	    }
-
-	    PnRDB::Via temp_via;
-	    PnRDB::contact upper_contact;
-	    PnRDB::contact lower_contact;
-	    upper_contact.placedCenter = temp_contact.placedCenter;
-	    lower_contact.placedCenter = temp_contact.placedCenter;
-
-	    PnRDB::contact h_contact;
-	    h_contact.originBox.LL = temp_contact.originBox.LL;
-	    h_contact.originBox.UL = temp_contact.originBox.UL;
-	    h_contact.originBox.UR = temp_contact.originBox.UR;
-	    h_contact.originBox.LR = temp_contact.originBox.LR;
-	    h_contact.originBox.LL.y = temp_contact.originBox.LL.y-(via_cover[0]-via_width[0]);
-	    h_contact.originBox.UL.y = temp_contact.originBox.UL.y+(via_cover[0]-via_width[0]);
-	    h_contact.originBox.UR.y = temp_contact.originBox.UR.y+(via_cover[0]-via_width[0]);
-	    h_contact.originBox.LR.y = temp_contact.originBox.LR.y-(via_cover[0]-via_width[0]);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
-
-	    PnRDB::contact v_contact;
-	    v_contact.originBox.LL = temp_contact.originBox.LL;
-	    v_contact.originBox.UL = temp_contact.originBox.UL;
-	    v_contact.originBox.UR = temp_contact.originBox.UR;
-	    v_contact.originBox.LR = temp_contact.originBox.LR;
-	    v_contact.originBox.LL.x = temp_contact.originBox.LL.x-(via_cover[0]-via_width[0]);
-	    v_contact.originBox.UL.x = temp_contact.originBox.UL.x-(via_cover[0]-via_width[0]);
-	    v_contact.originBox.UR.x = temp_contact.originBox.UR.x+(via_cover[0]-via_width[0]);
-	    v_contact.originBox.LR.x = temp_contact.originBox.LR.x+(via_cover[0]-via_width[0]);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
 
 	    json bound;
 	    bound["type"] = "boundary";
@@ -2599,139 +2680,13 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 		xy.push_back (y[i]);
 	    }
 	    bound["xy"] = xy;
-
-	    if(Nets_neg[i].via_metal[j].compare("M1")==0){
-
-		bound["layer"] = stoi(MaskID_V1);
-		temp_contact.metal = "V1";
-		lower_contact.metal = "M1";
-		upper_contact.metal = "M2";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 0;
-	    }else if(Nets_neg[i].via_metal[j].compare("M2")==0){
-
-		bound["layer"] = stoi(MaskID_V2);
-		temp_contact.metal = "V2";
-		lower_contact.metal = "M2";
-		upper_contact.metal = "M3";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 1;
-	    }else if(Nets_neg[i].via_metal[j].compare("M3")==0){
-
-		bound["layer"] = stoi(MaskID_V3);
-		temp_contact.metal = "V3";
-		lower_contact.metal = "M3";
-		upper_contact.metal = "M4";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 2;
-	    }else if(Nets_neg[i].via_metal[j].compare("M4")==0){
-
-		bound["layer"] = stoi(MaskID_V4);
-		temp_contact.metal = "V4";
-		lower_contact.metal = "M4";
-		upper_contact.metal = "M5";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 3;
-	    }else if(Nets_neg[i].via_metal[j].compare("M5")==0){
-
-		bound["layer"] = stoi(MaskID_V5);
-		temp_contact.metal = "V5";
-		lower_contact.metal = "M5";
-		upper_contact.metal = "M6";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 4;
-	    }else if(Nets_neg[i].via_metal[j].compare("M6")==0){
-
-		bound["layer"] = stoi(MaskID_V6);
-		temp_contact.metal = "V6";
-		lower_contact.metal = "M6";
-		upper_contact.metal = "M7";
-		lower_contact.originBox = h_contact.originBox;
-		upper_contact.originBox = v_contact.originBox;
-		temp_via.model_index = 5;
-	    }else if(Nets_neg[i].via_metal[j].compare("M7")==0){
-
-		bound["layer"] = stoi(MaskID_V7);
-		temp_contact.metal = "V7";
-		lower_contact.metal = "M7";
-		upper_contact.metal = "M8";
-		lower_contact.originBox = v_contact.originBox;
-		upper_contact.originBox = h_contact.originBox;
-		temp_via.model_index = 6;
-	    }
-
+	    bound["layer"] = getLayerViaMask (Nets_neg[i].via_metal[j]);
 	    jsonElements.push_back (bound);
-	 
-	    temp_via.placedpos = temp_contact.originCenter;
-	    temp_via.ViaRect = temp_contact;
-	    temp_via.LowerMetalRect = lower_contact;
-	    temp_via.UpperMetalRect = upper_contact;
-	    CheckOutBlock.interVias.push_back(temp_via);
 	}
     }
-    CheckOutBlock.orient = PnRDB::Omark(0); //need modify
-  
-    for(int i= 0; i<Caps.size();i++){
-	x[0]=Caps[i].x - unit_cap_demension.first/2+offset_x;
-	x[1]=Caps[i].x - unit_cap_demension.first/2+offset_x;
-	x[2]=Caps[i].x + unit_cap_demension.first/2+offset_x;
-	x[3]=Caps[i].x + unit_cap_demension.first/2+offset_x;
-	x[4]=x[0];
-       
-	y[0]=Caps[i].y - unit_cap_demension.second/2+offset_y;
-	y[1]=Caps[i].y + unit_cap_demension.second/2+offset_y;
-	y[2]=Caps[i].y + unit_cap_demension.second/2+offset_y;
-	y[3]=Caps[i].y - unit_cap_demension.second/2+offset_y;
-	y[4]=y[0];
-     
-
-	if(x[0]<Min_x){Min_x = x[0];}
-	if(x[2]>Max_x){Max_x = x[2];}
-	if(y[0]<Min_y){Min_y = y[0];}
-	if(y[2]>Max_y){Max_y = y[2];}
- 
-	PnRDB::contact temp_contact;
-	fillContact (temp_contact, x, y);
-
-	temp_contact.metal = "M1";
-	CheckOutBlock.interMetals.push_back(temp_contact);
-	temp_contact.metal = "M2";
-	CheckOutBlock.interMetals.push_back(temp_contact);
-	temp_contact.metal = "M3";
-	CheckOutBlock.interMetals.push_back(temp_contact);
-    }
-
-    CheckOutBlock.gdsFile = topGDS_loc;
-    PnRDB::point temp_point;
-    temp_point.x = Min_x;
-    temp_point.y = Min_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.LL = temp_point;
-    temp_point.x = Min_x;
-    temp_point.y = Max_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.UL = temp_point;
-    temp_point.x = Max_x;
-    temp_point.y = Max_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.UR = temp_point;
-    temp_point.x = Max_x;
-    temp_point.y = Min_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.LR = temp_point;
-    CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
-    CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
-    CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
-    CheckOutBlock.height = CheckOutBlock.originBox.UR.y-CheckOutBlock.originBox.LL.y;
   
     //wirte orientation for each cap
-    for(int i=0;i<Caps.size();i++){
-
+    for (int i = 0; i < Caps.size(); i++) {
 	json sref;
 	sref["type"] = "sref";
 	if (strBlocks_Top.size())
@@ -2740,8 +2695,8 @@ Placer_Router_Cap::WriteJSON(string fpath, string unit_capacitor, string final_g
 	    cout << "ERROR: no block found to output from subcells" << endl;
 	sref["strans"] = 0;
 	sref["angle"] = 0.0;
-	x[0]=2*(Caps[i].x-unit_cap_demension.first/2+offset_x);
-	y[0]=2*(Caps[i].y-unit_cap_demension.second/2+offset_y);
+	x[0] = 2*(Caps[i].x-unit_cap_demension.first/2+offset_x);
+	y[0] = 2*(Caps[i].y-unit_cap_demension.second/2+offset_y);
      
 	json xy = json::array();
 	xy.push_back (x[0]);
@@ -4698,3 +4653,6 @@ fout<<endl;
   //fout<<endl<<"pause -1 \'Press any key\'";
   fout.close();
 }
+// Local Variables:
+// c-basic-offset: 4
+// End:

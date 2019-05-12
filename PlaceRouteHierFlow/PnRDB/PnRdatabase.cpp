@@ -5328,3 +5328,6 @@ void PnRdatabase::PrintContact(PnRDB::contact& cont) {
         }
         std::cout<<std::endl;
 }
+// Local Variables:
+// c-basic-offset: 4
+// End:

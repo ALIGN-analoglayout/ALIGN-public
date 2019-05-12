@@ -269,6 +269,7 @@ class Placer_Router_Cap
 			      pair<double,double> &start,
 			      pair<double,double> &end,
 			      double width);
+    void ExtractData (string fpath, string unit_capacitor, string final_gds);
     //    void WriteGDS(string fpath, string unit_capacitor, string final_gds);
     void WriteJSON (string fpath, string unit_capacitor, string final_gds);
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
