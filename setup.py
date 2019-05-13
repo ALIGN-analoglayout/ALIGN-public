@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
-setup(name='Cell_Fabric_14nm_Mock',
+setup(name='Cell_Fabric_Common',
       version='0.1',
-      description='Fabric generators for 14nm Mock library',
-      url='ALIGN-analoglayout/ALIGN.git',
+      description='Fabric generator infrastructure',
+      url='ALIGN-analoglayout/ALIGN-public.git',
       author='Steven Burns',
       author_email='steven.m.burns@intel.com',
       license='MIT',
