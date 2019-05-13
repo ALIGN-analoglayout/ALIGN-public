@@ -6,9 +6,9 @@ import os
 from os import system
 
 #from . import gen_json_gds, gen_lef
-from .common import Via, Region, Canvas, Wire
-from .common import Grid, EnclosureGrid
-from .common import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric.common import Via, Region, Canvas, Wire
+from cell_fabric.common import Grid, EnclosureGrid
+from cell_fabric.common import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
 
 
 class CanvasCap(Canvas):

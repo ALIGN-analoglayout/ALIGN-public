@@ -1,4 +1,4 @@
-from cell_fabric import fabric_CMC_NMOS
+import fabric_CMC_NMOS
 
 import math
 import json

@@ -1,7 +1,7 @@
 
 import json
 
-from cell_fabric import fabric_gf
+import fabric_gf
 
 def test_nunit():
     c = fabric_gf.CanvasNMOS()
