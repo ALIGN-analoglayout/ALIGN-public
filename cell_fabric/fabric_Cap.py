@@ -5,7 +5,7 @@ import argparse
 import os
 from os import system
 
-from . import gen_json_gds, gen_lef
+#from . import gen_json_gds, gen_lef
 from .common import Via, Region, Canvas, Wire
 from .common import Grid, EnclosureGrid
 from .common import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
@@ -154,8 +154,8 @@ if __name__ == "__main__":
     with open( "./Viewer/INPUT/mydesign_dr_globalrouting.json", "wt") as fp:
         data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
-    gen_json_gds.json_gds("./Viewer/INPUT/mydesign_dr_globalrouting.json",args.block_name)
-    cell_pin = ["PLUS", "MINUS"]
-    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-    system('python3 setup.py build_ext --inplace')
-    system('python3 gen_gds.py -j %s.json -n %s -e MTI' % (args.block_name,args.block_name))
+#    gen_json_gds.json_gds("./Viewer/INPUT/mydesign_dr_globalrouting.json",args.block_name)
+#    cell_pin = ["PLUS", "MINUS"]
+#    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
+#    system('python3 setup.py build_ext --inplace')
+#    system('python3 gen_gds.py -j %s.json -n %s -e MTI' % (args.block_name,args.block_name))

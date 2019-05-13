@@ -1,4 +1,4 @@
-from fabric_14nm_mock import fabric_Cap
+from cell_fabric import fabric_Cap
 
 import math
 import json

@@ -1,5 +1,5 @@
 import pytest
-from fabric_14nm_mock.common import Canvas, Wire
+from cell_fabric.common import Canvas, Wire
 
 def test_vertical():
     c = Canvas()

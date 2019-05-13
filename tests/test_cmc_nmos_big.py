@@ -1,4 +1,4 @@
-from fabric_14nm_mock import fabric_CMC_NMOS
+from cell_fabric import fabric_CMC_NMOS
 
 import math
 import json
