@@ -3820,9 +3820,8 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 		json strAry = lib["bgnstr"];
 		for (json::iterator sit = strAry.begin(); sit != strAry.end(); ++sit) {
 		    json str = *sit;
-		    std::string nm = str["strname"];
-		    string strname= nm + "_" + std::to_string(rndnum);
-		    cout << "STRNAME " << nm << endl;
+		    string nm = str["strname"];
+		    string strname = nm + "_" + std::to_string(rndnum);
 		    json elements = str["elements"];
 		    for (json::iterator elmI = elements.begin(); elmI != elements.end(); ++elmI) {
 			json elm = *elmI;
@@ -3852,10 +3851,6 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 	// DAK: This means we will have a missing subcell!
 	// DAK: Should error here
     }
-  
-    cout << "COMPARE TO GDS:  " << GDSData
-	 << ": " << TJ_llx << " " << TJ_lly << " " << TJ_urx << " " << TJ_ury << endl;
-
     llx.push_back(TJ_llx);
     lly.push_back(TJ_lly);
     urx.push_back(TJ_urx);
@@ -3865,66 +3860,65 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 void
 JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAry)
 {
-
-  elmAry = json::array();
+    elmAry = json::array();
   
-  cout<<"Top: "<<node.isTop<<endl;
-  cout<<"#terminals print"<<endl;
-  cout<<"#size: "<<node.Terminals.size()<<endl;
-  for(int i=0;i<node.Terminals.size();i++){
-	 cout<<"#name: "<<node.Terminals[i].name<<endl; 
-     cout<<"#type: "<<node.Terminals[i].type<<endl; 
-     cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
-     cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
-     for(int j=0;j<node.Terminals[i].termContacts.size();j++){
-        cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
-        cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
-        <<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
-     }
-  }
-  int test_layer;//
-  int test_font=1,test_vp=1,test_hp=1;
-  int test_texttype=251;//pin purpose
-  double test_mag=0.03; 
-  int center_x[1],center_y[1];
-  string tmpstring;
-  if(node.isTop==1){
+    cout<<"Top: "<<node.isTop<<endl;
+    cout<<"#terminals print"<<endl;
+    cout<<"#size: "<<node.Terminals.size()<<endl;
     for(int i=0;i<node.Terminals.size();i++){
-       int write = 0;
-       for(int j=0;j<node.Terminals[i].termContacts.size();j++){
-           
-		  //if(node.Terminals[i].termContacts[j].metal.compare(NULL)==0){
-		  if(!node.Terminals[i].termContacts[j].metal.empty()){
-            tmpstring=node.Terminals[i].termContacts[j].metal;
-			cout<<"#test metal string: "<<tmpstring<<endl;
-		  }
-          if(write ==0){
-          test_layer = stoi(drc_info.MaskID_Metal[drc_info.Metalmap[node.Terminals[i].termContacts[j].metal]]);
-  	    //cout<<"#test print:"<<node.Terminals[i].termContacts[j].placedCenter.x<<endl;
-  	    //cout<<"#test print:"<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
-          center_x[0]=2*node.Terminals[i].termContacts[j].placedCenter.x;
-          center_y[0]=2*node.Terminals[i].termContacts[j].placedCenter.y;
-
-	  json elm;
-	  elm["type"] = "text";
-	  elm["layer"] = test_layer;
-	  elm["texttype"] = test_texttype;
-	  elm["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
-
-	  elm["strans"] = 0;
-	  elm["mag"] = test_mag;
-	  json xy = json::array();
-	  xy.push_back (center_x[0]);
-	  xy.push_back (center_y[0]);
-	  elm["xy"] = xy;
-	  elm["string"] = node.Terminals[i].name.c_str();
-	  elmAry.push_back (elm);
-	  
-          write = 1;
-           }
-	   }
+	cout<<"#name: "<<node.Terminals[i].name<<endl; 
+	cout<<"#type: "<<node.Terminals[i].type<<endl; 
+	cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
+	cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
+	for(int j=0;j<node.Terminals[i].termContacts.size();j++){
+	    cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
+	    cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
+		<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
 	}
-  }
+    }
+    int test_layer;//
+    int test_font=1,test_vp=1,test_hp=1;
+    int test_texttype=251;//pin purpose
+    double test_mag=0.03; 
+    int center_x[1],center_y[1];
+    string tmpstring;
+    
+    if (node.isTop == 1) {
+	for (int i = 0; i < node.Terminals.size(); i++) {
+	    int write = 0;
+	    for (int j = 0; j < node.Terminals[i].termContacts.size(); j++) {
+		PnRDB::contact con = node.Terminals[i].termContacts[j];
+           
+		//if (con.metal.compare(NULL)==0){
+		if (! con.metal.empty()) {
+		    tmpstring = con.metal;
+		    cout<<"#test metal string: "<<tmpstring<<endl;
+		}
+		if (write == 0) {
+		    test_layer = stoi(drc_info.MaskID_Metal[drc_info.Metalmap[con.metal]]);
+		    center_x[0] = 2 * con.placedCenter.x;
+		    center_y[0] = 2 * con.placedCenter.y;
+
+		    json elm;
+		    elm["type"] = "text";
+		    elm["layer"] = test_layer;
+		    elm["texttype"] = test_texttype;
+		    elm["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
+
+		    elm["strans"] = 0;
+		    elm["mag"] = test_mag;
+		    json xy = json::array();
+		    xy.push_back (center_x[0]);
+		    xy.push_back (center_y[0]);
+		    elm["xy"] = xy;
+		    elm["string"] = node.Terminals[i].name.c_str();
+		    elmAry.push_back (elm);
+	  
+		    write = 1;
+		}
+	    }
+	}
+    }
 }
 
 void
@@ -4059,13 +4053,11 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     long int rndnum = static_cast<long int>(time(NULL));
 
     int idx = 0;
-
     if (includeBlock) {
 	for (int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.gdsFile);
 
 	cout<<"start wrting sub-blocks"<<endl;
-	//int rndnum=111;
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 	    json j;
 	    JSONReaderWrite_subcells (*it, rndnum, strBlocks, llx,lly,urx,ury, j);
@@ -4076,34 +4068,27 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    idx++;
 	}   
     }
-    std::cout << "DONE READING GDS SUBCELLS FOR " << gdsName << std::endl;
-    for (int i=0;i<(int)llx.size();i++) {
-	//cout<<"llx "<<llx[i]<<" lly "<<lly[i]<<" urx "<<urx[i]<<" ury "<<ury[i]<<endl;
-    }
-    int x[5], y[5];
 
     json jsonStr;
     jsonStr["time"] = JSON_TimeTime();
-    // DAK: Hack to match
+    // DAK: Hack to match time for repeated runs
     jsonStr["time"] = {2019, 4, 24, 9, 46, 15, 2019, 4, 24, 9, 46, 15};
     jsonStr["strname"] = TopCellName.c_str();
     json jsonElements = json::array();
 
+    int x[5], y[5];
     int write_blockPins_name = 0;
     if (write_blockPins_name){
-    
 	for (int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
 	    for (int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
 		PnRDB::contact con = node.blockPins[i].pinContacts[j];
 		assignBoxPoints (x, y, con.placedBox);
-		//added by yg    
 		if (write == 0) {
 		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 				     stoi(drc_info.MaskID_Metal[drc_info.Metalmap[con.metal]]),
 				     node.blockPins[i].name);
-		    //added by yg 
-		    write = 1;
+		    write = 1;	// added by yg 
 		}
 	    }
 	}
@@ -4117,14 +4102,12 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    for (int j = 0; j < node.Nets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.Nets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements, metal, drc_info)) {
-		    //added by yg    
-		    if (write ==0) {
+		    if (write == 0) {
 			assignBoxPoints (x, y, metal.MetalRect.placedBox);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 stoi(drc_info.MaskID_Metal[drc_info.Metalmap[metal.MetalRect.metal]]),
 					 node.Nets[i].name);
-			//added by yg 
-			write = 1;
+			write = 1; // added by yg 
 		    }
 		}
 	    }
@@ -4144,14 +4127,12 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    for (int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.PowerNets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements,  metal, drc_info)) {
-		    //added by yg    
-		    if (write ==0){
+		    if (write == 0) {
 			assignBoxPoints (x, y, metal.MetalRect.placedBox);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 stoi(drc_info.MaskID_Metal[drc_info.Metalmap[metal.MetalRect.metal]]),
 					 node.PowerNets[i].name);
-			//added by yg 
-			write = 1;
+			write = 1; //added by yg 
 		    }
 		}
 	    }
@@ -4162,8 +4143,6 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     }
 
     if (includePowerGrid) {
-	std::cout << "JSON POWER include " << gdsName << std::endl;
-       
 	int vdd = 1; int gnd = 1;
 	if (vdd == 1) {
 	    for (int i = 0; i < node.Vdd.metals.size(); i++) 
@@ -4179,11 +4158,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    for (int i = 0; i < node.Gnd.vias.size(); i++) 
 		addViaBoundaries(jsonElements, node.Gnd.vias[i], drc_info);
 	}
-	std::cout << "DONE JSON POWER include " << gdsName << std::endl;
     }
 
     if (includeBlock) {
-	//cout<<"start wrting sref"<<endl;
 	int bOrient;
 	for (int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.gdsFile];
@@ -4204,70 +4181,61 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    default: bOrient = 8;
 	    }
 
-	    // if (node.Blocks[i].instance.orient==PnRDB::N) { bOrient=0; }
-	    // else if (node.Blocks[i].instance.orient==PnRDB::S) {bOrient=1; }
-	    // else if (node.Blocks[i].instance.orient==PnRDB::E) {bOrient=2;}
-	    // else if (node.Blocks[i].instance.orient==PnRDB::W) {bOrient=3;}
-	    // else if (node.Blocks[i].instance.orient==PnRDB::FN) {bOrient=4;}
-	    // else if (node.Blocks[i].instance.orient==PnRDB::FS) {bOrient=5;}
-	    // else if (node.Blocks[i].instance.orient==PnRDB::FE) {bOrient=6;}
-	    // else if (node.Blocks[i].instance.orient==PnRDB::FW) {bOrient=7;}
-	    // else { bOrient=8; }
-
+	    PnRDB::bbox box = node.Blocks[i].instance.placedBox;
 	    switch (bOrient) {
 	    case 0:
 		sref["strans"] = 0;
 		sref["angle"] = 0.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.LL.x;
-		y[0]=2*node.Blocks[i].instance.placedBox.LL.y;
+		x[0] = 2 * box.LL.x;
+		y[0] = 2 * box.LL.y;
 		break;
 	    case 1:
 		sref["strans"] = 0;
 		sref["angle"] = 180.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.UR.x+llx[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.UR.y+lly[index];
+		x[0] = 2 * box.UR.x+llx[index];
+		y[0] = 2 * box.UR.y+lly[index];
 		break;
 	    case 2:
 		sref["strans"] = 0;
 		sref["angle"] = 90.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.UL.x-lly[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.UL.y+llx[index];
+		x[0] = 2 * box.UL.x-lly[index];
+		y[0] = 2 * box.UL.y+llx[index];
 		break;
 	    case 3:
 		sref["strans"] = 0;
 		sref["angle"] = 270.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.LR.x-lly[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.LR.y-llx[index];
+		x[0] = 2 * box.LR.x-lly[index];
+		y[0] = 2 * box.LR.y-llx[index];
 		break;
 	    case 4:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 180.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.LR.x+llx[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.LR.y-lly[index];
+		x[0] = 2 * box.LR.x+llx[index];
+		y[0] = 2 * box.LR.y-lly[index];
 		break;
 	    case 5:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 0.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.UL.x-llx[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.UL.y+lly[index];
+		x[0] = 2 * box.UL.x-llx[index];
+		y[0] = 2 * box.UL.y+lly[index];
 		break;
 	    case 6:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 270.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.UR.x+lly[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.UR.x+llx[index]; 
+		x[0] = 2 * box.UR.x+lly[index];
+		y[0] = 2 * box.UR.x+llx[index]; 
 		break;
 	    case 7:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 180.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.LL.x+lly[index];
-		y[0]=2*node.Blocks[i].instance.placedBox.UL.y+llx[index]; 
+		x[0] = 2 * box.LL.x+lly[index];
+		y[0] = 2 * box.UL.y+llx[index]; 
 		break;
 	    default:
 		sref["strans"] = 0; // DAK: HACK
 		sref["angle"] = 0.0;
-		x[0]=2*node.Blocks[i].instance.placedBox.LL.x;
-		y[0]=2*node.Blocks[i].instance.placedBox.LL.y;
+		x[0] = 2 * box.LL.x;
+		y[0] = 2 * box.LL.y;
 	    }
 	    json xy = json::array();
 	    for (size_t i = 0; i < 1; i++) {
