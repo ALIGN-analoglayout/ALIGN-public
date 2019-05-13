@@ -5,9 +5,9 @@ from os import system
 
 import itertools
 
-from cell_fabric.common import Via, Region, Canvas, Wire
-from cell_fabric.common import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from cell_fabric.common import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from cell_fabric import Via, Region, Canvas, Wire
+from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
+from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(Canvas):
     def __init__( self, gate_u, fin_u, fin_u1):

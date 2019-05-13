@@ -1,5 +1,5 @@
 import pytest
-from cell_fabric.common import Canvas, Wire
+from cell_fabric import Canvas, Wire
 
 def test_vertical():
     c = Canvas()
