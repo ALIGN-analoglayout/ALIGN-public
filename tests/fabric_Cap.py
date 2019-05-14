@@ -88,13 +88,15 @@ class UnitCell(CanvasCap):
         for i in range(x_number):
             grid_x = i + x*grid_cell_x_pitch
             
-            self.addWire( self.m1, 'm1', None, grid_x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.m3, 'm3', None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            net = 'PLUS' if i%2 == 1 else 'MINUS'
+
+            self.addWire( self.m1, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m3, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
 
             grid_y = ((i+1)%2)*last_y1_track + grid_y0
 
-            self.addVia( self.v1, 'v1', None, grid_x, grid_y)
-            self.addVia( self.v2, 'v2', None, grid_x, grid_y)
+            self.addVia( self.v1, net, None, grid_x, grid_y)
+            self.addVia( self.v2, net, None, grid_x, grid_y)
 
 #
 # Build the narrow m2 pitch grid starting at grid_cell_y_pitch*y in standard m2 pitch grids (m2.clg)
@@ -111,15 +113,20 @@ class UnitCell(CanvasCap):
 
         for i in range(y_number-1):
             grid_x = x*grid_cell_x_pitch + ((i+1)%2)*(x_number-1)
-            self.addVia( v1n, 'v1', None, grid_x, i)
-            self.addVia( v2n, 'v2', None, grid_x, i)
+            
             pin = 'PLUS' if y == 0 and x == 0 and i == 0 else None
-            self.addWire( m2n, 'm2', pin, i, (grid_x0, -1), (grid_x1, 1))
+
+            net = 'PLUS' if i%2 == 0 else 'MINUS'
+
+            self.addVia( v1n, net, None, grid_x, i)
+            self.addVia( v2n, net, None, grid_x, i)
+
+            self.addWire( m2n, net, pin, i, (grid_x0, -1), (grid_x1, 1))
 
         grid_y = last_y1_track + grid_cell_y_pitch*y
 
         pin = 'MINUS'
-        self.addWire( self.m2, 'm2', pin, grid_y, (grid_x0, -1), (grid_x1, 1))
+        self.addWire( self.m2, 'MINUS', pin, grid_y, (grid_x0, -1), (grid_x1, 1))
 
         if x == x_cells-1 and y == y_cells-1:            
             self.addRegion( self.boundary, 'boundary', None,

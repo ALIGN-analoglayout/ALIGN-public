@@ -209,7 +209,7 @@ class UnitCell(CanvasNMOS):
                     self.addWire( self.m3, 'm3', None, grid_x, (grid_y0,-1), (grid_y1,1))
 
                 grid_y = y*(m2_tracks //y_cells) + self.finDummy//2 + adjust
-                self.addVia( self.v2, 'v2', 'NA', grid_x, grid_y-1)
+                self.addVia( self.v2, 'v2', None, grid_x, grid_y-1)
 
 
 ############### M2 routing ###########################
@@ -220,7 +220,7 @@ class UnitCell(CanvasNMOS):
                     assert self.m1Pitch == self.plPitch
                     grid_x0 = self.gateDummy-1
                     grid_x1 = x_cells*self.gate - 2*self.gateDummy + 2
-                    self.addWire( self.m2, 'm2', pin, i-1, (grid_x0, -1), (grid_x1, 1))
+                    self.addWire( self.m2, pin, pin, i-1, (grid_x0, -1), (grid_x1, 1))
 
                                                      
 ################# M1 routing ######################
@@ -234,7 +234,7 @@ class UnitCell(CanvasNMOS):
                 self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1))
 
             for i in G:
-                self.addWire( self.m1, 'm1', None, i, (grid_y0, -1), (grid_y1, 1))
+                self.addWire( self.m1, 'G', None, i, (grid_y0, -1), (grid_y1, 1))
 
 ######## Vias placement ########
         if x_cells - 1 == x:
@@ -242,10 +242,10 @@ class UnitCell(CanvasNMOS):
             (sa,sb) = (1,3) if y % 2 == 0 else (3,1)
             (da,db) = (2,4) if y % 2 == 0 else (4,2)
 
-            pairs = [(G,0),(SA,sa),(SB,sb),(DA,da),(DB,db)]
-            for (i,y_offset) in itertools.chain( *[[(p,q) for p in P] for (P,q) in pairs]):
+            triples = [('G',G,0),('SA',SA,sa),('SB',SB,sb),('DA',DA,da),('DB',DB,db)]
+            for (net,i,y_offset) in itertools.chain( *[[(net,p,q) for p in P] for (net,P,q) in triples]):
                 yy = y*(m2_tracks //y_cells) + self.finDummy//2 + y_offset - 1
-                self.addVia( self.v1, 'v1', None, i, yy)
+                self.addVia( self.v1, net, None, i, yy)
       
                         
                                    

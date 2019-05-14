@@ -29,9 +29,31 @@ class Scanline:
         self.end = rect[self.dIndex+2]
         self.currentNet = netName
 
+def containedIn( s, b):
+    """rS is contained in rB"""
+    (rS,_) = s
+    (rB,_) = b
+
+    return rB[0] <= rS[0] and rB[1] <= rS[1] and rS[2] <= rB[2] and rS[3] <= rB[3]
+
+#
+# s touching b
+# false if one rect to the left of the other
+# false if one rect above the other
+# true otherwise
+#
+def touching( a, b):
+    """a and b touch"""
+    (rA,_) = a
+    (rB,_) = b
+    # not touching if completely to left or right or above or below
+    return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
+
+
 def remove_duplicates( canvas):
     layers = collections.OrderedDict()
     skip_layers = set()
+    via_layers = set()
 
     for (nm, gen) in canvas.generators.items():
         if   isinstance( gen, Region):
@@ -39,7 +61,8 @@ def remove_duplicates( canvas):
             print( "Region", nm)
         elif isinstance( gen, Via):
             if gen.layer not in layers:
-                layers[gen.layer] = 'v' # Don't want to do this
+                layers[gen.layer] = 'v' # Could be either --- probably want to special vias
+            via_layers.add( gen.layer)
             print( "Via", nm)
         elif isinstance( gen, Wire):
             if gen.layer not in layers:
@@ -78,6 +101,7 @@ def remove_duplicates( canvas):
         tbl[layer][twice_center].append((rect, netName))
 
 
+    store_scan_lines = {}
 
     for (layer, dir) in layers.items():
         if layer not in tbl:
@@ -100,8 +124,8 @@ def remove_duplicates( canvas):
                         sl.set(rect, netName)
                     elif rect[dIndex] <= sl.end:  # continue
                         sl.end = max(sl.end, rect[dIndex+2])
-                        assert sl.currentNet == netName, (
-                            layer, sl.currentNet, netName)
+                        if  sl.currentNet != netName:
+                            print( "SHORT:", layer, sl.currentNet, netName)
                     else:  # gap
                         sl.emit()
                         sl.set(rect, netName)
@@ -110,8 +134,42 @@ def remove_duplicates( canvas):
                     sl.emit()
                     sl.clear()
 
+            if layer not in store_scan_lines: store_scan_lines[layer] = {}
+            store_scan_lines[layer][twice_center] = sl
+
             for (rect, netName) in sl.rects:
-                terminals.append(
+               terminals.append(
                     {'layer': layer, 'netName': netName, 'rect': rect})
 
+        
+    via_layers2 = [( "via1", ("M1", "M2")), 
+                   ( "via2", ("M3", "M2"))]
+
+
+    for (via, (mv,mh)) in via_layers2:
+        if via in store_scan_lines:
+            for (twice_center, via_scan_line) in store_scan_lines[via].items():
+                metal_scan_line_vertical = store_scan_lines[mv][twice_center]
+
+#
+# Should scan via_scan_line and metal_scan_line_vertical simultaneously
+# Easier to quadratic loop. FIX!
+#
+
+                for via_rect in via_scan_line.rects:
+                    for metal_rect in metal_scan_line_vertical.rects:
+                        if touching( via_rect, metal_rect):
+                            if via_rect[1] != metal_rect[1]:
+                                print( "SHORT", via, via_rect, mv,  metal_rect)
+
+                    twice_center_y = via_rect[0][1] + via_rect[0][3]
+                    metal_scan_line_horizontal = store_scan_lines[mh][twice_center_y]
+
+                    for metal_rect in metal_scan_line_horizontal.rects:
+                        if touching( via_rect, metal_rect):
+                            if via_rect[1] != metal_rect[1]:
+                                print( "SHORT", via, via_rect, mh,  metal_rect)
+
     return terminals
+
+

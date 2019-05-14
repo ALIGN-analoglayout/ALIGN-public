@@ -37,6 +37,8 @@ def test_fabric_Cap():
         assert data['bbox'] == data_golden['bbox']
 #        assert data == data_golden
         for (x,y) in zip( data['terminals'], data_golden['terminals']):
+            x['netName'] = '_'
+            y['netName'] = '_'
             assert x == y
 
 def test_fabric_Cap_no_duplicates():
@@ -71,4 +73,6 @@ def test_fabric_Cap_no_duplicates():
         assert data['bbox'] == data_golden['bbox']
 #        assert data == data_golden
         for (x,y) in zip( data['terminals'], data_golden['terminals']):
+            x['netName'] = '_'
+            y['netName'] = '_'
             assert x == y
