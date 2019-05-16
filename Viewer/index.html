@@ -45,10 +45,12 @@ function onJson( error, data) {
   d3.select("body").append("div").attr("id","netControls");
 
   var metalStack = [
-     { "layer": "active",   "tag": "ND",  "color": "green"},
-     { "layer": "pselect",   "tag": "PD",  "color": colorbrewer.Reds[3][0]},
-     { "layer": "nselect",   "tag": "ND",  "color": colorbrewer.Reds[3][0]},
-     { "layer": "fin",     "tag": "ND",  "color": "green"},
+     { "layer": "ndiff",   "tag": "ND",  "color": "green"},
+     { "layer": "pdiff",   "tag": "PD",  "color": "brown"},
+     { "layer": "active",   "tag": "Act",  "color": "green"},
+     { "layer": "pselect",   "tag": "PS",  "color": colorbrewer.Reds[3][0]},
+     { "layer": "nselect",   "tag": "NS",  "color": colorbrewer.Reds[3][0]},
+     { "layer": "fin",     "tag": "Fin",  "color": "green"},
      { "layer": "diffcon", "tag": "DC",  "color": "magenta"},
      { "layer": "polycon", "tag": "PC",  "color": "magenta"},
      { "layer": "poly",    "tag": "PL",  "color": "cyan"},

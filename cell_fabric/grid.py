@@ -97,8 +97,8 @@ class EnclosureGrid(Grid):
         self.semantic()
 
 class SingleGrid(Grid):
-    def __init__( self, *, clg=None, pitch, offset=0):
+    def __init__( self, *, clg=None, pitch, offset=0, repeat=1):
         super().__init__()
-        self.addGridLine( offset,         True)
-        self.addGridLine( offset + pitch, True)
+        for i in range(repeat+1):
+            self.addGridLine( offset + i*pitch, True)
         self.semantic()

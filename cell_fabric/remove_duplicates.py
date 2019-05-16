@@ -124,7 +124,11 @@ def remove_duplicates( canvas):
                         sl.set(rect, netName)
                     elif rect[dIndex] <= sl.end:  # continue
                         sl.end = max(sl.end, rect[dIndex+2])
-                        if  sl.currentNet != netName:
+                        if sl.currentNet is None:
+                            sl.currentNet = netName
+                        elif netName is None:
+                            pass
+                        elif sl.currentNet != netName:
                             print( "SHORT:", layer, sl.currentNet, netName)
                     else:  # gap
                         sl.emit()

@@ -31,15 +31,18 @@ def test_overlapping():
     assert len(newTerminals) == 1
     assert newTerminals[0]['rect'] == [0, -50, 600, 50]
 
+import re
 
-if False:
-    def test_short():
-        c = Canvas()
-        c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
-        c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
-                       {'layer': 'metal2', 'netName': 'y', 'rect': [200, -50, 600, 50]}]
-        with pytest.raises(AssertionError):
-            c.removeDuplicates()
+def test_short(capfd):
+    (out, err) = capfd.readouterr()
+    c = Canvas()
+    c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+                   {'layer': 'metal2', 'netName': 'y', 'rect': [200, -50, 600, 50]}]
+    c.removeDuplicates()
+    
+#    p = re.compile( 'SHORT')
+#    assert p.match(out) is not None, out
 
 
 def test_underlapping():
