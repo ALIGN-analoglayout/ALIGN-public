@@ -39,7 +39,7 @@ class Grid:
             v = idx
         whole = v // self.n
         fract = v % self.n
-        assert fract in self.legalIndices
+        assert fract in self.legalIndices, (v, self.n, whole, fract, self.legalIndices)
         (c,attrs) = self.grid[fract]
         period = self.grid[-1][0] - self.grid[0][0]
         c += whole*period
