@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name='Cell_Fabric_Common',
+setup(name='CellFabric',
       version='0.1',
       description='Fabric generator infrastructure',
       url='ALIGN-analoglayout/ALIGN-public.git',
