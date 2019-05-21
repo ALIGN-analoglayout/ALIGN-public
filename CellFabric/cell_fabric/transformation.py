@@ -1,14 +1,3 @@
-class Tech:
-# Mock the tech file to temporarily simplify integration
-  def __init__( self):
-      self.halfXADTGrid = 1
-      self.halfYADTGrid = 1
-      self.halfXGRGrid = 2
-      self.halfYGRGrid = 2
-      self.pitchPoly   = 720
-      self.pitchDG     = 720
-      self.verticalMetals = ["metal1","metal3","metal5"]
-      self.horizontalMetals = ["metal2","metal4"]
 
 class Rect:
   def __init__( self, llx=None, lly=None, urx=None, ury=None):
@@ -37,12 +26,7 @@ class Transformation:
         self.sY = sY
 
     def __repr__( self):
-      return "oX: %d oY: %d sX: %d sY: %d" % ( self.oX, self.oY, self.sX, self.sY) 
-
-    def plusOneIfMirrored( self):
-      xx = 1 if self.sX == -1 else 0
-      yy = 1 if self.sY == -1 else 0
-      return Transformation( self.oX+xx, self.oY+yy, self.sX, self.sY)
+      return "Transformation(oX=%d, oY=%d, sX=%d, sY=%d)" % ( self.oX, self.oY, self.sX, self.sY) 
 
     def hit( self, p):
         x,y = p
@@ -70,26 +54,3 @@ class Transformation:
 
     def postMult( self, A):
       return self.__class__.mult( self, A)
-
-def test_transformation_hit0():
-    t = Transformation( 0, 10)
-    assert (0,10) == t.hit( (0,0))
-
-def test_transformation_hit1():
-    t = Transformation( 0, 10, 1, -1)
-    assert (0,0) == t.hit( (0,10))
-
-def test_transformation_Mult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (Transformation.mult( b, a)).hit( (0,0))
-
-def test_transformation_preMult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (a.preMult(b)).hit( (0,0))
-
-def test_transformation_postMult0():
-    a = Transformation( 0, 10, 0, 0)
-    b = Transformation( 0,  0, 1,-1)
-    assert (0,-10) == (b.postMult(a)).hit( (0,0))
