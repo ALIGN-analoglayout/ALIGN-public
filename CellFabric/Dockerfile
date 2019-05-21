@@ -1,20 +1,6 @@
-FROM tally as cell_fabric_image
+FROM stevenmburns/pysat_image:2019mar14 as cktgen
+
+COPY . /src/
 
 RUN \
-    mkdir -p /scripts
-
-ADD . /Cell_Fabric_Common/
-
-RUN \
-    bash -c "source general/bin/activate && cd /Cell_Fabric_Common/ && pip install ."
-
-
-
-
-
-
-
-
-
-
-
+  bash -c "source general/bin/activate && cd /src && pip install ."
