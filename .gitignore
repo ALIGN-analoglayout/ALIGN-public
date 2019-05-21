@@ -1,0 +1,8 @@
+*~
+build/
+.coverage
+htmlcov/
+.eggs/
+*.egg-info/
+junit.xml
+tests/__json*_cand
