@@ -1,7 +1,6 @@
 
 import json
 
-from cell_fabric.transformation import Transformation
 from cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
 from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from cell_fabric import Canvas as AbstractCanvas
