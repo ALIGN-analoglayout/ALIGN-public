@@ -3,7 +3,7 @@ import collections
 
 from . import transformation
 from . import generators
-from . import remove_duplicates
+from .remove_duplicates import RemoveDuplicates
 
 class Canvas:
     def computeBbox( self):
@@ -50,4 +50,5 @@ class Canvas:
         assert self.trStack != []
 
     def removeDuplicates( self):
-        return remove_duplicates.remove_duplicates( self)
+        rd = RemoveDuplicates( self)
+        return rd.remove_duplicates()
