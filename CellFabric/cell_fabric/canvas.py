@@ -20,25 +20,32 @@ class Canvas:
         self.generators[gen.nm] = gen
         return gen
  
-    def addWire( self, grid, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
-        segment = grid.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS)
-        self.terminals.append( segment)
-        return segment
+    def transform_and_add( self, s):
+        r = transformation.Rect( *s['rect'])
+        s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
+        self.terminals.append( s)
+
+    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
+        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
        
-    def addRegion( self, grid, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
-        segment = grid.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1)
-        self.terminals.append( segment)
-        return segment
+    def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
+        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
 
-    def addVia( self, grid, netName, pinName, cx, cy):
-        segment = grid.segment( netName, pinName, cx, cy)
-        self.terminals.append( segment)
-        return segment
-
+    def addVia( self, via, netName, pinName, cx, cy):
+        self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
     def __init__( self):
         self.terminals = []
         self.generators = collections.OrderedDict()
+        self.trStack = [transformation.Transformation()]
+
+    def pushTr( self, tr):
+        top_tr = self.trStack[-1]
+        self.trStack.append( top_tr.preMult( tr))
+
+    def popTr( self):
+        self.trStack.pop()
+        assert self.trStack != []
 
     def removeDuplicates( self):
         return remove_duplicates.remove_duplicates( self)
