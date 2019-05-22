@@ -90,15 +90,13 @@ class Canvas(AbstractCanvas):
         self.dc.clg.semantic()
 
 
-    def nunit( self, x, y):
-        self.pushTr( Transformation( x*self.unitCellWidth, y*self.unitCellHeight))
-
+    def nunit( self):
         h = 2*self.m2PerUnitCell
+
+        (ds0, ds1) = ('s', 'd')
 
         self.addRegion( self.nd, None, None, (0, -1), (0*h,  2), (1, 1), (0*h,  6))
         self.addRegion( self.pd, None, None, (0, -1), (1*h, -6), (1, 1), (1*h, -2))
-
-        (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
 
         self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 2, -1), (0*h + 6,  1))
         self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 8, -1), (0*h + 12, 1))
@@ -116,8 +114,6 @@ class Canvas(AbstractCanvas):
         self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 2, -1), (0*h + 6,  1))
         self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 8, -1), (0*h + 12, 1))
 
-#        self.addWire( self.pc, 'g', None, (y, 0), (x, 1), ((x+1),-1))
-
         self.addWire( self.m1, ds0, None, (0, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
         self.addWire( self.m1, 'g', None, (0, 1), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
         self.addWire( self.m1, ds1, None, (1, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
@@ -126,5 +122,3 @@ class Canvas(AbstractCanvas):
 
         for o in range(0,self.m2PerUnitCell+1):
             self.addWire( self.m2, '_', None, (0, o), (0, -1), (1, 1))
-
-        self.popTr()

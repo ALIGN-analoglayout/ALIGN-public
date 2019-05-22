@@ -40,8 +40,10 @@ class Canvas:
         self.trStack = [transformation.Transformation()]
 
     def pushTr( self, tr):
-        top_tr = self.trStack[-1]
-        self.trStack.append( top_tr.preMult( tr))
+        self.trStack.append( self.trStack[-1].postMult( tr))
+
+    def hitTopTr( self, tr):
+        self.trStack[-1] = self.trStack[-1].postMult( tr)
 
     def popTr( self):
         self.trStack.pop()
