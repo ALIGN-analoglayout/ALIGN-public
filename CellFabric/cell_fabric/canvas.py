@@ -34,19 +34,46 @@ class Canvas:
     def addVia( self, via, netName, pinName, cx, cy):
         self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
-    def addWireAndViaSet( self, netName, wire, via, c, listOfIdx, *, bIdx=None, eIdx=None):
+    def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box."""
 
-        mn = min(listOfIdx)
-        mx = max(listOfIdx)
+        def range( v, bound):
+            (q,(lt,ge)) = wire.spg.inverseValue( v)
+            assert ge is not None
+            geValue = wire.spg.value( (q,ge), check=False)[0]
 
-        for q in listOfIdx:
+            assert bound in ['u','l']
+            result = (q,ge)
+            if bound == 'l' and v < geValue:
+                assert lt is not None
+                result = (q,lt)
+
+            return result
+
+        if wire.direction == 'h':
+            via_clg = via.v_clg
+        else:
+            via_clg = via.h_clg
+
+#
+# Find min and max indices (using physical coordinate as key)
+#
+        tuples = [ (via_clg.value( idx, check=False), idx) for idx in listOfIndices]
+        mnP = via_clg.value( min(tuples)[1], check=False)[0]
+        mxP = via_clg.value( max(tuples)[1], check=False)[0]
+
+# should be the real enclosure but this finds the next grid point
+        enclosure = 1
+        mn = range( mnP-enclosure, 'l')
+        mx = range( mxP+enclosure, 'u')
+
+        for q in listOfIndices:
             if wire.direction == 'v':
                 self.addVia( via, netName, None, c, q)
             else:
                 self.addVia( via, netName, None, q, c)
 
-        self.addWire( wire, netName, None, c, (mn, -1), (mx, 1))
+        self.addWire( wire, netName, None, c, mn, mx)
 
     def __init__( self):
         self.terminals = []

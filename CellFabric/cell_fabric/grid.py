@@ -31,7 +31,24 @@ class Grid:
     def n( self):
         return len(self.grid)-1
 
-    def value( self, idx):
+    @property
+    def period( self):
+        return self.grid[-1][0] - self.grid[0][0]
+
+    def inverseValue( self, physical):
+        (q,r) = divmod(physical - self.grid[0][0], self.period)
+        last_lt = None
+        ge = None
+        for (idx,(c,attrs)) in enumerate(self.grid):
+            if c - self.grid[0][0] < r:
+                last_lt = idx
+            else:
+                ge = idx
+                break
+        return (q,(last_lt,ge))
+
+
+    def value( self, idx, check=True):
         assert self.n > 0
         if type(idx) is tuple:
             v = idx[0]*self.n + idx[1]
@@ -39,10 +56,10 @@ class Grid:
             v = idx
         whole = v // self.n
         fract = v % self.n
-        assert fract in self.legalIndices, (v, self.n, whole, fract, self.legalIndices)
+        if check:
+            assert fract in self.legalIndices, (v, self.n, whole, fract, self.legalIndices)
         (c,attrs) = self.grid[fract]
-        period = self.grid[-1][0] - self.grid[0][0]
-        c += whole*period
+        c += whole*self.period
         return (c,attrs)
 
 class CenteredGrid(Grid):
