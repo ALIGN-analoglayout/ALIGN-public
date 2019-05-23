@@ -34,6 +34,20 @@ class Canvas:
     def addVia( self, via, netName, pinName, cx, cy):
         self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
+    def addWireAndViaSet( self, netName, wire, via, c, listOfIdx, *, bIdx=None, eIdx=None):
+        """March through listOfIdx, compute physical coords (including via extensions), keep bounding box."""
+
+        mn = min(listOfIdx)
+        mx = max(listOfIdx)
+
+        for q in listOfIdx:
+            if wire.direction == 'v':
+                self.addVia( via, netName, None, c, q)
+            else:
+                self.addVia( via, netName, None, q, c)
+
+        self.addWire( wire, netName, None, c, (mn, -1), (mx, 1))
+
     def __init__( self):
         self.terminals = []
         self.generators = collections.OrderedDict()
