@@ -24,4 +24,3 @@ cp tests/__json_via_set_cand Viewer/INPUT/mydesign_dr_globalrouting.json
 (cd Viewer && python -m http.server)&
 ```
 Then open up the web browser `localhost:8000`.
-
