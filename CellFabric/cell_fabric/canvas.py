@@ -35,7 +35,7 @@ class Canvas:
         self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
     def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
-        """March through listOfIdx, compute physical coords (including via extensions), keep bounding box."""
+        """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
 
         def bounds( v, bound):
             (q,(lt,ge)) = wire.spg.inverseValue( v)
@@ -50,14 +50,12 @@ class Canvas:
 
             return result
 
-        via_clg = via.v_clg if wire.direction == 'h' else via.h_clg
-
 #
-# Find min and max indices (using physical coordinate as key)
+# Find min and max physical coordinates
 #
-        tuples = [ (via_clg.value( idx, check=False), idx) for idx in listOfIndices]
-        mnP = via_clg.value( min(tuples)[1], check=False)[0]
-        mxP = via_clg.value( max(tuples)[1], check=False)[0]
+        tuples = [ (via.v_clg if wire.direction == 'h' else via.h_clg).value( idx, check=False)[0] for idx in listOfIndices]
+        mnP = min(tuples)
+        mxP = max(tuples)
 
 # should be the real enclosure but this finds the next grid point
         enclosure = 1
@@ -65,6 +63,43 @@ class Canvas:
         mx = bounds( mxP+enclosure, 'u')
 
         for q in listOfIndices:
+            if wire.direction == 'v':
+                self.addVia( via, netName, None, c, q)
+            else:
+                self.addVia( via, netName, None, q, c)
+
+        self.addWire( wire, netName, None, c, mn, mx)
+
+    def addWireAndMultiViaSet( self, netName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+        """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
+
+        def bounds( v, bound):
+            (q,(lt,ge)) = wire.spg.inverseValue( v)
+            assert ge is not None
+            geValue = wire.spg.value( (q,ge), check=False)[0]
+
+            assert bound in ['u','l']
+            result = (q,ge)
+            if bound == 'l' and v < geValue:
+                assert lt is not None
+                result = (q,lt)
+
+            return result
+
+        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,idx) in listOfPairs]
+
+#
+# Find min and max indices (using physical coordinate as key)
+#
+        mnP = min(tuples)
+        mxP = max(tuples)
+
+# should be the real enclosure but this finds the next grid point
+        enclosure = 1
+        mn = bounds( mnP-enclosure, 'l')
+        mx = bounds( mxP+enclosure, 'u')
+
+        for (via,q) in listOfPairs:
             if wire.direction == 'v':
                 self.addVia( via, netName, None, c, q)
             else:
