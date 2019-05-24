@@ -63,6 +63,84 @@ class Canvas:
 
         self.addWire( wire, netName, None, c, mn, mx)
 
+    def asciiStickDiagram( self, v1, m2, v2, m3, matrix):
+        # clean up text input
+        a = matrix.split( '\n')[1:-1]
+
+        ncols = max([ len(row) for row in a])
+        assert (ncols-1) % 4 == 0
+        nrows = len(a)
+        assert (nrows-1) % 2 == 0
+
+        paddedA = []
+        for row in a:
+            paddedA.append( row + ' '*(ncols-len(row)))
+        ncols2 = max([ len(row) for row in paddedA])        
+        assert ncols2 == ncols
+
+        # find all metal2
+        for y in reversed(range( (nrows-1) // 2 + 1)):
+            row = paddedA[nrows-1-y*2] + ' '
+            started = False
+            nm = None
+            via1s = []
+            via2s = []
+
+            for (x,c) in enumerate( row):
+                if c == ' ':
+                    if started:
+                        # close off wire
+                        assert nm is not None
+                        self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)]) 
+                        started = False
+                        nm = None
+                        via1s = []
+                        via2s = []
+                elif c in ['+','*']:
+                    assert x % 4 == 0
+                    via1s.append( x//4)
+                    started = True
+                elif c in ['/','*']:
+                    assert x % 4 == 0
+                    via2s.append( x//4)
+                    started = True
+                elif c in ['=']:
+                    assert started
+                elif c in ['|']:
+                    pass
+                else: # should be a one character name
+                    if started:
+                        nm = c
+
+        # find all metal3
+        for x in range( (ncols-1) // 4 + 1):
+            col = ''.join([ paddedA[nrows-1-y][x*4] for y in range(nrows)]) + ' '
+            started = False
+            nm = None
+            via2s = []
+
+            for (y,c) in enumerate( col):
+                if c == ' ':
+                    if started:
+                        # close off wire
+                        assert nm is not None
+                        self.addWireAndMultiViaSet( nm, m3, x, [ (v2, via2s)]) 
+                        started = False
+                        nm = None
+                        via1s = []
+                        via2s = []
+                elif c in ['/','*']:
+                    assert y % 2 == 0
+                    via2s.append( y//2)
+                    started = True
+                elif c in ['|']:
+                    assert started
+                elif c in ['=','+']:
+                    pass
+                else: # should be a one character name
+                    if started:
+                        nm = c
+
     def __init__( self):
         self.terminals = []
         self.generators = collections.OrderedDict()
