@@ -86,7 +86,7 @@ class Canvas:
 
             return result
 
-        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,idx) in listOfPairs]
+        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
 
 #
 # Find min and max indices (using physical coordinate as key)
@@ -99,11 +99,12 @@ class Canvas:
         mn = bounds( mnP-enclosure, 'l')
         mx = bounds( mxP+enclosure, 'u')
 
-        for (via,q) in listOfPairs:
-            if wire.direction == 'v':
-                self.addVia( via, netName, None, c, q)
-            else:
-                self.addVia( via, netName, None, q, c)
+        for (via,listOfIndices) in listOfPairs:
+            for q in listOfIndices:
+                if wire.direction == 'v':
+                    self.addVia( via, netName, None, c, q)
+                else:
+                    self.addVia( via, netName, None, q, c)
 
         self.addWire( wire, netName, None, c, mn, mx)
 

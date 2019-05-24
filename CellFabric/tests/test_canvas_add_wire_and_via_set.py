@@ -110,7 +110,7 @@ def test_m2_and_m3():
 
     c.addWireAndViaSet( 'b', m2, v1, 3, [(0,1), (1,1), (2,1)])
     c.addWireAndViaSet( 'a', m2, v1, 2, [(0,0), (1,0), (2,0)])
-    c.addWireAndMultiViaSet( 'b', m2, 1, [(v1, (0,1)), (v1, (1,1)), (v2, (2,1))])
+    c.addWireAndMultiViaSet( 'b', m2, 1, [(v1, [(0,1), (1,1)]), (v2, [(2,1)])])
 
     c.addWireAndViaSet( 'b', m3, v2, (2,1), [1,3])
 
