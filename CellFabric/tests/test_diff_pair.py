@@ -45,9 +45,9 @@ def test_one():
         c.addWireAndViaSet('DB', m2, v1, 3 + base, [8, 14])
 
 # DAK:  M3 connections seem to fail during remove_duplicates
-#    c.addWireAndViaSet('S', m3, v2, 5, [1, ch + 1])
-#    c.addWireAndViaSet('DA', m3, v2, 4, [2, ch + 2])
-#    c.addWireAndViaSet('DB', m3, v2, 9, [3, ch + 3])
+    c.addWireAndViaSet('S', m3, v2, 5, [1, ch + 1])
+    c.addWireAndViaSet('DA', m3, v2, 4, [2, ch + 2])
+    c.addWireAndViaSet('DB', m3, v2, 9, [3, ch + 3])
 
     print (c.terminals)
 
@@ -58,7 +58,8 @@ def test_one():
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
-             'terminals' : c.removeDuplicates()}
+#             'terminals' : c.removeDuplicates()}
+             'terminals' : c.terminals}
 
     with open( fn + "_cand", "wt") as fp:
         fp.write (json.dumps (data, indent=2) + '\n')
