@@ -25,7 +25,7 @@ def test_one():
                                                       repeat=20),
                          spg=EnclosureGrid( pitch=720, stoppoint=360)))
 
-    v2 = c.addGen( Via( nm='v2', layer='via2', h_clg=m3.clg, v_clg=m2.clg))
+    v2 = c.addGen( Via( nm='v2', layer='via2', h_clg=m2.clg, v_clg=m3.clg))
 
     ch = 5
     for base in [0, ch]:
@@ -44,7 +44,6 @@ def test_one():
         c.addWireAndViaSet('DA', m2, v1, 2 + base, [2, 20])
         c.addWireAndViaSet('DB', m2, v1, 3 + base, [8, 14])
 
-# DAK:  M3 connections seem to fail during remove_duplicates
     c.addWireAndViaSet('S', m3, v2, 5, [1, ch + 1])
     c.addWireAndViaSet('DA', m3, v2, 4, [2, ch + 2])
     c.addWireAndViaSet('DB', m3, v2, 9, [3, ch + 3])
@@ -58,8 +57,7 @@ def test_one():
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
-#             'terminals' : c.removeDuplicates()}
-             'terminals' : c.terminals}
+             'terminals' : c.removeDuplicates()}
 
     with open( fn + "_cand", "wt") as fp:
         fp.write (json.dumps (data, indent=2) + '\n')
