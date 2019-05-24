@@ -47,6 +47,14 @@ class Grid:
                 break
         return (q,(last_lt,ge))
 
+    def inverseValueBounds( self, physical):
+        (q,(lt,ge)) = self.inverseValue( physical)
+        assert ge is not None
+        if physical < self.value( (q,ge), check=False)[0]:
+            assert lt is not None
+            return ((q,lt), (q,ge))
+        else:
+            return ((q,ge), (q,ge))
 
     def value( self, idx, check=True):
         assert self.n > 0
