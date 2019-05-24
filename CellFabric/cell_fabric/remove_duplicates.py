@@ -123,7 +123,7 @@ class RemoveDuplicates():
                 if v:
                     (rect0, _) = v[0]
                     for (rect, netName) in v[1:]:
-                        assert all(rect[i] == rect0[i] for i in indices), (twice_center,layer,indices,v)
+                        assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
 
                     s = sorted(v, key=lambda p: p[0][dIndex])
 
