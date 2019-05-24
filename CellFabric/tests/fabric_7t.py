@@ -19,12 +19,14 @@ class Canvas(AbstractCanvas):
 
         m2Pitch = 720 
 
-        unitCellHeight = self.m2PerUnitCell*m2Pitch
+        self.unitCellHeight = self.m2PerUnitCell*m2Pitch
 
-        pcPitch  = unitCellHeight//2
+
+        pcPitch  = self.unitCellHeight//2
         m1Pitch  = 864
         m1hPitch  = m2Pitch
         m3Pitch  = 720 
+        self.unitCellWidth = 2*m1Pitch
 
         plPitch  = m1Pitch
         plOffset = plPitch//2
@@ -42,7 +44,7 @@ class Canvas(AbstractCanvas):
 
         self.pl = self.addGen( Wire( 'pl', 'poly', 'v',
                                      clg=CenterLineGrid(),
-                                     spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=m2Width//2+16)))
+                                     spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=16)))
         self.pl.clg.addCenterLine( 0,            plWidth, False)
         self.pl.clg.addCenterLine( plPitch//2,   plWidth, True)
         self.pl.clg.addCenterLine( plPitch,      plWidth, False)
@@ -72,52 +74,50 @@ class Canvas(AbstractCanvas):
 
         self.m3 = self.addGen( Wire( 'm3', 'M3', 'v',
                                      clg=UncoloredCenterLineGrid( width=m3Width, pitch=m3Pitch),
-                                     spg=EnclosureGrid( pitch=unitCellHeight, stoppoint=unitCellHeight//2-m2Pitch)))
+                                     spg=EnclosureGrid( pitch=self.unitCellHeight, stoppoint=self.unitCellHeight//2-m2Pitch)))
 
 
         self.dc = self.addGen( Wire( 'dc', 'diffcon', 'v',
-                                     clg=UncoloredCenterLineGrid( width=dcWidth, pitch=dcPitch),
-                                     spg=Grid()))
-        stoppoint=m1Pitch//2
-        self.dc.spg.addGridLine( 0,                           False)
-        self.dc.spg.addGridLine( stoppoint,                   True)
-        self.dc.spg.addGridLine( unitCellHeight//2-stoppoint, True)
-        self.dc.spg.addGridLine( unitCellHeight//2,           False)
-        self.dc.spg.addGridLine( unitCellHeight//2+stoppoint, True)
-        self.dc.spg.addGridLine( unitCellHeight-stoppoint,    True)
-        self.dc.spg.addGridLine( unitCellHeight,              False)
+                                     clg=CenterLineGrid(),
+                                     spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=0)))
 
-    def nunit( self, x, y):
+        self.dc.clg.addCenterLine( 0,            dcWidth, True)
+        self.dc.clg.addCenterLine( dcPitch//2,   dcWidth, False)
+        self.dc.clg.addCenterLine( dcPitch,      dcWidth, True)
+        self.dc.clg.addCenterLine( 3*dcPitch//2, dcWidth, False)
+        self.dc.clg.addCenterLine( 2*dcPitch,    dcWidth, True)
+        self.dc.clg.semantic()
+
+
+    def nunit( self):
         h = 2*self.m2PerUnitCell
 
-        self.addRegion( self.nd, None, None, (x, -1), ((y+0)*h,  2), (x+1, 1), ((y+0)*h,  6))
-        self.addRegion( self.pd, None, None, (x, -1), ((y+1)*h, -6), (x+1, 1), ((y+1)*h, -2))
+        (ds0, ds1) = ('s', 'd')
 
-        (ds0,ds1) = ('s', 'd') if x % 2 == 0 else ('d','s')
+        self.addRegion( self.nd, None, None, (0, -1), (0*h,  2), (1, 1), (0*h,  6))
+        self.addRegion( self.pd, None, None, (0, -1), (1*h, -6), (1, 1), (1*h, -2))
 
-#        self.addWire( self.dc, ds0, None, x+0, (y,-2), (y,-1))
-#        self.addWire( self.dc, ds0, None, x+0, (y, 1), (y, 2))
+        self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.dc, ds0, None,  (0, 0), (0*h + 8, -1), (0*h + 12, 1))
 
-        self.addWire( self.pl, None, None, (x, -1), (y*h + 2,-1), (y*h + 6, 1))
-        self.addWire( self.pl, 'g', None, (x, 1), (y*h + 2,-1), (y*h + 6, 1))
-        self.addWire( self.pl, 'g', None, (x+1, -1), (y*h + 2,-1), (y*h + 6, 1))
-        self.addWire( self.pl, None, None, (x+1, 1), (y*h + 2,-1), (y*h + 6, 1))
+        self.addWire( self.pl, None, None, (0,-1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, 'g', None,  (0, 1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, 'g', None,  (1,-1), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.pl, None, None, (1, 1), (0*h + 2, -1), (0*h + 6,  1))
 
-        self.addWire( self.pl, None, None, (x, -1), (y*h + 8, -1), (y*h + 12, 1))
-        self.addWire( self.pl, 'g', None, (x, 1), (y*h + 8, -1), (y*h + 12, 1))
-        self.addWire( self.pl, 'g', None, (x+1, -1), (y*h + 8, -1), (y*h + 12, 1))
-        self.addWire( self.pl, None, None, (x+1, 1), (y*h + 8, -1), (y*h + 12, 1))
+        self.addWire( self.pl, None, None, (0,-1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, 'g', None,  (0, 1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, 'g', None,  (1,-1), (0*h + 8, -1), (0*h + 12, 1))
+        self.addWire( self.pl, None, None, (1, 1), (0*h + 8, -1), (0*h + 12, 1))
 
-#        self.addWire( self.dc, ds1, None, x+1, (y,-2), (y,-1))
-#        self.addWire( self.dc, ds1, None, x+1, (y, 1), (y, 2))
+        self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 2, -1), (0*h + 6,  1))
+        self.addWire( self.dc, ds1, None,  (1, 0), (0*h + 8, -1), (0*h + 12, 1))
 
-#        self.addWire( self.pc, 'g', None, (y, 0), (x, 1), ((x+1),-1))
-
-        self.addWire( self.m1, ds0, None, (x+0, 0), (y*self.m2PerUnitCell + 1,-1), ((y+1)*self.m2PerUnitCell - 1, 1))
-        self.addWire( self.m1, 'g', None, (x+0, 1), (y*self.m2PerUnitCell + 1,-1), ((y+1)*self.m2PerUnitCell - 1, 1))
-        self.addWire( self.m1, ds1, None, (x+1, 0), (y*self.m2PerUnitCell + 1,-1), ((y+1)*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, ds0, None, (0, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, 'g', None, (0, 1), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
+        self.addWire( self.m1, ds1, None, (1, 0), (0*self.m2PerUnitCell + 1,-1), (1*self.m2PerUnitCell - 1, 1))
 
         assert self.m2PerUnitCell % 2 == 1
 
         for o in range(0,self.m2PerUnitCell+1):
-            self.addWire( self.m2, '_', None, (y, o), (x, -1), (x+1, 1))
+            self.addWire( self.m2, '_', None, (0, o), (0, -1), (1, 1))

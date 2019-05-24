@@ -3,7 +3,7 @@ import collections
 
 from . import transformation
 from . import generators
-from . import remove_duplicates
+from .remove_duplicates import RemoveDuplicates
 
 class Canvas:
     def computeBbox( self):
@@ -20,25 +20,109 @@ class Canvas:
         self.generators[gen.nm] = gen
         return gen
  
-    def addWire( self, grid, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
-        segment = grid.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS)
-        self.terminals.append( segment)
-        return segment
+    def transform_and_add( self, s):
+        r = transformation.Rect( *s['rect'])
+        s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
+        self.terminals.append( s)
+
+    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
+        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
        
-    def addRegion( self, grid, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
-        segment = grid.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1)
-        self.terminals.append( segment)
-        return segment
+    def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
+        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
 
-    def addVia( self, grid, netName, pinName, cx, cy):
-        segment = grid.segment( netName, pinName, cx, cy)
-        self.terminals.append( segment)
-        return segment
+    def addVia( self, via, netName, pinName, cx, cy):
+        self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
+    def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
+        """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
+
+        def bounds( v, bound):
+            (q,(lt,ge)) = wire.spg.inverseValue( v)
+            assert ge is not None
+            geValue = wire.spg.value( (q,ge), check=False)[0]
+
+            assert bound in ['u','l']
+            result = (q,ge)
+            if bound == 'l' and v < geValue:
+                assert lt is not None
+                result = (q,lt)
+
+            return result
+
+#
+# Find min and max physical coordinates
+#
+        tuples = [ (via.v_clg if wire.direction == 'h' else via.h_clg).value( idx, check=False)[0] for idx in listOfIndices]
+        mnP = min(tuples)
+        mxP = max(tuples)
+
+# should be the real enclosure but this finds the next grid point
+        enclosure = 1
+        mn = bounds( mnP-enclosure, 'l')
+        mx = bounds( mxP+enclosure, 'u')
+
+        for q in listOfIndices:
+            if wire.direction == 'v':
+                self.addVia( via, netName, None, c, q)
+            else:
+                self.addVia( via, netName, None, q, c)
+
+        self.addWire( wire, netName, None, c, mn, mx)
+
+    def addWireAndMultiViaSet( self, netName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+        """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
+
+        def bounds( v, bound):
+            (q,(lt,ge)) = wire.spg.inverseValue( v)
+            assert ge is not None
+            geValue = wire.spg.value( (q,ge), check=False)[0]
+
+            assert bound in ['u','l']
+            result = (q,ge)
+            if bound == 'l' and v < geValue:
+                assert lt is not None
+                result = (q,lt)
+
+            return result
+
+        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+
+#
+# Find min and max indices (using physical coordinate as key)
+#
+        mnP = min(tuples)
+        mxP = max(tuples)
+
+# should be the real enclosure but this finds the next grid point
+        enclosure = 1
+        mn = bounds( mnP-enclosure, 'l')
+        mx = bounds( mxP+enclosure, 'u')
+
+        for (via,listOfIndices) in listOfPairs:
+            for q in listOfIndices:
+                if wire.direction == 'v':
+                    self.addVia( via, netName, None, c, q)
+                else:
+                    self.addVia( via, netName, None, q, c)
+
+        self.addWire( wire, netName, None, c, mn, mx)
 
     def __init__( self):
         self.terminals = []
         self.generators = collections.OrderedDict()
+        self.trStack = [transformation.Transformation()]
+
+    def pushTr( self, tr):
+        self.trStack.append( self.trStack[-1].postMult( tr))
+
+    def hitTopTr( self, tr):
+        self.trStack[-1] = self.trStack[-1].postMult( tr)
+
+    def popTr( self):
+        self.trStack.pop()
+        assert self.trStack != []
 
     def removeDuplicates( self):
-        return remove_duplicates.remove_duplicates( self)
+        rd = RemoveDuplicates( self)
+        return rd.remove_duplicates()
