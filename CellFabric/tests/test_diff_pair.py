@@ -1,4 +1,4 @@
-import pytest
+
 import json
 from cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
 

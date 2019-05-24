@@ -39,7 +39,7 @@ class Grid:
         (q,r) = divmod(physical - self.grid[0][0], self.period)
         last_lt = None
         ge = None
-        for (idx,(c,attrs)) in enumerate(self.grid):
+        for (idx,(c,_)) in enumerate(self.grid):
             if c - self.grid[0][0] < r:
                 last_lt = idx
             else:
