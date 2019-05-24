@@ -37,7 +37,7 @@ class Canvas:
     def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box."""
 
-        def range( v, bound):
+        def bounds( v, bound):
             (q,(lt,ge)) = wire.spg.inverseValue( v)
             assert ge is not None
             geValue = wire.spg.value( (q,ge), check=False)[0]
@@ -50,10 +50,7 @@ class Canvas:
 
             return result
 
-        if wire.direction == 'h':
-            via_clg = via.v_clg
-        else:
-            via_clg = via.h_clg
+        via_clg = via.v_clg if wire.direction == 'h' else via.h_clg
 
 #
 # Find min and max indices (using physical coordinate as key)
@@ -64,8 +61,8 @@ class Canvas:
 
 # should be the real enclosure but this finds the next grid point
         enclosure = 1
-        mn = range( mnP-enclosure, 'l')
-        mx = range( mxP+enclosure, 'u')
+        mn = bounds( mnP-enclosure, 'l')
+        mx = bounds( mxP+enclosure, 'u')
 
         for q in listOfIndices:
             if wire.direction == 'v':
