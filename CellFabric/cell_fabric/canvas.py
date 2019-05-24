@@ -51,8 +51,8 @@ class Canvas:
 
 # should be the real enclosure but this finds the next grid point
         enclosure = 1
-        (mn, _) = wire.spg.inverseValueBounds( mnP-enclosure)
-        (_, mx) = wire.spg.inverseValueBounds( mxP+enclosure)
+        (mn, _) = wire.spg.inverseBounds( mnP-enclosure)
+        (_, mx) = wire.spg.inverseBounds( mxP+enclosure)
 
         for (via,listOfIndices) in listOfPairs:
             for q in listOfIndices:
