@@ -2,6 +2,7 @@
 import pytest
 import json
 from cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+from itertools import chain, product
 
 def finish_test( c, fn):
 
@@ -47,11 +48,8 @@ def setup():
 def test_m2_and_m3(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for i in [0,2,4]:
-        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
-
-    for i in [1,3,5]:
-        c.addWire( m1, 'b', None, i, (0,1), (4,-1)) 
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +b======+=======*
@@ -68,11 +66,8 @@ def test_m2_and_m3(setup):
 def test_m2_and_m3_twochar(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for i in [0,2,4]:
-        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
-
-    for i in [1,3,5]:
-        c.addWire( m1, 'tw', None, i, (0,1), (4,-1)) 
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
     +tw=====+=======*
@@ -89,11 +84,8 @@ def test_m2_and_m3_twochar(setup):
 def test_m2_and_m3_multicharskip(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for i in [0,2,4]:
-        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
-
-    for i in [1,3,5]:
-        c.addWire( m1, 'tw', None, i, (0,1), (4,-1)) 
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     # weird behavior, probably want to disallow
     c.asciiStickDiagram( v1, m2, v2, m3, """
@@ -111,11 +103,8 @@ def test_m2_and_m3_multicharskip(setup):
 def test_m2_and_m3_badchars(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for i in [0,2,4]:
-        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
-
-    for i in [1,3,5]:
-        c.addWire( m1, 'tw', None, i, (0,1), (4,-1)) 
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['tw'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     with pytest.raises(AssertionError) as excinfo:
         c.asciiStickDiagram( v1, m2, v2, m3, """
@@ -139,14 +128,13 @@ def test_m2_and_m3_badchars(setup):
 
 """)
 
+
+
 def test_m2_and_m3_different_pitch(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for i in [0,2,4]:
-        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
-
-    for i in [1,3,5]:
-        c.addWire( m1, 'b', None, i, (0,1), (4,-1)) 
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
    +b====+=====*
@@ -161,5 +149,6 @@ def test_m2_and_m3_different_pitch(setup):
 
 """, ypitch=3, xpitch=3)
 
+    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
 
     
