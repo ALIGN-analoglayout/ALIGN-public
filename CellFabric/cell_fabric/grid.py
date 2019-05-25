@@ -35,7 +35,7 @@ class Grid:
     def period( self):
         return self.grid[-1][0] - self.grid[0][0]
 
-    def inverseValue( self, physical):
+    def inverseBounds( self, physical):
         (q,r) = divmod(physical - self.grid[0][0], self.period)
         last_lt = None
         ge = None
@@ -45,17 +45,17 @@ class Grid:
             else:
                 ge = idx
                 break
-        return (q,(last_lt,ge))
-
+        assert ge is not None
+        if physical < self.value( (q,ge), check=False)[0]:
+            assert last_lt is not None
+            return ((q,last_lt), (q,ge))
+        else:
+            return ((q,ge), (q,ge))
 
     def value( self, idx, check=True):
         assert self.n > 0
-        if type(idx) is tuple:
-            v = idx[0]*self.n + idx[1]
-        else:
-            v = idx
-        whole = v // self.n
-        fract = v % self.n
+        v = idx[0]*self.n + idx[1] if type(idx) is tuple else idx
+        (whole, fract) = divmod(v, self.n)
         if check:
             assert fract in self.legalIndices, (v, self.n, whole, fract, self.legalIndices)
         (c,attrs) = self.grid[fract]
