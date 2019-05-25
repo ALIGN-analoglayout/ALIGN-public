@@ -86,6 +86,28 @@ def test_m2_and_m3_twochar(setup):
 
     finish_test( c, "tests/__json_via_set_m2_m3_sticks_twochar")
 
+def test_m2_and_m3_multicharskip(setup):
+    (c, m1, v1, m2, v2, m3) = setup
+
+    for i in [0,2,4]:
+        c.addWire( m1, 'a', None, i, (0,1), (4,-1)) 
+
+    for i in [1,3,5]:
+        c.addWire( m1, 'tw', None, i, (0,1), (4,-1)) 
+
+    # weird behavior, probably want to disallow
+    c.asciiStickDiagram( v1, m2, v2, m3, """
+    +tw=====+=======*
+                    t    
++a======+=======+   |
+                    w
+    +t======+==w====/
+
+
+""")
+
+    finish_test( c, "tests/__json_via_set_m2_m3_sticks_twochar")
+
 def test_m2_and_m3_badchars(setup):
     (c, m1, v1, m2, v2, m3) = setup
 

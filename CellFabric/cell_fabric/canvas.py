@@ -94,7 +94,7 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-#                        assert nm is not None
+                        assert nm is not None
                         self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)]) 
                         started = False
                         nm = None
@@ -112,7 +112,7 @@ class Canvas:
                     assert started
                 elif c in ['|']:
                     pass
-                else: # should be a one character name
+                else:
                     if started:
                         if nm is None:
                             nm = c
@@ -144,7 +144,7 @@ class Canvas:
                     assert started
                 elif c in ['=','+']:
                     pass
-                else: # should be a one character name
+                else: # bottom up traversal so construct the name in reverse
                     if started:
                         if nm is None:
                             nm = c
