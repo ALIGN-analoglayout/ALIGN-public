@@ -63,24 +63,28 @@ class Canvas:
 
         self.addWire( wire, netName, None, c, mn, mx)
 
-    def asciiStickDiagram( self, v1, m2, v2, m3, matrix):
+    def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
         a = matrix.split( '\n')[1:-1]
 
         ncols = max([ len(row) for row in a])
-        assert (ncols-1) % 4 == 0
+        assert (ncols-1) % xpitch == 0
         nrows = len(a)
-        assert (nrows-1) % 2 == 0
+        assert (nrows-1) % ypitch == 0
 
         paddedA = []
         for row in a:
             paddedA.append( row + ' '*(ncols-len(row)))
-        ncols2 = max([ len(row) for row in paddedA])        
-        assert ncols2 == ncols
+        assert max([ len(row) for row in paddedA]) == ncols
+
+        for x in range(ncols):
+            for y in range(nrows):
+                if x % xpitch != 0 and y % ypitch != 0:
+                    assert paddedA[y][x] == ' '
 
         # find all metal2
-        for y in reversed(range( (nrows-1) // 2 + 1)):
-            row = paddedA[nrows-1-y*2] + ' '
+        for y in reversed(range( (nrows-1) // ypitch + 1)):
+            row = paddedA[nrows-1-y*ypitch] + ' '
             started = False
             nm = None
             via1s = []
@@ -90,19 +94,19 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-                        assert nm is not None
+#                        assert nm is not None
                         self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)]) 
                         started = False
                         nm = None
                         via1s = []
                         via2s = []
                 elif c in ['+','*']:
-                    assert x % 4 == 0
-                    via1s.append( x//4)
+                    assert x % xpitch == 0
+                    via1s.append( x//xpitch)
                     started = True
                 elif c in ['/','*']:
-                    assert x % 4 == 0
-                    via2s.append( x//4)
+                    assert x % xpitch == 0
+                    via2s.append( x//xpitch)
                     started = True
                 elif c in ['=']:
                     assert started
@@ -110,11 +114,14 @@ class Canvas:
                     pass
                 else: # should be a one character name
                     if started:
-                        nm = c
+                        if nm is None:
+                            nm = c
+                        else:
+                            nm = nm + c
 
         # find all metal3
-        for x in range( (ncols-1) // 4 + 1):
-            col = ''.join([ paddedA[nrows-1-y][x*4] for y in range(nrows)]) + ' '
+        for x in range( (ncols-1) // xpitch + 1):
+            col = ''.join([ paddedA[nrows-1-y][x*xpitch] for y in range(nrows)]) + ' '
             started = False
             nm = None
             via2s = []
@@ -130,8 +137,8 @@ class Canvas:
                         via1s = []
                         via2s = []
                 elif c in ['/','*']:
-                    assert y % 2 == 0
-                    via2s.append( y//2)
+                    assert y % ypitch == 0
+                    via2s.append( y//ypitch)
                     started = True
                 elif c in ['|']:
                     assert started
@@ -139,7 +146,10 @@ class Canvas:
                     pass
                 else: # should be a one character name
                     if started:
-                        nm = c
+                        if nm is None:
+                            nm = c
+                        else:
+                            nm = c + nm
 
     def __init__( self):
         self.terminals = []
