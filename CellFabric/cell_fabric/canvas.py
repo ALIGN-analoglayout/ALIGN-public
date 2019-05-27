@@ -167,5 +167,5 @@ class Canvas:
         assert self.trStack != []
 
     def removeDuplicates( self):
-        rd = RemoveDuplicates( self)
-        return rd.remove_duplicates()
+        self.rd = RemoveDuplicates( self)
+        return self.rd.remove_duplicates()

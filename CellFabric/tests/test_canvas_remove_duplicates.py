@@ -25,30 +25,25 @@ def test_different_widths():
 def test_overlapping():
     c = Canvas()
     c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
-    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'x', 'rect': [200, -50, 600, 50]}]
     newTerminals = c.removeDuplicates()
     assert len(newTerminals) == 1
     assert newTerminals[0]['rect'] == [0, -50, 600, 50]
 
-import re
-
-def test_short(capfd):
-    (out, err) = capfd.readouterr()
+def test_short():
     c = Canvas()
     c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
-    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'y', 'rect': [200, -50, 600, 50]}]
     c.removeDuplicates()
-    
-#    p = re.compile( 'SHORT')
-#    assert p.match(out) is not None, out
+    assert len(c.rd.shorts) == 1
 
 
 def test_underlapping():
     c = Canvas()
     c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
-    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'x', 'rect': [100, -50, 200, 50]}]
     newTerminals = c.removeDuplicates()
     assert len(newTerminals) == 1
@@ -57,9 +52,9 @@ def test_underlapping():
 def test_disjoint():
     c = Canvas()
     c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
-    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [0, -50, 300, 50]},
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'x', 'rect': [400, -50, 600, 50]}]
     newTerminals = c.removeDuplicates()
     assert len(newTerminals) == 2
-    assert newTerminals[0]['rect'] == [0, -50, 300, 50]
+    assert newTerminals[0]['rect'] == [  0, -50, 300, 50]
     assert newTerminals[1]['rect'] == [400, -50, 600, 50]

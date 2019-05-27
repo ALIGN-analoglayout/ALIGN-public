@@ -57,6 +57,7 @@ class RemoveDuplicates():
     def __init__( self, canvas):
         self.canvas = canvas
         self.store_scan_lines = {}
+        self.shorts = []
 
     def remove_duplicates( self):
         layers = collections.OrderedDict()
@@ -137,7 +138,7 @@ class RemoveDuplicates():
                             elif netName is None:
                                 pass
                             elif sl.currentNet != netName:
-                                print( "SHORT:", layer, sl.currentNet, netName)
+                                self.shorts.append( (layer, sl.currentNet, netName))
                         else:  # gap
                             sl.emit()
                             sl.set(rect, netName)
@@ -172,7 +173,7 @@ class RemoveDuplicates():
                         for metal_rect in metal_scan_line_vertical.rects:
                             if self.__class__.touching( via_rect, metal_rect):
                                 if via_rect[1] != metal_rect[1]:
-                                    print( "SHORT", via, via_rect, mv,  metal_rect)
+                                    self.shorts.append( (via, via_rect, mv,  metal_rect))
 
                         twice_center_y = via_rect[0][1] + via_rect[0][3]
                         metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
@@ -180,7 +181,10 @@ class RemoveDuplicates():
                         for metal_rect in metal_scan_line_horizontal.rects:
                             if self.__class__.touching( via_rect, metal_rect):
                                 if via_rect[1] != metal_rect[1]:
-                                    print( "SHORT", via, via_rect, mh,  metal_rect)
+                                    self.shorts.append( (via, via_rect, mh,  metal_rect))
+
+        for short in self.shorts:
+            print( "SHORT", *short)
 
         return terminals
 
