@@ -53,54 +53,19 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-
-    def __init__( self, canvas):
-        self.canvas = canvas
-        self.store_scan_lines = {}
-        self.shorts = []
-
-    def remove_duplicates( self):
-        layers = collections.OrderedDict()
-        skip_layers = set()
-        via_layers = set()
-
-        for (nm, gen) in self.canvas.generators.items():
-            if   isinstance( gen, Region):
-                skip_layers.add( gen.layer)
-                print( "Region", nm)
-            elif isinstance( gen, Via):
-                if gen.layer not in layers:
-                    layers[gen.layer] = 'v' # Could be either --- probably want to special vias
-                via_layers.add( gen.layer)
-                print( "Via", nm)
-            elif isinstance( gen, Wire):
-                if gen.layer not in layers:
-                    layers[gen.layer] = gen.direction
-                print( "Wire", nm)
-            else:
-                assert False, (nm,type(gen))
-
-        hLayers = {layer for (layer, dir) in layers.items() if dir == 'h'}
-        vLayers = {layer for (layer, dir) in layers.items() if dir == 'v'}
-
-        indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
-
+    def build_centerline_tbl( self):
         tbl = {}
-
-        terminals = []
 
         for d in self.canvas.terminals:
             layer = d['layer']
             rect = d['rect']
             netName = d['netName']
 
-            if layer in skip_layers:
-                terminals.append( d)
-                continue
+            if layer in self.skip_layers: continue
 
-            assert layer in layers, layer
+            assert layer in self.layers, layer
             twice_center = sum(rect[index]
-                               for index in indicesTbl[layers[layer]][0])
+                               for index in self.indicesTbl[self.layers[layer]][0])
 
             if layer not in tbl:
                 tbl[layer] = {}
@@ -108,14 +73,48 @@ class RemoveDuplicates():
                 tbl[layer][twice_center] = []
 
             tbl[layer][twice_center].append((rect, netName))
+        return tbl
 
 
+    def __init__( self, canvas):
+        self.canvas = canvas
+        self.store_scan_lines = None
+        self.shorts = []
+
+        self.setup_layer_structures()
+
+
+    def setup_layer_structures( self):
+        self.layers = collections.OrderedDict()
+        self.skip_layers = set()
+        self.via_layers = set()
+
+        for (nm, gen) in self.canvas.generators.items():
+            if   isinstance( gen, Region):
+                self.skip_layers.add( gen.layer)
+                print( "Region", nm)
+            elif isinstance( gen, Via):
+                if gen.layer not in self.layers:
+                    self.layers[gen.layer] = 'v' # Could be either --- probably want to specialize vias
+                self.via_layers.add( gen.layer)
+                print( "Via", nm)
+            elif isinstance( gen, Wire):
+                if gen.layer not in self.layers:
+                    self.layers[gen.layer] = gen.direction
+                print( "Wire", nm)
+            else:
+                assert False, (nm,type(gen))
+
+        self.indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
+
+
+    def build_scan_lines( self, tbl):
         self.store_scan_lines = {}
 
-        for (layer, dir) in layers.items():
+        for (layer, dir) in self.layers.items():
             if layer not in tbl: continue
 
-            (indices, dIndex) = indicesTbl[dir]
+            (indices, dIndex) = self.indicesTbl[dir]
 
             for (twice_center, v) in tbl[layer].items():
 
@@ -147,6 +146,8 @@ class RemoveDuplicates():
                         sl.emit()
                         sl.clear()
 
+
+    def check_shorts_induced_by_vias( self):
 #
 # Check for shorts induced by vias
 # We need to do the right thing with nets named None
@@ -179,22 +180,40 @@ class RemoveDuplicates():
                                 if via_rect[1] != metal_rect[1]:
                                     self.shorts.append( (via, via_rect, mh,  metal_rect))
 
+
+
+    def generate_rectangles( self, tbl):
+
+        terminals = []
+#
+# Write out regions
+#
+        for d in self.canvas.terminals:
+            if d['layer'] in self.skip_layers:
+                terminals.append( d)
+
 #
 # Write out the rectangles stored in the scan line data structure
 #
 
-        for (layer, dir) in layers.items():
+        for (layer, dir) in self.layers.items():
             if layer not in tbl: continue
-
             for (twice_center, v) in tbl[layer].items():
-                sl = self.store_scan_lines[layer][twice_center]
-                for (rect, netName) in sl.rects:
-                   terminals.append(
-                        {'layer': layer, 'netName': netName, 'rect': rect})
+                for (rect, netName) in self.store_scan_lines[layer][twice_center].rects:
+                   terminals.append( {'layer': layer, 'netName': netName, 'rect': rect})
+
+        return terminals
+
+
+    def remove_duplicates( self):
+
+        tbl = self.build_centerline_tbl()
+        self.build_scan_lines( tbl)
+
+        self.check_shorts_induced_by_vias()
 
         for short in self.shorts:
             print( "SHORT", *short)
 
-        return terminals
-
+        return self.generate_rectangles( tbl)
 
