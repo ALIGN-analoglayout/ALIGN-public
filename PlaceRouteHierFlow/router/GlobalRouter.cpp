@@ -169,7 +169,7 @@ void GlobalRouter::listSegments(std::string binaryDIR) {
   std::string binary_directory=binaryDIR+"router";
   getcwd(cwd, sizeof(cwd)); 
   std::string string_cwd(cwd);
-  std::string string_steiner=binary_directory + "/steiner -rectilinear -seed 0 <"+ string_cwd + "/output.txt -print_tree >" + string_cwd + "/vals";
+  std::string string_steiner=binary_directory + "/FastSteinerUM/steiner -rectilinear -seed 0 <"+ string_cwd + "/output.txt -print_tree >" + string_cwd + "/vals";
   std::cout<<string_steiner<<std::endl;
 
   RouterDB::point newnode;
