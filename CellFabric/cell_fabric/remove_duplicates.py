@@ -113,13 +113,15 @@ class RemoveDuplicates():
         self.store_scan_lines = {}
 
         for (layer, dir) in layers.items():
-            if layer not in tbl:
-                continue
+            if layer not in tbl: continue
+
             (indices, dIndex) = indicesTbl[dir]
 
             for (twice_center, v) in tbl[layer].items():
 
+                if layer not in self.store_scan_lines: self.store_scan_lines[layer] = {}
                 sl = Scanline(v[0][0], indices, dIndex)
+                self.store_scan_lines[layer][twice_center] = sl
 
                 if v:
                     (rect0, _) = v[0]
@@ -135,9 +137,7 @@ class RemoveDuplicates():
                             sl.end = max(sl.end, rect[dIndex+2])
                             if sl.currentNet is None:
                                 sl.currentNet = netName
-                            elif netName is None:
-                                pass
-                            elif sl.currentNet != netName:
+                            elif netName is not None and sl.currentNet != netName:
                                 self.shorts.append( (layer, sl.currentNet, netName))
                         else:  # gap
                             sl.emit()
@@ -147,27 +147,23 @@ class RemoveDuplicates():
                         sl.emit()
                         sl.clear()
 
-                if layer not in self.store_scan_lines: self.store_scan_lines[layer] = {}
-                self.store_scan_lines[layer][twice_center] = sl
-
-                for (rect, netName) in sl.rects:
-                   terminals.append(
-                        {'layer': layer, 'netName': netName, 'rect': rect})
-
+#
+# Check for shorts induced by vias
+# We need to do the right thing with nets named None
+#
 
         via_layers2 = [( "via1", ("M1", "M2")), 
                        ( "via2", ("M3", "M2"))]
-
 
         for (via, (mv,mh)) in via_layers2:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
 
-    #
-    # Should scan via_scan_line and metal_scan_line_vertical simultaneously
-    # Easier to quadratic loop. FIX!
-    #
+#
+# Should scan via_scan_line and metal_scan_line_vertical simultaneously
+# Easier to quadratic loop. FIX!
+#
 
                     for via_rect in via_scan_line.rects:
                         for metal_rect in metal_scan_line_vertical.rects:
@@ -182,6 +178,19 @@ class RemoveDuplicates():
                             if self.__class__.touching( via_rect, metal_rect):
                                 if via_rect[1] != metal_rect[1]:
                                     self.shorts.append( (via, via_rect, mh,  metal_rect))
+
+#
+# Write out the rectangles stored in the scan line data structure
+#
+
+        for (layer, dir) in layers.items():
+            if layer not in tbl: continue
+
+            for (twice_center, v) in tbl[layer].items():
+                sl = self.store_scan_lines[layer][twice_center]
+                for (rect, netName) in sl.rects:
+                   terminals.append(
+                        {'layer': layer, 'netName': netName, 'rect': rect})
 
         for short in self.shorts:
             print( "SHORT", *short)

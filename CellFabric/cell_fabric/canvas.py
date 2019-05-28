@@ -155,6 +155,7 @@ class Canvas:
         self.terminals = []
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
+        self.rd = None
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))
