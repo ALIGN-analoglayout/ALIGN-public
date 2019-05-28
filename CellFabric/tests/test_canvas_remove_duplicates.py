@@ -1,5 +1,5 @@
 import pytest
-from cell_fabric import Canvas, Wire
+from cell_fabric import Canvas, Wire, Via
 
 def test_vertical():
     c = Canvas()
@@ -39,6 +39,17 @@ def test_short():
     c.removeDuplicates()
     assert len(c.rd.shorts) == 1
 
+def test_via_short():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M2', 'netName': 'y', 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': 'y', 'rect': [100,  -50, 200,  50]}
+    ]
+    c.removeDuplicates()
+    assert len(c.rd.shorts) == 1
 
 def test_underlapping():
     c = Canvas()

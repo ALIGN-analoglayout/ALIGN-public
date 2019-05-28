@@ -108,9 +108,9 @@ class Canvas:
                     assert x % xpitch == 0
                     via2s.append( x//xpitch)
                     started = True
-                elif c in ['=']:
+                elif c in ['=','═','╬']:
                     assert started
-                elif c in ['|']:
+                elif c in ['|','║']:
                     pass
                 else:
                     if started:
@@ -140,9 +140,9 @@ class Canvas:
                     assert y % ypitch == 0
                     via2s.append( y//ypitch)
                     started = True
-                elif c in ['|']:
+                elif c in ['|','║','╬']:
                     assert started
-                elif c in ['=','+']:
+                elif c in ['=','═','+']:
                     pass
                 else: # bottom up traversal so construct the name in reverse
                     if started:

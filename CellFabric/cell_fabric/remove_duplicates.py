@@ -53,29 +53,6 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-    def build_centerline_tbl( self):
-        tbl = {}
-
-        for d in self.canvas.terminals:
-            layer = d['layer']
-            rect = d['rect']
-            netName = d['netName']
-
-            if layer in self.skip_layers: continue
-
-            assert layer in self.layers, layer
-            twice_center = sum(rect[index]
-                               for index in self.indicesTbl[self.layers[layer]][0])
-
-            if layer not in tbl:
-                tbl[layer] = {}
-            if twice_center not in tbl[layer]:
-                tbl[layer][twice_center] = []
-
-            tbl[layer][twice_center].append((rect, netName))
-        return tbl
-
-
     def __init__( self, canvas):
         self.canvas = canvas
         self.store_scan_lines = None
@@ -106,6 +83,29 @@ class RemoveDuplicates():
                 assert False, (nm,type(gen))
 
         self.indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
+
+
+    def build_centerline_tbl( self):
+        tbl = {}
+
+        for d in self.canvas.terminals:
+            layer = d['layer']
+            rect = d['rect']
+            netName = d['netName']
+
+            if layer in self.skip_layers: continue
+
+            assert layer in self.layers, layer
+            twice_center = sum(rect[index]
+                               for index in self.indicesTbl[self.layers[layer]][0])
+
+            if layer not in tbl:
+                tbl[layer] = {}
+            if twice_center not in tbl[layer]:
+                tbl[layer][twice_center] = []
+
+            tbl[layer][twice_center].append((rect, netName))
+        return tbl
 
 
     def build_scan_lines( self, tbl):
@@ -149,7 +149,6 @@ class RemoveDuplicates():
 
     def check_shorts_induced_by_vias( self):
 #
-# Check for shorts induced by vias
 # We need to do the right thing with nets named None
 #
 
@@ -182,7 +181,7 @@ class RemoveDuplicates():
 
 
 
-    def generate_rectangles( self, tbl):
+    def generate_rectangles( self):
 
         terminals = []
 #
@@ -195,11 +194,9 @@ class RemoveDuplicates():
 #
 # Write out the rectangles stored in the scan line data structure
 #
-
-        for (layer, dir) in self.layers.items():
-            if layer not in tbl: continue
-            for (twice_center, v) in tbl[layer].items():
-                for (rect, netName) in self.store_scan_lines[layer][twice_center].rects:
+        for (layer,vv) in self.store_scan_lines.items():
+            for (twice_center, v) in vv.items():
+                for (rect, netName) in v.rects:
                    terminals.append( {'layer': layer, 'netName': netName, 'rect': rect})
 
         return terminals
@@ -207,13 +204,12 @@ class RemoveDuplicates():
 
     def remove_duplicates( self):
 
-        tbl = self.build_centerline_tbl()
-        self.build_scan_lines( tbl)
+        self.build_scan_lines( self.build_centerline_tbl())
 
         self.check_shorts_induced_by_vias()
 
         for short in self.shorts:
             print( "SHORT", *short)
 
-        return self.generate_rectangles( tbl)
+        return self.generate_rectangles()
 
