@@ -7,16 +7,23 @@ class UnionFind:
         self.dad = self
 
     def root( self):
+        root = self
+        while root.dad != root:
+            root = root.dad
+
+        # Path compression
         x = self
         while x.dad != x:
-            x = x.dad
-        return x
+            x_next = x.dad
+            x.dad = root
+            x = x_next
 
-# No path compression or balancing
+        return root
+
     def connect( self, other):
         xroot = self.root()
         yroot = other.root()
-        print( "Connecting", id(self), id(xroot), id(other), id(yroot))
+#        print( "Connecting", id(self), id(xroot), id(other), id(yroot))
         yroot.dad = xroot
     
 class ScanlineRect(UnionFind):

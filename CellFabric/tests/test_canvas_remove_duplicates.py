@@ -39,6 +39,14 @@ def test_short():
     c.removeDuplicates()
     assert len(c.rd.shorts) == 1
 
+def test_open():
+    c = Canvas()
+    c.addGen( Wire( nm='m2', layer='metal2', direction='h', clg=None, spg=None))
+    c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
+                   {'layer': 'metal2', 'netName': 'x', 'rect': [400, -50, 600, 50]}]
+    c.removeDuplicates()
+    assert len(c.rd.opens) == 1
+
 def test_via_connecta():
     c = Canvas()
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
