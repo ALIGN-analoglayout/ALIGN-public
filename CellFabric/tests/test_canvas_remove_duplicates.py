@@ -39,16 +39,100 @@ def test_short():
     c.removeDuplicates()
     assert len(c.rd.shorts) == 1
 
-def test_via_short():
+def test_via_connecta():
     c = Canvas()
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
     c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
     c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
-    c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect':   [  0,  -50, 300,  50]},
-                   {'layer': 'M2', 'netName': 'y', 'rect':   [100, -150, 200, 150]},
-                   {'layer': 'via1', 'netName': 'y', 'rect': [100,  -50, 200,  50]}
+    c.terminals = [{'layer': 'M2', 'netName': None, 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': 'b', 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': 'b', 'rect': [100,  -50, 200,  50]}
     ]
-    c.removeDuplicates()
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_connectb():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': 'b', 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': None, 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': 'b', 'rect': [100,  -50, 200,  50]}
+    ]
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_connectc():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': 'b', 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': 'b', 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
+    ]
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_connectd():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': None, 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': 'b', 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
+    ]
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_connecte():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': None, 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': None, 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': 'b', 'rect': [100,  -50, 200,  50]}
+    ]
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_connectf():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': 'b', 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': None, 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
+    ]
+    terms = c.removeDuplicates()
+    print(terms)
+    assert len(c.rd.shorts) == 0
+    assert { d['netName'] for d in terms} == { 'b'}
+
+def test_via_short1():
+    c = Canvas()
+    c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
+    c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
+    c.addGen( Via( nm="v1", layer="via1", h_clg=None, v_clg=None))
+    c.terminals = [{'layer': 'M2', 'netName': 'a', 'rect':   [  0,  -50, 300,  50]},
+                   {'layer': 'M1', 'netName': 'b', 'rect':   [100, -150, 200, 150]},
+                   {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
+    ]
+    print(c.removeDuplicates())
     assert len(c.rd.shorts) == 1
 
 def test_underlapping():
