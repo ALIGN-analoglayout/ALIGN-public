@@ -84,7 +84,7 @@ class RemoveDuplicates():
         tbl = defaultdict(lst)
 
         for (layer,v) in self.store_scan_lines.items():
-            for (twice_center,vv) in v.items():
+            for vv in v.values():
                 for slr in vv.rects:
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
 
@@ -274,8 +274,8 @@ class RemoveDuplicates():
 
         for short in self.shorts:
             print( "SHORT", *short)
-        for open in self.opens:
-            print( "OPEN", *open)
+        for opn in self.opens:
+            print( "OPEN", *opn)
 
         return self.generate_rectangles()
 

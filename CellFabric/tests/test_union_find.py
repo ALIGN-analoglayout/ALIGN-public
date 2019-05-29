@@ -1,4 +1,4 @@
-import pytest
+
 from cell_fabric.remove_duplicates import UnionFind
 
 def test_three():
