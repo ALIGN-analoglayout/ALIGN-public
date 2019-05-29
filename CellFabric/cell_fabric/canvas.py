@@ -94,7 +94,7 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-                        assert nm is not None
+#                        assert nm is not None
                         self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)]) 
                         started = False
                         nm = None
@@ -130,7 +130,7 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-                        assert nm is not None
+#                        assert nm is not None
                         self.addWireAndMultiViaSet( nm, m3, x, [ (v2, via2s)]) 
                         started = False
                         nm = None
@@ -144,7 +144,7 @@ class Canvas:
                     assert started
                 elif c in ['=','═','+']:
                     pass
-                else: # bottom up traversal so construct the name in reverse
+                else: # walking bottom-to-top (increasing y coord) so construct the name in reverse
                     if started:
                         if nm is None:
                             nm = c
@@ -156,6 +156,8 @@ class Canvas:
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
+        self.layer_stack = [( "via1", ("M1", "M2")), 
+                            ( "via2", ("M3", "M2"))]
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))

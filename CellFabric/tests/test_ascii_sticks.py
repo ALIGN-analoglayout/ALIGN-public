@@ -15,6 +15,9 @@ def finish_test( c, fn):
              'globalRouteGrid' : [],
              'terminals' : c.removeDuplicates()}
 
+    assert len(c.rd.opens) == 0
+    assert len(c.rd.shorts) == 0
+
     with open( fn + "_cand", "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
@@ -57,6 +60,24 @@ def test_m2_and_m3(setup):
 +a======+=======+   |
                     |
     +b======+=======/
+
+
+""")
+
+    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
+
+def test_m2_and_m3_infer(setup):
+    (c, m1, v1, m2, v2, m3) = setup
+
+    for (i,nm) in chain( product( [0,2,4], [None]), product( [1,3,5], ['b'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+
+    c.asciiStickDiagram( v1, m2, v2, m3, """
+    +=======+=======*
+                    |    
++a======+=======+   |
+                    |
+    +=======+=======/
 
 
 """)
@@ -116,6 +137,42 @@ def test_m2_and_m3_unicode2(setup):
 """)
 
     finish_test( c, "tests/__json_via_set_m2_m3_sticks2")
+
+def test_m2_and_m3_resolve_names(setup):
+    (c, m1, v1, m2, v2, m3) = setup
+
+    for (i,nm) in chain( product( [0,2,4], ['a']), product( [1,3,5], ['b'])):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+
+    c.asciiStickDiagram( v1, m2, v2, m3, """
+    +═══════*═══════+
+            ║
++═══════+═══╬═══+
+            ║
+    +═══════*
+
+
+""")
+
+    finish_test( c, "tests/__json_via_set_m2_m3_sticks2")
+
+def test_m2_and_m3_resolve_names_small(setup):
+    (c, m1, v1, m2, v2, m3) = setup
+
+    for (i,nm) in product( [0,2], [None]):
+        c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
+
+    c.asciiStickDiagram( v1, m2, v2, m3, """
+
+
++a══════+
+
+
+
+
+""")
+
+    finish_test( c, "tests/__json_via_set_m2_m3_sticks3")
 
 def test_m2_and_m3_multicharskip(setup):
     (c, m1, v1, m2, v2, m3) = setup
