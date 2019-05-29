@@ -145,9 +145,9 @@ def test_m2_and_m3_resolve_names(setup):
         c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
-    +b══════*═══════+
+    +═══════*═══════+
             ║
-+a══════+═══╬═══+
++═══════+═══╬═══+
             ║
     +═══════*
 

@@ -1,4 +1,5 @@
-import collections
+
+from collections import defaultdict, OrderedDict
 
 from .generators import *
 
@@ -14,17 +15,12 @@ class UnionFind:
         # Path compression
         x = self
         while x.dad != x:
-            x_next = x.dad
-            x.dad = root
-            x = x_next
+            x.dad,x = root,x.dad
 
         return root
 
     def connect( self, other):
-        xroot = self.root()
-        yroot = other.root()
-#        print( "Connecting", id(self), id(xroot), id(other), id(yroot))
-        yroot.dad = xroot
+        other.root().dad = self.root()
     
 class ScanlineRect(UnionFind):
     def __init__(self):
@@ -61,30 +57,36 @@ class Scanline:
         slr.netName = self.currentNet
         self.rects.append(slr)
 
-    def set(self, rect, netName):
+    def set_named_rect(self, rect, netName):
         self.start = rect[self.dIndex]
         self.end = rect[self.dIndex+2]
         self.currentNet = netName
 
-
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
 
+    def find_touching(self, via_rect):
+#
+# Linear search --- could improve performance by binary search if rects is sorted
+#
+        result = None
+        for metal_rect in self.rects:
+            if RemoveDuplicates.touching( via_rect.rect, metal_rect.rect):
+                result = metal_rect
+                break
+
+        assert result is not None
+        return result
 
 class RemoveDuplicates():
 
     def dump(self):
-        tbl = {}
+        tbl = defaultdict(lst)
 
         for (layer,v) in self.store_scan_lines.items():
             for (twice_center,vv) in v.items():
                 for slr in vv.rects:
-                    root = slr.root()
-                    root_id = id(root)
-                    if root_id not in tbl:
-                        tbl[root_id] = []
-
-                    tbl[root_id].append( (slr,root.netName,layer))
+                    tbl[id(slr.root())].append( (slr,root.netName,layer))
 
         for (i,s) in tbl.items():
             print( "Equivalence classes:", i, s)
@@ -92,7 +94,7 @@ class RemoveDuplicates():
     def check_opens(self):
         self.opens = []
 
-        tbl = {}
+        tbl = defaultdict(lambda: defaultdict(list))
 
         for (layer,v) in self.store_scan_lines.items():
             for (twice_center,vv) in v.items():
@@ -100,9 +102,7 @@ class RemoveDuplicates():
                     root = slr.root()
                     nm = root.netName
                     if nm is not None:
-                        if nm not in tbl:
-                            tbl[nm] = set()
-                        tbl[nm].add( id(root))
+                        tbl[nm][id(root)].append( (layer, slr))
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
@@ -114,12 +114,6 @@ class RemoveDuplicates():
         """rS is contained in rB"""
         return rB[0] <= rS[0] and rB[1] <= rS[1] and rS[2] <= rB[2] and rS[3] <= rB[3]
 
-#
-# s touching b
-# false if one rect to the left of the other
-# false if one rect above the other
-# true otherwise
-#
     @staticmethod
     def touching( rA, rB):
         """rA and rB touch"""
@@ -135,7 +129,7 @@ class RemoveDuplicates():
 
 
     def setup_layer_structures( self):
-        self.layers = collections.OrderedDict()
+        self.layers = OrderedDict()
         self.skip_layers = set()
         self.via_layers = set()
 
@@ -145,7 +139,7 @@ class RemoveDuplicates():
                 print( "Region", nm)
             elif isinstance( gen, Via):
                 if gen.layer not in self.layers:
-                    self.layers[gen.layer] = 'v' # Could be either --- probably want to specialize vias
+                    self.layers[gen.layer] = 'v' # Could be either --- probably want to specialize for vias
                 self.via_layers.add( gen.layer)
                 print( "Via", nm)
             elif isinstance( gen, Wire):
@@ -159,7 +153,7 @@ class RemoveDuplicates():
 
 
     def build_centerline_tbl( self):
-        tbl = {}
+        tbl = defaultdict(lambda: defaultdict(list))
 
         for d in self.canvas.terminals:
             layer = d['layer']
@@ -172,17 +166,12 @@ class RemoveDuplicates():
             twice_center = sum(rect[index]
                                for index in self.indicesTbl[self.layers[layer]][0])
 
-            if layer not in tbl:
-                tbl[layer] = {}
-            if twice_center not in tbl[layer]:
-                tbl[layer][twice_center] = []
-
             tbl[layer][twice_center].append((rect, netName))
         return tbl
 
 
     def build_scan_lines( self, tbl):
-        self.store_scan_lines = {}
+        self.store_scan_lines = defaultdict(dict)
 
         for (layer, dir) in self.layers.items():
             if layer not in tbl: continue
@@ -191,77 +180,49 @@ class RemoveDuplicates():
 
             for (twice_center, v) in tbl[layer].items():
 
-                if layer not in self.store_scan_lines: self.store_scan_lines[layer] = {}
-                sl = Scanline(v[0][0], indices, dIndex)
-                self.store_scan_lines[layer][twice_center] = sl
+                (rect0, _) = v[0]
+                for (rect, netName) in v[1:]:
+                    assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
 
-                if v:
-                    (rect0, _) = v[0]
-                    for (rect, netName) in v[1:]:
-                        assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
+                sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
-                    s = sorted(v, key=lambda p: p[0][dIndex])
-
-                    for (rect, netName) in s:
-                        if sl.isEmpty():
-                            sl.set(rect, netName)
-                        elif rect[dIndex] <= sl.end:  # continue
-                            sl.end = max(sl.end, rect[dIndex+2])
-                            if sl.currentNet is None:
-                                sl.currentNet = netName
-                            elif netName is not None and sl.currentNet != netName:
-                                self.shorts.append( (layer, sl.currentNet, netName))
-                        else:  # gap
-                            sl.emit()
-                            sl.set(rect, netName)
-
-                    if not sl.isEmpty():
+                for (rect, netName) in sorted(v, key=lambda p: p[0][dIndex]):
+                    if sl.isEmpty():
+                        sl.set_named_rect(rect, netName)
+                    elif rect[dIndex] <= sl.end:  # continue
+                        sl.end = max(sl.end, rect[dIndex+2])
+                        if sl.currentNet is None:
+                            sl.currentNet = netName
+                        elif netName is not None and sl.currentNet != netName:
+                            self.shorts.append( (layer, sl.currentNet, netName))
+                    else:  # gap
                         sl.emit()
-                        sl.clear()
+                        sl.set_named_rect(rect, netName)
+
+                if not sl.isEmpty():
+                    sl.emit()
+                    sl.clear()
 
 
     def check_shorts_induced_by_vias( self):
-#
-# We need to do the right thing with nets named None
-#
-
-        via_layers2 = [( "via1", ("M1", "M2")), 
-                       ( "via2", ("M3", "M2"))]
 
         connections = []
 
-        for (via, (mv,mh)) in via_layers2:
+        for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
                     print( "via", via, twice_center, via_scan_line)
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
 
-#
-# Should scan via_scan_line and metal_scan_line_vertical simultaneously
-# Easier to quadratic loop. FIX!
-#
-
                     for via_rect in via_scan_line.rects:
                         print( 'via_rect', via_rect)
-                        via_nm = via_rect.netName
-                        metal_rect_v = None
-                        for metal_rect in metal_scan_line_vertical.rects:
-                            if self.__class__.touching( via_rect.rect, metal_rect.rect):
-                                metal_rect_v = metal_rect
-                                break
 
-                        assert metal_rect_v is not None
+                        metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
 
                         twice_center_y = via_rect.rect[1] + via_rect.rect[3]
                         metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
                         
-                        metal_rect_h = None
-                        for metal_rect in metal_scan_line_horizontal.rects:
-                            if self.__class__.touching( via_rect.rect, metal_rect.rect):
-                                metal_rect_h = metal_rect
-                                break
-
-                        assert metal_rect_h is not None
+                        metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
                         
                         connections.append( (via_rect, metal_rect_v, metal_rect_h))
                         
@@ -274,16 +235,10 @@ class RemoveDuplicates():
             aux( a.root(), b.root())
 
         for triple  in connections:
-            (via_rect, metal_rect_v, metal_rect_h) = triple
+            connectPair( triple[1], triple[2])
+            connectPair( triple[0], triple[1])
 
-            connectPair( metal_rect_v, metal_rect_h)
-            connectPair( via_rect, metal_rect_v)
-
-            nms = set()
-            for slr in list(triple):
-                root = slr.root()
-                if root.netName is not None:
-                    nms.add( root.netName)
+            nms = { root.netName for slr in list(triple) for root in [slr.root()] if root.netName is not None}
 
             if len(nms) > 1:
                 self.shorts.append( triple)

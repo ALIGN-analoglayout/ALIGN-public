@@ -156,6 +156,8 @@ class Canvas:
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
+        self.layer_stack = [( "via1", ("M1", "M2")), 
+                            ( "via2", ("M3", "M2"))]
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))
