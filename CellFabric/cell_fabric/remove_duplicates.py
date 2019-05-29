@@ -97,7 +97,7 @@ class RemoveDuplicates():
         tbl = defaultdict(lambda: defaultdict(list))
 
         for (layer,v) in self.store_scan_lines.items():
-            for (twice_center,vv) in v.items():
+            for vv in v.values():
                 for slr in vv.rects:
                     root = slr.root()
                     nm = root.netName
