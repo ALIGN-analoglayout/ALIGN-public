@@ -2409,6 +2409,9 @@ void Placer_Router_Cap::GetPhsicalInfo_router(){
 }
 
 extern
+void addOABoundaries (json& jsonElements, int width, int height);
+
+extern
 void JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 			       vector<string>& strBlocks, vector<int>& llx, vector<int>& lly,
 			       vector<int>& urx, vector<int>& ury, json& mjsonStrAry);
@@ -2705,6 +2708,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
 	jsonElements.push_back (sref);
     }
 
+    addOABoundaries (jsonElements, 2 * CheckOutBlock.width, 2 * CheckOutBlock.height);
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;

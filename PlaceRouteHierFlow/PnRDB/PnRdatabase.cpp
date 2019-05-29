@@ -3822,8 +3822,9 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 		    json str = *sit;
 		    string nm = str["strname"];
 		    string strname = nm + "_" + std::to_string(rndnum);
-		    json elements = str["elements"];
-		    for (json::iterator elmI = elements.begin(); elmI != elements.end(); ++elmI) {
+		    //json elements = str["elements"];
+		    for (json::iterator elmI = str["elements"].begin(); elmI != str["elements"].end(); ++elmI) {
+                        TJ_llx=INT_MAX; TJ_lly=INT_MAX; TJ_urx=INT_MIN; TJ_ury=INT_MIN;
 			json elm = *elmI;
 			if (elm["xy"].is_array()) {
 			    json xyAry = elm["xy"];
@@ -3837,7 +3838,11 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 				    if (*xyI < TJ_llx) TJ_llx = *xyI;
 				}
 			    }
-			}
+			} 
+                        if (elm["sname"].is_string()) {
+                          string sn=elm["sname"];
+                          (*elmI)["sname"]=sn+ "_" + std::to_string(rndnum);
+                        }
 		    }
 		    strBlocks.push_back(strname);
 		    str["strname"] = strname;
@@ -3977,6 +3982,34 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_i
 	return true;
     }
     return false;
+}
+
+void
+addOABoundaries (json& jsonElements, int width, int height) {
+  int x[5],y[5];
+  x[0]=y[0]=x[1]=y[3]=x[4]=y[4]=0; x[2]=x[3]=width; y[1]=y[2]=height;
+  json bound1;
+  bound1["type"] = "boundary";
+  bound1["layer"]=235;
+  bound1["datatype"]=5;
+  json xy = json::array();
+  for (size_t i = 0; i < 5; i++) {
+      xy.push_back (x[i]);
+      xy.push_back (y[i]);
+  }
+  bound1["xy"] = xy;
+  bound1["propattr"]=126;
+  bound1["propvalue"]="oaBoundary:pr";
+  jsonElements.push_back (bound1);
+//   boundary
+//       layer 235
+//       datatype 5
+//       xy   5   0 0   0 1608   8640 1608   8640 0
+//                0 0
+//       propattr 126
+//       propvalue "oaBoundary:pr"
+//       endel
+
 }
 
 void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info) {
@@ -4247,6 +4280,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}
     }
 
+    addOABoundaries (jsonElements, 2 * node.width, 2 * node.height);
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;
