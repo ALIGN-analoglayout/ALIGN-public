@@ -5,6 +5,7 @@ Graph::Graph(Grid& grid) {
   //std::cout<<"~~~~~Before list \n";
   //this->grid.CheckVerticesTotal();
   //use grid information to create adjacentlist
+  this->path_number=1;
   std::cout<<"Start Creating adjacent list (graph), ";
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating adjacent list (graph)"<<std::endl;
@@ -17,6 +18,7 @@ Graph::Graph(Grid& grid, bool Power_grid){
   //std::cout<<"~~~~~Before list \n";
   //this->grid.CheckVerticesTotal();
   //use grid information to create adjacentlist
+  this->path_number=1;
   std::cout<<"Start Creating power grid (graph), ";
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating power grid (graph)"<<std::endl;
@@ -68,6 +70,7 @@ Graph::Graph(Grid& grid, int pathNo) {
   //std::cout<<"~~~~~After list \n";
   //this->grid.CheckVerticesTotal();
   //find shortest path based source and dest
+  this->path_number=pathNo;
   for(int i =0;i<pathNo;++i){
     
      std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;

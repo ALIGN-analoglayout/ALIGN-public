@@ -138,7 +138,7 @@ inline double  apply_triples
   long     max_stnr_per_phase
 )
 {
-  long     i, e0, e1;
+  long     i;//, e0, e1;
   double   tot_gain = 0;
   Triple*  t;
 
@@ -151,7 +151,7 @@ inline double  apply_triples
   for( i = 0;  i < *n_triples;  i++ )
   {
     t  = triple + i;
-    e0 = t->e[0];  e1 = t->e[1];
+    long e0 = t->e[0]; long e1 = t->e[1];
 
     if( edge[e0].free && edge[e1].free )
     {
@@ -226,7 +226,7 @@ double  stnr1
 {
   long      i, j;
   long      n_terminals, n_triples;
-  long      n_edges, phase_number;
+  long      n_edges;//, phase_number;
   long      phase_new_stnr, round_new_stnr;
   double    mst_len, len, old_len;
   Triple    tmp;
@@ -322,7 +322,7 @@ double  stnr1
     if( flags & PRINT_PHASES ) { printf( "\n" ); }
 
 
-    phase_number = 0;  phase_new_stnr = UNDEFINED;
+    long phase_number = 0;  phase_new_stnr = UNDEFINED;
 
     /************************************************************** 
       Inner loop: repeatedly find and apply  maximal sets of compatible 

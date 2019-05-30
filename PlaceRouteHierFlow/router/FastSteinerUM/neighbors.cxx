@@ -383,28 +383,28 @@ void  dq_nearest_neighbors
   long   i, j, tmp, oct;
 
   double   shear[4][4];
+ 
+  
+
+  if( metric == RECTILINEAR )
+  {
   double   rectilinear_shear[4][4] = {
                          {1, -1,  0,  2},
                          {2,  0, -1,  1},
                          {1,  1, -2,  0},
                          {0,  2, -1, -1}
                        };
- 
+//    shear = rectilinear_shear;
+    memcpy(shear,rectilinear_shear,sizeof(shear));
+  }
+  else
+  {
   double  octilinear_shear[4][4] = {
                          {1, -1,  0,  SQRT_TWO},
                          {SQRT_TWO,  0, -1,  1},
                          {1,  1, -SQRT_TWO,  0},
                          {0,  SQRT_TWO, -1, -1}
                        };
-  
-
-  if( metric == RECTILINEAR )
-  {
-//    shear = rectilinear_shear;
-    memcpy(shear,rectilinear_shear,sizeof(shear));
-  }
-  else
-  {
 //    shear = octilinear_shear;
     memcpy(shear,octilinear_shear,sizeof(shear));
   }

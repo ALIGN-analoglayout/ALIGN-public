@@ -10,7 +10,10 @@ RawRouter::RawRouter():topName("defaultDesign") {
   this->highest_metal=0;
   this->path_number=1;
   this->layerNo=0;
-  PnRDB::Drc_info drc_info2; drc_info2.MaxLayer=0;
+  PnRDB::Drc_info drc_info2; drc_info2.MaxLayer=0; 
+  drc_info2.Metalmap.clear(); drc_info2.Viamap.clear();
+  drc_info2.Metal_info.clear(); drc_info2.Via_info.clear(); 
+  drc_info2.MaskID_Metal.clear(); drc_info2.MaskID_Via.clear();
   this->drc_info=drc_info2;
 }
 

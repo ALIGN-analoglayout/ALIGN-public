@@ -113,7 +113,7 @@ void  preprocess_edges
   long   unsorted
 )
 {
-  long  i, j, pt1, pt2, new_node;  
+  long  i, j, new_node;  
   long  n_points = n_edges + 1;
   Edge  tmp;
 
@@ -162,8 +162,8 @@ void  preprocess_edges
 
   for( i = 0;  i < n_edges;  i++ )
   {
-    pt1 = edge[i].pt1;
-    pt2 = edge[i].pt2;
+    long pt1 = edge[i].pt1;
+    long pt2 = edge[i].pt2;
 
     while( TRUE )
     {
@@ -359,10 +359,10 @@ inline void  save_triple
   long      q
 )
 { 
-  Triple*   t;
+  //Triple*   t;
   Point     s[4];
-  long      i, best_i;
-  double    dx, dy, d1, d2, d3, len, best_len;
+  long      i;//, best_i;
+  double    dx, dy, d1, d2, d3, len;//, best_len;
 
 #ifdef  DEBUG
   assert( LESS_X(a,b) && LESS_X(b,c) && LESS_Y(b,c) && LESS_Y(c,a) );
@@ -377,7 +377,7 @@ inline void  save_triple
 
   if( (*n_triples) < max_n_triples )
   { 
-    t         = triple + (*n_triples);
+    Triple* t         = triple + (*n_triples);
     t->pt[0]  = a;  t->pt[1] = b;  t->pt[2] = c;
 
     if( metric == RECTILINEAR )
@@ -419,7 +419,7 @@ inline void  save_triple
       else           {  s[3].x = x(b) + dy;  s[3].y = y(c); }
 
 
-      best_i = UNDEFINED;   best_len = INFTY;
+      long best_i = UNDEFINED;  double best_len = INFTY;
       for( i = 0;  i < 4; i++ )
       {
         len = dist(s[i],rotated[a]) + dist(s[i],rotated[b]) + dist(s[i],rotated[c]);
@@ -612,7 +612,7 @@ void  se_combine
   long      q
 )
 {
-  long  i, j, k, i1, i2, j1, k1, b, d, r;
+  long  i, j, k, i1, i2, j1, k1, b, d;//, r;
  
 #ifdef DEBUG
   assert( right - left > 0 );
@@ -779,7 +779,7 @@ void  se_combine
     /*
        now collect type 2 triples 
     */
-    r = mid;       /* r is advanced in ascending y order */
+    long r = mid;       /* r is advanced in ascending y order */
     d = left;      /* d is advanced in ascending d2 order */
     while( (r < right) && (d < mid) )
     {
@@ -1091,7 +1091,7 @@ void  collect_triples
   Edge*     edge
 )
 {
-  long      i, j, q, tmp;
+  long      i, j, q;//, tmp;
 
   (*n_triples) = 0;
 
@@ -1115,7 +1115,7 @@ void  collect_triples
       for( i = 0;  i < n_pts/2;  i++ )
       {
         j = unif_rand(n_pts);
-        tmp = d1_sorted[i];  d1_sorted[i] = d1_sorted[j];  d1_sorted[j] = tmp;
+        long tmp = d1_sorted[i];  d1_sorted[i] = d1_sorted[j];  d1_sorted[j] = tmp;
       }
       qsort( d1_sorted, n_pts, sizeof(long), compare_d1 );  
 
