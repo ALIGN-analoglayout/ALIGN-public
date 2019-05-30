@@ -148,7 +148,8 @@ int  main(
     {
       num_terms =  atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-s", strlen("-s")))
+    else if(!strncmp(argv[i], "-s", 2))
+    //else if(!strncmp(argv[i], "-s", strlen("-s")))
     {
       seed =  atol(argv[++i]);
     }

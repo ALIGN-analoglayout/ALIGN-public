@@ -1770,7 +1770,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"set labels for terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
+    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     p_pin.clear();
     // for each pin

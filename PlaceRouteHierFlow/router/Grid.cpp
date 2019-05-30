@@ -74,7 +74,7 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
   }
 }
 
-Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector<RouterDB::Metal>& glb_path, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset) {
+Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector<RouterDB::Metal>& glb_path, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset):LL(ll),UR(ur) {
   // 1. Initialize member variables I
   this->LL=ll;
   this->UR=ur;
@@ -2016,14 +2016,14 @@ if(sourceL.coord.size()<25){
 
     int grid_distance=INT_MAX;
     int min_index=-1;
-    int grid_idx;
+    //int grid_idx;
     //std::cout<<"grid_node_coord.size(): "<<grid_node_coord.size()<<std::endl;
     for(int i=index_end_M1_M2;i<=index_end_M3_M3;i++){
         for(int j=0;j<grid_node_coord.size();j++){
            if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)) {
 		int dist=abs(grid_node_coord[j].x-Cx)+abs(grid_node_coord[j].y-Cy);
                 //std::cout<<"dist "<<dist<<std::endl;
-		if(dist<grid_distance) {grid_distance=dist; min_index=i;grid_idx=j;}
+		if(dist<grid_distance) {grid_distance=dist; min_index=i;}//grid_idx=j;}
 		break;
                //sourceL.ver_idx.push_back(vertices_total[i].index);
         		}

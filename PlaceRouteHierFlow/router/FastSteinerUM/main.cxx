@@ -68,59 +68,73 @@ int  main
   */
   for( i = 1; i < argc; i++) 
   {
-    if(!strncmp(argv[i], "-rectilinear", strlen("-rectilinear"))) 
+    //if(!strncmp(argv[i], "-rectilinear", strlen("-rectilinear"))) 
+    if(!strncmp(argv[i], "-rectilinear", 12)) 
     {
       metric = RECTILINEAR;
     }
-    else if(!strncmp(argv[i], "-octilinear", strlen("-octilinear"))) 
+    //else if(!strncmp(argv[i], "-octilinear", strlen("-octilinear"))) 
+    else if(!strncmp(argv[i], "-octilinear", 11)) 
     {
       metric = OCTILINEAR;
     }
-    else if(!strncmp(argv[i], "-no_results", strlen("-no_results")))
+    //else if(!strncmp(argv[i], "-no_results", strlen("-no_results")))
+    else if(!strncmp(argv[i], "-no_results", 11))
     {
       flags &= ALL_FLAGS - PRINT_RESULTS;
     }
-    else if(!strncmp(argv[i], "-print_tree", strlen("-print_tree")))
+    //else if(!strncmp(argv[i], "-print_tree", strlen("-print_tree")))
+    else if(!strncmp(argv[i], "-print_tree", 11))
     {
       flags |= PRINT_TREE;
     }
-    else if(!strncmp(argv[i], "-print_phases", strlen("-print_phases"))) 
+    //else if(!strncmp(argv[i], "-print_phases", strlen("-print_phases"))) 
+    else if(!strncmp(argv[i], "-print_phases", 13)) 
     {
       flags |= PRINT_PHASES;
     }
-    else if(!strncmp(argv[i], "-print_rounds", strlen("-print_rounds"))) 
+    //else if(!strncmp(argv[i], "-print_rounds", strlen("-print_rounds"))) 
+    else if(!strncmp(argv[i], "-print_rounds", 13)) 
     {
       flags |= PRINT_ROUNDS;
     }
-    else if(!strncmp(argv[i], "-max_rounds", strlen("-max_rounds"))) 
+    //else if(!strncmp(argv[i], "-max_rounds", strlen("-max_rounds"))) 
+    else if(!strncmp(argv[i], "-max_rounds", 11)) 
     {
       max_rounds = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-max_phases_per_round", strlen("-max_phases_per_round"))) 
+    //else if(!strncmp(argv[i], "-max_phases_per_round", strlen("-max_phases_per_round"))) 
+    else if(!strncmp(argv[i], "-max_phases_per_round", 21)) 
     {
       max_phases_per_round = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-max_stnr_per_round", strlen("-max_stnr_per_round"))) 
+    //else if(!strncmp(argv[i], "-max_stnr_per_round", strlen("-max_stnr_per_round"))) 
+    else if(!strncmp(argv[i], "-max_stnr_per_round", 19)) 
     {
       max_stnr_per_round = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-max_stnr_per_phase", strlen("-max_stnr_per_phase"))) 
+    //else if(!strncmp(argv[i], "-max_stnr_per_phase", strlen("-max_stnr_per_phase"))) 
+    else if(!strncmp(argv[i], "-max_stnr_per_phase", 19)) 
     {
       max_stnr_per_phase = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-cut_off", strlen("-cut_off"))) 
+    //else if(!strncmp(argv[i], "-cut_off", strlen("-cut_off"))) 
+    else if(!strncmp(argv[i], "-cut_off", 8)) 
     {
       cut_off = atof(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-timed_stnr_runs", strlen("-timed_stnr_runs"))) 
+    //else if(!strncmp(argv[i], "-timed_stnr_runs", strlen("-timed_stnr_runs"))) 
+    else if(!strncmp(argv[i], "-timed_stnr_runs", 16)) 
     {
       timed_stnr_runs = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-timed_mst_runs", strlen("-timed_mst_runs"))) 
+    //else if(!strncmp(argv[i], "-timed_mst_runs", strlen("-timed_mst_runs"))) 
+    else if(!strncmp(argv[i], "-timed_mst_runs", 15)) 
     {
       timed_mst_runs = atol(argv[++i]);
     }
-    else if(!strncmp(argv[i], "-seed", strlen("-seed"))) 
+    //else if(!strncmp(argv[i], "-seed", strlen("-seed"))) 
+    else if(!strncmp(argv[i], "-seed", 5)) 
     {
       seed = atol(argv[++i]);
     }

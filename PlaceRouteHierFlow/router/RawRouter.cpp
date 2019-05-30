@@ -10,6 +10,8 @@ RawRouter::RawRouter():topName("defaultDesign") {
   this->highest_metal=0;
   this->path_number=1;
   this->layerNo=0;
+  PnRDB::Drc_info drc_info2; drc_info2.MaxLayer=0;
+  this->drc_info=drc_info2;
 }
 
 void RawRouter::InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, std::vector<std::vector<RouterDB::point> >& plist){
