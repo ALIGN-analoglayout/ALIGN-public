@@ -48,6 +48,577 @@ long int PnRdatabase::get_number(string str) {
   return val;
 }
 
+bool PnRdatabase::ReadDesignRule_metal(string metal_name, vector<string>& jason_file, int& index, string &def, PnRDB::metal_info& temp_metal_info){
+
+  int *p=0;
+  int p_temp=0;
+  p=&p_temp;
+
+  int times = 2;
+
+  size_t found;
+  bool new_drc_found = 0;
+  vector<string> temp;
+  temp = split_by_spaces_yg(def);
+  if((found=def.find(metal_name))!=string::npos and (found=def.find("Layer"))!=string::npos) {
+    vector<string> names = get_true_word(0,temp[1],0,',',p);
+    string compare_name = "\""+metal_name+"\"";
+    if(names[0]!=compare_name){
+        return new_drc_found;
+      }
+
+
+    new_drc_found = 1;
+
+    temp_metal_info.name = metal_name;
+
+    index = index + 1;
+    def = jason_file[index];
+    //"LayerNo": 6,
+    
+    index = index + 1;
+    def = jason_file[index];
+    //"Type" : "Signal",
+
+    index = index + 1;
+    def = jason_file[index];
+    //"Direction": "V",
+    std::cout<<"check dir:  "<<def<<std::endl;
+    if((found=def.find("Direction"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=def.find("H"))!=string::npos){
+          temp_metal_info.direct = 1;
+         }else{
+          temp_metal_info.direct = 0;
+         }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"Pitch": 80,
+    if((found=def.find("Pitch"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       temp_metal_info.grid_unit_x = stoi(names[0])*times;
+       temp_metal_info.grid_unit_y = temp_metal_info.grid_unit_x;
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"Width": 32,
+    if((found=def.find("Width"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       temp_metal_info.width = stoi(names[0])*times;
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"MinL" : 180,
+    if((found=def.find("MinL"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[2],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_metal_info.minL = -1;
+         }else{
+          temp_metal_info.minL = stoi(names[0])*times;
+         }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"MaxL" : "NA",
+    if((found=def.find("MaxL"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[2],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_metal_info.maxL = -1;
+       }else{
+          temp_metal_info.maxL = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"End-to-End": 48
+    if((found=def.find("End-to-End"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names;
+       names.push_back(temp[1]);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_metal_info.dist_ee = -1;
+       }else{
+          temp_metal_info.dist_ee = stoi(names[0])*times;
+       }
+
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    temp_metal_info.dist_ss = temp_metal_info.grid_unit_x - temp_metal_info.width;
+      
+      return new_drc_found;
+
+    }else{
+      return new_drc_found;
+    }
+
+
+}
+
+bool PnRdatabase::ReadDesignRule_via(string via_name, vector<string>& jason_file, int &index, string &def, PnRDB::via_info& temp_via_info){
+
+  int *p=0;
+  int p_temp=0;
+  p=&p_temp;
+
+  int times = 2;
+
+  size_t found;
+  bool new_drc_found = 0;
+  vector<string> temp;
+  temp = split_by_spaces_yg(def);
+
+  if((found=def.find(via_name))!=string::npos and (found=def.find("Layer"))!=string::npos) {
+    vector<string> names = get_true_word(0,temp[1],0,',',p);
+    string compare_name = "\""+via_name+"\"";
+    if(names[0]!=compare_name){
+        return new_drc_found;
+      }
+
+
+    new_drc_found = 1;
+
+    temp_via_info.name = via_name;
+    
+    index = index + 1;
+    def = jason_file[index];
+    //"LayerNo": 11,
+
+    index = index + 1;
+    def = jason_file[index];
+    //"Type" : "Via",
+
+    index = index + 1;
+    def = jason_file[index];
+
+/*
+    //"Stack": "M1-M2",
+    if((found=def.find("Stack"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,'-',p);
+       vector<string> name2 = get_true_word(0,names[1],0,',',p);
+
+       temp_via_info.lower_metal_index = DRC_info.Metalmap[names[0]];
+       
+       temp_via_info.upper_metal_index = DRC_info.Metalmap[name2[0]];
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+*/
+
+
+    index = index + 1;
+    def = jason_file[index];
+    //"SpaceX": 76,
+    if((found=def.find("SpaceX"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.dist_ss = -1;
+       }else{
+          temp_via_info.dist_ss = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"SpaceY": 76,
+    if((found=def.find("SpaceY"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.dist_ss_y = -1;
+       }else{
+          temp_via_info.dist_ss_y = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"WidthX": 32,
+    if((found=def.find("WidthX"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.width = -1;
+       }else{
+          temp_via_info.width = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"WidthY": 32,
+    if((found=def.find("WidthY"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.width_y = -1;
+       }else{
+          temp_via_info.width_y = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"VencA_L" : 20,
+    if((found=def.find("VencA_L"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.cover_l = -1;
+       }else{
+          temp_via_info.cover_l = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+    index = index + 1;
+    def = jason_file[index];
+    //"VencA_H" : 20,
+    if((found=def.find("VencA_H"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.cover_u = -1;
+       }else{
+          temp_via_info.cover_u = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+
+    index = index + 1;
+    def = jason_file[index];
+    //"VencP_L" : 20,
+    if((found=def.find("VencP_L"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names = get_true_word(0,temp[1],0,',',p);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.cover_l_P = -1;
+       }else{
+          temp_via_info.cover_l_P = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+
+    index = index + 1;
+    def = jason_file[index];
+    //"VencP_H" : 20
+    if((found=def.find("VencP_H"))!=string::npos){
+       temp=split_by_spaces_yg(def);
+       vector<string> names;
+       names.push_back(temp[1]);
+
+       if((found=names[0].find("NA"))!=string::npos){
+          temp_via_info.cover_u_P = -1;
+       }else{
+          temp_via_info.cover_u_P = stoi(names[0])*times;
+       }
+
+      }else{
+        cout<<"Read Design Rule Error: Direction Error "<<endl;
+      }
+
+      return new_drc_found;
+
+    }else{
+      return new_drc_found;
+    }
+
+
+
+}
+
+
+bool PnRdatabase::ReadDesignRule_jason(string drfile){
+
+  cout<<"PnRDB-Info: reading design rule jason file "<<drfile<<endl;
+
+  ifstream fin;
+  fin.open(drfile.c_str());
+  string def;
+
+  vector<string> temp;
+  vector<string> temp2;
+
+  PnRDB::metal_info temp_metal_info;
+  PnRDB::via_info temp_via_info;
+  string metal_name;
+  string via_name;
+
+  vector<string> jason_file;
+
+  while(!fin.eof()){
+
+    getline(fin, def);
+    jason_file.push_back(def);
+    
+   }
+
+  int end_size = jason_file.size();
+
+  int index =0;
+
+  while(index < end_size){
+
+    def = jason_file[index];
+    int found_metal_via = 0;
+
+    metal_name = "M1";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M2";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M3";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M4";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M5";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M6";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    metal_name = "M7";
+    found_metal_via = ReadDesignRule_metal( metal_name, jason_file, index, def, temp_metal_info);
+    if(found_metal_via == 1){
+       DRC_info.Metal_info.push_back(temp_metal_info);
+       DRC_info.Metalmap[metal_name] = DRC_info.Metal_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V1";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V2";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V3";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V4";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V5";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+    via_name = "V6";
+    found_metal_via = ReadDesignRule_via( via_name, jason_file, index, def, temp_via_info);
+    if(found_metal_via == 1){
+       DRC_info.Via_info.push_back(temp_via_info);
+       DRC_info.Viamap[via_name] = DRC_info.Via_info.size()-1;
+       found_metal_via = 0;
+      }
+
+   index = index + 1;
+
+   }
+
+  fin.close();
+
+  DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
+  
+  //add
+  for(int i=0;i<DRC_info.Metal_info.size();i++){
+       DRC_info.metal_weight.push_back(1);
+     }
+  
+  for(int i=0;i<DRC_info.Via_info.size();i++){
+       PnRDB::ViaModel temp_viamodel;
+       temp_viamodel.name = DRC_info.Via_info[i].name;
+       temp_viamodel.ViaIdx = i;
+       temp_viamodel.LowerIdx = i;
+       temp_viamodel.UpperIdx = i+1;
+       PnRDB::point temp_point;
+       //LL
+       temp_point.x = 0-DRC_info.Via_info[i].width/2;
+       temp_point.y = 0-DRC_info.Via_info[i].width_y/2;
+       temp_viamodel.ViaRect.push_back(temp_point);
+       //UR
+       temp_point.x = 0+DRC_info.Via_info[i].width/2;
+       temp_point.y = 0+DRC_info.Via_info[i].width_y/2;
+       temp_viamodel.ViaRect.push_back(temp_point);
+       
+       //LL LowerRect
+       if(DRC_info.Metal_info[i].direct==0){
+       temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
+       temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       //UR
+       temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
+       temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       }else{
+       temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
+       temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       //UR
+       temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
+       temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       } 
+       
+       //LL UpperRect
+       if(DRC_info.Metal_info[i+1].direct==0){
+       temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
+       temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       //UR
+       temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
+       temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       }else{
+       temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
+       temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       //UR
+       temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
+       temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       } 
+      DRC_info.Via_model.push_back(temp_viamodel);
+    }
+  
+  //added by yg
+  DRC_info.MaskID_Metal.push_back("19");
+  DRC_info.MaskID_Metal.push_back("20");
+  DRC_info.MaskID_Metal.push_back("30");
+  DRC_info.MaskID_Metal.push_back("40");
+  DRC_info.MaskID_Metal.push_back("50");
+  DRC_info.MaskID_Metal.push_back("60");
+  DRC_info.MaskID_Metal.push_back("70");
+
+  DRC_info.MaskID_Via.push_back("21");
+  DRC_info.MaskID_Via.push_back("25");
+  DRC_info.MaskID_Via.push_back("35");
+  DRC_info.MaskID_Via.push_back("45");
+  DRC_info.MaskID_Via.push_back("55");
+  DRC_info.MaskID_Via.push_back("65");
+  DRC_info.MaskID_Via.push_back("75");
+
+
+}
+
 bool PnRdatabase::HardDesignRule() {
   PnRDB::metal_info tmp_metal;
   tmp_metal.name="M1";
@@ -1504,7 +2075,14 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   //PrintLEFData();
   this->ReadVerilog(path, vname, topcell);
   this->HardDesignRule();
+  //size_t found;
+  //std::cout<<"start to read rul"<<std::endl;
+  //if((found=drname.find(".rul"))!=string::npos){
   //  this->ReadDesignRule(path+"/"+drname);
+  //  }else{
+  //  this->ReadDesignRule_jason(path+"/"+drname);
+  //  }
+
   cout<<"PnRDB-Info: complete reading"<<endl;
   //cout<<"After reading verilog"<<endl;
   //PrintLEFData();
@@ -1763,15 +2341,18 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
   int p_temp=0;
   p=&p_temp;
   string cfile=fpath+"/"+node.name+"."+suffix;
-
+  std::cout<<"start to read const file "<<cfile<<std::endl;
   // constraint format issues(comma): Alignment, Preplace, MatchBlock, Abutment
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(cfile.c_str());
     while(fin.peek()!=EOF) {
       getline(fin, def);
+      //std::cout<<"line "<<def<<std::endl;
       if(def.compare("")==0) {continue;}
       temp=split_by_spaces(def);
+      //for(int i=0;i<temp.size();i++) {cout<<" ? "<<temp[i];}
+      //cout<<endl;
       if(temp[0].compare("SymmNet")==0) {
         string word=temp[2];
         word=word.substr(1);
@@ -1790,7 +2371,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                 if(node.Blocks.at(i).instance.name.compare(tempthd[0])==0) {
                   for(int j=0;j<(int)node.Blocks.at(i).instance.blockPins.size();j++) {
                     if(node.Blocks.at(i).instance.blockPins.at(j).name.compare(tempthd[1])==0) {
-                      //cout<<j<<i<<endl;
+                      //cout<<j<<" "<<i<<endl;
                       PnRDB::connectNode newnode={PnRDB::Block, j, i};
                       tmpnet.connected.push_back(newnode);
                       break;
@@ -1799,7 +2380,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                   break;
                 }
               }
-              //cout<<*it<<" is pin"<<tempthd[0]<<tempthd[1]<<endl;
+              //cout<<*it<<" is pin"<<tempthd[0]<<"/"<<tempthd[1]<<endl;
             } else { // if terminal
               for(int i=0;i<(int)node.Terminals.size();i++) {
                 if(node.Terminals.at(i).name.compare(*it)==0) {
@@ -1813,9 +2394,11 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           }
         }
         word=temp[4];
+        //cout<<word<<endl;
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         tempsec=StringSplitbyChar(word, ',');
+        //cout<<tempsec[0]<<" "<<tempsec[1]<<endl;
         PnRDB::net tmpnet2;
         for(vector<string>::iterator it=tempsec.begin(); it!=tempsec.end(); it++) {
           if(it==tempsec.begin()) {
@@ -1824,10 +2407,12 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             if(it->find("/")!=string::npos) { // if block pin
               vector<string> tempthd=StringSplitbyChar(*it, '/');
               for(int i=0;i<(int)node.Blocks.size();i++) {
+                //std::cout<<"block "<<node.Blocks.at(i).instance.name<<std::endl;
                 if(node.Blocks.at(i).instance.name.compare(tempthd[0])==0) {
                   for(int j=0;j<(int)node.Blocks.at(i).instance.blockPins.size();j++) {
+                    //std::cout<<"\t pin "<<node.Blocks.at(i).instance.blockPins.at(j).name<<std::endl;
                     if(node.Blocks.at(i).instance.blockPins.at(j).name.compare(tempthd[1])==0) {
-                      //cout<<j<<i<<endl;
+                      //cout<<j<<" "<<i<<endl;
                       PnRDB::connectNode newnode={PnRDB::Block, j, i};
                       tmpnet2.connected.push_back(newnode);
                       break;
@@ -1836,7 +2421,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                   break;
                 }
               }
-              //cout<<*it<<" is pin"<<tempthd[0]<<tempthd[1]<<endl;
+              //cout<<*it<<" is pin"<<tempthd[0]<<"/"<<tempthd[1]<<endl;
             } else { // if terminal
               for(int i=0;i<(int)node.Terminals.size();i++) {
                 if(node.Terminals.at(i).name.compare(*it)==0) {
@@ -1986,7 +2571,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             }
             int temp_int;
             if(temp_pair.first>temp_pair.second){
-              temp_int= temp_pair.second;
+              temp_int = temp_pair.second;
               temp_pair.second = temp_pair.first;
               temp_pair.first = temp_int;
             } else if (temp_pair.first==temp_pair.second) {
@@ -2026,10 +2611,30 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         //temp_cccap.size = temp[4]; //size?
         
         node.CC_Caps.push_back(temp_cccap);
+      } else if (temp[0].compare("AlignBlock")==0) {
+        PnRDB::AlignBlock alignment_unit;
+        if(temp[2].compare("H")==0) {
+          alignment_unit.horizon=1;
+        } else {
+          alignment_unit.horizon=0;
+        }
+        for(int j=4;j<(int)temp.size();j+=2) {
+          for(int i=0;i<(int)node.Blocks.size();i++) {
+            if(node.Blocks.at(i).instance.name.compare(temp[j])==0) {
+              alignment_unit.blocks.push_back(i);
+              break;
+            }
+          }
+        }
+        std::cout<<"AlignBlock "<<alignment_unit.horizon<<" @ ";
+        for(int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
+        std::cout<<std::endl;
+        node.Align_blocks.push_back(alignment_unit);
       }
       
     }
     fin.close();
+    //std::cout<<"end read const file "<<cfile<<std::endl;
     return true;
   } catch(ifstream::failure e) {
     cerr<<"PnRDB-Error: fail to read constraint file "<<endl;
@@ -2326,7 +2931,7 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
 
     //mergeLEFandGDS
     for(int i=0;i<hierTree.size();i++){
-    cout<<"hierTree node "<<i<<endl;
+    //cout<<"hierTree node "<<i<<endl;
     if(!MergeLEFMapData(hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<hierTree[i].name<<endl;
       }
       }
@@ -2388,7 +2993,7 @@ hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
          }
      }
    
-
+  std::cout<<"End of reading verilog\n";
   return true;
   }
 catch(ifstream::failure e){
@@ -2450,7 +3055,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   node.Blocks[i].instance.interMetals = lefData[node.Blocks[i].instance.master].interMetals;
 
   node.Blocks[i].instance.gdsFile=gdsData[node.Blocks[i].instance.master];
-  cout<<"xxx "<<node.Blocks[i].instance.gdsFile<<endl;
+  //cout<<"xxx "<<node.Blocks[i].instance.gdsFile<<endl;
 
   }
   ture = 1;
@@ -5223,6 +5828,24 @@ void PnRdatabase::PrintHierNode(PnRDB::hierNode& node) {
   for(vector<PnRDB::Via>::iterator it=node.interVias.begin(); it!=node.interVias.end(); ++it) {
     PrintVia(*it);
   }
+  std::cout<<std::endl<<"Node symmetry nets"<<std::endl;
+  for(std::vector<PnRDB::SymmNet>::iterator it=node.SNets.begin(); it!=node.SNets.end(); ++it) {
+    PrintSymmNet(*it);
+  }
+}
+
+void PnRdatabase::PrintSymmNet(PnRDB::SymmNet& t) {
+  std::cout<<"@Symmetry net"<<std::endl;
+  std::cout<<" net1:"<<t.net1.name<<" ; iter: "<<t.iter1<<std::endl;
+  for(std::vector<PnRDB::connectNode>::iterator it=t.net1.connected.begin(); it!=t.net1.connected.end(); ++it) {
+    std::cout<<" {"<<it->type<<":"<<it->iter<<","<<it->iter2<<"}";
+  }
+  std::cout<<endl;
+  std::cout<<" net2:"<<t.net2.name<<" ; iter: "<<t.iter2<<std::endl;
+  for(std::vector<PnRDB::connectNode>::iterator it=t.net2.connected.begin(); it!=t.net2.connected.end(); ++it) {
+    std::cout<<" {"<<it->type<<":"<<it->iter<<","<<it->iter2<<"}";
+  }
+  std::cout<<endl;
 }
 
 void PnRdatabase::PrintTerminal(PnRDB::terminal& t) {

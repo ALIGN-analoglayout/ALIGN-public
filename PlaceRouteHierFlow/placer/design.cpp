@@ -131,6 +131,13 @@ design::design(PnRDB::hierNode& node) {
     this->Match_blocks.back().blockid1=it->blockid1;
     this->Match_blocks.back().blockid2=it->blockid2;
   }
+  for(vector<PnRDB::AlignBlock>::iterator it=node.Align_blocks.begin();it!=node.Align_blocks.end();++it) {
+    this->Align_blocks.resize(this->Align_blocks.size()+1);
+    this->Align_blocks.back().horizon=it->horizon;
+    for(std::vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
+      this->Align_blocks.back().blocks.push_back(*it2);
+    }
+  }
   constructSymmGroup();
   hasAsymBlock=checkAsymmetricBlockExist();
   hasSymGroup=(not SBlocks.empty());
@@ -851,12 +858,22 @@ void design::PrintConstraints() {
   for(vector<MatchBlock>::iterator it=Match_blocks.begin();it!=Match_blocks.end();++it) {
     cout<<"block1-"<<it->blockid1<<" ;block2-"<<it->blockid2<<endl;
   }
+  cout<<"=== Align_blocks Constraints ==="<<endl;
+  for(vector<AlignBlock>::iterator it=Align_blocks.begin();it!=Align_blocks.end();++it) {
+    cout<<it->horizon<<" @ ";
+    for(vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
+      cout<<*it2<<" ";
+    }
+    cout<<endl;
+  }
 }
 
 void design::PrintTerminals() {
   cout<<"=== Terminals ==="<<endl;
   for(vector<terminal>::iterator it=Terminals.begin(); it!=Terminals.end(); ++it) {
-    cout<<"Name: "<<it->name<<" net:"<<it->netIter<<"@"<<Nets.at(it->netIter).name<<endl;
+    cout<<"Name: "<<it->name<<" net:"<<it->netIter;
+    if(it->netIter!=-1) { cout<<"@"<<Nets.at(it->netIter).name; }
+    cout<<endl;
   }
   cout<<endl;
 }
@@ -1148,6 +1165,7 @@ void design::constructSymmGroup() {
     tmpsympair.clear(); tmpselfsym.clear();
     //cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
     for(int i=0;i<(int)(sni->net1).connected.size();++i) {
+      //std::cout<<"type "<<sni->net1.connected.at(i).type<<" vs "<<sni->net2.connected.at(i).type<<std::endl;
       if(sni->net1.connected.at(i).type!=sni->net2.connected.at(i).type) {
         cout<<"Placer-Warning: different object type found in symmetric nets! Skip those objects..."<<endl; continue;
       }

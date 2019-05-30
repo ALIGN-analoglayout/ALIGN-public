@@ -25,6 +25,7 @@ struct SymmBlock;
 struct SymmNet;
 struct Preplace;
 struct Alignment;
+struct AlignBlock;
 struct Abument;
 struct MatchBlock;
 struct lefMacro;
@@ -197,6 +198,7 @@ struct hierNode {
   //vector<SymmBlock> SBlocks;
   vector<Preplace> Preplace_blocks;
   vector<Alignment> Alignment_blocks;
+  vector<AlignBlock> Align_blocks;
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
@@ -253,6 +255,11 @@ struct MatchBlock {
   //int horizon; // 1 is h, 0 is v.
 };
 
+struct AlignBlock {
+  std::vector<int> blocks;
+  int horizon; // 1 is h, 0 is v.
+};
+
 struct CCCap {
   vector<int> size;
   string CCCap_name;
@@ -290,16 +297,23 @@ struct metal_info {
   int direct;//direction, 1 is H, 0 is V  added it by your self
   int grid_unit_x;
   int grid_unit_y;
+  int minL;
+  int maxL;
+  int dist_ee;
 };
 
 struct via_info {
   string name;
   int lower_metal_index;
   int upper_metal_index;
-  int width;  //drData.MinWidth["V6"]
+  int width;  //drData.MinWidth["V6"], X direction width
+  int width_y; // Y direction width
   int cover_l;//the length that the via should be coverage   EnMax["V4M5"] EnMax["V4M4"]
+  int cover_l_P;
   int cover_u;
-  int dist_ss; //via spacing 
+  int cover_u_P;
+  int dist_ss; //via spacing, X direction spacing
+  int dist_ss_y; // Y direction spacing
 };
 
 struct Drc_info {

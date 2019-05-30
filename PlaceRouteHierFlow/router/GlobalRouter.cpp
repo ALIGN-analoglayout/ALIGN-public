@@ -24,9 +24,11 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
   }
 //
 //  //CreateGrid for within the region LL, UR
+  std::cout<<"Router-Info: start to create global grid "<<std::endl;
   Grid grid(this->drc_info, this->LL, this->UR, Lmetal, Hmetal, this->grid_scale);
+  std::cout<<"Router-Info: handling internal metals "<<std::endl;
   grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
-  std::cout<<"Router-Info: creating grid "<<std::endl;
+  std::cout<<"Router-Info: end of creating grid "<<std::endl;
 //  
 //
 for(int i=0;i<(int)this->Nets.size();i++) {
@@ -218,8 +220,8 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
       }
       myfile.close();
       system(string_steiner.c_str());
-      system("/bin/cat vals >> all_vals");
-      system("/bin/cat output.txt >> all_output.txt");
+      //system("/bin/cat vals >> all_vals");
+      //system("/bin/cat output.txt >> all_output.txt");
       input.open("vals");
       input>>this->Nets.at(i).numSeg;
       for(int a =0;a<(int)this->Nets.at(i).numSeg;a++) {

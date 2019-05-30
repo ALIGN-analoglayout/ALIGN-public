@@ -108,6 +108,12 @@ class design
     
     vector<Alignment> Alignment_blocks;
     
+    struct AlignBlock {
+      std::vector<int> blocks;
+      int horizon; // 1 is h, 0 is v.
+    };
+    vector<AlignBlock> Align_blocks;
+
     struct Abument {
       int blockid1;
       int blockid2;

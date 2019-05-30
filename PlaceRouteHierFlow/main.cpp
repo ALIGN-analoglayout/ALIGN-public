@@ -72,7 +72,7 @@ int main(int argc, char** argv ){
 
     // Global Routing
 
-    curr_route.RouteWork(0, current_node, drcInfo, 0, 6, binary_directory);
+    curr_route.RouteWork(0, current_node, drcInfo, 1, 6, binary_directory);
     std::cout<<"Checkpoint : after global route"<<std::endl;
     DB.PrintHierNode(current_node);
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv ){
 
     // Detail Routing
     std::cout<<"Checkpoint : detail route"<<std::endl;
-    curr_route.RouteWork(1, current_node, drcInfo, 0, 6, binary_directory);
+    curr_route.RouteWork(1, current_node, drcInfo, 1, 6, binary_directory);
     std::cout<<"Checkpoint : after detail route"<<std::endl;
     DB.PrintHierNode(current_node);
 
@@ -97,7 +97,7 @@ int main(int argc, char** argv ){
       DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
       
       std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
-      curr_route.RouteWork(3, current_node, drcInfo, 0, 6, binary_directory);
+      curr_route.RouteWork(3, current_node, drcInfo, 1, 6, binary_directory);
       std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
 
       //      DB.WriteGDS(current_node, true, false, true, true, current_node.name+"_PR", drcInfo);

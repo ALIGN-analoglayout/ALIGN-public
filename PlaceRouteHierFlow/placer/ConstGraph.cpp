@@ -977,7 +977,41 @@ bool ConstGraph::ConstraintGraph(design& caseNL, SeqPair& caseSP) {
   }
 
   //cout<<!caseNL.Preplace_blocks.empty()<<endl;
-  
+  if(!caseNL.Align_blocks.empty()) {
+    for(int i=0;i<caseNL.Align_blocks.size();i++) {
+      if(caseNL.Align_blocks.at(i).horizon==1) { // horizontal
+        CalculateLongestPath(sourceNode, this->VGraph, false);
+        int LL=INT_MIN, MM=-1;
+        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+          if(VGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position>LL) {
+            MM=caseNL.Align_blocks.at(i).blocks.at(j);
+            LL=VGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position;
+          }
+        }
+        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+          if(caseNL.Align_blocks.at(i).blocks.at(j)!=MM) {
+            AddEdgeforVertex(MM, caseNL.Align_blocks.at(i).blocks.at(j), 0, VGraph);
+            AddEdgeforVertex(caseNL.Align_blocks.at(i).blocks.at(j), MM, 0, VGraph);
+          }
+        }
+      } else if(caseNL.Align_blocks.at(i).horizon==0)  { // veritcal
+        CalculateLongestPath(sourceNode, this->HGraph, false);
+        int LL=INT_MIN, MM=-1;
+        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+          if(HGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position>LL) {
+            MM=caseNL.Align_blocks.at(i).blocks.at(j);
+            LL=HGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position;
+          }
+        }
+        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+          if(caseNL.Align_blocks.at(i).blocks.at(j)!=MM) {
+            AddEdgeforVertex(MM, caseNL.Align_blocks.at(i).blocks.at(j), 0, HGraph);
+            AddEdgeforVertex(caseNL.Align_blocks.at(i).blocks.at(j), MM, 0, HGraph);
+          }
+        }
+      }
+    }
+  } 
   //added by yg
   //adding edges for preplace, abument, and alignment
   if(!caseNL.Preplace_blocks.empty()){

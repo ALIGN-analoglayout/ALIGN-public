@@ -217,6 +217,11 @@ class PnRdatabase
 	PnRDB::designRule getDesignRule(){ return drData;};	
     //added by yg
     PnRDB::Drc_info getDrc_info(){return DRC_info;};
+
+    bool ReadDesignRule_metal(string metal_name, vector<string>& jason_file, int& index, string &def, PnRDB::metal_info& temp_metal_info);
+    bool ReadDesignRule_via(string via_name, vector<string>& jason_file, int& index, string &def, PnRDB::via_info& temp_via_info);
+    bool ReadDesignRule_jason(string drfile);
+
     // Interface for detail router II - wbxu
     void WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile);
     void PrintDesignRuleData();
@@ -232,6 +237,7 @@ class PnRdatabase
     void PrintNet(PnRDB::net& n);
     void PrintTerminal(PnRDB::terminal& t);
     void PrintBlockPin(PnRDB::pin& p);
+    void PrintSymmNet(PnRDB::SymmNet& t);
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
     //design(string blockfile, string netfile);
