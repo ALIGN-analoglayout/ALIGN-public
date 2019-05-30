@@ -21,7 +21,14 @@ void  mst2_package_init( long  n )
 
   if( max_n_points < n )
   {
-    degree = (long*)realloc( (void*)degree, (size_t)n*sizeof(Edge) );
+    //degree = (long*)realloc( (void*)degree, (size_t)n*sizeof(Edge) );
+    long* tmp_degree= static_cast<long *>( realloc( (void*)degree, (size_t)n*sizeof(Edge) ) );
+    if(tmp_degree == NULL) {
+      free(degree);
+      err_exit( "Cannot allocate memory in mst2_package_init()!" );
+    } else {
+      degree = tmp_degree;
+    }
     max_n_points = n;
   }
     
@@ -75,7 +82,7 @@ void  mst2
   long*   parent
 )
 {
-  long    i, k, nn1;
+  long    k, nn1;
   double  d;
   long    oct;
   long    root = 0;
@@ -96,7 +103,7 @@ void  mst2
 
   for( k = 0;  k < n;  k++ )   /* n points to be extracted from heap */
   {
-    i = heap_delete_min();
+    long i = heap_delete_min();
 
 //#ifdef DEBUG
     assert( (i >= 0) && (i < n) );

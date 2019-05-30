@@ -226,12 +226,12 @@ void design::Generate_random_const(string random_constrain_file) {
 	vector<pair<int,int>> const_pair_vector;
 	//int Const_type;
 	
-	for(int i=0;i<= Const_size;i++){
+	for(int i=0;i<= Const_size;++i){
 	 //Const_type = rand()%const_type_number;
 	 Const_type_list.push_back( rand()%const_type_number );
 	}
 	
-	for(int i=0;i<= Const_size;i++){
+	for(int i=0;i<= Const_size;++i){
 		
 		//generate const pairs
 		const_pair.first = rand()%Blocks.size();
@@ -248,7 +248,7 @@ void design::Generate_random_const(string random_constrain_file) {
 	fout<<"#This is a random constrains file."<<endl;
 	//fout<<"Current constrains include preplace, alignment and abutment."<<endl;
 	int distance=0;
-	for(int i=0;i<= Const_size;i++){
+	for(int i=0;i<= Const_size;++i){
 		if(Const_type_list[i]==0){
                         int h_p = (rand()%2);
                         while(distance<100){
@@ -319,13 +319,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
                 
 			Preplace preplace_const;
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 			     if(Blocks.at(i).name.compare(block_first)==0) {
 					 preplace_const.blockid1 = i;
 					 break;
 				 }
 			}
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_second)==0) {
 					preplace_const.blockid2 = i;
 					break;
@@ -346,13 +346,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
 
 			Alignment alignment_const;
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_first)==0) {
 					alignment_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_second)==0) {
 					alignment_const.blockid2 = i;
 					break;
@@ -371,13 +371,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			Abument abument_const;
 			
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_first)==0) {
 					abument_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_second)==0) {
 					abument_const.blockid2 = i;
 					break;
@@ -395,13 +395,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			MatchBlock match_const;
 			
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_first)==0) {
 					match_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();i++) {
+			for(int i=0;i<(int)Blocks.size();++i) {
 				if(Blocks.at(i).name.compare(block_second)==0) {
 					match_const.blockid2 = i;
 					break;
@@ -467,13 +467,13 @@ void design::readNetFile(string netfile) {
       int dno=stoi(temp[2]);
       vector<placerDB::Node> tmpNlist;
       //cout<<netname<<" "<<temp[2]<<endl;
-      for(int i=0;i<dno;i++) {
+      for(int i=0;i<dno;++i) {
         getline(fin,def);
         temp=split_by_spaces(def);
         placerDB::Node tmpNode;
         bool mark=false;
         if(temp[0].compare("terminal")==0) {
-          for(int k=0;k<(int)Terminals.size(); k++) {
+          for(int k=0;k<(int)Terminals.size(); ++k) {
             if(mark) {break;}
             if(Terminals.at(k).name.compare(temp[1])==0) {
               tmpNode.type=placerDB::Terminal;
@@ -484,10 +484,10 @@ void design::readNetFile(string netfile) {
             }
           }
         } else {
-          for(int k=0;k<(int)Blocks.size(); k++) {
+          for(int k=0;k<(int)Blocks.size(); ++k) {
             if(mark) {break;}
             if(Blocks.at(k).name.compare(temp[0])==0) {
-              for(int j=0;j<(int)Blocks.at(k).blockPins.size();j++) {
+              for(int j=0;j<(int)Blocks.at(k).blockPins.size();++j) {
                 if(mark) {break;}
                 if(Blocks.at(k).blockPins.at(j).name.compare(temp[1])==0) {
                   tmpNode.type=placerDB::Block;
@@ -543,7 +543,7 @@ void design::readBlockFile(string blockfile) {
   }
   cout<<"Placer-Info: reading "<<blockNo<<" blocks and "<<terminalNo<<" terminals ..."<<endl;
   getline(fin, def); 
-  for(int i=0;i<blockNo;i++) {
+  for(int i=0;i<blockNo;++i) {
     getline(fin, def);
     //cout<<i<<"-"<<def;
     temp=split_by_spaces(def);
@@ -580,10 +580,10 @@ void design::readBlockFile(string blockfile) {
       int bi;
       int pno=stoi(temp[temp.size()-2]);
       string target=temp[1];
-      for(bi=0;bi<(int)Blocks.size();bi++) {
+      for(bi=0;bi<(int)Blocks.size();++bi) {
         if(Blocks.at(bi).name.compare(target)==0) { break; }
       }
-      for(int i=0;i<pno;i++) {
+      for(int i=0;i<pno;++i) {
         getline(fin, def);
         if((found=def.find("INT"))==string::npos) {
           tempsec=split_by_spaces(def);
@@ -607,7 +607,7 @@ void design::readBlockFile(string blockfile) {
       }
     }
     if((found=def.find("terminal"))!=string::npos) {
-      for(int i=0;i<terminalNo;i++) {
+      for(int i=0;i<terminalNo;++i) {
         temp=split_by_spaces(def);
         terminal tmpterm;
         tmpterm.name=temp[0];
@@ -644,15 +644,15 @@ void design::readConstFile(string cfile) {
       tempsec=StringSplitbyChar(word, ',');
       //cout<<tempsec[0]<<" "<<tempsec[1]<<endl;
       placerDB::net tmpnet;
-      for(vector<string>::iterator it=tempsec.begin(); it!=tempsec.end(); it++) {
+      for(vector<string>::iterator it=tempsec.begin(); it!=tempsec.end(); ++it) {
         if(it==tempsec.begin()) {
           tmpnet.name=*it;
         } else {
           if(it->find("/")!=string::npos) {
             vector<string> tempthd=StringSplitbyChar(*it, '/');
-            for(int i=0;i<(int)Blocks.size();i++) {
+            for(int i=0;i<(int)Blocks.size();++i) {
               if(Blocks.at(i).name.compare(tempthd[0])==0) {
-                for(int j=0;j<(int)Blocks.at(i).blockPins.size();j++) {
+                for(int j=0;j<(int)Blocks.at(i).blockPins.size();++j) {
                   if(Blocks.at(i).blockPins.at(j).name.compare(tempthd[1])==0) {
                     //cout<<j<<i<<endl;
                     placerDB::Node newnode={placerDB::Block, j, i};
@@ -665,7 +665,7 @@ void design::readConstFile(string cfile) {
             }
             //cout<<*it<<" is pin"<<tempthd[0]<<tempthd[1]<<endl;
           } else {
-            for(int i=0;i<(int)Terminals.size();i++) {
+            for(int i=0;i<(int)Terminals.size();++i) {
               if(Terminals.at(i).name.compare(*it)==0) {
                 placerDB::Node newnode={placerDB::Terminal, i, -1};
                 tmpnet.connected.push_back(newnode);
@@ -687,9 +687,9 @@ void design::readConstFile(string cfile) {
         } else {
           if(it->find("/")!=string::npos) {
             vector<string> tempthd=StringSplitbyChar(*it, '/');
-            for(int i=0;i<(int)Blocks.size();i++) {
+            for(int i=0;i<(int)Blocks.size();++i) {
               if(Blocks.at(i).name.compare(tempthd[0])==0) {
-                for(int j=0;j<(int)Blocks.at(i).blockPins.size();j++) {
+                for(int j=0;j<(int)Blocks.at(i).blockPins.size();++j) {
                   if(Blocks.at(i).blockPins.at(j).name.compare(tempthd[1])==0) {
                     //cout<<j<<i<<endl;
                     placerDB::Node newnode={placerDB::Block, j, i};
@@ -702,7 +702,7 @@ void design::readConstFile(string cfile) {
             }
             //cout<<*it<<" is pin"<<tempthd[0]<<tempthd[1]<<endl;
           } else {
-            for(int i=0;i<(int)Terminals.size();i++) {
+            for(int i=0;i<(int)Terminals.size();++i) {
               if(Terminals.at(i).name.compare(*it)==0) {
                 placerDB::Node newnode={placerDB::Terminal, i, -1};
                 tmpnet2.connected.push_back(newnode);
@@ -717,7 +717,7 @@ void design::readConstFile(string cfile) {
       SNets.back().net1=tmpnet;
       SNets.back().net2=tmpnet2;
     } else if (temp[0].compare("CritNet")==0) {
-      for(int i=0;i<(int)Nets.size();i++) {
+      for(int i=0;i<(int)Nets.size();++i) {
         if(Nets.at(i).name.compare(temp[2])==0) {
           Nets.at(i).priority=temp[4];
           break;
@@ -1035,10 +1035,10 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
   PnRDB::bbox placedBox;
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
-  for(int i=0;i<(int)originBox.polygon.size();i++) {
+  for(int i=0;i<(int)originBox.polygon.size();++i) {
     placedBox.polygon.push_back( GetPlacedPnRPosition(originBox.polygon.at(i), Blocks.at(blockid).width, Blocks.at(blockid).height, ort) );
   }
-  for(int i=0;i<(int)placedBox.polygon.size();i++) {
+  for(int i=0;i<(int)placedBox.polygon.size();++i) {
     if(x>placedBox.polygon.at(i).x) {x=placedBox.polygon.at(i).x;}
     if(X<placedBox.polygon.at(i).x) {X=placedBox.polygon.at(i).x;}
     if(y>placedBox.polygon.at(i).y) {y=placedBox.polygon.at(i).y;}
@@ -1053,7 +1053,7 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
 
 PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL) {
   PnRDB::bbox placedBox=GetPlacedBlockInterMetalRelBox(blockid, ort, originBox);
-  for(int i=0;i<(int)placedBox.polygon.size();i++) {
+  for(int i=0;i<(int)placedBox.polygon.size();++i) {
     placedBox.polygon.at(i).x+=LL.x;
     placedBox.polygon.at(i).y+=LL.y;
   }
@@ -1147,7 +1147,7 @@ void design::constructSymmGroup() {
   for(vector<SymmNet>::iterator sni=SNets.begin(); sni!=SNets.end(); ++sni) {
     tmpsympair.clear(); tmpselfsym.clear();
     //cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
-    for(int i=0;i<(int)(sni->net1).connected.size();i++) {
+    for(int i=0;i<(int)(sni->net1).connected.size();++i) {
       if(sni->net1.connected.at(i).type!=sni->net2.connected.at(i).type) {
         cout<<"Placer-Warning: different object type found in symmetric nets! Skip those objects..."<<endl; continue;
       }
@@ -1179,10 +1179,10 @@ void design::constructSymmGroup() {
         tmpsympair.push_back(tpair);
       }
     }
-    for(int i=0;i<(int)tmpsympair.size();i++) {
+    for(int i=0;i<(int)tmpsympair.size();++i) {
       cout<<"paired-symmectric: "<<tmpsympair.at(i).first<<","<<tmpsympair.at(i).second<<endl;
     }
-    for(int i=0;i<(int)tmpselfsym.size();i++) {
+    for(int i=0;i<(int)tmpselfsym.size();++i) {
       cout<<"self-symmectric: "<<tmpselfsym.at(i).first<<","<<tmpselfsym.at(i).second<<endl;
     }
     MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs);
@@ -1320,8 +1320,8 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
-      for(int i=0;i<(int)tmpsympair.size();i++) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
-      for(int i=0;i<(int)tmpselfsym.size();i++) {
+      for(int i=0;i<(int)tmpsympair.size();++i) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
+      for(int i=0;i<(int)tmpselfsym.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
           if(i==mit->second) {found=true;break;}
@@ -1342,14 +1342,14 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
-      for(int i=0;i<(int)tmpsympair.size();i++) { 
+      for(int i=0;i<(int)tmpsympair.size();++i) { 
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
           if(i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
-      for(int i=0;i<(int)tmpselfsym.size();i++) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
+      for(int i=0;i<(int)tmpselfsym.size();++i) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
     } else { // both matched
       int gidx=matchedSelf[0].first;
       for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
@@ -1370,14 +1370,14 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
           SBs.at(itt->first).selfsym.clear();
         }
       }
-      for(int i=0;i<(int)tmpselfsym.size();i++) {
+      for(int i=0;i<(int)tmpselfsym.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
           if(i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
       }
-      for(int i=0;i<(int)tmpsympair.size();i++) { 
+      for(int i=0;i<(int)tmpsympair.size();++i) { 
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
           if(i==mit->second) {found=true;break;}
@@ -1446,7 +1446,7 @@ placerDB::point design::GetTerminalCenter(int teridx) {
 
 bool design::checkSymmetricBlockExist() {
   bool mark=false;
-  for(int i=0;i<(int)Blocks.size();i++) {
+  for(int i=0;i<(int)Blocks.size();++i) {
     if (Blocks.at(i).SBidx!=-1) {mark=true; break;}
   }
   return mark;
@@ -1454,7 +1454,7 @@ bool design::checkSymmetricBlockExist() {
 
 bool design::checkAsymmetricBlockExist() {
   bool mark=false;
-  for(int i=0;i<(int)Blocks.size();i++) {
+  for(int i=0;i<(int)Blocks.size();++i) {
     if (Blocks.at(i).SBidx==-1) {mark=true; break;}
   }
   return mark;

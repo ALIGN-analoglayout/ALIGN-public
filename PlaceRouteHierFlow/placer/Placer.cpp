@@ -118,8 +118,8 @@ void Placer::Placement(PnRDB::hierNode& node) {
   while(T>T_MIN) {
     int i=1;
     while(i<=1) {
-      double trial_cost; 
       #ifdef MTMODE
+      double trial_cost; 
       int id; int good_idx=-1;
       Thread_data td[NUM_THREADS];
       std::vector<std::thread> threads;
@@ -163,6 +163,7 @@ void Placer::Placement(PnRDB::hierNode& node) {
       #endif
 
       #ifndef MTMODE
+      double trial_cost; 
       //cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
       SeqPair trial_sp(curr_sp);  
