@@ -750,7 +750,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         -200,
@@ -760,7 +760,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         520,
@@ -770,7 +770,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         1240,
@@ -780,7 +780,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         1960,
@@ -790,7 +790,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         2680,
@@ -800,7 +800,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         3400,
@@ -810,7 +810,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         4120,
@@ -820,7 +820,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         4840,
@@ -830,7 +830,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         9880,
@@ -840,7 +840,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         9160,
@@ -850,7 +850,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         8440,
@@ -860,7 +860,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         7720,
@@ -870,7 +870,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         7000,
@@ -880,7 +880,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         6280,
@@ -890,7 +890,7 @@
     },
     {
       "layer": "M2",
-      "netName": "_",
+      "netName": null,
       "rect": [
         -432,
         5560,
