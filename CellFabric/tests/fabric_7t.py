@@ -81,11 +81,11 @@ class Canvas(AbstractCanvas):
                                      clg=CenterLineGrid(),
                                      spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=0)))
 
-        self.dc.clg.addCenterLine( 0,            dcWidth, True)
-        self.dc.clg.addCenterLine( dcPitch//2,   dcWidth, False)
-        self.dc.clg.addCenterLine( dcPitch,      dcWidth, True)
+        self.dc.clg.addCenterLine( 0*dcPitch//2, dcWidth, True)
+        self.dc.clg.addCenterLine( 1*dcPitch//2, dcWidth, False)
+        self.dc.clg.addCenterLine( 2*dcPitch//2, dcWidth, True)
         self.dc.clg.addCenterLine( 3*dcPitch//2, dcWidth, False)
-        self.dc.clg.addCenterLine( 2*dcPitch,    dcWidth, True)
+        self.dc.clg.addCenterLine( 4*dcPitch//2, dcWidth, True)
         self.dc.clg.semantic()
 
 
@@ -120,4 +120,4 @@ class Canvas(AbstractCanvas):
         assert self.m2PerUnitCell % 2 == 1
 
         for o in range(0,self.m2PerUnitCell+1):
-            self.addWire( self.m2, '_', None, (0, o), (0, -1), (1, 1))
+            self.addWire( self.m2, None, None, (0, o), (0, -1), (1, 1))
