@@ -226,7 +226,7 @@ double  stnr1
 {
   long      i, j;
   long      n_terminals, n_triples;
-  long      n_edges;//, phase_number;
+  //long      n_edges;//, phase_number;
   long      phase_new_stnr, round_new_stnr;
   double    mst_len, len, old_len;
   Triple    tmp;
@@ -302,7 +302,7 @@ double  stnr1
        e->len  = dist( pt[i], pt[parent[i]] );
        e->free = TRUE;
     }
-    n_edges = (*n_points) - 1;
+    long n_edges = (*n_points) - 1;
     preprocess_edges( n_edges, edge, edge2, TRUE );
 
     /*

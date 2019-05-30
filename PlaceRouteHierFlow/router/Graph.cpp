@@ -1,11 +1,11 @@
 #include "Graph.h"
 
-Graph::Graph(Grid& grid) {
+Graph::Graph(Grid& grid):path_number(1) {
   //this->grid=grid; 
   //std::cout<<"~~~~~Before list \n";
   //this->grid.CheckVerticesTotal();
   //use grid information to create adjacentlist
-  this->path_number=1;
+  //this->path_number=1;
   std::cout<<"Start Creating adjacent list (graph), ";
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating adjacent list (graph)"<<std::endl;
@@ -13,12 +13,12 @@ Graph::Graph(Grid& grid) {
   //this->grid.CheckVerticesTotal();
 };
 
-Graph::Graph(Grid& grid, bool Power_grid){
+Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
   //this->grid=grid; 
   //std::cout<<"~~~~~Before list \n";
   //this->grid.CheckVerticesTotal();
   //use grid information to create adjacentlist
-  this->path_number=1;
+  //this->path_number=1;
   std::cout<<"Start Creating power grid (graph), ";
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating power grid (graph)"<<std::endl;

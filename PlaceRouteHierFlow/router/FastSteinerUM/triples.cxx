@@ -361,8 +361,8 @@ inline void  save_triple
 { 
   //Triple*   t;
   Point     s[4];
-  long      i;//, best_i;
-  double    dx, dy, d1, d2, d3, len;//, best_len;
+  //long      i;//, best_i;
+  double    dx, dy, d1, d2, d3;//, len, best_len;
 
 #ifdef  DEBUG
   assert( LESS_X(a,b) && LESS_X(b,c) && LESS_Y(b,c) && LESS_Y(c,a) );
@@ -420,9 +420,9 @@ inline void  save_triple
 
 
       long best_i = UNDEFINED;  double best_len = INFTY;
-      for( i = 0;  i < 4; i++ )
+      for(long i = 0;  i < 4; i++ )
       {
-        len = dist(s[i],rotated[a]) + dist(s[i],rotated[b]) + dist(s[i],rotated[c]);
+        long len = dist(s[i],rotated[a]) + dist(s[i],rotated[b]) + dist(s[i],rotated[c]);
         if( len < best_len )  { best_len = len;  best_i = i; }
       }
 
@@ -612,7 +612,7 @@ void  se_combine
   long      q
 )
 {
-  long  i, j, k, i1, i2, j1, k1, b, d;//, r;
+  long  i, j, k, i1, i2, j1, k1, b;//, d, r;
  
 #ifdef DEBUG
   assert( right - left > 0 );
@@ -780,7 +780,7 @@ void  se_combine
        now collect type 2 triples 
     */
     long r = mid;       /* r is advanced in ascending y order */
-    d = left;      /* d is advanced in ascending d2 order */
+    long d = left;      /* d is advanced in ascending d2 order */
     while( (r < right) && (d < mid) )
     {
       if( highest_low_left(y_sorted[r]) == UNDEFINED )  { r++; }
@@ -1091,7 +1091,7 @@ void  collect_triples
   Edge*     edge
 )
 {
-  long      i, j, q;//, tmp;
+  //long      i, j, q, tmp;
 
   (*n_triples) = 0;
 
@@ -1100,8 +1100,9 @@ void  collect_triples
     /*
        rotate each quadrant into first, then collect SE-oriented triples 
     */
-    for( q = 0;  q < 4;  q++ ) 
+    for(long q = 0;  q < 4;  q++ ) 
     {
+      long i;
       for( i = 0;   i < n_pts;   i++ )
       {
         rotated[i].x = rotated_x( q, pt[i].x, pt[i].y );
@@ -1114,7 +1115,7 @@ void  collect_triples
 
       for( i = 0;  i < n_pts/2;  i++ )
       {
-        j = unif_rand(n_pts);
+        long j = unif_rand(n_pts);
         long tmp = d1_sorted[i];  d1_sorted[i] = d1_sorted[j];  d1_sorted[j] = tmp;
       }
       qsort( d1_sorted, n_pts, sizeof(long), compare_d1 );  
