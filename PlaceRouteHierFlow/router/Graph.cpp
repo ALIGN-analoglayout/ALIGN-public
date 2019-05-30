@@ -26,7 +26,7 @@ Graph::Graph(Grid& grid, bool Power_grid){
 
 bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
   bool mark=false;
-  for(int i =0;i<pathNo;i++){
+  for(int i =0;i<pathNo;++i){
     
      std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
@@ -68,7 +68,7 @@ Graph::Graph(Grid& grid, int pathNo) {
   //std::cout<<"~~~~~After list \n";
   //this->grid.CheckVerticesTotal();
   //find shortest path based source and dest
-  for(int i =0;i<pathNo;i++){
+  for(int i =0;i<pathNo;++i){
     
      std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
@@ -109,7 +109,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
   RouterDB::point LL_point;
   RouterDB::point UR_point;
   
-  for(int i=0;i<grid.vertices_graph.size();i++)
+  for(int i=0;i<grid.vertices_graph.size();++i)
      {
         if(grid.vertices_graph[i].active == 1)
           {
@@ -122,7 +122,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
              LL_point.y = grid.vertices_graph[i].y;
              temp_via.position = LL_point;
 
-             for(int j=0;j<grid.vertices_graph[i].north.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].north.size();++j) 
                 {   
                    temp_metal.LinePoint.clear();
                    if(grid.total2graph.find(grid.vertices_graph[i].north[j])!=grid.total2graph.end())
@@ -179,7 +179,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                    
                 }
 
-             for(int j=0;j<grid.vertices_graph[i].south.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].south.size();++j) 
                 {   
                    temp_metal.LinePoint.clear();
                    if(grid.total2graph.find(grid.vertices_graph[i].south[j])!=grid.total2graph.end())
@@ -237,7 +237,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                 }
              
 
-             for(int j=0;j<grid.vertices_graph[i].east.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].east.size();++j) 
                 {   
                    temp_metal.LinePoint.clear();
                    if(grid.total2graph.find(grid.vertices_graph[i].east[j])!=grid.total2graph.end())
@@ -294,7 +294,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                    
                 }
 
-             for(int j=0;j<grid.vertices_graph[i].west.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].west.size();++j) 
                 {   
                    temp_metal.LinePoint.clear();
                    if(grid.total2graph.find(grid.vertices_graph[i].west[j])!=grid.total2graph.end())
@@ -397,25 +397,25 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
   metallowx = VddPower_Set.begin();
   metalupx = VddPower_Set.end();
-  for(metalx=metallowx;metalx!=metalupx;metalx++){
+  for(metalx=metallowx;metalx!=metalupx;++metalx){
      Vdd_grid.metals.push_back(*metalx); 
      }
 
   metallowx = GndPower_Set.begin();
   metalupx = GndPower_Set.end();
-  for(metalx=metallowx;metalx!=metalupx;metalx++){
+  for(metalx=metallowx;metalx!=metalupx;++metalx){
       Gnd_grid.metals.push_back(*metalx); 
      }
 
   vialowx = VddVia_Set.begin();
   viaupx = VddVia_Set.end();
-  for(viax=vialowx;viax!=viaupx;viax++){
+  for(viax=vialowx;viax!=viaupx;++viax){
       Vdd_grid.vias.push_back(*viax);
      }
 
   vialowx = GndVia_Set.begin();
   viaupx = GndVia_Set.end();
-  for(viax=vialowx;viax!=viaupx;viax++){
+  for(viax=vialowx;viax!=viaupx;++viax){
       Gnd_grid.vias.push_back(*viax);
      }
 
@@ -423,7 +423,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 void Graph::CreateAdjacentList(Grid& grid){
 
-  for(int i=0;i<grid.vertices_graph.size();i++)
+  for(int i=0;i<grid.vertices_graph.size();++i)
      {
         if(grid.vertices_graph[i].active == 1)
           {
@@ -431,7 +431,7 @@ void Graph::CreateAdjacentList(Grid& grid){
              tempNode.src=i;
              Edge tempEdge;
 
-             for(int j=0;j<grid.vertices_graph[i].north.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].north.size();++j) 
                 {  	
                    if(grid.total2graph.find(grid.vertices_graph[i].north[j])!=grid.total2graph.end())
                      {
@@ -447,7 +447,7 @@ void Graph::CreateAdjacentList(Grid& grid){
                 }
              
 
-             for(int j=0;j<grid.vertices_graph[i].south.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].south.size();++j) 
                 {  	
                    if(grid.total2graph.find(grid.vertices_graph[i].south[j])!=grid.total2graph.end())
                      {
@@ -462,7 +462,7 @@ void Graph::CreateAdjacentList(Grid& grid){
                    
                  }
 
-             for(int j=0;j<grid.vertices_graph[i].east.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].east.size();++j) 
                 {  	
                    if(grid.total2graph.find(grid.vertices_graph[i].east[j])!=grid.total2graph.end())
                      {
@@ -477,7 +477,7 @@ void Graph::CreateAdjacentList(Grid& grid){
                    
                  }
 
-             for(int j=0;j<grid.vertices_graph[i].west.size();j++) 
+             for(int j=0;j<grid.vertices_graph[i].west.size();++j) 
                 {  	
                    if(grid.total2graph.find(grid.vertices_graph[i].west[j])!=grid.total2graph.end())
                      {
@@ -529,7 +529,7 @@ void Graph::CreateAdjacentList(Grid& grid){
   Node tempNodeS;
   tempNodeS.src = source;
      
-  for(int i=0;i<grid.Source.size();i++)
+  for(int i=0;i<grid.Source.size();++i)
      {
        if(grid.total2graph.find(grid.Source[i])!=grid.total2graph.end()){
            int graph_index = grid.total2graph[grid.Source[i]];
@@ -547,7 +547,7 @@ void Graph::CreateAdjacentList(Grid& grid){
   Node tempNodeD;
   tempNodeD.src = dest;
      
-  for(int i=0;i<grid.Dest.size();i++)
+  for(int i=0;i<grid.Dest.size();++i)
      {
        if(grid.total2graph.find(grid.Dest[i])!=grid.total2graph.end()){
            int graph_index = grid.total2graph[grid.Dest[i]];
@@ -571,7 +571,7 @@ std::vector<int>  Graph::dijkstra(Grid& grid){
   int parent[graph.size()];
   int status[graph.size()];
     
-  for(int i = 0; i < graph.size(); i++)
+  for(int i = 0; i < graph.size(); ++i)
      {
         parent[i] = -1;
         dist[i] = INT_MAX;
@@ -587,12 +587,12 @@ std::vector<int>  Graph::dijkstra(Grid& grid){
        {
           std::vector<int> ulist = minDistance(dist, status, graph.size());
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
-          if(ulist.size()<=0) {temp_path.clear(); return temp_path;}
+          if(ulist.empty()) {temp_path.clear(); return temp_path;}
           int u=ulist[0];
           //std::cout<<"check u: "<<u<<" x: "<<grid.vertices_graph[u].x<<" y: "<<grid.vertices_graph[u].y <<std::endl;
           status[u] = 2;
           
-          for (int j = 0; j < graph[u].list.size(); j++)
+          for (int j = 0; j < graph[u].list.size(); ++j)
               {
                  v=graph[u].list[j].dest;
                  if(v!=u)
@@ -639,7 +639,7 @@ std::vector<int> Graph::minDistance(double dist[], int status[], int V)
 {
   double min = INT_MAX;
   std::vector<int> min_index;
-  for(int v = 0; v < V; v++) 
+  for(int v = 0; v < V; ++v) 
      {
         if(status[v] == 1)//only fringe node
           {
@@ -664,8 +664,8 @@ void Graph::UpdateEdgeWeight(std::vector<int>& path){
   int alpha = 2;
 
   //based on path update edgeweight in graph
-  for(int i=0;i<path.size()-1;i++){
-      for(int j=0;j<graph[path[i]].list.size();j++){
+  for(int i=0;i<path.size()-1;++i){
+      for(int j=0;j<graph[path[i]].list.size();++j){
             if(graph[path[i]].list[j].dest == path[i+1]){
                graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
               }
@@ -673,7 +673,7 @@ void Graph::UpdateEdgeWeight(std::vector<int>& path){
      }
 
   for(int i=path.size()-1;i>-1;i--){
-      for(int j=0;j<graph[path[i]].list.size();j++){
+      for(int j=0;j<graph[path[i]].list.size();++j){
             if(graph[path[i]].list[j].dest == path[i-1]){
                graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
               }
@@ -684,7 +684,7 @@ void Graph::UpdateEdgeWeight(std::vector<int>& path){
 
 void Graph::Path_graph_total(Grid& grid, std::vector<int> &temp_path){
 
-  for(int i=0; i<temp_path.size(); i++){
+  for(int i=0; i<temp_path.size(); ++i){
         temp_path[i] = grid.vertices_graph[temp_path[i]].index;
      }
 
@@ -699,7 +699,7 @@ std::vector<std::vector<int> > Graph::GetShorestPath(){
 std::vector<std::vector<RouterDB::Metal> >  Graph::ConvertPathintoPhysical(Grid& grid){
 
   std::vector<std::vector<RouterDB::Metal> > Phsical_Path;
-  for(int i= 0; i<Path.size();i++){
+  for(int i= 0; i<Path.size();++i){
       std::vector<RouterDB::Metal> temp_physical_path;
       //int start_index = 0;
       //int end_index = 0;
@@ -707,7 +707,7 @@ std::vector<std::vector<RouterDB::Metal> >  Graph::ConvertPathintoPhysical(Grid&
       //int flag_end_write = 0;
       RouterDB::point temp_point;
       RouterDB::Metal temp_metal;
-      for(int j=0;j<Path[i].size();j++){
+      for(int j=0;j<Path[i].size();++j){
           if(flag_start_write == 1){
               temp_metal.LinePoint.clear();
               temp_metal.MetalIdx = grid.vertices_total[Path[i][j]].metal;

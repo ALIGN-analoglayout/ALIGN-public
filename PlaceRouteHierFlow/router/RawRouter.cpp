@@ -1,7 +1,7 @@
 #include "RawRouter.h"
 
-RawRouter::RawRouter() {
-  this->topName="defaultDesign";
+RawRouter::RawRouter():topName("defaultDesign") {
+  //this->topName="defaultDesign";
   this->width=0;
   this->height=0;
   this->isTop=false;
@@ -9,6 +9,7 @@ RawRouter::RawRouter() {
   this->lowest_metal=0;
   this->highest_metal=0;
   this->path_number=1;
+  this->layerNo=0;
 }
 
 void RawRouter::InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, std::vector<std::vector<RouterDB::point> >& plist){
@@ -132,7 +133,7 @@ std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, i
   // find upper bound of LLx set
   ele.val=URx;
   itup=LLxSet.upper_bound(ele);
-  for(xit=LLxSet.begin(); xit!=itup; ++xit) {
+  for(std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp >::iterator xit=LLxSet.begin(); xit!=itup; ++xit) {
     Set1.insert ( xit->index);
   } // LLxSet [0, URx)
 
@@ -147,7 +148,7 @@ std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, i
   // find lower bound of URx set
   ele.val=LLx;
   itlow=URxSet.lower_bound(ele);
-  for(xit=itlow; xit!=URxSet.end(); ++xit) {
+  for(std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp >::iterator xit=itlow; xit!=URxSet.end(); ++xit) {
     Set1.insert( xit->index );
   } // URxSet [LLx, MAX]
 
@@ -162,7 +163,7 @@ std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, i
   // find upper bound of LLy set
   ele.val=URy;
   itup=LLySet.upper_bound(ele);
-  for(xit=LLySet.begin(); xit!=itup; ++xit) {
+  for(std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp >::iterator xit=LLySet.begin(); xit!=itup; ++xit) {
     Set1.insert ( xit->index);
   } // LLySet [0, URy)
 
@@ -177,7 +178,7 @@ std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, i
   // find lower bound of URy set
   ele.val=LLy;
   itlow=URySet.lower_bound(ele);
-  for(xit=itlow; xit!=URySet.end(); ++xit) {
+  for(std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp >::iterator xit=itlow; xit!=URySet.end(); ++xit) {
     Set1.insert( xit->index );
   } // URySet [LLy, MAX]
 

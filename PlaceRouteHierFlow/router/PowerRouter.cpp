@@ -85,11 +85,13 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
             grid.InactivePointlist(pinplist);
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-            std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+            //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+            grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.ActivateSourceDest();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, LL, UR);
             grid.InactivePointlist(netplist);
-            Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+            //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+            grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
             grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
             Graph graph(grid);
             bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
@@ -600,8 +602,8 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   this->UR.x=node.width;
   this->UR.y=node.height;
   this->path_number=1; // number of candidates
-  int max_width = node.width;
-  int max_height = node.height;
+  //int max_width = node.width;
+  //int max_height = node.height;
   lowest_metal = Lmetal;
   highest_metal = Hmetal;
   this->layerNo = drc_info.Metal_info.size();
@@ -1006,16 +1008,16 @@ void PowerRouter::CreatePlistPowerNets(std::vector<std::vector<RouterDB::point> 
 void PowerRouter::CreatePlistPowerGrid(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::PowerGrid Nets){
   
   //RouterDB::point tmpP;
-  int mIdx, LLx, LLy, URx, URy;
+  //int mIdx, LLx, LLy, URx, URy;
   //here via is not included
   //for(int i=0;i<Nets.size();i++){
       for(int j=0;j<Nets.metals.size();j++){
 
-           mIdx = Nets.metals[j].MetalIdx;
-           LLx = Nets.metals[j].MetalRect.placedLL.x;
-           LLy = Nets.metals[j].MetalRect.placedLL.y;
-           URx = Nets.metals[j].MetalRect.placedUR.x;
-           URy = Nets.metals[j].MetalRect.placedUR.y;
+           int mIdx = Nets.metals[j].MetalIdx;
+           int LLx = Nets.metals[j].MetalRect.placedLL.x;
+           int LLy = Nets.metals[j].MetalRect.placedLL.y;
+           int URx = Nets.metals[j].MetalRect.placedUR.x;
+           int URy = Nets.metals[j].MetalRect.placedUR.y;
            ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
 
          }

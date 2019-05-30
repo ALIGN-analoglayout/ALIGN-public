@@ -1,32 +1,33 @@
 #include "Grid.h"
 
-Grid::Grid(const Grid& other) {
-  this->total2graph=other.total2graph;
-  this->graph2total=other.graph2total;
-  this->vertices_total=other.vertices_total;
-  this->vertices_graph=other.vertices_graph;
-  this->Start_index_metal_vertices=other.Start_index_metal_vertices;
-  this->End_index_metal_vertices=other.End_index_metal_vertices;
-  this->Source=other.Source;
-  this->Dest=other.Dest;
-  this->SourceGraph=other.SourceGraph;
-  this->DestGraph=other.DestGraph;
-  this->x_unit=other.x_unit;
-  this->y_unit=other.y_unit;
-  this->x_min= other.x_min;
-  this->y_min= other.y_min;
-  this->routeDirect=other.routeDirect;
-  this->LL=other.LL;
-  this->UR=other.UR;
-  this->GridLL=other.GridLL;
-  this->GridUR=other.GridUR;
-  this->drc_info=other.drc_info;
-  this->lowest_metal=other.lowest_metal;
-  this->highest_metal=other.highest_metal;
-  this->grid_scale=other.grid_scale;
-  this->layerNo=other.layerNo;
-  this->vertices_total_map=other.vertices_total_map;
-}
+    Grid::Grid(const Grid& other):total2graph(other.total2graph), graph2total(other.graph2total), vertices_total(other.vertices_total), vertices_graph(other.vertices_graph), Start_index_metal_vertices(other.Start_index_metal_vertices), End_index_metal_vertices(other.End_index_metal_vertices), Source(other.Source), Dest(other.Dest), SourceGraph(other.SourceGraph), DestGraph(other.DestGraph), x_unit(other.x_unit), y_unit(other.y_unit), x_min(other.x_min), y_min(other.y_min), routeDirect(other.routeDirect), LL(other.LL), UR(other.UR), GridLL(other.GridLL), GridUR(other.GridUR), drc_info(other.drc_info), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), grid_scale(other.grid_scale), layerNo(other.layerNo), vertices_total_map(other.vertices_total_map) { };
+//Grid::Grid(const Grid& other) {
+//  this->total2graph=other.total2graph;
+//  this->graph2total=other.graph2total;
+//  this->vertices_total=other.vertices_total;
+//  this->vertices_graph=other.vertices_graph;
+//  this->Start_index_metal_vertices=other.Start_index_metal_vertices;
+//  this->End_index_metal_vertices=other.End_index_metal_vertices;
+//  this->Source=other.Source;
+//  this->Dest=other.Dest;
+//  this->SourceGraph=other.SourceGraph;
+//  this->DestGraph=other.DestGraph;
+//  this->x_unit=other.x_unit;
+//  this->y_unit=other.y_unit;
+//  this->x_min= other.x_min;
+//  this->y_min= other.y_min;
+//  this->routeDirect=other.routeDirect;
+//  this->LL=other.LL;
+//  this->UR=other.UR;
+//  this->GridLL=other.GridLL;
+//  this->GridUR=other.GridUR;
+//  this->drc_info=other.drc_info;
+//  this->lowest_metal=other.lowest_metal;
+//  this->highest_metal=other.highest_metal;
+//  this->grid_scale=other.grid_scale;
+//  this->layerNo=other.layerNo;
+//  this->vertices_total_map=other.vertices_total_map;
+//}
 
 
 Grid& Grid::operator= (const Grid& other) {
@@ -122,7 +123,7 @@ Grid::Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector
       mdx=it2->metalIdx;
       RouterDB::point gLL, gUR;
       pLLx=INT_MAX; pLLy=INT_MAX; pURx=INT_MIN; pURy=INT_MIN;
-      for(std::vector<RouterDB::point>::iterator it3=it2->coord.begin(); it3!=it2->coord.end(); it3++) {
+      for(std::vector<RouterDB::point>::iterator it3=it2->coord.begin(); it3!=it2->coord.end(); ++it3) {
         if(pLLx>it3->x) pLLx=it3->x;
         if(pLLy>it3->y) pLLy=it3->y;
         if(pURx<it3->x) pURx=it3->x;
@@ -185,7 +186,7 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
     }
   }
   // b. update index within vertex and start/end flag of new list
-  std::vector<int> tmpv; int tmpi;
+  std::vector<int> tmpv; 
   RouterDB::point tmpp;
   int preMetal=-2;
   for(int i=0;i<(int)new_vertices.size();i++) {
@@ -221,7 +222,7 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
     for(std::vector<int>::iterator it=tmpv.begin(); it!=tmpv.end(); ++it) {
       if(old2new.find(*it)!=old2new.end()) new_vertices.at(i).west.push_back( old2new[*it] );
     }
-    tmpi=new_vertices.at(i).up;
+    int tmpi=new_vertices.at(i).up;
     if(old2new.find(tmpi)!=old2new.end()) {new_vertices.at(i).up=old2new[tmpi];}
     else { new_vertices.at(i).up=-1;  }
     tmpi=new_vertices.at(i).down;
@@ -423,7 +424,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
       gURy= nexlayer_unit * (int)ceil(double(pURy)/nexlayer_unit); 
       gURy+=nexlayer_unit*offset;
     } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
-      nexlayer_unit=gcd(this->y_unit.at(mdx-1), this->y_unit.at(mdx+1));
+      //nexlayer_unit=gcd(this->y_unit.at(mdx-1), this->y_unit.at(mdx+1));
       int LLy_1, LLy_2;
       LLy_1= this->y_unit.at(mdx-1) * (int)floor(double(pLLy)/this->y_unit.at(mdx-1));
       LLy_1-=this->y_unit.at(mdx-1)*offset;
@@ -471,7 +472,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
       gURx= nexlayer_unit * (int)ceil(double(pURx)/nexlayer_unit); 
       gURx+=nexlayer_unit*offset;
     } else if(mdx>0 and mdx<this->layerNo-1) { // if middle layer
-      nexlayer_unit=gcd(this->x_unit.at(mdx-1), this->x_unit.at(mdx+1));
+      //nexlayer_unit=gcd(this->x_unit.at(mdx-1), this->x_unit.at(mdx+1));
       int LL_1, LL_2;
       LL_1= this->x_unit.at(mdx-1) * (int)floor(double(pLLx)/this->x_unit.at(mdx-1));
       LL_1-=this->x_unit.at(mdx-1)*offset;
@@ -593,13 +594,13 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
   }
 }
 
-Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale) {
+Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale):LL(ll),UR(ur),GridLL(ll),GridUR(ur) {
   // Limitation: assume that neighboring layers have different routing diretions
   // 1. Initialize member variables I
-  this->LL=ll;
-  this->UR=ur;
-  this->GridLL=ll;
-  this->GridUR=ur;
+  //this->LL=ll;
+  //this->UR=ur;
+  //this->GridLL=ll;
+  //this->GridUR=ur;
   this->lowest_metal=Lmetal;
   this->highest_metal=Hmetal;
   this->grid_scale=grid_scale;
@@ -2195,14 +2196,14 @@ if(sourceL.coord.size()<25){
 
 std::vector<RouterDB::point> Grid::GetMaxMinSrcDest() {
   int x=INT_MAX, y=INT_MAX, X=INT_MIN, Y=INT_MIN;
-  for(std::vector<int>::iterator it=this->Source.begin(); it!=this->Source.end(); it++ ) {
+  for(std::vector<int>::iterator it=this->Source.begin(); it!=this->Source.end(); ++it ) {
     int Sx=vertices_total.at(*it).x; int Sy=vertices_total.at(*it).y;
     if(Sx>X) {X=Sx;}
     if(Sx<x) {x=Sx;}
     if(Sy>Y) {Y=Sy;}
     if(Sy<y) {y=Sy;}
   }
-  for(std::vector<int>::iterator it=this->Dest.begin(); it!=this->Dest.end(); it++ ) {
+  for(std::vector<int>::iterator it=this->Dest.begin(); it!=this->Dest.end(); ++it ) {
     int Dx=vertices_total.at(*it).x; int Dy=vertices_total.at(*it).y;
     if(Dx>X) {X=Dx;}
     if(Dx<x) {x=Dx;}

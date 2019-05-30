@@ -37,10 +37,43 @@ void  allocate_nn_arrays( long  n )
 {
   if( max_arrays_size < n ) 
   {
-    nn      = (nn_array*)realloc( (void*)nn, (size_t)n*sizeof(nn_array) );
-    sheared = (Point*)realloc( (void*)sheared, (size_t)n*sizeof(Point) );
-    sorted  = (long*)realloc( (void*)sorted, (size_t)n*sizeof(long) );
-    aux     = (long*)realloc( (void*)aux, (size_t)n*sizeof(long) );
+    //nn      = (nn_array*)realloc( (void*)nn, (size_t)n*sizeof(nn_array) );
+    //sheared = (Point*)realloc( (void*)sheared, (size_t)n*sizeof(Point) );
+    //sorted  = (long*)realloc( (void*)sorted, (size_t)n*sizeof(long) );
+    //aux     = (long*)realloc( (void*)aux, (size_t)n*sizeof(long) );
+
+    nn_array* tmp_nn= static_cast<nn_array *>( realloc( (void*)nn, (size_t)n*sizeof(nn_array) ) );
+    if(tmp_nn == NULL) {
+      free(nn);
+      err_exit( "Cannot allocate memory nn in allocate_nn_arrays!" );
+    } else {
+      nn = tmp_nn;
+    }
+
+    Point* tmp_sheared= static_cast<Point *>( realloc( (void*)sheared, (size_t)n*sizeof(Point) ) );
+    if(tmp_sheared == NULL) {
+      free(sheared);
+      err_exit( "Cannot allocate memory sheared in allocate_nn_arrays!" );
+    } else {
+      sheared = tmp_sheared;
+    }
+
+    long* tmp_sorted= static_cast<long *>( realloc( (void*)sorted, (size_t)n*sizeof(long) ) );
+    if(tmp_sorted == NULL) {
+      free(sorted);
+      err_exit( "Cannot allocate memory sorted in allocate_nn_arrays!" );
+    } else {
+      sorted = tmp_sorted;
+    }
+
+    long* tmp_aux= static_cast<long *>( realloc( (void*)aux, (size_t)n*sizeof(long) ) );
+    if(tmp_aux == NULL) {
+      free(aux);
+      err_exit( "Cannot allocate memory aux in allocate_nn_arrays!" );
+    } else {
+      aux = tmp_aux;
+    }
+
     if( !nn || !sheared || !sorted || !aux )
     {
       err_exit( "Cannot allocate memory in allocate_nn_arrays!" );
@@ -315,7 +348,7 @@ void  ne_sw_nearest_neighbors
   nn_array*  nn
 )
 {
-  long   mid;
+  //long   mid;
 
 #ifdef DEBUG
   assert( right > left );
@@ -327,7 +360,7 @@ void  ne_sw_nearest_neighbors
   }
   else
   {
-    mid = (left + right) / 2;
+    long mid = (left + right) / 2;
     ne_sw_nearest_neighbors( left, mid, pt, sorted, aux, oct, nn );
     ne_sw_nearest_neighbors( mid, right, pt, sorted, aux, oct, nn );
     ne_sw_combine( left, mid, right, pt, sorted, aux, oct, nn );

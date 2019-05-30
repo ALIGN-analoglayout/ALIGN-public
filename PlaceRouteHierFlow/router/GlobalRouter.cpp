@@ -11,7 +11,7 @@ GlobalRouter::GlobalRouter(){
 
 };
 
-GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR){
+GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
   //std::cout<<"Start of gr" <<std::endl ;
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
@@ -144,11 +144,11 @@ void GlobalRouter::GenerateLLUPSD(){
 // added by wbxu
 void GlobalRouter::placeTerminals() {
   // Limitation: assume that only 1 terminal for each net
-  bool mark;
+  //bool mark;
   int mj;
   for(int i=0;i<(int)this->Nets.size();i++) {
     this->Nets.at(i).isTerminal=false;
-    mark=false;
+    bool mark=false;
     for(int j=0;j<(int)this->Nets.at(i).connected.size();j++) {
       if(this->Nets.at(i).connected.at(j).type==RouterDB::TERMINAL) {
         mj=j; mark=true; break;
@@ -164,7 +164,7 @@ void GlobalRouter::placeTerminals() {
   }
 }
 
-void GlobalRouter::listSegments(std::string binaryDIR) {
+void GlobalRouter::listSegments(const std::string &binaryDIR) {
   int num_scale=1000000;
   std::string binary_directory=binaryDIR+"router";
   getcwd(cwd, sizeof(cwd)); 
@@ -173,7 +173,8 @@ void GlobalRouter::listSegments(std::string binaryDIR) {
   std::cout<<string_steiner<<std::endl;
 
   RouterDB::point newnode;
-  std::string  temp,segnaming, dummy;
+  //std::string  temp;
+  std::string segnaming, dummy;
   std::ofstream myfile,matlabfile;
   std::ifstream input;
   //matlabfile.open("output_matlab.txt");
@@ -296,7 +297,7 @@ void GlobalRouter::listSegments(std::string binaryDIR) {
           tempSeg.destList.back().coord.push_back(newnode);
         }
         input>>dummy;
-        temp=a+1;
+        //temp=a+1;
         input>>dummy;
         if(dummy!="NUM_TERM:") {
           this->Nets.at(i).numSeg=get_number(dummy);
@@ -417,12 +418,12 @@ int GlobalRouter::ILPSolveRouting() {
   lpsolve = open_lpsolve_lib(lpsolvelib);
   if (lpsolve == NULL) {
     fprintf(stderr, "Unable to load lpsolve shared library (%s).\nIt is probably not in the correct path.\n", lpsolvelib);
-    ERROR();
+    //ERROR();
   }
 
   if (!init_lpsolve(lpsolve)) {
     fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
-    ERROR();
+    //ERROR();
   }
 
   //std::ofstream output_Final_Selected_Candidates;
@@ -475,7 +476,7 @@ int GlobalRouter::ILPSolveRouting() {
   this->NumOfVar=TotNumberOfCandis;//#Variable initialization
   //output_Final_Selected_Candidates << "NumOfVar: "<<NumOfVar<<std::endl;
 
-  if ((lp = make_lp(0,NumOfVar)) == NULL) {ERROR();}
+  if ((lp = make_lp(0,NumOfVar)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
   lp_solve_version(&majorversion, &minorversion, &release, &build);
   sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
   print_str(lp, buf);
@@ -509,7 +510,7 @@ int GlobalRouter::ILPSolveRouting() {
   //  lp_solve_matrix <<"=1"<<std::endl;
   //  lp_solve_matrix.close();
     double* row = &temp_row[0];
-    if (!add_constraint(lp, row, EQ, 1)) {ERROR();}
+    if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
   }
 
   print_lp(lp);
@@ -848,7 +849,7 @@ void GlobalRouter::ViaSpacingCheckFunc(std::set< std::pair<int,int>, IntPairComp
         // Add row for new slack
         int colno[] = {ColNum1, ColNum2, this->NumOfVar};
         double row[] = {1, 1, -1};
-        if (!add_constraintex(lp, sizeof(colno)/sizeof(*colno), row, colno, LE, 1)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno)/sizeof(*colno), row, colno, LE, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate via overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
@@ -871,7 +872,7 @@ void GlobalRouter::ViaSpacingCheckFunc(std::set< std::pair<int,int>, IntPairComp
         // Add row for new slack
         int colno[] = {ColNum1, this->NumOfVar};
         double row[] = {1, -1};
-        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate via overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
@@ -893,7 +894,7 @@ void GlobalRouter::ViaSpacingCheckFunc(std::set< std::pair<int,int>, IntPairComp
         // Add row for new slack
         int colno[] = {ColNum1, this->NumOfVar};
         double row[] = {1, -1};
-        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate via overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
     }
@@ -929,7 +930,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         // Add row for new slack
         int colno[] = {ColNum1, ColNum2, this->NumOfVar};
         double row[] = {1, 1, -1};
-        if (!add_constraintex(lp, sizeof(colno)/sizeof(*colno), row, colno, LE, 1)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno)/sizeof(*colno), row, colno, LE, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
@@ -952,7 +953,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         // Add row for new slack
         int colno[] = {ColNum1, this->NumOfVar};
         double row[] = {1, -1};
-        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
       }
@@ -974,7 +975,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
         // Add row for new slack
         int colno[] = {ColNum1, this->NumOfVar};
         double row[] = {1, -1};
-        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {ERROR();}
+        if (!add_constraintex(lp, sizeof(colno) / sizeof(*colno), row, colno, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
         checked.insert(tpair);
         std::cout<<"Router-Info: candidate metal overlapped with "<<tpair.first<<" vs "<<tpair.second<<std::endl;
     }
@@ -1014,7 +1015,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   this->path_number=5; // number of candidates
   int max_width = node.width;
   int max_height = node.height;
-  int threshold = 10000000;
+  //int threshold = 10000000;
   lowest_metal = Lmetal;
   highest_metal = Hmetal;
 

@@ -57,7 +57,14 @@ void  gain_package_init( long  n )
 {
   if( max_size_gain_arrays < n )
   {
-    node = (Node*) realloc( (void*)node,  (size_t)2*n*sizeof(Node) );
+    //node = (Node*) realloc( (void*)node,  (size_t)2*n*sizeof(Node) );
+    Node* tmp_node= static_cast<Node *>( realloc( (void*)node,  (size_t)2*n*sizeof(Node) ) );
+    if(tmp_node == NULL) {
+      free(node);
+      err_exit( "Cannot allocate memory node!" );
+    } else {
+      node = tmp_node;
+    }
  
     if( !node )
     {
@@ -463,15 +470,78 @@ void  triple_package_init( long  n )
 {
   if( max_size_aux_arrays < n ) 
   {
-    rotated   = (Point*) realloc( (void*)rotated,  (size_t)n*sizeof(Point) );
-    x_sorted  = (long*)  realloc( (void*)x_sorted, (size_t)n*sizeof(long)  );
-    y_sorted  = (long*)  realloc( (void*)y_sorted, (size_t)n*sizeof(long)  );
-    d1_sorted = (long*)  realloc( (void*)d1_sorted,(size_t)n*sizeof(long)  );
-    d2_sorted = (long*)  realloc( (void*)d2_sorted,(size_t)n*sizeof(long)  );
-    aux1      = (long*)  realloc( (void*)aux1,     (size_t)n*sizeof(long)  );
-    aux2      = (long*)  realloc( (void*)aux2,     (size_t)n*sizeof(long)  );
-    aux3      = (long*)  realloc( (void*)aux3,     (size_t)n*sizeof(long)  );
-    aux4      = (long*)  realloc( (void*)aux4,     (size_t)n*sizeof(long)  );
+    //rotated   = (Point*) realloc( (void*)rotated,  (size_t)n*sizeof(Point) );
+    Point* tmp_rotated= static_cast<Point *>( realloc( (void*)rotated,  (size_t)n*sizeof(Point) ) );
+    if(tmp_rotated == NULL) {
+      free(rotated);
+      err_exit( "Cannot allocate memory rotated!" );
+    } else {
+      rotated = tmp_rotated;
+    }
+    //x_sorted  = (long*)  realloc( (void*)x_sorted, (size_t)n*sizeof(long)  );
+    long* tmp_x_sorted= static_cast<long *>(  realloc( (void*)x_sorted, (size_t)n*sizeof(long)  ) );
+    if(tmp_x_sorted == NULL) {
+      free(x_sorted);
+      err_exit( "Cannot allocate memory x_sorted!" );
+    } else {
+      x_sorted = tmp_x_sorted;
+    }
+    //y_sorted  = (long*)  realloc( (void*)y_sorted, (size_t)n*sizeof(long)  );
+    long* tmp_y_sorted= static_cast<long *>(  realloc( (void*)y_sorted, (size_t)n*sizeof(long)  ) );
+    if(tmp_y_sorted == NULL) {
+      free(y_sorted);
+      err_exit( "Cannot allocate memory y_sorted!" );
+    } else {
+      y_sorted = tmp_y_sorted;
+    }
+    //d1_sorted = (long*)  realloc( (void*)d1_sorted,(size_t)n*sizeof(long)  );
+    long* tmp_d1_sorted= static_cast<long *>(  realloc( (void*)d1_sorted,(size_t)n*sizeof(long)  ) );
+    if(tmp_d1_sorted == NULL) {
+      free(d1_sorted);
+      err_exit( "Cannot allocate memory d1_sorted!" );
+    } else {
+      d1_sorted = tmp_d1_sorted;
+    }
+    //d2_sorted = (long*)  realloc( (void*)d2_sorted,(size_t)n*sizeof(long)  );
+    long* tmp_d2_sorted= static_cast<long *>( realloc( (void*)d2_sorted,(size_t)n*sizeof(long)  ) );
+    if(tmp_d2_sorted == NULL) {
+      free(d2_sorted);
+      err_exit( "Cannot allocate memory d2_sorted!" );
+    } else {
+      d2_sorted = tmp_d2_sorted;
+    }
+    //aux1      = (long*)  realloc( (void*)aux1,     (size_t)n*sizeof(long)  );
+    long* tmp_aux1= static_cast<long *>( realloc( (void*)aux1,     (size_t)n*sizeof(long)  ) );
+    if(tmp_aux1 == NULL) {
+      free(aux1);
+      err_exit( "Cannot allocate memory aux1!" );
+    } else {
+      aux1 = tmp_aux1;
+    }
+    //aux2      = (long*)  realloc( (void*)aux2,     (size_t)n*sizeof(long)  );
+    long* tmp_aux2= static_cast<long *>( realloc( (void*)aux2,     (size_t)n*sizeof(long)  ) );
+    if(tmp_aux2 == NULL) {
+      free(aux2);
+      err_exit( "Cannot allocate memory aux2!" );
+    } else {
+      aux2 = tmp_aux2;
+    }
+    //aux3      = (long*)  realloc( (void*)aux3,     (size_t)n*sizeof(long)  );
+    long* tmp_aux3= static_cast<long *>( realloc( (void*)aux3,     (size_t)n*sizeof(long)  ) );
+    if(tmp_aux3 == NULL) {
+      free(aux3);
+      err_exit( "Cannot allocate memory aux3!" );
+    } else {
+      aux3 = tmp_aux3;
+    }
+    //aux4      = (long*)  realloc( (void*)aux4,     (size_t)n*sizeof(long)  );
+    long* tmp_aux4= static_cast<long *>( realloc( (void*)aux4,     (size_t)n*sizeof(long)  ) );
+    if(tmp_aux4 == NULL) {
+      free(aux4);
+      err_exit( "Cannot allocate memory aux4!" );
+    } else {
+      aux4 = tmp_aux4;
+    }
 
     if( !rotated || !x_sorted || !y_sorted || !d1_sorted || !d2_sorted ||
          !aux1 || !aux2 || !aux3 || !aux4 )

@@ -40,13 +40,41 @@ void  stnr1_package_init( long  max_n_points, long  flags )
   if( max_n_triples < max1 )
   {
     max_n_triples  = max1;
-    triple  = (Triple*) realloc( (void*)triple, (size_t)max_n_triples*sizeof(Triple) );   
+    //triple  = (Triple*) realloc( (void*)triple, (size_t)max_n_triples*sizeof(Triple) );   
+    Triple* tmp_triple= static_cast<Triple *>( realloc( (void*)triple, (size_t)max_n_triples*sizeof(Triple) ) );
+    if(tmp_triple == NULL) {
+      free(triple);
+      err_exit( "Cannot allocate memory triple!" );
+    } else {
+      triple = tmp_triple;
+    }
   }
   if( max_n_edges < max_n_points )
   {
-    edge    = (Edge*) realloc( (void*)edge, (size_t)max_n_points*sizeof(Edge) );
-    edge2   = (Edge*) realloc( (void*)edge2, (size_t)max_n_points*sizeof(Edge) );
-    sorted_stnr = (long*) realloc( (void*)sorted_stnr, (size_t)max_n_points*sizeof(long) );
+    //edge    = (Edge*) realloc( (void*)edge, (size_t)max_n_points*sizeof(Edge) );
+    //edge2   = (Edge*) realloc( (void*)edge2, (size_t)max_n_points*sizeof(Edge) );
+    //sorted_stnr = (long*) realloc( (void*)sorted_stnr, (size_t)max_n_points*sizeof(long) );
+    Edge* tmp_edge= static_cast<Edge *>( realloc( (void*)edge, (size_t)max_n_points*sizeof(Edge) ) );
+    if(tmp_edge == NULL) {
+      free(edge);
+      err_exit( "Cannot allocate memory edge!" );
+    } else {
+      edge = tmp_edge;
+    }
+    Edge* tmp_edge2= static_cast<Edge *>( realloc( (void*)edge2, (size_t)max_n_points*sizeof(Edge) ) );
+    if(tmp_edge2 == NULL) {
+      free(edge2);
+      err_exit( "Cannot allocate memory edge2!" );
+    } else {
+      edge2 = tmp_edge2;
+    }
+    long* tmp_sorted_stnr= static_cast<long *>( realloc( (void*)sorted_stnr, (size_t)max_n_points*sizeof(long) ) );
+    if(tmp_sorted_stnr == NULL) {
+      free(sorted_stnr);
+      err_exit( "Cannot allocate memory sorted_stnr!" );
+    } else {
+      sorted_stnr = tmp_sorted_stnr;
+    }
     max_n_edges = max_n_points;
   }
 

@@ -1,6 +1,7 @@
 #include "Router.h"
 
 Router::Router(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR) {
+  this->GR=NULL;
   GlobalRouter GR2(node, drcData, Lmetal, Hmetal, binaryDIR);
   DetailRouter(node, GR2, 1, 1);
   

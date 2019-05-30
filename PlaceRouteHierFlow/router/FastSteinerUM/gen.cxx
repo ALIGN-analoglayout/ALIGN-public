@@ -143,7 +143,8 @@ int  main(
 
   for( i = 1; i < argc; i++) 
   {
-    if(!strncmp(argv[i], "-t", strlen("-t")))
+    if(!strncmp(argv[i], "-t", 2))
+    //if(!strncmp(argv[i], "-t", strlen("-t")))
     {
       num_terms =  atol(argv[++i]);
     }
