@@ -612,7 +612,7 @@ void  se_combine
   long      q
 )
 {
-  long  i, j, k, i1, i2, j1, k1;//, b, d, r;
+  long  i, j, k;//, i1, i2, j1, k1, b, d, r;
  
 #ifdef DEBUG
   assert( right - left > 0 );
@@ -620,6 +620,7 @@ void  se_combine
 
   if( right - left >= 3 )
   {
+    long i1, i2, j1, k1;
     /********************************************************************
       collect triples of type 1, i.e., triples (d,r,b) with 
       r = leftmost_low_right(d) and b = highest among the points in 
