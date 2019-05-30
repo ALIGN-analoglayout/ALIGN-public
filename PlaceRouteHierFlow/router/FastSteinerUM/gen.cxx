@@ -105,7 +105,7 @@ long unif_rand( long m )
 
 void  generate_instance( long  num_terms, long  seed )
 {
-  long  new_x, new_y, i;
+  long  i;
   char  x_in[X_MAX];
   char  y_in[Y_MAX];
   extern void  init_rand( long );
@@ -119,6 +119,7 @@ void  generate_instance( long  num_terms, long  seed )
     y_in[i] = FALSE;
 
   for( i = 0;  i < num_terms;  i++ ) {
+    long  new_x, new_y;
     while( x_in[(new_x=unif_rand(X_MAX))] );   
     x_in[new_x] = TRUE;
 

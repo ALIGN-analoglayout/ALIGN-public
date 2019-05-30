@@ -497,9 +497,9 @@ double ConstGraph::CalculateMatchCost(design& caseNL, SeqPair& caseSP) {
 	double sum=0;
   //CalculateLongestPath(sourceNode, this->HGraph, false);
   //CalculateLongestPath(sourceNode, this->VGraph, false);
-  int x1,y1,x2,y2;
   // for each net
   for(int i=0;i<caseNL.Match_blocks.size();i++) {
+  int x1,y1,x2,y2;
         x1=this->HGraph.at(caseNL.Match_blocks[i].blockid1).position;
         y1=this->VGraph.at(caseNL.Match_blocks[i].blockid1).position;
 	x2=this->HGraph.at(caseNL.Match_blocks[i].blockid2).position;
@@ -828,13 +828,13 @@ bool ConstGraph::ConstraintGraph(design& caseNL, SeqPair& caseSP) {
   vector<int> xL, slack, Lslack; 
   pair<int,int> tp;
   pair<int,int> vio;
-  int dnode;
+  //int dnode;
   /* initialize random seed: */
   //srand(time(NULL));
   for(int i=0;i<(int)caseNL.SBlocks.size();i++) {
     // for i-th symmetry group
     axis=caseSP.GetSymmBlockAxis(i);
-    dnode=caseNL.SBlocks.at(i).dnode;
+    int dnode=caseNL.SBlocks.at(i).dnode;
     sympair.clear(); xL.clear(); slack.clear(); Lslack.clear();
 
     // first, keep all symmetry pairs aligned in vertical graph and reorganize the symmetry pairs
@@ -1240,8 +1240,8 @@ bool ConstGraph::CheckIfSingleL2Violation(design& caseNL, SeqPair& caseSP, vecto
 }
 
 pair<int,int> ConstGraph::CheckIfL2Violation(design& caseNL, SeqPair& caseSP, vector< pair<int,int> >& sympair, vector<int>& xL, placerDB::Smark axis) {
-  int vio;
   for(int j=0;j<(int)sympair.size();j++) {
+  int vio;
     if( (vio=CheckIfL2ViolationUnit(caseNL, caseSP, sympair, xL, j, axis))!=-1 ) {return make_pair(j,vio);}
   }
   return make_pair(-1,-1);
@@ -1727,8 +1727,8 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 
 void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) {
   cout<<"Placer-Info: create gnuplot file"<<endl;
-  int Xmax=HGraph.at(sinkNode).position;
-  int Ymax=VGraph.at(sinkNode).position;
+  //int Xmax=HGraph.at(sinkNode).position;
+  //int Ymax=VGraph.at(sinkNode).position;
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -1852,7 +1852,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"plot nets..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
+    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     vector<placerDB::point> pins;
     pins.clear();

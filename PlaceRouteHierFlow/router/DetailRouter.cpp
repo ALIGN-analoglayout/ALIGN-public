@@ -101,7 +101,8 @@ void DetailRouter::create_detailrouter(){
            std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
            
            std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-           std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+           //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+           grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
 
            grid.ActivateSourceDest();
            
@@ -109,7 +110,8 @@ void DetailRouter::create_detailrouter(){
            grid.InactivePointlist(netplist);
 
            //std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-           Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+           //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+           grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
 
 //what about this problem?????
            grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y); //QQQQQto be fixed

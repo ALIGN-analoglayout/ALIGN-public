@@ -45,11 +45,11 @@ vector<string> readfile_words(string filename){
 	ifstream fin;
 	string line;
 	vector<string> output;
-	int recording=0;
+	//int recording=0;
 	fin.open(filename.c_str());
 	while(!fin.eof()){
 		getline(fin,line);
-		recording=0;
+		int recording=0;
 		for(int i=0;i<line.length();i++){
 			if(line[i]!=' '&&line[i]!='\n'){
 				if(recording==0){
@@ -78,9 +78,10 @@ vector<string> split_by_spaces(string text){
 }
 vector<string> get_true_word(int start,string text,int textnum,char endflag,int *p){
 	vector<string> output;
-	int i,recording,record_num=0;
+	int i,recording;//,record_num=0;
 	recording=0;
 	if(textnum>0){
+                int record_num=0;
 		for(i=start;i<text.length();i++){
 			if(text[i]>='!'){
 				if(recording==0){

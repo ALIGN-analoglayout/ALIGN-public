@@ -8,7 +8,7 @@ design::design() {
 
 design::design(PnRDB::hierNode& node) {
   bias_graph=node.bias_graph; // from node
-  for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); it++) {
+  for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
     block tmpblock;
     tmpblock.name=(it->instance).name;
     //cout<<tmpblock.name<<endl;
@@ -21,7 +21,7 @@ design::design(PnRDB::hierNode& node) {
     tmpblock.height=(it->instance).height;
     //cout<<tmpblock.height<<endl;
     // [wbxu] Following lines have be updated to support multi contacts
-    for(vector<PnRDB::pin>::iterator pit=(it->instance).blockPins.begin(); pit!=(it->instance).blockPins.end(); pit++) {
+    for(vector<PnRDB::pin>::iterator pit=(it->instance).blockPins.begin(); pit!=(it->instance).blockPins.end(); ++pit) {
       block::pin tmppin;
       placerDB::point tpoint;
       tmppin.name=pit->name;
@@ -48,7 +48,7 @@ design::design(PnRDB::hierNode& node) {
     tmpter.netIter=it->netIter;
     this->Terminals.push_back(tmpter);
   }
-  for(vector<PnRDB::net>::iterator it=node.Nets.begin();it!=node.Nets.end();it++) {
+  for(vector<PnRDB::net>::iterator it=node.Nets.begin();it!=node.Nets.end();++it) {
     placerDB::net tmpnet;
     tmpnet.name=it->name;
     tmpnet.priority=it->priority;
@@ -224,11 +224,11 @@ void design::Generate_random_const(string random_constrain_file) {
 	vector<int> Const_type_list;
 	pair<int,int> const_pair;
 	vector<pair<int,int>> const_pair_vector;
-	int Const_type;
+	//int Const_type;
 	
 	for(int i=0;i<= Const_size;i++){
-	 Const_type = rand()%const_type_number;
-	 Const_type_list.push_back(Const_type);
+	 //Const_type = rand()%const_type_number;
+	 Const_type_list.push_back( rand()%const_type_number );
 	}
 	
 	for(int i=0;i<= Const_size;i++){
@@ -681,7 +681,7 @@ void design::readConstFile(string cfile) {
       word=word.substr(0, word.length()-1);
       tempsec=StringSplitbyChar(word, ',');
       placerDB::net tmpnet2;
-      for(vector<string>::iterator it=tempsec.begin(); it!=tempsec.end(); it++) {
+      for(vector<string>::iterator it=tempsec.begin(); it!=tempsec.end(); ++it) {
         if(it==tempsec.begin()) {
           tmpnet2.name=*it;
         } else {
@@ -783,7 +783,7 @@ void design::PrintSymmGroup() {
 
 void design::PrintBlocks() {
   cout<<"=== Blocks ==="<<endl;
-  for(vector<block>::iterator it=Blocks.begin(); it!=Blocks.end(); it++) {
+  for(vector<block>::iterator it=Blocks.begin(); it!=Blocks.end(); ++it) {
     cout<<"Name: "<<(*it).name<<"; SBidx: "<<it->SBidx<<"; counterpart: "<<it->counterpart<<endl;
     cout<<"\ttype: "<<(*it).type<<"; width: "<<(*it).width<<"; height: "<<(*it).height<<"; bbox: ";
     for(vector<placerDB::point>::iterator it2=(*it).boundary.polygon.begin(); it2!=(*it).boundary.polygon.end(); ++it2 ) {
@@ -813,13 +813,13 @@ void design::PrintConstraints() {
   cout<<"=== SymmNet Constraits ==="<<endl;
   for(vector<SymmNet>::iterator it=SNets.begin(); it!=SNets.end(); ++it) {
     cout<<it->net1.name;
-    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ni++) {
+    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ++ni) {
       cout<<"-{"<<ni->type<<","<<ni->iter<<","<<ni->iter2<<"}";
       if(ni->type==placerDB::Block) {cout<<"@"<<Blocks.at(ni->iter2).name<<"/"<<Blocks.at(ni->iter2).blockPins.at(ni->iter).name;}
       if(ni->type==placerDB::Terminal) {cout<<"@"<<Terminals.at(ni->iter).name;}
     }
     cout<<" "<<it->net2.name;
-    for(vector<placerDB::Node>::iterator ni=it->net2.connected.begin(); ni!=it->net2.connected.end(); ni++) {
+    for(vector<placerDB::Node>::iterator ni=it->net2.connected.begin(); ni!=it->net2.connected.end(); ++ni) {
       cout<<"-{"<<ni->type<<","<<ni->iter<<","<<ni->iter2<<"}";
       if(ni->type==placerDB::Block) {cout<<"@"<<Blocks.at(ni->iter2).name<<"/"<<Blocks.at(ni->iter2).blockPins.at(ni->iter).name;}
       if(ni->type==placerDB::Terminal) {cout<<"@"<<Terminals.at(ni->iter).name;}
@@ -1144,7 +1144,7 @@ void design::constructSymmGroup() {
   vector< pair<int,int> > tmpsympair;
   vector< pair<int,placerDB::Smark> > tmpselfsym;
   vector<placerDB::SymmBlock> SBs;
-  for(vector<SymmNet>::iterator sni=SNets.begin(); sni!=SNets.end(); sni++) {
+  for(vector<SymmNet>::iterator sni=SNets.begin(); sni!=SNets.end(); ++sni) {
     tmpsympair.clear(); tmpselfsym.clear();
     //cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
     for(int i=0;i<(int)(sni->net1).connected.size();i++) {
@@ -1167,8 +1167,8 @@ void design::constructSymmGroup() {
           cout<<"Block "<<sni->net1.connected.at(i).iter2<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).name<<  " pin "<<sni->net1.connected.at(i).iter<<"@"<<Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).name<<endl;
           vector<placerDB::point> p1V=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           vector<placerDB::point> p2V=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          placerDB::point p1=GetMultPolyCenterPoint(p1V);
-          placerDB::point p2=GetMultPolyCenterPoint(p2V);
+          //placerDB::point p1=GetMultPolyCenterPoint(p1V);
+          //placerDB::point p2=GetMultPolyCenterPoint(p2V);
           //placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           //placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
           placerDB::Smark tsmark= placerDB::H;
@@ -1275,7 +1275,7 @@ void design::constructSymmGroup() {
     //  }
     //} 
   }
-  for(vector<SymmPairBlock>::iterator sni=SPBlocks.begin(); sni!=SPBlocks.end(); sni++) {
+  for(vector<SymmPairBlock>::iterator sni=SPBlocks.begin(); sni!=SPBlocks.end(); ++sni) {
     MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs);
   }
   SBlocks.clear();

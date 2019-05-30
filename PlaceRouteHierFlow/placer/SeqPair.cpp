@@ -504,15 +504,15 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     vector<int>::iterator bit=Bpos.begin()+Apos.size();
     while(ait!=Apos.end() and bit!=Bpos.end()) {
       if( (*ait)<(*bit) ) {
-        newApos.push_back(*ait); ait++;
+        newApos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
-        newApos.push_back(*bit); bit++;
+        newApos.push_back(*bit); ++bit;
       } else {
         cerr<<"Placer-Error: same index for different lists!"<<endl;
       }
     }
-    while(ait!=Apos.end()) { newApos.push_back(*ait); ait++; }
-    while(bit!=Bpos.end()) { newApos.push_back(*bit); bit++; }
+    while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
+    while(bit!=Bpos.end()) { newApos.push_back(*bit); ++bit; }
     for(int i=0;i<(int)Bpos.size();i++)
       newseq.at(newApos.at(i))=seq.at(Bpos.at(i)); // B--> A
   } else {
@@ -524,15 +524,15 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     vector<int>::iterator bit=Bpos.begin();
     while(ait!=Apos.end() and bit!=Bpos.end()) {
       if( (*ait)<(*bit) ) {
-        newBpos.push_back(*ait); ait++;
+        newBpos.push_back(*ait); ++ait;
       } else if ( (*ait)>(*bit) ) {
-        newBpos.push_back(*bit); bit++;
+        newBpos.push_back(*bit); ++bit;
       } else {
         cerr<<"Placer-Error: same index for different lists!"<<endl;
       }
     }
-    while(ait!=Apos.end()) { newBpos.push_back(*ait); ait++; }
-    while(bit!=Bpos.end()) { newBpos.push_back(*bit); bit++; }
+    while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }
+    while(bit!=Bpos.end()) { newBpos.push_back(*bit); ++bit; }
     for(int i=0;i<(int)Apos.size();i++)
       newseq.at(newBpos.at(i))=seq.at(Apos.at(i)); // A--> B
   }
@@ -1059,7 +1059,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
     sgid=0;
   } else { return false; }
   //cout<<endl<<"Rotate symmetry group "<<sgid<<endl;
-  placerDB::Smark old_axis, new_axis, self_axis;
+  placerDB::Smark old_axis, new_axis=placerDB::V, self_axis;
   old_axis=symAxis.at(sgid); 
   if(old_axis==placerDB::V) {
     new_axis=placerDB::H;
