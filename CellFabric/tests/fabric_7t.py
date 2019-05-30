@@ -45,11 +45,8 @@ class Canvas(AbstractCanvas):
         self.pl = self.addGen( Wire( 'pl', 'poly', 'v',
                                      clg=CenterLineGrid(),
                                      spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=16)))
-        self.pl.clg.addCenterLine( 0,            plWidth, False)
-        self.pl.clg.addCenterLine( plPitch//2,   plWidth, True)
-        self.pl.clg.addCenterLine( plPitch,      plWidth, False)
-        self.pl.clg.addCenterLine( 3*plPitch//2, plWidth, True)
-        self.pl.clg.addCenterLine( 2*plPitch,      plWidth, False)
+        for i in range(5):
+            self.pl.clg.addCenterLine( i*plPitch//2, plWidth, i % 2 == 1)
         self.pl.clg.semantic()
 
         self.nd = self.addGen( Region( 'nd', 'ndiff',
@@ -81,13 +78,13 @@ class Canvas(AbstractCanvas):
                                      clg=CenterLineGrid(),
                                      spg=EnclosureGrid( pitch=m2Pitch//2, stoppoint=0)))
 
-        self.dc.clg.addCenterLine( 0*dcPitch//2, dcWidth, True)
-        self.dc.clg.addCenterLine( 1*dcPitch//2, dcWidth, False)
-        self.dc.clg.addCenterLine( 2*dcPitch//2, dcWidth, True)
-        self.dc.clg.addCenterLine( 3*dcPitch//2, dcWidth, False)
-        self.dc.clg.addCenterLine( 4*dcPitch//2, dcWidth, True)
+        for i in range(5):
+            self.dc.clg.addCenterLine( i*dcPitch//2, dcWidth, i % 2 == 0)
         self.dc.clg.semantic()
 
+        self.v0 = self.addGen( Via( 'v0', 'via0', v_clg=self.m1.clg, h_clg=self.pc.clg))
+        self.v1 = self.addGen( Via( 'v1', 'via1', v_clg=self.m1.clg, h_clg=self.m2.clg))
+        self.v2 = self.addGen( Via( 'v2', 'via2', v_clg=self.m3.clg, h_clg=self.m2.clg))
 
     def nunit( self):
         h = 2*self.m2PerUnitCell
