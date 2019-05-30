@@ -362,7 +362,7 @@ inline void  save_triple
   //Triple*   t;
   Point     s[4];
   //long      i;//, best_i;
-  double    dx, dy, d1, d2, d3;//, len, best_len;
+  //double    dx, dy, d1, d2, d3, len, best_len;
 
 #ifdef  DEBUG
   assert( LESS_X(a,b) && LESS_X(b,c) && LESS_Y(b,c) && LESS_Y(c,a) );
@@ -395,9 +395,9 @@ inline void  save_triple
       /*
         find the degree-2 point of the MST for the triple 
       */
-      d1 = dist( rotated[b], rotated[c] );
-      d2 = dist( rotated[a], rotated[c] );
-      d3 = dist( rotated[a], rotated[b] );
+      long d1 = dist( rotated[b], rotated[c] );
+      long d2 = dist( rotated[a], rotated[c] );
+      long d3 = dist( rotated[a], rotated[b] );
       if( d1 > d2 ) 
       {
         if( d1 > d3 ) { s[0].x = x(a); s[0].y = y(a); }
@@ -414,7 +414,7 @@ inline void  save_triple
       */
       s[1].x = x(b);                    s[1].y = y(a) - ( x(b) - x(a) );
       s[2].x = x(a) + ( y(a) - y(c) );  s[2].y = y(c);
-      dx = x(c) - x(b);  dy = y(c) - y(b); 
+      long dx = x(c) - x(b);  long dy = y(c) - y(b); 
       if( dx < dy )  {  s[3].x = x(b);       s[3].y = y(c) - dx; }
       else           {  s[3].x = x(b) + dy;  s[3].y = y(c); }
 
@@ -612,7 +612,7 @@ void  se_combine
   long      q
 )
 {
-  long  i, j, k, i1, i2, j1, k1, b;//, d, r;
+  long  i, j, k, i1, i2, j1, k1;//, b, d, r;
  
 #ifdef DEBUG
   assert( right - left > 0 );
@@ -959,7 +959,7 @@ void  se_combine
     /*
        now collect type 4 triples
     */  
-    b = mid-1;    /* b is advanced in descending x order */
+    long b = mid-1;    /* b is advanced in descending x order */
     d = mid;      /* d is advanced in ascending d2 order */
     while( (b >= left ) && (d < right) )
     {

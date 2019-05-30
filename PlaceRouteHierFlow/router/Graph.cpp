@@ -19,6 +19,7 @@ Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
   //this->grid.CheckVerticesTotal();
   //use grid information to create adjacentlist
   //this->path_number=1;
+  this->source=-1; this->dest=-1;
   std::cout<<"Start Creating power grid (graph), ";
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating power grid (graph)"<<std::endl;
