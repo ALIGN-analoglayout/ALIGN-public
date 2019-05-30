@@ -163,7 +163,6 @@ void Placer::Placement(PnRDB::hierNode& node) {
       #endif
 
       #ifndef MTMODE
-      double trial_cost; 
       //cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
       SeqPair trial_sp(curr_sp);  
@@ -172,7 +171,7 @@ void Placer::Placement(PnRDB::hierNode& node) {
       //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ConstGraph trial_sol;
       if(GenerateValidSolution(designData, trial_sp, trial_sol)) {
-        trial_cost=trial_sol.CalculateCost(designData, trial_sp);
+        double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
 
         delta_cost=trial_cost-curr_cost;
         if(delta_cost<0) {

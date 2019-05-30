@@ -30,7 +30,6 @@ class Graph {
     std::vector<std::vector<int> > Path;
     //std::vector<std::vector<RouterDB::Metal> > Phsical_Path; //how to get phsical_path, DRC_info is needed.
     //Grid grid;
-    //int path_number;
 
     RouterDB::PowerGrid Vdd_grid;
     RouterDB::PowerGrid Gnd_grid;

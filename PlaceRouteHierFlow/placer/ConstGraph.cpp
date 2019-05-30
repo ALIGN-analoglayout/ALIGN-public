@@ -1706,7 +1706,7 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
   //cout<<"writeplacement3"<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
+    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
 	vector<placerDB::point> p_pin;
     // for each pin
