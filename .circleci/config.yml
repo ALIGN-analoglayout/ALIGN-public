@@ -229,6 +229,10 @@ jobs:
           at: /work/workspace
 
       - run: |
+          cd Build
+          docker build -f Dockerfile.build.python -t with_python .
+
+      - run: |
           cd GDSConv
           docker build -t gds_image . -f Dockerfile.python3
           
