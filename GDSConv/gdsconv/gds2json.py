@@ -47,7 +47,7 @@ def convert_GDS_GDSjson (name, oname):
 
             if ((tag_type != types.NODATA and tag_name[0:3] == "BGN") or
                     isElement(tag_name)):
-                if isinstaance(cursors[level], dict):
+                if isinstance(cursors[level], dict):
                     level = level + 1
                     cursors[level] = []
                     cursors[level - 1][jsonName] = cursors[level]
