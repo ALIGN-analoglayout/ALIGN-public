@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-"""TXT to JSON."""
+"""TXT to PRETTY JSON."""
 
 from __future__ import print_function
 from gdsii import tags, types
@@ -33,7 +33,7 @@ def quote (s): return '\"' + s + '\"'
 def isElement (e):
     return e == "BOUNDARY" or e == "PATH" or e == "SREF" or e == "AREF" or e == "TEXT" or e == "NODE" or e == "BOX"
     
-def convert_GDStxt_GDSjson (name, oname):
+def convert_GDStxt_GDSprettyjson (name, oname):
     level = 0
     first = True
     levelTag = [""] * 256
@@ -121,7 +121,7 @@ def usage(prog):
 
 if __name__ == '__main__':
     if (len(sys.argv) == 3):
-        convert_GDStxt_GDSjson (sys.argv[1], sys.argv[2])
+        convert_GDStxt_GDSprettyjson (sys.argv[1], sys.argv[2])
     else:
         usage(sys.argv[0])
         sys.exit(1)

@@ -1,6 +1,6 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-"""GDSII to JSON."""
+"""GDSII to PRETTY JSON."""
                         
 #  This helps understand:  http://www.buchanan1.net/stream_description.html
 #  element:  boundary | path | sref | aref | text | node | box
@@ -29,7 +29,7 @@ def quote (s): return '\"' + s + '\"'
 def isElement (e):
     return e == "BOUNDARY" or e == "PATH" or e == "SREF" or e == "AREF" or e == "TEXT" or e == "NODE" or e == "BOX"
 
-def convert_GDS_GDSjson (name, oname):
+def convert_GDS_GDSprettyjson (name, oname):
     level = 0
 
     ofile = open (oname, 'wt')
@@ -97,7 +97,7 @@ def usage(prog):
 
 if __name__ == '__main__':
     if (len(sys.argv) == 3):
-        convert_GDS_GDSjson (sys.argv[1], sys.argv[2])
+        convert_GDS_GDSprettyjson (sys.argv[1], sys.argv[2])
     else:
         usage(sys.argv[0])
         sys.exit(1)
