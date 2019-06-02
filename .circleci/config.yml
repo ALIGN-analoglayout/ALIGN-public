@@ -237,7 +237,7 @@ jobs:
           docker build -t gds_image . -f Dockerfile.python3
           
       - run: |
-          docker run --name run_gds -ti gds_image /bin/bash -c "cd /GDSConv && pytest"
+          docker run --name run_gds -ti gds_image /bin/bash -c "source general/bin/activate; cd /GDSConv && pytest"
           mkdir -p test-reports/gdsconv
           docker cp run_gds:/GDSConv/junit.xml test-reports/gdsconv
 
