@@ -1,4 +1,4 @@
-FROM with_protobuf as placeroute_image
+FROM with_protobuf:latest as placeroute_image
 
 COPY . /PlaceRouteHierFlow
 

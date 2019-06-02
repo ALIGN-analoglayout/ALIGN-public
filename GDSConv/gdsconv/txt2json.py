@@ -55,7 +55,7 @@ def convert_GDStxt_GDSjson (name, oname):
 
             if ((tag_type != types.NODATA and tag_name[0:3] == "BGN") or
                     isElement(tag_name)):
-                if type(cursors[level]) is dict:
+                if isinstance(cursors[level], dict):
                     level = level + 1
                     cursors[level] = []
                     cursors[level - 1][jsonName] = cursors[level]
@@ -69,11 +69,9 @@ def convert_GDStxt_GDSjson (name, oname):
             if tag_type != types.NODATA and tag_name[0:3] != "BGN":
                 cursors[level][jsonName] = print_data(tag_type, rest)
             elif tag_name[0:3] == "END":
-                if type(cursors[level - 1]) is dict: level = level - 1
+                if isinstance(cursors[level - 1], dict): level = level - 1
                 level = level - 1
 
-#        if type(cursors[level]) is dict: level = level - 1
-    
     json.dump (top, ofile, indent=4)
 
 def usage(prog):
