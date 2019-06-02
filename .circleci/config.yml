@@ -230,7 +230,7 @@ jobs:
 
       - run: |
           cd GDSConv
-          docker build -t gds_image .
+          docker build -t gds_image . -f Dockerfile.python3
           
       - run: |
           docker run --name run_gds -ti gds_image /bin/bash -c "cd /GDSConv && pytest"
