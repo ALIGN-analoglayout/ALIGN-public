@@ -82,15 +82,15 @@ if __name__ == "__main__":
   macro_name = args.block_name
 
   lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
-  libraries.append(lib)
+  libraries.append (lib)
 
   structures = []
   lib["bgnstr"] = structures
 
-  str = {"time" : tme, "strname" : "M3_M2_CDNS_543864435520"}
-  structures.append(str)
+  strct = {"time" : tme, "strname" : "M3_M2_CDNS_543864435520"}
+  structures.append (strct)
   elements = []
-  str["elements"] = elements
+  strct["elements"] = elements
 
   elements.append ({"type": "boundary", "layer" : 25, "datatype" : 0,
                     "xy" : flat_rect_to_boundary( [-640,-640,640,640])})
@@ -99,10 +99,10 @@ if __name__ == "__main__":
   elements.append ({"type": "boundary", "layer" : 30, "datatype" : 0,
                     "xy" :  flat_rect_to_boundary( [-640,-1440,640,1440])})
 
-  str = {"time" : tme, "strname" : "M2_M1_CDNS_543864435521"}
-  structures.append(str)
+  strct = {"time" : tme, "strname" : "M2_M1_CDNS_543864435521"}
+  structures.append (strct)
   elements = []
-  str["elements"] = elements
+  strct["elements"] = elements
 
   elements.append ({"type": "boundary", "layer" : 21, "datatype" : 0,
                     "xy" : flat_rect_to_boundary( [-640,-640,640,640])})
@@ -111,10 +111,10 @@ if __name__ == "__main__":
   elements.append ({"type": "boundary", "layer" : 20, "datatype" : 0,
                     "xy" : flat_rect_to_boundary( [-1440,-640,1440,640])})
 
-  str = {"time" : tme, "strname" : macro_name}
-  structures.append(str)
+  strct = {"time" : tme, "strname" : macro_name}
+  structures.append (strct)
   elements = []
-  str["elements"] = elements
+  strct["elements"] = elements
   
   def scale(x): return x*4
 
