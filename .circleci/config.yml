@@ -221,7 +221,55 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/PlacementEditor
+            
+  build-PlaceRouteHierFlow:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
 
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd Build
+          docker build -f Dockerfile.build -t with_protobuf .
+
+      - run: |
+          cd PlaceRouteHierFlow
+          docker build -t placeroute_image .
+          docker volume create placerInputVol
+          docker volume create placerOutputVol
+          
+      - run: |
+          cd PlaceRouteHierFlow
+          apk add bash
+          ./run_small_in_docker.sh
+          
+  build-GDSConv:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          cd Build
+          docker build -f Dockerfile.build.python -t with_python .
+
+      - run: |
+          cd GDSConv
+          docker build -t gds_image . -f Dockerfile.python3
+          
+      - run: |
+          docker run --name run_gds -ti gds_image /bin/bash -c "source general/bin/activate; cd /GDSConv && pytest"
+          mkdir -p test-reports/gdsconv
+          docker cp run_gds:/GDSConv/junit.xml test-reports/gdsconv
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/gdsconv
 
   mono_end_to_end:
     executor: docker-executor
@@ -347,6 +395,12 @@ workflows:
       - build-PlacementEditor:
           requires:
             - start 
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start 
+      - build-GDSConv:
+          requires:
+            - start 
       - build-sci:
           requires:
             - start 
@@ -367,6 +421,7 @@ workflows:
             - build-tally 
             - build-sgi 
             - build-PlacementEditor 
+            - build-GDSConv 
             - build-sci 
             - build-cellfabric
             - build-cktgen 

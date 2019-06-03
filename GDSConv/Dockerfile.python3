@@ -1,0 +1,12 @@
+FROM with_python
+
+COPY . /GDSConv
+
+RUN \
+    python3 -m venv general && \
+    bash -c "source general/bin/activate; pip install wheel; pip install python-gdsii; pip install pytest"
+
+
+
+
+
