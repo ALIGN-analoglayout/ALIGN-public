@@ -2,6 +2,7 @@
 import re
 import json
 import argparse
+import datetime
 
 if __name__ == "__main__":
 
@@ -70,94 +71,81 @@ if __name__ == "__main__":
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
     return [ r[p[i]] for p in ordering for i in range(0,2)]
 
-  # JSON GDS structure cursors to store 
-  top = {}
-  cursors = [top, {}, {}, {}, {}, {}, {}]
+  # Top JSON GDS structure
+  libraries = []
+  top = {"header" : 600, "bgnlib" : libraries}
+  now = datetime.datetime.now()
+  tme = [ now.year, now.month, now.day, now.hour, now.minute, now.second,
+          now.year, now.month, now.day, now.hour, now.minute, now.second]
 
-  if True:
 
-    macro_name = args.block_name
+  macro_name = args.block_name
 
-    top["header"] = 600
-    libraries = []
-    top["bgnlib"] = libraries
+  lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
+  libraries.append(lib)
 
-    # Use a fixed time for comparison
-    tme = [ 2019, 6, 3, 18, 40, 44, 2019, 6, 3, 18, 40, 44]
+  structures = []
+  lib["bgnstr"] = structures
 
-    lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
-    libraries.append(lib)
+  str = {"time" : tme, "strname" : "M3_M2_CDNS_543864435520"}
+  structures.append(str)
+  elements = []
+  str["elements"] = elements
 
-    structures = []
-    lib["bgnstr"] = structures
+  elements.append ({"type": "boundary", "layer" : 25, "datatype" : 0,
+                    "xy" : flat_rect_to_boundary( [-640,-640,640,640])})
+  elements.append ({"type": "boundary", "layer" : 20, "datatype" : 0,
+                    "xy" : flat_rect_to_boundary( [-1440,-640,1440,640])})
+  elements.append ({"type": "boundary", "layer" : 30, "datatype" : 0,
+                    "xy" :  flat_rect_to_boundary( [-640,-1440,640,1440])})
 
-    str = {"time" : tme, "strname" : "M3_M2_CDNS_543864435520"}
-    structures.append(str)
-    elements = []
-    str["elements"] = elements
+  str = {"time" : tme, "strname" : "M2_M1_CDNS_543864435521"}
+  structures.append(str)
+  elements = []
+  str["elements"] = elements
 
-    elm = {"type": "boundary", "layer" : 25, "datatype" : 0,
-           "xy" : flat_rect_to_boundary( [-640,-640,640,640])}
-    elements.append(elm)
-    elm = {"type": "boundary", "layer" : 20, "datatype" : 0,
-           "xy" : flat_rect_to_boundary( [-1440,-640,1440,640])}
-    elements.append(elm)
-    elm = {"type": "boundary", "layer" : 30, "datatype" : 0,
-           "xy" :  flat_rect_to_boundary( [-640,-1440,640,1440])}
-    elements.append(elm)
+  elements.append ({"type": "boundary", "layer" : 21, "datatype" : 0,
+                    "xy" : flat_rect_to_boundary( [-640,-640,640,640])})
+  elements.append ({"type": "boundary", "layer" : 19, "datatype" : 0,
+                    "xy" : flat_rect_to_boundary( [-640,-1440,640,1440])})
+  elements.append ({"type": "boundary", "layer" : 20, "datatype" : 0,
+                    "xy" : flat_rect_to_boundary( [-1440,-640,1440,640])})
 
-    str = {"time" : tme, "strname" : "M2_M1_CDNS_543864435521"}
-    structures.append(str)
-    elements = []
-    str["elements"] = elements
+  str = {"time" : tme, "strname" : macro_name}
+  structures.append(str)
+  elements = []
+  str["elements"] = elements
+  
+  def scale(x): return x*4
 
-    elm = {"type": "boundary", "layer" : 21, "datatype" : 0,
-           "xy" : flat_rect_to_boundary( [-640,-640,640,640])}
-    elements.append(elm)
-    elm = {"type": "boundary", "layer" : 19, "datatype" : 0,
-           "xy" : flat_rect_to_boundary( [-640,-1440,640,1440])}
-    elements.append(elm)
-    elm = {"type": "boundary", "layer" : 20, "datatype" : 0,
-           "xy" : flat_rect_to_boundary( [-1440,-640,1440,640])}
-    elements.append(elm)
+  pat = None
+  if args.exclude_pattern != '':
+    pat = re.compile( args.exclude_pattern)
 
-    str = {"time" : tme, "strname" : macro_name}
-    structures.append(str)
-    elements = []
-    str["elements"] = elements
-    
-    def scale(x): return x*4
+  via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
 
-    pat = None
-    if args.exclude_pattern != '':
-      pat = re.compile( args.exclude_pattern)
+  # non-vias
+  for obj in j['terminals']:
+      if obj['layer'] in via_tbl: continue
+      if pat and pat.match( obj['netName']): continue
 
-    via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
+      elements.append ({"type": "boundary", "layer" : gds_layer_tbl[obj['layer']],
+                        "datatype" : 0,
+                        "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
 
-# non-vias
-    for obj in j['terminals']:
-        if obj['layer'] in via_tbl: continue
-        if pat and pat.match( obj['netName']): continue
+  # vias 
+  for obj in j['terminals']:
+      if obj['layer'] not in via_tbl: continue
+      if pat and pat.match( obj['netName']): continue
 
-        elm = {"type": "boundary", "layer" : gds_layer_tbl[obj['layer']], "datatype" : 0,
-               "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))}
-        elements.append(elm)
+      r = list(map( scale, obj['rect']))
+      xc = (r[0]+r[2])//2
+      yc = (r[1]+r[3])//2
 
-# vias 
-    for obj in j['terminals']:
-        if obj['layer'] not in via_tbl: continue
-        if pat and pat.match( obj['netName']): continue
+      elements.append ({"type": "sref", "sname" : via_tbl[obj['layer']], "xy" : [xc, yc]})
 
-        r = list(map( scale, obj['rect']))
-        xc = (r[0]+r[2])//2
-        yc = (r[1]+r[3])//2
+  elements.append ({"type": "boundary", "layer" : 235, "datatype" : 5,
+                    "xy" : flat_rect_to_boundary( list(map(scale,j['bbox'])))})
 
-        elm = {"type": "sref", "sname" : via_tbl[obj['layer']], "xy" : [xc, yc]}
-        elements.append(elm)
-
-    elm = {"type": "boundary", "layer" : 235, "datatype" : 5,
-           "xy" : flat_rect_to_boundary( list(map(scale,j['bbox'])))}
-    elements.append(elm)
-
-    ofile = open ("trial.json", 'wt')
-    json.dump(top, ofile, indent=4)
+  ofile = open (args.block_name + ".gds.json", 'wt')
+  json.dump(top, ofile, indent=4)
