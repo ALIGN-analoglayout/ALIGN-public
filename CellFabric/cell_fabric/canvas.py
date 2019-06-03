@@ -1,5 +1,6 @@
 import copy
 import collections
+import json
 
 from . import transformation
 from . import generators
@@ -172,3 +173,15 @@ class Canvas:
     def removeDuplicates( self):
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
+
+    def writeJSON(self, fp):
+        self.computeBbox()
+
+        data = { 'bbox' : self.bbox.toList(),
+                 'globalRoutes' : [],
+                 'globalRouteGrid' : [],
+                 'terminals' : self.removeDuplicates()}
+
+        fp.write( json.dumps( data, indent=2) + '\n')
+
+        return data

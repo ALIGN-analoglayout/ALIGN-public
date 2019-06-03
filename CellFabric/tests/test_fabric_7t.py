@@ -20,20 +20,12 @@ def test_nunit_no_duplicates():
         c.nunit()
         c.popTr()
 
-    c.computeBbox()
-
     fn = "tests/__json_7t_nunit"
-
-    data = { 'bbox' : c.bbox.toList(),
-             'globalRoutes' : [],
-             'globalRouteGrid' : [],
-             'terminals' : c.removeDuplicates()}
+    with open( fn + "_cand", "wt") as fp:
+        data = c.writeJSON( fp)
 
 #    assert len(c.rd.opens) == 0
     assert len(c.rd.shorts) == 0
-
-    with open( fn + "_cand", "wt") as fp:
-        fp.write( json.dumps( data, indent=2) + '\n')
 
     with open( fn + "_gold", "rt") as fp:
         data2 = json.load( fp)
@@ -56,20 +48,12 @@ def test_nunit_1x1():
         c.nunit()
         c.popTr()
 
-    c.computeBbox()
-
     fn = "tests/__json_7t_nunit_1x1"
-
-    data = { 'bbox' : c.bbox.toList(),
-             'globalRoutes' : [],
-             'globalRouteGrid' : [],
-             'terminals' : c.removeDuplicates()}
+    with open( fn + "_cand", "wt") as fp:
+        data = c.writeJSON( fp)
 
 #    assert len(c.rd.opens) == 0
     assert len(c.rd.shorts) == 0
-
-    with open( fn + "_cand", "wt") as fp:
-        fp.write( json.dumps( data, indent=2) + '\n')
 
     with open( fn + "_gold", "rt") as fp:
         data2 = json.load( fp)
