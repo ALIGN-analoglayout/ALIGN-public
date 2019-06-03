@@ -182,6 +182,6 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
 
-        fp.write( json.dumps( data, indent=2) + '\n')
+        json.dump( data, fp, indent=2)
 
         return data
