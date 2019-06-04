@@ -4,15 +4,7 @@ import json
 import argparse
 import datetime
 
-if __name__ == "__main__":
-
-  parser = argparse.ArgumentParser( description="Convert design json to GDS JSON")
-
-  parser.add_argument( "-n", "--block_name", type=str, required=True)
-  parser.add_argument( "-j", "--json_file_name", type=str, required=True)
-  parser.add_argument( "-e", "--exclude_pattern", type=str, default='')
-
-  args = parser.parse_args()
+def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
 
   gds_layer_tbl = { "nwell" : 1,
                     "fin" : 2, 	
@@ -57,8 +49,7 @@ if __name__ == "__main__":
                     "diearea" : 100
                   }
 
-  with open( args.json_file_name, "rt") as fp:
-    j = json.load( fp)
+  j = json.load( fp)
 
   def s( x):
     return "%.3f" % (x/1000.0)
@@ -74,12 +65,14 @@ if __name__ == "__main__":
   # Top JSON GDS structure
   libraries = []
   top = {"header" : 600, "bgnlib" : libraries}
+
   now = datetime.datetime.now()
-  tme = [ now.year, now.month, now.day, now.hour, now.minute, now.second,
-          now.year, now.month, now.day, now.hour, now.minute, now.second]
+  if timestamp is not None:
+    tme = timestamp + timestamp
+  else:
+    tme = [ now.year, now.month, now.day, now.hour, now.minute, now.second,
+            now.year, now.month, now.day, now.hour, now.minute, now.second]
 
-
-  macro_name = args.block_name
 
   lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
   libraries.append (lib)
@@ -119,8 +112,8 @@ if __name__ == "__main__":
   def scale(x): return x*4
 
   pat = None
-  if args.exclude_pattern != '':
-    pat = re.compile( args.exclude_pattern)
+  if exclude_pattern != '':
+    pat = re.compile( exclude_pattern)
 
   via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
 
@@ -147,5 +140,23 @@ if __name__ == "__main__":
   elements.append ({"type": "boundary", "layer" : 235, "datatype" : 5,
                     "xy" : flat_rect_to_boundary( list(map(scale,j['bbox'])))})
 
-  ofile = open (args.block_name + ".gds.json", 'wt')
   json.dump(top, ofile, indent=4)
+
+if __name__ == "__main__":
+
+  parser = argparse.ArgumentParser( description="Convert design json to GDS JSON")
+
+  parser.add_argument( "-n", "--block_name", type=str, required=True)
+  parser.add_argument( "-j", "--json_file_name", type=str, required=True)
+  parser.add_argument( "-e", "--exclude_pattern", type=str, default='')
+
+  args = parser.parse_args()
+
+  ofile = open (args.block_name + ".gds.json", 'wt')
+
+  with open( args.json_file_name, "rt") as fp:
+    translate( args.block_name, args.exclude_pattern, fp, ofile)
+
+
+
+

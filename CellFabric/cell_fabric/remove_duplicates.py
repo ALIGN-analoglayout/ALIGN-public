@@ -67,7 +67,7 @@ class Scanline:
 
     def find_touching(self, via_rect):
 #
-# Linear search --- could improve performance by binary search if rects is sorted
+# Linear search --- could improve performance by binary search since rects are sorted
 #
         result = None
         for metal_rect in self.rects:
@@ -102,11 +102,11 @@ class RemoveDuplicates():
                     root = slr.root()
                     nm = root.netName
                     if nm is not None:
-                        tbl[nm][id(root)].append( (layer, slr))
+                        tbl[nm][id(root)].append( (layer, slr.rect))
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
-                self.opens.append( (nm,s))
+                self.opens.append( (nm,list(s.values())))
 
 
     @staticmethod
@@ -136,16 +136,13 @@ class RemoveDuplicates():
         for (nm, gen) in self.canvas.generators.items():
             if   isinstance( gen, Region):
                 self.skip_layers.add( gen.layer)
-                print( "Region", nm)
             elif isinstance( gen, Via):
                 if gen.layer not in self.layers:
                     self.layers[gen.layer] = 'v' # Could be either --- probably want to specialize for vias
                 self.via_layers.add( gen.layer)
-                print( "Via", nm)
             elif isinstance( gen, Wire):
                 if gen.layer not in self.layers:
                     self.layers[gen.layer] = gen.direction
-                print( "Wire", nm)
             else:
                 assert False, (nm,type(gen))
 
@@ -211,19 +208,12 @@ class RemoveDuplicates():
         for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
-                    print( "via", via, twice_center, via_scan_line)
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
-
                     for via_rect in via_scan_line.rects:
-                        print( 'via_rect', via_rect)
-
                         metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
-
                         twice_center_y = via_rect.rect[1] + via_rect.rect[3]
                         metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
-                        
                         metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                        
                         connections.append( (via_rect, metal_rect_v, metal_rect_h))
                         
         def connectPair( a, b):
