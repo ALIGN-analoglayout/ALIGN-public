@@ -11,7 +11,7 @@ def test_one():
 
     with open( json_file_name + "_cand", "rt") as fp, \
          open( json_file_name + "_gds_cand", 'wt') as ofile:
-        cell_fabric.gen_gds_json.doit( block_name, '', fp, ofile, [0,0,0,0,0,0])
+        cell_fabric.gen_gds_json.translate( block_name, '', fp, ofile, [0,0,0,0,0,0])
 
     with open( json_file_name + "_gds_cand", "rt") as fp0, \
          open( json_file_name + "_gds_gold", "rt") as fp1:

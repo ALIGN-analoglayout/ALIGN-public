@@ -4,7 +4,7 @@ import json
 import argparse
 import datetime
 
-def doit( macro_name, exclude_pattern, fp, ofile, timestamp=None):
+def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
 
   gds_layer_tbl = { "nwell" : 1,
                     "fin" : 2, 	
@@ -155,7 +155,7 @@ if __name__ == "__main__":
   ofile = open (args.block_name + ".gds.json", 'wt')
 
   with open( args.json_file_name, "rt") as fp:
-    doit( args.block_name, args.exclude_pattern, fp, ofile)
+    translate( args.block_name, args.exclude_pattern, fp, ofile)
 
 
 
