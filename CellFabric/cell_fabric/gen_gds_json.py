@@ -66,12 +66,13 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
   libraries = []
   top = {"header" : 600, "bgnlib" : libraries}
 
-  now = datetime.datetime.now()
   if timestamp is not None:
-    tme = timestamp + timestamp
+    ts = timestamp
   else:
-    tme = [ now.year, now.month, now.day, now.hour, now.minute, now.second,
-            now.year, now.month, now.day, now.hour, now.minute, now.second]
+    ts = datetime.datetime.now()
+
+  tme = [ ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second]
+  tme = tme + tme
 
 
   lib = {"time" : tme, "libname" : "pcell", "units" : [ 0.000025, 2.5e-11 ]}
@@ -155,7 +156,7 @@ if __name__ == "__main__":
   ofile = open (args.block_name + ".gds.json", 'wt')
 
   with open( args.json_file_name, "rt") as fp:
-    translate( args.block_name, args.exclude_pattern, fp, ofile)
+    translate( args.block_name, args.exclude_pattern, fp, ofile, timestamp=datatime.now())
 
 
 
