@@ -1,11 +1,9 @@
 
-import pytest
 import json
 import cell_fabric.gen_gds_json
 
 def test_one():
     
-    dir = "tests"
     block_name = "foo"
     json_file_name = "tests/__json_cmc_nmos_big_no_duplicates"
 
