@@ -4,6 +4,7 @@
 ## Install and test locally
 
 ```bash
+(cd ../GDSConv && pip install -e .)
 pip install -e .
 pytest
 ```
@@ -12,8 +13,8 @@ pytest
 
 ```bash
 rm -rf __pycache__/ */__pycache__
-docker build -t cell_fabric_image .
-docker run -it cell_fabric_image bash -c "source general/bin/activate && cd /src/ && pytest"
+docker build -t cell_fabric_image -f ./Dockerfile ..
+docker run -it cell_fabric_image bash -c "source general/bin/activate && cd /CellFabric/ && pytest"
 ```
 
 ## To visualize JSON created by tests

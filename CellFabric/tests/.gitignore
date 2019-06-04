@@ -1,3 +1,4 @@
 *~
+*.gds
 __json*_cand
 __pycache__/

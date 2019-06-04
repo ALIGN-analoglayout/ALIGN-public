@@ -19,9 +19,7 @@ def unbracket (l):    return str(l)[1:-1]
 
 def quote (s):        return '\"' + s + '\"'
 
-def convert_GDSjson_GDS (name, oname):
-    ifile = open (name, 'rt')
-    ofile = open (oname, 'wb')
+def convert_GDSjson_GDS_fps( ifile, ofile):
     
     def store_data (tag_name, idata):
         tag = tags.DICT[tag_name]
@@ -81,6 +79,11 @@ def convert_GDSjson_GDS (name, oname):
                     store_data ("ENDEL", None)
             store_data ("ENDSTR", None)
         store_data ("ENDLIB", None)
+
+def convert_GDSjson_GDS (name, oname):
+    with open (name, 'rt') as ifile, \
+         open (oname, 'wb') as ofile:
+        convert_GDSjson_GDS_fps( ifile, ofile)
 
 def usage(prog):
     print('Usage: %s <file.json> <file.gds>' % prog)
