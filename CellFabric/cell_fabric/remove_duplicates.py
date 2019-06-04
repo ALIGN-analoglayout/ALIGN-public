@@ -138,7 +138,7 @@ class RemoveDuplicates():
                 self.skip_layers.add( gen.layer)
             elif isinstance( gen, Via):
                 if gen.layer not in self.layers:
-                    self.layers[gen.layer] = 'v' # Could be either --- probably want to specialize for vias
+                    self.layers[gen.layer] = '*' # Specialize for vias
                 self.via_layers.add( gen.layer)
             elif isinstance( gen, Wire):
                 if gen.layer not in self.layers:
@@ -146,7 +146,7 @@ class RemoveDuplicates():
             else:
                 assert False, (nm,type(gen))
 
-        self.indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
+        self.indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1), '*': ([0, 2], 1)}
 
 
     def build_centerline_tbl( self):
