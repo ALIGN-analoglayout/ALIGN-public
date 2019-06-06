@@ -50,7 +50,6 @@ class DesignRuleCheck():
                 layer, v.rects, self.canvas.rd.layers[layer])
 
     def _check_min_length(self, layer, slrects, direction):
-        # Look up layer min_length
         min_length = self.canvas.pdk[layer]['MinL']
         (l, u) = (0, 2) if direction == 'h' else (1, 3)
         for slr in slrects:
@@ -62,6 +61,19 @@ class DesignRuleCheck():
                 self.num_errors += 1
 
     def _check_min_spacing(self, layer, slrects, direction):
+        min_space = self.canvas.pdk[layer]['End-to-End']
+        (l, u) = (0, 2) if direction == 'h' else (1, 3)
+        prev_slr = None
+        for slr in slrects:
+            if prev_slr is not None and slr.rect[l] - prev_slr.rect[u] < min_space:
+                if direction == 'h':
+                    space_rect = ( prev_slr.rect[2], prev_slr.rect[1], slr.rect[0], slr.rect[3] )
+                else:
+                    space_rect = ( prev_slr.rect[0], prev_slr.rect[3], slr.rect[2], slr.rect[1] )
+                logging.error(
+                    f"MinSpace violation on layer:{layer} position:{space_rect} net1:{prev_slr.root().netName}, net2:{slr.root().netName}]")
+                self.num_errors += 1
+            prev_slr = slr
         return
 
 
