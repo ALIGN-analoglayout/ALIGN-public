@@ -6,6 +6,13 @@ from . import transformation
 from . import generators
 from .remove_duplicates import RemoveDuplicates
 
+from .gen_gds_json import translate
+
+import datetime
+
+import io
+import gdsconv.json2gds
+
 class Canvas:
     def computeBbox( self):
         self.bbox = transformation.Rect(None,None,None,None)
@@ -174,7 +181,7 @@ class Canvas:
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
 
-    def writeJSON(self, fp):
+    def gen_data( self):
         self.computeBbox()
 
         data = { 'bbox' : self.bbox.toList(),
@@ -182,6 +189,23 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
 
-        json.dump( data, fp, indent=2)
-
         return data
+
+    def writeJSON(self, fp):
+        data = self.gen_data()
+        json.dump( data, fp, indent=2)
+        return data
+
+    def writeGDS(self, fp1, timestamp=None):
+
+        with io.StringIO() as fp0:
+            self.writeJSON(fp0)
+            contents = fp0.getvalue()
+
+        with io.StringIO( contents) as fp0, \
+             io.StringIO() as fp_tmp:
+            translate( 'foo', '', fp0, fp_tmp, timestamp=timestamp)
+            contents2 = fp_tmp.getvalue()
+
+        with io.StringIO( contents2) as fp0:
+            gdsconv.json2gds.convert_GDSjson_GDS_fps( fp0, fp1)
