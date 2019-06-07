@@ -1,22 +1,6 @@
 import json
 import logging
 
-
-class LoadPDK():
-    def __init__(self, canvas):
-        self.canvas = canvas
-
-    def run(self, filename):
-        self.canvas.pdk = {}
-        with open(filename, "rt") as fp:
-            j = json.load(fp)
-        assert 'Abstraction' in j
-        for layer in j['Abstraction']:
-            assert layer['Layer'] not in self.canvas.pdk, f"Cannot have multiple {layer['Layer']} layers with same name"
-            self.canvas.pdk[layer['Layer']] = layer
-        return self.canvas.pdk
-
-
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
