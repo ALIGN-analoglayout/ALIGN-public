@@ -264,6 +264,9 @@ struct CCCap {
   vector<int> size;
   string CCCap_name;
   string Unit_capacitor;
+  bool cap_ratio = 0;
+  int cap_r = -1;
+  int cap_s = -1;
 };
 
 /// Part 4: declaration of structures for LEF data

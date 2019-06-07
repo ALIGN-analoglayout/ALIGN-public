@@ -2074,14 +2074,19 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   //cout<<"Before reading verilog"<<endl;
   //PrintLEFData();
   this->ReadVerilog(path, vname, topcell);
+  #ifndef HFLAG
+  std::cout<<"PnRDB-Info: default PDK"<<std::endl;
   this->HardDesignRule();
-  //size_t found;
-  //std::cout<<"start to read rul"<<std::endl;
-  //if((found=drname.find(".rul"))!=string::npos){
-  //  this->ReadDesignRule(path+"/"+drname);
-  //  }else{
-  //  this->ReadDesignRule_jason(path+"/"+drname);
-  //  }
+  #endif
+  #ifdef HFLAG
+  size_t found;
+  if((found=drname.find(".rul"))!=string::npos){
+    this->ReadDesignRule(path+"/"+drname);
+  }else{
+    this->ReadDesignRule_jason(path+"/"+drname);
+  }
+  std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
+  #endif
 
   cout<<"PnRDB-Info: complete reading"<<endl;
   //cout<<"After reading verilog"<<endl;
@@ -2608,6 +2613,16 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         for(int p=0;p<tempsec.size();p++){ 
             temp_cccap.size.push_back(atoi(tempsec[p].c_str()));
            }
+        if(temp.size()>9){
+          temp_cccap.cap_ratio = 1;
+          word=temp[8];
+          word=word.substr(1);
+          word=word.substr(0, word.length()-1);
+          //cout<<word<<endl;
+          tempsec=StringSplitbyChar(word, ',');
+          temp_cccap.cap_r = atoi(tempsec[0].c_str());
+          temp_cccap.cap_s = atoi(tempsec[1].c_str());
+          }
         //temp_cccap.size = temp[4]; //size?
         
         node.CC_Caps.push_back(temp_cccap);
@@ -4403,6 +4418,32 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
 };
 
 void
+JSONExtractUit (string GDSData, int& unit)
+{
+    std::string jsonFileName = GDSData + ".json";
+    //std::cout << "GDS JSON FILE=" << jsonFileName << std::endl;
+    json jsonStrAry;
+    ifstream jsonFile (jsonFileName);
+    if (jsonFile.is_open()) {
+	json jedb = json::parse (jsonFile);
+	if (jedb["header"].is_number ()) {
+	    json libAry = jedb["bgnlib"];
+	    for (json::iterator lit = libAry.begin(); lit != libAry.end(); ++lit) {
+		json lib = *lit;
+		json strAry = lib["units"];
+                if(strAry.is_array()) {
+                     std::cout<<"Unit "<<strAry<<std::endl;
+		     json::iterator xyI = strAry.begin();
+                     double xyU=*xyI;
+                     unit=2*0.00025/xyU;
+                     return;
+                }
+            }
+        }
+    }
+}
+
+void
 JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 			  vector<string>& strBlocks, vector<int>& llx, vector<int>& lly,
 			  vector<int>& urx, vector<int>& ury, json& mjsonStrAry)
@@ -4468,7 +4509,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 };
 
 void
-JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAry)
+JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAry, int unit)
 {
     elmAry = json::array();
   
@@ -4506,8 +4547,8 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
 		}
 		if (write == 0) {
 		    test_layer = stoi(drc_info.MaskID_Metal[drc_info.Metalmap[con.metal]]);
-		    center_x[0] = 2 * con.placedCenter.x;
-		    center_y[0] = 2 * con.placedCenter.y;
+		    center_x[0] = unit * con.placedCenter.x;
+		    center_y[0] = unit * con.placedCenter.y;
 
 		    json elm;
 		    elm["type"] = "text";
@@ -4532,16 +4573,16 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
 }
 
 void
-assignBoxPoints (int* x, int*y, struct PnRDB::bbox b) {
-    x[0] = 2 * b.LL.x;
-    x[1] = 2 * b.UL.x;
-    x[2] = 2 * b.UR.x;
-    x[3] = 2 * b.LR.x;
+assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, int unit) {
+    x[0] = unit * b.LL.x;
+    x[1] = unit * b.UL.x;
+    x[2] = unit * b.UR.x;
+    x[3] = unit * b.LR.x;
     x[4] = x[0];
-    y[0] = 2 * b.LL.y;
-    y[1] = 2 * b.UL.y;
-    y[2] = 2 * b.UR.y;
-    y[3] = 2 * b.LR.y;
+    y[0] = unit * b.LL.y;
+    y[1] = unit * b.UL.y;
+    y[2] = unit * b.UR.y;
+    y[3] = unit * b.LR.y;
     y[4] = y[0];
 }
 
@@ -4567,9 +4608,9 @@ addTextElements (json& jsonElements, int cenX, int cenY, int layer, const string
 }
 
 bool
-addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_info& drc_info) {
+addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_info& drc_info, int unit) {
     int x[5], y[5];
-    assignBoxPoints (x, y, metal.MetalRect.placedBox);
+    assignBoxPoints (x, y, metal.MetalRect.placedBox, unit);
 
     if (metal.LinePoint[0].x != metal.LinePoint[1].x or
 	metal.LinePoint[0].y != metal.LinePoint[1].y) {
@@ -4617,9 +4658,9 @@ addOABoundaries (json& jsonElements, int width, int height) {
 
 }
 
-void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info) {
+void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info, int unit) {
     int x[5], y[5];
-    assignBoxPoints (x, y, via.ViaRect.placedBox);
+    assignBoxPoints (x, y, via.ViaRect.placedBox, unit);
     
     json bound0;
     bound0["type"] = "boundary";
@@ -4634,7 +4675,7 @@ void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_in
     jsonElements.push_back (bound0);
 
     //LowerMetalRect
-    assignBoxPoints (x, y, via.LowerMetalRect.placedBox);
+    assignBoxPoints (x, y, via.LowerMetalRect.placedBox, unit);
      
     json bound1;
     bound1["type"] = "boundary";
@@ -4649,7 +4690,7 @@ void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_in
     jsonElements.push_back (bound1);
 
     //UpperMetalRect
-    assignBoxPoints (x, y, via.UpperMetalRect.placedBox);
+    assignBoxPoints (x, y, via.UpperMetalRect.placedBox, unit);
      
     json bound2;
     bound2["type"] = "boundary";
@@ -4671,6 +4712,16 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     std::cout << "JSON WRITE CELL " << gdsName << std::endl;
     node.gdsFile = gdsName+".gds";
     string TopCellName = gdsName;
+    std::set<string> uniGDSset;
+    int unitScale=2;
+	for (int i = 0; i < node.Blocks.size(); i++) 
+	    uniGDSset.insert(node.Blocks[i].instance.gdsFile);
+
+	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
+	    JSONExtractUit (*it, unitScale);
+	}   
+    std::cout<<"unitScale "<<unitScale<<std::endl;
+    uniGDSset.clear();
   
     std::ofstream jsonStream;
     jsonStream.open (node.gdsFile + ".json");
@@ -4679,13 +4730,15 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     jsonTop["header"] = 600;
     json jsonLib;
     jsonLib["time"] = JSON_TimeTime ();
-    jsonLib["units"] = {0.00025, 2.5e-10};
+    double dbUnitUser=2*0.00025/unitScale;
+    double dbUnitMeter=dbUnitUser/1e6;
+    jsonLib["units"] = {dbUnitUser, dbUnitMeter};
+    //jsonLib["units"] = {0.00025, 2.5e-10};
     jsonLib["libname"] = "test";
     json jsonStrAry = json::array();
 
     vector<string> strBlocks;
     std::map<string, int> gdsMap2strBlock;
-    std::set<string> uniGDSset;
     vector<string> strBlocks_Top;
     vector<int> llx, lly, urx, ury;
     long int rndnum = static_cast<long int>(time(NULL));
@@ -4721,7 +4774,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    int write = 0;
 	    for (int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
 		PnRDB::contact con = node.blockPins[i].pinContacts[j];
-		assignBoxPoints (x, y, con.placedBox);
+		assignBoxPoints (x, y, con.placedBox, unitScale);
 		if (write == 0) {
 		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 				     stoi(drc_info.MaskID_Metal[drc_info.Metalmap[con.metal]]),
@@ -4739,9 +4792,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    int write = 1;
 	    for (int j = 0; j < node.Nets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.Nets[i].path_metal[j];
-		if (addMetalBoundaries (jsonElements, metal, drc_info)) {
+		if (addMetalBoundaries (jsonElements, metal, drc_info, unitScale)) {
 		    if (write == 0) {
-			assignBoxPoints (x, y, metal.MetalRect.placedBox);
+			assignBoxPoints (x, y, metal.MetalRect.placedBox, unitScale);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 stoi(drc_info.MaskID_Metal[drc_info.Metalmap[metal.MetalRect.metal]]),
 					 node.Nets[i].name);
@@ -4751,11 +4804,11 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    }
 	    //path_via
 	    for (int j = 0; j < node.Nets[i].path_via.size(); j++) 
-		addViaBoundaries(jsonElements, node.Nets[i].path_via[j], drc_info);
+		addViaBoundaries(jsonElements, node.Nets[i].path_via[j], drc_info, unitScale);
 	}
     }
     json j;
-    JSONLabelTerminals(node, drc_info, j);
+    JSONLabelTerminals(node, drc_info, j, unitScale);
     for (json::iterator elm = j.begin(); elm != j.end(); ++elm) jsonElements.push_back (*elm);
 
     if (includePowerNet) {
@@ -4764,9 +4817,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    int write = 0;
 	    for (int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.PowerNets[i].path_metal[j];
-		if (addMetalBoundaries (jsonElements,  metal, drc_info)) {
+		if (addMetalBoundaries (jsonElements,  metal, drc_info, unitScale)) {
 		    if (write == 0) {
-			assignBoxPoints (x, y, metal.MetalRect.placedBox);
+			assignBoxPoints (x, y, metal.MetalRect.placedBox, unitScale);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 stoi(drc_info.MaskID_Metal[drc_info.Metalmap[metal.MetalRect.metal]]),
 					 node.PowerNets[i].name);
@@ -4776,7 +4829,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    }
 	    //path_via
 	    for (int j = 0; j < node.PowerNets[i].path_via.size(); j++) 
-		addViaBoundaries(jsonElements, node.PowerNets[i].path_via[j], drc_info);
+		addViaBoundaries(jsonElements, node.PowerNets[i].path_via[j], drc_info, unitScale);
 	}
     }
 
@@ -4784,17 +4837,17 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	int vdd = 1; int gnd = 1;
 	if (vdd == 1) {
 	    for (int i = 0; i < node.Vdd.metals.size(); i++) 
-		addMetalBoundaries (jsonElements, node.Vdd.metals[i], drc_info);
+		addMetalBoundaries (jsonElements, node.Vdd.metals[i], drc_info, unitScale);
 
 	    for (int i = 0; i < node.Vdd.vias.size(); i++) 
-		addViaBoundaries(jsonElements, node.Vdd.vias[i], drc_info);
+		addViaBoundaries(jsonElements, node.Vdd.vias[i], drc_info, unitScale);
 	}
 	if (gnd == 1) {
 	    for (int i = 0; i < node.Gnd.metals.size(); i++) 
-		addMetalBoundaries (jsonElements, node.Gnd.metals[i], drc_info);
+		addMetalBoundaries (jsonElements, node.Gnd.metals[i], drc_info, unitScale);
 
 	    for (int i = 0; i < node.Gnd.vias.size(); i++) 
-		addViaBoundaries(jsonElements, node.Gnd.vias[i], drc_info);
+		addViaBoundaries(jsonElements, node.Gnd.vias[i], drc_info, unitScale);
 	}
     }
 
@@ -4824,56 +4877,56 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    case 0:
 		sref["strans"] = 0;
 		sref["angle"] = 0.0;
-		x[0] = 2 * box.LL.x;
-		y[0] = 2 * box.LL.y;
+		x[0] = unitScale * box.LL.x;
+		y[0] = unitScale * box.LL.y;
 		break;
 	    case 1:
 		sref["strans"] = 0;
 		sref["angle"] = 180.0;
-		x[0] = 2 * box.UR.x+llx[index];
-		y[0] = 2 * box.UR.y+lly[index];
+		x[0] = unitScale * box.UR.x+llx[index];
+		y[0] = unitScale * box.UR.y+lly[index];
 		break;
 	    case 2:
 		sref["strans"] = 0;
 		sref["angle"] = 90.0;
-		x[0] = 2 * box.UL.x-lly[index];
-		y[0] = 2 * box.UL.y+llx[index];
+		x[0] = unitScale * box.UL.x-lly[index];
+		y[0] = unitScale * box.UL.y+llx[index];
 		break;
 	    case 3:
 		sref["strans"] = 0;
 		sref["angle"] = 270.0;
-		x[0] = 2 * box.LR.x-lly[index];
-		y[0] = 2 * box.LR.y-llx[index];
+		x[0] = unitScale * box.LR.x-lly[index];
+		y[0] = unitScale * box.LR.y-llx[index];
 		break;
 	    case 4:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 180.0;
-		x[0] = 2 * box.LR.x+llx[index];
-		y[0] = 2 * box.LR.y-lly[index];
+		x[0] = unitScale * box.LR.x+llx[index];
+		y[0] = unitScale * box.LR.y-lly[index];
 		break;
 	    case 5:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 0.0;
-		x[0] = 2 * box.UL.x-llx[index];
-		y[0] = 2 * box.UL.y+lly[index];
+		x[0] = unitScale * box.UL.x-llx[index];
+		y[0] = unitScale * box.UL.y+lly[index];
 		break;
 	    case 6:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 270.0;
-		x[0] = 2 * box.UR.x+lly[index];
-		y[0] = 2 * box.UR.x+llx[index]; 
+		x[0] = unitScale * box.UR.x+lly[index];
+		y[0] = unitScale * box.UR.x+llx[index]; 
 		break;
 	    case 7:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 180.0;
-		x[0] = 2 * box.LL.x+lly[index];
-		y[0] = 2 * box.UL.y+llx[index]; 
+		x[0] = unitScale * box.LL.x+lly[index];
+		y[0] = unitScale * box.UL.y+llx[index]; 
 		break;
 	    default:
 		sref["strans"] = 0; // DAK: HACK
 		sref["angle"] = 0.0;
-		x[0] = 2 * box.LL.x;
-		y[0] = 2 * box.LL.y;
+		x[0] = unitScale * box.LL.x;
+		y[0] = unitScale * box.LL.y;
 	    }
 	    json xy = json::array();
 	    for (size_t i = 0; i < 1; i++) {
@@ -4885,7 +4938,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}
     }
 
-    addOABoundaries (jsonElements, 2 * node.width, 2 * node.height);
+    addOABoundaries (jsonElements, unitScale * node.width, unitScale * node.height);
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;

@@ -44,6 +44,7 @@ int main(int argc, char** argv ){
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   //PnRDB::designRule design_rule=DB.getDesignRule(); 
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
+  map<string, PnRDB::lefMacro> lefData = DB.checkoutlef();
   queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
 
   while (!Q.empty())
@@ -54,7 +55,7 @@ int main(int argc, char** argv ){
 
     DB.AddingPowerPins(current_node);
 
-    Placer_Router_Cap PRC(fpath, current_node);
+    Placer_Router_Cap PRC(fpath, current_node, drcInfo, lefData, 0);
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);

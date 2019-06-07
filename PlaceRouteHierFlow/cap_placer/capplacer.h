@@ -215,11 +215,18 @@ class Placer_Router_Cap
     };
 
     vector<int> metal_width;
+    vector<int> metal_direct; // 1 is h, 0 is v
     vector<int> metal_distance_ss;
-    vector<int> via_width;
-    vector<int> via_cover;
-    int shifting;
-    int min_dis;
+    vector<int> via_width_x;
+    vector<int> via_width_y;
+    vector<int> via_cover_l;
+    vector<int> via_cover_u;
+    int shifting; // need modify this 
+    int shifting_x;
+    int shifting_y;
+    int min_dis; //need modify this
+    int min_dis_x;
+    int min_dis_y;
     vector<cap> Caps;
     pair<int,int> unit_cap_demension;
     pair<int,int> span_distance;
@@ -256,26 +263,27 @@ class Placer_Router_Cap
 
   public:
     Placer_Router_Cap();
-    Placer_Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds);
-    Placer_Router_Cap(string fpath, PnRDB::hierNode & current_node);
+    Placer_Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds, bool cap_ratio, int cap_r, int cap_s, PnRDB::Drc_info drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag);
+    Placer_Router_Cap(string fpath, PnRDB::hierNode & current_node, PnRDB::Drc_info &drc_info, map<string, PnRDB::lefMacro>& lefData, bool dummy_flag);
     void initial_net_pair_sequence(vector<int> & ki, vector<pair<string, string> > &cap_pin);
     void perturbation_pair_sequence();
     void Placer_Cap(vector<int> & ki);
-    void Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin);
+    void Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, bool dummy_flag, bool cap_ratio, int cap_r, int cap_s);
     void PrintPlacer_Router_Cap(string outfile);
-    void GetPhsicalInfo_router();
-    void cal_offset();
+    void GetPhsicalInfo_router(string H_metal, int H_metal_index, string V_metal, int V_metal_index, PnRDB::Drc_info &drc_info);
+    void cal_offset(PnRDB::Drc_info &drc_info);
     void fillPathBoundingBox (int *x, int* y,
 			      pair<double,double> &start,
 			      pair<double,double> &end,
 			      double width);
-    void ExtractData (string fpath, string unit_capacitor, string final_gds);
+    void ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info);
     //    void WriteGDS(string fpath, string unit_capacitor, string final_gds);
-    void WriteJSON (string fpath, string unit_capacitor, string final_gds);
+    void WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info);
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
     //    void GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury);
     int found_neighbor(int j, net& pos, connection_set& temp_set);
-    void Common_centroid_capacitor(string fpath, PnRDB::hierNode& current_node);
+    void Common_centroid_capacitor(string fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag);
+    void addVia(net &temp_net, pair<double,double> &coord, PnRDB::Drc_info &drc_info, string HV_via_metal, int HV_via_metal_index, int isPin);
 };
 
 #endif
