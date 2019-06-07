@@ -1,0 +1,7 @@
+MACRO foo
+  ORIGIN 0 0 ;
+  FOREIGN foo 0 0 ;
+  SIZE 0.1240 BY 0.1554 ;
+  OBS
+  END
+END foo

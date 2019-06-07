@@ -1,44 +1,45 @@
 import sys
 import json
 
-def json_lef(input_json,out_lef,cell_pin):
-  macro_name = out_lef + '.lef'
-  #cell_pin  = map(str, sys.argv[3].strip('[]').split(','))
-  with open( input_json, "rt") as fp:
-    j = json.load( fp)
-
+def gen_lef_data(data, fp, macro_name, cell_pin):
   def s( x):
     return "%.4f" % (x/10000.0)
 
-  with open( macro_name, "wt") as fp:
+  fp.write( "MACRO %s\n" % macro_name)
+  fp.write( "  ORIGIN 0 0 ;\n")
+  fp.write( "  FOREIGN %s 0 0 ;\n" % macro_name)
 
-    #macro_name = "macro_name"
+  fp.write( "  SIZE %s BY %s ;\n" % ( s(data['bbox'][2]), s(data['bbox'][3])))
 
-    fp.write( "MACRO %s\n" % out_lef)
-    fp.write( "  ORIGIN 0 0 ;\n")
-    fp.write( "  FOREIGN %s 0 0 ;\n" % out_lef)
+  exclude_layers = {"via0","via1","via2","poly","LISD","SDT","RVT","M0","fin","polycon","GCUT","active","nselect","pselect","nwell"}
 
-    fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
+  for i in cell_pin:
+    fp.write( "  PIN %s\n" % i)
+      #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
+    fp.write( "    DIRECTION INOUT ;\n")
+    fp.write( "    USE SIGNAL ;\n")
+    fp.write( "  PORT\n")
+    for obj in data['terminals']:
+      if obj['pin'] in [i]:                  
+        fp.write( "      LAYER %s ;\n" % obj['layer'])
+        fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
+    fp.write( "    END\n")
+    fp.write( "  END %s\n" % i)
+  fp.write( "  OBS\n")
+  for obj in data['terminals']:
+    if 'pin' in obj and obj['pin'] not in cell_pin and obj['layer'] not in exclude_layers:
+      fp.write( "    LAYER %s ;\n" % obj['layer'])
+      fp.write( "      RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
+  fp.write( "  END\n")    
 
-    #for i in ["S","D","G"]:
-    for i in cell_pin:
-      fp.write( "  PIN %s\n" % i)
-        #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
-      fp.write( "    DIRECTION INOUT ;\n")
-      fp.write( "    USE SIGNAL ;\n")
-      fp.write( "    PORT\n")
-      for obj in j['terminals']:
-        if obj['pin'] in [i]:                  
-          fp.write( "      LAYER %s ;\n" % obj['layer'])
-          fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
-      fp.write( "    END\n")
-      fp.write( "  END %s\n" % i)
-    fp.write( "  OBS\n")
-    for obj in j['terminals']:
-      #if "pin" not in obj and obj['layer'] not in ["via0","via1","via2","poly","LISD","SDT","fin","polycon","GCUT","active","nselect","pselect","nwell"]:
-      if obj['pin'] not in cell_pin and obj['layer'] not in ["via0","via1","via2","poly","LISD","SDT","RVT","M0","fin","polycon","GCUT","active","nselect","pselect","nwell"]:
-        fp.write( "    LAYER %s ;\n" % obj['layer'])
-        fp.write( "      RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
-    fp.write( "  END\n")    
+  fp.write( "END %s\n" % macro_name)
 
-    fp.write( "END %s\n" % out_lef)
+def gen_lef_json_fp( json_fp, lef_fp, macro_name, cell_pin):
+  gen_lef_data( json.load( json_fp), lef_fp, macro_name, cell_pin)
+
+def gen_lef_json( json_fn, lef_fn, macro_name, cell_pin):
+  with open( json_fn, "rt") as json_fp, \
+       open( lef_fn, "wt") as fp:
+    gen_lef_json_fp( json_fp, lef_fp, macro_name, cell_pin)
+
+  
