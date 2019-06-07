@@ -71,7 +71,7 @@ class Canvas:
                 else:
                     self.addVia( via, netName, None, q, c)
 
-        self.addWire( wire, netName, None, c, mn, mx)
+        self.addWire( wire, netName, pinName, c, mn, mx)
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input

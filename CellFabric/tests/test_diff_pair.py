@@ -44,23 +44,16 @@ def test_one():
         c.addWireAndViaSet('DA', None, m2, v1, 2 + base, [2, 20])
         c.addWireAndViaSet('DB', None, m2, v1, 3 + base, [8, 14])
 
-    c.addWireAndViaSet('S', None, m3, v2, 5, [1, ch + 1])
-    c.addWireAndViaSet('DA', None, m3, v2, 4, [2, ch + 2])
-    c.addWireAndViaSet('DB', None, m3, v2, 9, [3, ch + 3])
-
-    print (c.terminals)
-
-    c.computeBbox ()
+    c.addWireAndViaSet('S', 'S', m3, v2, 5, [1, ch + 1])
+    c.addWireAndViaSet('DA', 'DA', m3, v2, 4, [2, ch + 2])
+    c.addWireAndViaSet('DB', 'DB', m3, v2, 9, [3, ch + 3])
 
     fn = "tests/__json_diff_pair"
 
-    data = { 'bbox' : c.bbox.toList(),
-             'globalRoutes' : [],
-             'globalRouteGrid' : [],
-             'terminals' : c.removeDuplicates()}
+    print(c.terminals)
 
     with open( fn + "_cand", "wt") as fp:
-        fp.write (json.dumps (data, indent=2) + '\n')
+        data = c.writeJSON( fp)
 
     with open( fn + "_gold", "rt") as fp:
         data2 = json.load( fp)

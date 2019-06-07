@@ -27,6 +27,7 @@ class ScanlineRect(UnionFind):
         super().__init__()
         self.rect = None
         self.netName = None
+        self.isPorted = False
 
     def __repr__(self):
         return str( (self.rect, self.netName))
@@ -44,6 +45,7 @@ class Scanline:
         self.start = None
         self.end = None
         self.currentNet = None
+        self.currentIsPorted = False
 
     def isEmpty(self):
         return self.start is None
@@ -55,12 +57,14 @@ class Scanline:
         slr = ScanlineRect()
         slr.rect = r
         slr.netName = self.currentNet
+        slr.isPorted = self.isPorted
         self.rects.append(slr)
 
-    def set_named_rect(self, rect, netName):
+    def set_named_rect(self, rect, netName, *, isPorted=False):
         self.start = rect[self.dIndex]
         self.end = rect[self.dIndex+2]
         self.currentNet = netName
+        self.isPorted = isPorted
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -156,6 +160,9 @@ class RemoveDuplicates():
             layer = d['layer']
             rect = d['rect']
             netName = d['netName']
+            isPorted = 'pin' in d
+            if isPorted:
+                assert netName == d['pin']
 
             if layer in self.skip_layers: continue
 
@@ -163,7 +170,7 @@ class RemoveDuplicates():
             twice_center = sum(rect[index]
                                for index in self.indicesTbl[self.layers[layer]][0])
 
-            tbl[layer][twice_center].append((rect, netName))
+            tbl[layer][twice_center].append((rect, netName, isPorted))
         return tbl
 
 
@@ -177,24 +184,25 @@ class RemoveDuplicates():
 
             for (twice_center, v) in tbl[layer].items():
 
-                (rect0, _) = v[0]
-                for (rect, netName) in v[1:]:
+                (rect0, _, _) = v[0]
+                for (rect, _, _) in v[1:]:
                     assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
-                for (rect, netName) in sorted(v, key=lambda p: p[0][dIndex]):
+                for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
                     if sl.isEmpty():
-                        sl.set_named_rect(rect, netName)
+                        sl.set_named_rect(rect, netName, isPorted=isPorted)
                     elif rect[dIndex] <= sl.end:  # continue
                         sl.end = max(sl.end, rect[dIndex+2])
                         if sl.currentNet is None:
                             sl.currentNet = netName
+                            sl.currentIsPorted = isPorted
                         elif netName is not None and sl.currentNet != netName:
                             self.shorts.append( (layer, sl.currentNet, netName))
                     else:  # gap
                         sl.emit()
-                        sl.set_named_rect(rect, netName)
+                        sl.set_named_rect(rect, netName, isPorted=isPorted)
 
                 if not sl.isEmpty():
                     sl.emit()
@@ -251,6 +259,8 @@ class RemoveDuplicates():
                 for slr in v.rects:
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect})
+                    if slr.isPorted:
+                        terminals[-1]['pin'] = root.netName
 
         return terminals
 
