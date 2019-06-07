@@ -40,13 +40,13 @@ def test_one():
         c.addWire( m1, 'DB', None, 14, (base + 1,1), (base + ch + 1,-1))
     
         c.addWire( m2, 'GND', None, 0 + base, (0,1), (24,-1))
-        c.addWireAndViaSet('S', m2, v1, 1 + base, [0, 6, 12, 18])
-        c.addWireAndViaSet('DA', m2, v1, 2 + base, [2, 20])
-        c.addWireAndViaSet('DB', m2, v1, 3 + base, [8, 14])
+        c.addWireAndViaSet('S', None, m2, v1, 1 + base, [0, 6, 12, 18])
+        c.addWireAndViaSet('DA', None, m2, v1, 2 + base, [2, 20])
+        c.addWireAndViaSet('DB', None, m2, v1, 3 + base, [8, 14])
 
-    c.addWireAndViaSet('S', m3, v2, 5, [1, ch + 1])
-    c.addWireAndViaSet('DA', m3, v2, 4, [2, ch + 2])
-    c.addWireAndViaSet('DB', m3, v2, 9, [3, ch + 3])
+    c.addWireAndViaSet('S', None, m3, v2, 5, [1, ch + 1])
+    c.addWireAndViaSet('DA', None, m3, v2, 4, [2, ch + 2])
+    c.addWireAndViaSet('DB', None, m3, v2, 9, [3, ch + 3])
 
     print (c.terminals)
 
