@@ -44,11 +44,11 @@ class Canvas:
     def addVia( self, via, netName, pinName, cx, cy):
         self.transform_and_add( via.segment( netName, pinName, cx, cy))
 
-    def addWireAndViaSet( self, netName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
+    def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
-        self.addWireAndMultiViaSet( netName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
+        self.addWireAndMultiViaSet( netName, pinName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
 
-    def addWireAndMultiViaSet( self, netName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+    def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
         tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
@@ -105,7 +105,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, m2, y, [ (v1, via1s), (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)]) 
                         started = False
                         nm = None
                         via1s = []
@@ -141,7 +141,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, m3, x, [ (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)]) 
                         started = False
                         nm = None
                         via1s = []
