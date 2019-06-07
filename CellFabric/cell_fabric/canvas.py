@@ -162,11 +162,12 @@ class Canvas:
                             nm = c + nm
 
     def __init__( self, pdk=None):
+        self.pdk = pdk
         self.terminals = []
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
-        self.pdk = pdk
+        self.drc = None
         self.layer_stack = [( "via1", ("M1", "M2")), 
                             ( "via2", ("M3", "M2"))]
 
@@ -193,8 +194,8 @@ class Canvas:
                  'terminals' : self.removeDuplicates()}
 
         if self.pdk is not None:
-            errors = DesignRuleCheck( self).run()
-            assert errors == 0, f"Found {errors} DRC Errors! Exiting"
+            self.drc = DesignRuleCheck( self)
+            self.drc.run()
 
         return data
 
