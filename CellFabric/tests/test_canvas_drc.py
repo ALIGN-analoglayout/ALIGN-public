@@ -1,4 +1,3 @@
-from cell_fabric.utilities import DesignRuleCheck
 from cell_fabric import Canvas, Pdk, Wire
 
 def test_min_length_pass():

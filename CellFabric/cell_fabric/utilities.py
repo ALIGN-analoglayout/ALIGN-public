@@ -1,4 +1,3 @@
-import json
 import logging
 
 class DesignRuleCheck():
@@ -23,7 +22,8 @@ class DesignRuleCheck():
 
     def _check_via_rules(self, layer, vv):
         '''TODO : Add via pattern checking rules '''
-        return
+        space = self.canvas.pdk[layer]['SpaceX']
+        return space
 
     def _check_metal_rules(self, layer, vv):
         '''Check metal min-length / min-spacing rules'''
