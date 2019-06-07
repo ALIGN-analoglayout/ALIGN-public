@@ -9,11 +9,11 @@ def test_lef():
     
     
     block_name = "foo"
-    json_file_name = "tests/__json_cmc_nmos_big_no_duplicates"
+    json_file_name = "tests/__json_diff_pair"
 
     with open( json_file_name + "_cand", "rt") as fp0, \
          open( "tests/foo.lef_cand", 'wt') as fp1:
-        cell_fabric.gen_lef.gen_lef_json_fp( fp0, fp1, macro_name=block_name, cell_pin=[])
+        cell_fabric.gen_lef.gen_lef_json_fp( fp0, fp1, macro_name=block_name, cell_pin=['DA','DB','S'])
 
     assert filecmp.cmp( "tests/foo.lef_cand", "tests/foo.lef_gold")
 

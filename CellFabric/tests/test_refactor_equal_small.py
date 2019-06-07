@@ -66,4 +66,6 @@ def test_fabric_Cap_no_duplicates():
         for (x,y) in zip( data['terminals'], data_golden['terminals']):
             x['netName'] = '_'
             y['netName'] = '_'
+            x['pin'] = '_'
+            y['pin'] = '_'
             assert x == y

@@ -41,6 +41,8 @@ def test_fabric():
         for (x,y) in zip( data['terminals'], data_golden['terminals']):
             x['netName'] = '_'
             y['netName'] = '_'
+            x['pin'] = '_'
+            y['pin'] = '_'
             assert x == y
 
 def test_fabric_no_duplicates():
@@ -68,7 +70,7 @@ def test_fabric_no_duplicates():
 
     with open( fn + "_gold", "rt") as fp:
         data_golden = json.load( fp)
-        assert data['bbox'] == data_golden['bbox']
+        assert data == data_golden
 
 def test_fabric_no_duplicates_gds():
     unit_cap = 10

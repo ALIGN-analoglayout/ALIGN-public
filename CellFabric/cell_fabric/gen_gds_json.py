@@ -6,47 +6,21 @@ import datetime
 
 def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
-  gds_layer_tbl = { "nwell" : 1,
+  gds_layer_tbl = { 
+                    "polycon" : 1,
                     "fin" : 2, 	
-                    "poly" : 7, 	
-                    "GCUT" : 10,
-                    "active" : 11,	
-                    "RVT" : 88,	
-                    "nselect" : 12,
-                    "pselect" : 13,
-                    "SLVT" : 97,	
-                    "LVT" : 98,	
-                    "SRAMDRC" : 99,
-                    "SRAMVT" : 110,
-                    "DUMMY" : 8,
-                    "polycon" : 16,
-                    "LISD" : 17,
-                    "via0" : 18,
-                    "M0"   : 98,
-                    "M1" : 19,
-                    "via1" : 21,
-                    "M2" : 20,
-                    "via2" : 25,
-                    "via3" : 35,
-                    "via4" : 45,
-                    "M3" : 30,
-                    "V3" : 35,
-                    "M4" : 40,
-                    "V4" : 45,
-                    "M5" : 50,
-                    "V5" : 55,
-                    "M6" : 60,
-                    "V6" : 65,
-                    "M7" : 70,
-                    "V7" : 75,
-                    "M8" : 80,
-                    "V8" : 85,
-                    "M9" : 90,
-                    "V9" : 95,
-                    "Pad" : 96,
-                    "cellarea" : 100,
-                    "BOUNDARY" : 100,
-                    "diearea" : 100
+                    "poly" : 3, 	
+                    "active" : 4,	
+                    "nselect" : 5,
+                    "pselect" : 6,
+                    "M0"   : 10,
+                    "via0" : 11,
+                    "M1"   : 12,
+                    "via1" : 13,
+                    "M2"   : 14,
+                    "via2" : 15,
+                    "M3"   : 16,
+                    "bbox" : 50
                   }
 
   def rect_to_boundary( r):
@@ -130,7 +104,7 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
   # SMB
   # What should 235 map from?
-  strct["elements"].append ({"type": "boundary", "layer" : 235, "datatype" : 5,
+  strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'], "datatype" : 5,
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
 
   return top

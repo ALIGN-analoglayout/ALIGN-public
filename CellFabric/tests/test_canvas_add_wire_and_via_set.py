@@ -21,8 +21,8 @@ def test_one():
     for i in [1,3,5]:
         c.addWire( m1, 'b', None, i, (0,1), (4,-1)) 
 
-    c.addWireAndViaSet( 'a', m2, v1, 2, [0, 2, 4])
-    c.addWireAndViaSet( 'b', m2, v1, 1, [1, 3, 5])
+    c.addWireAndViaSet( 'a', None, m2, v1, 2, [0, 2, 4])
+    c.addWireAndViaSet( 'b', None, m2, v1, 1, [1, 3, 5])
 
     print( c.terminals)
 
@@ -62,8 +62,8 @@ def test_two():
     for i in [1,3,5]:
         c.addWire( m1, 'b', None, i, (0,1), (4,-1)) 
 
-    c.addWireAndViaSet( 'a', m2, v1, 2, [(0,0), (1,0), (2,0)])
-    c.addWireAndViaSet( 'b', m2, v1, 1, [(0,1), (1,1), (2,1)])
+    c.addWireAndViaSet( 'a', None, m2, v1, 2, [(0,0), (1,0), (2,0)])
+    c.addWireAndViaSet( 'b', None, m2, v1, 1, [(0,1), (1,1), (2,1)])
 
     print( c.terminals)
 
@@ -108,11 +108,11 @@ def test_m2_and_m3():
     for i in [1,3,5]:
         c.addWire( m1, 'b', None, i, (0,1), (4,-1)) 
 
-    c.addWireAndViaSet( 'b', m2, v1, 3, [(0,1), (1,1), (2,1)])
-    c.addWireAndViaSet( 'a', m2, v1, 2, [(0,0), (1,0), (2,0)])
-    c.addWireAndMultiViaSet( 'b', m2, 1, [(v1, [(0,1), (1,1)]), (v2, [(2,1)])])
+    c.addWireAndViaSet( 'b', None, m2, v1, 3, [(0,1), (1,1), (2,1)])
+    c.addWireAndViaSet( 'a', None, m2, v1, 2, [(0,0), (1,0), (2,0)])
+    c.addWireAndMultiViaSet( 'b', None, m2, 1, [(v1, [(0,1), (1,1)]), (v2, [(2,1)])])
 
-    c.addWireAndViaSet( 'b', m3, v2, (2,1), [1,3])
+    c.addWireAndViaSet( 'b', None, m3, v2, (2,1), [1,3])
 
 
     print( c.terminals)
