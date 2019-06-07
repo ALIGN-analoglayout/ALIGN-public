@@ -5,6 +5,8 @@ import json
 from . import transformation
 from . import generators
 from .remove_duplicates import RemoveDuplicates
+from .utilities import DesignRuleCheck, ParasiticExtraction
+from .pdk import Pdk
 
 from .gen_gds_json import translate
 
@@ -159,11 +161,13 @@ class Canvas:
                         else:
                             nm = c + nm
 
-    def __init__( self):
+    def __init__( self, pdk=None):
+        self.pdk = pdk
         self.terminals = []
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
+        self.drc = None
         self.layer_stack = [( "via1", ("M1", "M2")), 
                             ( "via2", ("M3", "M2"))]
 
@@ -189,6 +193,10 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
 
+        if self.pdk is not None:
+            self.drc = DesignRuleCheck( self)
+            self.drc.run()
+
         return data
 
     def writeJSON(self, fp):
@@ -209,3 +217,18 @@ class Canvas:
 
         with io.StringIO( contents2) as fp0:
             gdsconv.json2gds.convert_GDSjson_GDS_fps( fp0, fp1)
+
+    def loadPDK(self, filename):
+        assert self.pdk is None, "PDK already loaded. Cannot re-load"
+        self.pdk = Pdk().load( filename)
+
+    def checkDesignRules(self):
+        assert self.pdk is not None, "loadPDK() must be run before checkDesignRules()"
+        assert self.rd is not None, "removeDuplicates() must be run before checkDesignRules()"
+        errors = DesignRuleCheck( self).run()
+        assert errors == 0, f"Found {errors} DRC Errors! Exiting"
+
+    def extractParasitics(self):
+        assert self.pdk is not None, "loadPDK() must be run before extractParasitics()"
+        assert self.rd is not None, "removeDuplicates() must be run before extractParasitics()"
+        return ParasiticExtraction( self).run()
