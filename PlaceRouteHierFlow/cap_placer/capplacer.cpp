@@ -36,9 +36,9 @@ Placer_Router_Cap::Placer_Router_Cap(vector<int> & ki, vector<pair<string, strin
   
   cout<<"step1"<<endl;
   string H_metal;
-  int H_metal_index;
+  int H_metal_index=-1;
   string V_metal;
-  int V_metal_index;
+  int V_metal_index=-1;
   vector<string> obs;
 
   if(lefData.find(unit_capacitor)==lefData.end()){
@@ -326,8 +326,7 @@ int
 getLayerMask (const std::string & layer, PnRDB::Drc_info & drc_info) {
     // DAK: These should be defined in a method that can load this map from a file / PDK
     int index = drc_info.Metalmap[layer];
-    int mask = -1;
-    mask = stoi(drc_info.MaskID_Metal[index]);
+    int mask = stoi(drc_info.MaskID_Metal[index]);
     return mask;
 }
 int
@@ -335,8 +334,7 @@ getLayerViaMask (const std::string & layer, PnRDB::Drc_info & drc_info) {
     // DAK: These should be defined in a method that can load this map from a file / PDK
     int index = drc_info.Metalmap[layer];
     //string via_name = drc_info.ViaModel[index].name;
-    int mask = -1;
-    mask = stoi(drc_info.MaskID_Via[index]);
+    int mask = stoi(drc_info.MaskID_Via[index]);
     return mask;
 }
 
