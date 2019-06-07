@@ -3,7 +3,7 @@ CC=g++ -g -w -Wall -std=c++11
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 
 # JSON place can be over-ridden:  nlohmann/json
-JSON?=../opt/json
+JSON?=/opt/json
 SOURCE=./
 OBJECTS=readfile.o PnRdatabase.o main.o
 
