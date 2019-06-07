@@ -102,8 +102,6 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
       strct["elements"].append ({"type": "sref", "sname" : via_tbl[obj['layer']], "xy" : [xc, yc]})
 
-  # SMB
-  # What should 235 map from?
   strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'], "datatype" : 5,
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
 
