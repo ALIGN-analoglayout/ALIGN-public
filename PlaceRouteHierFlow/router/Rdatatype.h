@@ -59,6 +59,22 @@ struct contact {
   point placedCenter;
 }; // structure of contact
 
+struct tileEdge{
+  int next;
+  int capacity;
+};
+
+struct tile{
+  int x=-1;
+  int y=-1;
+  int width;
+  int height;
+  std::vector<int> metal;	
+  int index=-1;
+  tileEdge* north,south,east,west,down,up;
+  //int power; // i is vdd, 0 is gnd;
+};
+
 struct vertex{
   int x=-1;
   int y=-1;
