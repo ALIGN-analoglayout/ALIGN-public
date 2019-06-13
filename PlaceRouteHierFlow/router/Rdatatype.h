@@ -136,6 +136,10 @@ struct Candidate{
   bool chosen=false;
 };
 
+struct SteinerTree{
+  std::vector<int> Edges; //index of edges in graph
+};
+
 //struct Node{
 //  int x,y;
 //};
@@ -213,6 +217,8 @@ struct Net{
   std::string priority=""; // critical net constraint			
   std::vector<Metal> path_metal;
   std::vector<Via> path_via;
+  std::vector<SteinerTree> STs;
+  std::vector<pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
   //void display();
 };
 
