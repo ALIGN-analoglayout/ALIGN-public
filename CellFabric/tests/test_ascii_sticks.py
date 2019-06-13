@@ -69,11 +69,11 @@ def test_m2_and_m3(setup):
 def test_m2_and_m3_infer(setup):
     (c, m1, v1, m2, v2, m3) = setup
 
-    for (i,nm) in chain( product( [0,2,4], [None]), product( [1,3,5], ['b'])):
+    for (i,nm) in chain( product( [0,2,4], [None]), product( [1,3,5], [None])):
         c.addWire( m1, nm, None, i, (0,1), (4,-1)) 
 
     c.asciiStickDiagram( v1, m2, v2, m3, """
-    +=======+=======*
+    +b======+=======*
                     |    
 +a======+=======+   |
                     |
