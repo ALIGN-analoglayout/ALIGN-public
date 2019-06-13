@@ -90,16 +90,20 @@ class UncoloredCenterLineGrid(CenterLineGrid):
             self.addCenterLine( offset+i*pitch, width)
         self.semantic()
 
+
+
 class ColoredCenterLineGrid(CenterLineGrid):
 
-    def __init__( self, *, colors, pitch, width, offset=0):
+    def __init__( self, *, colors, pitch, width, offset=0, repeat=None):
         assert len(colors) % 2 == 0
         super().__init__()
-        for (idx, color) in enumerate(colors + [colors[0]]):
+        if repeat is not None:
+            c = (colors * repeat)[:repeat]
+        else:
+            c = colors
+        for (idx, color) in enumerate(c + [c[0]]):
             self.addCenterLine( offset+idx*pitch, width, color=color)
         self.semantic()
-
-
 
 class EnclosureGrid(Grid):
     def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=False):
