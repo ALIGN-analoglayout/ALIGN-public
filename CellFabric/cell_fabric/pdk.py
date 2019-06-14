@@ -57,6 +57,9 @@ class Pdk():
                   'VencP_L',
                   'VencP_H']
         self._check(params, **kwargs)
+        if isinstance(kwargs['Stack'], str):
+            kwargs['Stack'] = kwargs['Stack'].split('-')
+        assert len(kwargs['Stack']) == 2
         self._add(params, **kwargs)
 
     def add(self, **kwargs):
