@@ -18,7 +18,8 @@ class Pdk():
                 self.add(**layer)
         return self.pdk
 
-    def _check(self, parameters, **kwargs):
+    @staticmethod
+    def _check(parameters, **kwargs):
         assert all( x in kwargs for x in parameters), f"Entry {kwargs} missing one or more of {parameters}"
         assert all( x in parameters for x in kwargs.keys()), f"Entry {kwargs} has one or more spurious entries (Needs only {parameters})"
 
