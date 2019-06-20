@@ -38,6 +38,16 @@ class Pdk():
                   'MaxL',
                   'End-to-End']
         self._check(params, **kwargs)
+        # Attributes that need additional processing
+        # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
+        ll = set()
+        for param in ["Pitch", "Width", "MinL", "MaxL", "End-to-End"]:
+            if isinstance(kwargs[param], list):
+                if len(kwargs[param]) == 1:
+                    kwargs[param] = kwargs[param][0]
+                else:
+                    ll.add(len(kwargs[param]))
+        assert len(ll) <= 1, f"All lists in {kwargs} must of be same length"
         self._add(params, **kwargs)
 
     def addVia(self, **kwargs):
@@ -55,10 +65,11 @@ class Pdk():
                   'DesignRules']
         self._check(params, **kwargs)
         # Attributes that need additional processing
-        # 1. Stack
+        # 1. Metal Stack
         if isinstance(kwargs['Stack'], str):
             kwargs['Stack'] = kwargs['Stack'].split('-')
         assert len(kwargs['Stack']) == 2, f"{kwargs['Stack']} does not specify two metal layers"
+        assert all(x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
         # 2. DesignRules
         if isinstance(kwargs['DesignRules'], list):
             for rule in kwargs['DesignRules']:
