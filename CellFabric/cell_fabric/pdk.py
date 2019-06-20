@@ -56,11 +56,18 @@ class Pdk():
                   'VencA_L',
                   'VencA_H',
                   'VencP_L',
-                  'VencP_H']
+                  'VencP_H',
+                  'DesignRules']
         self._check(params, **kwargs)
+        # Attributes that need additional processing
+        # 1. Stack
         if isinstance(kwargs['Stack'], str):
             kwargs['Stack'] = kwargs['Stack'].split('-')
-        assert len(kwargs['Stack']) == 2
+        assert len(kwargs['Stack']) == 2, f"{kwargs['Stack']} does not specify two metal layers"
+        # 2. DesignRules
+        if isinstance(kwargs['DesignRules'], list):
+            for rule in kwargs['DesignRules']:
+                self._check(['Name', 'Present', 'Absent'], **rule)
         self._add(params, **kwargs)
 
     def add(self, **kwargs):

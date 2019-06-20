@@ -60,7 +60,16 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": [
+    {
+        "Name": "ViaHole",
+        "Present": [[0,0], [0,1], [0,2],
+                    [1,0], [1, 2],
+                    [2, 0], [2, 1], [2, 2]],
+        "Absent": [[1,1]]
+    }
+]
 },
 
 {
@@ -87,7 +96,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -114,7 +124,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -141,7 +152,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -168,7 +180,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -195,7 +208,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -222,7 +236,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -249,7 +264,8 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
@@ -276,7 +292,8 @@
 "VencA_L" : 40,
 "VencA_H" : 40,
 "VencP_L" : 40,
-"VencP_H" : 40
+"VencP_H" : 40,
+"DesignRules": []
 },
 
 {
@@ -303,7 +320,8 @@
 "VencA_L" : 40,
 "VencA_H" : 40,
 "VencP_L" : 40,
-"VencP_H" : 40
+"VencP_H" : 40,
+"DesignRules": []
 },
 
 {
@@ -330,7 +348,8 @@
 "VencA_L" : 60,
 "VencA_H" : 60,
 "VencP_L" : 60,
-"VencP_H" : 60
+"VencP_H" : 60,
+"DesignRules": []
 },
 
 {
@@ -357,7 +376,8 @@
 "VencA_L" : 60,
 "VencA_H" : 60,
 "VencP_L" : 60,
-"VencP_H" : 60
+"VencP_H" : 60,
+"DesignRules": []
 },
 
 {
@@ -400,7 +420,8 @@
 "VencA_L" : 100,
 "VencA_H" : 100,
 "VencP_L" : 100,
-"VencP_H" : 100
+"VencP_H" : 100,
+"DesignRules": []
 },
 
 {
@@ -415,7 +436,8 @@
 "VencA_L" : 100,
 "VencA_H" : 100,
 "VencP_L" : 100,
-"VencP_H" : 100
+"VencP_H" : 100,
+"DesignRules": []
 }
  
 ]
