@@ -10,9 +10,10 @@ class Pdk():
         assert 'Abstraction' in j
         for layer in j['Abstraction']:
             assert layer['Layer'] not in self.pdk, f"Cannot have multiple {layer['Layer']} layers with same name"
-            if layer['Layer'].lower().startswith('m'):
+            assert layer['Layer'][0].isupper(), f"Layer name {layer['Layer']} must start with capitalized letter"
+            if layer['Layer'].startswith('M'):
                 self.addMetal(**layer)
-            elif layer['Layer'].lower().startswith('v'):
+            elif layer['Layer'].startswith('V'):
                 self.addVia(**layer)
             else:
                 self.add(**layer)
