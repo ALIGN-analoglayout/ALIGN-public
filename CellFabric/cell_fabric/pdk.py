@@ -40,14 +40,20 @@ class Pdk():
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
+        list_params = params[3:]
         ll = set()
-        for param in ["Pitch", "Width", "MinL", "MaxL", "End-to-End"]:
+        for param in list_params:
             if isinstance(kwargs[param], list):
                 if len(kwargs[param]) == 1:
                     kwargs[param] = kwargs[param][0]
                 else:
                     ll.add(len(kwargs[param]))
         assert len(ll) <= 1, f"All lists in {kwargs} must of be same length"
+        if len(ll) == 1:
+            ll = ll.pop()
+            for param in list_params:
+                if not isinstance(kwargs[param], list):
+                    kwargs[param] = [kwargs[param]] * ll
         self._add(params, **kwargs)
 
     def addVia(self, **kwargs):
