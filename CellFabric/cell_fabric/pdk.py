@@ -31,23 +31,18 @@ class Pdk():
     def addMetal(self, **kwargs):
         params = ['Layer',
                   'LayerNo',
-                  'Type',
                   'Direction',
                   'Pitch',
                   'Width',
                   'MinL',
                   'MaxL',
                   'End-to-End']
-        assert 'Type' in kwargs
-        if kwargs['Type'] == 'Power':
-            params.extend(['MinW', 'MaxW'])
         self._check(params, **kwargs)
         self._add(params, **kwargs)
 
     def addVia(self, **kwargs):
         params = ['Layer',
                   'LayerNo',
-                  'Type',
                   'Stack',
                   'SpaceX',
                   'SpaceY',
