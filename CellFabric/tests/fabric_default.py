@@ -1,13 +1,11 @@
-import sys
 import json
 import argparse
-from os import system
 
 import itertools
 
 from cell_fabric import Via, Region, DefaultCanvas, Wire, Pdk
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(DefaultCanvas):
     def __init__( self, gate_u, fin_u, fin_u1):
@@ -111,12 +109,12 @@ class UnitCell(CanvasNMOS):
         #####   Derived parameters   #####         
         fin = int(round(fin_u + 2*self.finDummy)) #### Total number of fins per unit cell    
         cont_no = int(round(self.activeWidth/self.v0Pitch)) ### number of V0 
-        x_length = self.gate*self.plPitch
+        # x_length = self.gate*self.plPitch
         y_length = fin * self.finPitch
         y_total = y_length*y_cells
 
-        m1Length = self.m2Width/2 + self.v_enclosure + self.m2Pitch*((fin_u+2)//2)
-        m1PCLength = self.m2Width + 2*self.v_enclosure + self.m2Pitch*((fin_u+3)//2)
+        # m1Length = self.m2Width/2 + self.v_enclosure + self.m2Pitch*((fin_u+2)//2)
+        # m1PCLength = self.m2Width + 2*self.v_enclosure + self.m2Pitch*((fin_u+3)//2)
         m2_tracks = int(round(y_total/self.m2Pitch)) ### Total number of M2-tracks 
 
         #####   This part generats locations of S/D/G   #####
