@@ -33,6 +33,7 @@ class Pdk():
         params = ['Layer',
                   'LayerNo',
                   'Direction',
+                  'Color',
                   'Pitch',
                   'Width',
                   'MinL',
@@ -41,7 +42,7 @@ class Pdk():
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
-        list_params = params[3:]
+        list_params = params[4:]
         ll = set()
         for param in list_params:
             if isinstance(kwargs[param], list):
@@ -55,6 +56,9 @@ class Pdk():
             for param in list_params:
                 if not isinstance(kwargs[param], list):
                     kwargs[param] = [kwargs[param]] * ll
+        # 2. Cast direction must be lowercase & ensure it is either v or h
+        kwargs['Direction'] = kwargs['Direction'].lower()
+        assert kwargs['Direction'] in ('v', 'h'), f"Invalid Direction {kwargs['Direction']} in {kwargs}"
         self._add(params, **kwargs)
 
     def addVia(self, **kwargs):
