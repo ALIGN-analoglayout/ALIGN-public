@@ -1,8 +1,11 @@
-import logging
-
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
+        self.errors = []
+
+    @property
+    def num_errors(self):
+        return len(self.errors)
 
     def run(self):
         '''
@@ -12,7 +15,6 @@ class DesignRuleCheck():
               (aka removeDuplicates has been run)
         '''
 
-        self.num_errors = 0
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if self.canvas.rd.layers[layer] == '*':
                 self._check_via_rules(layer, vv)
@@ -29,34 +31,28 @@ class DesignRuleCheck():
         '''Check metal min-length / min-spacing rules'''
         for v in vv.values():
             self._check_min_length(
-                layer, v.rects, self.canvas.rd.layers[layer])
+                layer, v.rects, v.dIndex)
             self._check_min_spacing(
-                layer, v.rects, self.canvas.rd.layers[layer])
+                layer, v.rects, v.dIndex)
 
-    def _check_min_length(self, layer, slrects, direction):
+    def _check_min_length(self, layer, slrects, dIndex):
         min_length = self.canvas.pdk[layer]['MinL']
-        (l, u) = (0, 2) if direction == 'h' else (1, 3)
+        (start, end) = (dIndex, dIndex + 2)
         for slr in slrects:
             rect = slr.rect
-            if rect[u] - rect[l] < min_length:
+            if rect[end] - rect[start] < min_length:
                 root = slr.root()
-                logging.error(
-                    f"MinLength violation on layer:{layer} position:{rect} net:{root.netName}")
-                self.num_errors += 1
+                self.errors.append(
+                    f"MinLength violation on {layer}: {root.netName}{rect}")
 
-    def _check_min_spacing(self, layer, slrects, direction):
+    def _check_min_spacing(self, layer, slrects, dIndex):
         min_space = self.canvas.pdk[layer]['End-to-End']
-        (l, u) = (0, 2) if direction == 'h' else (1, 3)
+        (start, end) = (dIndex, dIndex + 2)
         prev_slr = None
         for slr in slrects:
-            if prev_slr is not None and slr.rect[l] - prev_slr.rect[u] < min_space:
-                if direction == 'h':
-                    space_rect = ( prev_slr.rect[2], prev_slr.rect[1], slr.rect[0], slr.rect[3] )
-                else:
-                    space_rect = ( prev_slr.rect[0], prev_slr.rect[3], slr.rect[2], slr.rect[1] )
-                logging.error(
-                    f"MinSpace violation on layer:{layer} position:{space_rect} net1:{prev_slr.root().netName}, net2:{slr.root().netName}]")
-                self.num_errors += 1
+            if prev_slr is not None and slr.rect[start] - prev_slr.rect[end] < min_space:
+                self.errors.append(
+                    f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
             prev_slr = slr
         return
 

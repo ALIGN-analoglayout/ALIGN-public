@@ -5,7 +5,6 @@
 {
 "Layer": "Poly",
 "LayerNo": 1,
-"Type" : "Signal",
 "Direction": "V",
 "Pitch": 80,
 "Width": 14,
@@ -16,7 +15,6 @@
 {
 "Layer": "Fin",
 "LayerNo": 3,
-"Type" : "Signal",
 "Direction": "H",
 "Pitch": 42,
 "Width": 10,
@@ -27,8 +25,8 @@
 {
 "Layer": "M1",
 "LayerNo": 6,
-"Type" : "Signal",
 "Direction": "V",
+"Color": ["c1", "c2"],
 "Pitch": 80,
 "Width": 32,
 "MinL" : 180,
@@ -39,8 +37,8 @@
 {
 "Layer": "M2",
 "LayerNo": 8,
-"Type" : "Signal",
 "Direction": "H",
+"Color": ["c2", "c1"],
 "Pitch": 84,
 "Width": 32,
 "MinL" : 200,
@@ -51,7 +49,6 @@
 {
 "Layer": "V1",
 "LayerNo": 11,
-"Type" : "Via",
 "Stack": "M1-M2",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -60,14 +57,23 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": [
+    {
+        "Name": "ViaHole",
+        "Present": [[0,0], [0,1], [0,2],
+                    [1,0], [1, 2],
+                    [2, 0], [2, 1], [2, 2]],
+        "Absent": [[1,1]]
+    }
+]
 },
 
 {
 "Layer": "M3",
 "LayerNo": 13,
-"Type" : "Signal",
 "Direction": "V",
+"Color": ["c1", "c2"],
 "Pitch": 80,
 "Width": 40,
 "MinL" : 210,
@@ -78,7 +84,6 @@
 {
 "Layer": "V2",
 "LayerNo": 15,
-"Type" : "Via",
 "Stack": "M2-M3",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -87,14 +92,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M4",
 "LayerNo": 20,
-"Type" : "Signal",
 "Direction": "H",
+"Color": [],
 "Pitch": 80,
 "Width": 40,
 "MinL" : 140,
@@ -105,7 +111,6 @@
 {
 "Layer": "V3",
 "LayerNo": 23,
-"Type" : "Via",
 "Stack": "M3-M4",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -114,14 +119,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M5",
 "LayerNo": 25,
-"Type" : "Signal",
 "Direction": "V",
+"Color": [],
 "Pitch": 144,
 "Width": 64,
 "MinL" : 100,
@@ -132,7 +138,6 @@
 {
 "Layer": "V4",
 "LayerNo": 28,
-"Type" : "Via",
 "Stack": "M4-M5",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -141,14 +146,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M6",
 "LayerNo": 30,
-"Type" : "Signal",
 "Direction": "H",
+"Color": [],
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
@@ -159,7 +165,6 @@
 {
 "Layer": "V5",
 "LayerNo": 35,
-"Type" : "Via",
 "Stack": "M5-M6",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -168,14 +173,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M7",
 "LayerNo": 38,
-"Type" : "Signal",
 "Direction": "V",
+"Color": [],
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
@@ -186,7 +192,6 @@
 {
 "Layer": "V6",
 "LayerNo": 40,
-"Type" : "Via",
 "Stack": "M6-M7",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -195,14 +200,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M8",
 "LayerNo": 43,
-"Type" : "Signal",
 "Direction": "H",
+"Color": [],
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
@@ -213,7 +219,6 @@
 {
 "Layer": "V7",
 "LayerNo": 45,
-"Type" : "Via",
 "Stack": "M7-M8",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -222,14 +227,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M9",
 "LayerNo": 48,
-"Type" : "Signal",
 "Direction": "V",
+"Color": [],
 "Pitch": 256,
 "Width": 128,
 "MinL" : 200,
@@ -240,7 +246,6 @@
 {
 "Layer": "V8",
 "LayerNo": 50,
-"Type" : "Via",
 "Stack": "M8-M9",
 "SpaceX": 76,
 "SpaceY": 76,
@@ -249,14 +254,15 @@
 "VencA_L" : 20,
 "VencA_H" : 20,
 "VencP_L" : 20,
-"VencP_H" : 20
+"VencP_H" : 20,
+"DesignRules": []
 },
 
 {
 "Layer": "M10",
 "LayerNo": 55,
-"Type" : "Signal",
 "Direction": "H",
+"Color": [],
 "Pitch": 256,
 "Width": 128,
 "MinL" : 500,
@@ -267,7 +273,6 @@
 {
 "Layer": "V9",
 "LayerNo": 58,
-"Type" : "Via",
 "Stack": "M9-M10",
 "SpaceX": 200,
 "SpaceY": 200,
@@ -276,14 +281,15 @@
 "VencA_L" : 40,
 "VencA_H" : 40,
 "VencP_L" : 40,
-"VencP_H" : 40
+"VencP_H" : 40,
+"DesignRules": []
 },
 
 {
 "Layer": "M11",
 "LayerNo": 60,
-"Type" : "Signal",
 "Direction": "V",
+"Color": [],
 "Pitch": 512,
 "Width": 256,
 "MinL" : 260,
@@ -294,7 +300,6 @@
 {
 "Layer": "V10",
 "LayerNo": 62,
-"Type" : "Via",
 "Stack": "M10-M11",
 "SpaceX": 200,
 "SpaceY": 200,
@@ -303,14 +308,15 @@
 "VencA_L" : 40,
 "VencA_H" : 40,
 "VencP_L" : 40,
-"VencP_H" : 40
+"VencP_H" : 40,
+"DesignRules": []
 },
 
 {
 "Layer": "M12",
 "LayerNo": 65,
-"Type" : "Signal",
 "Direction": "H",
+"Color": [],
 "Pitch": 512,
 "Width": 256,
 "MinL" : 1200,
@@ -321,7 +327,6 @@
 {
 "Layer": "V11",
 "LayerNo": 68,
-"Type" : "Via",
 "Stack": "M11-M12",
 "SpaceX": 360,
 "SpaceY": 360,
@@ -330,14 +335,15 @@
 "VencA_L" : 60,
 "VencA_H" : 60,
 "VencP_L" : 60,
-"VencP_H" : 60
+"VencP_H" : 60,
+"DesignRules": []
 },
 
 {
 "Layer": "M13",
 "LayerNo": 70,
-"Type" : "Signal",
 "Direction": "V",
+"Color": [],
 "Pitch": 2400,
 "Width": 1200,
 "MinL" : 400,
@@ -348,7 +354,6 @@
 {
 "Layer": "V12",
 "LayerNo": 72,
-"Type" : "Via",
 "Stack": "M12-M13",
 "SpaceX": 360,
 "SpaceY": 360,
@@ -357,18 +362,17 @@
 "VencA_L" : 60,
 "VencA_H" : 60,
 "VencP_L" : 60,
-"VencP_H" : 60
+"VencP_H" : 60,
+"DesignRules": []
 },
 
 {
 "Layer": "M14",
 "LayerNo": 75,
-"Type" : "Power",
 "Direction": "H",
-"MinW" : 1200,
-"MaxW" : 20000,
-"Width": 1200,
-"Pitch": "Width + 1200",
+"Color": [],
+"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
+"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
 "MaxL" : "NA",
 "End-to-End": 1200
@@ -377,12 +381,10 @@
 {
 "Layer": "M15",
 "LayerNo": 78,
-"Type" : "Power",
-"Direction": "H",
-"MinW" : 1200,
-"MaxW" : 20000,
-"Width": 1200,
-"Pitch": "Width + 1200",
+"Direction": "V",
+"Color": [],
+"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
+"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
 "MaxL" : "NA",
 "End-to-End": 1200
@@ -391,7 +393,6 @@
 {
 "Layer": "V13",
 "LayerNo": 80,
-"Type" : "Via",
 "Stack": "M13-M14",
 "SpaceX": 1200,
 "SpaceY": 1200,
@@ -400,13 +401,13 @@
 "VencA_L" : 100,
 "VencA_H" : 100,
 "VencP_L" : 100,
-"VencP_H" : 100
+"VencP_H" : 100,
+"DesignRules": []
 },
 
 {
 "Layer": "V14",
 "LayerNo": 85,
-"Type" : "Via",
 "Stack": "M14-M15",
 "SpaceX": 1200,
 "SpaceY": 1200,
@@ -415,7 +416,8 @@
 "VencA_L" : 100,
 "VencA_H" : 100,
 "VencP_L" : 100,
-"VencP_H" : 100
+"VencP_H" : 100,
+"DesignRules": []
 }
  
 ]
