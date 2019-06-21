@@ -76,7 +76,17 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
   strct = {"time" : tme, "strname" : macro_name, "elements" : []}
   structures.append (strct)
   
-  def scale(x): return x*4
+  def scale(x):
+    
+    result = x*4
+    if type(result) == float:
+      print("-W- gen_gds_json:translate_data: Coord %s (%s) not integral" % (str(x),str(result)))
+      intresult = int(result)
+      assert abs(intresult-result) < 0.00001
+      return intresult
+    else:
+      return result
+
 
   pat = None
   if exclude_pattern != '':

@@ -70,10 +70,9 @@ Placer_Router_Cap::Placer_Router_Cap(vector<int> & ki, vector<pair<string, strin
               }
           }
      }
-   shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[pin_metal]].LowerRect[0].x;
-   shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[pin_metal]].LowerRect[0].y;
-
+	  
    //determine which three layer are used for routing metal
+	  
    if(drc_info.Metal_info[drc_info.Metalmap[pin_metal]].direct == 1){ // metal pin is H
          H_metal = pin_metal;
          H_metal_index = drc_info.Metalmap[pin_metal];
@@ -96,7 +95,26 @@ Placer_Router_Cap::Placer_Router_Cap(vector<int> & ki, vector<pair<string, strin
            H_metal_index = drc_info.Metalmap[pin_metal]+1;
          }
      }
+	  
+  string HV_via_metal;
+  int HV_via_metal_index;
 
+  if(H_metal_index>V_metal_index){
+      HV_via_metal = V_metal;
+      HV_via_metal_index = V_metal_index;
+    }else{
+      HV_via_metal = H_metal;
+      HV_via_metal_index = H_metal_index;
+    }
+
+   shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x;
+   shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y;
+   //cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
+   //cout<<"pin_miny "<<pin_miny<<endl;
+   //cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y<<endl;
+   //cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
+   //cout<<"shifting_y "<<shifting_y<<endl;
+	  
   }
 
   cout<<"step2"<<endl;
