@@ -7,6 +7,8 @@ from . import generators
 from .remove_duplicates import RemoveDuplicates
 from .utilities import DesignRuleCheck, ParasiticExtraction
 from .pdk import Pdk
+from .generators import *
+from .grid import *
 
 from .gen_gds_json import translate
 
@@ -26,7 +28,7 @@ class Canvas:
             if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
 
     def addGen( self, gen):
-        assert gen.nm not in self.generators
+        assert gen.nm not in self.generators, gen.nm
         self.generators[gen.nm] = gen
         return gen
  
@@ -232,3 +234,77 @@ class Canvas:
         assert self.pdk is not None, "loadPDK() must be run before extractParasitics()"
         assert self.rd is not None, "removeDuplicates() must be run before extractParasitics()"
         return ParasiticExtraction( self).run()
+
+class DefaultCanvas(Canvas):
+
+    def __init__( self, pdk):
+        super().__init__(pdk)
+        assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
+        self._create_metal_stack()
+        for layer, info in self.pdk.items():
+            if layer.startswith('M'):
+                self._create_metal(layer, info)
+            elif layer.startswith('V'):
+                self._create_via(layer, info)
+
+    def _create_metal( self, layer, info):
+        if isinstance(info['Width'], list):
+            # TODO: Figure out what multiple metal widths even means. Just doing first width for now
+            # for i in range(0, len(info['Width'])):
+            for i in range(0, 1):
+                self._create_metal(layer, \
+                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL', 'End-to-End'] else v for k, v in info.items()})
+        else:
+            base_layer = layer.split('_')[0]
+            (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
+            if nm is not None:
+                spg_pitch = self.pdk[nm]['Pitch'][0] if isinstance(self.pdk[nm]['Width'], list) else self.pdk[nm]['Pitch']
+                w = self.pdk[nm]['Width'][0] if isinstance(self.pdk[nm]['Width'], list) else self.pdk[nm]['Width']
+                spg_stop = w//2 + max([v for k, v in self.pdk[nv].items() if k.startswith('Venc')])
+
+            else:
+                spg_pitch = self.pdk[pm]['Pitch'][0] if isinstance(self.pdk[pm]['Width'], list) else self.pdk[pm]['Pitch']
+                w = self.pdk[pm]['Width'][0] if isinstance(self.pdk[pm]['Width'], list) else self.pdk[pm]['Width']
+                spg_stop = w//2 + max([v for k, v in self.pdk[pv].items() if k.startswith('Venc')])
+            layer = layer.lower()
+            if len(info['Color']) == 0:
+                clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+            else:
+                clg = ColoredCenterLineGrid( colors=info['Color'], pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+            setattr(self, layer, self.addGen(
+                Wire(layer, base_layer, info['Direction'], clg = clg,
+                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_pitch//2, stoppoint=spg_stop, check=True))
+            ))
+
+    def _create_via( self, layer, info):
+        if self.pdk[info['Stack'][0]]['Direction'] == 'h':
+            assert self.pdk[info['Stack'][1]]['Direction'] == 'v', f"{info['Stack']} both appear to be horizontal"
+            h_clg = getattr(self, info['Stack'][0].lower()).clg
+            v_clg = getattr(self, info['Stack'][1].lower()).clg
+        else:
+            assert self.pdk[info['Stack'][1]]['Direction'] == 'h', f"{info['Stack']} both appear to be vertical"
+            v_clg = getattr(self, info['Stack'][0].lower()).clg
+            h_clg = getattr(self, info['Stack'][1].lower()).clg
+        setattr(self, layer.lower(), self.addGen(
+            # TODO: layer.replace('V', 'via') is a temporary hack to reuse common tests. 
+            #       Fix tests & replace with layer
+            Via(layer.lower(), layer.replace('V', 'via'), h_clg = h_clg, v_clg = v_clg)
+        ))
+
+    def _create_metal_stack( self):
+        self.layer_stack = []
+        for l, info in self.pdk.items():
+            if l.startswith('V'):
+                self.layer_stack.append( (l, tuple(info['Stack'])) )
+
+    def _find_adjoining_layers( self, layer):
+        pm = pv = nv = nm = None
+        for (v, (m0, m1)) in self.layer_stack:
+            if layer == m0:
+                nv = v
+                nm = m1
+            elif layer == m1:
+                pv = v
+                pm = m0
+        assert nm is not None or pm is not None, f"Could not trace any connections for {layer}"
+        return (pm, pv, nv, nm)

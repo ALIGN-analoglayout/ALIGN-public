@@ -1,11 +1,10 @@
-import fabric_CMC_NMOS
+import fabric_default
 
-import math
 import json
 
 import itertools
 
-def test_fabric_Cap():
+def test_fabric_default():
     unit_cap = 10
 
     fin_u1 = 8
@@ -18,7 +17,7 @@ def test_fabric_Cap():
     else:
         fin_u = fin_u1 
 
-    uc = fabric_CMC_NMOS.UnitCell( gate_u, fin_u, fin_u1)
+    uc = fabric_default.UnitCell( gate_u, fin_u, fin_u1)
 
     for (x,y) in itertools.product( range(x_cells), range(y_cells)):
         uc.unit( x, y, x_cells, y_cells, fin_u, gate_u)
@@ -42,4 +41,3 @@ def test_fabric_Cap():
             x['pin'] = '_'
             y['pin'] = '_'
             assert x == y
-
