@@ -4,7 +4,7 @@ import argparse
 import itertools
 
 from cell_fabric import Via, Region, DefaultCanvas, Wire, Pdk
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric import UncoloredCenterLineGrid
 from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(DefaultCanvas):
