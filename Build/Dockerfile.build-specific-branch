@@ -1,0 +1,28 @@
+FROM ubuntu:18.04 as can_build
+
+RUN apt-get update && apt-get install -yq curl g++ git build-essential lcov && apt-get clean
+
+FROM can_build as with_googletest
+
+RUN \
+    cd opt && \
+    git clone https://github.com/google/googletest.git && \
+    cd googletest && \
+    git checkout release-1.8.1 && \
+    cd googletest && \
+    cd make && \
+    make && \
+    ./sample1_unittest
+    
+FROM with_googletest as with_json
+
+RUN \
+    cd opt && \
+    git clone https://github.com/nlohmann/json.git
+
+FROM with_json as with_protobuf
+
+RUN \
+  apt-get update && \
+  apt-get install -yq libprotobuf-dev protobuf-compiler && \
+  apt-get clean
