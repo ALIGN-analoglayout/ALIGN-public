@@ -76,6 +76,9 @@ class Pdk():
                   'DesignRules']
         self._check(params, **kwargs)
         # Attributes that need additional processing
+        # 0. Dimensions
+        assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
+        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} not even in {kwargs}"
         # 1. Metal Stack
         if isinstance(kwargs['Stack'], str):
             kwargs['Stack'] = kwargs['Stack'].split('-')
