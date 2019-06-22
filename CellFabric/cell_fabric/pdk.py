@@ -41,6 +41,16 @@ class Pdk():
                   'End-to-End']
         self._check(params, **kwargs)
         # Attributes that need additional processing
+        # 0. Dimensions must be integers or None. Pitch & Width must be even.
+        assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
+            if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
+            for x in params[4:] if kwargs[x] is not None), \
+            f"One or more of {params[4:]} not an integer in {kwargs}"
+        print(f'{params[4:6]} blah blah {kwargs}')
+        assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
+            if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
+            for x in params[4:6] if kwargs[x] is not None), \
+            f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
         # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
         list_params = params[4:]
         ll = set()
@@ -78,7 +88,7 @@ class Pdk():
         # Attributes that need additional processing
         # 0. Dimensions
         assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
-        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} not even in {kwargs}"
+        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
         if isinstance(kwargs['Stack'], str):
             kwargs['Stack'] = kwargs['Stack'].split('-')
