@@ -240,7 +240,7 @@ class DefaultCanvas(Canvas):
     def __init__( self, pdk):
         super().__init__(pdk)
         assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
-        self._create_metal_stack()
+        self.layer_stack = pdk.get_electrical_connectivity()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):
                 self._create_metal(layer, info)
@@ -298,12 +298,6 @@ class DefaultCanvas(Canvas):
             #       Fix tests & replace with layer
             Via(layer.lower(), layer.replace('V', 'via'), h_clg = h_clg, v_clg = v_clg)
         ))
-
-    def _create_metal_stack( self):
-        self.layer_stack = []
-        for l, info in self.pdk.items():
-            if l.startswith('V'):
-                self.layer_stack.append( (l, tuple(info['Stack'])) )
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None

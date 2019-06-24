@@ -1,8 +1,27 @@
 import json
 
-class Pdk():
+class Pdk(object):
+
     def __init__(self):
+        """Initialize empty container dict"""
         self.pdk = {}
+
+    def __getitem__(self, key):
+        """Act like a read-only dict"""
+        assert key in self.pdk
+        return self.pdk[key]
+
+    def items(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.items()
+
+    def keys(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.keys()
+
+    def values(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.values()
 
     def load(self, filename):
         with open(filename, "rt") as fp:
@@ -17,7 +36,7 @@ class Pdk():
                 self.addVia(**layer)
             else:
                 self.add(**layer)
-        return self.pdk
+        return self
 
     @staticmethod
     def _check(parameters, **kwargs):
@@ -101,3 +120,10 @@ class Pdk():
     def add(self, **kwargs):
         assert 'Layer' in kwargs, '"Layer" is required parameter for all layers in PDK abstraction'
         self._add(None, **kwargs)
+
+    def get_electrical_connectivity(self):
+        layer_stack = []
+        for l, info in self.pdk.items():
+            if l.startswith('V'):
+                layer_stack.append( (l, tuple(info['Stack'])) )
+        return layer_stack
