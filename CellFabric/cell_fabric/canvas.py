@@ -260,7 +260,7 @@ class DefaultCanvas(Canvas):
             # for i in range(0, len(info['Width'])):
             for i in range(0, 1):
                 self._create_metal(layer, \
-                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL', 'End-to-End'] else v for k, v in info.items()})
+                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL'] else v for k, v in info.items()})
         else:
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)

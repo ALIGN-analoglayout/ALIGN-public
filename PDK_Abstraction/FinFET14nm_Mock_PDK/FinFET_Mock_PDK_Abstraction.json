@@ -31,7 +31,7 @@
 "Width": 32,
 "MinL" : 180,
 "MaxL" : null,
-"End-to-End": 48
+"EndToEnd": 48
 },
 
 {
@@ -43,7 +43,7 @@
 "Width": 32,
 "MinL" : 200,
 "MaxL" : null,
-"End-to-End": 48
+"EndToEnd": 48
 },
 
 {
@@ -78,7 +78,7 @@
 "Width": 40,
 "MinL" : 210,
 "MaxL" : null,
-"End-to-End": 48
+"EndToEnd": 48
 },
 
 {
@@ -105,7 +105,7 @@
 "Width": 40,
 "MinL" : 140,
 "MaxL" : null,
-"End-to-End": 65
+"EndToEnd": 65
 },
 
 {
@@ -132,7 +132,7 @@
 "Width": 64,
 "MinL" : 100,
 "MaxL" : null,
-"End-to-End": 65
+"EndToEnd": 65
 },
 
 {
@@ -159,7 +159,7 @@
 "Width": 64,
 "MinL" : 360,
 "MaxL" : null,
-"End-to-End": 70
+"EndToEnd": 70
 },
 
 {
@@ -186,7 +186,7 @@
 "Width": 64,
 "MinL" : 360,
 "MaxL" : null,
-"End-to-End": 70
+"EndToEnd": 70
 },
 
 {
@@ -213,7 +213,7 @@
 "Width": 64,
 "MinL" : 360,
 "MaxL" : null,
-"End-to-End": 70
+"EndToEnd": 70
 },
 
 {
@@ -240,7 +240,7 @@
 "Width": 128,
 "MinL" : 200,
 "MaxL" : null,
-"End-to-End": 70
+"EndToEnd": 70
 },
 
 {
@@ -267,7 +267,7 @@
 "Width": 128,
 "MinL" : 500,
 "MaxL" : null,
-"End-to-End": 128
+"EndToEnd": 128
 },
 
 {
@@ -294,7 +294,7 @@
 "Width": 256,
 "MinL" : 260,
 "MaxL" : null,
-"End-to-End": 128
+"EndToEnd": 128
 },
 
 {
@@ -321,7 +321,7 @@
 "Width": 256,
 "MinL" : 1200,
 "MaxL" : null,
-"End-to-End":280 
+"EndToEnd":280 
 },
 
 {
@@ -348,7 +348,7 @@
 "Width": 1200,
 "MinL" : 400,
 "MaxL" : null,
-"End-to-End": 280
+"EndToEnd": 280
 },
 
 {
@@ -375,7 +375,7 @@
 "Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
 "MaxL" : null,
-"End-to-End": 1200
+"EndToEnd": 1200
 },
 
 {
@@ -402,7 +402,7 @@
 "Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
 "MaxL" : null,
-"End-to-End": 1200
+"EndToEnd": 1200
 },
 
 {

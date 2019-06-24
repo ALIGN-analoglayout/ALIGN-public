@@ -57,7 +57,7 @@ class Pdk(object):
                   'Width',
                   'MinL',
                   'MaxL',
-                  'End-to-End']
+                  'EndToEnd']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
@@ -70,7 +70,7 @@ class Pdk(object):
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[4:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
-        # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
+        # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
         list_params = params[4:]
         ll = set()
         for param in list_params:
