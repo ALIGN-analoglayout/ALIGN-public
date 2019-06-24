@@ -3,7 +3,6 @@ import collections
 import json
 
 from . import transformation
-from . import generators
 from .remove_duplicates import RemoveDuplicates
 from .utilities import DesignRuleCheck, ParasiticExtraction
 from .pdk import Pdk
@@ -12,6 +11,8 @@ from .grid import *
 
 from .gen_gds_json import translate
 
+from . import routing_collateral
+
 import datetime
 
 import io
@@ -19,6 +20,7 @@ import gdsconv.json2gds
 
 class Canvas:
     def computeBbox( self):
+        """Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly"""
         self.bbox = transformation.Rect(None,None,None,None)
         for term in self.terminals:
             r = transformation.Rect( *term['rect'])
@@ -234,6 +236,12 @@ class Canvas:
         assert self.pdk is not None, "loadPDK() must be run before extractParasitics()"
         assert self.rd is not None, "removeDuplicates() must be run before extractParasitics()"
         return ParasiticExtraction( self).run()
+
+
+    def generate_routing_collateral(self, dirname):
+        return routing_collateral.gen( self, dirname)
+
+
 
 class DefaultCanvas(Canvas):
 
