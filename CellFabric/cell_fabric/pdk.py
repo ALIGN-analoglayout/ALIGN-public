@@ -1,8 +1,27 @@
 import json
 
-class Pdk():
+class Pdk(object):
+
     def __init__(self):
+        """Initialize empty container dict"""
         self.pdk = {}
+
+    def __getitem__(self, key):
+        """Act like a read-only dict"""
+        assert key in self.pdk
+        return self.pdk[key]
+
+    def items(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.items()
+
+    def keys(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.keys()
+
+    def values(self):
+        """Manage iterators for read-only dict"""
+        return self.pdk.values()
 
     def load(self, filename):
         with open(filename, "rt") as fp:
@@ -17,7 +36,7 @@ class Pdk():
                 self.addVia(**layer)
             else:
                 self.add(**layer)
-        return self.pdk
+        return self
 
     @staticmethod
     def _check(parameters, **kwargs):
@@ -38,10 +57,20 @@ class Pdk():
                   'Width',
                   'MinL',
                   'MaxL',
-                  'End-to-End']
+                  'EndToEnd']
         self._check(params, **kwargs)
         # Attributes that need additional processing
-        # 1. Pitch, Width, MinL, MaxL, End-to-End of type list
+        # 0. Dimensions must be integers or None. Pitch & Width must be even.
+        assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
+            if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
+            for x in params[4:] if kwargs[x] is not None), \
+            f"One or more of {params[4:]} not an integer in {kwargs}"
+        print(f'{params[4:6]} blah blah {kwargs}')
+        assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
+            if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
+            for x in params[4:6] if kwargs[x] is not None), \
+            f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
+        # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
         list_params = params[4:]
         ll = set()
         for param in list_params:
@@ -76,10 +105,11 @@ class Pdk():
                   'DesignRules']
         self._check(params, **kwargs)
         # Attributes that need additional processing
+        # 0. Dimensions
+        assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
+        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
-        if isinstance(kwargs['Stack'], str):
-            kwargs['Stack'] = kwargs['Stack'].split('-')
-        assert len(kwargs['Stack']) == 2, f"{kwargs['Stack']} does not specify two metal layers"
+        assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
         assert all(x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
         # 2. DesignRules
         if isinstance(kwargs['DesignRules'], list):
@@ -90,3 +120,10 @@ class Pdk():
     def add(self, **kwargs):
         assert 'Layer' in kwargs, '"Layer" is required parameter for all layers in PDK abstraction'
         self._add(None, **kwargs)
+
+    def get_electrical_connectivity(self):
+        layer_stack = []
+        for l, info in self.pdk.items():
+            if l.startswith('V'):
+                layer_stack.append( (l, tuple(info['Stack'])) )
+        return layer_stack

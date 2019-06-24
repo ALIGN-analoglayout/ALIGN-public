@@ -46,7 +46,7 @@ class DesignRuleCheck():
                     f"MinLength violation on {layer}: {root.netName}{rect}")
 
     def _check_min_spacing(self, layer, slrects, dIndex):
-        min_space = self.canvas.pdk[layer]['End-to-End']
+        min_space = self.canvas.pdk[layer]['EndToEnd']
         (start, end) = (dIndex, dIndex + 2)
         prev_slr = None
         for slr in slrects:

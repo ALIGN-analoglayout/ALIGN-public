@@ -240,12 +240,19 @@ class DefaultCanvas(Canvas):
     def __init__( self, pdk):
         super().__init__(pdk)
         assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
-        self._create_metal_stack()
+        self.layer_stack = pdk.get_electrical_connectivity()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):
                 self._create_metal(layer, info)
             elif layer.startswith('V'):
                 self._create_via(layer, info)
+
+    def _get_spg_pitch( self, layer):
+        return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
+
+    def _get_spg_stop( self, metal, via):
+        w = min(self.pdk[metal]['Width']) if isinstance(self.pdk[metal]['Width'], list) else self.pdk[metal]['Width']
+        return w // 2 + max([v for k, v in self.pdk[via].items() if k.startswith('Venc')])
 
     def _create_metal( self, layer, info):
         if isinstance(info['Width'], list):
@@ -253,19 +260,20 @@ class DefaultCanvas(Canvas):
             # for i in range(0, len(info['Width'])):
             for i in range(0, 1):
                 self._create_metal(layer, \
-                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL', 'End-to-End'] else v for k, v in info.items()})
+                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL'] else v for k, v in info.items()})
         else:
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
-            if nm is not None:
-                spg_pitch = self.pdk[nm]['Pitch'][0] if isinstance(self.pdk[nm]['Width'], list) else self.pdk[nm]['Pitch']
-                w = self.pdk[nm]['Width'][0] if isinstance(self.pdk[nm]['Width'], list) else self.pdk[nm]['Width']
-                spg_stop = w//2 + max([v for k, v in self.pdk[nv].items() if k.startswith('Venc')])
-
+            if nm is None:
+                spg_pitch, spg_stop = self._get_spg_pitch(pm), self._get_spg_stop(pm, pv)
+            elif pm is None:
+                spg_pitch, spg_stop = self._get_spg_pitch(nm), self._get_spg_stop(nm, nv)
             else:
-                spg_pitch = self.pdk[pm]['Pitch'][0] if isinstance(self.pdk[pm]['Width'], list) else self.pdk[pm]['Pitch']
-                w = self.pdk[pm]['Width'][0] if isinstance(self.pdk[pm]['Width'], list) else self.pdk[pm]['Width']
-                spg_stop = w//2 + max([v for k, v in self.pdk[pv].items() if k.startswith('Venc')])
+                pm_pitch, nm_pitch = self._get_spg_pitch(pm), self._get_spg_pitch(nm)
+                if pm_pitch <= nm_pitch:
+                    spg_pitch, spg_stop = pm_pitch, self._get_spg_stop(pm, pv)
+                else:
+                    spg_pitch, spg_stop = nm_pitch, self._get_spg_stop(nm, nv)
             layer = layer.lower()
             if len(info['Color']) == 0:
                 clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
@@ -290,12 +298,6 @@ class DefaultCanvas(Canvas):
             #       Fix tests & replace with layer
             Via(layer.lower(), layer.replace('V', 'via'), h_clg = h_clg, v_clg = v_clg)
         ))
-
-    def _create_metal_stack( self):
-        self.layer_stack = []
-        for l, info in self.pdk.items():
-            if l.startswith('V'):
-                self.layer_stack.append( (l, tuple(info['Stack'])) )
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None

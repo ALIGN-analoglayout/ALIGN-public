@@ -9,7 +9,7 @@
 "Pitch": 80,
 "Width": 14,
 "MinL" : 60,
-"MaxL" : "NA"
+"MaxL" : null
 },
 
 {
@@ -19,7 +19,7 @@
 "Pitch": 42,
 "Width": 10,
 "MinL" : 100,
-"MaxL" : "NA"
+"MaxL" : null
 },
 
 {
@@ -30,8 +30,8 @@
 "Pitch": 80,
 "Width": 32,
 "MinL" : 180,
-"MaxL" : "NA",
-"End-to-End": 48
+"MaxL" : null,
+"EndToEnd": 48
 },
 
 {
@@ -42,14 +42,14 @@
 "Pitch": 84,
 "Width": 32,
 "MinL" : 200,
-"MaxL" : "NA",
-"End-to-End": 48
+"MaxL" : null,
+"EndToEnd": 48
 },
 
 {
 "Layer": "V1",
 "LayerNo": 11,
-"Stack": "M1-M2",
+"Stack": ["M1", "M2"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 32,
@@ -77,14 +77,14 @@
 "Pitch": 80,
 "Width": 40,
 "MinL" : 210,
-"MaxL" : "NA",
-"End-to-End": 48
+"MaxL" : null,
+"EndToEnd": 48
 },
 
 {
 "Layer": "V2",
 "LayerNo": 15,
-"Stack": "M2-M3",
+"Stack": ["M2", "M3"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 32,
@@ -104,14 +104,14 @@
 "Pitch": 80,
 "Width": 40,
 "MinL" : 140,
-"MaxL" : "NA",
-"End-to-End": 65
+"MaxL" : null,
+"EndToEnd": 65
 },
 
 {
 "Layer": "V3",
 "LayerNo": 23,
-"Stack": "M3-M4",
+"Stack": ["M3", "M4"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 40,
@@ -131,14 +131,14 @@
 "Pitch": 144,
 "Width": 64,
 "MinL" : 100,
-"MaxL" : "NA",
-"End-to-End": 65
+"MaxL" : null,
+"EndToEnd": 65
 },
 
 {
 "Layer": "V4",
 "LayerNo": 28,
-"Stack": "M4-M5",
+"Stack": ["M4", "M5"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 40,
@@ -158,14 +158,14 @@
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
-"MaxL" : "NA",
-"End-to-End": 70
+"MaxL" : null,
+"EndToEnd": 70
 },
 
 {
 "Layer": "V5",
 "LayerNo": 35,
-"Stack": "M5-M6",
+"Stack": ["M5", "M6"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 64,
@@ -185,14 +185,14 @@
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
-"MaxL" : "NA",
-"End-to-End": 70
+"MaxL" : null,
+"EndToEnd": 70
 },
 
 {
 "Layer": "V6",
 "LayerNo": 40,
-"Stack": "M6-M7",
+"Stack": ["M6", "M7"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 64,
@@ -212,14 +212,14 @@
 "Pitch": 144,
 "Width": 64,
 "MinL" : 360,
-"MaxL" : "NA",
-"End-to-End": 70
+"MaxL" : null,
+"EndToEnd": 70
 },
 
 {
 "Layer": "V7",
 "LayerNo": 45,
-"Stack": "M7-M8",
+"Stack": ["M7", "M8"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 64,
@@ -239,14 +239,14 @@
 "Pitch": 256,
 "Width": 128,
 "MinL" : 200,
-"MaxL" : "NA",
-"End-to-End": 70
+"MaxL" : null,
+"EndToEnd": 70
 },
 
 {
 "Layer": "V8",
 "LayerNo": 50,
-"Stack": "M8-M9",
+"Stack": ["M8", "M9"],
 "SpaceX": 76,
 "SpaceY": 76,
 "WidthX": 64,
@@ -266,14 +266,14 @@
 "Pitch": 256,
 "Width": 128,
 "MinL" : 500,
-"MaxL" : "NA",
-"End-to-End": 128
+"MaxL" : null,
+"EndToEnd": 128
 },
 
 {
 "Layer": "V9",
 "LayerNo": 58,
-"Stack": "M9-M10",
+"Stack": ["M9", "M10"],
 "SpaceX": 200,
 "SpaceY": 200,
 "WidthX": 128,
@@ -293,14 +293,14 @@
 "Pitch": 512,
 "Width": 256,
 "MinL" : 260,
-"MaxL" : "NA",
-"End-to-End": 128
+"MaxL" : null,
+"EndToEnd": 128
 },
 
 {
 "Layer": "V10",
 "LayerNo": 62,
-"Stack": "M10-M11",
+"Stack": ["M10", "M11"],
 "SpaceX": 200,
 "SpaceY": 200,
 "WidthX": 128,
@@ -320,14 +320,14 @@
 "Pitch": 512,
 "Width": 256,
 "MinL" : 1200,
-"MaxL" : "NA",
-"End-to-End":280 
+"MaxL" : null,
+"EndToEnd":280 
 },
 
 {
 "Layer": "V11",
 "LayerNo": 68,
-"Stack": "M11-M12",
+"Stack": ["M11", "M12"],
 "SpaceX": 360,
 "SpaceY": 360,
 "WidthX": 256,
@@ -347,14 +347,14 @@
 "Pitch": 2400,
 "Width": 1200,
 "MinL" : 400,
-"MaxL" : "NA",
-"End-to-End": 280
+"MaxL" : null,
+"EndToEnd": 280
 },
 
 {
 "Layer": "V12",
 "LayerNo": 72,
-"Stack": "M12-M13",
+"Stack": ["M12", "M13"],
 "SpaceX": 360,
 "SpaceY": 360,
 "WidthX": 256,
@@ -374,8 +374,23 @@
 "Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
 "Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
-"MaxL" : "NA",
-"End-to-End": 1200
+"MaxL" : null,
+"EndToEnd": 1200
+},
+
+{
+"Layer": "V13",
+"LayerNo": 80,
+"Stack": ["M13", "M14"],
+"SpaceX": 1200,
+"SpaceY": 1200,
+"WidthX": 1200,
+"WidthY": 1200,
+"VencA_L" : 100,
+"VencA_H" : 100,
+"VencP_L" : 100,
+"VencP_H" : 100,
+"DesignRules": []
 },
 
 {
@@ -386,29 +401,14 @@
 "Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
 "Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
 "MinL" : 1400,
-"MaxL" : "NA",
-"End-to-End": 1200
-},
-
-{
-"Layer": "V13",
-"LayerNo": 80,
-"Stack": "M13-M14",
-"SpaceX": 1200,
-"SpaceY": 1200,
-"WidthX": 1200,
-"WidthY": 1200,
-"VencA_L" : 100,
-"VencA_H" : 100,
-"VencP_L" : 100,
-"VencP_H" : 100,
-"DesignRules": []
+"MaxL" : null,
+"EndToEnd": 1200
 },
 
 {
 "Layer": "V14",
 "LayerNo": 85,
-"Stack": "M14-M15",
+"Stack": ["M14", "M15"],
 "SpaceX": 1200,
 "SpaceY": 1200,
 "WidthX": 1200,
@@ -419,6 +419,6 @@
 "VencP_H" : 100,
 "DesignRules": []
 }
- 
+
 ]
 }
