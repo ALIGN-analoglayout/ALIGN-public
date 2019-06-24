@@ -90,9 +90,7 @@ class Pdk():
         assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
         assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
-        if isinstance(kwargs['Stack'], str):
-            kwargs['Stack'] = kwargs['Stack'].split('-')
-        assert len(kwargs['Stack']) == 2, f"{kwargs['Stack']} does not specify two metal layers"
+        assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
         assert all(x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
         # 2. DesignRules
         if isinstance(kwargs['DesignRules'], list):
