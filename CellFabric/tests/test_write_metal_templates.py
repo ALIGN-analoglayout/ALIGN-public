@@ -1,4 +1,4 @@
-from cell_fabric.routing_collateral import write_metal_templates, MetalTemplate
+from cell_fabric.routing_collateral import MetalTemplate
 
 from cell_fabric.grid import *
 from cell_fabric.canvas import *
