@@ -1,11 +1,3 @@
-import copy
-import collections
-import json
-
-from . import canvas
-
-import os
-import os.path
 
 import pathlib
 
