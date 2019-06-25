@@ -6,6 +6,12 @@ class Pdk(object):
         """Initialize empty container dict"""
         self.pdk = {}
 
+    def __str__(self):
+        ret = ''
+        for key, value in self.pdk.items():
+            ret += f"{key}: {value}\n"
+        return ret
+
     def __getitem__(self, key):
         """Act like a read-only dict"""
         assert key in self.pdk
@@ -65,7 +71,6 @@ class Pdk(object):
             if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
             for x in params[4:] if kwargs[x] is not None), \
             f"One or more of {params[4:]} not an integer in {kwargs}"
-        print(f'{params[4:6]} blah blah {kwargs}')
         assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[4:6] if kwargs[x] is not None), \

@@ -258,9 +258,9 @@ class DefaultCanvas(Canvas):
     def _get_spg_pitch( self, layer):
         return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
 
-    def _get_spg_stop( self, metal, via):
+    def _get_spg_stop( self, metal, viaenc):
         w = min(self.pdk[metal]['Width']) if isinstance(self.pdk[metal]['Width'], list) else self.pdk[metal]['Width']
-        return w // 2 + max([v for k, v in self.pdk[via].items() if k.startswith('Venc')])
+        return w // 2 + viaenc
 
     def _create_metal( self, layer, info):
         if isinstance(info['Width'], list):
@@ -273,15 +273,15 @@ class DefaultCanvas(Canvas):
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
             if nm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(pm), self._get_spg_stop(pm, pv)
+                spg_pitch, spg_stop = self._get_spg_pitch(pm), self._get_spg_stop(pm, self.pdk[pv]['VencA_H'])
             elif pm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(nm), self._get_spg_stop(nm, nv)
+                spg_pitch, spg_stop = self._get_spg_pitch(nm), self._get_spg_stop(nm, self.pdk[nv]['VencA_L'])
             else:
                 pm_pitch, nm_pitch = self._get_spg_pitch(pm), self._get_spg_pitch(nm)
                 if pm_pitch <= nm_pitch:
-                    spg_pitch, spg_stop = pm_pitch, self._get_spg_stop(pm, pv)
+                    spg_pitch, spg_stop = pm_pitch, self._get_spg_stop(pm, self.pdk[pv]['VencA_H'])
                 else:
-                    spg_pitch, spg_stop = nm_pitch, self._get_spg_stop(nm, nv)
+                    spg_pitch, spg_stop = nm_pitch, self._get_spg_stop(nm, self.pdk[nv]['VencA_L'])
             layer = layer.lower()
             if len(info['Color']) == 0:
                 clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
