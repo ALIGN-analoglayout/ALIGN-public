@@ -3,3 +3,4 @@
 __json*_cand
 *.lef_cand
 __pycache__/
+routing_collateral_cand/
