@@ -12,10 +12,7 @@ from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(Canvas):
 
-    #def pitch(self, lxx, index, p):
-    #    c2c = p[lxx]['Space'][index] + p[lxx]['Width'][index]
-    #    return c2c
-
+    
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
         super().__init__()
         p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')                                           
