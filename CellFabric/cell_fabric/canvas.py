@@ -259,7 +259,6 @@ class DefaultCanvas(Canvas):
         return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
 
     def _get_spg_stop( self, metal, viaenc):
-        print(viaenc)
         w = min(self.pdk[metal]['Width']) if isinstance(self.pdk[metal]['Width'], list) else self.pdk[metal]['Width']
         return w // 2 + viaenc
 
