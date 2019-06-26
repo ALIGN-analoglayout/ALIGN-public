@@ -30,7 +30,7 @@ void Placer_Router_Cap::Placer_Router_Cap_clean(){
   std::cout<<"Enter clean 1"<<std::endl;
 
   PnRDB::block temp_block;
-
+  temp_block.blockPins.clear(); temp_block.interMetals.clear(); temp_block.interVias.clear(); temp_block.dummy_power_pin.clear();
   std::cout<<"Enter clean 2"<<std::endl;
   CheckOutBlock = temp_block;
 
@@ -2816,7 +2816,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                       if(aspect_ratio){
                          int sum = 0;
                          double temp_r = 0;
-                         double temp_s = 0;
+                         //double temp_s = 0;
                          for(int k=0;k<ki.size();k++){
                                sum = sum+ ki[k];
                              }
@@ -2824,7 +2824,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                          //temp_s = ceil(sum/temp_r); 
                          int aspect_num = num_aspect;
                          while(aspect_num > 0 and temp_r > 0){
-                                temp_s = ceil(sum/temp_r);
+                                double temp_s = ceil(sum/temp_r);
                                 cap_r.push_back(temp_r);
                                 cap_s.push_back(temp_s);
                                 aspect_num = aspect_num - 1;

@@ -343,7 +343,7 @@ void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int origin
   } else if (this->symAxis.at(originIdx)==placerDB::H) {
     // 1. push new sympair b nodes
     if(!diff.sympair.empty()) {
-      for(vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); it++) {
+      for(vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
         new_negPair.push_back(it->second);
         this->orient.at(it->second)=placerDB::FS;
       }

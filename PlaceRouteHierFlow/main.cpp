@@ -45,7 +45,8 @@ int main(int argc, char** argv ){
   binary_directory = binary_directory.erase(beginIdx+1);
   cout <<"binary_directory: "<< binary_directory <<endl;
 
-  int status = mkdir(opath.c_str(), 0777);
+  mkdir(opath.c_str(), 0777);
+  //int status = mkdir(opath.c_str(), 0777);
   //struct stat info;
   //if( stat( opath.c_str(), &info ) != 0 ) {
   //    int status = mkdir(opath.c_str(), 0777);

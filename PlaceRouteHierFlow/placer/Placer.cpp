@@ -375,8 +375,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   while(T>T_MIN) {
     int i=1;
     while(i<=1) {
-      double trial_cost; 
       #ifdef MTMODE
+      double trial_cost; 
       int id; int good_idx=-1;
       Thread_data td[NUM_THREADS];
       std::vector<std::thread> threads;
@@ -434,7 +434,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ConstGraph trial_sol;
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
-        trial_cost=trial_sol.CalculateCost(designData, trial_sp);
+        double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
         bool Smark=false;
         delta_cost=trial_cost-curr_cost;
         if(delta_cost<0) {Smark=true;

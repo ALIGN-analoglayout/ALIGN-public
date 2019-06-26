@@ -138,13 +138,13 @@ design::design(design& other, int mode) {
         tmpnet.connected=newbigs;
         // The weight of net is determinted by the number of the small blocks
         std::set<int> sset;
-        for(vector<placerDB::Node>::iterator it4=smalls.begin(); it4!=smalls.end(); it4++) {
+        for(vector<placerDB::Node>::iterator it4=smalls.begin(); it4!=smalls.end(); ++it4) {
           if(it4->type==placerDB::Terminal) {
             cout<<"Placer-Warning: unexpected node type"<<endl; continue;
           }
           if( sset.find(it4->iter2)==sset.end() ) {sset.insert(it4->iter2);}
         }
-        for(std::set<int>::iterator it5=sset.begin(); it5!=sset.end(); it5++) {
+        for(std::set<int>::iterator it5=sset.begin(); it5!=sset.end(); ++it5) {
           int M=0;
           for(int w=0;w<other.Blocks.at(*it5).size();++w) {
             int wl= other.Blocks.at(*it5).at(w).width>other.Blocks.at(*it5).at(w).height?other.Blocks.at(*it5).at(w).width:other.Blocks.at(*it5).at(w).height;
@@ -2014,7 +2014,7 @@ int design::GetMappedSymmBlockIdx(int idx) {
 }
 
 void design::ResetBlockMapIdx() {
-  for(std::vector<std::vector<block> >::iterator it=this->Blocks.begin(); it!=this->Blocks.end(); it++) {
+  for(std::vector<std::vector<block> >::iterator it=this->Blocks.begin(); it!=this->Blocks.end(); ++it) {
     for(int w=0;w<it->size();++w) {
       it->at(w).mapIdx=-1;
     }
@@ -2022,7 +2022,7 @@ void design::ResetBlockMapIdx() {
 }
 
 void design::ResetSymmBlockMapIdx() {
-  for(std::vector<placerDB::SymmBlock>::iterator it=this->SBlocks.begin(); it!=this->SBlocks.end(); it++) {
+  for(std::vector<placerDB::SymmBlock>::iterator it=this->SBlocks.begin(); it!=this->SBlocks.end(); ++it) {
     it->mapIdx=-1;
   }
 }
