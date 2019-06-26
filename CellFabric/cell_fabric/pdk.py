@@ -12,6 +12,9 @@ class Pdk(object):
             ret += f"{key}: {value}\n"
         return ret
 
+    def __contains__(self, key):
+        return key in self.pdk
+
     def __getitem__(self, key):
         """Act like a read-only dict"""
         assert key in self.pdk

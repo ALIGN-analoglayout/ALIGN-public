@@ -22,9 +22,7 @@ def test_fabric_default():
     for (x,y) in itertools.product( range(x_cells), range(y_cells)):
         uc.unit( x, y, x_cells, y_cells, fin_u, gate_u)
 
-    uc.computeBbox()
-
-    data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
+    data = uc.gen_data()
 
     fn = "tests/__json_default_fabric_nmos"
 
