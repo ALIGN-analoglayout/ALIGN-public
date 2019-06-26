@@ -26,7 +26,7 @@ def test_fabric_default():
 
     data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
 
-    fn = "tests/__json_cmc_nmos"
+    fn = "tests/__json_default_fabric_nmos"
 
     with open( fn + "_cand", "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')

@@ -88,7 +88,7 @@ class CanvasNMOS(DefaultCanvas):
                                             h_grid=self.fin.clg))
 
         v0x_offset = self.finDummy*self.finPitch - self.fin_enclosure - self.finWidth//2 + self.finOffset + self.v0Width//2
-        self.v0 = self.addGen( Via( 'v0', 'via0',
+        self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=UncoloredCenterLineGrid( pitch=self.v0Pitch, width=self.v0Width, offset=v0x_offset),
                                     v_clg=self.m1.clg))
 

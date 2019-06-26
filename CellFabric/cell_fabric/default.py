@@ -62,9 +62,7 @@ class DefaultCanvas(Canvas):
             v_clg = getattr(self, info['Stack'][0].lower()).clg
             h_clg = getattr(self, info['Stack'][1].lower()).clg
         setattr(self, layer.lower(), self.addGen(
-            # TODO: layer.replace('V', 'via') is a temporary hack to reuse common tests. 
-            #       Fix tests & replace with layer
-            Via(layer.lower(), layer.replace('V', 'via'), h_clg = h_clg, v_clg = v_clg)
+            Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg)
         ))
 
     def _find_adjoining_layers( self, layer):
