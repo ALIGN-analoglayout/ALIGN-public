@@ -13,9 +13,9 @@ Placer::Placer(PnRDB::hierNode& node, string opath) {
 }
 
 Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath) {
-  //PlacementRegularAspectRatio(nodeVec, opath);
+  PlacementRegularAspectRatio(nodeVec, opath);
   //PlacementMixSAAspectRatio(nodeVec, opath);
-  PlacementMixAPAspectRatio(nodeVec, opath);
+  //PlacementMixAPAspectRatio(nodeVec, opath);
 }
 
 //PnRDB::hierNode Placer::CheckoutHierNode() {
