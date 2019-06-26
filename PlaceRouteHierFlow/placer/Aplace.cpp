@@ -352,10 +352,10 @@ void Aplace::AddOverlapGradient(boost_vector& G_k, boost_vector& x_k, design& ca
 double Aplace::CalculateBoundaryViolationSmooth(design& caseNL, boost_vector& x_k, double alpha) {
   int xL=0, yL=0, xR=this->width, yR=this->height;
   double sum=0;
-  double LLx,LLy;
+  //double LLx,LLy;
   for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
-    LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
-    LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
+    double LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
+    double LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     double eXL=exp( (xL-LLx)/alpha );
     double eXR=exp( (LLx+caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))-xR) / alpha );  
     double eYL=exp( (yL-LLy)/alpha );
