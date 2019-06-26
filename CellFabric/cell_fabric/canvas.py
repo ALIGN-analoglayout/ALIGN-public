@@ -5,6 +5,7 @@ import json
 from . import transformation
 from .remove_duplicates import RemoveDuplicates
 from .utilities import DesignRuleCheck, ParasiticExtraction
+from .postprocess import PostProcessor
 from .pdk import Pdk
 from .generators import *
 from .grid import *
@@ -33,7 +34,7 @@ class Canvas:
         assert gen.nm not in self.generators, gen.nm
         self.generators[gen.nm] = gen
         return gen
- 
+
     def transform_and_add( self, s):
         r = transformation.Rect( *s['rect'])
         s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
@@ -41,7 +42,7 @@ class Canvas:
 
     def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
         self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
-       
+
     def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
         self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
 
@@ -168,6 +169,7 @@ class Canvas:
     def __init__( self, pdk=None):
         self.pdk = pdk
         self.terminals = []
+        self.postprocessor = PostProcessor()
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
@@ -196,6 +198,8 @@ class Canvas:
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
+
+        data['terminals'] = self.postprocessor.run(data['terminals'])
 
         if self.pdk is not None:
             self.drc = DesignRuleCheck( self)

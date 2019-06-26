@@ -65,6 +65,13 @@ class DefaultCanvas(Canvas):
             Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg)
         ))
 
+        def single_centered_via(rect):
+            xpos = ( rect[0] + rect[2] ) // 2
+            ypos = ( rect[1] + rect[3] ) // 2
+            return [xpos - info['WidthX'] // 2, ypos - info['WidthY'] // 2, xpos + info['WidthX'] // 2, ypos + info['WidthY'] // 2]
+
+        self.postprocessor.register(layer, single_centered_via)
+
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None
         for (v, (m0, m1)) in self.layer_stack:
