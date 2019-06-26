@@ -164,7 +164,7 @@ class PnRdatabase
     int topidx;
     PnRDB::Drc_info DRC_info;
     vector<PnRDB::hierNode> hierTree;
-    map<string, PnRDB::lefMacro> lefData;
+    map<string, std::vector<PnRDB::lefMacro> > lefData;
     map<string, string> gdsData;
     PnRDB::designRule drData;
 
@@ -207,7 +207,7 @@ class PnRdatabase
     //bool ReadVerilog(string verilogfile, string topcell);
     bool ReadLEF(string leffile); // read building block data from LEF file
     void PrintLEFData();  // print LEF data for debugging
-    map<string, PnRDB::lefMacro> checkoutlef(){return lefData;};
+    map<string, std::vector<PnRDB::lefMacro> > checkoutlef(){return lefData;};
     bool ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix);
     bool MergeLEFMapData(PnRDB::hierNode& node);
     void PrintHierTree();
@@ -241,6 +241,7 @@ class PnRdatabase
     void PrintSymmNet(PnRDB::SymmNet& t);
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
+    std::map<string, PnRDB::lefMacro> checkoutSingleLEF();
     //design(string blockfile, string netfile);
     //design(string blockfile, string netfile, string cfile);
     //

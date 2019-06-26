@@ -2069,11 +2069,6 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   unitScale=2000;
   maxNode=0;
   cout<<"PnRDB-Info: reading data from path "<<path<<endl;
-  this->ReadLEF(path+"/"+lefname);
-  this->ReadMap(path, mapname);
-  //cout<<"Before reading verilog"<<endl;
-  //PrintLEFData();
-  this->ReadVerilog(path, vname, topcell);
   #ifndef HFLAG
   std::cout<<"PnRDB-Info: default PDK"<<std::endl;
   this->HardDesignRule();
@@ -2087,6 +2082,12 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   }
   std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
   #endif
+
+  this->ReadLEF(path+"/"+lefname);
+  this->ReadMap(path, mapname);
+  //cout<<"Before reading verilog"<<endl;
+  //PrintLEFData();
+  this->ReadVerilog(path, vname, topcell);
 
   cout<<"PnRDB-Info: complete reading"<<endl;
   //cout<<"After reading verilog"<<endl;
@@ -2146,11 +2147,13 @@ void PnRdatabase::PrintHierTree() {
 
 void PnRdatabase::PrintLEFData() {
   cout<<"PnRDB-Info: PrintLEFData"<<endl;
-  for(map<string, PnRDB::lefMacro>::iterator it=lefData.begin();it!=lefData.end();++it) {
+  for(map<string, std::vector<PnRDB::lefMacro> >::iterator it=lefData.begin();it!=lefData.end();++it) {
     cout<<"\nMacro: "<<it->first<<endl;
-    cout<<"Content: name "<<(it->second).name<<"; width "<<(it->second).width<<"; height "<<(it->second).height<<endl;
+    for(int w=0;w<(int)it->second.size();++w) {
+    std::cout<<"Choice "<<w<<std::endl;
+    cout<<"Content: name "<<(it->second).at(w).name<<"; width "<<(it->second).at(w).width<<"; height "<<(it->second).at(w).height<<endl;
     cout<<"Macro pins"<<endl;
-    for(vector<PnRDB::pin>::iterator it2=it->second.macroPins.begin();it2!=it->second.macroPins.end();++it2) {
+    for(vector<PnRDB::pin>::iterator it2=it->second.at(w).macroPins.begin();it2!=it->second.at(w).macroPins.end();++it2) {
       cout<<"\tpin name: "<<it2->name<<"; type: "<<it2->type;
       for(vector<PnRDB::contact>::iterator it4=it2->pinContacts.begin(); it4!= it2->pinContacts.end();it4++) {
         cout<<"\n\tmetal: "<<it4->metal<<"; orginBox: ";
@@ -2166,7 +2169,7 @@ void PnRdatabase::PrintLEFData() {
       cout<<endl;
     }
     cout<<"Internal metals"<<endl;
-    for(vector<PnRDB::contact>::iterator it4=it->second.interMetals.begin(); it4!= it->second.interMetals.end();it4++) {
+    for(vector<PnRDB::contact>::iterator it4=it->second.at(w).interMetals.begin(); it4!= it->second.at(w).interMetals.end();it4++) {
       cout<<"\tmetal: "<<it4->metal<<"; orginBox: ";
       for(vector<PnRDB::point>::iterator it3=it4->originBox.polygon.begin();it3!=it4->originBox.polygon.end();it3++) {
         cout<<" {"<<it3->x<<","<<it3->y<<"}";
@@ -2176,8 +2179,9 @@ void PnRdatabase::PrintLEFData() {
       cout<<" UL-{"<<it4->originBox.UL.x<<","<<it4->originBox.UL.y<<"}";
       cout<<" UR-{"<<it4->originBox.UR.x<<","<<it4->originBox.UR.y<<"}";
       cout<<" center-{"<<it4->originCenter.x<<","<<it4->originCenter.y<<"}";
+      cout<<endl;
     }
-    cout<<endl;
+    }
   }
 }
 
@@ -2231,7 +2235,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           //cout<<"Stage "<<stage<<" @ pin "<<macroPins.back().name<<"; end "<<pinEnd<<endl;
           stage=2;
         } else if((found=def.find("OBS"))!=string::npos) {
-          interMetals.resize(interMetals.size()+1);
+          //interMetals.resize(interMetals.size()+1);
           stage=4;
         } else if((found=def.find(macroEnd))!=string::npos) {
           PnRDB::lefMacro macroIns;
@@ -2240,12 +2244,26 @@ bool PnRdatabase::ReadLEF(string leffile) {
           macroIns.name=macroName;
           macroIns.macroPins=macroPins;
           macroIns.interMetals=interMetals;
-          lefData.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
+          string key="_AspectRatio";
+          std::size_t found = macroIns.name.find(key);
+          if(found!=std::string::npos) { // different aspect ratio exists
+            macroIns.master=macroIns.name.substr(0, found);
+          } else { // different aspect ratio does not exist
+            macroIns.master=macroIns.name;
+          }
+          if(lefData.find(macroIns.master)==lefData.end()) {
+            std::vector<PnRDB::lefMacro> lefV; lefV.push_back(macroIns);
+            lefData.insert( std::pair<string, std::vector<PnRDB::lefMacro> >(macroIns.master,lefV) );
+            //lefData.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
+          } else {
+            lefData[macroIns.master].push_back(macroIns);
+          }
           //cout<<"Stage "<<stage<<" @ insert macro data"<<endl;
           stage=0;
         } 
       } else if (stage==4) { // within OBS
         if((found=def.find("LAYER"))!=string::npos) {
+          interMetals.resize(interMetals.size()+1);
           temp=get_true_word(found,def,0,';',p);
           interMetals.back().metal=temp[1];
         } else if((found=def.find("RECT"))!=string::npos) {
@@ -2373,9 +2391,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             if(it->find("/")!=string::npos) { // if block pin
               vector<string> tempthd=StringSplitbyChar(*it, '/');
               for(int i=0;i<(int)node.Blocks.size();i++) {
-                if(node.Blocks.at(i).instance.name.compare(tempthd[0])==0) {
-                  for(int j=0;j<(int)node.Blocks.at(i).instance.blockPins.size();j++) {
-                    if(node.Blocks.at(i).instance.blockPins.at(j).name.compare(tempthd[1])==0) {
+                if(node.Blocks.at(i).instance.back().name.compare(tempthd[0])==0) {
+                  for(int j=0;j<(int)node.Blocks.at(i).instance.back().blockPins.size();j++) {
+                    if(node.Blocks.at(i).instance.back().blockPins.at(j).name.compare(tempthd[1])==0) {
                       //cout<<j<<" "<<i<<endl;
                       PnRDB::connectNode newnode={PnRDB::Block, j, i};
                       tmpnet.connected.push_back(newnode);
@@ -2412,11 +2430,11 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             if(it->find("/")!=string::npos) { // if block pin
               vector<string> tempthd=StringSplitbyChar(*it, '/');
               for(int i=0;i<(int)node.Blocks.size();i++) {
-                //std::cout<<"block "<<node.Blocks.at(i).instance.name<<std::endl;
-                if(node.Blocks.at(i).instance.name.compare(tempthd[0])==0) {
-                  for(int j=0;j<(int)node.Blocks.at(i).instance.blockPins.size();j++) {
-                    //std::cout<<"\t pin "<<node.Blocks.at(i).instance.blockPins.at(j).name<<std::endl;
-                    if(node.Blocks.at(i).instance.blockPins.at(j).name.compare(tempthd[1])==0) {
+                //std::cout<<"block "<<node.Blocks.at(i).instance.back().name<<std::endl;
+                if(node.Blocks.at(i).instance.back().name.compare(tempthd[0])==0) {
+                  for(int j=0;j<(int)node.Blocks.at(i).instance.back().blockPins.size();j++) {
+                    //std::cout<<"\t pin "<<node.Blocks.at(i).instance.back().blockPins.at(j).name<<std::endl;
+                    if(node.Blocks.at(i).instance.back().blockPins.at(j).name.compare(tempthd[1])==0) {
                       //cout<<j<<" "<<i<<endl;
                       PnRDB::connectNode newnode={PnRDB::Block, j, i};
                       tmpnet2.connected.push_back(newnode);
@@ -2467,13 +2485,13 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         int horizon = atoi(temp[5].c_str());
         PnRDB::Preplace preplace_const;
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_first)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             preplace_const.blockid1 = i;
             break;
           }
         }
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_second)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_second)==0) {
             preplace_const.blockid2 = i;
             break;
           } else {
@@ -2490,13 +2508,13 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         int horizon = atoi(temp[5].c_str());
         PnRDB::Alignment alignment_const;
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_first)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             alignment_const.blockid1 = i;
             break;
           }
         }
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_second)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_second)==0) {
             alignment_const.blockid2 = i;
             break;
           }
@@ -2513,13 +2531,13 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         PnRDB::Abument abument_const;
       
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_first)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             abument_const.blockid1 = i;
             break;
           }
         }
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_second)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_second)==0) {
             abument_const.blockid2 = i;
             break;
           }
@@ -2536,13 +2554,13 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         PnRDB::MatchBlock match_const;
       
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_first)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             match_const.blockid1 = i;
             break;
           }
         }
         for(int i=0;i<(int)node.Blocks.size();i++) {
-          if(node.Blocks.at(i).instance.name.compare(block_second)==0) {
+          if(node.Blocks.at(i).instance.back().name.compare(block_second)==0) {
             match_const.blockid2 = i;
             break;
           }
@@ -2552,7 +2570,14 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         node.Match_blocks.push_back(match_const);
       } else if(temp[0].compare("bias_graph")==0){
         int distance= atoi(temp[2].c_str());
-        node.bias_graph = distance;
+        node.bias_Hgraph = distance;
+        node.bias_Vgraph = distance;
+      } else if(temp[0].compare("bias_Hgraph")==0 ) {
+        int distance= atoi(temp[2].c_str());
+        node.bias_Hgraph = distance;
+      } else if(temp[0].compare("bias_Vgraph")==0 ) {
+        int distance= atoi(temp[2].c_str());
+        node.bias_Vgraph = distance;
       } else if (temp[0].compare("ShieldNet")==0) {
         string shield_net=temp[2];
         for(int i=0;i<(int)node.Nets.size();i++) {
@@ -2571,8 +2596,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           tempsec=StringSplitbyChar(word, ',');
           if((found=temp[i].find(","))!=string::npos) { // sympair
             for(int k=0;k<(int)node.Blocks.size();k++) {
-              if(node.Blocks.at(k).instance.name.compare(tempsec[0])==0) {temp_pair.first = k;}
-              if(node.Blocks.at(k).instance.name.compare(tempsec[1])==0) {temp_pair.second = k;}
+              if(node.Blocks.at(k).instance.back().name.compare(tempsec[0])==0) {temp_pair.first = k;}
+              if(node.Blocks.at(k).instance.back().name.compare(tempsec[1])==0) {temp_pair.second = k;}
             }
             int temp_int;
             if(temp_pair.first>temp_pair.second){
@@ -2585,7 +2610,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             temp_SymmPairBlock.sympair.push_back(temp_pair);
           } else { // selfsym
             for(int j=0;j<(int)node.Blocks.size();j++) {
-              if(node.Blocks.at(j).instance.name.compare(word)==0) {
+              if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
                 temp_selfsym.second = PnRDB::H;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
@@ -2635,7 +2660,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         for(int j=4;j<(int)temp.size();j+=2) {
           for(int i=0;i<(int)node.Blocks.size();i++) {
-            if(node.Blocks.at(i).instance.name.compare(temp[j])==0) {
+            if(node.Blocks.at(i).instance.back().name.compare(temp[j])==0) {
               alignment_unit.blocks.push_back(i);
               break;
             }
@@ -2667,6 +2692,8 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
   size_t found;
   vector<string> temp;
   PnRDB::blockComplex temp_blockComplex,clear_blockComplex;
+  temp_blockComplex.instance.resize(1);
+  clear_blockComplex.instance.resize(1);
   PnRDB::net temp_net,clear_net;
   PnRDB::PowerNet temp_PowerNet, clear_PowerNet;
   PnRDB::terminal temp_terminal,clear_terminal;
@@ -2746,6 +2773,17 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
         if(lock ==0){
           if((found=verilog_string.find("endmodule"))!=string::npos){
              in_module = 0;
+             if(DRC_info.Metal_info.size()<=1) {std::cout<<"PnRDB-Error: too less metal layers\n";}
+             if(DRC_info.Metal_info[0].direct==1) { //horizontal
+               temp_node.bias_Vgraph=DRC_info.Metal_info[0].grid_unit_y;
+             } else {
+               temp_node.bias_Hgraph=DRC_info.Metal_info[0].grid_unit_x;
+             }
+             if(DRC_info.Metal_info[1].direct==1) { //horizontal
+               temp_node.bias_Vgraph=DRC_info.Metal_info[1].grid_unit_y;
+             } else {
+               temp_node.bias_Hgraph=DRC_info.Metal_info[1].grid_unit_x;
+             }
              //added one nodes to the class
              if(!ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
              
@@ -2822,26 +2860,26 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
                 }else{
                    if((found=verilog_string.find("supply0"))!=string::npos){
                       temp = split_by_spaces_yg(verilog_string);
-                      temp_blockComplex.instance.master=temp[0];
+                      temp_blockComplex.instance.back().master=temp[0];
                       vector<string> names = get_true_word(0,temp[1],0,';',p);
-                      temp_blockComplex.instance.name = names[0];
+                      temp_blockComplex.instance.back().name = names[0];
                       Supply_node.Blocks.push_back(temp_blockComplex);
                       temp_blockComplex = clear_blockComplex;
                       continue;
                     }else{
                       if((found=verilog_string.find("supply1"))!=string::npos){
                         temp = split_by_spaces_yg(verilog_string);
-                        temp_blockComplex.instance.master=temp[0];
+                        temp_blockComplex.instance.back().master=temp[0];
                         vector<string> names = get_true_word(0,temp[1],0,';',p);
-                        temp_blockComplex.instance.name = names[0];
+                        temp_blockComplex.instance.back().name = names[0];
                         Supply_node.Blocks.push_back(temp_blockComplex);
                         temp_blockComplex = clear_blockComplex;
                         continue;
                        }
                         else{
                         temp = split_by_spaces_yg(verilog_string);
-                        temp_blockComplex.instance.master=temp[0];
-                        temp_blockComplex.instance.name=temp[1];
+                        temp_blockComplex.instance.back().master=temp[0];
+                        temp_blockComplex.instance.back().name=temp[1];
                         // read in pin for blockComplex.instance 
                         for(int i=3;i<temp.size()-1;i++){
                           temp_pin.name =  get_word(temp[i],'.','(');
@@ -2886,7 +2924,7 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
                                   }
                               }
                           temp_pin.netIter=net_index;
-                          temp_blockComplex.instance.blockPins.push_back(temp_pin);
+                          temp_blockComplex.instance.back().blockPins.push_back(temp_pin);
                          }
                        }
                temp_node.Blocks.push_back(temp_blockComplex);
@@ -2908,7 +2946,7 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     for(int i=0;i<hierTree.size();i++){
         for(int j=0;j<hierTree.size();j++){
             for(int k=0;k<hierTree[i].Blocks.size();k++)
-                if(hierTree[i].Blocks[k].instance.master.compare(hierTree[j].name)==0){
+                if(hierTree[i].Blocks[k].instance.back().master.compare(hierTree[j].name)==0){
                    hierTree[i].Blocks[k].child = j;
                    hierTree[j].parent.push_back(i);
                   }
@@ -2936,27 +2974,29 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     for(int i=0;i<hierTree.size();i++){
         for(int j=0;j<hierTree[i].Blocks.size();j++){
             if(hierTree[i].Blocks[j].child==-1){
-               hierTree[i].Blocks[j].instance.isLeaf=1;
+               hierTree[i].Blocks[j].instance.back().isLeaf=1;
                }
         else{
-             hierTree[i].Blocks[j].instance.isLeaf=0;
+             hierTree[i].Blocks[j].instance.back().isLeaf=0;
              }
            }
        }
 
+  std::cout<<"Middle\n";
     //mergeLEFandGDS
     for(int i=0;i<hierTree.size();i++){
     //cout<<"hierTree node "<<i<<endl;
     if(!MergeLEFMapData(hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<hierTree[i].name<<endl;
       }
       }
-
+  // wbxu: following lines need modifications to reflect changes of block instance vector
   //update powernets information
+  std::cout<<"Middle\n";
   for(int i=0;i<Supply_node.Blocks.size();i++){
-      std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.name;
-      std::string supply_name = Supply_node.Blocks[i].instance.name;
+      std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
+      std::string supply_name = Supply_node.Blocks[i].instance.back().name;
       int power;
-      if(Supply_node.Blocks[i].instance.master == "supply0"){
+      if(Supply_node.Blocks[i].instance.back().master == "supply0"){
          power = 0;
         }else{
          power =1;
@@ -2983,7 +3023,9 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
       for(int j=0;j<hierTree[i].Nets.size();j++){
            for(int k=0;k<hierTree[i].Nets[j].connected.size();k++){
                 if(hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
-                    hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.blockPins[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+                        for(int m=0;m<(int)hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
+                            hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+                        } // [RA] need confirmation -wbxu
                   }else{
 hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
                   }
@@ -2994,7 +3036,10 @@ hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
 
            for(int k=0;k<hierTree[i].PowerNets[j].connected.size();k++){
                 if(hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
-                    hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.blockPins[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; hierTree[i].PowerNets[j].Pins.push_back(hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.blockPins[hierTree[i].PowerNets[j].connected[k].iter]);
+                    for(int m=0;m<(int) hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
+                    hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
+                    }  // [RA] need confirmation - wbxu
+                    hierTree[i].PowerNets[j].Pins.push_back(hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
                   }else{
                     hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
                     PnRDB::pin temp_pin;
@@ -3019,58 +3064,59 @@ catch(ifstream::failure e){
 
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   bool ture = 0;
-  
+  std::cout<<"PnRdatabase-Info:: merge LEF/map data\n";
   for(int i=0;i<node.Blocks.size();i++){
-    
-    if(lefData.find(node.Blocks[i].instance.master)==lefData.end()){
-    if(node.Blocks[i].instance.isLeaf) {
-      cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<node.Blocks[i].instance.master<<endl;
+    string master=node.Blocks[i].instance.back().master;
+    if(lefData.find(master)==lefData.end()){
+    if(node.Blocks[i].instance.back().isLeaf) {
+      cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
     }
     continue;
     }
     
-    //cout<<node.Blocks[i].instance.name<<" "<<node.Blocks[i].instance.master<<endl;
-    node.Blocks[i].instance.width=lefData[node.Blocks[i].instance.master].width;
-    node.Blocks[i].instance.height=lefData[node.Blocks[i].instance.master].height;
+    //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
+    for(int w=0;w<(int)lefData[master].size();++w) {
+      if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
+      node.Blocks[i].instNum++;
+      node.Blocks[i].instance.back().width=lefData[master].at(w).width;
+      node.Blocks[i].instance.back().height=lefData[master].at(w).height;
+      node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
+      node.Blocks[i].instance.back().originBox.LL.x=0;
+      node.Blocks[i].instance.back().originBox.LL.y=0;
+      node.Blocks[i].instance.back().originBox.polygon.clear();
+      node.Blocks[i].instance.back().originBox.polygon.push_back(node.Blocks[i].instance.back().originBox.LL);
+      node.Blocks[i].instance.back().originBox.UL.x=0;
+      node.Blocks[i].instance.back().originBox.UL.y=lefData[master].at(w).height;
+      node.Blocks[i].instance.back().originBox.polygon.push_back(node.Blocks[i].instance.back().originBox.UL);
+      node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
+      node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
+      node.Blocks[i].instance.back().originBox.polygon.push_back(node.Blocks[i].instance.back().originBox.UR);
+      node.Blocks[i].instance.back().originBox.LR.x=lefData[master].at(w).width;
+      node.Blocks[i].instance.back().originBox.LR.y=0;
+      node.Blocks[i].instance.back().originBox.polygon.push_back(node.Blocks[i].instance.back().originBox.LR);
+      node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
+      node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
 
-    node.Blocks[i].instance.originBox.LL.x=0;
-    node.Blocks[i].instance.originBox.LL.y=0;
-    node.Blocks[i].instance.originBox.polygon.push_back(node.Blocks[i].instance.originBox.LL);
-
-    node.Blocks[i].instance.originBox.UL.x=0;
-    node.Blocks[i].instance.originBox.UL.y=lefData[node.Blocks[i].instance.master].height;
-    node.Blocks[i].instance.originBox.polygon.push_back(node.Blocks[i].instance.originBox.UL);
-
-    node.Blocks[i].instance.originBox.UR.x=lefData[node.Blocks[i].instance.master].width;
-    node.Blocks[i].instance.originBox.UR.y=lefData[node.Blocks[i].instance.master].height;
-    node.Blocks[i].instance.originBox.polygon.push_back(node.Blocks[i].instance.originBox.UR);
-
-    node.Blocks[i].instance.originBox.LR.x=lefData[node.Blocks[i].instance.master].width;
-    node.Blocks[i].instance.originBox.LR.y=0;
-    node.Blocks[i].instance.originBox.polygon.push_back(node.Blocks[i].instance.originBox.LR);
-
-    node.Blocks[i].instance.originCenter.x=lefData[node.Blocks[i].instance.master].width/2;
-    node.Blocks[i].instance.originCenter.y=lefData[node.Blocks[i].instance.master].height/2;
-
-  for(int j=0;j<lefData[node.Blocks[i].instance.master].macroPins.size();j++){
-    bool found = 0;
-    for(int k=0;k<node.Blocks[i].instance.blockPins.size();k++){
-      if(lefData[node.Blocks[i].instance.master].macroPins[j].name.compare(node.Blocks[i].instance.blockPins[k].name)==0){
-        node.Blocks[i].instance.blockPins[k].type = lefData[node.Blocks[i].instance.master].macroPins[j].type;
-        node.Blocks[i].instance.blockPins[k].pinContacts = lefData[node.Blocks[i].instance.master].macroPins[j].pinContacts;
-        node.Blocks[i].instance.blockPins[k].use = lefData[node.Blocks[i].instance.master].macroPins[j].use;
-        found = 1;
-             }
+      for(int j=0;j<lefData[master].at(w).macroPins.size();j++){
+        bool found = 0;
+        for(int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
+          if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
+            node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
+            node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
+            node.Blocks[i].instance.back().blockPins[k].use = lefData[master].at(w).macroPins[j].use;
+            found = 1;
+            }
         }
-     if(found == 0){
-       node.Blocks[i].instance.blockPins.push_back(lefData[node.Blocks[i].instance.master].macroPins[j]);
-       }
+        if(found == 0){
+          node.Blocks[i].instance.back().blockPins.push_back(lefData[master].at(w).macroPins[j]);
+        }
+      }
+
+      node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
+      node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
+  //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
     }
 
-  node.Blocks[i].instance.interMetals = lefData[node.Blocks[i].instance.master].interMetals;
-
-  node.Blocks[i].instance.gdsFile=gdsData[node.Blocks[i].instance.master];
-  //cout<<"xxx "<<node.Blocks[i].instance.gdsFile<<endl;
 
   }
   ture = 1;
@@ -3078,6 +3124,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   
 }
 
+// [RA] need confirmation - wbxu
 void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
  
   for(int i=0;i<temp_pin.pinContacts.size();i++){
@@ -3109,33 +3156,62 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 
 };
 
+// [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
+  std::cout<<"CheckinHierNode\n";
+  PnRDB::layoutAS tmpL;
+  tmpL.gdsFile=updatedNode.gdsFile;
+  tmpL.width=updatedNode.width;
+  tmpL.height=updatedNode.height;
+  tmpL.Blocks=updatedNode.Blocks;
+  tmpL.Terminals=updatedNode.Terminals;
+  tmpL.Nets=updatedNode.Nets;
+  hierTree[nodeID].PnRAS.push_back(tmpL);
+
   hierTree[nodeID].isCompleted = 1;
   hierTree[nodeID].gdsFile = updatedNode.gdsFile;
   //update current node information
   for(int i=0;i<hierTree[nodeID].Blocks.size();i++){
-     //hierTree[nodeID].Blocks[i].instance.name = updatedNode.Blocks[i].instance.name;
-     hierTree[nodeID].Blocks[i].instance.orient = updatedNode.Blocks[i].instance.orient;
-     hierTree[nodeID].Blocks[i].instance.placedBox = updatedNode.Blocks[i].instance.placedBox;
-     hierTree[nodeID].Blocks[i].instance.placedCenter = updatedNode.Blocks[i].instance.placedCenter;
-	 
-     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.blockPins.size();j++){
-        for(int k=0;k<hierTree[nodeID].Blocks[i].instance.blockPins[j].pinContacts.size();k++){
-           hierTree[nodeID].Blocks[i].instance.blockPins[j].pinContacts[k]= updatedNode.Blocks[i].instance.blockPins[j].pinContacts[k];
+     int sel=updatedNode.Blocks[i].selectedInstance;
+     std::cout<<"Block "<<i<<" select "<<sel<<std::endl;
+     if(sel<0 or sel>=updatedNode.Blocks[i].instNum) {std::cout<<"PnRDB-Error: unselected block "<<i<<std::endl;continue;}
+     //std::cout<<"dB "<<hierTree[nodeID].Blocks[i].instNum<<std::endl;
+     if(hierTree[nodeID].Blocks[i].instNum<updatedNode.Blocks[i].instNum) { // for capacitor, new data in place and route
+       hierTree[nodeID].Blocks[i].instance.clear();
+       hierTree[nodeID].Blocks[i].instance=updatedNode.Blocks[i].instance;
+       hierTree[nodeID].Blocks[i].instNum=updatedNode.Blocks[i].instNum;
+     }
+     hierTree[nodeID].Blocks[i].selectedInstance=sel;
+     for(int w=0;w<updatedNode.Blocks[i].instNum;++w) {
+     //std::cout<<"\tchoice "<<w<<std::endl;
+     //hierTree[nodeID].Blocks[i].instance.at(w).name = updatedNode.Blocks[i].instance.at(w).name;
+     hierTree[nodeID].Blocks[i].instance.at(w).orient = updatedNode.Blocks[i].instance.at(w).orient;
+     //std::cout<<"\t\tcheck 1\n";
+     hierTree[nodeID].Blocks[i].instance.at(w).placedBox = updatedNode.Blocks[i].instance.at(w).placedBox;
+     //std::cout<<"\t\tcheck 2\n";
+     hierTree[nodeID].Blocks[i].instance.at(w).placedCenter = updatedNode.Blocks[i].instance.at(w).placedCenter;
+     //std::cout<<"\t\tcheck 3\n";
+     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.at(w).blockPins.size();j++){
+        for(int k=0;k<hierTree[nodeID].Blocks[i].instance.at(w).blockPins[j].pinContacts.size();k++){
+           hierTree[nodeID].Blocks[i].instance.at(w).blockPins[j].pinContacts[k]= updatedNode.Blocks[i].instance.at(w).blockPins[j].pinContacts[k];
            }
-        for(int k=0;k<hierTree[nodeID].Blocks[i].instance.blockPins[j].pinVias.size();k++){
-           hierTree[nodeID].Blocks[i].instance.blockPins[j].pinVias[k]= updatedNode.Blocks[i].instance.blockPins[j].pinVias[k];
+        for(int k=0;k<hierTree[nodeID].Blocks[i].instance.at(w).blockPins[j].pinVias.size();k++){
+           hierTree[nodeID].Blocks[i].instance.at(w).blockPins[j].pinVias[k]= updatedNode.Blocks[i].instance.at(w).blockPins[j].pinVias[k];
            }  
         }
-     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.interMetals.size();j++){
-           hierTree[nodeID].Blocks[i].instance.interMetals[j]= updatedNode.Blocks[i].instance.interMetals[j];
+     //std::cout<<"\t\tcheck 4\n";
+     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.at(w).interMetals.size();j++){
+           hierTree[nodeID].Blocks[i].instance.at(w).interMetals[j]= updatedNode.Blocks[i].instance.at(w).interMetals[j];
         }
-     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.interVias.size();j++){
-           hierTree[nodeID].Blocks[i].instance.interVias[j]= updatedNode.Blocks[i].instance.interVias[j];
+     //std::cout<<"\t\tcheck 5\n";
+     for(int j=0;j<hierTree[nodeID].Blocks[i].instance.at(w).interVias.size();j++){
+           hierTree[nodeID].Blocks[i].instance.at(w).interVias[j]= updatedNode.Blocks[i].instance.at(w).interVias[j];
         }     
      }
+	 
+  }
 
     
 
@@ -3161,8 +3237,10 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
             }
         }
      }
-
+  std::cout<<"update power net\n";
   //update PowerNet information//////
+  std::cout<<"hierTree power net size "<<hierTree[nodeID].PowerNets.size()<<std::endl;
+  std::cout<<"updatedNode power net size "<<updatedNode.PowerNets.size()<<std::endl;
   for(int i=0;i<hierTree[nodeID].PowerNets.size();i++){
      for(int j=0;j<updatedNode.PowerNets.size();j++){
          if(hierTree[nodeID].PowerNets[i].name == updatedNode.PowerNets[j].name){
@@ -3175,71 +3253,36 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
            }
          }
      }
+   std::cout<<"node ID "<<nodeID<<std::endl;
+   std::cout<<"hierTree power net size "<<hierTree[nodeID].PowerNets.size()<<std::endl;
+   std::cout<<"updatedNode power net size "<<updatedNode.PowerNets.size()<<std::endl;
 
    hierTree[nodeID].blockPins=updatedNode.blockPins;
    hierTree[nodeID].interMetals=updatedNode.interMetals;
    hierTree[nodeID].interVias=updatedNode.interVias;
   //update father imformation//////
-    
+    std::cout<<"Update parent\n";
     for(int i=0;i<hierTree[nodeID].parent.size();i++){
 
-     //update power pin information
-     for(int j=0;j<hierTree[hierTree[nodeID].parent[i]].Blocks.size();j++){
-          if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.master.compare(updatedNode.name)==0){
-             for(int k = 0; k<updatedNode.PowerNets.size();k++){
-                  int found = 0;
-                  for(int l =0;l<hierTree[hierTree[nodeID].parent[i]].PowerNets.size();l++){
-                       if(updatedNode.PowerNets[k].name == hierTree[hierTree[nodeID].parent[i]].PowerNets[l].name){
-                            found = 1;
-                            for(int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                                  PnRDB::connectNode temp_connectNode;
-                                  temp_connectNode.iter2 = j;
-                                  hierTree[hierTree[nodeID].parent[i]].PowerNets[l].dummy_connected.push_back(temp_connectNode);
-                                  PnRDB::pin temp_pin;
-                                  temp_pin=updatedNode.PowerNets[k].Pins[p];
-                                  
-                                  updatePowerPins(temp_pin);
-
-                                  hierTree[hierTree[nodeID].parent[i]].PowerNets[l].Pins.push_back(temp_pin);
-                               }
-                         }
-                     }
-                  if(found ==0){
-                      PnRDB::PowerNet temp_PowerNet;
-                      temp_PowerNet = updatedNode.PowerNets[k];
-                      temp_PowerNet.connected.clear();
-                      temp_PowerNet.Pins.clear();
-                      
-                      for(int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
-                             PnRDB::pin temp_pin;
-                             PnRDB::connectNode temp_connectNode;
-                             temp_connectNode.iter2 = j;
-                             temp_pin = updatedNode.PowerNets[k].Pins[p];
-                             updatePowerPins(temp_pin);
-                             temp_PowerNet.Pins.push_back(temp_pin);
-                             temp_PowerNet.dummy_connected.push_back(temp_connectNode);
-                          }
-                      
-                      hierTree[hierTree[nodeID].parent[i]].PowerNets.push_back(temp_PowerNet);
-                    }
-                }             
-            }
-        }
-
+     std::cout<<"Start update blocks in parent"<<std::endl;
      //update father blocks information
      for(int j=0;j<hierTree[hierTree[nodeID].parent[i]].Blocks.size();j++){
         
-        if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.master.compare(updatedNode.name)==0){
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.gdsFile = updatedNode.gdsFile;
+        if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().master.compare(updatedNode.name)==0){
+          if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instNum>0) {
+            hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.push_back( hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back() );
+          }
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instNum++;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().gdsFile = updatedNode.gdsFile;
           //update terminal to pin information
           
-          for(int p=0;p<hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins.size();p++){
+          for(int p=0;p<hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins.size();p++){
               for(int q=0;q<updatedNode.blockPins.size();q++){
-                  if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[p].name.compare(updatedNode.blockPins[q].name)==0){                     
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[p].pinContacts.clear();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[p].pinContacts = updatedNode.blockPins[q].pinContacts;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[p].pinVias.clear();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[p].pinVias = updatedNode.blockPins[q].pinVias;
+                  if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins[p].name.compare(updatedNode.blockPins[q].name)==0){                     
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins[p].pinContacts.clear();
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins[p].pinContacts = updatedNode.blockPins[q].pinContacts;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins[p].pinVias.clear();
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().blockPins[p].pinVias = updatedNode.blockPins[q].pinVias;
           break;     
                      }
                    
@@ -3247,8 +3290,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
               
           }
           
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interMetals.clear();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interMetals = updatedNode.interMetals;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().interMetals.clear();
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().interMetals = updatedNode.interMetals;
           
 /*
           for(int k=0;k<updatedNode.Blocks.size();k++){
@@ -3256,8 +3299,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
                  } 
           }
 */          
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interVias.clear();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interVias = updatedNode.interVias;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().interVias.clear();
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().interVias = updatedNode.interVias;
 /*
           for(int k=0;k<updatedNode.Blocks.size();k++){
               for(int l=0;l<updatedNode.Blocks[k].instance.interVias.size();l++){                      	   hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interVias.push_back(updatedNode.Blocks[k].instance.interVias[l]);
@@ -3304,26 +3347,79 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
           //hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
           //hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
           //}
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.width=updatedNode.width;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.height=updatedNode.height;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originCenter.x = updatedNode.width/2;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originCenter.y = updatedNode.height/2;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL.x = 0;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL.y = 0;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL.x = 0;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL.y = updatedNode.height;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR.x = updatedNode.width;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR.y = updatedNode.height;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR.x = updatedNode.width;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR.y = 0;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.clear();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR);
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().width=updatedNode.width;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().height=updatedNode.height;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originCenter.x = updatedNode.width/2;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originCenter.y = updatedNode.height/2;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LL.x = 0;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LL.y = 0;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UL.x = 0;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UL.y = updatedNode.height;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UR.x = updatedNode.width;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UR.y = updatedNode.height;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LR.x = updatedNode.width;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LR.y = 0;
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.polygon.clear();
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LL);
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UL);
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.UR);
+          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().originBox.LR);
           }
         }
+
+    std::cout<<"Start Update power pin in parent"<<std::endl;
+     //update power pin information
+     for(int j=0;j<hierTree[hierTree[nodeID].parent[i]].Blocks.size();j++){
+          if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().master.compare(updatedNode.name)==0){
+             for(int k = 0; k<updatedNode.PowerNets.size();k++){
+                  int found = 0;
+                  
+                  for(int l =0;l<hierTree[hierTree[nodeID].parent[i]].PowerNets.size();l++){
+                       if(updatedNode.PowerNets[k].name == hierTree[hierTree[nodeID].parent[i]].PowerNets[l].name){
+                            found = 1;
+
+                            hierTree[hierTree[nodeID].parent[i]].PowerNets[l].dummy_connected.clear();
+
+                            for(int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                                  PnRDB::connectNode temp_connectNode;
+                                  temp_connectNode.iter2 = j;
+                                  temp_connectNode.iter = hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().dummy_power_pin.size();
+                                  hierTree[hierTree[nodeID].parent[i]].PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                                  PnRDB::pin temp_pin;
+                                  temp_pin=updatedNode.PowerNets[k].Pins[p];
+                                  
+                                  updatePowerPins(temp_pin);
+
+                                  hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().dummy_power_pin.push_back(temp_pin);
+                               }
+                         }
+                     }
+                  if(found ==0){
+                      PnRDB::PowerNet temp_PowerNet;
+                      temp_PowerNet = updatedNode.PowerNets[k];
+                      temp_PowerNet.connected.clear();
+                      temp_PowerNet.Pins.clear();
+                      
+                      for(int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                             PnRDB::pin temp_pin;
+                             PnRDB::connectNode temp_connectNode;
+                             temp_connectNode.iter2 = j;
+                             temp_connectNode.iter = hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().dummy_power_pin.size();
+                             temp_pin = updatedNode.PowerNets[k].Pins[p];
+                             updatePowerPins(temp_pin);
+                             hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.back().dummy_power_pin.push_back(temp_pin);
+                             temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+                          }
+                      
+                      hierTree[hierTree[nodeID].parent[i]].PowerNets.push_back(temp_PowerNet);
+                    }
+                }             
+            }
+        }
+     std::cout<<"End update power pin in parent"<<std::endl;
      }
+
+  std::cout<<"End update blocks in parent"<<std::endl;
   
   /*
   for(int i=0;i<hierTree[nodeID].parent.size();i++){
@@ -3436,12 +3532,23 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
   OF<<"  \"leaves\": ["<<endl;
   string endStr;
   endStr=(lefData.rbegin())->first;
-  for( map<string, PnRDB::lefMacro>::iterator it=lefData.begin(); it!=lefData.end(); ++it) {
+  for( map<string, std::vector<PnRDB::lefMacro> >::iterator it=lefData.begin(); it!=lefData.end(); ++it) {
+    string lefname;
+    for(int w=0;w<(int)node.Blocks.size();++w) {
+      if(it->first.compare(node.Blocks.at(w).instance.back().master)==0) {
+        lefname=node.Blocks.at(w).instance.at( node.Blocks.at(w).selectedInstance ).lefmaster;
+        break;
+      }
+    }
+    int sel;
+    for(int w=0;w<it->second.size();++w) {
+      if(it->second.at(w).name.compare(lefname)==0) {sel=w;break;}
+    }
     OF<<"    {"<<endl;
-    OF<<"      \"template_name\": \""<<(it->second).name<<"\","<<endl;
-    OF<<"      \"bbox\": [ 0, 0, "<<(it->second).width/Xunit<<", "<<(it->second).height/Yunit<<"],"<<endl;
+    OF<<"      \"template_name\": \""<<(it->second).at(sel).master<<"\","<<endl;
+    OF<<"      \"bbox\": [ 0, 0, "<<(it->second).at(sel).width/Xunit<<", "<<(it->second).at(sel).height/Yunit<<"],"<<endl;
     OF<<"      \"terminales\": ["<<endl;
-    for(vector<PnRDB::pin>::iterator it2=(it->second).macroPins.begin(); it2!=(it->second).macroPins.end(); ++it2) {
+    for(vector<PnRDB::pin>::iterator it2=(it->second).at(sel).macroPins.begin(); it2!=(it->second).at(sel).macroPins.end(); ++it2) {
       for(vector<PnRDB::contact>::iterator it3=it2->pinContacts.begin(); it3!=it2->pinContacts.end(); ++it3) {
         //int metalUnit;
         //int metalIdx=DRC_info.Metalmap[it3->metal];
@@ -3455,7 +3562,7 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
         //  cout<<"PnRDB-Error: undefined direction found"<<endl;
         //}
         OF<<"        { \"net_name\": \""<<it2->name<<"\", \"layer\": \""<<it3->metal<<"\", \"rect\": [ "<<it3->originBox.LL.x<<", "<<it3->originBox.LL.y<<", "<<it3->originBox.UR.x<<", "<<it3->originBox.UR.y<<"]}";
-        if(!(it2==(it->second).macroPins.end()-1 and it3==it2->pinContacts.end()-1)) {
+        if(!(it2==(it->second).at(sel).macroPins.end()-1 and it3==it2->pinContacts.end()-1)) {
           OF<<",";
         }
         OF<<endl;
@@ -3469,27 +3576,29 @@ void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string r
   // write instances
   OF<<"  \"instances\": ["<<endl;
   for(vector<PnRDB::blockComplex>::iterator it=node.Blocks.begin(); it!=node.Blocks.end(); ++it) {
+    int sel=it->selectedInstance;
+    if(sel<0 or sel>=it->instNum) {std::cout<<"PnRDB-Error: unselected block\n";}
     OF<<"    {"<<endl;
-    OF<<"      \"instance_name\": \""<<it->instance.name<<"\","<<endl;
-    OF<<"      \"template_name\": \""<<it->instance.master<<"\","<<endl;
+    OF<<"      \"instance_name\": \""<<it->instance.at(sel).name<<"\","<<endl;
+    OF<<"      \"template_name\": \""<<it->instance.at(sel).master<<"\","<<endl;
     OF<<"      \"transformation\": {"<<endl;
-    if(it->instance.orient==PnRDB::N) {
-      OF<<"      \"oX\": "<<(it->instance.placedCenter.x-(it->instance.width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.placedCenter.y-(it->instance.height/2))/Yunit<<",\n      \"sX\": "<<1<<",\n      \"sY\": "<<1<<"\n      },"<<endl;
-    } else if (it->instance.orient==PnRDB::S) {
-      OF<<"      \"oX\": "<<(it->instance.placedCenter.x+(it->instance.width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.placedCenter.y+(it->instance.height/2))/Yunit<<",\n      \"sX\": "<<-1<<",\n      \"sY\": "<<-1<<"\n      },"<<endl;
-    } else if (it->instance.orient==PnRDB::FN) {
-      OF<<"      \"oX\": "<<(it->instance.placedCenter.x+(it->instance.width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.placedCenter.y-(it->instance.height/2))/Yunit<<",\n      \"sX\": "<<-1<<",\n      \"sY\": "<<1<<"\n      },"<<endl;
-    } else if (it->instance.orient==PnRDB::FS) {
-      OF<<"      \"oX\": "<<(it->instance.placedCenter.x-(it->instance.width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.placedCenter.y+(it->instance.height/2))/Yunit<<",\n      \"sX\": "<<1<<",\n      \"sY\": "<<-1<<"\n      },"<<endl;
+    if(it->instance.at(sel).orient==PnRDB::N) {
+      OF<<"      \"oX\": "<<(it->instance.at(sel).placedCenter.x-(it->instance.at(sel).width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.at(sel).placedCenter.y-(it->instance.at(sel).height/2))/Yunit<<",\n      \"sX\": "<<1<<",\n      \"sY\": "<<1<<"\n      },"<<endl;
+    } else if (it->instance.at(sel).orient==PnRDB::S) {
+      OF<<"      \"oX\": "<<(it->instance.at(sel).placedCenter.x+(it->instance.at(sel).width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.at(sel).placedCenter.y+(it->instance.at(sel).height/2))/Yunit<<",\n      \"sX\": "<<-1<<",\n      \"sY\": "<<-1<<"\n      },"<<endl;
+    } else if (it->instance.at(sel).orient==PnRDB::FN) {
+      OF<<"      \"oX\": "<<(it->instance.at(sel).placedCenter.x+(it->instance.at(sel).width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.at(sel).placedCenter.y-(it->instance.at(sel).height/2))/Yunit<<",\n      \"sX\": "<<-1<<",\n      \"sY\": "<<1<<"\n      },"<<endl;
+    } else if (it->instance.at(sel).orient==PnRDB::FS) {
+      OF<<"      \"oX\": "<<(it->instance.at(sel).placedCenter.x-(it->instance.at(sel).width/2))/Xunit<<",\n      \"oY\": "<<(it->instance.at(sel).placedCenter.y+(it->instance.at(sel).height/2))/Yunit<<",\n      \"sX\": "<<1<<",\n      \"sY\": "<<-1<<"\n      },"<<endl;
     } else {
       cout<<"PnRDB-Error: unsupported orientation!"<<endl;
     }
     OF<<"      \"formal_actual_map\": {"<<endl;
     int maxNo=0;
-    for(vector<PnRDB::pin>::iterator it2=it->instance.blockPins.begin(); it2!=it->instance.blockPins.end(); ++it2) {
+    for(vector<PnRDB::pin>::iterator it2=it->instance.at(sel).blockPins.begin(); it2!=it->instance.at(sel).blockPins.end(); ++it2) {
       if(it2->netIter!=-1) maxNo++;
     }
-    for(vector<PnRDB::pin>::iterator it2=it->instance.blockPins.begin(); it2!=it->instance.blockPins.end(); ++it2) {
+    for(vector<PnRDB::pin>::iterator it2=it->instance.at(sel).blockPins.begin(); it2!=it->instance.at(sel).blockPins.end(); ++it2) {
       int netID=it2->netIter;
       if(netID==-1) {continue;}
       maxNo--;
@@ -4352,25 +4461,29 @@ void PnRdatabase::PrintDesignRuleData() {
 
 // };
 
+// [RA] need confirmation -wbxu
 void PnRdatabase::AddingPowerPins(PnRDB::hierNode &node){
 
   for(int i=0;i<node.PowerNets.size();i++){
-       int number_index = node.PowerNets[i].connected.size();
+       
        for(int j=0;j<node.PowerNets[i].dummy_connected.size();j++){
-
-            PnRDB::pin temp_pin;
-            temp_pin = node.PowerNets[i].Pins[j+number_index];
-            temp_pin.netIter = -2; //added dummy power pins if -2 
             int iter2 = node.PowerNets[i].dummy_connected[j].iter2;
-            node.PowerNets[i].dummy_connected[j].iter = node.Blocks[iter2].instance.blockPins.size();
-            node.Blocks[iter2].instance.blockPins.push_back(temp_pin);
-            
+            int iter = node.PowerNets[i].dummy_connected[j].iter;
+            for(int k=0;k<node.Blocks[iter2].instance.size();k++){
+                 PnRDB::pin temp_pin;
+                 temp_pin = node.Blocks[iter2].instance[k].dummy_power_pin[iter];
+                 temp_pin.netIter = -2;
+                 node.PowerNets[i].dummy_connected[j].iter = node.Blocks[iter2].instance[k].blockPins.size();
+                 node.Blocks[iter2].instance[k].blockPins.push_back(temp_pin);
+               }
+           
           }     
      }
 
-}
-;
+   
+};
 
+// [RA] need confirmation -wbxu
 void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
 
 //extract power pin information
@@ -4383,7 +4496,7 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
              PnRDB::pin temp_pin;
              int iter = node.PowerNets[i].connected[j].iter;
              int iter2 = node.PowerNets[i].connected[j].iter2;
-             temp_pin = node.Blocks[iter2].instance.blockPins[iter];
+             temp_pin = node.Blocks[iter2].instance[node.Blocks[iter2].selectedInstance].blockPins[iter];
              node.PowerNets[i].Pins.push_back(temp_pin);
            }
 
@@ -4391,7 +4504,7 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
              PnRDB::pin temp_pin;
              int iter = node.PowerNets[i].dummy_connected[j].iter;
              int iter2 = node.PowerNets[i].dummy_connected[j].iter2;
-             temp_pin = node.Blocks[iter2].instance.blockPins[iter];
+             temp_pin = node.Blocks[iter2].instance[node.Blocks[iter2].selectedInstance].blockPins[iter];
              node.PowerNets[i].Pins.push_back(temp_pin);
            }
      
@@ -4400,18 +4513,20 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
 //remove power pins in blocks
 
   for(int i=0;i<node.Blocks.size();i++){
-     std::vector<PnRDB::pin> temp_pins;
-     for(int j=0;j<node.Blocks[i].instance.blockPins.size();j++){
-          int netIter = node.Blocks[i].instance.blockPins[j].netIter;
-          if(netIter!=-2){
-               temp_pins.push_back(node.Blocks[i].instance.blockPins[j]);
-            }else{
-               break;
-            }
+     
+     for(int k=0;k<node.Blocks[i].instance.size();k++){
+       std::vector<PnRDB::pin> temp_pins;
+       for(int j=0;j<node.Blocks[i].instance[k].blockPins.size();j++){
+            int netIter = node.Blocks[i].instance[k].blockPins[j].netIter;
+            if(netIter!=-2){
+                 temp_pins.push_back(node.Blocks[i].instance[k].blockPins[j]);
+              }else{
+                 break;
+              }
+          }
+        node.Blocks[i].instance[k].blockPins.clear();
+        node.Blocks[i].instance[k].blockPins = temp_pins;
         }
-      node.Blocks[i].instance.blockPins.clear();
-      node.Blocks[i].instance.blockPins = temp_pins;
-      
      }
 
 
@@ -4715,7 +4830,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     std::set<string> uniGDSset;
     int unitScale=2;
 	for (int i = 0; i < node.Blocks.size(); i++) 
-	    uniGDSset.insert(node.Blocks[i].instance.gdsFile);
+	    uniGDSset.insert(node.Blocks[i].instance.at( node.Blocks[i].selectedInstance ).gdsFile);
 
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
 	    JSONExtractUit (*it, unitScale);
@@ -4746,7 +4861,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     int idx = 0;
     if (includeBlock) {
 	for (int i = 0; i < node.Blocks.size(); i++) 
-	    uniGDSset.insert(node.Blocks[i].instance.gdsFile);
+	    uniGDSset.insert(node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile);
 
 	cout<<"start wrting sub-blocks"<<endl;
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
@@ -4854,13 +4969,13 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (includeBlock) {
 	int bOrient;
 	for (int i = 0; i < node.Blocks.size(); i++) {
-	    int index=gdsMap2strBlock[node.Blocks[i].instance.gdsFile];
+	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 
 	    json sref;
 	    sref["type"] = "sref";
 	    sref["sname"] = strBlocks_Top[index].c_str();
 
-	    switch (node.Blocks[i].instance.orient) {
+	    switch (node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).orient) {
 	    case PnRDB::N:   bOrient = 0; break;
 	    case PnRDB::S:   bOrient = 1; break;
 	    case PnRDB::E:   bOrient = 2; break;
@@ -4872,7 +4987,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	    default: bOrient = 8;
 	    }
 
-	    PnRDB::bbox box = node.Blocks[i].instance.placedBox;
+	    PnRDB::bbox box = node.Blocks[i].instance.at(node.Blocks[i].selectedInstance ).placedBox;
 	    switch (bOrient) {
 	    case 0:
 		sref["strans"] = 0;
@@ -5929,19 +6044,21 @@ void PnRdatabase::PrintNet(PnRDB::net& n) {
 void PnRdatabase::PrintBlock(PnRDB::blockComplex& bc) {
   PnRDB::blockComplex *it=&bc;
   std::cout<<"@Block"<<std::endl;
-    std::cout<<"Child: "<<it->child<<" ; name: "<<it->instance.name<<" ; master: "<<it->instance.master<<" ; type: "<<it->instance.type<<" ; width: "<<it->instance.width<<" ; height: "<<it->instance.height<<" ; isLeaf: "<<it->instance.isLeaf<<" ; gds: "<<it->instance.gdsFile<<" ; orient: "<<it->instance.orient<<" ; originCenter: {"<<it->instance.originCenter.x<<","<<it->instance.originCenter.y<<"}; placedCenter: {"<<it->instance.placedCenter.x<<","<<it->instance.placedCenter.y<<"}"<<std::endl;
-    std::cout<<"originBox: LL"<<it->instance.originBox.LL.x<<","<<it->instance.originBox.LL.y<<" LR"<<it->instance.originBox.LR.x<<","<<it->instance.originBox.LR.y<<" UR"<<it->instance.originBox.UR.x<<","<<it->instance.originBox.UR.y<<" UL"<<it->instance.originBox.UL.x<<","<<it->instance.originBox.UL.y<<" poly ";
-    for(vector<PnRDB::point>::iterator it2=it->instance.originBox.polygon.begin(); it2!=it->instance.originBox.polygon.end(); ++it2) {
+    std::cout<<"Child: "<<it->child<<" ; instNum: "<<it->instNum<<" ; selectedInstance: "<<it->selectedInstance<<std::endl;
+    for(int w=0;w<bc.instance.size();++w) {
+    std::cout<<"Choice "<<w<<" -> name: "<<it->instance.at(w).name<<" ; master: "<<it->instance.at(w).master<<" ; type: "<<it->instance.at(w).type<<" ; width: "<<it->instance.at(w).width<<" ; height: "<<it->instance.at(w).height<<" ; isLeaf: "<<it->instance.at(w).isLeaf<<" ; gds: "<<it->instance.at(w).gdsFile<<" ; orient: "<<it->instance.at(w).orient<<" ; originCenter: {"<<it->instance.at(w).originCenter.x<<","<<it->instance.at(w).originCenter.y<<"}; placedCenter: {"<<it->instance.at(w).placedCenter.x<<","<<it->instance.at(w).placedCenter.y<<"}"<<std::endl;
+    std::cout<<"originBox: LL"<<it->instance.at(w).originBox.LL.x<<","<<it->instance.at(w).originBox.LL.y<<" LR"<<it->instance.at(w).originBox.LR.x<<","<<it->instance.at(w).originBox.LR.y<<" UR"<<it->instance.at(w).originBox.UR.x<<","<<it->instance.at(w).originBox.UR.y<<" UL"<<it->instance.at(w).originBox.UL.x<<","<<it->instance.at(w).originBox.UL.y<<" poly ";
+    for(vector<PnRDB::point>::iterator it2=it->instance.at(w).originBox.polygon.begin(); it2!=it->instance.at(w).originBox.polygon.end(); ++it2) {
       std::cout<<"{"<<it2->x<<","<<it2->y<<"} ";
     }
     std::cout<<std::endl;
-    std::cout<<"placedBox: LL"<<it->instance.placedBox.LL.x<<","<<it->instance.placedBox.LL.y<<" LR"<<it->instance.placedBox.LR.x<<","<<it->instance.placedBox.LR.y<<" UR"<<it->instance.placedBox.UR.x<<","<<it->instance.placedBox.UR.y<<" UL"<<it->instance.placedBox.UL.x<<","<<it->instance.placedBox.UL.y<<" poly ";
-    for(vector<PnRDB::point>::iterator it2=it->instance.placedBox.polygon.begin(); it2!=it->instance.placedBox.polygon.end(); ++it2) {
+    std::cout<<"placedBox: LL"<<it->instance.at(w).placedBox.LL.x<<","<<it->instance.at(w).placedBox.LL.y<<" LR"<<it->instance.at(w).placedBox.LR.x<<","<<it->instance.at(w).placedBox.LR.y<<" UR"<<it->instance.at(w).placedBox.UR.x<<","<<it->instance.at(w).placedBox.UR.y<<" UL"<<it->instance.at(w).placedBox.UL.x<<","<<it->instance.at(w).placedBox.UL.y<<" poly ";
+    for(vector<PnRDB::point>::iterator it2=it->instance.at(w).placedBox.polygon.begin(); it2!=it->instance.at(w).placedBox.polygon.end(); ++it2) {
       std::cout<<"{"<<it2->x<<","<<it2->y<<"} ";
     }
     std::cout<<std::endl;
     std::cout<<"Blockpins"<<std::endl;
-    for(vector<PnRDB::pin>::iterator it2=it->instance.blockPins.begin(); it2!=it->instance.blockPins.end(); it2++) {
+    for(vector<PnRDB::pin>::iterator it2=it->instance.at(w).blockPins.begin(); it2!=it->instance.at(w).blockPins.end(); it2++) {
       std::cout<<"name: "<<it2->name<<" ; type: "<<it2->type<<" ; use: "<<it2->use<<" ; netIter: "<<it2->netIter<<std::endl;
       std::cout<<"pinContact "<<std::endl;
       for(vector<PnRDB::contact>::iterator it3=it2->pinContacts.begin(); it3!=it2->pinContacts.end(); ++it3) {
@@ -5952,12 +6069,13 @@ void PnRdatabase::PrintBlock(PnRDB::blockComplex& bc) {
       }
     }
     std::cout<<"Internal Metals"<<std::endl;
-    for(vector<PnRDB::contact>::iterator it2=it->instance.interMetals.begin(); it2!=it->instance.interMetals.end(); it2++) {
+    for(vector<PnRDB::contact>::iterator it2=it->instance.at(w).interMetals.begin(); it2!=it->instance.at(w).interMetals.end(); it2++) {
       PrintContact(*it2);
     }
     std::cout<<"Internal Vias"<<std::endl;
-    for(vector<PnRDB::Via>::iterator it2=it->instance.interVias.begin(); it2!=it->instance.interVias.end(); it2++) {
+    for(vector<PnRDB::Via>::iterator it2=it->instance.at(w).interVias.begin(); it2!=it->instance.at(w).interVias.end(); it2++) {
       PrintVia(*it2);
+    }
     }
 }
 
@@ -6009,3 +6127,11 @@ void PnRdatabase::PrintContact(PnRDB::contact& cont) {
 // Local Variables:
 // c-basic-offset: 4
 // End:
+
+std::map<string, PnRDB::lefMacro> PnRdatabase::checkoutSingleLEF() {
+  std::map<string, PnRDB::lefMacro> mm;
+  for(std::map<string, std::vector<PnRDB::lefMacro> >::iterator it=this->lefData.begin(); it!=this->lefData.end(); ++it) {
+    mm[it->first]=it->second.back();
+  }
+  return mm;
+}

@@ -1106,87 +1106,88 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //For blocks	
   for(int i=0;i<node.Blocks.size();i++){
       RouterDB::Block temp_block;
-      temp_block.blockName=node.Blocks[i].instance.name;
-      temp_block.blockMaster=node.Blocks[i].instance.master;
-      temp_block.gdsfile=node.Blocks[i].instance.gdsFile;
-      temp_block.numTerminals=node.Blocks[i].instance.blockPins.size();
-      temp_block.orient=RouterDB::Omark(node.Blocks[i].instance.orient);
-      temp_block.isLeaf=node.Blocks[i].instance.isLeaf;
-      temp_block.width=node.Blocks[i].instance.width;
-      temp_block.height=node.Blocks[i].instance.height;
+      int sel=node.Blocks[i].selectedInstance;
+      temp_block.blockName=node.Blocks[i].instance[sel].name;
+      temp_block.blockMaster=node.Blocks[i].instance[sel].master;
+      temp_block.gdsfile=node.Blocks[i].instance[sel].gdsFile;
+      temp_block.numTerminals=node.Blocks[i].instance[sel].blockPins.size();
+      temp_block.orient=RouterDB::Omark(node.Blocks[i].instance[sel].orient);
+      temp_block.isLeaf=node.Blocks[i].instance[sel].isLeaf;
+      temp_block.width=node.Blocks[i].instance[sel].width;
+      temp_block.height=node.Blocks[i].instance[sel].height;
       temp_block.area=temp_block.width*temp_block.height;
-      temp_block.placedLL.x=node.Blocks[i].instance.placedBox.LL.x;
-      temp_block.placedLL.y=node.Blocks[i].instance.placedBox.LL.y;
-      temp_block.placedUR.x=node.Blocks[i].instance.placedBox.UR.x;
-      temp_block.placedUR.y=node.Blocks[i].instance.placedBox.UR.y;
-      //temp_block.originLL.x=node.Blocks[i].instance.originBox.LL.x;
-      //temp_block.originLL.y=node.Blocks[i].instance.originBox.LL.y;
-      //temp_block.originUR.x=node.Blocks[i].instance.originBox.UR.x;
-      //temp_block.originUR.y=node.Blocks[i].instance.originBox.UR.y;
+      temp_block.placedLL.x=node.Blocks[i].instance[sel].placedBox.LL.x;
+      temp_block.placedLL.y=node.Blocks[i].instance[sel].placedBox.LL.y;
+      temp_block.placedUR.x=node.Blocks[i].instance[sel].placedBox.UR.x;
+      temp_block.placedUR.y=node.Blocks[i].instance[sel].placedBox.UR.y;
+      //temp_block.originLL.x=node.Blocks[i].instance[sel].originBox.LL.x;
+      //temp_block.originLL.y=node.Blocks[i].instance[sel].originBox.LL.y;
+      //temp_block.originUR.x=node.Blocks[i].instance[sel].originBox.UR.x;
+      //temp_block.originUR.y=node.Blocks[i].instance[sel].originBox.UR.y;
 
-      for(int j=0;j<node.Blocks[i].instance.blockPins.size();j++){
+      for(int j=0;j<node.Blocks[i].instance[sel].blockPins.size();j++){
           RouterDB::Pin temp_pin;
-          temp_pin.pinName=node.Blocks[i].instance.blockPins[j].name;
-          temp_pin.netIter=node.Blocks[i].instance.blockPins[j].netIter;
-          for(int k=0;k<node.Blocks[i].instance.blockPins[j].pinContacts.size();k++){
+          temp_pin.pinName=node.Blocks[i].instance[sel].blockPins[j].name;
+          temp_pin.netIter=node.Blocks[i].instance[sel].blockPins[j].netIter;
+          for(int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinContacts.size();k++){
              RouterDB::contact temp_contact;
-             if(drc_info.Metalmap.find(node.Blocks[i].instance.blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
-                 temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance.blockPins[j].pinContacts[k].metal];
+             if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
+                 temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal];
                }else{
                  std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
                }
-             temp_contact.placedLL.x=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedBox.LL.x;
-             temp_contact.placedLL.y=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedBox.LL.y;
-             temp_contact.placedUR.x=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedBox.UR.x;
-             temp_contact.placedUR.y=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedBox.UR.y;
-             temp_contact.placedCenter.x=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedCenter.x;
-             temp_contact.placedCenter.y=node.Blocks[i].instance.blockPins[j].pinContacts[k].placedCenter.y;
+             temp_contact.placedLL.x=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.x;
+             temp_contact.placedLL.y=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.LL.y;
+             temp_contact.placedUR.x=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.UR.x;
+             temp_contact.placedUR.y=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedBox.UR.y;
+             temp_contact.placedCenter.x=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedCenter.x;
+             temp_contact.placedCenter.y=node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].placedCenter.y;
              temp_pin.pinContacts.push_back(temp_contact);
              }
           
 
-          for(int k=0;k<node.Blocks[i].instance.blockPins[j].pinVias.size();k++){
+          for(int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinVias.size();k++){
                RouterDB::Via temp_via;
-               temp_via.model_index = node.Blocks[i].instance.blockPins[j].pinVias[k].model_index;
-               temp_via.position.x = node.Blocks[i].instance.blockPins[j].pinVias[k].placedpos.x;
-               temp_via.position.y = node.Blocks[i].instance.blockPins[j].pinVias[k].placedpos.y;
+               temp_via.model_index = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].model_index;
+               temp_via.position.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].placedpos.x;
+               temp_via.position.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].placedpos.y;
                //ViaRect
 
-               if(drc_info.Viamap.find(node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
-                   temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.metal];
+               if(drc_info.Viamap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
+                   temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.metal];
                  }else{
                    std::cout<<"Router-Error: - Viamap Error"<<std::endl;
                  }
-               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedBox.LL.x;
-               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedBox.LL.y;
-               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedBox.UR.x;
-               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedBox.UR.y;
-               temp_via.ViaRect.placedCenter.x=node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedCenter.x;
-               temp_via.ViaRect.placedCenter.y=node.Blocks[i].instance.blockPins[j].pinVias[k].ViaRect.placedCenter.y;
+               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.x;
+               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.LL.y;
+               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.UR.x;
+               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedBox.UR.y;
+               temp_via.ViaRect.placedCenter.x=node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedCenter.x;
+               temp_via.ViaRect.placedCenter.y=node.Blocks[i].instance[sel].blockPins[j].pinVias[k].ViaRect.placedCenter.y;
                //LowerRect //LowerMetalRect
-               if(drc_info.Metalmap.find(node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
-                  temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.metal];
+               if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
+                  temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.x;
-               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.y;
-               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.x;
-               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.y;
-               temp_via.LowerMetalRect.placedCenter.x=node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedCenter.x;
-               temp_via.LowerMetalRect.placedCenter.y=node.Blocks[i].instance.blockPins[j].pinVias[k].LowerMetalRect.placedCenter.y;
+               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.x;
+               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.y;
+               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.x;
+               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.y;
+               temp_via.LowerMetalRect.placedCenter.x=node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedCenter.x;
+               temp_via.LowerMetalRect.placedCenter.y=node.Blocks[i].instance[sel].blockPins[j].pinVias[k].LowerMetalRect.placedCenter.y;
                //UpperRect //UpperMetalRect
-               if(drc_info.Metalmap.find(node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
-                  temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.metal];
+               if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
+                  temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.x;
-               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.y;
-               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.x;
-               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.y;
-               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedCenter.x;
-               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance.blockPins[j].pinVias[k].UpperMetalRect.placedCenter.y;
+               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.x;
+               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.y;
+               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.x;
+               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.y;
+               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedCenter.x;
+               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].UpperMetalRect.placedCenter.y;
 
                temp_pin.pinVias.push_back(temp_via);
              }
@@ -1194,66 +1195,66 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
           temp_block.pins.push_back(temp_pin);
       }
 
-   for(int j=0;j<node.Blocks[i].instance.interMetals.size();j++){
+   for(int j=0;j<node.Blocks[i].instance[sel].interMetals.size();j++){
        RouterDB::contact temp_metal;
-       if(drc_info.Metalmap.find(node.Blocks[i].instance.interMetals[j].metal)!=drc_info.Metalmap.end()){
-           temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance.interMetals[j].metal];
+       if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interMetals[j].metal)!=drc_info.Metalmap.end()){
+           temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].interMetals[j].metal];
            //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
          }else{
            std::cout<<"Router-Error: interMetal info missing metal"<<std::endl;
          }
        RouterDB::point temp_point;
-       temp_metal.placedLL.x = node.Blocks[i].instance.interMetals[j].placedBox.LL.x;     
-       temp_metal.placedLL.y = node.Blocks[i].instance.interMetals[j].placedBox.LL.y;
-       temp_metal.placedUR.x = node.Blocks[i].instance.interMetals[j].placedBox.UR.x;      
-       temp_metal.placedUR.y = node.Blocks[i].instance.interMetals[j].placedBox.UR.y;  
+       temp_metal.placedLL.x = node.Blocks[i].instance[sel].interMetals[j].placedBox.LL.x;     
+       temp_metal.placedLL.y = node.Blocks[i].instance[sel].interMetals[j].placedBox.LL.y;
+       temp_metal.placedUR.x = node.Blocks[i].instance[sel].interMetals[j].placedBox.UR.x;      
+       temp_metal.placedUR.y = node.Blocks[i].instance[sel].interMetals[j].placedBox.UR.y;  
        temp_metal.placedCenter.x = (temp_metal.placedLL.x + temp_metal.placedUR.x)/2;
        temp_metal.placedCenter.y = (temp_metal.placedLL.y + temp_metal.placedUR.y)/2;
        temp_block.InternalMetal.push_back(temp_metal);
       }
 	
-   for(int j=0;j<node.Blocks[i].instance.interVias.size();j++){
+   for(int j=0;j<node.Blocks[i].instance[sel].interVias.size();j++){
        RouterDB::Via temp_via;
-       temp_via.model_index=node.Blocks[i].instance.interVias[j].model_index;
-       temp_via.position.x=node.Blocks[i].instance.interVias[j].placedpos.x;
-       temp_via.position.y=node.Blocks[i].instance.interVias[j].placedpos.y;
+       temp_via.model_index=node.Blocks[i].instance[sel].interVias[j].model_index;
+       temp_via.position.x=node.Blocks[i].instance[sel].interVias[j].placedpos.x;
+       temp_via.position.y=node.Blocks[i].instance[sel].interVias[j].placedpos.y;
        //ViaRect
 
-       if(drc_info.Viamap.find(node.Blocks[i].instance.interVias[j].ViaRect.metal)!=drc_info.Metalmap.end()){
-                   temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance.interVias[j].ViaRect.metal];
+       if(drc_info.Viamap.find(node.Blocks[i].instance[sel].interVias[j].ViaRect.metal)!=drc_info.Metalmap.end()){
+                   temp_via.ViaRect.metal = drc_info.Viamap[node.Blocks[i].instance[sel].interVias[j].ViaRect.metal];
                  }else{
                    std::cout<<"Router-Error: - Viamap Error"<<std::endl;
                  }
-               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance.interVias[j].ViaRect.placedBox.LL.x;
-               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance.interVias[j].ViaRect.placedBox.LL.y;
-               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance.interVias[j].ViaRect.placedBox.UR.x;
-               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance.interVias[j].ViaRect.placedBox.UR.y;
-               temp_via.ViaRect.placedCenter.x = node.Blocks[i].instance.interVias[j].ViaRect.placedCenter.x;
-               temp_via.ViaRect.placedCenter.y = node.Blocks[i].instance.interVias[j].ViaRect.placedCenter.y;
+               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.x;
+               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.LL.y;
+               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.UR.x;
+               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedBox.UR.y;
+               temp_via.ViaRect.placedCenter.x = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedCenter.x;
+               temp_via.ViaRect.placedCenter.y = node.Blocks[i].instance[sel].interVias[j].ViaRect.placedCenter.y;
                //LowerRect //LowerMetalRect
-               if(drc_info.Metalmap.find(node.Blocks[i].instance.interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
-                  temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance.interVias[j].LowerMetalRect.metal];
+               if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
+                  temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedBox.LL.x;
-               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedBox.LL.y;
-               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedBox.UR.x;
-               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedBox.UR.y;
-               temp_via.LowerMetalRect.placedCenter.x = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedCenter.x;
-               temp_via.LowerMetalRect.placedCenter.y = node.Blocks[i].instance.interVias[j].LowerMetalRect.placedCenter.y;
+               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.x;
+               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.LL.y;
+               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.UR.x;
+               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedBox.UR.y;
+               temp_via.LowerMetalRect.placedCenter.x = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedCenter.x;
+               temp_via.LowerMetalRect.placedCenter.y = node.Blocks[i].instance[sel].interVias[j].LowerMetalRect.placedCenter.y;
                //UpperRect //UpperMetalRect
-               if(drc_info.Metalmap.find(node.Blocks[i].instance.interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
-                  temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance.interVias[j].UpperMetalRect.metal];
+               if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
+                  temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedBox.LL.x;
-               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedBox.LL.y;
-               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedBox.UR.x;
-               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedBox.UR.y;       
-               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedCenter.x;
-               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance.interVias[j].UpperMetalRect.placedCenter.y;
+               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.x;
+               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.LL.y;
+               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.UR.x;
+               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedBox.UR.y;       
+               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedCenter.x;
+               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance[sel].interVias[j].UpperMetalRect.placedCenter.y;
 
        temp_block.InternalVia.push_back(temp_via);
       }

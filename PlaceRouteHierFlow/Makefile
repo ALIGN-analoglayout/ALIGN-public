@@ -4,8 +4,9 @@ LDFLAGS="-Wl,--no-as-needed -ldl"
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 LP_DIR?=/usr/local/lib/lpsolve
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
+BOOST_LP?=/usr/local
 
-CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP)
+CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP)
 
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 
@@ -17,7 +18,7 @@ placer_path=placer
 Capplacer_path=cap_placer
 Capplacer_objs=cap_placer/capplacer.o
 router_path=router
-placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o
+placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
 router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o 
 
 all: subsystem main.o tester
