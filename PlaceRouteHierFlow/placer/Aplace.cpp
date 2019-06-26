@@ -39,16 +39,16 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
   double f_j;//, f_k;
   int count=0, MAX_COUNT=300000;
 // 1. initialize g0 and d0, x0
-  for(int i=0;i<vec_len;i++) {G_j(i)=0; D_j(i)=0;} // G_j=0, D_j=0
+  for(int i=0;i<vec_len;++i) {G_j(i)=0; D_j(i)=0;} // G_j=0, D_j=0
   // x_j/x_k: {x_0,y_0,x_1,y_1,...,x_N-1,y_N-1,x_vs_0,...x_vs_M-1,y_hs_0,...,y_hs_P-1}
-  for(int i=0;i<this->B_len;i++) { // all blocks
+  for(int i=0;i<this->B_len;++i) { // all blocks
     x_j(i*2)=this->ABlocks.at(i).center.x; // x
     x_j(i*2+1)=this->ABlocks.at(i).center.y; // y
   }
-  for(int i=0;i<this->VSG_len;i++) { // vertical symmetry group
+  for(int i=0;i<this->VSG_len;++i) { // vertical symmetry group
     x_j(2*this->B_len+i)=this->SGroups.at(this->VSG.at(i)).axis_coor; 
   }
-  for(int i=0;i<this->HSG_len;i++) { // horizontal symmetry group
+  for(int i=0;i<this->HSG_len;++i) { // horizontal symmetry group
     x_j(2*this->B_len+VSG_len+i)=this->SGroups.at(this->HSG.at(i)).axis_coor;
   }
   std::cout<<"G_j "<<G_j<<std::endl;
@@ -57,7 +57,7 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
   PlotPlacement(caseNL, x_j, opath+name+"_AP_init.plt");
 // 2. initialize gk and dk
   do {
-    for(int i=0;i<vec_len;i++) {G_k(i)=0;} // G_k
+    for(int i=0;i<vec_len;++i) {G_k(i)=0;} // G_k
     AddWireLengthGradient(G_k, x_j, caseNL, alpha_wl, lamda_wl);
     //std::cout<<"G_k WL "<<G_k<<std::endl;
     AddSymmetryGradient(G_k, x_j, caseNL, lamda_sym);
@@ -98,14 +98,14 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
 
   std::cout<<"Final x_k "<<x_k<<std::endl;
   PlotPlacement(caseNL, x_k, opath+name+"_AP.plt");
-  for(int i=0;i<this->B_len;i++) {
+  for(int i=0;i<this->B_len;++i) {
     this->ABlocks.at(i).center.x=x_k(i*2); // x
     this->ABlocks.at(i).center.y=x_k(i*2+1); // y
   }
-  for(int i=0;i<this->VSG_len;i++) { // vertical symmetry group
+  for(int i=0;i<this->VSG_len;++i) { // vertical symmetry group
     this->SGroups.at(this->VSG.at(i)).axis_coor=x_k(2*this->B_len+i); 
   }
-  for(int i=0;i<this->HSG_len;i++) { // horizontal symmetry group
+  for(int i=0;i<this->HSG_len;++i) { // horizontal symmetry group
     this->SGroups.at(this->HSG.at(i)).axis_coor=x_k(2*this->B_len+VSG_len+i);
   }
 }
@@ -143,9 +143,9 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, this->ABlocks.at(i).orient, tp, this->selected.at(i));
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,this->ABlocks.at(i).orient, tp, this->selected.at(i));
-          for(int k = 0; k<p_pin.size();k++){
+          for(int k = 0; k<p_pin.size();++k){
       placerDB::point newp = p_pin[k];
       fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
@@ -181,7 +181,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     //std::vector<point> newp=caseNL.GetPlacedBlockAbsBoundary(i, E, tp);
     std::vector<placerDB::point> newp=caseNL.GetPlacedBlockAbsBoundary(i, this->ABlocks.at(i).orient, tp, this->selected.at(i));
 
-    for(int it=0; it<(int)newp.size(); it++ ) {
+    for(int it=0; it<(int)newp.size(); ++it ) {
       fout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
     }
     fout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
@@ -196,11 +196,11 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     placerDB::point tp;
     tp.x=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, this->ABlocks.at(i).orient, tp, this->selected.at(i));
-      for(int k=0;k<newp_pin.size();k++){
+      for(int k=0;k<newp_pin.size();++k){
           std::vector<placerDB::point> newp_p = newp_pin[k];
-      for(int it=0; it<(int)newp_p.size(); it++ ) {
+      for(int it=0; it<(int)newp_p.size(); ++it ) {
         fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
       }
       fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
@@ -238,8 +238,8 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
   // plot nets
   //cout<<"plot nets..."<<endl;
   for(std::vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
-    bool hasTerminal=false;
-    int distTerm=INT_MIN;
+    //bool hasTerminal=false;
+    //int distTerm=INT_MIN;
     //int tno; 
     placerDB::point tp;
     std::vector<placerDB::point> pins;
@@ -252,7 +252,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
         p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, this->ABlocks.at(ci->iter2).orient, bp, this->selected.at(ci->iter2));
 
         if(!p_pin.empty()) {
-        for(int i=0;i<1;i++){
+        for(int i=0;i<1;++i){
                 p=p_pin[i];
                 pins.push_back(p);
                 }
@@ -264,7 +264,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     //if(hasTerminal) {pins.push_back(caseNL.Terminals.at(tno).center);}
     fout<<"\n#Net: "<<ni->name<<endl;
     if(pins.size()>=2) {
-    for(int i=1;i<(int)pins.size();i++) {
+    for(int i=1;i<(int)pins.size();++i) {
       fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl;
       fout<<"\t"<<pins.at(i).x<<"\t"<<pins.at(i).y<<endl;
       fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl<<endl;
@@ -280,8 +280,8 @@ double Aplace::CalculateOverlapSmooth(design& caseNL, boost_vector& x_k, double 
   double Oy, Ox, ex1, ex2, ex3, ey1, ey2, ey3;
   double iLLx,iLLy,jLLx,jLLy;
   double sum=0;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
-    for(int j=i+1;j<caseNL.GetSizeofBlocks();j++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+    for(int j=i+1;j<caseNL.GetSizeofBlocks();++j) {
       iLLx=x_k(i*2)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
       iLLy=x_k(i*2+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
       jLLx=x_k(j*2)-caseNL.GetBlockWidth(j, this->ABlocks.at(j).orient, this->selected.at(j))/2;
@@ -292,10 +292,10 @@ double Aplace::CalculateOverlapSmooth(design& caseNL, boost_vector& x_k, double 
       ey1=exp( -1*( iLLy+caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))-jLLy )/alphaA );
       ey2=exp( -1*( jLLy+caseNL.GetBlockHeight(j, this->ABlocks.at(j).orient,this->selected.at(j))-iLLy )/alphaA );
       ey3=exp( -1* std::min( caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i)), caseNL.GetBlockHeight(j, this->ABlocks.at(j).orient,this->selected.at(j)) ) /alphaA);
-      Ox=alphaB*log( exp( -1*alphaA/alphaB*log(ex1+ex2+ex3) )+1 );
-      Oy=alphaB*log( exp( -1*alphaA/alphaB*log(ey1+ey2+ey3) )+1 );
-      //Ox=log( exp( -1*alphaA/alphaB*log(ex1+ex2+ex3) )+1 );
-      //Oy=log( exp( -1*alphaA/alphaB*log(ey1+ey2+ey3) )+1 );
+      Ox=alphaB*log1p( exp( -1*alphaA/alphaB*log(ex1+ex2+ex3) ) );
+      Oy=alphaB*log1p( exp( -1*alphaA/alphaB*log(ey1+ey2+ey3) ) );
+      //Ox=log1p( exp( -1*alphaA/alphaB*log(ex1+ex2+ex3) ) );
+      //Oy=log1p( exp( -1*alphaA/alphaB*log(ey1+ey2+ey3) ) );
       sum+=Ox*Oy;
     }
   }
@@ -307,8 +307,8 @@ double Aplace::CalculateOverlap(design& caseNL, boost_vector& x_k) {
   double sum=0;
   double Ox,Oy;
   double iLLx,iLLy,jLLx,jLLy;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
-    for(int j=i+1;j<caseNL.GetSizeofBlocks();j++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+    for(int j=i+1;j<caseNL.GetSizeofBlocks();++j) {
       iLLx=x_k(i*2)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
       iLLy=x_k(i*2+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
       jLLx=x_k(j*2)-caseNL.GetBlockWidth(j, this->ABlocks.at(j).orient,this->selected.at(j))/2;
@@ -325,8 +325,8 @@ void Aplace::AddOverlapGradient(boost_vector& G_k, boost_vector& x_k, design& ca
   double Oy, Ox, ex1, ex2, ex3, ey1, ey2, ey3;
   double scale=beta;
   double iLLx,iLLy,jLLx,jLLy;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
-    for(int j=i+1;j<caseNL.GetSizeofBlocks();j++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+    for(int j=i+1;j<caseNL.GetSizeofBlocks();++j) {
       iLLx=x_k(i*2)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
       iLLy=x_k(i*2+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
       jLLx=x_k(j*2)-caseNL.GetBlockWidth(j, this->ABlocks.at(j).orient,this->selected.at(j))/2;
@@ -353,7 +353,7 @@ double Aplace::CalculateBoundaryViolationSmooth(design& caseNL, boost_vector& x_
   int xL=0, yL=0, xR=this->width, yR=this->height;
   double sum=0;
   double LLx,LLy;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
     LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     double eXL=exp( (xL-LLx)/alpha );
@@ -368,10 +368,10 @@ double Aplace::CalculateBoundaryViolationSmooth(design& caseNL, boost_vector& x_
 double Aplace::CalculateBoundaryViolation(design& caseNL, boost_vector& x_k) {
   double sum=0;
   int xL=0, yL=0, xR=this->width, yR=this->height;
-  double LLx,LLy;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
-    LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
-    LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
+  //double LLx,LLy;
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+    double LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
+    double LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     sum+=std::max(xL-LLx, 0.0);
     sum+=std::max(LLx+caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))-xR, 0.0) ;
     sum+=std::max(yL-LLy,0.0) ;
@@ -385,7 +385,7 @@ void Aplace::AddBoundaryGradient(boost_vector& G_k, boost_vector& x_k, design& c
   int xL=0, yL=0, xR=this->width, yR=this->height;
   double scale=beta;
   //double LLx,LLy;
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
     double LLx=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     double LLy=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient,this->selected.at(i))/2;
     double eXL=exp( (xL-LLx)/alpha );
@@ -401,7 +401,7 @@ double Aplace::CalculateSymmetryViolation(design& caseNL, boost_vector& x_k) {
   double sum=0;
   for(std::vector<int>::iterator it=this->VSG.begin(); it!=this->VSG.end(); ++it) {
     // for each vertical symmetry group
-    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); it2++) {
+    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
       if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
         sum += std::pow( x_k(2*it2->first)-x_k(it-this->VSG.begin()+2*this->B_len), 2 ); // (x_i-x_axis)^2
@@ -417,7 +417,7 @@ double Aplace::CalculateSymmetryViolation(design& caseNL, boost_vector& x_k) {
   }
   for(std::vector<int>::iterator it=this->HSG.begin(); it!=this->HSG.end(); ++it) {
     // for each vertical symmetry group
-    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); it2++) {
+    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
       if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
         sum+=std::pow( x_k(2*it2->first+1)-x_k(it-this->HSG.begin()+2*this->B_len+this->VSG_len) , 2 ); // (y_i-y_axis)^2
@@ -438,7 +438,7 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
   double scale=beta;
   for(std::vector<int>::iterator it=this->VSG.begin(); it!=this->VSG.end(); ++it) {
     // for each vertical symmetry group
-    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); it2++) {
+    for(std::vector<pair<int,placerDB::Smark> >::iterator it2=caseNL.SBlocks.at(*it).selfsym.begin(); it2!=caseNL.SBlocks.at(*it).selfsym.end(); ++it2) {
       // for each selfsymmetric block
       if(it2->first>=0 and it2->first<caseNL.GetSizeofBlocks()) {
         G_k(2*it2->first) += scale*2*( x_k(2*it2->first)-x_k(it-this->VSG.begin()+2*this->B_len) ); // 2(x_i-x_axis)
@@ -484,10 +484,10 @@ void Aplace::AddSymmetryGradient(boost_vector& G_k, boost_vector& x_k, design& c
 
 double Aplace::CalculateWireLengthSmooth(design& caseNL, boost_vector& x_k, double alpha) {
   double sum=0;
-  double scale;
-  for(int i=0;i<(int)caseNL.Nets.size();i++) {
+  //double scale;
+  for(int i=0;i<(int)caseNL.Nets.size();++i) {
     //std::cout<<"net: "<<i<<std::endl;
-    scale=1;
+    double scale=1;
     if(caseNL.Nets.at(i).priority.compare("min")==0) {
       scale=4;
     } else if (caseNL.Nets.at(i).priority.compare("mid")==0) {
@@ -497,7 +497,7 @@ double Aplace::CalculateWireLengthSmooth(design& caseNL, boost_vector& x_k, doub
     double x_neg_base=0;
     double y_pos_base=0;
     double y_neg_base=0;
-    for(std::vector<placerDB::Node>::iterator it=caseNL.Nets.at(i).connected.begin(); it!=caseNL.Nets.at(i).connected.end(); it++) {
+    for(std::vector<placerDB::Node>::iterator it=caseNL.Nets.at(i).connected.begin(); it!=caseNL.Nets.at(i).connected.end(); ++it) {
       if(it->type==placerDB::Block) {
         int iter=it->iter;
         int iter2=it->iter2;
@@ -507,7 +507,7 @@ double Aplace::CalculateWireLengthSmooth(design& caseNL, boost_vector& x_k, doub
         std::vector<placerDB::point> tmpp=caseNL.GetPlacedBlockPinAbsPosition(iter2, iter, this->ABlocks.at(iter2).orient, LL,this->selected.at(iter2));
         if(tmpp.empty()) {continue;}
         int x=INT_MAX,y=INT_MAX,X=INT_MIN,Y=INT_MIN;
-        for(int w=0;w<(int)tmpp.size();w++) {
+        for(int w=0;w<(int)tmpp.size();++w) {
           if(tmpp.at(w).x<x) {x=tmpp.at(w).x;}
           if(tmpp.at(w).y<y) {y=tmpp.at(w).y;}
           if(tmpp.at(w).x>X) {X=tmpp.at(w).x;}
@@ -546,7 +546,7 @@ double Aplace::CalculateWireLength(design& caseNL, boost_vector& x_k) {
         bp.y=x_k(2*ci->iter2+1)-caseNL.GetBlockHeight(ci->iter2, this->ABlocks.at(ci->iter2).orient,this->selected.at(ci->iter2))/2;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, this->ABlocks.at(ci->iter2).orient, bp, this->selected.at(ci->iter2));
         //pos_pin_all.push_back(pos_pin);
-        for(int i=0;i<pos_pin.size();i++){
+        for(int i=0;i<pos_pin.size();++i){
           p = pos_pin[i];
           pos.push_back(p);
           //if( caseNL.GetBlockSymmGroup(ci->iter2)==-1  ) { // not in any symmetry group
@@ -586,7 +586,7 @@ double Aplace::CalculateWireLength(design& caseNL, boost_vector& x_k) {
 
 void Aplace::AddWireLengthGradient(boost_vector& G_k, boost_vector& x_k, design& caseNL, double alpha, double beta) {
   //double scale;
-  for(int i=0;i<(int)caseNL.Nets.size();i++) {
+  for(int i=0;i<(int)caseNL.Nets.size();++i) {
     //std::cout<<"net: "<<i<<std::endl;
     double scale=1;
     if(caseNL.Nets.at(i).priority.compare("min")==0) {
@@ -599,7 +599,7 @@ void Aplace::AddWireLengthGradient(boost_vector& G_k, boost_vector& x_k, design&
     double x_neg_base=0;
     double y_pos_base=0;
     double y_neg_base=0;
-    for(std::vector<placerDB::Node>::iterator it=caseNL.Nets.at(i).connected.begin(); it!=caseNL.Nets.at(i).connected.end(); it++) {
+    for(std::vector<placerDB::Node>::iterator it=caseNL.Nets.at(i).connected.begin(); it!=caseNL.Nets.at(i).connected.end(); ++it) {
       if(it->type==placerDB::Block) {
         int iter=it->iter;
         int iter2=it->iter2;
@@ -609,7 +609,7 @@ void Aplace::AddWireLengthGradient(boost_vector& G_k, boost_vector& x_k, design&
         std::vector<placerDB::point> tmpp=caseNL.GetPlacedBlockPinAbsPosition(iter2, iter, this->ABlocks.at(iter2).orient, LL,this->selected.at(iter2));
         if(tmpp.empty()) {continue;}
         int x=INT_MAX,y=INT_MAX,X=INT_MIN,Y=INT_MIN;
-        for(int w=0;w<(int)tmpp.size();w++) {
+        for(int w=0;w<(int)tmpp.size();++w) {
           if(tmpp.at(w).x<x) {x=tmpp.at(w).x;}
           if(tmpp.at(w).y<y) {y=tmpp.at(w).y;}
           if(tmpp.at(w).x>X) {X=tmpp.at(w).x;}
@@ -633,7 +633,7 @@ void Aplace::AddWireLengthGradient(boost_vector& G_k, boost_vector& x_k, design&
         std::vector<placerDB::point> tmpp=caseNL.GetPlacedBlockPinAbsPosition(iter2, iter, this->ABlocks.at(iter2).orient, LL,this->selected.at(iter2));
         if(tmpp.empty()) {continue;}
         int x=INT_MAX,y=INT_MAX,X=INT_MIN,Y=INT_MIN;
-        for(int w=0;w<(int)tmpp.size();w++) {
+        for(int w=0;w<(int)tmpp.size();++w) {
           if(tmpp.at(w).x<x) {x=tmpp.at(w).x;}
           if(tmpp.at(w).y<y) {y=tmpp.at(w).y;}
           if(tmpp.at(w).x>X) {X=tmpp.at(w).x;}
@@ -686,13 +686,13 @@ Aplace::Aplace(PnRDB::hierNode& node, design& caseNL, string opath) {
 }
 
 void Aplace::PrintABlocks() {
-  for(int i=0;i<(int)this->ABlocks.size();i++) {
+  for(int i=0;i<(int)this->ABlocks.size();++i) {
     std::cout<<"Block "<<i<<" C:{"<<this->ABlocks.at(i).center.x<<" , "<<this->ABlocks.at(i).center.y<<" } O: "<<this->ABlocks.at(i).orient<<std::endl;
   }
 }
 
 void Aplace::PrintSGroups() {
-  for(int i=0;i<(int)this->SGroups.size();i++) {
+  for(int i=0;i<(int)this->SGroups.size();++i) {
     std::cout<<"SGroup "<<i<<" dir "<<this->SGroups.at(i).axis_dir<<" coor "<<SGroups.at(i).axis_coor<<std::endl;
   }
 } 
