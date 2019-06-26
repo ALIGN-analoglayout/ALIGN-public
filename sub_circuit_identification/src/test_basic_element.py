@@ -27,3 +27,23 @@ def test_pmos():
     dev = _parse_inst("m0 3 2 1 1 p")
     assert len(dev.items()) == 5
 
+def test_pmos_param():
+    dev = _parse_inst("m0 3 2 1 1 p nfin = 1")
+    assert len(dev.items()) == 5
+
+def test_subckt_param():
+    dev = _parse_inst("xdp D G S nmos p=1")
+    assert len(dev["values"].items()) == 1
+
+def test_subckt_param_backslash():
+    dev = _parse_inst('xdp D G S / nmos p=1')
+    assert len(dev["values"].items()) == 1
+
+def test_wrong_name():
+    dev = _parse_inst("m0=1 3 2 1 1 p")
+    print("checking,",dev)
+    assert dev == None
+
+def test_subckt_param_spaces():
+    dev = _parse_inst("xdp D S G nmos p = 1")
+    assert len(dev["values"].items()) == 1

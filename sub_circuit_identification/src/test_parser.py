@@ -8,8 +8,13 @@ def test_parser1():
     g = sp.sp_parser()
     assert len(g.nodes()) == 10
 
-
 def test_parser2():
     sp = SpiceParser("test2.sp")
     g = sp.sp_parser()
     assert len(g.nodes()) == 12
+
+
+def test_parser3():
+    sp = SpiceParser("ota.sp")
+    g = sp.sp_parser()
+    assert len(g.nodes()) == 25
