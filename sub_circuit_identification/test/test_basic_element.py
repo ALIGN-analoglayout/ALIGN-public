@@ -1,5 +1,5 @@
 
-from basic_element import _parse_inst
+from src import _parse_inst
 
 def test_blank():
     be = _parse_inst("")
