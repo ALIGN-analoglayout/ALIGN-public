@@ -10,7 +10,7 @@ def setup():
     p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
     c = DefaultCanvas(p)
     for (i,nm) in itertools.chain( itertools.product( [0,2,4], ['a']), itertools.product( [1,3,5], ['b'])):
-        c.addWire( c.m1, nm, None, i, (0,1), (4,-1)) 
+        c.addWire( c.m1, nm, None, i, (0,-1), (3,-1)) 
     return c
 
 def test_via_postprocessor(setup):
@@ -21,10 +21,27 @@ def test_via_postprocessor(setup):
 +a======+=======+   |
                     |
     +b======+=======/
-""", xpitch=1, ypitch=1)
+""")
 
-    # TODO: Figure out why this is failing
-    # data = c.gen_data()
+    c.asciiStickDiagram( c.v3, c.m4, c.v4, c.m5, """
+            /=======+
+            |
+            |
+            |
+            /b======+
+""")
+
+    c.computeBbox()
+
+    data = { 'bbox' : c.bbox.toList(),
+             'globalRoutes' : [],
+             'globalRouteGrid' : [],
+             'terminals' : c.terminals}
+
+    fn = "tests/__default_fabric_ascii_stick_dia"
+
+    with open( fn + "_cand", "wt") as fp:
+        fp.write( json.dumps( data, indent=2) + '\n')
 
 def test_fabric_default():
     unit_cap = 10

@@ -57,12 +57,15 @@ class Region:
         return data
 
 class Via:
-    def __init__( self, nm, layer, *, h_clg, v_clg):
+    def __init__( self, nm, layer, *, h_clg, v_clg, h_ext=1, v_ext=1):
         self.nm = nm
-        self.layer = layer           
+        self.layer = layer
 
         self.h_clg = h_clg
         self.v_clg = v_clg
+
+        self.h_ext = h_ext
+        self.v_ext = v_ext
 
     def physical_xs( self, p):
         (c,(w,_)) = self.v_clg.value( p)

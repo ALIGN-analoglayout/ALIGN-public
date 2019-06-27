@@ -56,22 +56,21 @@ class Canvas:
     def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
-        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        # Get minimum & maximum via centerpoints (in terms of physical coords)
+        dim_tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        mnP = min(dim_tuples)
+        mxP = max(dim_tuples)
 
-#
-# Find min and max indices (using physical coordinate as key)
-#
-        mnP = min(tuples)
-        mxP = max(tuples)
+        # Adjust for via enclosure & obtain min & max wire coordinates
+        via_list = [via for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        mnP -= getattr(via_list[dim_tuples.index(mnP)], f'{wire.direction}_ext')
+        mxP += getattr(via_list[dim_tuples.index(mxP)], f'{wire.direction}_ext')
 
-        # Make sure wire is using EnclosureGrid for spg
-        assert isinstance(wire.spg, EnclosureGrid)
-        # Find nearest spg grid coordinate
-        # whilte adjusting for viaWidth //2 + viaEncA
-        enclosure = wire.spg.grid[1][0] - wire.spg.grid[0][0]
-        (mn, _) = wire.spg.inverseBounds( mnP - enclosure)
-        (_, mx) = wire.spg.inverseBounds( mxP + enclosure)
-        # Snap to legal required for irregular grids
+        # Compute abstract grid coordinates
+        (mn, _) = wire.spg.inverseBounds( mnP )
+        (_, mx) = wire.spg.inverseBounds( mxP )
+
+        # Snap to legal coordinates
         mn = wire.spg.snapToLegal(mn, -1)
         mx = wire.spg.snapToLegal(mx, 1)
 

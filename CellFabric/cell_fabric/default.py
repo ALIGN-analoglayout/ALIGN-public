@@ -14,10 +14,10 @@ class DefaultCanvas(Canvas):
             elif layer.startswith('V'):
                 self._create_via(layer, info)
 
-    def _get_spg_pitch( self, layer):
+    def _get_metal_pitch( self, layer):
         return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
 
-    def _get_spg_stop( self, metal, via):
+    def _get_via_ext( self, metal, via):
         viaenc = self.pdk[via][f'VencA_L'] if self.pdk[via]['Stack'][0] == metal else self.pdk[via][f'VencA_H']
         viawidth = self.pdk[via]['WidthX'] if self.pdk[metal]['Direction'] == 'h' else self.pdk[via]['WidthY']
         return viawidth // 2 + viaenc
@@ -33,15 +33,15 @@ class DefaultCanvas(Canvas):
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
             if nm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(pm), self._get_spg_stop(base_layer, pv)
+                spg_pitch, spg_stop = self._get_metal_pitch(pm), self._get_via_ext(base_layer, pv)
             elif pm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(nm), self._get_spg_stop(base_layer, nv)
+                spg_pitch, spg_stop = self._get_metal_pitch(nm), self._get_via_ext(base_layer, nv)
             else:
-                pm_pitch, nm_pitch = self._get_spg_pitch(pm), self._get_spg_pitch(nm)
+                pm_pitch, nm_pitch = self._get_metal_pitch(pm), self._get_metal_pitch(nm)
                 if pm_pitch <= nm_pitch:
-                    spg_pitch, spg_stop = pm_pitch, self._get_spg_stop(base_layer, pv)
+                    spg_pitch, spg_stop = pm_pitch, self._get_via_ext(base_layer, pv)
                 else:
-                    spg_pitch, spg_stop = nm_pitch, self._get_spg_stop(base_layer, nv)
+                    spg_pitch, spg_stop = nm_pitch, self._get_via_ext(base_layer, nv)
             layer = layer.lower()
             if len(info['Color']) == 0:
                 clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
@@ -57,12 +57,16 @@ class DefaultCanvas(Canvas):
             assert self.pdk[info['Stack'][1]]['Direction'] == 'v', f"{info['Stack']} both appear to be horizontal"
             h_clg = getattr(self, info['Stack'][0].lower()).clg
             v_clg = getattr(self, info['Stack'][1].lower()).clg
+            h_ext = self._get_via_ext(info['Stack'][0], layer)
+            v_ext = self._get_via_ext(info['Stack'][1], layer)
         else:
             assert self.pdk[info['Stack'][1]]['Direction'] == 'h', f"{info['Stack']} both appear to be vertical"
             v_clg = getattr(self, info['Stack'][0].lower()).clg
             h_clg = getattr(self, info['Stack'][1].lower()).clg
+            v_ext = self._get_via_ext(info['Stack'][0], layer)
+            h_ext = self._get_via_ext(info['Stack'][1], layer)
         setattr(self, layer.lower(), self.addGen(
-            Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg)
+            Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg, h_ext=h_ext, v_ext=v_ext)
         ))
 
         def single_centered_via(rect):
