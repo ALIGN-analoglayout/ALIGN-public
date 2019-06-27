@@ -1,7 +1,7 @@
 from . import transformation
 import copy
 import collections
-
+import operator
 
 class Grid:
     def __init__( self):
@@ -51,6 +51,24 @@ class Grid:
             return ((q,last_lt), (q,ge))
         else:
             return ((q,ge), (q,ge))
+
+    def snapToLegal(self, idx, direction):
+        assert len(idx) == 2
+        assert len(self.legalIndices) > 0
+        assert direction == 1 or direction == -1
+        if direction == -1:
+            legal = { x for x in self.legalIndices if x <= idx[1] }
+            if len(legal) > 0:
+                return (idx[0], max(legal))
+            else:
+                return (idx[0] - 1, max(self.legalIndices))
+        elif direction == 1:
+            legal = { x for x in self.legalIndices if x >= idx[1] }
+            if len(legal) > 0:
+                return (idx[0], min(legal))
+            else:
+                return (idx[0] + 1, min(self.legalIndices))
+        return idx
 
     def value( self, idx, check=True):
         assert self.n > 0

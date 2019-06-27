@@ -41,7 +41,6 @@ class Canvas:
         self.terminals.append( s)
 
     def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
-        print(f"Adding Wire {netName} on {wire.layer} from {bIdx} to {eIdx}")
         self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
 
     def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
@@ -65,10 +64,16 @@ class Canvas:
         mnP = min(tuples)
         mxP = max(tuples)
 
-# should be the real enclosure but this finds the next grid point
-        enclosure = 1
-        (mn, _) = wire.spg.inverseBounds( mnP-enclosure)
-        (_, mx) = wire.spg.inverseBounds( mxP+enclosure)
+        # Make sure wire is using EnclosureGrid for spg
+        assert isinstance(wire.spg, EnclosureGrid)
+        # Find nearest spg grid coordinate
+        # whilte adjusting for viaWidth //2 + viaEncA
+        enclosure = wire.spg.grid[1][0] - wire.spg.grid[0][0]
+        (mn, _) = wire.spg.inverseBounds( mnP - enclosure)
+        (_, mx) = wire.spg.inverseBounds( mxP + enclosure)
+        # Snap to legal required for irregular grids
+        mn = wire.spg.snapToLegal(mn, -1)
+        mx = wire.spg.snapToLegal(mx, 1)
 
         for (via,listOfIndices) in listOfPairs:
             for q in listOfIndices:
