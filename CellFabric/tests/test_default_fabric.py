@@ -33,7 +33,7 @@ def test_beol_stack(setup):
 
     data = c.gen_data()
 
-    fn = "tests/__default_fabric_beol_sticks"
+    fn = "tests/__json_default_fabric_beol_sticks"
 
     with open( fn + "_cand", "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
