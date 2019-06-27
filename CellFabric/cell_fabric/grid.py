@@ -1,7 +1,6 @@
 from . import transformation
 import copy
 import collections
-import operator
 
 class Grid:
     def __init__( self):
