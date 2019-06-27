@@ -1,6 +1,5 @@
 
-from satplacer.lef_parser import LEFParser
-from satplacer.verilog_parser import VerilogParser
+from satplacer.lef_v_to_cktgen import *
 
 import json
 
@@ -245,45 +244,34 @@ endmodule
 
 """
 
-    lp = LEFParser()
-    lp.parse(lef_str)
-    
-    vp = VerilogParser()
-    vp.parse(verilog_str)
+    d = convert( lef_str, verilog_str)
 
-    assert len(vp.modules) == 1
-    top_module = vp.modules[0]
+    assert d['nm'] == 'vga'
+    assert d['instances'][0]['instance_name'] == 'u0'
+    assert len(d['instances'][0]['formal_actual_map']) == 4
+    assert d['leaves'][0]['bbox'][0] == 0
+    assert d['leaves'][0]['bbox'][1] == 0
+    assert d['leaves'][0]['bbox'][2] == 38400
+    assert d['leaves'][0]['bbox'][3] == 34440
 
+    print( json.dumps( d, indent=2) + '\n')
 
-    d = { 'nm' : top_module.nm, 'bbox' : [0,0,0,0]}
+def test_two():
+    with open( 'tests/merged.lef', 'rt') as fp:
+        lef_str = fp.read()
 
-    leaves = []
-    for m in lp.macros:
-        leaf = { 'template_name' : m.macroName, 'bbox' : [0,0,0,0] }
-        terminals = []
-        
-        for pin in m.pins:
-            for port in pin.ports:
-                terminal = { 'net_name' : pin.nm, 'layer' : port[0], 'rect' : list(port[1]) }
-                terminals.append(terminal)
+    with open( 'tests/vga.v', 'rt') as fp:
+        verilog_str = fp.read()
 
-        leaf['terminals'] = terminals
-        leaves.append(leaf)
+    d = convert( lef_str, verilog_str)
 
-    d['leaves'] = leaves
-
-    instances = []
-    d['instances'] = instances
-
-    for inst in top_module.instances:
-        instance = { 'template_name' : inst.template_name,
-                     'instance_name' : inst.instance_name}
-
-        instance['transformation'] = { 'oX': 0, 'oY': 0, 'sX': 1, 'sY': 1}
-
-        instance['formal_actual_map'] = \
-            { formal : actual for (formal, actual) in inst.fa_list}
-
-        instances.append( instance)
+    if False:
+        assert d['nm'] == 'vga'
+        assert d['instances'][0]['instance_name'] == 'u0'
+        assert len(d['instances'][0]['formal_actual_map']) == 4
+        assert d['leaves'][0]['bbox'][0] == 0
+        assert d['leaves'][0]['bbox'][1] == 0
+        assert d['leaves'][0]['bbox'][2] == 38400
+        assert d['leaves'][0]['bbox'][3] == 34440
 
     print( json.dumps( d, indent=2) + '\n')
