@@ -201,7 +201,7 @@ class LEFParser:
 
     def whole(self):
 
-        macros = []
+        self.macros = []
 
         while True:
             if self._accept_keyword('END'):
@@ -229,11 +229,8 @@ class LEFParser:
                         raise SyntaxError('Expected END or MACRO keywords')
             elif self._accept_keyword( 'MACRO'):
                 m = self.macro()
-                macros.append(m)
+                self.macros.append(m)
             elif self.nexttok is None:
                 break
             else:
                 raise SyntaxError( f'Expected END, VERSION, BUSBITCHARS, DIVIDERCHAR, PROPERTYDEFINITIONS or MACRO, got {self.nexttok}')
-
-        for m in macros:
-            m.prnt()
