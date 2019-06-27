@@ -78,7 +78,7 @@ class VerilogParser:
     def _advance(self):
         'Advance one token ahead'
         self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
-        print( self.tok, self.nexttok)
+#        print( self.tok, self.nexttok)
 
     def _accept(self,toktype):
         'Test and consume the next token if it matches toktype'
@@ -151,11 +151,14 @@ class VerilogParser:
 
     def whole(self):
 
+        self.modules = []
+
         while True:
             if self.nexttok is None:
                 break
             elif self._accept_keyword('module'):
                 m = Module()
+                self.modules.append(m)
                 self._expect('NAME')
                 m.nm = self.tok.value
                 m.parameters = self.parse_possibly_empty_comma_separated_list( self.parse_name)
