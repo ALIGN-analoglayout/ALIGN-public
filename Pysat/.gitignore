@@ -4,3 +4,5 @@
 htmlcov/
 satplacer/satplacer.egg-info/
 tally/tally.egg-info/
+*.log
+bottom-up.test_result
