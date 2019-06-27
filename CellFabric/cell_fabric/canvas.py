@@ -5,6 +5,7 @@ import json
 from . import transformation
 from .remove_duplicates import RemoveDuplicates
 from .utilities import DesignRuleCheck, ParasiticExtraction
+from .postprocess import PostProcessor
 from .pdk import Pdk
 from .generators import *
 from .grid import *
@@ -33,7 +34,7 @@ class Canvas:
         assert gen.nm not in self.generators, gen.nm
         self.generators[gen.nm] = gen
         return gen
- 
+
     def transform_and_add( self, s):
         r = transformation.Rect( *s['rect'])
         s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
@@ -41,7 +42,7 @@ class Canvas:
 
     def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
         self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
-       
+
     def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
         self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
 
@@ -55,18 +56,23 @@ class Canvas:
     def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
-        tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        # Get minimum & maximum via centerpoints (in terms of physical coords)
+        dim_tuples = [(via.v_clg if wire.direction == 'h' else via.h_clg).value(idx, check=False)[0] for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        mnP = min(dim_tuples)
+        mxP = max(dim_tuples)
 
-#
-# Find min and max indices (using physical coordinate as key)
-#
-        mnP = min(tuples)
-        mxP = max(tuples)
+        # Adjust for via enclosure & obtain min & max wire coordinates
+        via_list = [via for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
+        mnP -= via_list[dim_tuples.index(mnP)].center_to_metal_edge(wire.direction)
+        mxP += via_list[dim_tuples.index(mxP)].center_to_metal_edge(wire.direction)
 
-# should be the real enclosure but this finds the next grid point
-        enclosure = 1
-        (mn, _) = wire.spg.inverseBounds( mnP-enclosure)
-        (_, mx) = wire.spg.inverseBounds( mxP+enclosure)
+        # Compute abstract grid coordinates
+        (mn, _) = wire.spg.inverseBounds( mnP )
+        (_, mx) = wire.spg.inverseBounds( mxP )
+
+        # Snap to legal coordinates
+        mn = wire.spg.snapToLegal(mn, -1)
+        mx = wire.spg.snapToLegal(mx, 1)
 
         for (via,listOfIndices) in listOfPairs:
             for q in listOfIndices:
@@ -168,6 +174,7 @@ class Canvas:
     def __init__( self, pdk=None):
         self.pdk = pdk
         self.terminals = []
+        self.postprocessor = PostProcessor()
         self.generators = collections.OrderedDict()
         self.trStack = [transformation.Transformation()]
         self.rd = None
@@ -196,6 +203,8 @@ class Canvas:
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
+
+        data['terminals'] = self.postprocessor.run(data['terminals'])
 
         if self.pdk is not None:
             self.drc = DesignRuleCheck( self)
@@ -241,80 +250,3 @@ class Canvas:
     def generate_routing_collateral(self, dirname):
         return routing_collateral.gen( self, dirname)
 
-
-
-class DefaultCanvas(Canvas):
-
-    def __init__( self, pdk):
-        super().__init__(pdk)
-        assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
-        self.layer_stack = pdk.get_electrical_connectivity()
-        for layer, info in self.pdk.items():
-            if layer.startswith('M'):
-                self._create_metal(layer, info)
-            elif layer.startswith('V'):
-                self._create_via(layer, info)
-
-    def _get_spg_pitch( self, layer):
-        return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
-
-    def _get_spg_stop( self, metal, viaenc):
-        w = min(self.pdk[metal]['Width']) if isinstance(self.pdk[metal]['Width'], list) else self.pdk[metal]['Width']
-        return w // 2 + viaenc
-
-    def _create_metal( self, layer, info):
-        if isinstance(info['Width'], list):
-            # TODO: Figure out what multiple metal widths even means. Just doing first width for now
-            # for i in range(0, len(info['Width'])):
-            for i in range(0, 1):
-                self._create_metal(layer, \
-                    {k: v[i] if k in ['Pitch', 'Width', 'MinL', 'MaxL'] else v for k, v in info.items()})
-        else:
-            base_layer = layer.split('_')[0]
-            (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
-            if nm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(pm), self._get_spg_stop(pm, self.pdk[pv]['VencA_H'])
-            elif pm is None:
-                spg_pitch, spg_stop = self._get_spg_pitch(nm), self._get_spg_stop(nm, self.pdk[nv]['VencA_L'])
-            else:
-                pm_pitch, nm_pitch = self._get_spg_pitch(pm), self._get_spg_pitch(nm)
-                if pm_pitch <= nm_pitch:
-                    spg_pitch, spg_stop = pm_pitch, self._get_spg_stop(pm, self.pdk[pv]['VencA_H'])
-                else:
-                    spg_pitch, spg_stop = nm_pitch, self._get_spg_stop(nm, self.pdk[nv]['VencA_L'])
-            layer = layer.lower()
-            if len(info['Color']) == 0:
-                clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
-            else:
-                clg = ColoredCenterLineGrid( colors=info['Color'], pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
-            setattr(self, layer, self.addGen(
-                Wire(layer, base_layer, info['Direction'], clg = clg,
-                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_pitch//2, stoppoint=spg_stop, check=True))
-            ))
-
-    def _create_via( self, layer, info):
-        if self.pdk[info['Stack'][0]]['Direction'] == 'h':
-            assert self.pdk[info['Stack'][1]]['Direction'] == 'v', f"{info['Stack']} both appear to be horizontal"
-            h_clg = getattr(self, info['Stack'][0].lower()).clg
-            v_clg = getattr(self, info['Stack'][1].lower()).clg
-        else:
-            assert self.pdk[info['Stack'][1]]['Direction'] == 'h', f"{info['Stack']} both appear to be vertical"
-            v_clg = getattr(self, info['Stack'][0].lower()).clg
-            h_clg = getattr(self, info['Stack'][1].lower()).clg
-        setattr(self, layer.lower(), self.addGen(
-            # TODO: layer.replace('V', 'via') is a temporary hack to reuse common tests. 
-            #       Fix tests & replace with layer
-            Via(layer.lower(), layer.replace('V', 'via'), h_clg = h_clg, v_clg = v_clg)
-        ))
-
-    def _find_adjoining_layers( self, layer):
-        pm = pv = nv = nm = None
-        for (v, (m0, m1)) in self.layer_stack:
-            if layer == m0:
-                nv = v
-                nm = m1
-            elif layer == m1:
-                pv = v
-                pm = m0
-        assert nm is not None or pm is not None, f"Could not trace any connections for {layer}"
-        return (pm, pv, nv, nm)

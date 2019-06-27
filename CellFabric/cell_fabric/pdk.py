@@ -12,6 +12,9 @@ class Pdk(object):
             ret += f"{key}: {value}\n"
         return ret
 
+    def __contains__(self, key):
+        return key in self.pdk
+
     def __getitem__(self, key):
         """Act like a read-only dict"""
         assert key in self.pdk
@@ -126,7 +129,7 @@ class Pdk(object):
         assert 'Layer' in kwargs, '"Layer" is required parameter for all layers in PDK abstraction'
         self._add(None, **kwargs)
 
-    def get_electrical_connectivity(self):
+    def get_via_stack(self):
         layer_stack = []
         for l, info in self.pdk.items():
             if l.startswith('V'):

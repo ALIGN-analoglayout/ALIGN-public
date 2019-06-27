@@ -1,5 +1,5 @@
 
-from cell_fabric import RemoveDuplicates
+from cell_fabric.remove_duplicates import RemoveDuplicates
 
 def test_containedIn():
     rA = [0,0,1,1]

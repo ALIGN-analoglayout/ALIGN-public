@@ -1,0 +1,737 @@
+{
+  "bbox": [
+    -40,
+    -42,
+    1240,
+    798
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "netName": "nselect",
+      "layer": "nselect",
+      "rect": [
+        -40,
+        -42,
+        1240,
+        798
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "S",
+      "rect": [
+        184,
+        90,
+        216,
+        582
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "S",
+      "rect": [
+        824,
+        90,
+        856,
+        582
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "D",
+      "rect": [
+        344,
+        90,
+        376,
+        582
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "D",
+      "rect": [
+        984,
+        90,
+        1016,
+        582
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "G",
+      "rect": [
+        264,
+        90,
+        296,
+        582
+      ]
+    },
+    {
+      "layer": "M1",
+      "netName": "G",
+      "rect": [
+        904,
+        90,
+        936,
+        582
+      ]
+    },
+    {
+      "layer": "M2",
+      "netName": "G",
+      "rect": [
+        164,
+        110,
+        1036,
+        142
+      ],
+      "pin": "G"
+    },
+    {
+      "layer": "M2",
+      "netName": "SA",
+      "rect": [
+        164,
+        194,
+        1036,
+        226
+      ],
+      "pin": "SA"
+    },
+    {
+      "layer": "M2",
+      "netName": "DA",
+      "rect": [
+        164,
+        278,
+        1036,
+        310
+      ],
+      "pin": "DA"
+    },
+    {
+      "layer": "M2",
+      "netName": "SB",
+      "rect": [
+        164,
+        362,
+        1036,
+        394
+      ],
+      "pin": "SB"
+    },
+    {
+      "layer": "M2",
+      "netName": "DB",
+      "rect": [
+        164,
+        446,
+        1036,
+        478
+      ],
+      "pin": "DB"
+    },
+    {
+      "layer": "V1",
+      "netName": "G",
+      "rect": [
+        264,
+        110,
+        296,
+        142
+      ]
+    },
+    {
+      "layer": "V1",
+      "netName": "G",
+      "rect": [
+        904,
+        110,
+        936,
+        142
+      ]
+    },
+    {
+      "layer": "V1",
+      "netName": "SA",
+      "rect": [
+        184,
+        194,
+        216,
+        226
+      ]
+    },
+    {
+      "layer": "V1",
+      "netName": "SB",
+      "rect": [
+        824,
+        362,
+        856,
+        394
+      ]
+    },
+    {
+      "layer": "V1",
+      "netName": "DA",
+      "rect": [
+        344,
+        278,
+        376,
+        310
+      ]
+    },
+    {
+      "layer": "V1",
+      "netName": "DB",
+      "rect": [
+        984,
+        446,
+        1016,
+        478
+      ]
+    },
+    {
+      "layer": "M0",
+      "netName": "m0",
+      "rect": [
+        183,
+        189,
+        217,
+        525
+      ]
+    },
+    {
+      "layer": "M0",
+      "netName": "m0",
+      "rect": [
+        823,
+        189,
+        857,
+        525
+      ]
+    },
+    {
+      "layer": "M0",
+      "netName": "m0",
+      "rect": [
+        343,
+        189,
+        377,
+        525
+      ]
+    },
+    {
+      "layer": "M0",
+      "netName": "m0",
+      "rect": [
+        983,
+        189,
+        1017,
+        525
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        -7,
+        -42,
+        7,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        73,
+        -42,
+        87,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        153,
+        -42,
+        167,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        233,
+        -42,
+        247,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        313,
+        -42,
+        327,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        393,
+        -42,
+        407,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        473,
+        -42,
+        487,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        553,
+        -42,
+        567,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        633,
+        -42,
+        647,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        713,
+        -42,
+        727,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        793,
+        -42,
+        807,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        873,
+        -42,
+        887,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        953,
+        -42,
+        967,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        1033,
+        -42,
+        1047,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        1113,
+        -42,
+        1127,
+        798
+      ]
+    },
+    {
+      "layer": "poly",
+      "netName": "g",
+      "rect": [
+        1193,
+        -42,
+        1207,
+        798
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        -5,
+        1240,
+        5
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        37,
+        1240,
+        47
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        79,
+        1240,
+        89
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        121,
+        1240,
+        131
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        163,
+        1240,
+        173
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        205,
+        1240,
+        215
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        247,
+        1240,
+        257
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        289,
+        1240,
+        299
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        331,
+        1240,
+        341
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        373,
+        1240,
+        383
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        415,
+        1240,
+        425
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        457,
+        1240,
+        467
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        499,
+        1240,
+        509
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        541,
+        1240,
+        551
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        583,
+        1240,
+        593
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        625,
+        1240,
+        635
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        667,
+        1240,
+        677
+      ]
+    },
+    {
+      "layer": "fin",
+      "netName": "fin",
+      "rect": [
+        -40,
+        709,
+        1240,
+        719
+      ]
+    },
+    {
+      "layer": "active",
+      "netName": "active",
+      "rect": [
+        160,
+        189,
+        400,
+        525
+      ]
+    },
+    {
+      "layer": "active",
+      "netName": "active",
+      "rect": [
+        800,
+        189,
+        1040,
+        525
+      ]
+    },
+    {
+      "layer": "polycon",
+      "netName": "RVT",
+      "rect": [
+        160,
+        147,
+        400,
+        567
+      ]
+    },
+    {
+      "layer": "polycon",
+      "netName": "RVT",
+      "rect": [
+        800,
+        147,
+        1040,
+        567
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        184,
+        189,
+        216,
+        221
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        184,
+        315,
+        216,
+        347
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        184,
+        441,
+        216,
+        473
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        344,
+        189,
+        376,
+        221
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        344,
+        315,
+        376,
+        347
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        344,
+        441,
+        376,
+        473
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        824,
+        189,
+        856,
+        221
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        824,
+        315,
+        856,
+        347
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        824,
+        441,
+        856,
+        473
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        984,
+        189,
+        1016,
+        221
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        984,
+        315,
+        1016,
+        347
+      ]
+    },
+    {
+      "layer": "V0",
+      "netName": "v0",
+      "rect": [
+        984,
+        441,
+        1016,
+        473
+      ]
+    }
+  ]
+}
