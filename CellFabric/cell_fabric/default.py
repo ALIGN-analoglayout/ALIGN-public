@@ -7,12 +7,17 @@ class DefaultCanvas(Canvas):
     def __init__( self, pdk):
         super().__init__(pdk)
         assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
-        self.layer_stack = pdk.get_electrical_connectivity()
+        self._initialize_layer_stack()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):
                 self._create_metal(layer, info)
             elif layer.startswith('V'):
                 self._create_via(layer, info)
+
+    def _initialize_layer_stack(self):
+        """layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))"""
+        self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
+            for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
 
     def _get_metal_pitch( self, layer):
         return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
