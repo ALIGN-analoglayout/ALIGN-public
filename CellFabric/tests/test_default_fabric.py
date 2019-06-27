@@ -13,7 +13,7 @@ def setup():
         c.addWire( c.m1, nm, None, i, (0,-1), (3,-1)) 
     return c
 
-def test_via_postprocessor(setup):
+def test_beol_stack(setup):
     c = setup
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
     +b======+=======*
@@ -31,17 +31,17 @@ def test_via_postprocessor(setup):
             /b======+
 """)
 
-    c.computeBbox()
+    data = c.gen_data()
 
-    data = { 'bbox' : c.bbox.toList(),
-             'globalRoutes' : [],
-             'globalRouteGrid' : [],
-             'terminals' : c.terminals}
-
-    fn = "tests/__default_fabric_ascii_stick_dia"
+    fn = "tests/__default_fabric_beol_sticks"
 
     with open( fn + "_cand", "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
+
+    with open( fn + "_gold", "rt") as fp:
+        data2 = json.load( fp)
+
+        assert data == data2
 
 def test_fabric_default():
     unit_cap = 10
