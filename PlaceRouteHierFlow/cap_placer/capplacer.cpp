@@ -90,7 +90,7 @@ void Placer_Router_Cap::Placer_Router_Cap_clean(){
 
 
 
-void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds, bool cap_ratio, int cap_r, int cap_s, PnRDB::Drc_info drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag){
+void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds, bool cap_ratio, int cap_r, int cap_s, PnRDB::Drc_info drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag, string opath){
 
 //dummy_flag is 1, dummy capacitor is added; Else, dummy capacitor do not exist.
 //not added, needed to be added 
@@ -393,9 +393,9 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step4"<<endl;
   cal_offset(drc_info, H_metal_index, V_metal_index, HV_via_metal_index);
   cout<<"step5"<<endl;
-  ExtractData(fpath ,unit_capacitor, final_gds, obs, drc_info, H_metal_index, V_metal_index, HV_via_metal_index);
+  ExtractData(fpath ,unit_capacitor, final_gds, obs, drc_info, H_metal_index, V_metal_index, HV_via_metal_index, opath);
   cout<<"step6"<<endl;
-  WriteJSON (fpath ,unit_capacitor, final_gds, drc_info);
+  WriteJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
   cout<<"step7"<<endl;
   //PrintPlacer_Router_Cap(outfile);
   cout<<"step8"<<endl;
@@ -442,8 +442,8 @@ fillContact (PnRDB::contact& con, int* x, int*y) {
 }
 
 void
-Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index) {
-    string topGDS_loc = final_gds+".gds";
+Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, string opath) {
+    string topGDS_loc = opath+final_gds+".gds";
     int gds_unit = 20;
     //writing metals
     int x[5], y[5];
@@ -2525,10 +2525,10 @@ Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
 }
 
 void
-Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info) {
+Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info, string opath) {
     //begin to write JSON file from unit capacitor to final capacitor file
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
-    string topGDS_loc = final_gds+".gds";
+    string topGDS_loc = opath+final_gds+".gds";
     string TopCellName = final_gds;
     int unitScale=2;
     JSONExtractUit (gds_unit_capacitor, unitScale);
@@ -2845,7 +2845,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                         //string cr_string = cr.str();
                         //string cs_string = cs.str();
                         std::cout<<"New CC 7 "<<j<<std::endl;
-                        std::string cc_gds_file = opath+final_gds+"_AspectRatio_"+to_string(cap_r[q])+"x"+to_string(cap_s[q]);
+                        std::string cc_gds_file = final_gds+"_AspectRatio_"+to_string(cap_r[q])+"x"+to_string(cap_s[q]);
    
                         
                         std::cout<<"StartClean New CC"<<std::endl;
@@ -2854,7 +2854,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                         std::cout<<"End Clean New CC"<<std::endl;
 
                         std::cout<<"Start New CC"<<std::endl;
-                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio or aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag);
+                        Placer_Router_Cap_function(ki, pin_names, fpath, unit_capacitor, cc_gds_file, cap_ratio or aspect_ratio, cap_r[q], cap_s[q], drc_info, lefData, dummy_flag, opath);
                         std::cout<<"End New CC"<<std::endl;
                         PnRDB::block temp_block=CheckoutData();
                         //delete PRC;

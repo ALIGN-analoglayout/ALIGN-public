@@ -264,7 +264,7 @@ class Placer_Router_Cap
   public:
     Placer_Router_Cap();
     void Placer_Router_Cap_clean();
-    void Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds, bool cap_ratio, int cap_r, int cap_s, PnRDB::Drc_info drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag);
+    void Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, string fpath, string unit_capacitor, string final_gds, bool cap_ratio, int cap_r, int cap_s, PnRDB::Drc_info drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag, string opath);
     Placer_Router_Cap(string opath, string fpath, PnRDB::hierNode & current_node, PnRDB::Drc_info &drc_info, map<string, PnRDB::lefMacro> &lefData, bool dummy_flag, bool aspect_ratio, int num_aspect);
     //Placer_Router_Cap(string fpath, PnRDB::hierNode & current_node, PnRDB::Drc_info &drc_info, map<string, PnRDB::lefMacro>& lefData, bool dummy_flag);
     void initial_net_pair_sequence(vector<int> & ki, vector<pair<string, string> > &cap_pin);
@@ -278,9 +278,9 @@ class Placer_Router_Cap
 			      pair<double,double> &start,
 			      pair<double,double> &end,
 			      double width);
-    void ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_metal_index);
+    void ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_metal_index, string opath);
     //    void WriteGDS(string fpath, string unit_capacitor, string final_gds);
-    void WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info);
+    void WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info, string opath);
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
     //    void GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury);
     int found_neighbor(int j, net& pos, connection_set& temp_set);

@@ -91,7 +91,7 @@ int main(int argc, char** argv ){
       std::cout<<"Checkpoint : before route"<<std::endl;
       DB.PrintHierNode(current_node);
       //    DB.WriteGDS(current_node, true, false, false, false, current_node.name+"_PL", drcInfo); //block net powernet powergrid
-      DB.WriteJSON (current_node, true, false, false, false, opath+current_node.name+"_PL_"+std::to_string(lidx), drcInfo); //block net powernet powergrid
+      DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
 
       Router curr_route;
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv ){
       DB.PrintHierNode(current_node);
 
       //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_GR", drcInfo);
-      DB.WriteJSON (current_node, true, true, false, false, opath+current_node.name+"_GR_"+std::to_string(lidx), drcInfo);
+      DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
 
       // Detail Routing
       std::cout<<"Checkpoint : detail route"<<std::endl;
@@ -111,7 +111,7 @@ int main(int argc, char** argv ){
       DB.PrintHierNode(current_node);
 
       //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_DR", drcInfo);
-      DB.WriteJSON (current_node, true, true, false, false, opath+current_node.name+"_DR_"+std::to_string(lidx), drcInfo);
+      DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
 
       if(current_node.isTop){
         std::cout<<"Checkpoint : Starting Power Grid Creation"<<std::endl;
@@ -119,19 +119,19 @@ int main(int argc, char** argv ){
         std::cout<<"Checkpoint : End Power Grid Creation"<<std::endl;
 
         //      DB.WriteGDS(current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
-        DB.WriteJSON (current_node, true, true, false, true, opath+current_node.name+"_PG_"+std::to_string(lidx), drcInfo);
+        DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
         
         std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
         curr_route.RouteWork(3, current_node, drcInfo, 1, 6, binary_directory);
         std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
 
         //      DB.WriteGDS(current_node, true, false, true, true, current_node.name+"_PR", drcInfo);
-        DB.WriteJSON (current_node, true, false, true, true, opath+current_node.name+"_PR_"+std::to_string(lidx), drcInfo);
+        DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
         
         }
   
       //    DB.WriteGDS(current_node, true, true, true, true, current_node.name, drcInfo);
-      DB.WriteJSON (current_node, true, true, true, true, opath+current_node.name+"_"+std::to_string(lidx), drcInfo);
+      DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
       // Update node
