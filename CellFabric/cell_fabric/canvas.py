@@ -41,6 +41,7 @@ class Canvas:
         self.terminals.append( s)
 
     def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
+        print(f"Adding Wire {netName} on {wire.layer} from {bIdx} to {eIdx}")
         self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
 
     def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
