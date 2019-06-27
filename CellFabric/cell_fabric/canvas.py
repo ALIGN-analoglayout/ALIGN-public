@@ -63,8 +63,8 @@ class Canvas:
 
         # Adjust for via enclosure & obtain min & max wire coordinates
         via_list = [via for (via,listOfIndices) in listOfPairs for idx in listOfIndices]
-        mnP -= getattr(via_list[dim_tuples.index(mnP)], f'{wire.direction}_ext')
-        mxP += getattr(via_list[dim_tuples.index(mxP)], f'{wire.direction}_ext')
+        mnP -= via_list[dim_tuples.index(mnP)].center_to_metal_edge(wire.direction)
+        mxP += via_list[dim_tuples.index(mxP)].center_to_metal_edge(wire.direction)
 
         # Compute abstract grid coordinates
         (mn, _) = wire.spg.inverseBounds( mnP )

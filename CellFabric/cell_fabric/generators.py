@@ -87,3 +87,6 @@ class Via:
 
         return data
 
+    def center_to_metal_edge(self, direction):
+        assert direction in ('h', 'v')
+        return getattr(self, f'{direction}_ext')
