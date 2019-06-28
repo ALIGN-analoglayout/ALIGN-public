@@ -4,7 +4,6 @@ import pathlib
 
 import re
 
-
 def import_gds(fp):
     j = json.load( fp)
 
@@ -30,17 +29,9 @@ def import_gds(fp):
         assert all( b[i] == b[j] for (i,j) in same_pairs)
         return [ b[i] for i in indices]
 
-    cmb = extract('CMB_4_n10_A1_B1_C2_D4_1560115511')
-    dpa = extract('DP_NMOS_n10_X5_Y2_1560115512')
-    dpb = extract('DP_NMOS_n10_X5_Y4_1560115513')
-    dpc = extract('DP_NMOS_n10_X8_Y5_1560115514')
-    r = extract('Res_400_1560115515')
-    s = extract('Switch_NMOS_n10_X4_Y4_1560115516')
-    ca = extract('cap_10f_112_1560115517')
-    cb = extract('Cap_10f_1560115517')
-    vga = extract('vga')
-
+    result = []
     for x in r23:
         bb = get_bb(x['elements'])
-        print( x['strname'], boundary_to_rect( bb[0]['xy']))
+        result.append( (x['strname'], boundary_to_rect( bb[0]['xy'])))
 
+    return result,r23

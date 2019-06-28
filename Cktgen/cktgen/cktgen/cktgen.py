@@ -8,10 +8,14 @@ import json
 from . import techfile
 
 class ADT:
-  def __init__( self, tech, nm, npp=10, nr=1):
+  def __init__( self, tech, nm, npp=10, nr=1, *, physical_bbox=None):
     self.tech = tech
     self.nm = nm
-    self.bbox = Rect( 0, 0, npp*self.tech.pitchPoly, nr*self.tech.dgPerRow*self.tech.pitchDG)
+    if physical_bbox is None:
+      self.bbox = Rect( 0, 0, npp*self.tech.pitchPoly, nr*self.tech.dgPerRow*self.tech.pitchDG)
+    else:
+      self.bbox = Rect( *physical_bbox)
+
     self.terminals = []
 
   @property
@@ -571,7 +575,7 @@ Option name=create_fake_line_end_grids           value=1
     self.write_ctrl_file( dir + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
     self.write_input_file( dir + "/" + self.nm + "_dr_netlist.txt")
     self.write_global_routing_file( dir + "/" + self.nm + "_dr_globalrouting.txt")
-    self.dumpGR( tech, dir + "/" + self.nm + "_dr_globalrouting.json")
+    self.dumpGR( tech, dir + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
 
 import re
