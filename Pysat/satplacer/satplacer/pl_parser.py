@@ -59,9 +59,9 @@ class PLParser:
         else:
             return False
 
-    def _accept_keyword(self,str):
-        'Test and consume the next token if it matches the keyword str'
-        if self.nexttok and self.nexttok.type == 'NAME' and self.nexttok.value == str:
+    def _accept_keyword(self,k):
+        'Test and consume the next token if it matches the keyword k'
+        if self.nexttok and self.nexttok.type == 'NAME' and self.nexttok.value == k:
             self._advance()
             return True
         else:
@@ -72,10 +72,10 @@ class PLParser:
         if not self._accept(toktype):
             raise SyntaxError('Expected ' + toktype)
 
-    def _expect_keyword(self,str):
+    def _expect_keyword(self,k):
         'Consume next token if it matches argument or raise SyntaxError'
-        if not self._accept_keyword(str):
-            raise SyntaxError('Expected keyword' + str)
+        if not self._accept_keyword(k):
+            raise SyntaxError('Expected keyword' + k)
 
     # Grammar rules follow
 

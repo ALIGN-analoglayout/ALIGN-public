@@ -1,6 +1,5 @@
 
 import json
-import pathlib
 
 import re
 
@@ -16,9 +15,6 @@ def import_gds(fp):
     p = re.compile( r'^M(\d+)_M(\d+)_CDNS_(\d+)_(\d+)(|_(\d+))$')
 
     r23 = [ x for x in l23 if not p.match(x['strname'])]
-
-    def extract( nm):
-        return [ x for x in l23 if x['strname'] == nm][0]
 
     def get_bb( l):
         return [ x for x in l if 'datatype' in x and x['datatype'] == 5]
