@@ -158,8 +158,8 @@ class UnitCell(CanvasNMOS):
                 self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1)) 
                 for j in range(1,self.v0.h_clg.n):
                     self.addVia( self.v0, 'v0', None, i, (y, j))
-            #pin = 'VDD' if y%2==0 else 'GND'    
-            #self.addWire( self.m2, pin, pin, h*(y+1), (0, 0), (x_cells*gu, 0))                     
+            pin = 'VDD' if y%2==0 else 'GND'    
+            self.addWire( self.m2, pin, pin, h*(y+1), (0, -1), (x_cells*gu, 1))                     
             for (pin, contact, track) in Routing:
                 self.addWire( self.m2,'_', pin, y*h+track, (min(contact), -1), (max(contact), 1))
                 self.addWire( self.m3,'_', None, min(contact), (track, -1), (y*h+track, 1))
@@ -174,7 +174,7 @@ class UnitCell(CanvasNMOS):
         if x == x_cells -1 and y == y_cells -1:
            # assert 2*self. self.pitch('Fin', 0, p) == self. self.pitch('M2', 0, p)        
             self.addRegion( self.nselect, 'ns', None, (0, -1), -1, ((1+x)*gu, -1), (y+1)*fin-1)                                                
-            #self.addWire( self.m2, 'GND', 'GND', 0, (0, 0), (x_cells*gu, 0))
+            self.addWire( self.m2, 'GND', 'GND', 0, (0, -1), (x_cells*gu, 1))
 
                                       
                                    
