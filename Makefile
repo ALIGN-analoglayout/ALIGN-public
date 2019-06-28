@@ -30,7 +30,7 @@ build_docker:
 	
 annotate:
 	cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
-	docker build -f sub_circuit_identification/Dockerfile -t topology .
+	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
 	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./results /INPUT"

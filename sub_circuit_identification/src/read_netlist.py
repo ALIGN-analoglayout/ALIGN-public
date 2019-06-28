@@ -330,7 +330,7 @@ class SpiceParser:
                     for val in value_function:
                         try:
                             mult=int(val)
-                        except:
+                        except ValueError:
                             value=val
                             
                 
@@ -416,7 +416,7 @@ class SpiceParser:
     def _hier_circuit(self,
                       subckt_name,
                       connected_nets="",
-                      inherited_param={}):
+                      inherited_param=None):
         hier_design = []
         ## FIX for UT Austin circuit
         if not inherited_param:
