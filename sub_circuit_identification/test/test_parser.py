@@ -1,6 +1,6 @@
 import networkx as nx
 
-from read_netlist import SpiceParser
+from src import SpiceParser
 
 
 def test_parser1():

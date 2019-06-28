@@ -48,3 +48,28 @@ MM17 D1 D1 net047 net047 nmos_rvt w=270.0n l=20n nfin=10
 MM16 D1 D1 net042 net042 nmos_rvt w=270.0n l=20n nfin=10
 .ENDS
 
+.subckt CMB_NMOS_2 D0 D1 D2 S
+M0 (D0 D0 S 0) NMOS_VTL w=w l=90n
+M1 (D1 D0 S 0) NMOS_VTL w=w l=90n
+M2 (D2 D0 S 0) NMOS_VTL w=w l=90n
+.ends CMB_NMOS_2 
+
+.subckt CMB_NMOS_3 D0 D1 D2 D3 S
+M0 (D0 D0 S 0) NMOS_VTL w=w l=90n
+M1 (D1 D0 S 0) NMOS_VTL w=w l=90n
+M2 (D2 D0 S 0) NMOS_VTL w=w l=90n
+M3 (D3 D0 S 0) NMOS_VTL w=w l=90n
+.ends CMB_NMOS_3 
+
+.subckt CMB_NMOS_4 D0 D1 D2 D3 D4 S
+M0 (D0 D0 S 0) NMOS_VTL w=w l=90n
+M1 (D1 D0 S 0) NMOS_VTL w=w l=90n
+M2 (D2 D0 S 0) NMOS_VTL w=w l=90n
+M3 (D3 D0 S 0) NMOS_VTL w=w l=90n
+M4 (D4 D0 S 0) NMOS_VTL w=w l=90n
+.ends CMB_NMOS_4
+
+.subckt INV_LVT i zn vdd vss
+xm0 zn i vss vss lvtnfet w=w0 l=l0
+xm1 zn i vdd vdd lvtpfet w=w1 l=l0
+.ends INV_LVT
