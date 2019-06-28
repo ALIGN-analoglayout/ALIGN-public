@@ -1,5 +1,5 @@
 from .grid import *
-from .canvas import *
 from .generators import *
-from .remove_duplicates import *
+from .canvas import Canvas
+from .default import DefaultCanvas
 from .pdk import Pdk

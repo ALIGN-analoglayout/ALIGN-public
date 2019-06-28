@@ -6,8 +6,6 @@ Created on Thu Nov 29 22:19:39 2018
 """
 import networkx as nx
 from networkx.algorithms import isomorphism
-import re
-
 
 def merge_nodes(G, hier_type, argv, matched_ports):
     """ Merges the  given nodes in argv and returns a
@@ -31,7 +29,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                           inst_type=G.nodes[node]["inst_type"],
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
-                          values=G.nodes[node]['values'])
+                          values=merged_value({},G.nodes[node]['values']))
 
         #max_value.extend(G.nodes[node]['values'])
         max_value = merged_value(max_value, G.nodes[node]['values'])
@@ -94,72 +92,158 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 
     if not graph_match.subgraph_is_isomorphic():
         print("isomorphism check fail")
+    #print("checking sub graph")
+    check_nodes(subgraph)
 
     return G, subgraph
 
-
-def merged_value(values1, values2):
-    if [param for param in values1.keys() if 'fin' in param.lower()]:
-        value = {'nfin': find_max_transistor_size(values1, values2)}
-    elif [param for param in values2.keys() if 'r' in param.lower()]:
-        value = {'res': calc_res(values2)}
-    elif [param for param in values2.keys() if 'c' in param.lower()]:
-        value = {'cap': calc_cap(values2)}
+#%%
+#def merged_value(values1, values2):
+#    if [param for param in values1.keys() if 'fin' in param.lower()]:
+#        value = {'nfin': find_max_transistor_size(values1, values2)}
+#    elif [param for param in values2.keys() if 'r' == param.lower()]:
+#        value = {'res': calc_res(values2)}
+#    elif [param for param in values2.keys() if 'c' == param.lower()]:
+#        value = {'cap': calc_cap(values2)}
+#    elif [param for param in values2.keys() if 'fin' in param.lower()]:
+#        value = {'nfin': calc_total_fin(values2)}
+#    else: 
+#        value = calc_value(values2)
+#    #print(value)
+#    return value
+#
+#
+#def find_max_transistor_size(values1, values2):
+#    val_1 = calc_total_fin(values1)
+#    val_2 = calc_total_fin(values1)
+#    return max(val_1, val_2)
+#
+#
+#def calc_total_fin(values):
+#    total_fin = 1
+#    #print(values)
+#    for param, value in values.items():
+#        if 'fin' in param:
+#            total_fin = total_fin * int(value)
+#        elif 'nf' in param:
+#            total_fin = total_fin * int(value)
+#        elif 'M' in param:
+#            total_fin = total_fin * int(value)
+#    #print("total fin", total_fin)
+#    return total_fin
+#
+#
+#def calc_res(values):
+#    for param, value in values.items():
+#        if 'r' in param:
+#            float_value = convert_unit(value)
+#    total_res = float_value
+#
+#    return total_res
+#
+#
+#def calc_cap(values):
+#    for param, value in values.items():
+#        if 'c' in param:
+#            float_value = convert_unit(value)
+#    value = float_value * 1e15
+#
+#    return value
+#
+#def calc_value(values):
+#    #print(values)
+#    total_val =1
+#    for param, value in values.items():
+#        if value == '0' or  'flag' in param:
+#            continue
+#        elif 'l' in param:
+#            length = convert_unit(value)
+#            total_val = total_val *length
+#        elif 'w' in param:
+#            width = convert_unit(value)
+#            total_val = total_val *width
+#        elif 'm' == param:
+#            multiplier = convert_unit(value)
+#            total_val = total_val *multiplier
+#        else:
+#            convert_unit(value)
+#       # print (param, total_val)
+#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val } 
+#    #print(length*1E9)
+#    return {'total_val': int(length*1E9) } 
+        
+#%%
+def convert_unit(value):
+    #print("checking value",value)
+    mult =1
+    if type(value)==float or type(value)== int:
+        value = value
+    elif '*' in value:
+        value_function = value.split('*')
+        #total =1
+        value = 1
+        for val in value_function:
+            try:
+                mult = mult*int(val)
+            except:
+                value = val
+    if isinstance(value, float) or isinstance(value, int):
+        value = value
+    elif 'k' in value:
+        value = float(value.replace('k', ""))
+        value = value * 1000
+    elif 'K' in value:
+        value = float(value.replace('K', ""))
+        value = value * 1000
+    elif 'm' in value.lower():
+        value = float(value.replace('m', ""))
+        value = value * 1E6
+    elif 'p' in value.lower():
+        value = float(value.replace('p', ""))
+        value = value * 1E-12
+    elif 'n' in value.lower():
+        value = float(value.replace('n', ""))
+        value = value * 1E-9
+    elif 'u' in value.lower():
+        value = float(value.replace('u', ""))
+        value = value * 1E-6
+    elif 'f' in value.lower():
+        #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
+        value = float(value.replace('f', ""))
+        value = value * 1e-15
     else:
-        value = {'nfin': calc_total_fin(values2)}
-    return value
+        try:
+            value = float(value)
+        except ValueError:
+            print("ERROR: Parameter",value, "not defined. \
+                  using value=10n. Please fix netlist")
+            value = 1e-8
+    #print()
+    return mult*value
 
+def check_values(values):
+    for param,value in values.items():
+        #print("param,value:%s,%s", param,value)
+        assert(type(value)==int or type(value)==float)
 
-def find_max_transistor_size(values1, values2):
-    val_1 = calc_total_fin(values1)
-    val_2 = calc_total_fin(values1)
-    return max(val_1, val_2)
-
-
-def calc_total_fin(values):
-    total_fin = 1
-    #print(values)
-    for param, value in values.items():
-        if 'fin' in param:
-            total_fin = total_fin * int(value)
-        elif 'nf' in param:
-            total_fin = total_fin * int(value)
-        elif 'M' in param:
-            total_fin = total_fin * int(value)
-    #print("total fin", total_fin)
-    return total_fin
-
-
-def calc_res(values):
-    total_res = 1
-    for param, value in values.items():
-        if 'r' in param:
-            if 'k' in value.lower():
-                value = float(re.sub("[^0-9]", "", value))
-                value = value * 1000
-            elif 'm' in value.lower():
-                value = float(re.sub("[^0-9]", "", value))
-                value = value * 1E6
-            else:
-                value = float(re.sub("[^0-9]", "", value))
-    return value
-
-
-def calc_cap(values):
-    total_res = 1
-    for param, value in values.items():
-        if 'c' in param:
-            if 'pf' in value.lower():
-                value = float(re.sub("[^0-9]", "", value))
-                value = value * 1E-12
-            elif 'nf' in value.lower():
-                value = float(re.sub("[^0-9]", "", value))
-                value = value * 1E-9
-            elif 'f' in value.lower():
-                #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
-                value = float(re.sub("[^0-9]", "", value))
-                value = value * 1e-15
-            else:
-                value = float(value)
-            value = value * 1e15
-    return value
+def check_nodes(graph):
+    """ Checking all values"""
+    for node, attr in graph.nodes(data=True):
+        if  not attr["inst_type"] == "net":
+            check_values(attr["values"])
+            
+def merged_value(values1, values2):
+    merged_vals={}
+    if values1:
+        for param,value in values1.items():
+            merged_vals[param] = convert_unit(value)
+    for param,value in values2.items():
+        if param in merged_vals.keys():
+            merged_vals[param] = max(convert_unit(value), merged_vals[param])
+        else:
+            merged_vals[param] = convert_unit(value)
+    check_values(merged_vals)
+    return merged_vals
+#val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+#val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+#merged_value(val1,val2)

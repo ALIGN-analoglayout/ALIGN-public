@@ -7,6 +7,8 @@ Created on Tue Dec 11 11:34:45 2018
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
+from networkx.algorithms import bipartite
+
 #library_graphs = glob.glob("L1*.yaml")
 def max_connectivity(G):
     conn_value =0 
@@ -121,4 +123,21 @@ def _write_circuit_graph(filename, graph,dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
     nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
-    #logging.info("Graph saved in circuit_graphs directory")    
+    #logging.info("Graph saved in circuit_graphs directory")
+    
+def convert_to_unit(values):
+    for param in values:
+        if values[param]>= 1 :
+            values[param]=int(values[param])                 
+        elif values[param]*1E3> 1 :
+            values[param]=str(int(values[param]*1E3))+'m'                                   
+        elif values[param]*1E6>1 :
+            values[param]=str(int(values[param]*1E6))+'u'               
+        elif values[param]*1E9>1:
+            values[param]=str(int(values[param]*1E9))+'n'
+        elif values[param]*1E12>1:
+            values[param]=str(int(values[param]*1E12))+'p'
+        else:
+            print("ERROR:WRONG value, %s",values)
+            
+            

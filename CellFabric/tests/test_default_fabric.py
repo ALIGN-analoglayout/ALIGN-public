@@ -1,8 +1,47 @@
+from cell_fabric import DefaultCanvas, Pdk
+
+import pytest
 import fabric_default
-
 import json
-
 import itertools
+
+@pytest.fixture
+def setup():
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    c = DefaultCanvas(p)
+    for (i,nm) in itertools.chain( itertools.product( [0,2,4], ['a']), itertools.product( [1,3,5], ['b'])):
+        c.addWire( c.m1, nm, None, i, (0,-1), (3,-1)) 
+    return c
+
+def test_beol_stack(setup):
+    c = setup
+    c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """
+    +b======+=======*
+                    b
++a======+=======+   |
+                    |
+    +b======+=======/
+""")
+
+    c.asciiStickDiagram( c.v3, c.m4, c.v4, c.m5, """
+            /=======+
+            |
+            |
+            |
+            /b======+
+""")
+
+    data = c.gen_data()
+
+    fn = "tests/__json_default_fabric_beol_sticks"
+
+    with open( fn + "_cand", "wt") as fp:
+        fp.write( json.dumps( data, indent=2) + '\n')
+
+    with open( fn + "_gold", "rt") as fp:
+        data2 = json.load( fp)
+
+        assert data == data2
 
 def test_fabric_default():
     unit_cap = 10
@@ -22,11 +61,9 @@ def test_fabric_default():
     for (x,y) in itertools.product( range(x_cells), range(y_cells)):
         uc.unit( x, y, x_cells, y_cells, fin_u, gate_u)
 
-    uc.computeBbox()
+    data = uc.gen_data()
 
-    data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
-
-    fn = "tests/__json_cmc_nmos"
+    fn = "tests/__json_default_fabric_nmos"
 
     with open( fn + "_cand", "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
@@ -41,3 +78,4 @@ def test_fabric_default():
             x['pin'] = '_'
             y['pin'] = '_'
             assert x == y
+

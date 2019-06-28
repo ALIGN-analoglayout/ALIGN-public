@@ -11,7 +11,6 @@ class CanvasNMOS(DefaultCanvas):
     def __init__( self, gate_u, fin_u, fin_u1):
 
         p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
-        p['M3']['Width'] = 32
         super().__init__(p)
 
         ##### PDK Abstraction   ##### 
@@ -26,8 +25,8 @@ class CanvasNMOS(DefaultCanvas):
         self.m1Width = 32
         self.m2Pitch = 84 ### Can be directly used from DRM (usually twice of the fin pitch)
         self.m2Width = 32
-        self.m3Pitch = self.plPitch ### Use same as for m1
-        self.m3Width = 32
+        # self.m3Pitch = self.plPitch ### Use same as for m1
+        # self.m3Width = 32
         self.v0Pitch  = 3*self.finPitch ### V0 spacing rule
         self.v0Width = 32
 
@@ -89,7 +88,7 @@ class CanvasNMOS(DefaultCanvas):
                                             h_grid=self.fin.clg))
 
         v0x_offset = self.finDummy*self.finPitch - self.fin_enclosure - self.finWidth//2 + self.finOffset + self.v0Width//2
-        self.v0 = self.addGen( Via( 'v0', 'via0',
+        self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=UncoloredCenterLineGrid( pitch=self.v0Pitch, width=self.v0Width, offset=v0x_offset),
                                     v_clg=self.m1.clg))
 
