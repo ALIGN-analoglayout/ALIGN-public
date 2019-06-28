@@ -1,7 +1,7 @@
 from satplacer.lef_parser import *
 
 def test_lef():
-    str = """VERSION 5.7 ;
+    txt = """VERSION 5.7 ;
 BUSBITCHARS "[]" ;
 DIVIDERCHAR "/" ;
 
@@ -51,10 +51,10 @@ END current_mirror_nmos
 END LIBRARY
 """
     lp = LEFParser()
-    lp.parse( str)
+    lp.parse( txt)
 
 def test_file():
-    str = """
+    txt = """
 MACRO cap_10f
   ORIGIN 0 0 ;
   FOREIGN cap_10f 0 0 ;
@@ -4256,4 +4256,4 @@ END Switch_PMOS_n10_X5_Y2
 
     lp = LEFParser()
 
-    lp.parse(str)
+    lp.parse(txt)

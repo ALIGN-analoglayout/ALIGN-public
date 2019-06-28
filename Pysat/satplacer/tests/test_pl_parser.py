@@ -1,7 +1,7 @@
 from satplacer.pl_parser import *
 
 def test_pl():
-    str = """DIE {0, 0} {38016, 36580}
+    txt = """DIE {0, 0} {38016, 36580}
 
 C1	6420	29432	N
 C2	31596	29432	FN
@@ -30,4 +30,4 @@ vin2	0	19672
 
     pp = PLParser()
 
-    pp.parse(str)
+    pp.parse(txt)

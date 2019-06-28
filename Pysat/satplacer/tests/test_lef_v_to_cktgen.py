@@ -1,6 +1,5 @@
 
 from satplacer.lef_v_to_cktgen import *
-import pytest
 
 import json
 
