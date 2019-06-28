@@ -127,14 +127,17 @@ def _write_circuit_graph(filename, graph,dir_path):
     
 def convert_to_unit(values):
     for param in values:
-        if values[param]> 1 :
+        if values[param]>= 1 :
             values[param]=int(values[param])                 
         elif values[param]*1E3> 1 :
-            values[param]=str(int(values[param]*1E3))+'k'                                   
+            values[param]=str(int(values[param]*1E3))+'m'                                   
         elif values[param]*1E6>1 :
             values[param]=str(int(values[param]*1E6))+'u'               
         elif values[param]*1E9>1:
             values[param]=str(int(values[param]*1E9))+'n'
         elif values[param]*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
+        else:
+            print("ERROR:WRONG value, %s",values)
+            
             

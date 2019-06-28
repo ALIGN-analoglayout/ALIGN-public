@@ -162,7 +162,9 @@ class SpiceParser:
                 logging.info("List of subckts in design: %s \n",
                              " ".join(self.subckts))
                 logging.info(
-                    "###################PARSING DONE #################### \n")
+                    "###################\
+                    PARSING DONE \
+                    #################### \n")
 
             ## remove source from tesbench circuit
             self._remove_source()
@@ -175,14 +177,18 @@ class SpiceParser:
 
             subckt_ports = self.subckts[self.top_ckt_name]["ports"]
             logging.info(
-                "\n################### FINAL CIRCUIT AFTER initialization#################### \n"
+                "\n###################\
+                FINAL CIRCUIT AFTER initialization\
+                #################### \n"
             )
             logging.info("DISPLAYING  circuit")
             for node in design:
                 logging.info(node)
 
             logging.info(
-                "################### CREATING BIPARTITE GRAPH #################### \n"
+                "################### \
+                CREATING BIPARTITE GRAPH \
+                #################### \n"
             )
             self.circuit_graph = self._create_bipartite_circuit_graph(
                 design, subckt_ports)
@@ -313,7 +319,8 @@ class SpiceParser:
             self.option += line.strip().split()
             line = self.get_next_line(fp_l, 1)
             
-    def _resolve_param(self, inherited_param,node, values):
+    def _resolve_param(self, inherited_param, node, values):
+        logging.info("inherited parameter: %s", inherited_param )
         if "values" in node.keys():
             for param, value in node["values"].items():
                 logging.info("checking parameter: %s= %s", param, value)
@@ -350,7 +357,11 @@ class SpiceParser:
         flatdesign = []
         ## FIX for UT Austin circuit
         if not inherited_param:
-            inherited_param = self.params
+            inherited_param = {**self.params, **self.subckts[subckt_name]["params"]}
+        else:
+            inherited_param = {**self.params, **inherited_param}
+            inherited_param = {**inherited_param, **self.subckts[subckt_name]["params"]}
+            
         logging.info("flattening the circuits below: %s, %s, %s,%s",
                      subckt_name, subckt_inst, connected_nets, inherited_param)
         ### node is not local copy and modifying it modifies dictionary
