@@ -7,7 +7,7 @@ import itertools
 
 def test_fabric_Cap():
 
-    x_cells = 4
+    x_cells = 4	
     y_cells = 2
     fin_u = 12
     #gate_u = int(sys.argv[4])

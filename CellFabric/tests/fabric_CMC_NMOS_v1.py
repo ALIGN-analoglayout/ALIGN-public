@@ -2,7 +2,8 @@ import sys
 import json
 import argparse
 from os import system
-
+#import gen_gds_json
+#import gen_lef
 import itertools
 
 from cell_fabric import Via, Region, Canvas, Wire, Pdk
@@ -15,7 +16,7 @@ class CanvasNMOS(Canvas):
     
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
         super().__init__()
-        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')                                           
+        p = Pdk().load('FinFET_Mock_PDK_Abstraction.json')                                           
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 
 ######### Derived Parameters ############        
@@ -35,11 +36,11 @@ class CanvasNMOS(Canvas):
         activeWidth1 =  p['Fin']['Pitch']*fin_u
         activeWidth =  p['Fin']['Pitch']*fin
         activeWidth_h = ((gate-1)* p['Poly']['Pitch']) + (p['Feol']['plActive_s']*2)+p['Poly']['Width']
-        activeOffset = activeWidth/2 + finDummy* p['Fin']['Pitch']-p['M2']['Pitch']/2+p['Fin']['Offset']
+        activeOffset = activeWidth//2 + finDummy* p['Fin']['Pitch']-p['M2']['Pitch']//2+p['Fin']['Offset']
         activePitch = self.unitCellHeight
         RVTPitch = activePitch
-        RVTWidth = activeWidth + 2*  p['Feol']['active_enclosure']
-        RVTOffset = RVTWidth/2 + finDummy* p['Fin']['Pitch']-p['Fin']['Pitch']/2-p['Feol']['active_enclosure']+p['Fin']['Offset']
+        RVTWidth = activeWidth + 2*p['Feol']['active_enclosure']
+        RVTOffset = RVTWidth//2 + finDummy* p['Fin']['Pitch']-p['Fin']['Pitch']//2-p['Feol']['active_enclosure']+p['Fin']['Offset']
 
 ############Include these all ###########
        # self.extension_x = (self. self.pitch('Poly', 0, p) - self. p['Poly']['Width'])//2  ### Minimum horizontal extension of GCUT past GATE
@@ -64,9 +65,6 @@ class CanvasNMOS(Canvas):
                                      clg=UncoloredCenterLineGrid( pitch= p['Poly']['Pitch'], width= p['Poly']['Width'], offset= p['Poly']['Offset']),
                                      spg=SingleGrid( offset= p['M2']['Offset'], pitch=self.unitCellHeight)))
 
-        self.tb = self.addGen( Wire( 'tb', 'poly', 'v',
-                                     clg=UncoloredCenterLineGrid( pitch= p['Poly']['Pitch'], width=  p['Feol']['tbWidth'], offset= p['Poly']['Offset']),
-                                     spg=SingleGrid( offset= p['M2']['Offset'], pitch=self.unitCellHeight)))
 
         self.fin = self.addGen( Wire( 'fin', 'fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= p['Fin']['Pitch'], width= p['Fin']['Width'], offset= p['Fin']['Offset']),
@@ -91,6 +89,12 @@ class CanvasNMOS(Canvas):
         self.RVT.spg.addCenterLine( unitCellLength, activeWidth_h,         False)
 
         self.nselect = self.addGen( Region( 'nselect', 'nselect',
+                                            v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
+                                            h_grid=self.fin.clg))
+        self.pselect = self.addGen( Region( 'pselect', 'pselect',
+                                            v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
+                                            h_grid=self.fin.clg))
+        self.nwell = self.addGen( Region( 'nwell', 'nwell',
                                             v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
 
@@ -137,44 +141,48 @@ class UnitCell(CanvasNMOS):
             DB.append(lDb)
 
         (S,D,G) = (SA+SB,DA+DB,GA+GB)
-        Routing = [('S',S,1), ('DA',DA,2), ('DB',DB,3), ('GA',GA,4), ('GB',GB,5)]
-        #print(SA)        
+               
         self.addWire( self.active, 'active', None, y, (x,1), (x+1,-1)) 
         self.addWire( self.RVT,    'RVT',    None, y, (x, 1), (x+1, -1)) 
  
-        for i in range(fin-1 if y==y_cells-1 else fin):
+        for i in range(fin):
             self.addWire( self.fin, 'fin', None, fin*y+i, x, x+1)
 
         #####   Gate Placement   #####                       
         for i in range(gu):        
             self.addWire( self.pl, 'g', None, gu*x+i,   (y,0), (y,1))
-            self.addWire( self.tb, 'tb', None, gu*x+i,   (y,0), (y,1))
+            
 
+        CcM3 = (min(S)+max(S))//2
+        Routing = [('SA', SA if y%2==0 else SB, 1, CcM3-1), ('DA', DA if y%2==0 else DB, 2, CcM3-2), ('SB', SB if y%2==0 else SA, 3, CcM3+1), ('DB', DB if y%2==0 else DA, 4, CcM3+2), ('G', G, 5, CcM3)]
         if x_cells-1==x:
-            grid_y0 = y*h + finDummy//2
-            grid_y1 = grid_y0+(fin_u+2)//2 - 1
+            grid_y0 = y*h + finDummy//2-1
+            grid_y1 = grid_y0+(fin_u+2)//2
+            for i in G:
+                self.addWire( self.m1, '_', None, i, (grid_y0, -1), (grid_y1, 1))
             for i in S+D:
                 SD = 'S' if i in S else 'D'
                 self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1)) 
                 for j in range(1,self.v0.h_clg.n):
                     self.addVia( self.v0, 'v0', None, i, (y, j))
-            pin = 'VDD' if y%2==0 else 'GND'    
-            self.addWire( self.m2, pin, pin, h*(y+1), (0, -1), (x_cells*gu, 1))                     
-            for (pin, contact, track) in Routing:
-                self.addWire( self.m2,'_', pin, y*h+track, (min(contact), -1), (max(contact), 1))
-                self.addWire( self.m3,'_', None, min(contact), (track, -1), (y*h+track, 1))
-                self.addVia( self.v2,'_', None, min(contact), track)
-                self.addVia( self.v2,'_', None, min(contact), y*h+track)
 
+            #pin = 'VDD' if y%2==0 else 'GND'    
+            #self.addWire( self.m2, pin, pin, h*(y+1), (0, 1), (x_cells*gu, -1))
+                                 
+            for (pin, contact, track, m3route) in Routing:
+                self.addWire( self.m2,'_', pin, y*h+track, (min(contact), -1), (max(contact), 1))
+                if y_cells > 1:
+                   self.addWire( self.m3,'_', None, m3route, (track, -1), (y*h+track, 1))
+                   self.addVia( self.v2,'_', None, m3route, track)
+                   self.addVia( self.v2,'_', None, m3route, y*h+track)
 
                 for i in contact:
                     self.addVia( self.v1, '_', None, i, (y, track)) 
    
         #####   Nselect Placement   #####
-        if x == x_cells -1 and y == y_cells -1:
-           # assert 2*self. self.pitch('Fin', 0, p) == self. self.pitch('M2', 0, p)        
-            self.addRegion( self.nselect, 'ns', None, (0, -1), -1, ((1+x)*gu, -1), (y+1)*fin-1)                                                
-            self.addWire( self.m2, 'GND', 'GND', 0, (0, -1), (x_cells*gu, 1))
+        if x == x_cells -1 and y == y_cells -1:      
+            self.addRegion( self.nselect, 'ns', None, (0, -1), -1, ((1+x)*gu, -1), (y+1)*fin+1)                                                
+            #self.addWire( self.m2, 'GND', 'GND', 0, (0, 1), (x_cells*gu, -1))
 
                                       
                                    
@@ -189,11 +197,10 @@ if __name__ == "__main__":
     fin_u = args.nfin
     x_cells = 2*args.Xcells
     y_cells = args.Ycells
-    #gate_u = int(sys.argv[4])
     gate = 2
     fin = 2*((fin_u+1)//2)
-    gateDummy = 3 ### Total Dummy gates per unit cell 2*gateDummy
-    finDummy = 4  ### Total Dummy fins per unit cell 2*finDummy
+    gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
+    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
 
     uc = UnitCell( fin_u, fin, finDummy, gate, gateDummy)
 
@@ -202,11 +209,10 @@ if __name__ == "__main__":
 
     uc.computeBbox()
 
-    with open( "./../Viewer/INPUT/mydesign_dr_globalrouting.json", "wt") as fp:
+    with open(args.block_name + '.json', "wt") as fp:
         data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
-#    gen_json_gds.json_gds("./Viewer/INPUT/mydesign_dr_globalrouting.json",args.block_name)
-#    cell_pin = ["G", "SA", "SB", "DA", "DB"]
-#    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-#    system('python3 setup.py build_ext --inplace')
-#    system('python3 gen_gds.py -j %s.json -n %s -e MTI' % (args.block_name,args.block_name))
+    #cell_pin = ["SA", "SB", "G", "DA", "DB"]
+    #gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
+    #system('python3 gen_gds_json.py -n %s -j %s.json' % (args.block_name,args.block_name))
+    #system('python3 json2gds.py %s.gds.json %s.gds' % (args.block_name,args.block_name))
