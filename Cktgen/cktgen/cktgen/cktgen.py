@@ -328,7 +328,7 @@ class ADNetlist:
         a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
         if True or a not in ["vcc","vss"]:
           netl.newWire( a, v.hit( w.rect), w.layer)
-          print( "genNetlist", w, v.hit( w.rect))
+#          print( "genNetlist", w, v.hit( w.rect))
 
     for p in self.ports:
       print( "Port", p)
@@ -471,6 +471,22 @@ class Netlist:
 
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
+      ys = set()
+      ys2 = set()
+
+      for term in data['terminals']:
+        if isinstance( term, Wire):
+          if term.layer == 'M2':
+            r = term.rect
+            yc = (r.lly+r.ury)//2
+            ys.add(yc)
+            ys2.add(yc%840)
+
+      print(sorted(list(ys)))
+      print(sorted(list(ys2)))
+
+
+
   def newWire( self, netName, r, l):
     cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)
     if cand not in self.wires:
@@ -508,41 +524,38 @@ class Netlist:
 
   def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates):
     with open( fn, "w") as fp:
-      fp.write( """# circuit-independent technology collateral
-Option name=layer_file          value={4}/layers.txt
-Option name=arch_file           value={4}/arch.txt
-Option name=generator_file      value={4}/car_generators.txt
-Option name=pattern_file        value={4}/v2_patterns.txt
-Option name=option_file         value={4}/design_rules.txt
+      fp.write( f"""# circuit-independent technology collateral
+Option name=layer_file          value=DR_COLLATERAL/layers.txt
+Option name=arch_file           value=DR_COLLATERAL/arch.txt
+Option name=generator_file      value=DR_COLLATERAL/car_generators.txt
+Option name=pattern_file        value=DR_COLLATERAL/v2_patterns.txt
+Option name=option_file         value=DR_COLLATERAL/design_rules.txt
 
 # technology collateral may vary for different circuits
-Option name=metal_template_file value=INPUT/{0}_dr_metal_templates.txt
+Option name=metal_template_file value=INPUT/{self.nm}_dr_metal_templates.txt
 
 # circuit-specific collateral
-Option name=global_routing_file value=INPUT/{0}_dr_globalrouting.txt
-Option name=input_file          value=INPUT/{0}_dr_netlist.txt
-Option name=option_file         value=INPUT/{0}_dr_mti.txt
+Option name=global_routing_file value=INPUT/{self.nm}_dr_globalrouting.txt
+Option name=input_file          value=INPUT/{self.nm}_dr_netlist.txt
+Option name=option_file         value=INPUT/{self.nm}_dr_mti.txt
 
 # primary synthesis options
-Option name=route       value={1}
+Option name=route       value={1 if route else 0}
 Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=i,o
-Option name=nets_not_to_route value=!kor,vss,vcc
+      Option name=nets_not_to_route value=!kor,vss,vcc
 
 # debug options
-Option name=create_fake_global_routes            value={2}
+Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
 Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
-Option name=create_fake_metal_template_instances value={3}
+Option name=create_fake_metal_template_instances value={1 if show_metal_templates else 0}
 Option name=create_fake_line_end_grids           value=1
-""".format( self.nm,
-            "1" if route else "0",
-            "1" if show_global_routes else "0",
-            "1" if show_metal_templates else "0",
-            "DR_COLLATERAL"))
+""")
+
 
   def write_input_file( self, fn):
     with open( fn, "w") as fp:
@@ -576,6 +589,7 @@ Option name=create_fake_line_end_grids           value=1
     self.write_input_file( dir + "/" + self.nm + "_dr_netlist.txt")
     self.write_global_routing_file( dir + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dir + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
+
 
 
 import re
@@ -811,25 +825,7 @@ def removeDuplicates( data):
     return terminals
 
 
-def parse_args():
-  parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
-
-  parser.add_argument( "-n", "--block_name", type=str, required=True)
-  parser.add_argument( "--route", action='store_true')
-  parser.add_argument( "--show_global_routes", action='store_true')
-  parser.add_argument( "--show_metal_templates", action='store_true')
-  parser.add_argument( "--consume_results", action='store_true')
-  parser.add_argument( "--placer_json", type=str, default='')
-  parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
-  parser.add_argument( "-s", "--source", type=str, default='')
-  parser.add_argument( "--small", action='store_true')
-
-  args = parser.parse_args()
-
-  with open( args.technology_file) as fp:
-    tech = techfile.TechFile( fp)
-
-  if args.consume_results:
+def consume_results(args,tech):
     with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  
       netl = parse_lgf( fp)
 
@@ -841,9 +837,10 @@ def parse_args():
         
     terminals = []
     if placer_results is not None:
-      globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
-#      b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
-#      terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
+      if args.no_interface:
+        globalScale = transformation.Transformation( 0, 0, 1, 1)
+      else:        
+        globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
 
       leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
 
@@ -856,6 +853,13 @@ def parse_args():
         nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
         terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
       
+    netl.write_input_file( netl.nm + "_xxx.txt")
+
+    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
+
+    if args.no_interface:
+      return
+
     leaf = {}
 
     design_name = netl.nm
@@ -983,10 +987,6 @@ def parse_args():
     leaf['terminals'] = removeDuplicates(leaf['terminals'])
     leaf['layout'] = layout
 
-    netl.write_input_file( netl.nm + "_xxx.txt")
-
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
-
     interface_fn = "INPUT/interface.json"
     if args.source != '':
       interface_fn = "INPUT/" + args.source + "_interface.json"
@@ -994,6 +994,28 @@ def parse_args():
     with open( interface_fn, "wt") as fp:
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
+
+def parse_args():
+  parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
+
+  parser.add_argument( "-n", "--block_name", type=str, required=True)
+  parser.add_argument( "--route", action='store_true')
+  parser.add_argument( "--show_global_routes", action='store_true')
+  parser.add_argument( "--show_metal_templates", action='store_true')
+  parser.add_argument( "--consume_results", action='store_true')
+  parser.add_argument( "--no_interface", action='store_true')
+  parser.add_argument( "--placer_json", type=str, default='')
+  parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
+  parser.add_argument( "-s", "--source", type=str, default='')
+  parser.add_argument( "--small", action='store_true')
+
+  args = parser.parse_args()
+
+  with open( args.technology_file) as fp:
+    tech = techfile.TechFile( fp)
+
+  if args.consume_results:
+    consume_results(args,tech)
     exit()
 
   return args,tech

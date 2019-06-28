@@ -15,6 +15,7 @@ ROUTE=" --route"
 PLACERJSON=""
 SOURCE=""
 SMALL=""
+NO_INTERFACE=""
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -94,6 +95,9 @@ case $key in
     --small)
     SMALL=" --small"
     shift
+    ;;
+    --no_interface)
+    NO_INTERFACE=" --no_interface"
     shift
     ;;
     *)    # unknown option
@@ -146,7 +150,7 @@ if [ ${SKIPROUTER} = "NO" ]; then
 	echo "ERROR: Failed to run detailed_router"
 	exit $?
     fi
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python ${SCRIPT} --consume_results -n mydesign ${SOURCE}${PLACERJSON}${SMALL}${NO_INTERFACE}"
     if [ $? -ne 0 ]; then
 	echo "ERROR: Failed to run Cktgen (consume)"
 	exit $?
