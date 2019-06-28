@@ -11,7 +11,7 @@
 "MinL": 60,
 "MaxL": null,
 "EndToEnd": null,
-"Offset": 0
+"Offset": 40
 },
 
 {
@@ -36,7 +36,7 @@
 "MinL": 180,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 40
+"Offset": 0
 },
 
 {
@@ -49,7 +49,7 @@
 "MinL": 200,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 42
+"Offset": 0
 },
 
 {
@@ -86,7 +86,7 @@
 "MinL": 210,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 40
+"Offset": 0
 },
 
 {
@@ -461,11 +461,20 @@
 "dcWidth": 200,
 "v0Width": 32,
 "v0Pitch": 126,
-"tbWidth": 60,
 "v0_enclosure": 20, 
 "v_enclosure": 20,
 "active_enclosure": 42,
 "plActive_s": 71
+},
+
+{
+"Layer": "Cap",
+"m1Pitch": 64,
+"m2Pitch": 64,
+"m3Pitch": 64,
+"m1Width": 32,
+"m2Width": 32,
+"m3Width": 32
 } 
 
 
