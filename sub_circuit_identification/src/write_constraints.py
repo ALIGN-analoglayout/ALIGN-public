@@ -5,12 +5,11 @@ from tkinter import filedialog
 from tkinter import *
 
 # importing required libraries 
-import requests, json, os 
+import json, os 
 
 # Create a GUI window 
 root = Tk() 
 root.title("Constraint writer GUI") 
-#root.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("jpeg files","*.jpg"),("all files","*.*")))
 
 	
 # Function for clearing the Entry field 

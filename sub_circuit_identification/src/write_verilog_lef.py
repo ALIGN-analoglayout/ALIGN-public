@@ -205,7 +205,7 @@ def generate_lef(fp, name, values, available_block_lef,
             
         #print(size)
         logging.info('Generating lef for: %s %s', name, str(size))
-        if type(size) == int:
+        if isinstance(size, int):
             no_units = ceil(size / unit_size_mos)
             square_x = ceil(sqrt(no_units))
             while no_units % square_x != 0:
@@ -259,7 +259,7 @@ if __name__ == '__main__':
     logging.info("Found files: %s", ", ".join(INPUT_PICKLE))
     try:
         INPUT_PICKLE = INPUT_PICKLE[0]
-    except:
+    except ValueError:
         print("ERROR: No input file. Exiting verilog writer")
         sys.exit()
     logging.info("Picking first file for generating results: %s", INPUT_PICKLE)

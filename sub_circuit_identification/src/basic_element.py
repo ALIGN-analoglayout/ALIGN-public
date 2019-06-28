@@ -29,11 +29,11 @@ class BasicElement:
             self.num_pins = len(self.pins)
         elif '=' in self.line.strip():
             all_words = self.line.strip().split()
-            for idx, word in enumerate(all_words[1:]):
+            for word in all_words[1:]:
                 if '=' in word:
                     self.real_inst_type = self.pins[-1]
                     del(self.pins[-1])
-                    [param, value] = word.split('=')
+                    param= word.split('=')[0]
                     if not param:
                         self.real_inst_type = self.pins[-1]
                         del (self.pins[-1])
@@ -45,7 +45,7 @@ class BasicElement:
         else:
             self.num_pins = num_pins
             self.pins = self.line.strip().split()[1:1+self.num_pins]
-            "check valid pin name"
+            """check valid pin name"""
             if any ('=' in pin_name for pin_name in self.pins):
                 self.pins=None
                 self.num_pins=0
@@ -255,18 +255,7 @@ def _parse_inst(line):
         }
         logging.debug('FOUND subckt instance: %s, type %s ', device["inst"],
                       device["inst_type"])
-        """
-        if 'fet' in line:
-            device = element.transistor()
-            logging.debug('Overriding transistor %s',
-                          device["inst_type"])
-        elif ' cap' in line:
-            logging.debug('Overrinding cap: %s', line.strip())
-            device = element.capacitor()
-        elif ' res' in line:
-            logging.debug('Overriding resistor: %s', line.strip())
-            device = element.resistor()            
-        """
+
     if device:
         if '=' in device["inst"] or '=' in device[
                 "inst_type"] or '=' in ' '.join(device["ports"]):

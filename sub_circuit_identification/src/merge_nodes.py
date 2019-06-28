@@ -6,9 +6,6 @@ Created on Thu Nov 29 22:19:39 2018
 """
 import networkx as nx
 from networkx.algorithms import isomorphism
-import sys
-#import re
-#import logging
 
 def merge_nodes(G, hier_type, argv, matched_ports):
     """ Merges the  given nodes in argv and returns a
@@ -190,7 +187,7 @@ def convert_unit(value):
                 mult = mult*int(val)
             except:
                 value = val
-    if type(value)==float or type(value)== int:
+    if isinstance(value, float) or isinstance(value, int):
         value = value
     elif 'k' in value:
         value = float(value.replace('k', ""))
@@ -220,7 +217,6 @@ def convert_unit(value):
         except ValueError:
             print("ERROR: Parameter",value, "not defined. \
                   using value=10n. Please fix netlist")
-            #sys.exit()                
             value = 1e-8
     #print()
     return mult*value
@@ -231,13 +227,11 @@ def check_values(values):
         assert(type(value)==int or type(value)==float)
 
 def check_nodes(graph):
-    #print("Checking all values")
+    """ Checking all values"""
     for node, attr in graph.nodes(data=True):
-        #print(":%s,%s", node,attr)
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
             
-            #%%
 def merged_value(values1, values2):
     merged_vals={}
     if values1:

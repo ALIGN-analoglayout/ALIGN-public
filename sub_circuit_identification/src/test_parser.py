@@ -1,5 +1,3 @@
-import networkx as nx
-
 from read_netlist import SpiceParser
 
 

@@ -189,8 +189,8 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
                     check_values(updated_values)
                     G1.nodes[remove_these_nodes[0]]["values"] = updated_values
-                    for local_param,local_value in updated_values.items():
-                        if not type(local_value) == int:
+                    for local_value in updated_values.values():
+                        if not isinstance(local_value, int):
                             logging.error("unidentified sizing: %s", G1.nodes[remove_these_nodes[0]])
 
                 else:
@@ -302,7 +302,7 @@ def check_values(values):
     for param,value in values.items():
         logging.debug("param,value:%s,%s", param,value)
         try:
-            assert(type(value)==int or type(value)==float)
+            assert(isinstance(value, int) or isinstance(value, float))
         except AssertionError:
             print("ERROR: Parameter value",value, "not defined. Check match log")
             exit()
