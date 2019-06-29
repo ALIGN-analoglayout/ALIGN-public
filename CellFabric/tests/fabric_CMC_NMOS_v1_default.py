@@ -2,21 +2,22 @@ import sys
 import json
 import argparse
 from os import system
-import gen_gds_json
-import gen_lef
+#import gen_gds_json
+#import gen_lef
 import itertools
 
-from cell_fabric import Via, Region, Canvas, Wire, Pdk
+from cell_fabric import Via, Region, DefaultCanvas, Wire, Pdk
 from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
 from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
 
 
-class CanvasNMOS(Canvas):
+class CanvasNMOS(DefaultCanvas):
 
     
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        super().__init__()
-        p = Pdk().load('./../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')                                           
+        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json') 
+        super().__init__(p)
+                                                 
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 
 ######### Derived Parameters ############        
@@ -49,23 +50,22 @@ class CanvasNMOS(Canvas):
                                      clg=UncoloredCenterLineGrid( pitch=   p['Feol']['m0Pitch'], width= p['Feol']['m0Width'], offset= p['Feol']['m0Pitch']//2),
                                      spg=EnclosureGrid( pitch=activePitch, offset=activeOffset, stoppoint=activeWidth//2, check=True)))
 
-        self.m1 = self.addGen( Wire( 'm1', 'M1', 'v',
-                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch= p['M1']['Pitch'], width=p['M1']['Width'], offset= p['M1']['Offset']),
-                                     spg=EnclosureGrid( pitch= p['M2']['Pitch'], offset= p['M2']['Offset'], stoppoint= p['M2']['Width']//2 +p['V1']['VencA_L'], check=True)))
+        #self.m1 = self.addGen( Wire( 'm1', 'M1', 'v',
+        #                             clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch= p['M1']['Pitch'], width=p['M1']['Width'], offset= p['M1']['Offset']),
+        #                             spg=EnclosureGrid( pitch= p['M2']['Pitch'], offset= p['M2']['Offset'], stoppoint= p['M2']['Width']//2 +p['V1']['VencA_L'], check=True)))
 
-        self.m2 = self.addGen( Wire( 'm2', 'M2', 'h',
-                                     clg=ColoredCenterLineGrid( colors=['c2','c1'], pitch= p['M2']['Pitch'], width= p['M2']['Width'], offset= p['M2']['Offset'], repeat=self.m2PerUnitCell),
-                                     spg=EnclosureGrid(pitch= p['M1']['Pitch'], offset= p['M1']['Offset'], stoppoint= p['M1']['Width']//2 +   p['V1']['VencA_H'], check=True)))
+        #self.m2 = self.addGen( Wire( 'm2', 'M2', 'h',
+        #                             clg=ColoredCenterLineGrid( colors=['c2','c1'], pitch= p['M2']['Pitch'], width= p['M2']['Width'], offset= p['M2']['Offset'], repeat=self.m2PerUnitCell),
+        #                             spg=EnclosureGrid(pitch= p['M1']['Pitch'], offset= p['M1']['Offset'], stoppoint= p['M1']['Width']//2 +   p['V1']['VencA_H'], check=True)))
 
-        self.m3 = self.addGen( Wire( 'm3', 'M3', 'v',
-                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch= p['M3']['Pitch'], width= p['M3']['Width'], offset= p['M3']['Offset']),
-                                     spg=EnclosureGrid( pitch= p['M2']['Pitch'], offset= p['M2']['Offset'], stoppoint= p['M2']['Width']//2 +   p['V2']['VencA_H'], check=True)))
+        #self.m3 = self.addGen( Wire( 'm3', 'M3', 'v',
+        #                             clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch= p['M3']['Pitch'], width= p['M3']['Width'], offset= p['M3']['Offset']),
+        #                             spg=EnclosureGrid( pitch= p['M2']['Pitch'], offset= p['M2']['Offset'], stoppoint= p['M2']['Width']//2 +   p['V2']['VencA_H'], check=True)))
 
         self.pl = self.addGen( Wire( 'pl', 'poly', 'v',
                                      clg=UncoloredCenterLineGrid( pitch= p['Poly']['Pitch'], width= p['Poly']['Width'], offset= p['Poly']['Offset']),
                                      spg=SingleGrid( offset= p['M2']['Offset'], pitch=self.unitCellHeight)))
 
-        
 
         self.fin = self.addGen( Wire( 'fin', 'fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= p['Fin']['Pitch'], width= p['Fin']['Width'], offset= p['Fin']['Offset']),
@@ -102,7 +102,7 @@ class CanvasNMOS(Canvas):
         v0x_offset =  p['M2']['Offset'] + (1+finDummy//2)* p['M2']['Pitch']
         #print( "SMB",   p['Feol']['v0Pitch'],  self.pitch('M2', 0, p))
 
-        self.v0 = self.addGen( Via( 'v0', 'via0',
+        self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=CenterLineGrid(),
                                     v_clg=self.m1.clg))
 
@@ -111,8 +111,8 @@ class CanvasNMOS(Canvas):
             self.v0.h_clg.addCenterLine( v0x_offset+i*  p['Feol']['v0Pitch'],    p['Feol']['v0Width'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['Feol']['v0Width'], False)
 
-        self.v1 = self.addGen( Via( 'v1', 'via1', h_clg=self.m2.clg,  v_clg=self.m1.clg))
-        self.v2 = self.addGen( Via( 'v2', 'via2', h_clg=self.m2.clg,  v_clg=self.m3.clg))
+        #self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg,  v_clg=self.m1.clg))
+        #self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg,  v_clg=self.m3.clg))
 
         
 class UnitCell(CanvasNMOS):
@@ -128,14 +128,20 @@ class UnitCell(CanvasNMOS):
         fin = self.finsPerUnitCell
         h = self.m2PerUnitCell
 
-        S, D, G = ([] for i in range(3))       
-        for k in range(x_cells):
-            lS = k*gu+gateDummy
-            lG = lS+1
-            lD = lS+gate
-            S.append(lS)
-            G.append(lG)
-            D.append(lD)
+        SA, SB, DA, DB, GA, GB = ([] for i in range(6))       
+        for k in range(x_cells//2):
+            (p,q) = (gateDummy,gu+gateDummy) if k%2 == 0 else (gu+gateDummy,gateDummy)
+            (lSa,lSb) = (2*k*gu+p,2*k*gu+q)
+            (lGa,lGb) = (lSa+1,lSb+1)
+            (lDa,lDb) = (lSa+gate,lSb+gate)
+            SA.append(lSa)
+            GA.append(lGa)
+            DA.append(lDa)
+            SB.append(lSb)
+            GB.append(lGb)
+            DB.append(lDb)
+
+        (S,D,G) = (SA+SB,DA+DB,GA+GB)
                
         self.addWire( self.active, 'active', None, y, (x,1), (x+1,-1)) 
         self.addWire( self.RVT,    'RVT',    None, y, (x, 1), (x+1, -1)) 
@@ -149,7 +155,7 @@ class UnitCell(CanvasNMOS):
             
 
         CcM3 = (min(S)+max(S))//2
-        Routing = [('S', S, 1, CcM3), ('D', G+D, 2, CcM3+1)]
+        Routing = [('SA', SA if y%2==0 else SB, 1, CcM3-1), ('DA', DA if y%2==0 else DB, 2, CcM3-2), ('SB', SB if y%2==0 else SA, 3, CcM3+1), ('DB', DB if y%2==0 else DA, 4, CcM3+2), ('G', G, 5, CcM3)]
         if x_cells-1==x:
             grid_y0 = y*h + finDummy//2-1
             grid_y1 = grid_y0+(fin_u+2)//2
@@ -190,7 +196,7 @@ if __name__ == "__main__":
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     args = parser.parse_args()
     fin_u = args.nfin
-    x_cells = args.Xcells
+    x_cells = 2*args.Xcells
     y_cells = args.Ycells
     gate = 2
     fin = 2*((fin_u+1)//2)
@@ -207,7 +213,7 @@ if __name__ == "__main__":
     with open(args.block_name + '.json', "wt") as fp:
         data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
-    cell_pin = ["S", "D"]
-    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-    system('python3 gen_gds_json.py -n %s -j %s.json' % (args.block_name,args.block_name))
+    #cell_pin = ["SA", "SB", "G", "DA", "DB"]
+    #gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
+    #system('python3 gen_gds_json.py -n %s -j %s.json' % (args.block_name,args.block_name))
     #system('python3 json2gds.py %s.gds.json %s.gds' % (args.block_name,args.block_name))

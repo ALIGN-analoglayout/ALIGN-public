@@ -49,12 +49,12 @@ class DefaultCanvas(Canvas):
                     spg_pitch, spg_stop = nm_pitch, self._get_via_ext(base_layer, nv)
             layer = layer.lower()
             if len(info['Color']) == 0:
-                clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+                clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=0)
             else:
-                clg = ColoredCenterLineGrid( colors=info['Color'], pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+                clg = ColoredCenterLineGrid( colors=info['Color'], pitch=info['Pitch'], width=info['Width'], offset=0)
             setattr(self, layer, self.addGen(
                 Wire(layer, base_layer, info['Direction'], clg = clg,
-                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_pitch//2, stoppoint=spg_stop, check=True))
+                     spg = EnclosureGrid( pitch=spg_pitch, offset=0, stoppoint=spg_stop, check=True))
             ))
 
     def _create_via( self, layer, info):

@@ -16,7 +16,7 @@ class CanvasNMOS(Canvas):
     
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
         super().__init__()
-        p = Pdk().load('FinFET_Mock_PDK_Abstraction.json')                                           
+        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')                                           
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 
 ######### Derived Parameters ############        
@@ -101,7 +101,7 @@ class CanvasNMOS(Canvas):
         v0x_offset =  p['M2']['Offset'] + (1+finDummy//2)* p['M2']['Pitch']
         #print( "SMB",   p['Feol']['v0Pitch'],  self.pitch('M2', 0, p))
 
-        self.v0 = self.addGen( Via( 'v0', 'via0',
+        self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=CenterLineGrid(),
                                     v_clg=self.m1.clg))
 
@@ -110,8 +110,8 @@ class CanvasNMOS(Canvas):
             self.v0.h_clg.addCenterLine( v0x_offset+i*  p['Feol']['v0Pitch'],    p['Feol']['v0Width'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['Feol']['v0Width'], False)
 
-        self.v1 = self.addGen( Via( 'v1', 'via1', h_clg=self.m2.clg,  v_clg=self.m1.clg))
-        self.v2 = self.addGen( Via( 'v2', 'via2', h_clg=self.m2.clg,  v_clg=self.m3.clg))
+        self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg,  v_clg=self.m1.clg))
+        self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg,  v_clg=self.m3.clg))
 
         
 class UnitCell(CanvasNMOS):
