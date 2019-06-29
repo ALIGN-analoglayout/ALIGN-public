@@ -1,6 +1,38 @@
 from .cktgen import *
 
+from .transformation import Rect, Transformation
+
 import json
+from collections import defaultdict
+
+def gr_hints(parser_results):
+  leaf_map = { x['template_name'] : x for x in placer_results['leaves'] }
+
+  net_map = defaultdict(list)
+  for inst in placer_results['instances']:
+    i = inst['instance_name']
+    t = inst['template_name']
+    assert t in leaf_map
+    leaf = leaf_map[t]
+    pin_map = defaultdict(list)
+    for terminal in leaf['terminals']:
+      pin_map[terminal['net_name']].append( terminal)
+
+    tr = inst['transformation']
+    trans = Transformation( tr['oX'], tr['oY'], tr['sX'], tr['sY'])
+
+    for (formal,actual) in inst['formal_actual_map'].items():
+      assert formal in pin_map
+      lst = [trans.hitRect( Rect( *terminal['rect'])).canonical() for terminal in pin_map[formal]]
+
+      gr_lst = [ [ int(round((t-2*840)/(4*840),2)) for t in r.toList()] for r in lst]
+
+      net_map[actual].append( (i,formal,lst,gr_lst))
+
+  for (k,v) in net_map.items():
+    print(k)
+    for x in v:
+      print("   ", x)
 
 if __name__ == "__main__":
 
@@ -15,6 +47,8 @@ if __name__ == "__main__":
 
 #  with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
 #    global_router_results = json.load( fp)
+#  gr_hints(placer_results)
+
 
   wires = []
   wires.append( { 'layer': 'metal3', 'net_name': 'net3', 'width': 320, 'rect': [32,1,32,53]})
