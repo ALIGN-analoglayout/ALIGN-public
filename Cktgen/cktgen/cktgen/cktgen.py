@@ -546,7 +546,7 @@ Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=i,o
-      Option name=nets_not_to_route value=!kor,vss,vcc
+Option name=nets_not_to_route value=!kor,vss,vcc
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
