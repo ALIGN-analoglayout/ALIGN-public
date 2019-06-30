@@ -1,12 +1,8 @@
-import sys
 import json
 import math
 import argparse
-import os
-from os import system
 import gen_gds_json
 import gen_lef
-#from . import gen_json_gds, gen_lef
 from cell_fabric import Via, Region, Canvas, Wire, Pdk
 from cell_fabric import Grid, EnclosureGrid
 from cell_fabric import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
@@ -139,9 +135,10 @@ if __name__ == "__main__":
     uc.computeBbox()
 
     with open(args.block_name + '.json', "wt") as fp:
-    #with open( "./../Viewer/INPUT/mydesign_dr_globalrouting.json", "wt") as fp:
         data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
     cell_pin = ["PLUS", "MINUS"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-    system('python3 gen_gds_json.py -n %s -j %s.json' % (args.block_name,args.block_name))
+    with open( args.block_name + ".json", "rt") as fp0, \
+         open( args.block_name + ".gds.json", 'wt') as fp1:
+        gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())

@@ -19,13 +19,14 @@ def test_m3():
 
     assert 1 in m.spg.legalIndices
     assert 3 in m.spg.legalIndices
-    assert m.spg.grid[1][0] == 80
-    assert m.spg.grid[3][0] == 80
+ ### The following assertions are modified based on the updtaed PDK
+    assert m.spg.grid[1][0] == 36 
+    assert m.spg.grid[3][0] == 48 
 
     assert mt.widths == [40,40,40]
     assert mt.colors == ["c1","c2","c1"]
     assert mt.spaces == [40,40]
-    assert mt.offset == 40 # Why not zero? is the grid offset on purpose
+    assert mt.offset == 0
 
-    assert mt.stop_offset == 80 # Why not zero? [should mean the same thing]
-    assert mt.stops == [80]
+    assert mt.stop_offset == 36 
+    assert mt.stops == [12,72]
