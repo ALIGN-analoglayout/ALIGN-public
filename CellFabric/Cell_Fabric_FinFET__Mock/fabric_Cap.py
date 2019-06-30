@@ -4,9 +4,9 @@ import argparse
 import gen_gds_json
 import gen_lef
 from datetime import datetime
-from cell_fabric import Via, Region, Canvas, Wire, Pdk
+from cell_fabric import Canvas, Pdk, Wire, Region, Via
 from cell_fabric import EnclosureGrid
-from cell_fabric import CenterLineGrid, ColoredCenterLineGrid
+from cell_fabric import ColoredCenterLineGrid
 
 
 class CanvasCap(Canvas):
@@ -39,8 +39,8 @@ class CanvasCap(Canvas):
 
         self.boundary = self.addGen( Region( 'boundary', 'boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
 
-        self.v1 = self.addGen( Via( 'v1', 'via1', h_clg=self.m2.clg, v_clg=self.m1.clg))
-        self.v2 = self.addGen( Via( 'v2', 'via2', h_clg=self.m2.clg, v_clg=self.m3.clg))
+        self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg, v_clg=self.m1.clg))
+        self.v2 = self.addGen( Via( 'v2', 'V1', h_clg=self.m2.clg, v_clg=self.m3.clg))
 
 
 class UnitCell(CanvasCap):
@@ -88,8 +88,8 @@ class UnitCell(CanvasCap):
                     clg=self.m2n.clg.copyShift( self.m2.clg.value( grid_cell_y_pitch*y)[0]),
                     spg=self.m2n.spg)
 
-        v1n = Via( 'v1', 'via1', h_clg=m2n.clg, v_clg=self.m1.clg)
-        v2n = Via( 'v2', 'via2', h_clg=m2n.clg, v_clg=self.m3.clg)
+        v1n = Via( 'v1', 'V1', h_clg=m2n.clg, v_clg=self.m1.clg)
+        v2n = Via( 'v2', 'V2', h_clg=m2n.clg, v_clg=self.m3.clg)
 
         grid_x0 = x*grid_cell_x_pitch
         grid_x1 = grid_x0 + self.last_x_track

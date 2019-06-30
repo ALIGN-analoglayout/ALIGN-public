@@ -5,7 +5,7 @@ import gen_lef
 from datetime import datetime
 from cell_fabric import Via, Region, Canvas, Wire, Pdk
 from cell_fabric import EnclosureGrid
-from cell_fabric import CenterLineGrid, ColoredCenterLineGrid
+from cell_fabric import ColoredCenterLineGrid
 
 
 class CanvasCap(Canvas):
@@ -43,8 +43,8 @@ class CanvasCap(Canvas):
                                      spg=EnclosureGrid(pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] + p['Cap']['m2Width']//2, check=True)))
 
         self.boundary = self.addGen( Region( 'boundary', 'boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
-        self.v1 = self.addGen( Via( 'v1', 'via1', h_clg=self.m2.clg, v_clg=self.m1.clg))
-        self.v2 = self.addGen( Via( 'v2', 'via2', h_clg=self.m2.clg, v_clg=self.m3.clg))
+        self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg, v_clg=self.m1.clg))
+        self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg, v_clg=self.m3.clg))
 
 
 class UnitCell(CanvasCap):

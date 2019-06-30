@@ -3,11 +3,7 @@ import argparse
 import gen_gds_json
 import gen_lef
 from datetime import datetime
-
-from cell_fabric import Via, Region, Canvas, Wire
 from primitive import CanvasNMOS
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
-from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
         
 class UnitCell(CanvasNMOS):
 
