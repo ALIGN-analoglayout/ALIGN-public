@@ -178,7 +178,7 @@ class UnitCell(CanvasNMOS):
                    self.addVia( self.v2,'_', None, m3route, y*h+track)
 
                 for i in contact:
-                    self.addVia( self.v1, '_', None, i, (y, track)) 
+                    self.addVia( self.v1, '_', None, i, y*h + track) 
    
         #####   Nselect Placement   #####
         if x == x_cells -1 and y == y_cells -1:      
