@@ -3606,6 +3606,31 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
+  for(int i=0;i<(int)caseNL.SNets.size(); ++i) {
+    int SBidx=caseNL.SNets.at(i).SBidx;
+    placerDB::Smark axis_dir=caseAP.GetSBlockDir(SBidx);
+    UpdateSymmetryNetInfo(caseNL, node, i, SBidx, axis_dir);
+  }
+}
+
+void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir) {
+  int dnode=caseNL.GetBlockSymmGroupDnode(SBidx);
+  int axis_coor=0;
+  if(axis_dir==placerDB::V) {
+    axis_coor=HGraph.at(dnode).position;
+  } else if(axis_dir==placerDB::H) {
+    axis_coor=VGraph.at(dnode).position;
+  } else {
+    std::cout<<"Placer-Error: incorrect symmetry axis direction"<<std::endl;
+  }
+  string net1=caseNL.SNets.at(i).net1.name;
+  string net2=caseNL.SNets.at(i).net2.name;
+  for(std::vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+    if(it->name.compare(net1)==0 or it->name.compare(net2)==0) {
+      it->axis_dir=PnRDB::Smark(int(axis_dir));
+      it->axis_coor=axis_coor;
+    }
+  }
 }
 
 void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node) {
@@ -3625,6 +3650,11 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
+  for(int i=0;i<(int)caseNL.SNets.size(); ++i) {
+    int SBidx=caseNL.SNets.at(i).SBidx;
+    placerDB::Smark axis_dir=caseSP.GetSymmBlockAxis(SBidx);
+    UpdateSymmetryNetInfo(caseNL, node, i, SBidx, axis_dir);
+  }
 }
 
 void ConstGraph::updateTerminalCenterAP(design& caseNL, Aplace& caseAP) {

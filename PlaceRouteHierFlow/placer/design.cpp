@@ -1236,6 +1236,9 @@ void design::PrintDesign() {
   PrintNets();
   PrintConstraints();
   PrintSymmGroup();
+  for(int i=0;i<(int)SNets.size();++i) {
+    std::cout<<"Symmetry net "<<i<<" SBidx "<<SNets.at(i).SBidx<<std::endl;
+  }
 }
 
 void design::PrintSymmGroup() {
@@ -1677,7 +1680,9 @@ void design::constructSymmGroup() {
     for(int i=0;i<(int)tmpselfsym.size();++i) {
       cout<<"self-symmectric: "<<tmpselfsym.at(i).first<<","<<tmpselfsym.at(i).second<<endl;
     }
-    MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs);
+    int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets);
+    std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
+    sni->SBidx=sbidx;
     //vector<pair<int,int> > matchedPair,matchedSelf;
     //matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
     //matchedSelf=checkSelfsymInSymmBlock(SBs, tmpselfsym);
@@ -1768,7 +1773,7 @@ void design::constructSymmGroup() {
     //} 
   }
   for(vector<SymmPairBlock>::iterator sni=SPBlocks.begin(); sni!=SPBlocks.end(); ++sni) {
-    MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs);
+    MergeNewBlockstoSymmetryGroup(sni->sympair, sni->selfsym, SBs, this->SNets);
   }
   SBlocks.clear();
   for(vector<placerDB::SymmBlock>::iterator it=SBs.begin();it!=SBs.end();++it) {
@@ -1802,10 +1807,11 @@ void design::constructSymmGroup() {
   ////std::cout<<"Leaving constrcution\n";
 }
 
-void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs ) {
+int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  vector< pair<int,placerDB::Smark> >& tmpselfsym, vector<placerDB::SymmBlock>& SBs, vector<SymmNet>& SNs ) {
   vector<pair<int,int> > matchedPair,matchedSelf;
   matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
   matchedSelf=checkSelfsymInSymmBlock(SBs, tmpselfsym);
+  int sbidx=-1;
   if(matchedPair.empty()) {
     if(matchedSelf.empty()) { // neither matched
       cout<<"New symmetric group "<<endl;
@@ -1813,6 +1819,7 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
       SBs.back().sympair=tmpsympair;
       SBs.back().selfsym=tmpselfsym;
       //SBs.back().dnode=dnidx++;
+      sbidx=SBs.size()-1;
     } else { // only matched self-symmetric
       int gidx=matchedSelf[0].first;
       for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
@@ -1822,6 +1829,9 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
+          for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
+            if(nit->SBidx==itt->first) {nit->SBidx=gidx;}
+          }
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
@@ -1833,6 +1843,7 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
         }
         if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
       }
+      sbidx=gidx;
     }
   } else {
     if(matchedSelf.empty()) { // only matched paired-symmetric  
@@ -1844,6 +1855,9 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
+          for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
+            if(nit->SBidx==itt->first) {nit->SBidx=gidx;}
+          }
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
@@ -1855,6 +1869,7 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
       for(int i=0;i<(int)tmpselfsym.size();++i) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
+      sbidx=gidx;
     } else { // both matched
       int gidx=matchedSelf[0].first;
       for(vector<pair<int,int> >::iterator itt=matchedSelf.begin();itt!=matchedSelf.end();++itt) {
@@ -1864,6 +1879,9 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
+          for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
+            if(nit->SBidx==itt->first) {nit->SBidx=gidx;}
+          }
         }
       }
       for(vector<pair<int,int> >::iterator itt=matchedPair.begin();itt!=matchedPair.end();++itt) {
@@ -1873,6 +1891,9 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
           cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
+          for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
+            if(nit->SBidx==itt->first) {nit->SBidx=gidx;}
+          }
         }
       }
       for(int i=0;i<(int)tmpselfsym.size();++i) {
@@ -1889,8 +1910,10 @@ void design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair, 
         }
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
+      sbidx=gidx;
     }
   } 
+  return sbidx;
 }
 
 int design::GetBlockSymmGroup(int blockid) {

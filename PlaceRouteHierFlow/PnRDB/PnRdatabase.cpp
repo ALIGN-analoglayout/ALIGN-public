@@ -6027,7 +6027,7 @@ void PnRdatabase::PrintTerminal(PnRDB::terminal& t) {
 
 void PnRdatabase::PrintNet(PnRDB::net& n) {
   std::cout<<"@Net"<<std::endl;
-  std::cout<<"name: "<<n.name<<" ; shielding: "<<n.shielding<<" ; sin2Terminal: "<<n.sink2Terminal<<" ; degree: "<<n.degree<<" ; symCounterpart: "<<n.symCounterpart<<" ; iter2SNetLsit: "<<n.iter2SNetLsit<<" ; priority: "<<n.priority<<std::endl;
+  std::cout<<"name: "<<n.name<<" ; shielding: "<<n.shielding<<" ; sin2Terminal: "<<n.sink2Terminal<<" ; degree: "<<n.degree<<" ; symCounterpart: "<<n.symCounterpart<<" ; iter2SNetLsit: "<<n.iter2SNetLsit<<" ; priority: "<<n.priority<<" ; symmetry axis direction:"<<n.axis_dir<<" ; symmetry axis coor: "<<n.axis_coor<<std::endl;
   std::cout<<"connected ";
   for(vector<PnRDB::connectNode>::iterator it=n.connected.begin(); it!=n.connected.end(); ++it) {
     std::cout<<" {"<<it->type<<","<<it->iter<<","<<it->iter2<<"} ";
