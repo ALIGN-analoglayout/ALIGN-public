@@ -17,15 +17,15 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
                     "SLVT" : 9,	
                     "LVT" : 10,	                                                           
                     "polycon" : 11,
-                    "via0" : 12,	
+                    "V0" : 12,	
                     "M1" : 13,
-                    "via1" : 14,
+                    "V1" : 14,
                     "M2" : 15,
-                    "via2" : 16,
-                    "via3" : 17,
-                    "via4" : 18,
+                    "V2" : 16,
+                    "V3" : 17,
+                    "V4" : 18,
                     "M3" : 19,
-                    "V3" : 20,
+                    #"V3" : 20,
                     "M4" : 21,
                     "V4" : 22,
                     "M5" : 23,
@@ -86,13 +86,13 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
     return strct
 
-  via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
+  via_tbl = { "V1": "M2_M1_CDNS_543864435521", "V2": "M3_M2_CDNS_543864435520"}
 
 
-  structures.append( genVia( "via2", "M2", "M3",
+  structures.append( genVia( "V2", "M2", "M3",
                              [-640,-640,640,640], [-1440,-640,1440,640], [-640,-1440,640,1440]))
 
-  structures.append( genVia( "via1", "M1", "M2",
+  structures.append( genVia( "V1", "M1", "M2",
                              [-640,-640,640,640], [-640,-1440,640,1440], [-1440,-640,1440,640]))
 
   strct = {"time" : tme, "strname" : macro_name, "elements" : []}

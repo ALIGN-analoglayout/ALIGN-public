@@ -1,12 +1,11 @@
-import json
-from cell_fabric import Via, Region, Canvas, Wire, Pdk, DefaultCanvas
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from cell_fabric import Via, Region, Wire, Pdk, DefaultCanvas
+from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 
 class CanvasNMOS(DefaultCanvas):    
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json') 
+        p = Pdk().load('../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json') 
         super().__init__(p)                                           
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 

@@ -1,4 +1,3 @@
-import sys
 import json
 from collections import OrderedDict
 def json_lef(input_json,out_lef,cell_pin):

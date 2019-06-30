@@ -1,10 +1,5 @@
 import fabric_CMC_NMOS_v1_default
-
-import math
 import json
-
-import itertools
-
 def test_fabric_Cap1():
 
     x_cells = 4	

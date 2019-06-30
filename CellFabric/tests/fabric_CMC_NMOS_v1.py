@@ -1,14 +1,11 @@
-import sys
 import json
 import argparse
-from os import system
 #import gen_gds_json
 #import gen_lef
-import itertools
 
 from cell_fabric import Via, Region, Canvas, Wire, Pdk
 from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 
 class CanvasNMOS(Canvas):
@@ -31,9 +28,9 @@ class CanvasNMOS(Canvas):
         self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
         self.unitCellHeight = self.m2PerUnitCell* p['M2']['Pitch']
         unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch']
-        dcPitch  = 2* p['M1']['Pitch']               
-        pcPitch  = self.unitCellHeight//2
-        activeWidth1 =  p['Fin']['Pitch']*fin_u
+        #dcPitch  = 2* p['M1']['Pitch']               
+        #pcPitch  = self.unitCellHeight//2
+        #activeWidth1 =  p['Fin']['Pitch']*fin_u
         activeWidth =  p['Fin']['Pitch']*fin
         activeWidth_h = ((gate-1)* p['Poly']['Pitch']) + (p['Feol']['plActive_s']*2)+p['Poly']['Width']
         activeOffset = activeWidth//2 + finDummy* p['Fin']['Pitch']-p['M2']['Pitch']//2+p['Fin']['Offset']

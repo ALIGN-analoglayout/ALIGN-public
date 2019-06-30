@@ -1,9 +1,5 @@
 import fabric_CMC_NMOS_v1
-
-import math
 import json
-
-import itertools
 
 def test_fabric_Cap():
 

@@ -3,9 +3,10 @@ import math
 import argparse
 import gen_gds_json
 import gen_lef
+from datetime import datetime
 from cell_fabric import Via, Region, Canvas, Wire, Pdk
-from cell_fabric import Grid, EnclosureGrid
-from cell_fabric import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric import EnclosureGrid
+from cell_fabric import CenterLineGrid, ColoredCenterLineGrid
 
 
 class CanvasCap(Canvas):

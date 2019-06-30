@@ -2,13 +2,12 @@ import json
 import argparse
 import gen_gds_json
 import gen_lef
-import itertools
 from datetime import datetime
 
-from cell_fabric import Via, Region, Canvas, Wire, Pdk
+from cell_fabric import Via, Region, Canvas, Wire
 from primitive import CanvasNMOS
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
         
 class UnitCell(CanvasNMOS):
 
