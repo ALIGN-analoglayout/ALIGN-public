@@ -16,6 +16,8 @@ def import_gds(fp):
 
     r23 = [ x for x in l23 if not p.match(x['strname'])]
 
+    print( [ x['elements'] for x in r23 if x['strname'] == 'vga_GR'])
+
     def get_bb( l):
         return [ x for x in l if 'datatype' in x and x['datatype'] == 5]
 
