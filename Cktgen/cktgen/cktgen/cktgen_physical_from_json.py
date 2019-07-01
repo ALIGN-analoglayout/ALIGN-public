@@ -1,7 +1,7 @@
 from .cktgen import *
 
 #
-# Need to rename these of the router crashes with an stoi error?
+# Need to rename these or the router crashes with an stoi error?
 #
 from .transformation import Rect as tRect
 from .transformation import Transformation as tTransformation
