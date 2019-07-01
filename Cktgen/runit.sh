@@ -1,11 +1,10 @@
 #!/bin/bash
 
 
-(cd ../Pysat/satplacer && pytest --capture=no tests/test_lef_v_to_cktgen.py)
-(cd cktgen && cp ../../Pysat/satplacer/tests/__json_cktgen_physical_vga .)
+(cd cktgen && pytest --capture=no tests/test_lef_v_to_cktgen.py)
 
 docker run --mount source=equalizerInputVol,target=/INPUT --name sam ubuntu
-docker cp cktgen/__json_cktgen_physical_vga sam:INPUT
+docker cp cktgen/tests/__json_cktgen_physical_vga sam:INPUT
 docker rm sam
 
 docker build -t cktgen .

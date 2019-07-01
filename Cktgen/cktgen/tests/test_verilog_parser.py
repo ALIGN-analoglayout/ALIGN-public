@@ -1,4 +1,4 @@
-from satplacer.verilog_parser import *
+from cktgen.verilog_parser import *
 
 
 def test_str():

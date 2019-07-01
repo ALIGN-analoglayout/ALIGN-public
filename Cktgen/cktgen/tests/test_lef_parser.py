@@ -1,4 +1,4 @@
-from satplacer.lef_parser import *
+from cktgen.lef_parser import *
 
 def test_lef():
     txt = """VERSION 5.7 ;

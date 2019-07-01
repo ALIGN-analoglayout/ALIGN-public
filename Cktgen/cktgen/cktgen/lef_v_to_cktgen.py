@@ -1,9 +1,9 @@
 
-from satplacer.lef_parser import LEFParser
-from satplacer.verilog_parser import VerilogParser
-from satplacer.pl_parser import PLParser
+from .lef_parser import LEFParser
+from .verilog_parser import VerilogParser
+from .pl_parser import PLParser
 
-from satplacer.import_gds import import_gds
+from .import_gds import import_gds
 import pathlib
 
 
