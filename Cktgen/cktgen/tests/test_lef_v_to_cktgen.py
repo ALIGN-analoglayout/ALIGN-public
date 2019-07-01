@@ -1,5 +1,5 @@
 
-from satplacer.lef_v_to_cktgen import *
+from cktgen.lef_v_to_cktgen import *
 
 import json
 

@@ -1,5 +1,5 @@
 
-from satplacer.import_gds import *
+from cktgen.import_gds import *
 
 import pathlib
 
