@@ -4,24 +4,7 @@ import json
 import argparse
 import datetime
 
-def translate_data( macro_name, exclude_pattern, data, timestamp=None):
-
-  gds_layer_tbl = { 
-                    "polycon" : 1,
-                    "fin" : 2, 	
-                    "poly" : 3, 	
-                    "active" : 4,	
-                    "nselect" : 5,
-                    "pselect" : 6,
-                    "M0"   : 10,
-                    "via0" : 11,
-                    "M1"   : 12,
-                    "via1" : 13,
-                    "M2"   : 14,
-                    "via2" : 15,
-                    "M3"   : 16,
-                    "bbox" : 50
-                  }
+def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, timestamp=None):
 
   def rect_to_boundary( r):
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
@@ -117,8 +100,8 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
   return top
 
-def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
-  json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, timestamp=None):
+  json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), gds_layer_tbl, timestamp), ofile, indent=4)
 
 if __name__ == "__main__":
 

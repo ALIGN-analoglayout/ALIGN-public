@@ -6,15 +6,35 @@ import datetime
 import gdsconv.json2gds
 import filecmp
 import io
+import pytest
 
-def test_one():
-    
+@pytest.fixture
+def setup():
+    gds_layer_map = {"polycon" : 1,
+                     "fin" : 2,
+                     "poly" : 3,
+                     "active" : 4,
+                     "nselect" : 5,
+                     "pselect" : 6,
+                     "M0"   : 10,
+                     "via0" : 11,
+                     "M1"   : 12,
+                     "via1" : 13,
+                     "M2"   : 14,
+                     "via2" : 15,
+                     "M3"   : 16,
+                     "bbox" : 50}
+    return gds_layer_map
+
+def test_one(setup):
+    gds_layer_map = setup
+
     block_name = "foo"
     json_file_name = "tests/__json_cmc_nmos_big_no_duplicates"
 
     with open( json_file_name + "_cand", "rt") as fp0, \
          open( json_file_name + "_gds_cand", 'wt') as fp1:
-        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1,
+        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1, gds_layer_map,
                                             datetime.datetime( 2019, 1, 1, 0, 0, 0))
 
     with open( json_file_name + "_gds_cand", "rt") as fp0, \
@@ -23,14 +43,15 @@ def test_one():
         gold = json.load( fp1)
         assert cand == gold
 
-def test_gds():
-    
+def test_gds(setup):
+    gds_layer_map = setup
+
     block_name = "foo"
     json_file_name = "tests/__json_cmc_nmos_big_no_duplicates"
 
     with open( json_file_name + "_cand", "rt") as fp0, \
          open( json_file_name + "_gds_cand", 'wt') as fp1:
-        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1,
+        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1, gds_layer_map,
                                             datetime.datetime( 2019, 1, 1, 0, 0, 0))
 
     with open( json_file_name + "_gds_cand", "rt") as fp0, \
@@ -39,14 +60,15 @@ def test_gds():
 
     assert filecmp.cmp( "tests/test_gds.gds", "tests/test_gds.gds_gold", shallow=False)
 
-def test_gds_stringio():
-    
+def test_gds_stringio(setup):
+    gds_layer_map = setup
+
     block_name = "foo"
     json_file_name = "tests/__json_cmc_nmos_big_no_duplicates"
 
     with open( json_file_name + "_cand", "rt") as fp0, \
          io.StringIO() as fp1:
-        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1,
+        cell_fabric.gen_gds_json.translate( block_name, '', fp0, fp1, gds_layer_map,
                                             datetime.datetime( 2019, 1, 1, 0, 0, 0))
         contents = fp1.getvalue()
 
@@ -55,4 +77,4 @@ def test_gds_stringio():
         gdsconv.json2gds.convert_GDSjson_GDS_fps( fp0, fp1)
 
     assert filecmp.cmp( "tests/test_gds.gds", "tests/test_gds.gds_gold", shallow=False)
-    
+
