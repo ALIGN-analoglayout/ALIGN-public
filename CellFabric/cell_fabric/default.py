@@ -19,8 +19,14 @@ class DefaultCanvas(Canvas):
         self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
             for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
 
+    def _get_metal_width( self, layer):
+        return self.pdk[layer]['Width'][0] if isinstance(self.pdk[layer]['Width'], list) else self.pdk[layer]['Width']
+
     def _get_metal_pitch( self, layer):
-        return min(self.pdk[layer]['Pitch']) if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
+        return self.pdk[layer]['Pitch'][0] if isinstance(self.pdk[layer]['Pitch'], list) else self.pdk[layer]['Pitch']
+
+    def _get_metal_offset( self, layer):
+        return self.pdk[layer]['Offset'][0] if isinstance(self.pdk[layer]['Offset'], list) else self.pdk[layer]['Offset']
 
     def _get_via_ext( self, metal, via):
         viaenc = self.pdk[via][f'VencA_L'] if self.pdk[via]['Stack'][0] == metal else self.pdk[via][f'VencA_H']
@@ -38,23 +44,41 @@ class DefaultCanvas(Canvas):
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
             if nm is None:
-                spg_pitch, spg_stop = self._get_metal_pitch(pm), self._get_via_ext(base_layer, pv)
+                print(f'spg for {base_layer} aligned to {pm}')
+                spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(pm),
+                                                   self._get_via_ext(base_layer, pv),
+                                                   self._get_metal_offset(pm))
             elif pm is None:
-                spg_pitch, spg_stop = self._get_metal_pitch(nm), self._get_via_ext(base_layer, nv)
+                print(f'spg for {base_layer} aligned to {nm}')
+                spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(nm),
+                                                   self._get_via_ext(base_layer, nv),
+                                                   self._get_metal_offset(nm))
             else:
                 pm_pitch, nm_pitch = self._get_metal_pitch(pm), self._get_metal_pitch(nm)
                 if pm_pitch <= nm_pitch:
-                    spg_pitch, spg_stop = pm_pitch, self._get_via_ext(base_layer, pv)
+                    print(f'spg for {base_layer} aligned to {pm}')
+                    spg_pitch, spg_stop, spg_offset = (pm_pitch,
+                                                       self._get_via_ext(base_layer, pv),
+                                                       self._get_metal_offset(pm))
                 else:
-                    spg_pitch, spg_stop = nm_pitch, self._get_via_ext(base_layer, nv)
+                    print(f'spg for {base_layer} aligned to {nm}')
+                    spg_pitch, spg_stop, spg_offset = (nm_pitch,
+                                                       self._get_via_ext(base_layer, nv),
+                                                       self._get_metal_offset(nm))
             layer = layer.lower()
             if len(info['Color']) == 0:
-                clg = UncoloredCenterLineGrid( pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+                clg = UncoloredCenterLineGrid(pitch=self._get_metal_pitch(base_layer),
+                                              width=self._get_metal_width(base_layer),
+                                              offset=self._get_metal_offset(base_layer))
             else:
-                clg = ColoredCenterLineGrid( colors=info['Color'], pitch=info['Pitch'], width=info['Width'], offset=info['Pitch']//2)
+                clg = ColoredCenterLineGrid(colors=info['Color'],
+                                            pitch=self._get_metal_pitch(base_layer),
+                                            width=self._get_metal_width(base_layer),
+                                            offset=self._get_metal_offset(base_layer))
+
             setattr(self, layer, self.addGen(
                 Wire(layer, base_layer, info['Direction'], clg = clg,
-                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_pitch//2, stoppoint=spg_stop, check=True))
+                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_offset, stoppoint=spg_stop, check=True))
             ))
 
     def _create_via( self, layer, info):
@@ -83,7 +107,7 @@ class DefaultCanvas(Canvas):
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None
-        for (v, (m0, m1)) in self.layer_stack:
+        for (v, (m0, m1)) in self.pdk.get_via_stack():
             if layer == m0:
                 nv = v
                 nm = m1

@@ -37,7 +37,7 @@ class CanvasNMOS(DefaultCanvas):
         self.active_enclosure = 42
 
         self.finOffset = 0  
-        self.plOffset = 0
+        self.plOffset = self.plPitch//2
         
         self.finDummy = 5  ### Number of dummy fins
         self.gateDummy = 3 ### Number of dummy gates
