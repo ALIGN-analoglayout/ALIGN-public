@@ -27,7 +27,7 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
                     "M3" : 19,
                     #"V3" : 20,
                     "M4" : 21,
-                    "V4" : 22,
+                    #"V4" : 22,
                     "M5" : 23,
                     "V5" : 24,
                     "M6" : 25,
