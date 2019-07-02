@@ -2990,7 +2990,14 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
             for(int k=0;k<hierTree[i].Blocks.size();k++)
                 if(hierTree[i].Blocks[k].instance.back().master.compare(hierTree[j].name)==0){
                    hierTree[i].Blocks[k].child = j;
-                   hierTree[j].parent.push_back(i);
+                   
+                   int parent_found = 0;
+                   for(int p=0;p<hierTree[j].parent.size();p++){
+                       if(hierTree[j].parent[p] == i){parent_found=1;} 
+                      }
+                   if(parent_found==0){hierTree[j].parent.push_back(i);}
+                   
+                   //hierTree[j].parent.push_back(i);
                   }
             }
         if(hierTree[i].name.compare(topcell)==0){
