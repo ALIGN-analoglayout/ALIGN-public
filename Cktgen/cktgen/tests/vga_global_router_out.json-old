@@ -1,0 +1,53 @@
+{
+	"wires":[
+{ "layer": "metal4", "net_name": "vgnd", "width": 320, "rect": [16,50,39,50]},
+{ "layer": "metal3", "net_name": "vgnd", "width": 320, "rect": [32,0,32,50]},
+
+{ "layer": "metal3", "net_name": "vga_out1", "width": 960, "rect": [30,20,30,53]},
+{ "layer": "metal4", "net_name": "vga_out1", "width": 960, "rect": [16,43,30,43]},
+{ "layer": "metal4", "net_name": "vga_out1", "width": 960, "rect": [0,49,31,49]},
+
+{ "layer": "metal3", "net_name": "vga_out2", "width": 960, "rect": [32,20,32,53]},
+{ "layer": "metal4", "net_name": "vga_out2", "width": 960, "rect": [32,43,39,43]},
+{ "layer": "metal4", "net_name": "vga_out2", "width": 960, "rect": [32,48,55,48]},
+
+
+
+{ "layer": "metal3", "net_name": "net3", "width": 320, "rect": [32,1,32,53]},
+
+{ "layer": "metal3", "net_name": "net4", "width": 320, "rect": [30,10,30,40]},
+{ "layer": "metal3", "net_name": "net4", "width": 320, "rect": [5,10,5,40]},
+{ "layer": "metal4", "net_name": "net4", "width": 320, "rect": [5,20,30,20]},
+
+{ "layer": "metal3", "net_name": "net4p", "width": 320, "rect": [19,1,19,20]},
+{ "layer": "metal3", "net_name": "net4p", "width": 320, "rect": [7,20,7,28]},
+{ "layer": "metal4", "net_name": "net4p", "width": 320, "rect": [7,20,19,20]},
+
+{ "layer": "metal3", "net_name": "net5", "width": 320, "rect": [26,45,26,48]},
+{ "layer": "metal3", "net_name": "net5", "width": 320, "rect": [4,44,4,52]},
+{ "layer": "metal4", "net_name": "net5", "width": 320, "rect": [4,48,26,48]},
+
+{ "layer": "metal3", "net_name": "net5p", "width": 320, "rect": [19,1,19,30]},
+{ "layer": "metal3", "net_name": "net5p", "width": 320, "rect": [8,30,8,51]},
+{ "layer": "metal4", "net_name": "net5p", "width": 320, "rect": [8,30,19,30]},
+
+{ "layer": "metal3", "net_name": "net6", "width": 320, "rect": [26,31,26,41]},
+{ "layer": "metal3", "net_name": "net6", "width": 320, "rect": [5,31,5,39]},
+{ "layer": "metal4", "net_name": "net6", "width": 320, "rect": [5,35,26,35]},
+
+{ "layer": "metal3", "net_name": "net6p", "width": 320, "rect": [19,1,19,25]},
+{ "layer": "metal3", "net_name": "net6p", "width": 320, "rect": [8,25,8,39]},
+{ "layer": "metal4", "net_name": "net6p", "width": 320, "rect": [8,25,19,25]},
+
+
+{ "layer": "metal4", "net_name": "vps",  "width": 320, "rect": [1,51,54,51]},  
+
+{ "layer": "metal3", "net_name": "vmirror",  "width": 320, "rect": [27,0,27,18]},  
+
+{ "layer": "metal3", "net_name": "s0",  "width": 320, "rect": [5,43,5,51]},  
+{ "layer": "metal3", "net_name": "s1",  "width": 320, "rect": [3,20,3,28]},  
+{ "layer": "metal3", "net_name": "s2",  "width": 320, "rect": [5,31,5,38]},  
+
+{ "layer": "metal3", "net_name": "vin1",  "width": 320, "rect": [27,20,27,53]},  
+{ "layer": "metal3", "net_name": "vin2",  "width": 320, "rect": [27,20,27,53]}
+]}

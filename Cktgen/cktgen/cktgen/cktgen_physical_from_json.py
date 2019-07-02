@@ -104,6 +104,24 @@ def gr_hints(parser_results):
   return wires
 
 
+def hack_gr( results):
+  wires = results['wires']
+
+  layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+
+  new_wires = []
+  for wire in wires:
+    new_wire = { 'layer': layer_map[wire['layer']],
+                 'net_name': wire['net_name'],
+                 'width': 320,
+                 'rect': [ x//(84*2*4) for x in wire['rect']]
+    }
+    new_wires.append(new_wire)
+
+
+  results['wires'] = new_wires
+
+
 if __name__ == "__main__":
 
   args,tech = parse_args()
@@ -119,7 +137,9 @@ if __name__ == "__main__":
   with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
     global_router_results = json.load( fp)
 
-  wires = gr_hints(placer_results)
+  hack_gr( global_router_results)
+
+#  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
   global_ycs2 = set()
