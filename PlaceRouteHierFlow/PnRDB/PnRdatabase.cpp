@@ -2666,12 +2666,54 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             }
           }
         }
-        std::cout<<"AlignBlock "<<alignment_unit.horizon<<" @ ";
+        //std::cout<<"AlignBlock "<<alignment_unit.horizon<<" @ ";
         for(int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
-        std::cout<<std::endl;
+        //std::cout<<std::endl;
         node.Align_blocks.push_back(alignment_unit);
+      } else if (temp[0].compare("PortLocation")==0) {
+        // PortLocation(X,L) 
+        // This constraint indicates the location of the port ‘X’
+        // Considering the block as a rectangle, the edges can be divided into 12 sections as shown in the figure below.
+        //  L indicates the approximate position of the port. Value of L should be taken from the set
+        // {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT, }
+        PnRDB::PortPos tmp_portpos;
+        //std::cout<<temp[4]<<temp[2]<<std::endl;
+        if(temp[4].compare("TL")==0) {
+          tmp_portpos.pos=PnRDB::TL;
+        } else if(temp[4].compare("TC")==0) {
+          tmp_portpos.pos=PnRDB::TC;
+        } else if(temp[4].compare("TR")==0) {
+          tmp_portpos.pos=PnRDB::TR;
+        } else if(temp[4].compare("RT")==0) {
+          tmp_portpos.pos=PnRDB::RT;
+        } else if(temp[4].compare("RC")==0) {
+          tmp_portpos.pos=PnRDB::RC;
+        } else if(temp[4].compare("RB")==0) {
+          tmp_portpos.pos=PnRDB::RB;
+        } else if(temp[4].compare("BL")==0) {
+          tmp_portpos.pos=PnRDB::BL;
+        } else if(temp[4].compare("BC")==0) {
+          tmp_portpos.pos=PnRDB::BC;
+        } else if(temp[4].compare("BR")==0) {
+          tmp_portpos.pos=PnRDB::BR;
+        } else if(temp[4].compare("LB")==0) {
+          tmp_portpos.pos=PnRDB::LB;
+        } else if(temp[4].compare("LC")==0) {
+          tmp_portpos.pos=PnRDB::LC;
+        } else if(temp[4].compare("LT")==0) {
+          tmp_portpos.pos=PnRDB::LT;
+        }
+        string name=temp[2];
+        for(int k=0;k<(int)node.Terminals.size();++k) {
+          std::cout<<node.Terminals.at(k).name<<std::endl;
+          if(node.Terminals.at(k).name.compare(name)==0) {
+            //tmp_portpos.tid=k;
+            break;
+          }
+        }
+        std:cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
+        node.Port_Location.push_back(tmp_portpos);
       }
-      
     }
     fin.close();
     //std::cout<<"end read const file "<<cfile<<std::endl;
@@ -3498,6 +3540,31 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
 
 }
 
+void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath) {
+  std::ofstream OF2(opath+rofile);
+  if(OF2.fail()) {
+    cout<< "PnRData-Error: cannot open the file "<<rofile<<endl;
+    return;
+  }
+  OF2<<"{"<<endl<<"  \"wires\": ["<<endl;
+  int i=0;
+  for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+    for(vector<PnRDB::Metal>::iterator it2=it->path_metal.begin(); it2!=it->path_metal.end(); ++it2) {
+      if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
+      if(i!=0) {OF2<<","<<std::endl;}
+      i++;
+      OF2<<"    { \"layer\": \""<<DRC_info.Metal_info.at(it2->MetalIdx).name;
+      OF2<<"\", \"net_name\": \""<<it->name<<"\", \"width\": "<<it2->width;
+      OF2<<", \"rect\": [ "<<it2->LinePoint.at(0).x<<", "<<it2->LinePoint.at(0).y<<", "<<it2->LinePoint.at(1).x<<", "<<it2->LinePoint.at(1).y<<"] }";
+      //OF2<<"] }";
+      //if(it!=node.Nets.end()-1 or it2!=it->segments.end()-1) {OF2<<",";}
+      //OF2<<endl;
+    }
+    //OF2<<endl;
+  }
+  OF2<<std::endl<<"  ]"<<endl<<"}";
+  OF2.close();
+}
 
 void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile) {
   std::ofstream OF(pofile);

@@ -37,11 +37,13 @@ struct ViaModel;
 struct Via;
 struct PowerGrid;
 struct PowerNet;
+struct PortPos;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
+enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 
 /// Part 2: declaration of sturctures for placer and router
 struct point {
@@ -221,6 +223,7 @@ struct hierNode {
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
+  vector<PortPos> Port_Location;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
@@ -278,6 +281,11 @@ struct MatchBlock {
 struct AlignBlock {
   std::vector<int> blocks;
   int horizon; // 1 is h, 0 is v.
+};
+
+struct PortPos {
+  int tid;
+  Bmark pos;
 };
 
 struct CCCap {
