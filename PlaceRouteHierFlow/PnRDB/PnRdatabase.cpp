@@ -4600,7 +4600,7 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
 };
 
 void
-JSONExtractUit (string GDSData, int& unit)
+JSONExtractUit (string GDSData, double& unit)
 {
     std::string jsonFileName = GDSData + ".json";
     //std::cout << "GDS JSON FILE=" << jsonFileName << std::endl;
@@ -4691,7 +4691,7 @@ JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 };
 
 void
-JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAry, int unit)
+JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAry, double unit)
 {
     elmAry = json::array();
   
@@ -4755,7 +4755,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
 }
 
 void
-assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, int unit) {
+assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
     x[0] = unit * b.LL.x;
     x[1] = unit * b.UL.x;
     x[2] = unit * b.UR.x;
@@ -4790,7 +4790,7 @@ addTextElements (json& jsonElements, int cenX, int cenY, int layer, const string
 }
 
 bool
-addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_info& drc_info, int unit) {
+addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_info& drc_info, double unit) {
     int x[5], y[5];
     assignBoxPoints (x, y, metal.MetalRect.placedBox, unit);
 
@@ -4840,7 +4840,7 @@ addOABoundaries (json& jsonElements, int width, int height) {
 
 }
 
-void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info, int unit) {
+void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info, double unit) {
     int x[5], y[5];
     assignBoxPoints (x, y, via.ViaRect.placedBox, unit);
     
@@ -4895,7 +4895,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     node.gdsFile = opath+gdsName+".gds";
     string TopCellName = gdsName;
     std::set<string> uniGDSset;
-    int unitScale=2;
+    double unitScale=2;
 	for (int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at( node.Blocks[i].selectedInstance ).gdsFile);
 

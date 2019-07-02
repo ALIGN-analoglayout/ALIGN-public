@@ -2457,7 +2457,7 @@ void JSONReaderWrite_subcells (string GDSData, long int& rndnum,
 			       vector<int>& urx, vector<int>& ury, json& mjsonStrAry);
 
 extern
-void JSONExtractUit (string GDSData, int& unit);
+void JSONExtractUit (string GDSData, double& unit);
 
 extern 
 void addOABoundaries (json& jsonElements, int width, int height);
@@ -2530,7 +2530,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = opath+final_gds+".gds";
     string TopCellName = final_gds;
-    int unitScale=2;
+    double unitScale=2;
     JSONExtractUit (gds_unit_capacitor, unitScale);
     std::cout<<"Cap unitScale "<<unitScale<<std::endl;
 
