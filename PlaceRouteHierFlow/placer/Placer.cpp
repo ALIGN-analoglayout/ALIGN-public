@@ -524,8 +524,8 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     //std::cout<<"Placer-Info: cost "<<it->first<<std::endl;
     ConstGraph vec_sol(designData, it->second, mode);
     vec_sol.ConstraintGraph(designData, it->second);
-    vec_sol.updateTerminalCenter(designData, it->second);
     vec_sol.FastInitialScan();
+    vec_sol.updateTerminalCenter(designData, it->second);
     //std::cout<<"wbxu check design\n";
     //designData.PrintDesign();
     //it->second.PrintSeqPair();
@@ -636,8 +636,8 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   for(std::map<double, SeqPair>::iterator it=spVec.begin(); it!=spVec.end() and idx<nodeSize; ++it, ++idx) {
     ConstGraph vec_sol(designData, it->second, bias_mode);
     vec_sol.ConstraintGraph(designData, it->second);
-    vec_sol.updateTerminalCenter(designData, it->second);
     vec_sol.FastInitialScan();
+    vec_sol.updateTerminalCenter(designData, it->second);
     vec_sol.PrintConstGraph();
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.pl");
     vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+"_reduced.plt");

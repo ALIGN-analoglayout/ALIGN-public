@@ -14,6 +14,7 @@ namespace placerDB {
 enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
+enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 
 struct point {
   int x;

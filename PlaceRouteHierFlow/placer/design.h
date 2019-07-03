@@ -64,8 +64,10 @@ class design
 
     struct terminal {
       string name;
-      int netIter;
+      int netIter=-1;
       placerDB::point center;  //added a function to update the center point for each terminal when SA is finished, and plot write call this function.
+      int SBidx=-1;
+      int counterpart=-1;
     };
 //    struct net {
 //      string name;
@@ -78,6 +80,10 @@ class design
     struct SymmPairBlock {
       vector< pair<int,int> > sympair;
       vector< pair<int,placerDB::Smark> > selfsym;
+    };
+    struct PortPos {
+      int tid;
+      placerDB::Bmark pos;
     };
     //struct SymmBlock {
     //  vector< pair<int,int> > sympair;
@@ -96,6 +102,7 @@ class design
     std::vector<SymmNet> SNets;
     std::vector<placerDB::SymmBlock> SBlocks;
     std::vector<SymmPairBlock> SPBlocks;
+    std::vector<PortPos> Port_Location;
 
     //added by ya
     

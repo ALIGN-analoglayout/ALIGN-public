@@ -1737,12 +1737,12 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
                 if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y;}
               }
             }
-	       }
-          } else if (ci->type==placerDB::Terminal) {
-            //cout<<"Terminal "<<ci->iter<<" ";
-            hasTerminal=true;
-          }
-        }
+	  }
+      } else if (ci->type==placerDB::Terminal) {
+        //cout<<"Terminal "<<ci->iter<<" ";
+        hasTerminal=true;
+      }
+    }
     int x=0; int y=0;
     for(vector<placerDB::point>::iterator pi=pos.begin(); pi!=pos.end(); ++pi) {
       for(vector<placerDB::point>::iterator qi=pi+1; qi!=pos.end(); ++qi) {
@@ -1757,6 +1757,324 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
   }
   return sum;
 }
+
+double ConstGraph::CalculateWireLengthNew(design& caseNL, SeqPair& caseSP) {
+  double sum=0;
+  //CalculateLongestPath(sourceNode, this->HGraph, false);
+  //CalculateLongestPath(sourceNode, this->VGraph, false);
+  int Xmax=HGraph.at(sinkNode).position;
+  int Ymax=VGraph.at(sinkNode).position;
+  vector<placerDB::point> pos; placerDB::point p, bp; int alpha;
+  vector<placerDB::point> pos_pin;
+  std::set<int> solved_terminals;
+  // for each net
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    pos.clear();
+    if((ni->priority).compare("min")==0) { alpha=4;
+    } else if((ni->priority).compare("mid")==0) { alpha=2;
+    } else { alpha=1; }
+    alpha*=ni->weight; // add weight to reflect the modification for bigMacros
+    // for each pin
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      if(ci->type==placerDB::Block) {
+        bp.x=this->HGraph.at(ci->iter2).position;
+        bp.y=this->VGraph.at(ci->iter2).position;
+        pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+        for(int i=0;i<pos_pin.size();i++){
+          p = pos_pin[i];
+          pos.push_back(p);
+	}
+      }
+    }
+    int x=0; int y=0;
+    for(vector<placerDB::point>::iterator pi=pos.begin(); pi!=pos.end(); ++pi) {
+      for(vector<placerDB::point>::iterator qi=pi+1; qi!=pos.end(); ++qi) {
+        if( abs((pi->x)-(qi->x))>x ) {x=abs((pi->x)-(qi->x));}
+        if( abs((pi->y)-(qi->y))>y ) {y=abs((pi->y)-(qi->y));}
+      }
+    }
+    sum+=((x+y)*alpha);
+  }
+  // for each terminal
+  for(int i=0;i<(int)caseNL.GetSizeofTerminals();++i) {
+    if(solved_terminals.find(i)!=solved_terminals.end()) {continue;}
+    solved_terminals.insert(i);
+    int netIdx=caseNL.Terminals.at(i).netIter;
+    int sbIdx=caseNL.Terminals.at(i).SBidx;
+    int cp=caseNL.Terminals.at(i).counterpart;
+    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Warning: terminal "<<i<<" is dangling\n"; continue;}
+    //pos.clear();
+    if((caseNL.Nets.at(netIdx).priority).compare("min")==0) { alpha=4;
+    } else if((caseNL.Nets.at(netIdx).priority).compare("mid")==0) { alpha=2;
+    } else { alpha=1; }
+    alpha*=caseNL.Nets.at(netIdx).weight; // add weight to reflect the modification for bigMacros
+    if(sbIdx!=-1) { // in symmetry group
+      int dnode=caseNL.GetBlockSymmGroupDnode(sbIdx);
+      placerDB::Smark axis=caseSP.GetSymmBlockAxis(sbIdx);
+      int axis_X=this->HGraph.at(dnode).position;
+      int axis_Y=this->VGraph.at(dnode).position;
+      if(cp==i) { // self-symmetric
+        if(axis==placerDB::V) {
+          int distTerm=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++){
+                p = pos_pin[k];
+                if(p.y<distTerm) {distTerm=p.y;}
+                if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y;}
+              }
+            }
+          }
+          sum+=distTerm*alpha;
+        } else if(axis==placerDB::H) {
+          int distTerm=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++) {
+                p = pos_pin[k];
+                if(p.x<distTerm) {distTerm=p.x;}
+                if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
+              }
+            }
+          }
+          sum+=distTerm*alpha;
+        } else {
+          std::cout<<"Placer-Error: incorrect axis direction\n";
+        }
+      } else { // symmetry pair
+        if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
+        solved_terminals.insert(cp);
+        int netIdx2=caseNL.Terminals.at(cp).netIter;
+        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; continue;}
+        int alpha2;
+        if((caseNL.Nets.at(netIdx2).priority).compare("min")==0) { alpha2=4;
+        } else if((caseNL.Nets.at(netIdx2).priority).compare("mid")==0) { alpha2=2;
+        } else { alpha2=1; }
+        alpha2*=caseNL.Nets.at(netIdx2).weight; // add weight to reflect the modification for bigMacros
+        if(axis==placerDB::V) {
+          int distTermL=INT_MAX, distTermR=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++){
+                p = pos_pin[k];
+                if(p.x<distTermL) {distTermL=p.x;}
+                if(Xmax-p.x<distTermR) {distTermR=Xmax-p.x;}
+              }
+            }
+          }
+          int distTermL2=INT_MAX, distTermR2=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx2).connected.begin(); ci!=caseNL.Nets.at(netIdx2).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++){
+                p = pos_pin[k];
+                if(p.x<distTermL2) {distTermL2=p.x;}
+                if(Xmax-p.x<distTermR2) {distTermR2=Xmax-p.x;}
+              }
+            }
+          }
+          if(distTermL*alpha+distTermR2*alpha2<distTermR*alpha+distTermL2*alpha2) {
+            sum+=(distTermL*alpha+distTermR2*alpha2);
+          } else {
+            sum+=(distTermR*alpha+distTermL2*alpha2);
+          }
+        } else if (axis==placerDB::H) {
+          int distTermL=INT_MAX, distTermU=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++){
+                p = pos_pin[k];
+                if(p.y<distTermL) {distTermL=p.y;}
+                if(Ymax-p.y<distTermU) {distTermU=Ymax-p.y;}
+              }
+            }
+          }
+          int distTermL2=INT_MAX, distTermU2=INT_MAX;
+          for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx2).connected.begin(); ci!=caseNL.Nets.at(netIdx2).connected.end(); ++ci) {
+            if(ci->type==placerDB::Block) {
+              bp.x=this->HGraph.at(ci->iter2).position;
+              bp.y=this->VGraph.at(ci->iter2).position;
+              pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+              for(int k=0;k<pos_pin.size();k++){
+                p = pos_pin[k];
+                if(p.y<distTermL2) {distTermL2=p.y;}
+                if(Ymax-p.y<distTermU2) {distTermU2=Ymax-p.y;}
+              }
+            }
+          }
+          if(distTermL*alpha+distTermU2*alpha2<distTermU*alpha+distTermL2*alpha2) {
+            sum+=(distTermL*alpha+distTermU2*alpha2);
+          } else {
+            sum+=(distTermU*alpha+distTermL2*alpha2);
+          }
+        } else {
+          std::cout<<"Placer-Error: incorrect axis direction\n";
+        }
+      }
+    } else { // not in symmetry group
+      int tar=-1;
+      for(int j=0;j<(int)caseNL.Port_Location.size();++j) {
+        if(caseNL.Port_Location.at(j).tid==i) {tar=j; break;}
+      }
+      if(tar!=-1) { // specifiy PortLocation constraint
+        int x1=Xmax/3, x2=Xmax*2/3, x3=Xmax;
+        int y1=Ymax/3, y2=Ymax*2/3, y3=Ymax;
+        pos.clear();
+        for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+          if(ci->type==placerDB::Block) {
+            bp.x=this->HGraph.at(ci->iter2).position;
+            bp.y=this->VGraph.at(ci->iter2).position;
+            pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+            for(int k=0;k<pos_pin.size();k++) {
+              p = pos_pin[k];
+              pos.push_back(p);
+            }
+          }
+        }
+        int shot=-1;
+        int distTerm=INT_MAX;
+        for(int k=0;k<pos.size();++k) {
+          p=pos.at(k);
+          // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
+          switch(caseNL.Port_Location.at(tar).pos) {
+            case placerDB::TL :
+                 if(p.x>=0 and p.x<=x1) { 
+                   if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-0)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-0)+Ymax-p.y; shot=k;}
+                   if( std::abs(p.x-x1)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x1)+Ymax-p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::TC :
+                 if(p.x>=x1 and p.x<=x2) { 
+                   if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
+                   if( std::abs(p.x-x1)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x1)+Ymax-p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::TR :
+                 if(p.x>=x2 and p.x<=x3) { 
+                   if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-x2)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x2)+Ymax-p.y; shot=k;}
+                   if( std::abs(p.x-x3)+Ymax-p.y<distTerm ) {distTerm=std::abs(p.x-x3)+Ymax-p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::RT :
+                 if(p.y>=y2 and p.y<=y3) { 
+                   if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
+                   if( std::abs(p.y-y3)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y3)+Xmax-p.x; shot=k;}
+                 }
+                 break;
+            case placerDB::RC :
+                 if(p.y>=y1 and p.y<=y2) { 
+                   if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-y2)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y2)+Xmax-p.x; shot=k;}
+                   if( std::abs(p.y-y1)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y1)+Xmax-p.x; shot=k;}
+                 }
+                 break;
+            case placerDB::RB :
+                 if(p.y>=0 and p.y<=y1) { 
+                   if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-0)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-0)+Xmax-p.x; shot=k;}
+                   if( std::abs(p.y-y1)+Xmax-p.x<distTerm ) {distTerm=std::abs(p.y-y1)+Xmax-p.x; shot=k;}
+                 }
+                 break;
+            case placerDB::BL :
+                 if(p.x>=0 and p.x<=x1) { 
+                   if(p.y<distTerm) {distTerm=p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-0)+p.y<distTerm ) {distTerm=std::abs(p.x-0)+p.y; shot=k;}
+                   if( std::abs(p.x-x1)+p.y<distTerm ) {distTerm=std::abs(p.x-x1)+p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::BC :
+                 if(p.x>=x1 and p.x<=x2) { 
+                   if(p.y<distTerm) {distTerm=p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
+                   if( std::abs(p.x-x1)+p.y<distTerm ) {distTerm=std::abs(p.x-x1)+p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::BR :
+                 if(p.x>=x2 and p.x<=x3) { 
+                   if(p.y<distTerm) {distTerm=p.y; shot=k;}
+                 } else {
+                   if( std::abs(p.x-x2)+p.y<distTerm ) {distTerm=std::abs(p.x-x2)+p.y; shot=k;}
+                   if( std::abs(p.x-x3)+p.y<distTerm ) {distTerm=std::abs(p.x-x3)+p.y; shot=k;}
+                 }
+                 break;
+            case placerDB::LT :
+                 if(p.y>=y2 and p.y<=y3) { 
+                   if(p.x<distTerm) {distTerm=p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
+                   if( std::abs(p.y-y3)+p.x<distTerm ) {distTerm=std::abs(p.y-y3)+p.x; shot=k;}
+                 }
+                 break;
+            case placerDB::LC :
+                 if(p.y>=y1 and p.y<=y2) { 
+                   if(p.x<distTerm) {distTerm=p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-y2)+p.x<distTerm ) {distTerm=std::abs(p.y-y2)+p.x; shot=k;}
+                   if( std::abs(p.y-y1)+p.x<distTerm ) {distTerm=std::abs(p.y-y1)+p.x; shot=k;}
+                 }
+                 break;
+            case placerDB::LB :
+                 if(p.y>=0 and p.y<=y1) { 
+                   if(p.x<distTerm) {distTerm=p.x; shot=k;}
+                 } else {
+                   if( std::abs(p.y-0)+p.x<distTerm ) {distTerm=std::abs(p.y-0)+p.x; shot=k;}
+                   if( std::abs(p.y-y1)+p.x<distTerm ) {distTerm=std::abs(p.y-y1)+p.x; shot=k;}
+                 }
+                 break;
+            default :
+                 std::cout<<"Placer-Warning: incorrect port position\n";
+          }
+        }
+        if(shot!=-1) {sum+=distTerm*alpha;}
+      } else { // no constraint
+        int distTerm=INT_MAX;
+        for(vector<placerDB::Node>::iterator ci=caseNL.Nets.at(netIdx).connected.begin(); ci!=caseNL.Nets.at(netIdx).connected.end(); ++ci) {
+          if(ci->type==placerDB::Block) {
+            bp.x=this->HGraph.at(ci->iter2).position;
+            bp.y=this->VGraph.at(ci->iter2).position;
+            pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+            for(int k=0;k<pos_pin.size();k++) {
+              p = pos_pin[k];
+              if(p.x<distTerm) {distTerm=p.x;}
+              if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
+              if(p.y<distTerm) {distTerm=p.y;}
+              if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y;}
+            }
+          }
+        }
+        sum+=distTerm*alpha;
+      }
+    }
+  }
+  return sum;
+}
+
 
 
 //added by yg

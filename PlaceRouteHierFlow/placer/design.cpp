@@ -488,6 +488,12 @@ design::design(PnRDB::hierNode& node) {
       this->Align_blocks.back().blocks.push_back(*it2);
     }
   }
+  // Add port location constraint
+  for(vector<PnRDB::PortPos>::iterator it=node.Port_Location.begin();it!=node.Port_Location.end();++it) {
+    this->Port_Location.resize(this->Port_Location.size()+1);
+    this->Port_Location.back().tid=it->tid;
+    this->Port_Location.back().pos=placerDB::Bmark(it->pos);
+  }
   constructSymmGroup();
   PrintDesign();
   //std::cout<<"Leaving design2\n";
@@ -1203,6 +1209,7 @@ design::design(const design& other) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
+  this->Port_Location=other.Port_Location;
 }
 
 design& design::operator= (const design& other) {
@@ -1224,6 +1231,7 @@ design& design::operator= (const design& other) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
+  this->Port_Location=other.Port_Location;
   return *this;
 }
 
@@ -1238,6 +1246,9 @@ void design::PrintDesign() {
   PrintSymmGroup();
   for(int i=0;i<(int)SNets.size();++i) {
     std::cout<<"Symmetry net "<<i<<" SBidx "<<SNets.at(i).SBidx<<std::endl;
+  }
+  for(int i=0;i<(int)Port_Location.size();++i) {
+    std::cout<<"Port location "<<Port_Location.at(i).tid<<" @ "<<Port_Location.at(i).pos<<std::endl; 
   }
 }
 
@@ -1342,6 +1353,7 @@ void design::PrintTerminals() {
   for(vector<terminal>::iterator it=Terminals.begin(); it!=Terminals.end(); ++it) {
     cout<<"Name: "<<it->name<<" net:"<<it->netIter<<"@";
     if(it->netIter>=0) {cout<<Nets.at(it->netIter).name;}
+    cout<<" SBidx:"<<it->SBidx<<" counterpart:"<<it->counterpart;
     cout<<endl;
   }
   cout<<endl;
@@ -1789,11 +1801,15 @@ void design::constructSymmGroup() {
         for(int w=0;w<Blocks.at(pit->first).size();++w) {
           Blocks.at(pit->first).at(w).SBidx=i; Blocks.at(pit->first).at(w).counterpart=pit->second;  
         }
+      } else {
+        Terminals.at(pit->first-Blocks.size()).SBidx=i; Terminals.at(pit->first-Blocks.size()).counterpart=pit->second-Blocks.size();
       }
       if(pit->second<(int)Blocks.size()) {
         for(int w=0;w<Blocks.at(pit->second).size();++w) {
           Blocks.at(pit->second).at(w).SBidx=i; Blocks.at(pit->second).at(w).counterpart=pit->first;  
         }
+      } else {
+        Terminals.at(pit->second-Blocks.size()).SBidx=i; Terminals.at(pit->second-Blocks.size()).counterpart=pit->first-Blocks.size();
       }
     }
     for(vector< pair<int,placerDB::Smark> >::iterator sit=SBlocks[i].selfsym.begin(); sit!=SBlocks[i].selfsym.end(); ++sit) {
@@ -1801,6 +1817,8 @@ void design::constructSymmGroup() {
         for(int w=0;w<Blocks.at(sit->first).size();++w) {
           Blocks.at(sit->first).at(w).SBidx=i; Blocks.at(sit->first).at(w).counterpart=sit->first;  
         }
+      } else {
+        Terminals.at(sit->first-Blocks.size()).SBidx=i; Terminals.at(sit->first-Blocks.size()).counterpart=sit->first-Blocks.size();
       }
     }
   }

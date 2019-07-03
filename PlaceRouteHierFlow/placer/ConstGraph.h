@@ -100,6 +100,7 @@ class ConstGraph
     int GetY(int i);
     double CalculatePenalty(vector<Vertex> &graph);
     double CalculateWireLength(design& caseNL, SeqPair& caseSP);
+    double CalculateWireLengthNew(design& caseNL, SeqPair& caseSP);
     double CalculateWireLengthAP(design& caseNL, Aplace& caseAP);
     double CalculateArea();
     double CalculateRatio();
