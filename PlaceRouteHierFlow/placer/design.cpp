@@ -1190,7 +1190,7 @@ void design::readRandConstFile(string random_constrain_file) {
 //  }
 //}
 
-design::design(const design& other) {
+design::design(const design& other):Port_Location(other.Port_Location) {
   this->Blocks=other.Blocks;
   this->Terminals=other.Terminals;
   this->Nets=other.Nets;
@@ -1209,7 +1209,7 @@ design::design(const design& other) {
   this->noAsymBlock4Move=other.noAsymBlock4Move;
   this->noSymGroup4PartMove=other.noSymGroup4PartMove;
   this->noSymGroup4FullMove=other.noSymGroup4FullMove;
-  this->Port_Location=other.Port_Location;
+  //this->Port_Location=other.Port_Location;
 }
 
 design& design::operator= (const design& other) {
