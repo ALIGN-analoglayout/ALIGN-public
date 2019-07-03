@@ -86,7 +86,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "res")
         }
 
     def inductor(self):
@@ -101,7 +101,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "ind")
         }
 
     def v_source(self):
@@ -115,21 +115,21 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def vcvs_source(self):
         """v_source: E1 (Vinp net2 net3 net2) vcvs gain=1
-             The assumption is 2 port network
+             The assumption is 4 port network
         """
-        self.get_elements(3)
+        self.get_elements(4)
         return {
             "inst": self.inst,
             "inst_type": "v_source",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def i_source(self):
@@ -143,7 +143,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def transistor(self):

@@ -58,7 +58,7 @@ class SpiceParser:
             line = self.get_next_line(fp_l, 1)
             while ".END" not in line:
                 # if "**" in line.lower(): pass
-                if any(c in line.lower() for c in ("//", "**")):
+                if any(c in line.lower() for c in ("//", "**",'*.')):
                     #line = fp_l.readline()
                     pass
                 elif not line.strip():
@@ -231,13 +231,9 @@ class SpiceParser:
             self.next_line = self.next_line.replace('+', '')
             self.next_line = self.next_line.replace('\\','')
 
-                #self.next_line = self.next_line.replace('(', '').replace(')', '')
-
-
             #print("Read line:",self.next_line)
         elif line_type == -1:
             self.next_line = self.prev_line
-            #print("Fixing line pointer:")
         elif line_type == 0:
             self.next_line = self.next_line
         return self.next_line
@@ -274,7 +270,7 @@ class SpiceParser:
                         subckt_param_all = subckt_param
                     #for param,value in subckt_param.items():
                     #    logging.info('Found subckt param: %s, value:%s', param, value);
-                line = self.get_next_line(fp_l, 0)
+                line = self.get_next_line(fp_l, 1)
             else:
                 node1 = _parse_inst(line)
                 if node1:
@@ -286,7 +282,7 @@ class SpiceParser:
     def _parse_param(self, line, fp_l):
         """Reads and store all parameters"""
         param_list = {}
-        #logging.info("param: %s", line)
+        logging.info("param: %s", line)
         all_param = line.strip().split()
         for idx, individual_param in enumerate(all_param):
             if '=' in individual_param:
