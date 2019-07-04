@@ -4,7 +4,7 @@ LDFLAGS="-Wl,--no-as-needed -ldl"
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 LP_DIR?=/usr/local/lib/lpsolve
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
-BOOST_LP?=/usr/local
+BOOST_LP?=/usr/include
 
 CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP) -lboost_program_options
 
