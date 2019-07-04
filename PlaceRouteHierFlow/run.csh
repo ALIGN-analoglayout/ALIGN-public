@@ -1,9 +1,9 @@
 #! /bin/csh
 
-./tester ./testcase_latest2 sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 | tee log
-#./tester ./testcase_small sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 | tee log
-#./tester ./testcase_cap common_centroid.lef common_centroid.v common_centroid.map NO.rul common_centroid 1 | tee log
+#./tester -I ./testcase_latest2 --lef sc.lef --verilog sc_block.v --map sc.map --pdk NO.rul --topDesign switched_capacitor_filter --maxLayout 1 | tee log
+./tester -I ./testcase_small --lef sc.lef --verilog sc_block.v --map sc.map --pdk NO.rul --topDesign switched_capacitor_filter --maxLayout 1 | tee log
+#./tester -I ./testcase_cap --lef common_centroid.lef --verilog common_centroid.v --map common_centroid.map --pdf NO.rul --topDesign common_centroid --maxLayout 1 | tee log
 ##
 ##gdb tester
-##set args ./testcase_latest2 sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1
+##set args -I ./testcase_latest2 --lef sc.lef --verilog sc_block.v --map sc.map --pdk NO.rul --topDesign switched_capacitor_filter --maxLayout 1
 

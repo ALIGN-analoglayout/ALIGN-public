@@ -1,21 +1,21 @@
 #include "Placer.h"
 #define NUM_THREADS 8
 
-Placer::Placer(PnRDB::hierNode& node, string opath) {
+Placer::Placer(PnRDB::hierNode& node, string opath, int effort) {
   //cout<<"Constructor placer"<<endl;
   //this->node=input_node;
   //this->designData=design(input_node);
   //cout<<"Complete construction"<<endl;
   //this->designData.PrintDesign();
-  //PlacementMixAP(node, opath);
-  //PlacementMixSA(node, opath);
-  PlacementRegular(node, opath);
+  //PlacementMixAP(node, opath, effort);
+  //PlacementMixSA(node, opath, effort);
+  PlacementRegular(node, opath, effort);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath) {
-  PlacementRegularAspectRatio(nodeVec, opath);
-  //PlacementMixSAAspectRatio(nodeVec, opath);
-  //PlacementMixAPAspectRatio(nodeVec, opath);
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
+  PlacementRegularAspectRatio(nodeVec, opath, effort);
+  //PlacementMixSAAspectRatio(nodeVec, opath, effort);
+  //PlacementMixAPAspectRatio(nodeVec, opath, effort);
 }
 
 //PnRDB::hierNode Placer::CheckoutHierNode() {
@@ -92,7 +92,7 @@ void Placer::ThreadFunc(Thread_data* MT) {
    }
 };
 
-void Placer::PlacementRegular(PnRDB::hierNode& node, string opath) {
+void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -111,14 +111,14 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath) {
   SeqPair curr_sp(designData);
   curr_sp.PrintSeqPair();
   ConstGraph curr_sol;
-  PlacementCore(designData, curr_sp, curr_sol, mode);
+  PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+".pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt");
   curr_sol.UpdateHierNode(designData, curr_sp, node);
 }
 
 
-void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath) {
+void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -143,7 +143,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath) {
   //curr_sp.PrintSeqPair();
  
   ConstGraph curr_sol;
-  PlacementCore(designData, curr_sp, curr_sol, mode);
+  PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
 
@@ -152,7 +152,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath) {
   //curr_sp_full.PrintSeqPair();
 
   ConstGraph curr_sol_full;
-  PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode);
+  PlacementCore(designData_full, curr_sp_full, curr_sol_full, mode, effort);
   curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+node.name+".pl");
   curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt");
   //cout<<"Test: before update node"<<endl;
@@ -162,7 +162,7 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath) {
   //curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
 }
 
-void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath) {
+void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -188,7 +188,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath) {
   //curr_sp.PrintSeqPair();
  
   ConstGraph curr_sol;
-  PlacementCore(designData, curr_sp, curr_sol, 1);
+  PlacementCore(designData, curr_sp, curr_sol, 1, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+"_reduced.pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+"_reduced.plt");
   curr_sol.UpdateDesignHierNode4AP(designData_full, designData, curr_sp, node);
@@ -239,7 +239,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath) {
   */
 }
 
-void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode) {
+void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort) {
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   curr_sp.PrintSeqPair();
@@ -259,7 +259,11 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   int updateThrd=100;
   while(T>T_MIN) {
     int i=1;
-    while(i<=1) {
+    int MAX_Iter=1;
+    if(effort==0) { MAX_Iter=1;
+    } else if (effort==1) { MAX_Iter=4;
+    } else {MAX_Iter=8;}
+    while(i<=MAX_Iter) {
       double trial_cost; 
       #ifdef MTMODE
       int id; int good_idx=-1;
@@ -353,7 +357,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   curr_sol.updateTerminalCenter(designData, curr_sp);
 }
 
-std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize) {
+std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort) {
 // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
   //cout<<"PlacementCore\n";
   std::map<double, SeqPair> oData;
@@ -374,7 +378,11 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
   while(T>T_MIN) {
     int i=1;
-    while(i<=1) {
+    int MAX_Iter=1;
+    if(effort==0) { MAX_Iter=1;
+    } else if (effort==1) { MAX_Iter=4;
+    } else {MAX_Iter=8;}
+    while(i<=MAX_Iter) {
       #ifdef MTMODE
       double trial_cost; 
       int id; int good_idx=-1;
@@ -493,7 +501,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
   if(it!=spMap.end()) {spMap.erase(it, spMap.end());}
 }
 
-void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath) {
+void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -512,7 +520,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
   SeqPair curr_sp(designData);
   curr_sp.PrintSeqPair();
   ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize);
+  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize, effort);
   curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
   if(spVec.size()<nodeSize) {
@@ -536,7 +544,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
   }
 }
 
-void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath) {
+void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   cout<<"Placer-Info: initial size "<<nodeSize<<std::endl;
@@ -565,7 +573,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   //curr_sp.PrintSeqPair();
  
   ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize);
+  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize, effort);
   curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"_reduced.plt");
 
@@ -586,7 +594,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     //curr_sp_full.PrintSeqPair();
 
     ConstGraph curr_sol_full;
-    PlacementCore(designData_full, curr_sp_full, curr_sol_full, bias_mode);
+    PlacementCore(designData_full, curr_sp_full, curr_sol_full, bias_mode, effort);
     curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
     curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
     //cout<<"Test: before update node"<<endl;
@@ -595,7 +603,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   }
 }
 
-void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath) {
+void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<endl;
   #ifdef RFLAG
@@ -623,7 +631,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   //curr_sp.PrintSeqPair();
  
   ConstGraph curr_sol;
-  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize);
+  std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize, effort);
 
   if(spVec.size()<nodeSize) {
     nodeSize=spVec.size();

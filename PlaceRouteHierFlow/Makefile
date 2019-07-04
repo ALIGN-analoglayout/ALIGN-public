@@ -6,7 +6,7 @@ LP_DIR?=/usr/local/lib/lpsolve
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 BOOST_LP?=/usr/local
 
-CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP)
+CC=g++ -g -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP) -lboost_program_options
 
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 
