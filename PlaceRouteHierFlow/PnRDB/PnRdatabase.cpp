@@ -2680,34 +2680,46 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         //std::cout<<temp[4]<<temp[2]<<std::endl;
         if(temp[4].compare("TL")==0) {
           tmp_portpos.pos=PnRDB::TL;
+          //std::cout<<"TL\n";
         } else if(temp[4].compare("TC")==0) {
+	  //std::cout<<"TC\n";
           tmp_portpos.pos=PnRDB::TC;
         } else if(temp[4].compare("TR")==0) {
+          //std::cout<<"TR\n";
           tmp_portpos.pos=PnRDB::TR;
         } else if(temp[4].compare("RT")==0) {
+          //std::cout<<"RT\n";
           tmp_portpos.pos=PnRDB::RT;
         } else if(temp[4].compare("RC")==0) {
+          //std::cout<<"RC\n";
           tmp_portpos.pos=PnRDB::RC;
         } else if(temp[4].compare("RB")==0) {
+          //std::cout<<"RB\n";
           tmp_portpos.pos=PnRDB::RB;
         } else if(temp[4].compare("BL")==0) {
+          //std::cout<<"BL\n";
           tmp_portpos.pos=PnRDB::BL;
         } else if(temp[4].compare("BC")==0) {
+          //std::cout<<"BC\n";
           tmp_portpos.pos=PnRDB::BC;
         } else if(temp[4].compare("BR")==0) {
+          //std::cout<<"BR\n";
           tmp_portpos.pos=PnRDB::BR;
         } else if(temp[4].compare("LB")==0) {
+          //std::cout<<"LB\n";
           tmp_portpos.pos=PnRDB::LB;
         } else if(temp[4].compare("LC")==0) {
+          //std::cout<<"LC\n";
           tmp_portpos.pos=PnRDB::LC;
         } else if(temp[4].compare("LT")==0) {
+          //std::cout<<"LT\n";
           tmp_portpos.pos=PnRDB::LT;
         }
         string name=temp[2];
         for(int k=0;k<(int)node.Terminals.size();++k) {
-          std::cout<<node.Terminals.at(k).name<<std::endl;
+          //std::cout<<name<<" vs "<<node.Terminals.at(k).name<<std::endl;
           if(node.Terminals.at(k).name.compare(name)==0) {
-            //tmp_portpos.tid=k;
+            tmp_portpos.tid=k;
             break;
           }
         }

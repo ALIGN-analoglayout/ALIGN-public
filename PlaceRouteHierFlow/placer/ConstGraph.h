@@ -99,8 +99,9 @@ class ConstGraph
     int GetX(int i);
     int GetY(int i);
     double CalculatePenalty(vector<Vertex> &graph);
+    double CalculateWireLengthRetire(design& caseNL, SeqPair& caseSP);
     double CalculateWireLength(design& caseNL, SeqPair& caseSP);
-    double CalculateWireLengthNew(design& caseNL, SeqPair& caseSP);
+    double CalculateWireLengthAPRetire(design& caseNL, Aplace& caseAP);
     double CalculateWireLengthAP(design& caseNL, Aplace& caseAP);
     double CalculateArea();
     double CalculateRatio();
@@ -158,7 +159,9 @@ class ConstGraph
     bool ConstraintGraphAP(design& caseNL, Aplace& caseAP);
     double CalculateCost(design& caseNL, SeqPair& caseSP);
     double CalculateMatchCost(design& caseNL, SeqPair& caseSP);
+    void updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP);
     void updateTerminalCenter(design& caseNL, SeqPair& caseSP);
+    void updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP);
     void updateTerminalCenterAP(design& caseNL, Aplace& caseAP);
     void WritePlacement(design& caseNL, SeqPair& caseSP, string outfile);
     void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile);
