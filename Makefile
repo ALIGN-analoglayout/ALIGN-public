@@ -2,20 +2,20 @@ SHELL = bash
 PC=python3
 HOME = /home/kunal001/Desktop/research_work/full_flow/ALIGN-public
 INPUT_DIR = $(HOME)/examples/telescopic_ota
-INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
-DESIGN_NAME = switched_capacitor_filter
-#DESIGN_NAME =telescopic_ota
+DESIGN_NAME =telescopic_ota
+#INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
+#DESIGN_NAME = switched_capacitor_filter
+#INPUT_DIR = $(HOME)/../input/testcase_equlizer/
+#DESIGN_NAME = sdc
 PDK_DIR = ../ALIGN/PDK_Abstraction/FinFET7nm_Mock_PDK/
 PDK_FILE = ASAP7_PDK_Abstraction.json
 Cell_generator = ../ALIGN/PDK_Abstraction/Cell_Fabric_Interdigitated_7nm
 CELL_PATH?= CellFabric/Viewer/INPUT/mydesign_dr_globalrouting.json
 DEF_PATH = CellFabric/Viewer/INPUT/mydesign_dr_globalrouting.json
 
-#COMMAND =  $(shell source install.sh)
-#.PHONY: work templates 
-
 list:
 	@echo make clean
+	@echo make compile
 	@echo make annotate
 	@echo make create_cell
 	@echo make PnR
@@ -27,7 +27,10 @@ clean:
 	@rm -rf $(Cell_generator)/*gds
 	@rm -rf $(Cell_generator)/*gds.json
 	@rm -rf $(Cell_generator)/*lef
-	@cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json; \
+compile:
+	pip install --quiet -r sub_circuit_identification/requirements.txt
+	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
+	pip install python-gdsii
 
 clean_docker:
 	docker container prune
@@ -54,9 +57,15 @@ annotate_docker:
 	docker cp topology_container:/INPUT/results ./sub_circuit_identification/
 
 annotate: 
-	@echo '########################################################################'
-	@echo '#    	 ALIGN     R E F E R E N C E      F L O W'
-	@echo '########################################################################'
+	@echo '-----------------------------------------------------------------------'
+	@echo '         ###    ##          ##########    ######## ###     ##'
+	@echo '        ## ##   ##              ##       ##        ####    ##'
+	@echo '       ##   ##  ##              ##      ##         ## ##   ##'
+	@echo '      ##     ## ##              ##      ##  ###### ##  ##  ##'
+	@echo '      ######### ##              ##      ##      ## ##   ## ##'
+	@echo '      ##     ## ##              ##       ##     ## ##    ####'
+	@echo '      ##     ## #########   ##########    ######## ##     ###'
+	@echo '-----------------------------------------------------------------------'
 	@echo '#'
 	@echo '# Contributors: UMN , TAMU and INTEL'
 	@echo '#'
@@ -64,7 +73,6 @@ annotate:
 	@echo Starting sub circuit annotation
 	@echo ""
 	@cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
-	@pip install --quiet -r sub_circuit_identification/requirements.txt
 	cd ./sub_circuit_identification/ && ./runme.sh $(DESIGN_NAME)
 	@echo Sub circuit annotation finished successfully
 	@echo Check logs at sub_circuit_identification/LOG
@@ -116,7 +124,7 @@ PnR_docker: create_PnR_data
 	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./tester ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME); mkdir results;cp $(DESIGN_NAME)* results/"
 	docker cp PnR:/PlaceRouteHierFlow/results/ ./testcase_latest/
 
-PnR: create_PnR_data
+PnR:
 	@echo ""
 	@echo check logs at PlaceRouteHierFlow/PnR.log
 	@cp -rp testcase_latest ./PlaceRouteHierFlow
@@ -135,13 +143,12 @@ PnR: create_PnR_data
 	@if [ ! -a "testcase_latest/results/$(DESIGN_NAME).gds" ]; then \
 		echo PnR finished successfully; \
 		echo "#########################################"; \
-		echo Please check results at: testcase_latest/results/$(DESIGN_NAME).gds; \
 	fi
-	@echo View results using \'make view_result\'
+	@echo "Creating gds"
+	@echo Check results at: testcase_latest/results/$(DESIGN_NAME).gds;
+	@$(PC) ./testcase_latest/json2gds.py ./testcase_latest/results/$(DESIGN_NAME)_DR.gds.json ./testcase_latest/results/$(DESIGN_NAME).gds
 
 view_result: 
-	@pip install python-gdsii
-	@$(PC) ./testcase_latest/json2gds.py ./testcase_latest/results/$(DESIGN_NAME)_DR.gds.json ./testcase_latest/results/$(DESIGN_NAME).gds
 ifneq (, $(shell which klayout))
 	@klayout ./testcase_latest/results/$(DESIGN_NAME).gds &
 endif
@@ -150,7 +157,7 @@ ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker view_res
 	echo "Done"
 	
 
-ALIGN:annotate create_cell PnR
+ALIGN:annotate create_cell create_PnR_data PnR
 
 local_view_cell:
 ifneq ($(CELL_PATH),$(DEF_PATH))
