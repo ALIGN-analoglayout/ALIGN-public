@@ -58,7 +58,7 @@ class SpiceParser:
             line = self.get_next_line(fp_l, 1)
             while ".END" not in line:
                 # if "**" in line.lower(): pass
-                if any(c in line.lower() for c in ("//", "**")):
+                if any(c in line.lower() for c in ("//", "**",'*.')):
                     #line = fp_l.readline()
                     pass
                 elif not line.strip():
@@ -99,7 +99,7 @@ class SpiceParser:
             elif self._global:
                 self._global = filter(lambda a: a != '+', self._global)
 
-            if self.top_ckt_name == '__top__':
+            if self.top_ckt_name == '__top__' or not self.top_ckt_name in self.subckts:
                 top = os.path.basename(self.netlist).split('.')[0]
                 logging.info('NO subckt defined, \
                         checking for any instance at top')
@@ -222,7 +222,8 @@ class SpiceParser:
             self.check_next_line = file_pointer.readline()
             #print("Read line",self.next_line,self.check_next_line)
             while self.next_line.strip().endswith('\\') or \
-                self.check_next_line.strip().startswith('+'): 
+                self.check_next_line.strip().startswith('+') \
+                or (self.check_next_line and not self.check_next_line.strip()): 
                 #print("reading next line", self.check_next_line)
                 self.next_line += self.check_next_line
                 self.check_next_line = file_pointer.readline().strip()
@@ -230,13 +231,9 @@ class SpiceParser:
             self.next_line = self.next_line.replace('+', '')
             self.next_line = self.next_line.replace('\\','')
 
-                #self.next_line = self.next_line.replace('(', '').replace(')', '')
-
-
             #print("Read line:",self.next_line)
         elif line_type == -1:
             self.next_line = self.prev_line
-            #print("Fixing line pointer:")
         elif line_type == 0:
             self.next_line = self.next_line
         return self.next_line
@@ -273,7 +270,7 @@ class SpiceParser:
                         subckt_param_all = subckt_param
                     #for param,value in subckt_param.items():
                     #    logging.info('Found subckt param: %s, value:%s', param, value);
-                line = self.get_next_line(fp_l, 0)
+                line = self.get_next_line(fp_l, 1)
             else:
                 node1 = _parse_inst(line)
                 if node1:
@@ -285,39 +282,32 @@ class SpiceParser:
     def _parse_param(self, line, fp_l):
         """Reads and store all parameters"""
         param_list = {}
-        while 'param' in line.strip() or '+' in line.strip():
-            #logging.info("param: %s", line)
-            all_param = line.strip().split()
-            for idx, individual_param in enumerate(all_param):
-                if '=' in individual_param:
-                    [param, value] = individual_param.split('=')
-                    if not param:
-                        param = all_param[idx - 1]
-                    if not value:
-                        value = all_param[idx + 1]
-                    logging.info('Found parameters: %s, value:%s', param,
-                                 value)
-                    param_list[param] = value
-            line = self.get_next_line(fp_l, 1)
+        logging.info("param: %s", line)
+        all_param = line.strip().split()
+        for idx, individual_param in enumerate(all_param):
+            if '=' in individual_param:
+                [param, value] = individual_param.split('=')
+                if not param:
+                    param = all_param[idx - 1]
+                if not value:
+                    value = all_param[idx + 1]
+                logging.info('Found parameters: %s, value:%s', param,
+                             value)
+                param_list[param] = value
         return param_list
 
     def _parse_global(self, line, fp_l):
         """ Read all global lines"""
-        while line.strip():
-            logging.info("global: %s", line)
-            self._global += line.strip().split()
-            line = self.get_next_line(fp_l, 1)
+        logging.info("global: %s", line)
+        self._global = line.strip().split()
 
     def _parse_include(self, line, fp_l):
         logging.info("include: %s", line)
         self.include.append(line.strip())
-        line = self.get_next_line(fp_l, 1)
 
     def _parse_option(self, line, fp_l):
-        while line.strip():
-            logging.info("option: %s", line)
-            self.option += line.strip().split()
-            line = self.get_next_line(fp_l, 1)
+        logging.info("option: %s", line)
+        self.option = line.strip().split()
             
     def _resolve_param(self, inherited_param, node, values):
         logging.info("inherited parameter: %s", inherited_param )

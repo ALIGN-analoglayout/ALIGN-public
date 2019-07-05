@@ -137,7 +137,7 @@ def generate_lef(fp, name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         logging.info("Found cap with size: %s",size)                
-        block_name = name + '_' + size + '_fF'
+        block_name = name + '_' + size + 'fF'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if not block_name in available_block_lef:
             logging.info('Generating lef for: %s %s', name, size)

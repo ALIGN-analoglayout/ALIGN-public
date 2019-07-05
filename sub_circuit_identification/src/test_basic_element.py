@@ -5,12 +5,12 @@ def test_blank():
     assert be is None
 
 def test_r():
-    dev = _parse_inst("ra 1 0 r=10k")
+    dev = _parse_inst("ra 1 0 10k")
     assert len(dev.items()) == 6
     assert dev['inst_type'] == "res"
 
 def test_v_source():
-    dev = _parse_inst("v0 1 0 v=1.0")
+    dev = _parse_inst("v0 1 0 1.0")
     assert len(dev.items()) == 6
     assert dev['inst_type'] == "v_source"
 
@@ -22,8 +22,8 @@ def test_i_source():
     dev = _parse_inst("i0 1 0 1.0")
     assert len(dev.items()) == 6
 
-def test_pmos():
-    dev = _parse_inst("m0 3 2 1 1 p")
+def test_nmos():
+    dev = _parse_inst("m0 3 2 1 1 n nfin=1")
     assert len(dev.items()) == 6
 
 def test_pmos_param():
