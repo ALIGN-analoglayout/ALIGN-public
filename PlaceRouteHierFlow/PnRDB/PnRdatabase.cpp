@@ -2286,8 +2286,8 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   if((found=drname.find(".rul"))!=string::npos){
     this->ReadDesignRule(path+"/"+drname);
   }else{
-    //this->ReadPDKJSON(path+"/"+drname);
-    this->ReadDesignRule_jason(path+"/"+drname);
+    this->ReadPDKJSON(path+"/"+drname);
+    //this->ReadDesignRule_jason(path+"/"+drname);
   }
   std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
   #endif

@@ -21,10 +21,10 @@ router_path=router
 placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
 router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o 
 
-all: subsystem main.o tester
+all: subsystem main.o pnr_compiler
 
-tester::
-	$(CC) -o tester $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -ldl
+pnr_compiler::
+	$(CC) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -ldl
 
 subsystem:
 	$(MAKE) -C $(PnRDB_path);
@@ -36,7 +36,7 @@ main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_
 	$(CC) -c main.cpp -I$(JSON)/include
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o tester tester.log *.pl *.plt *gds all_*
+	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_*
 	make -C $(router_path) clean
 	make -C $(Capplacer_path) clean
 
