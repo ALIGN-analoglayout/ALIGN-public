@@ -171,6 +171,7 @@ class PnRdatabase
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
     void TraverseDFS(queue<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
     long int get_number(string str);
+    bool ReadPDKJSON(std::string drfile);
 
 	////added by ya
 	//

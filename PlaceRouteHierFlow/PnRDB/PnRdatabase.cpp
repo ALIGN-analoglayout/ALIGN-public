@@ -391,6 +391,197 @@ bool PnRdatabase::ReadDesignRule_via(string via_name, vector<string>& jason_file
 
 }
 
+bool PnRdatabase::ReadPDKJSON(std::string drfile) {
+    //std::cout<<"inside "<<drfile<<std::endl;
+    //std::string jsonFileName = GDSData + ".json";
+    json jsonStrAry;
+    ifstream jsonFile (drfile);
+    if (jsonFile.is_open()) {
+	json jedb = json::parse (jsonFile);
+        json layerAry = jedb["Abstraction"];
+        std::map<int, PnRDB::metal_info> metalSet;
+        std::map<int, PnRDB::via_info> viaSet;
+        // 1. Extract metal info
+        //std::cout<<"shot\n";
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
+          json layer = *lit;
+          int lnum=layer["LayerNo"];
+          std::string lname=layer["Layer"];
+          if(lname.front()=='M') {
+            // metal layer
+            std::string ldir=layer["Direction"];
+            int lpitch=layer["Pitch"];
+            int lwidth=layer["Width"];
+            int lminL=layer["MinL"];
+            //int lmaxL=layer["MaxL"];
+            int le2e=layer["EndToEnd"];
+            int loff=layer["Offset"];
+            PnRDB::metal_info tmp_metal;
+            tmp_metal.name=lname;
+            tmp_metal.layerNo=lnum;
+            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=lpitch; tmp_metal.grid_unit_y=-1;
+            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=lpitch; tmp_metal.grid_unit_x=-1;
+            } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
+            tmp_metal.width=lwidth;
+            tmp_metal.dist_ss=lpitch-lwidth;
+            tmp_metal.minL=lminL;
+            tmp_metal.dist_ee=le2e;
+            metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
+            //std::cout<<tmp_metal.name<<std::endl;
+            //std::cout<<tmp_metal.layerNo<<std::endl;
+            //std::cout<<tmp_metal.direct<<std::endl;
+            //std::cout<<tmp_metal.grid_unit_x<<std::endl;
+            //std::cout<<tmp_metal.grid_unit_y<<std::endl;
+            //std::cout<<tmp_metal.width<<std::endl;
+            //std::cout<<tmp_metal.dist_ss<<std::endl;
+            //std::cout<<tmp_metal.minL<<std::endl;
+            //std::cout<<tmp_metal.dist_ee<<std::endl;
+            //std::cout<<lname<<lnum<<ldir<<lpitch<<lwidth<<lminL<<le2e<<loff<<std::endl;
+            }
+        }
+        for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
+          DRC_info.Metal_info.push_back(it->second);
+          DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
+        }
+        DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
+
+        // 2. Extract via info
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
+          json layer = *lit;
+          int lnum=layer["LayerNo"];
+          std::string lname=layer["Layer"];
+          if(lname.front()=='V') {
+            // via layer
+            json stackAry = layer["Stack"];
+            int lwidthx= layer["WidthX"];
+            int lwidthy= layer["WidthY"];
+            int lspacex= layer["SpaceX"];
+            int lspacey= layer["SpaceY"];
+            int lvencal= layer["VencA_L"];
+            int lvencah= layer["VencA_H"];
+            int lvencpl= layer["VencP_L"];
+            int lvencph= layer["VencP_H"];
+            int lminno= layer["MinNo"];
+            PnRDB::via_info tmp_via;
+            tmp_via.name=lname;
+            tmp_via.layerNo=lnum;
+            tmp_via.width=lwidthx;
+            tmp_via.width_y=lwidthy;
+            tmp_via.cover_l=lvencal;
+            tmp_via.cover_l_P=lvencpl;
+            tmp_via.cover_u=lvencah;
+            tmp_via.cover_u_P=lvencph;
+            tmp_via.dist_ss=lspacex;
+            tmp_via.dist_ss_y=lspacey;
+            std::set<int> viaMSet; 
+            std::set<int>::iterator vit;
+            std::set<int>::reverse_iterator rvit;
+            for(json::iterator sit=stackAry.begin(); sit!=stackAry.end(); ++sit) {
+              if(sit->is_string()) {
+                for(int k=0;k<(int)DRC_info.Metal_info.size();++k) {
+                  if( DRC_info.Metal_info.at(k).name.compare(*sit)==0 ) {
+                    viaMSet.insert(k);
+                    break;
+                  } 
+                }
+              }
+            }
+            vit=viaMSet.begin();
+            tmp_via.lower_metal_index=(*vit);
+            rvit=viaMSet.rbegin();
+            tmp_via.upper_metal_index=(*rvit);
+            viaSet.insert( std::pair<int, PnRDB::via_info>(lnum, tmp_via) );
+            //std::cout<<tmp_via.name<<std::endl;
+            //std::cout<<tmp_via.layerNo<<std::endl;
+            //std::cout<<tmp_via.width<<std::endl;
+            //std::cout<<tmp_via.width_y<<std::endl;
+            //std::cout<<tmp_via.cover_l<<std::endl;
+            //std::cout<<tmp_via.cover_l_P<<std::endl;
+            //std::cout<<tmp_via.cover_u<<std::endl;
+            //std::cout<<tmp_via.cover_u_P<<std::endl;
+            //std::cout<<tmp_via.dist_ss<<std::endl;
+            //std::cout<<tmp_via.dist_ss_y<<std::endl;
+            //std::cout<<tmp_via.lower_metal_index<<std::endl;
+            //std::cout<<tmp_via.upper_metal_index<<std::endl;
+            //std::cout<<lname<<lnum<<lwidthx<<lwidthy<<lspacex<<lspacey<<lvencal<<lvencah<<lvencpl<<lvencph<<lminno<<std::endl;
+          }
+        }
+        for(std::map<int, PnRDB::via_info>::iterator it=viaSet.begin(); it!=viaSet.end(); ++it) {
+          DRC_info.Via_info.push_back(it->second);
+          DRC_info.Viamap[it->second.name] = DRC_info.Via_info.size()-1;
+        }
+
+        // 3. Add metal weight
+        //add
+        for(int i=0;i<DRC_info.Metal_info.size();i++){
+             DRC_info.metal_weight.push_back(1);
+        }
+        // 4. Add Via model
+        for(int i=0;i<DRC_info.Via_info.size();i++){
+             PnRDB::ViaModel temp_viamodel;
+             temp_viamodel.name = DRC_info.Via_info[i].name;
+             temp_viamodel.ViaIdx = i;
+             temp_viamodel.LowerIdx = i;
+             temp_viamodel.UpperIdx = i+1;
+             PnRDB::point temp_point;
+             //LL
+             temp_point.x = 0-DRC_info.Via_info[i].width/2;
+             temp_point.y = 0-DRC_info.Via_info[i].width_y/2;
+             temp_viamodel.ViaRect.push_back(temp_point);
+             //UR
+             temp_point.x = 0+DRC_info.Via_info[i].width/2;
+             temp_point.y = 0+DRC_info.Via_info[i].width_y/2;
+             temp_viamodel.ViaRect.push_back(temp_point);
+             
+             //LL LowerRect
+             if(DRC_info.Metal_info[i].direct==0){
+             temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
+             temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
+             temp_viamodel.LowerRect.push_back(temp_point);
+             //UR
+             temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
+             temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
+             temp_viamodel.LowerRect.push_back(temp_point);
+             }else{
+             temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
+             temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
+             temp_viamodel.LowerRect.push_back(temp_point);
+             //UR
+             temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
+             temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
+             temp_viamodel.LowerRect.push_back(temp_point);
+             } 
+             
+             //LL UpperRect
+             if(DRC_info.Metal_info[i+1].direct==0){
+             temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
+             temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
+             temp_viamodel.UpperRect.push_back(temp_point);
+             //UR
+             temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
+             temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
+             temp_viamodel.UpperRect.push_back(temp_point);
+             }else{
+             temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
+             temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
+             temp_viamodel.UpperRect.push_back(temp_point);
+             //UR
+             temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
+             temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
+             temp_viamodel.UpperRect.push_back(temp_point);
+             } 
+            DRC_info.Via_model.push_back(temp_viamodel);
+        }
+        // 6. Add mask ID
+        //added by wbxu
+        for(int i=0;i<(int)DRC_info.Metal_info.size();++i) {
+          DRC_info.MaskID_Metal.push_back(std::to_string( DRC_info.Metal_info.at(i).layerNo ));
+        }
+        for(int i=0;i<(int)DRC_info.Via_info.size();++i) {
+          DRC_info.MaskID_Via.push_back(std::to_string( DRC_info.Via_info.at(i).layerNo ));
+        }
+    }
+}
 
 bool PnRdatabase::ReadDesignRule_jason(string drfile){
 
@@ -2078,6 +2269,7 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   if((found=drname.find(".rul"))!=string::npos){
     this->ReadDesignRule(path+"/"+drname);
   }else{
+    //this->ReadPDKJSON(path+"/"+drname);
     this->ReadDesignRule_jason(path+"/"+drname);
   }
   std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;

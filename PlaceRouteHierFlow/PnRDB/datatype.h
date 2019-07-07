@@ -324,6 +324,7 @@ struct ViaModel {
 
 struct metal_info {
   string name;
+  int layerNo;
   int width;  //from minwidth MinWidth["M1"]
   int dist_ss;//side to side distance  from SpaceNumTem found the minimim one SpaceNumTem["M1"]
   int direct;//direction, 1 is H, 0 is V  added it by your self
@@ -336,6 +337,7 @@ struct metal_info {
 
 struct via_info {
   string name;
+  int layerNo;
   int lower_metal_index;
   int upper_metal_index;
   int width;  //drData.MinWidth["V6"], X direction width
