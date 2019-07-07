@@ -397,7 +397,9 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
+        //std::cout<<"before parse\n";
 	json jedb = json::parse (jsonFile);
+        //std::cout<<"Parse\n";
         json layerAry = jedb["Abstraction"];
         std::map<int, PnRDB::metal_info> metalSet;
         std::map<int, PnRDB::via_info> viaSet;
@@ -405,13 +407,28 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
         //std::cout<<"shot\n";
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
-          int lnum=layer["LayerNo"];
           std::string lname=layer["Layer"];
+          //std::cout<<"Now at "<<lname<<std::endl<<std::endl;
           if(lname.front()=='M') {
             // metal layer
+            int lnum=layer["LayerNo"];
             std::string ldir=layer["Direction"];
-            int lpitch=layer["Pitch"];
-            int lwidth=layer["Width"];
+            int lpitch=-1;
+            json pdata=layer["Pitch"];
+            if(pdata.is_array()) {
+              json::iterator pit=pdata.begin();
+              lpitch=(*pit);
+            } else if (pdata.is_number()) {
+              lpitch=pdata;
+            }
+            int lwidth=-1;
+            json wdata=layer["Width"];
+            if(wdata.is_array()) {
+              json::iterator wit=wdata.begin();
+              lwidth=(*wit);
+            } else if (wdata.is_number()) {
+              lwidth=wdata;
+            }
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
             int le2e=layer["EndToEnd"];
@@ -444,14 +461,14 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
-
+        //std::cout<<"Parse via\n";
         // 2. Extract via info
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
-          int lnum=layer["LayerNo"];
           std::string lname=layer["Layer"];
           if(lname.front()=='V') {
             // via layer
+            int lnum=layer["LayerNo"];
             json stackAry = layer["Stack"];
             int lwidthx= layer["WidthX"];
             int lwidthy= layer["WidthY"];
@@ -2455,8 +2472,9 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } 
       } else if (stage==4) { // within OBS
         if((found=def.find("LAYER"))!=string::npos) {
-          interMetals.resize(interMetals.size()+1);
           temp=get_true_word(found,def,0,';',p);
+          if(temp[1].front()!='M') {continue;} // work around for obs on Via layer - wbxu 20190707
+          interMetals.resize(interMetals.size()+1);
           interMetals.back().metal=temp[1];
         } else if((found=def.find("RECT"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
