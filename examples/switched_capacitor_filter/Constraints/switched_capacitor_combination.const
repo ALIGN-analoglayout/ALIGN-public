@@ -1,0 +1,4 @@
+CC ( {c0} , {6} , {cap_10_fF} )
+CC ( {c1} , {3} , {cap_10_fF} )
+CC ( {c3} , {6} , {cap_10_fF} )
+bias_graph ( 108 )

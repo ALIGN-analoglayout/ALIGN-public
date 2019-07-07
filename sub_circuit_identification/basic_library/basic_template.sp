@@ -6,10 +6,15 @@ M0 (D G S 0) NMOS_VTL w=w1 l=l1
 M0 (D G S 0) PMOS_VTL w=w1 l=l1
 .ends Switch_PMOS
 
-.subckt SCM_NMOS D0 DA S
-M0 (D0 D0 S 0) NMOS_VTL w=w l=90n
-M1 (DA D0 S 0) NMOS_VTL w=w l=90n
+.subckt SCM_NMOS DA DB S
+M0 (DA DA S 0) NMOS_VTL w=w l=90n
+M1 (DB DA S 0) NMOS_VTL w=w l=90n
 .ends SCM_NMOS
+
+.subckt SCM_CMFB_NMOS DA DB GB S
+M0 (DA DA S 0) NMOS_VTL w=w l=90n
+M1 (DB GB S 0) NMOS_VTL w=w l=90n
+.ends SCM_CMFB_NMOS
 
 .subckt CMC_PMOS_S  DA DB G S
 M0 (DA G S 0) PMOS_VTL w=w l=90n

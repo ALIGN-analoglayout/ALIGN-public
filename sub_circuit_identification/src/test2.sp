@@ -30,10 +30,10 @@
 
 .SUBCKT test2 Vbias Vin Vout
 *.PININFO Vbias:I Vin:I Vout:O
-LL0 vdd! Vout inductor ind=2m
+LL0 vdd! Vout 2m
 MM0 Vout net5 gnd! gnd! nmos_rvt w=27n l=20n nfin=1
-RR0 Vbias net5 res res=5K
-RR1 Vdd! net5 res res=5K
-CC1 Vin net5 cap cap=10f
+RR0 Vbias net5 5K
+RR1 Vdd! net5 5K
+CC1 Vin net5 10f
 .ENDS
 

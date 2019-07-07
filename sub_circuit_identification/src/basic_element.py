@@ -49,9 +49,13 @@ class BasicElement:
             if any ('=' in pin_name for pin_name in self.pins):
                 self.pins=None
                 self.num_pins=0
-                     
-        self.value = self.line.strip().split()[self.num_pins+2:]
-        self.real_inst_type = self.line.strip().split()[self.num_pins+1]
+        if len(self.line.strip().split()) > self.num_pins+2:      
+            self.value = self.line.strip().split()[self.num_pins+2:]
+            self.real_inst_type = self.line.strip().split()[self.num_pins+1]
+        else :
+            self.value = self.line.strip().split()[self.num_pins+1:]
+            self.real_inst_type = ""
+
         logging.info("real inst type from netlist: %s",self.real_inst_type)
         start = 1
         multiple = 2
@@ -68,7 +72,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "cap")
         }
 
     def resistor(self):
@@ -82,7 +86,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "res")
         }
 
     def inductor(self):
@@ -97,7 +101,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "ind")
         }
 
     def v_source(self):
@@ -111,21 +115,21 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def vcvs_source(self):
         """v_source: E1 (Vinp net2 net3 net2) vcvs gain=1
-             The assumption is 2 port network
+             The assumption is 4 port network
         """
-        self.get_elements(3)
+        self.get_elements(4)
         return {
             "inst": self.inst,
             "inst_type": "v_source",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def i_source(self):
@@ -139,7 +143,7 @@ class BasicElement:
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
             "edge_weight": self.pin_weight,
-            "values": parse_value(self.value)
+            "values": parse_value(self.value, "DC")
         }
 
     def transistor(self):
@@ -169,7 +173,7 @@ class BasicElement:
         }
 
 
-def parse_value(all_param):
+def parse_value(all_param, vtype=None):
     """ parse the value parameters for each block and returns a dict"""
     device_param_list = {}
     for idx, unique_param in enumerate(all_param):
@@ -181,6 +185,8 @@ def parse_value(all_param):
                 value = all_param[idx + 1]
             logging.info('Found device values: %s, value:%s', param, value)
             device_param_list[param] = value
+    if not device_param_list and len(all_param)>0:
+        device_param_list[vtype] =all_param[0]
     return device_param_list
 
 
