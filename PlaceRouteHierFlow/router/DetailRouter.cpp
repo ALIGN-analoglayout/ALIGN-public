@@ -1419,7 +1419,7 @@ void DetailRouter::GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal> > &
 void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
   RouterDB::point tmpP;
   int obs_l=0;
-  int obs_h=6;
+  int obs_h=this->layerNo-1;
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
