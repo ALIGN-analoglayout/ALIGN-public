@@ -1025,8 +1025,10 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //more adjust is necessry for detail router?
   if(max_height*max_width<=100000000){
      grid_scale = 1;
-    }else{
+    }else if (max_height*max_width<=1000000000000){
      grid_scale = 4;
+    } else {
+     grid_scale = 10;
     }
 
   //For terminals	

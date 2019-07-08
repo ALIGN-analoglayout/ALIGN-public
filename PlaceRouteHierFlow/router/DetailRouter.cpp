@@ -25,6 +25,7 @@ DetailRouter::DetailRouter(PnRDB::hierNode& HierNode, GlobalRouter& GR, int path
   this->grid_scale = grid_scale;
   this->layerNo = GR.drc_info.Metal_info.size();
   this->isTop = GR.isTop;
+  this->global_grid_scale= GR.grid_scale;
  
 /*
   Connection();
@@ -77,7 +78,7 @@ void DetailRouter::create_detailrouter(){
        std::cout<<"end check find path"<<std::endl;
        //create grid
        //Grid grid(drc_info, grid_scale, lowest_metal, highest_metal, LL, UR, temp_pins, temp_path);
-       Grid grid ( temp_pins, temp_path,  drc_info, LL, UR, lowest_metal, highest_metal, 1, 5);
+       Grid grid ( temp_pins, temp_path,  drc_info, LL, UR, lowest_metal, highest_metal, 1, this->global_grid_scale+1);
        RouterDB::point gridll=grid.GetGridLL();
        RouterDB::point gridur=grid.GetGridUR();
        std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > plist = FindsetPlist(Set_x, gridll, gridur);
