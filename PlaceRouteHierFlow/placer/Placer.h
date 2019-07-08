@@ -6,6 +6,7 @@
 #include <time.h>       /* time */
 #include <cmath>
 #include "design.h"
+#include "Aplace.h"
 #include "SeqPair.h"
 #include "ConstGraph.h"
 #include "../PnRDB/datatype.h"
@@ -14,8 +15,8 @@ using std::endl;
 
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
 #define T_INT 1e6
-#define T_MIN 1e-5
-#define ALPHA 0.85
+#define T_MIN 1e-6
+#define ALPHA 0.95
 #define COUNT_LIMIT 200
 
 //#define MTMODE 1 // flag to turn on multi-threading
@@ -27,17 +28,27 @@ class Placer {
        design thread_designData;
        SeqPair thread_trial_sp;
        ConstGraph thread_trial_sol;
+       int thread_mode;
        double thread_trial_cost=0.0;
        bool thread_succeed=false;
     };
     //design designData;
     //PnRDB::hierNode node;
-    bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol);
-    void Placement(PnRDB::hierNode& node); // do placement
+    bool GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGraph& curr_sol, int mode);
+    void PlacementRegular(PnRDB::hierNode& node, string opath, int effort); // do placement with simulated annealing 
+    void PlacementMixSA(PnRDB::hierNode& node, string opath, int effort); // do placement with mix-sized simulated annealing
+    void PlacementMixAP(PnRDB::hierNode& node, string opath, int effort); // do placement with mix-sized analytical placement
     void ThreadFunc(Thread_data* MT);
+    void PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int effort);
+    std::map<double, SeqPair> PlacementCoreAspectRatio(design& designData, SeqPair& curr_sp, ConstGraph& curr_sol, int mode, int nodeSize, int effort);
+    void ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize);
+    void PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort);
+    void PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort);
+    void PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort);
 
   public:
-    Placer(PnRDB::hierNode& node);
+    Placer(PnRDB::hierNode& node, string opath, int effort);
+    Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort);
     //Placer(PnRDB::hierNode& input_node); // Constructor
     //PnRDB::hierNode CheckoutHierNode(); // Output hier Node after placement
 };

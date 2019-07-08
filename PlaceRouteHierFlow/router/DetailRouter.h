@@ -31,6 +31,7 @@ class DetailRouter : public GlobalRouter {
   friend class PowerRouter;
 
   private:
+   int global_grid_scale;
    
 /*
    int End_Metal_Flag = 1;
