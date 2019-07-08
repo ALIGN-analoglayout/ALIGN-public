@@ -1,18 +1,18 @@
 # PlaceRouteHierFlow
 
 ## A. Syntax
-```
-./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.rul testcaseTop numOfLayout optEffort
+``` Shell
+./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
 Inputs
->-   testcase_DIR: directory type; The directory of input data
+>-   testcase_DIR: string type; the directory of input data
 >-   testcase.lef: string type; LEF file
 >-   testcase.v: string type; Verilog file
->-   testcase.map: string type; Map file for gds.json
->-   testcase.rul: string type; PDK file, either .rul or .json format is accepted
->-   testcaseTop: string type; Top module name in netlist
->-   numOfLayout: integer type; The max number of generated layouts
->-   optEffort: integer type; Optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
+>-   testcase.map: string type; map file for gds.json
+>-   testcase.json: string type; PDK file in.json format
+>-   testcaseTop: string type; top module name in netlist
+>-   numOfLayout: integer type; the max number of generated layouts
+>-   optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
 
 Outputs: all the results will be saved under 'Results' folder by default
 >-   xx.plt: GNU plot file of placement results
@@ -39,12 +39,12 @@ docker build -t placeroute_image .
 docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 2 0"
 ```
 
-## E. Conversion from JSON to GDS or from GDS to JSON
+## E. Conversion between JSON and GDS for layouts
 Currently we support the input/output layout files in JSON format.
 
-To convert the format, please use the codes under GDSConv <https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv>.
+To convert the format, please use the codes under [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv)
 
-To configure the Python environment, please follow the instruction of Dockerfile.python3 under GDSConv.
+To configure the Python environment, please follow Dockerfile.python3 under GDSConv.
 
 ## F. About third-party solvers/libraries
 1.  In our router, a third-party ILP solver lp_solve is required. The current supported version is lp_solve 5.5.2.5.
