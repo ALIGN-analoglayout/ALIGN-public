@@ -25,8 +25,7 @@ class UnitCell(CanvasNMOS):
 
         #####   Nselect Placement   #####
         if x == x_cells -1 and y == y_cells -1:      
-            self.addRegion( self.pselect, 'ps', None, (0, -1), 0, ((1+x)*gu, -1), (y+1)* self.finsPerUnitCell)                                                
-            self.addRegion( self.nwell, 'nw', None, (0, -1), 0, ((1+x)*gu, -1), (y+1)* self.finsPerUnitCell)    
+            self.addRegion( self.nselect, 'ns', None, (0, -1), 0, ((1+x)*gu, -1), (y+1)* self.finsPerUnitCell)    
                 
         if x_cells-1==x:
             grid_y0 = y*h + finDummy//2-1
