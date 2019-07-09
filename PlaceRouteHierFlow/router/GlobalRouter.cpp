@@ -1023,13 +1023,24 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   //grid_alpha should be adjusted according to the size of node
   //more adjust is necessry for detail router?
-  if(max_height*max_width<=100000000){
+  if(max_height*max_width<=10000){
      grid_scale = 1;
-    }else if (max_height*max_width<=1000000000000){
+    }else if (max_height*max_width<=1000000){
+     grid_scale = 2;
+    }else if (max_height*max_width<=100000000){
      grid_scale = 4;
-    } else {
+    }else if (max_height*max_width<=10000000000){
      grid_scale = 10;
+    } else {
+     grid_scale = 20;
     }
+  //if(max_height*max_width<=100000000){
+  //   grid_scale = 1;
+  //  }else if (max_height*max_width<=1000000000000){
+  //   grid_scale = 4;
+  //  } else {
+  //   grid_scale = 10;
+  //  }
 
   //For terminals	
   for(int i=0;i<node.Terminals.size();i++){	

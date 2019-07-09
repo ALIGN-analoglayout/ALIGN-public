@@ -39,14 +39,14 @@ docker build -t placeroute_image .
 docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 2 0"
 ```
 
-## E. Conversion between JSON and GDS for layouts
+## C. Conversion between JSON and GDS for layouts
 Currently we support the input/output layout files in JSON format.
 
 To convert the format, please use the codes under [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv)
 
 To configure the Python environment, please follow Dockerfile.python3 under GDSConv.
 
-## F. About third-party solvers/libraries
+## D. About third-party solvers/libraries
 1.  In our router, a third-party ILP solver lp_solve is required. The current supported version is lp_solve 5.5.2.5.
 Please download the codes from <http://lpsolve.sourceforge.net/5.5/>.
 

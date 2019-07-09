@@ -2413,6 +2413,17 @@ double ConstGraph::CalculateMatchCost(design& caseNL, SeqPair& caseSP) {
 }
 
 
+double ConstGraph::CalculateDeadArea(design& caseNL, SeqPair& caseSP) {
+  double cellArea=0;
+  for(int i=0;i<caseNL.Blocks.size();++i) {
+    int sel=caseSP.GetBlockSelected(i);
+    int w=caseNL.GetBlockWidth(i, caseSP.GetBlockOrient(i), sel); // Get width of block when it's placed
+    int h=caseNL.GetBlockHeight(i, caseSP.GetBlockOrient(i), sel); // Get height of block when it's placed
+    cellArea+=(w*h);
+  }
+  return 1-cellArea/CalculateArea();
+}
+
 
 double ConstGraph::CalculateArea() {
   //int sum=0;
@@ -2430,12 +2441,14 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   cost += CalculateMatchCost(caseNL, caseSP)*BETA;
   cost += CalculateRatio()*SIGMA;
   cost += CalculateArea();
+  cost += CalculateDeadArea(caseNL, caseSP)*PHI;
   //cout<<"GAMAR:"<<GAMAR<<" BETA "<<BETA<<"LAMBDA "<<LAMBDA<<endl;
   //cout<<"Penalt: "<<  (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph))*GAMAR<<" vs "<< (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)) << endl;
   //cout<<"WL: "<<CalculateWireLength(caseNL, caseSP)*LAMBDA<<" vs "<<CalculateWireLength(caseNL, caseSP)<<endl;
   //cout<<"Area: "<<CalculateArea()<<endl;
   //cout<<"MAtch: "<<CalculateMatchCost(caseNL, caseSP)*BETA<<" vs "<< CalculateMatchCost(caseNL, caseSP) <<endl;
   //cout<<"Ratio: "<<CalculateRatio()*SIGMA<<" vs "<<CalculateRatio() <<endl;
+  //cout<<"DeadArea: "<<CalculateDeadArea(caseNL, caseSP)*PHI<<" vs "<<CalculateDeadArea(caseNL, caseSP)<<endl;
   return cost;
 }
 
@@ -2452,19 +2465,23 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   cost += CalculateMatchCost(caseNL, caseSP)*BETA;
   cost += CalculateRatio()*SIGMA;
   cost += CalculateArea();
+  cost += CalculateDeadArea(caseNL, caseSP)*PHI;
   if(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)>0){
   GAMAR=cost/(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph));
-}
+  }
   if(CalculateWireLength(caseNL, caseSP)>0){
   LAMBDA =cost/CalculateWireLength(caseNL, caseSP);
-}
+  }
   if(CalculateMatchCost(caseNL, caseSP)){
   BETA = cost/CalculateMatchCost(caseNL, caseSP);
-}
+  }
   if(CalculateRatio()){
   SIGMA = cost/CalculateRatio()*1.5;
-}
-  //cout<<"NEW GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<endl;
+  }
+  if(CalculateDeadArea(caseNL, caseSP)) {
+  PHI = cost/CalculateDeadArea(caseNL, caseSP) *1.8;
+  }
+  //cout<<"NEW GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<" PHI:"<<PHI<<endl;
   //cout<<"NEW_BETA:"<<BETA<<endl;
 
 }

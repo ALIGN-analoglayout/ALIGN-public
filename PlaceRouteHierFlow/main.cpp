@@ -19,6 +19,7 @@ double ConstGraph::LAMBDA=1000;
 double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
+double ConstGraph::PHI=1500;
 
 //template<class T>
 //std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
