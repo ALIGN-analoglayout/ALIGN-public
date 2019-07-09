@@ -1207,7 +1207,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                 Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
                 break;
              } else {
-               std::cout<<"Router-Error: cannot find grid point for source terminal"<<std::endl;
+               std::cerr<<"Router-Error: cannot find grid point for source terminal"<<std::endl;
              }
          }
 
@@ -1229,7 +1229,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                          Smap.insert(map<RouterDB::point, std::vector<int> >::value_type(source.coord[0],temp_Source));   
                          break;
                      } else {
-                         std::cout<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
+                         std::cerr<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
                      }
                  }
             }else{
@@ -1304,7 +1304,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                 Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
                 break;
              } else {
-               std::cout<<"Router-Error: cannot find grid point for dest terminal"<<std::endl;
+               std::cerr<<"Router-Error: cannot find grid point for dest terminal"<<std::endl;
              }
          }
 
@@ -1327,7 +1327,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                       Smap.insert(map<RouterDB::point, std::vector<int> >::value_type(dest.coord[0],temp_Dest));
                           break;
                   } else {
-                      std::cout<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
+                      std::cerr<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
                   }
              }
            }else{
@@ -1418,7 +1418,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
                 Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
                 break;
              } else {
-               std::cout<<"Router-Error: cannot find grid point for source terminal"<<std::endl;
+               std::cerr<<"Router-Error: cannot find grid point for source terminal"<<std::endl;
              }
          }
 
@@ -1440,7 +1440,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
                          Smap.insert(map<RouterDB::point, std::vector<int> >::value_type(source.coord[0],temp_Source));   
                          break;
                      } else {
-                         std::cout<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
+                         std::cerr<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
                      }
                  }
             }else{
@@ -1515,7 +1515,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
                 Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
                 break;
              } else {
-               std::cout<<"Router-Error: cannot find grid point for dest terminal"<<std::endl;
+               std::cerr<<"Router-Error: cannot find grid point for dest terminal"<<std::endl;
              }
          }
 
@@ -1538,7 +1538,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
                       Smap.insert(map<RouterDB::point, std::vector<int> >::value_type(dest.coord[0],temp_Dest));
                           break;
                   } else {
-                      std::cout<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
+                      std::cerr<<"Router-Error: cannot find grid point for source steiner node"<<std::endl;
                   }
              }
            }else{
@@ -2035,7 +2035,7 @@ if(sourceL.coord.size()<25){
 	//std::cout<<vertices_total[min_index].x<<","<<vertices_total[min_index].y<<","<<min_index<<std::endl;
         //std::cout<<"Can map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
     }else{
-        std::cout<<"Router-Error: cannot map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
+        std::cerr<<"Router-Error: cannot map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
         //std::cout<<"grid_x"<<" "<<grid_x<<" grid_y "<<grid_y<<" grid_x1 "<<grid_x1<<" grid_y1 "<<grid_y1<<std::endl;
         //std::cout<<"grid_unit_x"<<" "<<grid_unit_x<<" grid_unit_y "<<grid_unit_y<<" grid_unit_x1 "<<grid_unit_x1<<" grid_unit_y1 "<<grid_unit_y1<<std::endl;
         //for(int l=0;l<grid_node_coord.size();l++){
@@ -2162,7 +2162,7 @@ if(sourceL.coord.size()<25){
 	//std::cout<<vertices_total[min_index].x<<","<<vertices_total[min_index].y<<","<<min_index<<std::endl;
         //std::cout<<"Can map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
     }else{
-        std::cout<<"Router-Error: cannot map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
+        std::cerr<<"Router-Error: cannot map from seg to grid seg: "<<Cx<<" "<<Cy<<" "<<grid_scale_func<<std::endl;
         //std::cout<<"grid_x"<<" "<<grid_x<<" grid_y "<<grid_y<<" grid_x1 "<<grid_x1<<" grid_y1 "<<grid_y1<<std::endl;
         //std::cout<<"grid_unit_x"<<" "<<grid_unit_x<<" grid_unit_y "<<grid_unit_y<<" grid_unit_x1 "<<grid_unit_x1<<" grid_unit_y1 "<<grid_unit_y1<<std::endl;
         //for(int l=0;l<grid_node_coord.size();l++){
