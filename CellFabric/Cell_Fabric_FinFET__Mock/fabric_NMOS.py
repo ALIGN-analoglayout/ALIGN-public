@@ -2,10 +2,6 @@ from primitive import CanvasNMOS
         
 class UnitCell(CanvasNMOS):
 
-    def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        super().__init__(fin_u, fin, finDummy, gate, gateDummy)
-
-
     def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
         (SA, GA, DA, SB, GB, DB) = SDG
         (S, D, G) = (SA+SB, DA+DB, GA+GB)

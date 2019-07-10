@@ -1,7 +1,6 @@
         
 class pattern():
 
- #   def __init__(self):       
     def common_centroid(x_cells, gu, gate, gateDummy):
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         for k in range(x_cells//2):

@@ -99,10 +99,6 @@ class CanvasNMOS(DefaultCanvas):
 
 class UnitCell(CanvasNMOS):
 
-    def __init__( self, gate_u, fin_u, fin_u1):
-        super().__init__( gate_u, fin_u, fin_u1)
-
-
     def unit( self, x, y, x_cells, y_cells, fin_u, gate_u):
 
         #####   Derived parameters   #####         
