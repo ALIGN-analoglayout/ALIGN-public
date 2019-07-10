@@ -1,6 +1,7 @@
 #ifndef SEQPAIR_h_
 #define SEQPAIR_h_
 
+#include <set>
 #include <vector>
 #include <utility>
 #include <string>
@@ -25,11 +26,14 @@ class SeqPair
     vector<int> negPair;
     vector<placerDB::Omark> orient;
     vector<placerDB::Smark> symAxis;
+    vector<int> selected;
     vector<int> FindShortSeq(design& caseNL, vector<int>& seq, int idx);
     int GetVertexIndexinSeq(vector<int>& seq, int v);
     bool MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anode);
     vector<int> GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L);
     vector<int> SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, vector<int>& seq);
+    void InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx);
+    void InsertNewSBlock(design& originNL, int originIdx);
 
   public:
     SeqPair();
@@ -38,6 +42,7 @@ class SeqPair
     SeqPair(const SeqPair& sp);
     SeqPair(design& caseNL);
     SeqPair& operator=(const SeqPair& sp);
+    SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP);
     vector<int> GetBlockIndex(int blockNo);
     vector<int> GetRightBlock(int blockNo);
     vector<int> GetLeftBlock(int blockNo);
@@ -63,7 +68,10 @@ class SeqPair
     bool ChangeSymmetryGroupOrient(design& caseNL);
     bool ChangeSymmetryBlockOrient(design& caseNL);
     void Perturbation(design& caseNL);
+    void PerturbationNew(design& caseNL);
     void TestSwap();
+    int GetBlockSelected(int blockNo);
+    bool ChangeSelectedBlock(design& caseNL);
 };
 
 #endif

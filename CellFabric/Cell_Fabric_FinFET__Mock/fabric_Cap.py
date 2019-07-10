@@ -44,8 +44,6 @@ class CanvasCap(Canvas):
 
 
 class UnitCell(CanvasCap):
-    def __init__( self, x_length, y_length):
-        super().__init__(x_length, y_length)
 
     def unit( self, x, y, x_cells, y_cells):
         m2factor = 2 ### number of m2-tracks (m2factor-1)in between two unitcells in y-direction

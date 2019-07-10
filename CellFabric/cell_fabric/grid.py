@@ -85,8 +85,6 @@ class CenteredGrid(Grid):
         self.addGridLine( offset + pitch,             False)
 
 class CenterLineGrid(Grid):
-    def __init__( self):
-        super().__init__()
 
     def addCenterLine( self, value, width, isLegal=True, *, color=None):
         assert width % 2 == 0

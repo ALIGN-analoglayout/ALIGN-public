@@ -19,7 +19,7 @@ python ./src/read_library.py --dir basic_library
 ## Reads inputs netlist of spice format (".sp") from input_circuit folder
 ## User need to keep his spice netlist in this directory : switched_cap_filter.sp
 SPICE_FILE="$DESIGN.sp"
-python ./src/read_netlist.py --dir input_circuit -f $SPICE_FILE --subckt $DESIGN --flat 1
+python ./src/read_netlist.py --dir input_circuit -f $SPICE_FILE --subckt $DESIGN --flat 0
 # the output is stored in circuit_graph directory in yaml format
 
 ## MATCH GRAPH

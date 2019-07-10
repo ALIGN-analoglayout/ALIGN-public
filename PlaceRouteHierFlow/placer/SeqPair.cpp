@@ -5,40 +5,382 @@ SeqPair::SeqPair() {
   this->negPair.clear();
   this->orient.clear();
   this->symAxis.clear();
+  this->selected.clear();
 }
 
-SeqPair::SeqPair(int blockSize) {
-// For testing
-  for(int i=0;i<blockSize;i++) {
-    posPair.push_back(i);
-    negPair.push_back(i);
-    orient.push_back(placerDB::N);
-  }
-}
+//SeqPair::SeqPair(int blockSize) {
+//// For testing
+//  for(int i=0;i<blockSize;i++) {
+//    posPair.push_back(i);
+//    negPair.push_back(i);
+//    orient.push_back(placerDB::N);
+//  }
+//}
 
-SeqPair::SeqPair(string pos, string neg) {
-// For testing
-  vector<string> temp1=split_by_spaces(pos);
-  vector<string> temp2=split_by_spaces(neg);
-  for(vector<string>::iterator it=temp1.begin(); it!=temp1.end()-1; ++it) {
-    posPair.push_back(stoi(*it));
-  }
-  for(vector<string>::iterator it=temp2.begin(); it!=temp2.end()-1; ++it) {
-    negPair.push_back(stoi(*it));
-  }
-  for(int i=0;i<(int)posPair.size();++i) {orient.push_back(placerDB::N);}
-}
+//SeqPair::SeqPair(string pos, string neg) {
+//// For testing
+//  vector<string> temp1=split_by_spaces(pos);
+//  vector<string> temp2=split_by_spaces(neg);
+//  for(vector<string>::iterator it=temp1.begin(); it!=temp1.end()-1; ++it) {
+//    posPair.push_back(stoi(*it));
+//  }
+//  for(vector<string>::iterator it=temp2.begin(); it!=temp2.end()-1; ++it) {
+//    negPair.push_back(stoi(*it));
+//  }
+//  for(int i=0;i<(int)posPair.size();++i) {orient.push_back(placerDB::N);}
+//}
 
 SeqPair::SeqPair(const SeqPair& sp) {
   this->posPair=sp.posPair;
   this->negPair=sp.negPair;
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
+  this->selected=sp.selected;
+}
+
+SeqPair::SeqPair(design& originNL, design& reducedNL, SeqPair& reducedSP) {
+  this->posPair=reducedSP.posPair;
+  this->negPair=reducedSP.negPair;
+  this->orient.resize( originNL.GetSizeofBlocks(),  placerDB::N  );
+  this->symAxis.resize(originNL.GetSizeofSBlocks(), placerDB::V  );
+  this->selected.resize(originNL.GetSizeofBlocks(), 0);
+  // A. For those common symmetry groups in both original and reduced designs
+  // 1. first, convert all the axis nodes of reduced design in sequence pairs
+  // into axis nodes of original design
+  std::set<int> commonSBs;
+  //std::cout<<"work on axis nodes\n";
+  for(vector<placerDB::SymmBlock>::iterator it=reducedNL.SBlocks.begin(); it!=reducedNL.SBlocks.end(); ++it) {
+    //std::cout<<"work on axis "<<it-reducedNL.SBlocks.begin()<<std::endl;
+    // for each symmetry group of reduced design,
+    // find the corresponding group in original design
+    int reducedsbIdx=it-reducedNL.SBlocks.begin();
+    int sbIdx=reducedNL.GetMappedSymmBlockIdx(reducedsbIdx);
+    if(sbIdx==-1) {cout<<"Placer-Error: cannot find similar symmetry group in original design"<<endl;continue;}
+    // modify positive sequence
+    commonSBs.insert(sbIdx);
+    for(vector<int>::iterator ppit=this->posPair.begin(); ppit!=this->posPair.end(); ++ppit) {
+      if( (*ppit)==it->dnode ) { *ppit=originNL.SBlocks.at(sbIdx).dnode; break; }
+    }
+    // modify negative sequence
+    for(vector<int>::iterator npit=this->negPair.begin(); npit!=this->negPair.end(); ++npit) {
+      if( (*npit)==it->dnode ) { *npit=originNL.SBlocks.at(sbIdx).dnode; break; }
+    }
+    this->symAxis.at(sbIdx) = reducedSP.symAxis.at(reducedsbIdx);
+  }
+  // 2. second, convert all other nodes of reduced design in sequence pairs
+  // into nodes of original design
+  //std::cout<<"work on sp nodes\n";
+  for(vector<int>::iterator it=this->posPair.begin(); it!=this->posPair.end(); ++it) {
+    //std::cout<<"work on "<<*it<<" @ "<<it-this->posPair.begin()<<std::endl;
+    if( *it<reducedNL.GetSizeofBlocks() ) {  
+      int newi=reducedNL.GetMappedBlockIdx(*it);
+      if(newi!=-1) { this->orient.at(newi)=reducedSP.orient.at(*it); *it=newi; 
+      } else {std::cout<<"Placer-Error: cannot covert block in positive sequence\n";}
+    }
+  }
+  for(vector<int>::iterator it=this->negPair.begin(); it!=this->negPair.end(); ++it) {
+    //std::cout<<"work on "<<*it<<" @ "<<it-this->negPair.begin()<<std::endl;
+    if( *it<reducedNL.GetSizeofBlocks() ) {  
+      int newi=reducedNL.GetMappedBlockIdx(*it);
+      if(newi!=-1) {*it=newi;
+      } else {std::cout<<"Placer-Error: cannot covert block in negative sequence\n";}
+    }
+  }
+  // 3. third, add other nodes in the original design into sequence pairs
+  //std::cout<<"work on other sp nodes\n";
+  for(int i=0;i<(int)originNL.SBlocks.size(); ++i) {
+    if(commonSBs.find(i)==commonSBs.end()) { // not common SB
+      // Potential bug: some blocks might belong to one original symmetry group but not in reduced symmetry group (e.g. a single self-symmetry block)
+      // in this case its symmetry group cannot be inserted as new one
+      // need fix in future [wbxu]
+      std::cout<<"InsertNewSBlock(originNL, i) "<<i<<std::endl;
+      InsertNewSBlock(originNL, i);
+    } else { // common SB
+      std::cout<<"InsertCommonSBlock(originNL, reducedNL, i)  "<<i<<std::endl;
+      InsertCommonSBlock(originNL, reducedNL, i);
+    } 
+  }
+  // 4. add other nodes
+  //std::cout<<"work on other nodes\n";
+  //std::cout<<"size "<<originNL.GetSizeofBlocks()<<std::endl;
+  for(int i=0;i<originNL.GetSizeofBlocks();++i) {
+    //std::cout<<i<<endl;
+    if(originNL.GetBlockSymmGroup(i)==-1 and originNL.GetMappedBlockIdx(i)==-1) {
+      posPair.push_back(i);
+      negPair.push_back(i);
+      orient.at(i)=placerDB::N;
+    }
+  }
+  //std::cout<<"work on selected mark\n";
+  // 5. update selected mark
+  for(int i=0;i<reducedNL.GetSizeofBlocks();++i) {
+    //std::cout<<i<<" map "<<reducedNL.GetMappedBlockIdx(i)<<" sel " <<reducedSP.GetBlockSelected(i)<<std::endl;
+    selected.at( reducedNL.GetMappedBlockIdx(i) )=reducedSP.GetBlockSelected(i);
+  }
+}
+
+void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
+  //std::cout<<"InsertNewSBlock "<<originIdx<<std::endl;
+  placerDB::Smark axis;
+  vector<placerDB::SymmBlock>::iterator bit=originNL.SBlocks.begin()+originIdx;
+    axis=placerDB::V; // initialize veritcal symmetry
+    if ( !(bit->selfsym).empty() ) {
+      switch( (bit->selfsym).at(0).second ) {
+        case placerDB::H: axis=placerDB::V;break;
+        case placerDB::V: axis=placerDB::H;break;
+      }
+    }
+    //cout<<"axis"<<axis<<endl;
+    this->symAxis.at(originIdx)=axis;
+    // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+    //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+    // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+    //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+    if(!bit->sympair.empty()) {
+      for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
+        if( pit->first<(int)originNL.GetSizeofBlocks() ) {
+          posPair.push_back(pit->first); // a1,a2,...,ap --> positive
+          orient[pit->first]=placerDB::N;
+        }
+      }
+    }
+    posPair.push_back(bit->dnode); // axis --> positive
+    if(!bit->selfsym.empty()) {
+      for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.begin(); sit!=bit->selfsym.end(); ++sit) {
+        if ( sit->first<(int)originNL.GetSizeofBlocks() ) {
+          posPair.push_back(sit->first); // c1,...cs --> positve
+          orient[sit->first]=placerDB::N;
+        }
+      }
+    }
+    if(!bit->sympair.empty()) {
+      //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+      for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
+        if( pit->second<(int)originNL.GetSizeofBlocks() ) {
+          posPair.push_back(pit->second); // bp,...,b1 --> positive
+          if(axis==placerDB::V) { orient[pit->second]=placerDB::FN; }
+          else if (axis==placerDB::H) { orient[pit->second]=placerDB::FS; }
+        }
+      }
+    }
+    // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+    //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+    // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+    //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+    if(axis==placerDB::V) {
+      if(!bit->sympair.empty()) {
+        for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
+          if( pit->first<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(pit->first); // a1,a2,...,ap --> negative
+          }
+        }
+      }
+      if(!bit->selfsym.empty()) {
+        //for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.end()-1; sit>=bit->selfsym.begin(); --sit) {
+        for(vector< pair<int,placerDB::Smark> >::reverse_iterator sit=bit->selfsym.rbegin(); sit!=bit->selfsym.rend(); ++sit) {
+          if ( sit->first<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(sit->first); // cs,...c1 --> negative
+          }
+        }
+      }
+      negPair.push_back(bit->dnode); // axis --> negative
+      if (!bit->sympair.empty()) {
+        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
+          if( pit->second<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(pit->second); // bp,...,b1 --> positive
+          }
+        }
+      }
+    } else if (axis==placerDB::H) {
+      if(!bit->sympair.empty()) {
+        for(vector< pair<int,int> >::iterator pit=bit->sympair.begin(); pit!=bit->sympair.end(); ++pit) {
+          if( pit->second<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(pit->second); // b1,...,bp --> negative
+          }
+        }
+      }
+      negPair.push_back(bit->dnode); // axis --> negative
+      if(!bit->selfsym.empty()) {
+        for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.begin(); sit!=bit->selfsym.end(); ++sit) {
+          if ( sit->first<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(sit->first); // c1,...cs --> negative
+          }
+        }
+      }
+      if(!bit->sympair.empty()) {
+        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
+          if( pit->first<(int)originNL.GetSizeofBlocks() ) {
+            negPair.push_back(pit->first); // ap,...,a1 --> negative
+          }
+        }
+      }
+    }
+}
+
+void SeqPair::InsertCommonSBlock(design& originNL, design& reducedNL, int originIdx) {
+  std::vector<placerDB::SymmBlock> tempSB=originNL.SplitSymmBlock(reducedNL, originIdx);
+  placerDB::SymmBlock comm=tempSB.at(0);
+  placerDB::SymmBlock diff=tempSB.at(1);
+  std::set<int> existingPairNode;
+  cout<<"InsertCommonSBlock\nComm SB\n";
+  for(vector<pair<int,int> >::iterator it=comm.sympair.begin(); it!=comm.sympair.end(); ++it) {
+    existingPairNode.insert(it->first);
+    existingPairNode.insert(it->second);
+    cout<<"sympair "<<it->first<<" vs "<<it->second<<endl;
+  }
+  for(vector<pair<int,placerDB::Smark> >::iterator it=comm.selfsym.begin(); it!=comm.selfsym.end(); ++it) {
+    cout<<"selfsym "<<it->first<<" @ "<<it->second<<endl;
+  }
+  cout<<"Diff SB\n";
+  for(vector<pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
+    cout<<"sympair "<<it->first<<" vs "<<it->second<<endl;
+  }
+  for(vector<pair<int,placerDB::Smark> >::iterator it=diff.selfsym.begin(); it!=diff.selfsym.end(); ++it) {
+    cout<<"selfsym "<<it->first<<" @ "<<it->second<<endl;
+  }
+  int anode=originNL.SBlocks.at(originIdx).dnode;
+  int anode_pos=-1, anode_neg=-1;
+  int L_pos=-1, R_pos=this->posPair.size(), L_neg=-1, R_neg=this->negPair.size();
+  for(int i=0;i<(int)this->posPair.size();++i) {
+    if(this->posPair.at(i)==anode) {anode_pos=i;break;}
+  }
+  for(int i=0;i<(int)this->negPair.size();++i) {
+    if(this->negPair.at(i)==anode) {anode_neg=i;break;}
+  }
+  if(anode_pos==-1 or anode_neg==-1) {
+    cout<<"Placer-Error: cannot find axis node in seq pair\n"; return;
+  }
+  for(int i=0;i<anode_pos;++i) {
+    if(existingPairNode.find(this->posPair.at(i))!=existingPairNode.end()) {
+      if(i>L_pos) {L_pos=i;}
+    }
+  }
+  for(int i=anode_pos+1;i<(int)this->posPair.size();++i) {
+    if(existingPairNode.find(this->posPair.at(i))!=existingPairNode.end()) {
+      if(i<R_pos) {R_pos=i;break;}
+    }
+  }
+  for(int i=0;i<anode_neg;++i) {
+    if(existingPairNode.find(this->negPair.at(i))!=existingPairNode.end()) {
+      if(i>L_neg) {L_neg=i;}
+    }
+  }
+  for(int i=anode_neg+1;i<(int)this->negPair.size();++i) {
+    if(existingPairNode.find(this->negPair.at(i))!=existingPairNode.end()) {
+      if(i<R_neg) {R_neg=i;break;}
+    }
+  }
+  cout<<"posPair: axis "<<anode_pos<<" left "<<L_pos<<" right "<<R_pos<<endl; 
+  cout<<"negPair: axis "<<anode_neg<<" left "<<L_neg<<" right "<<R_neg<<endl; 
+  vector<int> new_posPair, new_negPair;
+  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+  // Positive sequence
+  // 1. push new sympair a nodes
+  if(!diff.sympair.empty()) {
+    for(vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
+      new_posPair.push_back(it->first);
+    }
+  }
+  // 2. push original nodes before L_pos
+  for(int i=0;i<=L_pos;++i) {new_posPair.push_back(this->posPair.at(i));}
+  // 3. push original nodes between L_pos and R_pos
+  for(int i=L_pos+1;i<R_pos;++i) {new_posPair.push_back(this->posPair.at(i));}
+  // 4. push new selfsym nodes
+  if(!diff.selfsym.empty()) {
+    for(vector< pair<int, placerDB::Smark> >::iterator it=diff.selfsym.begin(); it!=diff.selfsym.end(); ++it) {
+      new_posPair.push_back(it->first);
+    }
+  }
+  // 5. push orignal nodes after R_pos
+  for(int i=R_pos;i<(int)this->posPair.size();++i) {new_posPair.push_back(this->posPair.at(i));}
+  // 6. push new sympair b nodes
+  if(!diff.sympair.empty()) {
+    //for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
+    for(vector< pair<int,int> >::reverse_iterator it=diff.sympair.rbegin(); it!=diff.sympair.rend(); ++it) {
+      new_posPair.push_back(it->second);
+    }
+  }
+  // Negative sequence
+  // axis==V: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+  //          negative - a1,...,ap, cs,...,c1, axis, bp,...,b1
+  // axis==H: positive - a1,...,ap, axis, c1,...,cs, bp,...,b1
+  //          negative - b1,...,bp, axis, c1,...,cs, ap,...,a1
+  if(this->symAxis.at(originIdx)==placerDB::V) {
+    // 1. push new sympair a nodes
+    if(!diff.sympair.empty()) {
+      for(vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
+        new_negPair.push_back(it->first);
+        this->orient.at(it->first)=placerDB::N;
+      }
+    }
+    // 2. push original nodes before L_neg
+    for(int i=0;i<=L_neg;++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 3. push new selfsym nodes
+    if(!diff.selfsym.empty()) {
+      //for(vector< pair<int, placerDB::Smark> >::iterator it=diff.selfsym.end()-1; it!=diff.selfsym.begin(); --it) {
+      for(vector< pair<int, placerDB::Smark> >::reverse_iterator it=diff.selfsym.rbegin(); it!=diff.selfsym.rend(); ++it) {
+        new_negPair.push_back(it->first);
+        this->orient.at(it->first)=placerDB::N;
+      }
+    }
+    // 4. push original nodes between L_neg and R_neg
+    for(int i=L_neg+1;i<R_neg;++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 5. push orignal nodes after R_neg
+    for(int i=R_neg;i<(int)this->negPair.size();++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 6. push new sympair b nodes
+    if(!diff.sympair.empty()) {
+      //for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
+      for(vector< pair<int,int> >::reverse_iterator it=diff.sympair.rbegin(); it!=diff.sympair.rend(); ++it) {
+        new_negPair.push_back(it->second);
+        this->orient.at(it->second)=placerDB::FN;
+      }
+    }
+  } else if (this->symAxis.at(originIdx)==placerDB::H) {
+    // 1. push new sympair b nodes
+    if(!diff.sympair.empty()) {
+      for(vector< pair<int,int> >::iterator it=diff.sympair.begin(); it!=diff.sympair.end(); ++it) {
+        new_negPair.push_back(it->second);
+        this->orient.at(it->second)=placerDB::FS;
+      }
+    }
+    // 2. push original nodes before L_neg
+    for(int i=0;i<=L_neg;++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 3. push original nodes between L_neg and R_neg
+    for(int i=L_neg+1;i<R_neg;++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 4. push new selfsym nodes
+    if(!diff.selfsym.empty()) {
+      for(vector< pair<int, placerDB::Smark> >::iterator it=diff.selfsym.begin(); it!=diff.selfsym.end(); ++it) {
+        new_negPair.push_back(it->first);
+        this->orient.at(it->first)=placerDB::N;
+      }
+    }
+    // 5. push orignal nodes after R_neg
+    for(int i=R_neg;i<(int)this->negPair.size();++i) {new_negPair.push_back(this->negPair.at(i));}
+    // 6. push new sympair a nodes
+    if(!diff.sympair.empty()) {
+      //for(vector< pair<int,int> >::iterator it=diff.sympair.end()-1; it>=diff.sympair.begin(); it--) {
+      for(vector< pair<int,int> >::reverse_iterator it=diff.sympair.rbegin(); it!=diff.sympair.rend(); ++it) {
+        new_negPair.push_back(it->first);
+        this->orient.at(it->first)=placerDB::N;
+      }
+    }
+  } else {
+    cout<<"Placer-Error: incorrect axis\n";
+  }
+  this->posPair=new_posPair;
+  this->negPair=new_negPair;
 }
 
 SeqPair::SeqPair(design& caseNL) {
+  // Know limitation: currently we force all symmetry group in veritcal symmetry
   placerDB::Smark axis;
   orient.resize(caseNL.GetSizeofBlocks());
+  selected.resize(caseNL.GetSizeofBlocks(),0);
   for(vector<placerDB::SymmBlock>::iterator bit=caseNL.SBlocks.begin(); bit!=caseNL.SBlocks.end(); ++bit) {
     axis=placerDB::V; // initialize veritcal symmetry
     if ( !(bit->selfsym).empty() ) {
@@ -71,7 +413,8 @@ SeqPair::SeqPair(design& caseNL) {
       }
     }
     if(!bit->sympair.empty()) {
-      for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+      //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+      for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
         if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
           posPair.push_back(pit->second); // bp,...,b1 --> positive
           if(axis==placerDB::V) { orient[pit->second]=placerDB::FN; }
@@ -92,7 +435,8 @@ SeqPair::SeqPair(design& caseNL) {
         }
       }
       if(!bit->selfsym.empty()) {
-        for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.end()-1; sit>=bit->selfsym.begin(); --sit) {
+        //for(vector< pair<int,placerDB::Smark> >::iterator sit=bit->selfsym.end()-1; sit>=bit->selfsym.begin(); --sit) {
+        for(vector< pair<int,placerDB::Smark> >::reverse_iterator sit=bit->selfsym.rbegin(); sit!=bit->selfsym.rend(); ++sit) {
           if ( sit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(sit->first); // cs,...c1 --> negative
           }
@@ -100,7 +444,8 @@ SeqPair::SeqPair(design& caseNL) {
       }
       negPair.push_back(bit->dnode); // axis --> negative
       if (!bit->sympair.empty()) {
-        for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
           if( pit->second<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->second); // bp,...,b1 --> positive
           }
@@ -123,7 +468,8 @@ SeqPair::SeqPair(design& caseNL) {
         }
       }
       if(!bit->sympair.empty()) {
-        for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        //for(vector< pair<int,int> >::iterator pit=bit->sympair.end()-1; pit>=bit->sympair.begin(); --pit) {
+        for(vector< pair<int,int> >::reverse_iterator pit=bit->sympair.rbegin(); pit!=bit->sympair.rend(); ++pit) {
           if( pit->first<(int)caseNL.GetSizeofBlocks() ) {
             negPair.push_back(pit->first); // ap,...,a1 --> negative
           }
@@ -131,7 +477,7 @@ SeqPair::SeqPair(design& caseNL) {
       }
     }
   }
-  for(int i=0;i<caseNL.GetSizeofBlocks();i++) {
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
     if(caseNL.GetBlockSymmGroup(i)==-1) {
       posPair.push_back(i);
       negPair.push_back(i);
@@ -145,40 +491,53 @@ SeqPair& SeqPair::operator=(const SeqPair& sp) {
   this->negPair=sp.negPair;
   this->orient=sp.orient;
   this->symAxis=sp.symAxis;
+  this->selected=sp.selected;
   return *this;
 }
 
 void SeqPair::PrintSeqPair() {
   cout<<endl<<"=== Sequence Pair ==="<<endl;
   cout<<"Positive pair: ";
-  for(int i=0;i<(int)posPair.size();i++) {
+  for(int i=0;i<(int)posPair.size();++i) {
     cout<<posPair.at(i)<<" ";
   }
   cout<<endl;
   cout<<"Negative pair: ";
-  for(int i=0;i<(int)negPair.size();i++) {
+  for(int i=0;i<(int)negPair.size();++i) {
     cout<<negPair.at(i)<<" ";
   }
   cout<<endl;
   cout<<"Orientation: ";
-  for(int i=0;i<(int)orient.size();i++) {
+  for(int i=0;i<(int)orient.size();++i) {
     cout<<orient.at(i)<<" ";
   }
   cout<<endl;
   cout<<"Symmetry axis: ";
-  for(int i=0;i<(int)symAxis.size();i++) {
+  for(int i=0;i<(int)symAxis.size();++i) {
     if(symAxis.at(i)==0) {cout<<"H ";
     } else {cout<<"V ";}
   }
   cout<<endl;
+  cout<<"Selected: ";
+  for(int i=0;i<(int)selected.size();++i) {
+    cout<<" "<<selected.at(i);
+  }
+  cout<<endl;
+}
+
+int SeqPair::GetBlockSelected(int blockNo) {
+  if(blockNo>=0 and blockNo<selected.size()) {
+    return(selected.at(blockNo));
+  }
+  return -1;
 }
 
 vector<int> SeqPair::GetBlockIndex(int blockNo) {
   vector<int> blockIdx;
-  for(int i=0;i<(int)posPair.size();i++) {
+  for(int i=0;i<(int)posPair.size();++i) {
     if(posPair.at(i)==blockNo) {blockIdx.push_back(i);break;}
   }
-  for(int i=0;i<(int)negPair.size();i++) {
+  for(int i=0;i<(int)negPair.size();++i) {
     if(negPair.at(i)==blockNo) {blockIdx.push_back(i);break;}
   }
   return(blockIdx);
@@ -187,8 +546,8 @@ vector<int> SeqPair::GetBlockIndex(int blockNo) {
 vector<int> SeqPair::GetRightBlock(int blockNo) {
   vector<int> blockIdx=GetBlockIndex(blockNo);
   vector<int> Rblock;
-  for(int i=blockIdx.at(0)+1;i<(int)posPair.size();i++) {
-    for(int j=blockIdx.at(1)+1;j<(int)negPair.size();j++) {
+  for(int i=blockIdx.at(0)+1;i<(int)posPair.size();++i) {
+    for(int j=blockIdx.at(1)+1;j<(int)negPair.size();++j) {
       if(posPair.at(i)==negPair.at(j)) {
         Rblock.push_back(posPair.at(i));
         //cout<<"Push "<<posPair.at(i)<<endl;
@@ -202,8 +561,8 @@ vector<int> SeqPair::GetRightBlock(int blockNo) {
 vector<int> SeqPair::GetLeftBlock(int blockNo) {
   vector<int> blockIdx=GetBlockIndex(blockNo);
   vector<int> Lblock;
-  for(int i=0; i<blockIdx.at(0); i++) {
-    for(int j=0; j<blockIdx.at(1); j++) {
+  for(int i=0; i<blockIdx.at(0); ++i) {
+    for(int j=0; j<blockIdx.at(1); ++j) {
       if(posPair.at(i)==negPair.at(j)) {Lblock.push_back(posPair.at(i));break;}
     }
   }
@@ -213,8 +572,8 @@ vector<int> SeqPair::GetLeftBlock(int blockNo) {
 vector<int> SeqPair::GetAboveBlock(int blockNo) {
   vector<int> blockIdx=GetBlockIndex(blockNo);
   vector<int> Ablock;
-  for(int i=0; i<blockIdx.at(0); i++) {
-    for(int j=blockIdx.at(1)+1;j<(int)negPair.size();j++) {
+  for(int i=0; i<blockIdx.at(0); ++i) {
+    for(int j=blockIdx.at(1)+1;j<(int)negPair.size();++j) {
       if(posPair.at(i)==negPair.at(j)) {Ablock.push_back(posPair.at(i));break;}
     }
   }
@@ -224,8 +583,8 @@ vector<int> SeqPair::GetAboveBlock(int blockNo) {
 vector<int> SeqPair::GetBelowBlock(int blockNo) {
   vector<int> blockIdx=GetBlockIndex(blockNo);
   vector<int> Bblock;
-  for(int i=blockIdx.at(0)+1;i<(int)posPair.size();i++) {
-    for(int j=0; j<blockIdx.at(1); j++) {
+  for(int i=blockIdx.at(0)+1;i<(int)posPair.size();++i) {
+    for(int j=0; j<blockIdx.at(1); ++j) {
       if(posPair.at(i)==negPair.at(j)) {Bblock.push_back(posPair.at(i));break;}
     }
   }
@@ -317,7 +676,7 @@ vector<int> SeqPair::FindShortSeq(design& caseNL, vector<int>& seq, int idx) {
 
 int SeqPair::GetVertexIndexinSeq(vector<int>& seq, int v) {
   int idx=-1;
-  for(int i=0;i<(int)seq.size(); i++) {
+  for(int i=0;i<(int)seq.size(); ++i) {
     if(seq.at(i)==v) {idx=i; break;}
   }
   return idx;
@@ -328,13 +687,13 @@ bool SeqPair::FastInitialScan(design& caseNL) {
 // Current feature: only support scan of symmetry constraints
 // Future supports: will support scan of general placement constraints
   bool mark=true;
-  for(int b=0; b<(int)caseNL.GetSizeofSBlocks() and mark ; b++) {
+  for(int b=0; b<(int)caseNL.GetSizeofSBlocks() and mark ; ++b) {
     // for each symmetry group
     placerDB::Smark axis=symAxis.at(b);
     vector<int> posQ=FindShortSeq(caseNL, posPair, b);
     vector<int> negQ=FindShortSeq(caseNL, negPair, b);
-    for(int i=0; i<(int)posQ.size() and mark ; i++) {
-      for(int j=i+1; j<(int)posQ.size() and mark ; j++) { 
+    for(int i=0; i<(int)posQ.size() and mark ; ++i) {
+      for(int j=i+1; j<(int)posQ.size() and mark ; ++j) { 
         // V: posSeq_i < posSeq_j <==> negSeq_counter(j) < negSeq_counter(i)
         // H: posSeq_i < posSeq_j <==> negSeq_counter(i) < negSeq_counter(j)
         int negi=GetVertexIndexinSeq(negQ , caseNL.GetBlockCounterpart( posQ.at(i) ) );
@@ -347,8 +706,8 @@ bool SeqPair::FastInitialScan(design& caseNL) {
         //cout<<"Check "<<posQ[i]<<"-"<<caseNL.GetBlockCounterpart( posQ.at(i) )<<" vs "<<posQ[j]<<"-"<<caseNL.GetBlockCounterpart( posQ.at(j) )<<" in posQ "<<mark<<endl;
       }
     }
-    for(int i=0; i<(int)negQ.size() and mark; i++) {
-      for(int j=i+1; j<(int)negQ.size() and mark ; j++) {
+    for(int i=0; i<(int)negQ.size() and mark; ++i) {
+      for(int j=i+1; j<(int)negQ.size() and mark ; ++j) {
         int posi=GetVertexIndexinSeq(posQ , caseNL.GetBlockCounterpart( negQ.at(i) ) );
         int posj=GetVertexIndexinSeq(posQ , caseNL.GetBlockCounterpart( negQ.at(j) ) );
         if(axis==placerDB::V) {
@@ -365,6 +724,58 @@ bool SeqPair::FastInitialScan(design& caseNL) {
 
 placerDB::Smark SeqPair::GetSymmBlockAxis(int SBidx) {
   return symAxis.at(SBidx);
+}
+
+bool SeqPair::ChangeSelectedBlock(design& caseNL) {
+  int anode=rand() % caseNL.GetSizeofBlocks();
+  if(caseNL.mixFlag) {
+    while(caseNL.GetMappedBlockIdx(anode)!=-1) {
+      anode=rand() % caseNL.GetSizeofBlocks();
+    } // randomly choose a block
+  }
+  if(caseNL.Blocks.at(anode).size()<=1) {return false;}
+  int newsel=rand() % caseNL.Blocks.at(anode).size();
+  selected.at(anode)=newsel;
+  if(caseNL.GetBlockCounterpart(anode)!=-1) { selected.at( caseNL.GetBlockCounterpart(anode) )=newsel;}
+  return true;
+}
+
+void SeqPair::PerturbationNew(design& caseNL) {
+  /* initialize random seed: */
+  //srand(time(NULL));
+  bool mark=false;
+  std::set<int> pool;
+  // 0:ChangeSelectedBlock
+  // 1:MoveAsymmetricBlockposPair
+  // 2:MoveAsymmetricBlocknegPair
+  // 3:MoveAsymmetricBlockdoublePair
+  // 4:ChangeAsymmetricBlockOrient
+  // 5:SwapTwoBlocksofSameGroup
+  // 6:SwapTwoSymmetryGroup
+  // 7:ChangeSymmetryBlockOrient
+  // 8:SwapMultiBlocksofSameGroup
+  // 9:RotateSymmetryGroup
+  if(caseNL.noBlock4Move>0) {pool.insert(0);}
+  if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3); pool.insert(4);}
+  if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(7); pool.insert(8);} // pool.insert(9);}
+  if(caseNL.noSymGroup4FullMove>1) {pool.insert(6);}
+  while(!mark) {
+    int choice=rand() % int(pool.size());
+    std::set<int>::iterator cit=pool.begin(); std::advance(cit, choice);
+    switch(*cit) {
+        case 0: mark=ChangeSelectedBlock(caseNL); break;
+        case 1: mark=MoveAsymmetricBlockposPair(caseNL); break;
+        case 2: mark=MoveAsymmetricBlocknegPair(caseNL); break;
+        case 3: mark=MoveAsymmetricBlockdoublePair(caseNL); break;
+        case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
+        case 5: mark=SwapTwoBlocksofSameGroup(caseNL); break;
+        case 6: mark=SwapTwoSymmetryGroup(caseNL); break;
+        case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
+        case 8: mark=SwapMultiBlocksofSameGroup(caseNL); break;
+        //case 9: mark=RotateSymmetryGroup(caseNL); break;
+        default: mark=false;
+    }
+  }
 }
 
 void SeqPair::Perturbation(design& caseNL) {
@@ -454,6 +865,9 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
     sgB=rand() % caseNL.GetSizeofSBlocks();
     while(sgB==sgA) { sgB=rand() % caseNL.GetSizeofSBlocks(); }
   }
+  if(caseNL.mixFlag) {
+    if(caseNL.GetMappedSymmBlockIdx(sgA)!=-1 or caseNL.GetMappedSymmBlockIdx(sgB)!=-1) {return false;}
+  }
   //cout<<"Swap symmetry group "<<sgA<<" and "<<sgB<<endl;
   vector<int> Alist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgA);
   vector<int> Blist=caseNL.GetRealBlockPlusAxisListfromSymmGroup(sgB);
@@ -464,7 +878,7 @@ bool SeqPair::SwapTwoSymmetryGroup(design& caseNL) {
 
 vector<int> SeqPair::GetVerticesIndexinSeq(vector<int>& seq, vector<int>& L) {
   vector<int> idx;
-  for(int i=0;i<(int)seq.size();i++) {
+  for(int i=0;i<(int)seq.size();++i) {
     for(vector<int>::iterator it=L.begin(); it!=L.end(); ++it) {
       if(seq.at(i)==*it) {idx.push_back(i);break;}
     }
@@ -491,12 +905,12 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
   // A0, A1, ..., An
   //     B0, B1, ..., Bm
   if(Apos.size()==Bpos.size()) {
-    for(int i=0;i<(int)Apos.size();i++) {
+    for(int i=0;i<(int)Apos.size();++i) {
       newseq.at(Apos.at(i))=seq.at(Bpos.at(i)); // B --> A
       newseq.at(Bpos.at(i))=seq.at(Apos.at(i)); // A --> B
     }
   } else if (Apos.size()<Bpos.size()) {
-    for(int i=0;i<(int)Apos.size();i++)
+    for(int i=0;i<(int)Apos.size();++i)
       newseq.at(Bpos.at(i))=seq.at(Apos.at(i)); // A --> B
     // Merge sort to create new Apos list
     vector<int> newApos;
@@ -513,10 +927,10 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     }
     while(ait!=Apos.end()) { newApos.push_back(*ait); ++ait; }
     while(bit!=Bpos.end()) { newApos.push_back(*bit); ++bit; }
-    for(int i=0;i<(int)Bpos.size();i++)
+    for(int i=0;i<(int)Bpos.size();++i)
       newseq.at(newApos.at(i))=seq.at(Bpos.at(i)); // B--> A
   } else {
-    for(int i=0;i<(int)Bpos.size();i++)
+    for(int i=0;i<(int)Bpos.size();++i)
       newseq.at(Apos.at(i))=seq.at(Bpos.at(i)); // B --> A
     // Merge sort to create new Bpos list
     vector<int> newBpos;
@@ -533,7 +947,7 @@ vector<int> SeqPair::SwapTwoListinSeq(vector<int>& Alist, vector<int>& Blist, ve
     }
     while(ait!=Apos.end()) { newBpos.push_back(*ait); ++ait; }
     while(bit!=Bpos.end()) { newBpos.push_back(*bit); ++bit; }
-    for(int i=0;i<(int)Apos.size();i++)
+    for(int i=0;i<(int)Apos.size();++i)
       newseq.at(newBpos.at(i))=seq.at(Apos.at(i)); // A--> B
   }
   return newseq;
@@ -549,7 +963,7 @@ bool SeqPair::SwapTwoBlocksofSameGroup(design& caseNL) {
     sgid=0;
   } else { return false; }
   //cout<<"sgid "<<sgid<<endl;
-  vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group
+  vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group cosidering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
   if(blist.empty() or (int)blist.size()==1) {return false;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
@@ -590,11 +1004,11 @@ bool SeqPair::SwapMultiBlocksofSameGroup(design& caseNL) {
     sgid=0;
   } else { return false; }
   //cout<<"sgid "<<sgid<<endl;
-  vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group
+  vector<int> blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // all real blocks in symmetry group considering mixFlag
   //cout<<"blist size: "<<blist.size()<<endl;
   if(blist.empty() or (int)blist.size()==1) {return false;}
   if((int)blist.size()==2 and blist.at(0)==caseNL.GetBlockCounterpart(blist.at(1))) {return false;}
-  for(int i=0;i<count;i++) {
+  for(int i=0;i<count;++i) {
     int A=blist.at( rand() % (int)blist.size() );
     //while(A>=(int)caseNL.GetSizeofBlocks()) {
     //   A=blist.at( rand() % (int)blist.size() );
@@ -630,6 +1044,7 @@ bool SeqPair::MoveAsymmetricBlockposPair(design& caseNL) {
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
     anode=rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
+  if(caseNL.mixFlag and caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   //cout<<endl<<"Move asymmetric block in pos SP"<<endl;
   return MoveAsymmetricBlockUnit(caseNL, this->posPair, anode);
 }
@@ -642,6 +1057,7 @@ bool SeqPair::MoveAsymmetricBlocknegPair(design& caseNL) {
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
     anode=rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
+  if(caseNL.mixFlag and caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   //cout<<endl<<"Move asymmetric block in neg SP"<<endl;
   return MoveAsymmetricBlockUnit(caseNL, this->negPair, anode);
 }
@@ -654,6 +1070,7 @@ bool SeqPair::MoveAsymmetricBlockdoublePair(design& caseNL) {
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
     anode=rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
+  if(caseNL.mixFlag and caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   bool mark=true;
   //cout<<endl<<"Move asymmetric block in pos SP"<<endl;
   mark=mark&&MoveAsymmetricBlockUnit(caseNL, this->posPair, anode);
@@ -674,20 +1091,20 @@ bool SeqPair::MoveAsymmetricBlockUnit(design& caseNL, vector<int>& seq, int anod
   } // randomly choose a new position
   //cout<<"Aymnode-"<<anode<<" oldpos-"<<oldpos<<" newpos-"<<newpos<<endl;
   if(oldpos<newpos) {
-    for(int i=0;i<oldpos;i++) 
+    for(int i=0;i<oldpos;++i) 
       newseq.at(i)=seq.at(i);
-    for(int i=oldpos+1;i<=newpos;i++) 
+    for(int i=oldpos+1;i<=newpos;++i) 
       newseq.at(i-1)=seq.at(i);
-    for(int i=newpos+1;i<(int)seq.size();i++)
+    for(int i=newpos+1;i<(int)seq.size();++i)
       newseq.at(i)=seq.at(i);
     newseq.at(newpos)=seq.at(oldpos);
   } else if (oldpos>newpos) {
-    for(int i=0;i<newpos;i++)
+    for(int i=0;i<newpos;++i)
       newseq.at(i)=seq.at(i);
     newseq.at(newpos)=seq.at(oldpos);
-    for(int i=newpos+1;i<=oldpos;i++)
+    for(int i=newpos+1;i<=oldpos;++i)
       newseq.at(i)=seq.at(i-1);
-    for(int i=oldpos+1;i<(int)seq.size();i++)
+    for(int i=oldpos+1;i<(int)seq.size();++i)
       newseq.at(i)=seq.at(i);
   }
   seq=newseq;
@@ -702,6 +1119,7 @@ bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
   while(caseNL.GetBlockSymmGroup(anode)>=0) {
     anode=rand() % caseNL.GetSizeofBlocks();
   } // randomly choose an asymmetric block
+  if(caseNL.mixFlag and caseNL.GetMappedBlockIdx(anode)!=-1) {return false;}
   bool mark=false;
   placerDB::Omark curr_ort=orient.at(anode);
   placerDB::Omark ort;
@@ -734,6 +1152,8 @@ bool SeqPair::ChangeAsymmetricBlockOrient(design& caseNL) {
 }
 
 bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
+  // Known limitation: due to the restricition of verical symmetry, we do not change
+  // the orientation of block into E/W/FE/FW
   /* initialize random seed: */
   //srand(time(NULL));
   int sgid;
@@ -745,7 +1165,7 @@ bool SeqPair::ChangeSymmetryBlockOrient(design& caseNL) {
   //cout<<endl<<"Change orientation of cell in symmetry group "<<sgid<<endl;
   placerDB::Smark new_axis, self_axis;
   new_axis=symAxis.at(sgid);
-  vector<int> Blist=caseNL.GetRealBlockListfromSymmGroup(sgid);
+  vector<int> Blist=caseNL.GetRealBlockListfromSymmGroup(sgid); // already consider mixFlag in GetRealBlockListfromSymmGroup
   if(Blist.empty()) {return false;}
   int tar;
   if((int)Blist.size()==1) {
@@ -891,6 +1311,7 @@ bool SeqPair::ChangeSymmetryGroupOrient(design& caseNL) {
     sgid=0;
   } else { return false; }
   //cout<<endl<<"Change orientation of symmetry group "<<sgid<<endl;
+  if(caseNL.mixFlag and caseNL.GetMappedSymmBlockIdx(sgid)!=-1) {return false;}
   placerDB::Smark new_axis, self_axis;
   new_axis=symAxis.at(sgid);
   // Change orientation of cells in symmetry group
@@ -1058,6 +1479,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
   } else if (caseNL.GetSizeofSBlocks()==1) {
     sgid=0;
   } else { return false; }
+  if(caseNL.mixFlag and caseNL.GetMappedSymmBlockIdx(sgid)!=-1) {return false;}
   //cout<<endl<<"Rotate symmetry group "<<sgid<<endl;
   placerDB::Smark old_axis, new_axis=placerDB::V, self_axis;
   old_axis=symAxis.at(sgid); 
@@ -1225,7 +1647,7 @@ bool SeqPair::RotateSymmetryGroup(design& caseNL) {
   vector<int> Spos=GetVerticesIndexinSeq(this->negPair, Slist);
   vector<int> newNP=this->negPair;
   int Slength=(int)Spos.size();
-  for(int i=0;i<Slength;i++) {
+  for(int i=0;i<Slength;++i) {
     newNP.at(Spos.at(i))=this->negPair.at(Spos.at(Slength-1-i));
   }
   this->negPair=newNP;

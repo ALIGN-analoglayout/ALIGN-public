@@ -82,10 +82,6 @@ class CanvasNMOS(DefaultCanvas):
 
 class UnitCell(CanvasNMOS):
 
-    def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        super().__init__(fin_u, fin, finDummy, gate, gateDummy)
-
-
     def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy):
 
         #####   This part generats locations of S/D/G   #####

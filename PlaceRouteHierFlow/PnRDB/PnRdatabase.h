@@ -164,13 +164,14 @@ class PnRdatabase
     int topidx;
     PnRDB::Drc_info DRC_info;
     vector<PnRDB::hierNode> hierTree;
-    map<string, PnRDB::lefMacro> lefData;
+    map<string, std::vector<PnRDB::lefMacro> > lefData;
     map<string, string> gdsData;
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
     void TraverseDFS(queue<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
     long int get_number(string str);
+    bool ReadPDKJSON(std::string drfile);
 
 	////added by ya
 	//
@@ -207,7 +208,7 @@ class PnRdatabase
     //bool ReadVerilog(string verilogfile, string topcell);
     bool ReadLEF(string leffile); // read building block data from LEF file
     void PrintLEFData();  // print LEF data for debugging
-    map<string, PnRDB::lefMacro> checkoutlef(){return lefData;};
+    map<string, std::vector<PnRDB::lefMacro> > checkoutlef(){return lefData;};
     bool ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix);
     bool MergeLEFMapData(PnRDB::hierNode& node);
     void PrintHierTree();
@@ -229,7 +230,7 @@ class PnRdatabase
     //    void GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, long int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury);
     //    std::string WriteGDS(PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info);
     //    void labelTerminals(PnRDB::hierNode& node, GdsParser::GdsWriter& gw, PnRDB::Drc_info& drc_info);//jinhyun 
-    std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info);
+    std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info, string opath);
     void PrintHierNode(PnRDB::hierNode& node);
     void PrintContact(PnRDB::contact& cont);
     void PrintVia(PnRDB::Via& v);
@@ -241,6 +242,8 @@ class PnRdatabase
     void PrintSymmNet(PnRDB::SymmNet& t);
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
+    std::map<string, PnRDB::lefMacro> checkoutSingleLEF();
+    void WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath);
     //design(string blockfile, string netfile);
     //design(string blockfile, string netfile, string cfile);
     //
