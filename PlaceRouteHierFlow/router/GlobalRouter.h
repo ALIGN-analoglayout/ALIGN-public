@@ -92,6 +92,8 @@ class GlobalRouter : public RawRouter {
     //vector<PnRDB::Drc_info> drc_info;
     //int lowest_metal, highest_metal; //index of lowest metal & highest metal
     //int grid_scale; //dynamic grid_scal
+    void AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
+    void AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy);
 
   public:
     GlobalRouter();

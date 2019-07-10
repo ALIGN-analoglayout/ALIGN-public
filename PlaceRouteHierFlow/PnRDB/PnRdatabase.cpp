@@ -3791,7 +3791,25 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
     }
     //OF2<<endl;
   }
-  OF2<<std::endl<<"  ]"<<endl<<"}";
+  OF2<<std::endl<<"  ],"<<endl;
+  OF2<<"  \"rects\": ["<<endl;
+  for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+    if(node.isTop) {
+      if(it->connected.size()<=1) {continue;}
+    } else {
+      if(!it->sink2Terminal and it->connected.size()<=1) {continue;}
+      if(it->sink2Terminal and it->connected.size()<=2) {continue;}
+    }
+    for(int k=0;k<it->connectedContact.size();++k) {
+      if(it->connected.at(k).type==PnRDB::Block) {
+        OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+      } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+        OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+      } else {continue;}
+      OF2<<", \"layer\": \""<<it->connectedContact.at(k).metal<<"\", \"rect\": ["<<it->connectedContact.at(k).placedBox.LL.x<<", "<<it->connectedContact.at(k).placedBox.LL.y<<", "<<it->connectedContact.at(k).placedBox.UR.x<<", "<<it->connectedContact.at(k).placedBox.UR.y<<"] },"<<endl;
+    }
+  }
+  OF2<<"  ]"<<endl<<"}";
   OF2.close();
 }
 

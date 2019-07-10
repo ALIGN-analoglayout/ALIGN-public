@@ -1363,6 +1363,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
                       terminal_contact.placedLL.y= terminal_contact.placedCenter.y-myext;
                       terminal_contact.placedUR.x= terminal_contact.placedCenter.x+myext;
                       terminal_contact.placedUR.y= terminal_contact.placedCenter.y+myext;
+                      //std::cout<<"INFO:: terminal contact metal"<<terminal_contact.metal<<" "<<terminal_contact.placedLL.x<<","<<terminal_contact.placedLL.y<<"; "<<terminal_contact.placedUR.x<<","<<terminal_contact.placedUR.y<<std::endl;
                       Terminal_contact.push_back(terminal_contact);
                     }
                 int temp_width = 1;
@@ -1467,10 +1468,16 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
              temp_Dest = Mapping_function_terminal(dest, temp_MetalIdx, direction);
              if(temp_Dest.size()>0){
                 for(int j=0;j<temp_Dest.size();j++){
+                      int myext=this->drc_info.Metal_info.at(vertices_total[temp_Dest[j]].metal).width/2;
                       Dest.push_back(temp_Dest[j]);
                       terminal_contact.metal = vertices_total[temp_Dest[j]].metal;
                       terminal_contact.placedCenter.x = vertices_total[temp_Dest[j]].x;
                       terminal_contact.placedCenter.y = vertices_total[temp_Dest[j]].y;
+                      terminal_contact.placedLL.x= terminal_contact.placedCenter.x-myext;
+                      terminal_contact.placedLL.y= terminal_contact.placedCenter.y-myext;
+                      terminal_contact.placedUR.x= terminal_contact.placedCenter.x+myext;
+                      terminal_contact.placedUR.y= terminal_contact.placedCenter.y+myext;
+                      //std::cout<<"INFO:: terminal contact metal"<<terminal_contact.metal<<" "<<terminal_contact.placedLL.x<<","<<terminal_contact.placedLL.y<<"; "<<terminal_contact.placedUR.x<<","<<terminal_contact.placedUR.y<<std::endl;
                       Terminal_contact.push_back(terminal_contact);
                    }
 
@@ -1689,10 +1696,15 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
              temp_Dest = Mapping_function_terminal(dest, temp_MetalIdx, direction);
              if(temp_Dest.size()>0){
                 for(int j=0;j<temp_Dest.size();j++){
+                      int myext=this->drc_info.Metal_info.at(vertices_total[temp_Dest[j]].metal).width/2;
                       Dest.push_back(temp_Dest[j]);
                       terminal_contact.metal = vertices_total[temp_Dest[j]].metal;
                       terminal_contact.placedCenter.x = vertices_total[temp_Dest[j]].x;
                       terminal_contact.placedCenter.y = vertices_total[temp_Dest[j]].y;
+                      terminal_contact.placedLL.x= terminal_contact.placedCenter.x-myext;
+                      terminal_contact.placedLL.y= terminal_contact.placedCenter.y-myext;
+                      terminal_contact.placedUR.x= terminal_contact.placedCenter.x+myext;
+                      terminal_contact.placedUR.y= terminal_contact.placedCenter.y+myext;
                       Terminal_contact.push_back(terminal_contact);
                    }
 

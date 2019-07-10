@@ -181,10 +181,17 @@ struct DetailPoint{
   int iterNet=-1;
 };
 
+struct connectNode {
+  NType type; // 1: blockPin; 2. Terminal
+  int iter; // 1: #blockPin; 2. #Terminal
+  int iter2; // 1: #block
+};
+
 struct Segment {
   std::vector<SinkData> sourceList, destList; // for each contact
   std::vector<SinkData> sourceGrid, destGrid; //for detail router connection
-  
+  connectNode sourceType;
+  connectNode destType;
   //bool sourceGridScale, destGridScale; // true for wide grid, false for regular grid
   //Node source;//No use
   //Node dest;//No use
@@ -196,12 +203,6 @@ struct Segment {
   int chosenCand=-1;
 };
 
-
-struct connectNode {
-  NType type; // 1: blockPin; 2. Terminal
-  int iter; // 1: #blockPin; 2. #Terminal
-  int iter2; // 1: #block
-};
 
 struct Net{
   std::string netName;

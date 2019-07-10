@@ -185,7 +185,7 @@ int main(int argc, char** argv ){
       DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
       // wbxu: the following line is used to write global route results for Intel router
       // Old version of global router should be used.
-      //DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
+      DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
 
       // Detail Routing
       std::cout<<"Checkpoint : detail route"<<std::endl;

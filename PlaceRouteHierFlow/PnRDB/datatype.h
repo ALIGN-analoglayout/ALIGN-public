@@ -83,6 +83,7 @@ struct net {
   vector<contact> interVias;////TEMPORARY!!!+Jinhyun
   vector<Metal> path_metal;
   vector<Via> path_via;
+  vector<contact> connectedContact; // for writing global route results
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
 }; // structure of nets
