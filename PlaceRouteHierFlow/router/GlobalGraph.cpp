@@ -745,13 +745,13 @@ std::vector<int> GlobalGraph::minDistance(double dist[], int status[], int V)
   return min_index;
 };
 
-void GlobalGraph::setTerminals(std::vector<std::vector<int> > t){
+void GlobalGraph::setTerminals(const std::vector<std::vector<int> >& t){
 
  Pin_terminals = t;
 
 };
 
-void GlobalGraph::setterminals(std::vector<int> t){
+void GlobalGraph::setterminals(const std::vector<int>& t){
 
  terminals = t;
 

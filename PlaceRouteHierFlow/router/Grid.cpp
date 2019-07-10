@@ -2548,10 +2548,10 @@ void Grid::CheckMaptotal2graph() {
 }
 
 
-Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale) {
+Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale):LL(ll), UR(ur) {
   // 1. Initialize member variables I
-  this->LL=ll;
-  this->UR=ur;
+  //this->LL=ll;
+  //this->UR=ur;
   //this->GridLL=ll;
   //this->GridUR=ur;
   this->GridLL.x=INT_MAX; this->GridLL.y=INT_MAX;

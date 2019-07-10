@@ -1,7 +1,7 @@
 #lp_solve
 LDFLAGS="-Wl,--no-as-needed"
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
-LP_DIR?=/opt/lp_solve
+LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 

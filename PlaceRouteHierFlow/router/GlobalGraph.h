@@ -61,8 +61,8 @@ class GlobalGraph {
     void RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
     void printPath(int parent[], int j, int Vsize, std::vector<int> & temp_path);
     std::vector<int> minDistance(double dist[], int status[], int V);
-    void setTerminals(std::vector<std::vector<int> > t);
-    void setterminals(std::vector<int> t);
+    void setTerminals(const std::vector<std::vector<int> >& t);
+    void setterminals(const std::vector<int>& t);
     std::vector<std::vector<std::pair<int,int> > > returnPath();
     void InitialSrcDest(std::vector<int> & temp_src, std::vector<int> & temp_dest, std::vector<int> &pin_access);
     void clearPath();

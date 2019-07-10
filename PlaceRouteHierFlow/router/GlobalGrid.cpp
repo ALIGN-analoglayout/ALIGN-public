@@ -4,27 +4,27 @@ GlobalGrid::GlobalGrid(){
 
 }
 
-GlobalGrid::GlobalGrid(const GlobalGrid& other) {
-   this->x_unit         =other.x_unit;
-   this->y_unit         =other.y_unit;
-   this->metal2tile     =other.metal2tile;
-   this->tile2metal     =other.tile2metal;
-   this->Start_index    =other.Start_index;
-   this->End_index      =other.End_index;
-   this->tiles_total    =other.tiles_total;
-   this->drc_info       =other.drc_info;
-   this->layerNo        =other.layerNo;
-   this->metalLayerNo   =other.metalLayerNo;
-   this->lowest_metal   =other.lowest_metal;
-   this->highest_metal  =other.highest_metal;
-   this->LL             =other.LL;
-   this->UR             =other.UR ;
-   this->XYmap          =other.XYmap;
-   this->YXmap          =other.YXmap;
-   this->XYSet          =other.XYSet;
-   this->YXSet          =other.YXSet;
-   this->maxXidx        =other.maxXidx;
-   this->maxYidx        =other.maxYidx;
+GlobalGrid::GlobalGrid(const GlobalGrid& other):x_unit(other.x_unit), y_unit(other.y_unit), metal2tile(other.metal2tile), tile2metal(other.tile2metal), Start_index(other.Start_index), End_index(other.End_index), tiles_total(other.tiles_total), drc_info(other.drc_info), layerNo(other.layerNo), metalLayerNo(other.metalLayerNo), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), LL(other.LL), UR(other.UR), XYmap(other.XYmap), YXmap(other.YXmap), XYSet(other.XYSet), YXSet(other.YXSet), maxXidx(other.maxXidx), maxYidx(other.maxYidx) {
+   ////this->x_unit         =other.x_unit;
+   //this->y_unit         =other.y_unit;
+   //this->metal2tile     =other.metal2tile;
+   //this->tile2metal     =other.tile2metal;
+   //this->Start_index    =other.Start_index;
+   //this->End_index      =other.End_index;
+   //this->tiles_total    =other.tiles_total;
+   //this->drc_info       =other.drc_info;
+   //this->layerNo        =other.layerNo;
+   //this->metalLayerNo   =other.metalLayerNo;
+   //this->lowest_metal   =other.lowest_metal;
+   //this->highest_metal  =other.highest_metal;
+   //this->LL             =other.LL;
+   //this->UR             =other.UR ;
+   //this->XYmap          =other.XYmap;
+   //this->YXmap          =other.YXmap;
+   //this->XYSet          =other.XYSet;
+   //this->YXSet          =other.YXSet;
+   //this->maxXidx        =other.maxXidx;
+   //this->maxYidx        =other.maxYidx;
 }
 
 GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, int Hmetal, int tileLayerNo, int scale) {
