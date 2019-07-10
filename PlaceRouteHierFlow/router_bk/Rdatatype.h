@@ -59,25 +59,6 @@ struct contact {
   point placedCenter;
 }; // structure of contact
 
-struct tileEdge{
-  int next;
-  int capacity;
-};
-
-struct tile{
-  int x=-1;
-  int y=-1;
-  int width;
-  int height;
-  std::vector<int> metal;
-  int tileLayer=-1;
-  int index=-1;
-  int Yidx=-1;
-  int Xidx=-1;
-  std::vector<tileEdge> north,south,east,west,down,up;
-  //int power; // i is vdd, 0 is gnd;
-};
-
 struct vertex{
   int x=-1;
   int y=-1;
@@ -137,12 +118,6 @@ struct Candidate{
   int TotMetalWeightByCa;
   int valIdx;
   bool chosen=false;
-};
-
-struct SteinerTree{
-  std::vector<std::pair<int,int> > path; //index of edges in graph
-  int valIdx;
-  int sym_val_Idx = -1;
 };
 
 //struct Node{
@@ -217,20 +192,11 @@ struct Net{
   bool shielding=false; // shielding constraint
   bool sink2Terminal=false; // if connected to terminal , duplicate?
   int symCounterpart=-1; // symmetry const
-  int global_sym = -1;
-  int global_center = -1;
-  bool sym_H; //if 1 H, else V
-  int center; //symmetry center;
   int iter2SNetLsit=-1; // iterator to the list of symmetry nets
   std::vector<connectNode> connected; // list of connected components
   std::string priority=""; // critical net constraint			
   std::vector<Metal> path_metal;
   std::vector<Via> path_via;
-  std::vector<SteinerTree> STs;
-  std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
-  std::vector<int> terminals;
-  std::vector<std::vector<int> > connectedTile;
-  int STindex = -1;
   //void display();
 };
 
@@ -348,26 +314,6 @@ struct pointYXComp {
   }
 };
 
-struct tileComp {
-  bool operator() (const tile& lhs, const tile& rhs) const
-  {
-    if(lhs.x==rhs.x) {
-      if(lhs.y==rhs.y){
-           if(lhs.index==rhs.index){
-               return lhs.metal[0]<rhs.metal[0];
-             }else{
-               return lhs.index<rhs.index;
-             }
-        }else{
-           return lhs.y<rhs.y;
-        }
-      
-    } else {
-      return lhs.x<rhs.x;
-    }
-  }
-};
-
 struct SinkDataComp {
   bool operator() (const SinkData& lhs, const SinkData& rhs) const
    {
@@ -438,16 +384,12 @@ struct MetalComp {
     }
 
 };
-struct pairComp {
-    bool operator() (const std::pair<int,int>& lhs, const std::pair<int,int>& rhs) const
-   {
-      if(lhs.first==rhs.first){
-          return lhs.second<rhs.second;
-        }else{
-          return lhs.first<rhs.first;
-        }
-   }
-};
+//struct SinkDataYComp {
+//  bool operator() (const SinkData& lhs, const SinkData& rhs) const
+//   {
+//      return lhs.coord[0].y<rhs.coord[0].y;
+//   }
+//};
 
 
 

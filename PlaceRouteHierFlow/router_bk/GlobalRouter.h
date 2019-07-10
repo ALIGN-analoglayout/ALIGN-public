@@ -31,20 +31,18 @@
 //#include "lp_explicit.h"
 //}
 
-// wbxu: 20190708 the following codes are to enable ILP to choose candidates
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//}
+extern "C"
+{
+#include <stdio.h>
+#include "lp_lib.h"
+}
 
 
 class GlobalRouter : public RawRouter {
  
   friend class Grid;
   friend class DetailRouter;
-  friend class GcellDetailRouter;
-
+  
   private:
     struct IntPairComp {
       bool operator() (const std::pair<int,int>& lhs, const std::pair<int,int>& rhs) const
@@ -59,7 +57,6 @@ class GlobalRouter : public RawRouter {
     struct valInfo {
       int netIter;
       int segIter;
-      int STiter;
       int candIter;
       int valIter;
     };
@@ -73,9 +70,7 @@ class GlobalRouter : public RawRouter {
     char cwd[PATH_MAX];
     int NumOfVar;
     int SlackCounter;
-    // wbxu: 20190708 the following codes are to enable ILP to choose candidates
-    //lprec *lp;//Data structure for lp_solve
-    // wbxu-end
+    lprec *lp;//Data structure for lp_solve
     std::vector<std::vector<RouterDB::SegPiece> > MetalPieces, ViaPieces;
     std::vector<valInfo> ValArray;
     std::vector<slackInfo>  SlackArray;

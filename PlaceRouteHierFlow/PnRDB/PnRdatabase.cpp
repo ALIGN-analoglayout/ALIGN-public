@@ -3050,6 +3050,7 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
              }
              //added one nodes to the class
              if(!ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
+             else{std::cout<<"Finished reading contraint file"<<std::endl;}
              
              hierTree.push_back(temp_node);
              temp_node = clear_node;
@@ -3209,17 +3210,14 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     //update hiear tree here for the class Nodes.
     for(int i=0;i<hierTree.size();i++){
         for(int j=0;j<hierTree.size();j++){
-            for(int k=0;k<hierTree[i].Blocks.size();k++)
-                if(hierTree[i].Blocks[k].instance.back().master.compare(hierTree[j].name)==0){
-                   hierTree[i].Blocks[k].child = j;
-                   
+            for(int k=0;k<hierTree[j].Blocks.size();k++)
+                if(hierTree[j].Blocks[k].instance.back().master.compare(hierTree[i].name)==0){
+                   hierTree[j].Blocks[k].child = i;
                    int parent_found = 0;
-                   for(int p=0;p<hierTree[j].parent.size();p++){
-                       if(hierTree[j].parent[p] == i){parent_found=1;} 
+                   for(int p=0;p<hierTree[i].parent.size();p++){
+                       if(hierTree[i].parent[p] == j){parent_found=1;} 
                       }
-                   if(parent_found==0){hierTree[j].parent.push_back(i);}
-                   
-                   //hierTree[j].parent.push_back(i);
+                   if(parent_found==0){hierTree[i].parent.push_back(j);}                   
                   }
             }
         if(hierTree[i].name.compare(topcell)==0){
@@ -3258,6 +3256,8 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     for(int i=0;i<hierTree.size();i++){
     //cout<<"hierTree node "<<i<<endl;
     if(!MergeLEFMapData(hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<hierTree[i].name<<endl;
+      }else{
+      std::cout<<"Finished merge lef data"<<std::endl;
       }
       }
   // wbxu: following lines need modifications to reflect changes of block instance vector
@@ -5041,6 +5041,28 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_i
     return false;
 }
 
+bool
+addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, PnRDB::Drc_info& drc_info, int unit) {
+
+    int x[5], y[5];
+    assignBoxPoints (x, y, Contact.placedBox, unit);
+    json bound0;
+    bound0["type"] = "boundary";
+    bound0["layer"] = stoi(drc_info.MaskID_Metal[drc_info.Metalmap[Contact.metal]]);
+    bound0["datatype"] = 0;
+    json xy = json::array();
+    for (size_t i = 0; i < 5; i++) {
+	 xy.push_back (x[i]);
+	 xy.push_back (y[i]);
+       }
+    bound0["xy"] = xy; 
+    jsonElements.push_back (bound0);
+
+
+}
+
+
+
 void
 addOABoundaries (json& jsonElements, int width, int height) {
   int x[5],y[5];
@@ -5068,6 +5090,8 @@ addOABoundaries (json& jsonElements, int width, int height) {
 //       endel
 
 }
+
+
 
 void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info, double unit) {
     int x[5], y[5];
@@ -5264,6 +5288,14 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     if (includeBlock) {
 	int bOrient;
+   
+        //for(int i = 0;i < node.Blocks.size(); i++){
+        //    //int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
+        //    for( int j=0;j<node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).interMetals.size();j++){
+        //         addContactBoundaries(jsonElements, node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).interMetals[j], drc_info, unitScale);
+        //       }
+        //   }
+
 	for (int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 

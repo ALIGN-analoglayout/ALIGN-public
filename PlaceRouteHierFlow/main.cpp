@@ -161,6 +161,20 @@ int main(int argc, char** argv ){
 
       Router curr_route;
 
+      #ifdef GROUTER
+      std::cout<<"Starting Gcell Global Routing"<<std::endl;
+      // Gcell Global Routing
+      curr_route.RouteWork(4, current_node, drcInfo, 0, 6, binary_directory);
+      std::cout<<"Ending Gcell Global Routing"<<std::endl;
+
+      std::cout<<"Starting Gcell Detail Routing"<<std::endl;
+      curr_route.RouteWork(5, current_node, drcInfo, 0, 6, binary_directory);
+      DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
+      std::cout<<"Ending Gcell Detail Routing"<<std::endl;
+      #endif
+      #ifndef GROUTER      
+      // wbxu: The following codes are for old version of global router
+      //
       // Global Routing
 
       curr_route.RouteWork(0, current_node, drcInfo, 1, 6, binary_directory);
@@ -169,7 +183,9 @@ int main(int argc, char** argv ){
 
       //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_GR", drcInfo);
       DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
-      DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
+      // wbxu: the following line is used to write global route results for Intel router
+      // Old version of global router should be used.
+      //DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
 
       // Detail Routing
       std::cout<<"Checkpoint : detail route"<<std::endl;
@@ -202,6 +218,7 @@ int main(int argc, char** argv ){
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
       // Update node
+      #endif
       DB.CheckinHierNode(idx, current_node);
       //return 0;
     }

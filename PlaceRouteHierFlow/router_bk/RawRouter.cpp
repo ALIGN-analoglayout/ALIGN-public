@@ -44,7 +44,7 @@ std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterD
   std::set<RouterDB::SinkData, RouterDB::SinkData2Comp >::iterator itlowy, itupy, xity; 
   
 
-  //std::cout<<"set@@@@@set"<<std::endl;
+  std::cout<<"set@@@@@set"<<std::endl;
   RouterDB::SinkData temp_sink_up;
   RouterDB::SinkData temp_sink_low;
   temp_sink_up.coord.push_back(UR);
@@ -56,7 +56,7 @@ std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterD
   //temp_sink_low.iterNet=-2;
   itlowx = Set_x.lower_bound(temp_sink_low);
   
-  //std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
+  std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
 
   for(xitx=itlowx; xitx!=itupx; ++xitx){
       Set_y.insert(*xitx);
@@ -88,7 +88,7 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Findse
   std::set<RouterDB::SinkData, RouterDB::SinkData2Comp >::iterator itlowy, itupy, xity; 
   
 
-  //std::cout<<"set@@@@@set"<<std::endl;
+  std::cout<<"set@@@@@set"<<std::endl;
   RouterDB::SinkData temp_sink_up;
   RouterDB::SinkData temp_sink_low;
   temp_sink_up.coord.push_back(UR);
@@ -100,7 +100,7 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Findse
   //temp_sink_low.iterNet=-2;
   itlowx = Set_x.lower_bound(temp_sink_low);
   
-  //std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
+  std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
 
   for(xitx=itlowx; xitx!=itupx; ++xitx){
       Set_y.insert(*xitx);
@@ -113,7 +113,7 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Findse
   for(xity=itlowy;xity!=itupy;++xity){
        RouterDB::point temp_point;
        temp_point.x = xity->coord[0].x;
-       //std::cout<<"FindPlist in this area, x,y,metalIdx,iterNet "<< temp_point.x<<" "<<temp_point.y<<" "<<xity->metalIdx<<std::endl;
+       std::cout<<"FindPlist in this area, x,y,metalIdx,iterNet "<< temp_point.x<<" "<<temp_point.y<<" "<<xity->metalIdx<<std::endl;
        temp_point.y = xity->coord[0].y;
        //temp_point.iterNet = xity->iterNet;
        plist[xity->metalIdx].insert(temp_point);

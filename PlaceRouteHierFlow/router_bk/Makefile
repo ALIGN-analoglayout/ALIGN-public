@@ -1,7 +1,7 @@
 #lp_solve
 LDFLAGS="-Wl,--no-as-needed"
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
-LP_DIR?=/opt/lp_solve
+LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 
@@ -36,10 +36,10 @@ SOURCE_CODE_PnRDB = ../PnRDB
 ###
 ###GdsWriter.o:  $(SOURCE_GDSW)/GdsWriter.h $(SOURCE_GDSW)/String.h
 ###	$(CC) -c $(SOURCE_GDSW)/GdsWriter.cpp
-### 
+###
 
 #########2333333
-all: RawRouter.o Grid.o GlobalGrid.o Graph.o GlobalGraph.o GlobalRouter.o GcellGlobalRouter.o DetailRouter.o GcellDetailRouter.o PowerRouter.o Router.o
+all: RawRouter.o Grid.o Graph.o GlobalRouter.o DetailRouter.o PowerRouter.o Router.o
 	$(MAKE) -C FastSteinerUM
 
 RawRouter.o: $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h 
@@ -48,33 +48,20 @@ RawRouter.o: $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE
 Grid.o: $(SOURCE_CODE)/Grid.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h
 	$(CC) -c $(SOURCE_CODE)/Grid.cpp
 
-GlobalGrid.o: $(SOURCE_CODE)/GlobalGrid.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h
-	$(CC) -c $(SOURCE_CODE)/GlobalGrid.cpp
-
 Graph.o: $(SOURCE_CODE)/Graph.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h
 	$(CC) -c $(SOURCE_CODE)/Graph.cpp
-
-GlobalGraph.o: $(SOURCE_CODE)/GlobalGraph.h $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/GlobalGrid.h
-	$(CC) -c $(SOURCE_CODE)/GlobalGraph.cpp
 
 GlobalRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h $(SOURCE_CODE)/Graph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/GlobalRouter.h $(LIB_LP)/lp_lib.h $(SOURCE_LP)/lp_explicit.h
 	$(CC) -c $(SOURCE_CODE)/GlobalRouter.cpp
 
-GcellGlobalRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/GlobalGrid.h $(SOURCE_CODE)/GlobalGraph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/GcellGlobalRouter.h $(LIB_LP)/lp_lib.h $(SOURCE_LP)/lp_explicit.h
-	$(CC) -c $(SOURCE_CODE)/GcellGlobalRouter.cpp
-
-DetailRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h $(SOURCE_CODE)/Graph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/GlobalRouter.h $(SOURCE_CODE)/GcellGlobalRouter.h $(SOURCE_CODE)/DetailRouter.h
+DetailRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h $(SOURCE_CODE)/Graph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/GlobalRouter.h $(SOURCE_CODE)/DetailRouter.h
 	$(CC) -c $(SOURCE_CODE)/DetailRouter.cpp
-
-GcellDetailRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h $(SOURCE_CODE)/Graph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/GlobalRouter.h $(SOURCE_CODE)/GcellGlobalRouter.h $(SOURCE_CODE)/GcellDetailRouter.h $(SOURCE_CODE)/GlobalGrid.h $(SOURCE_CODE)/GlobalGraph.h 
-	$(CC) -c $(SOURCE_CODE)/GcellDetailRouter.cpp
 
 PowerRouter.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/Grid.h $(SOURCE_CODE)/Graph.h $(SOURCE_CODE)/RawRouter.h $(SOURCE_CODE)/DetailRouter.h $(SOURCE_CODE)/PowerRouter.h
 	$(CC) -c $(SOURCE_CODE)/PowerRouter.cpp 
 
-Router.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/GlobalRouter.h $(SOURCE_CODE)/DetailRouter.h $(SOURCE_CODE)/PowerRouter.h $(SOURCE_CODE)/GcellGlobalRouter.h
+Router.o: $(SOURCE_CODE_PnRDB)/datatype.h $(SOURCE_CODE)/Rdatatype.h $(SOURCE_CODE)/GlobalRouter.h $(SOURCE_CODE)/DetailRouter.h $(SOURCE_CODE)/PowerRouter.h
 	$(CC) -c $(SOURCE_CODE)/Router.cpp
-
 
 #########
 

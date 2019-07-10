@@ -19,7 +19,7 @@ Capplacer_path=cap_placer
 Capplacer_objs=cap_placer/capplacer.o
 router_path=router
 placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
-router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o 
+router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o router/GlobalGrid.o router/GlobalGraph.o router/GcellGlobalRouter.o router/GcellDetailRouter.o
 
 all: subsystem main.o pnr_compiler
 

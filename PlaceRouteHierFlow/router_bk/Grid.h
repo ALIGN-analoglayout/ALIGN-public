@@ -2,9 +2,7 @@
 #define GRID_H_
 
 #include "Rdatatype.h"
-#include "GlobalGrid.h"
 #include "../PnRDB/datatype.h"
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,7 +14,6 @@
 class Grid {
   
   friend class Graph;
-  friend class GlobalGrid;
 
   private:
     std::map<int, int> total2graph; // mapping from total to graph vertices
@@ -52,10 +49,8 @@ class Grid {
     Grid(const Grid& other);
     Grid& operator= (const Grid& other);
     Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale);
-    void CreateGridData();
-    Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector<RouterDB::Metal>& glb_path, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset);
-    Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale);
 
+    Grid(std::vector< std::vector<RouterDB::SinkData> >& SinkList, std::vector<RouterDB::Metal>& glb_path, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale, int offset);
     void ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<RouterDB::vertex>& new_vertices, std::map<int, int>& old2new, std::map<int, int>& new2old, std::vector<int>& old_source, std::vector<int>& old_dest, std::vector<int>& new_source, std::vector<int>& new_dest, std::vector<int>& new_start, std::vector<int>& new_end, int LLx, int LLy, int URx, int URy, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& new_vertices_map );
     void CreateGridCoreFunc(int Lmetal, int Hmetal, bool VFlag, RouterDB::point AreaLL, RouterDB::point AreaUR, std::vector<RouterDB::vertex>& fake_vertices_total, std::vector<int>& fake_Start_index_metal_vertices, std::vector<int>& fake_End_index_metal_vertices, std::vector<std::map<RouterDB::point, int, RouterDB::pointXYComp> >& fake_vertices_total_map);
     void GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, int offset, RouterDB::point& gLL, RouterDB::point& gUR, int Lmetal, int Hmetal);
@@ -96,7 +91,6 @@ class Grid {
     void InactivePlist(std::vector<std::vector<RouterDB::DetailPoint> > &plist);
     //void InactivePointlist(std::vector<std::vector<RouterDB::point> > &plist);
     void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
-    void ActivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     //void inactive_node_global();
     //void inacitve_node_detail();
     //active or inactive node?

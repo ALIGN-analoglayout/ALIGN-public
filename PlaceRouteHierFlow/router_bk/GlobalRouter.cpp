@@ -1,13 +1,11 @@
 #include "GlobalRouter.h"
-// wbxu: 20190708 the following codes are to enable ILP to choose candidates
-//extern "C"
-//{
-//#include <stdio.h>
-//#include "lp_lib.h"
-//#define LPSOLVEAPIFROMLIBDEF
-//#include "lp_explicit.h"
-//}
-// wbxu-end
+extern "C"
+{
+#include <stdio.h>
+#include "lp_lib.h"
+#define LPSOLVEAPIFROMLIBDEF
+#include "lp_explicit.h"
+}
 
 GlobalRouter::GlobalRouter(){
 
@@ -85,21 +83,8 @@ for(int i=0;i<(int)this->Nets.size();i++) {
 //    //after this return path to Nets
 //    } 
 //
-
-  // wbxu: 20190708 the following codes is set to always choose the first candidate for each segment
-  for(int i=0;i<this->Nets.size();++i) {
-    for(int j=0;j<this->Nets.at(i).seg.size();++j) {
-      this->Nets.at(i).seg.at(j).candis.at(0).chosen=true;
-      this->Nets.at(i).seg.at(j).chosenCand=0;
-      std::cout<<"choose: "<<i<<" net "<<j<<" seg "<<0<<" cand "<<std::endl;
-    }
-  }
-  // wbxu-end
-  // wbxu: 20190708 the following codes are to use ILP to choose candidates
-  //int sb=250;
-  //ILPSolveRouting();
-  // wbxu-end 
-
+  int sb=250;
+  ILPSolveRouting();
 //  DesignRuleCheck();
 //  //LP solver
 //  LP_solver();
@@ -415,7 +400,6 @@ long int GlobalRouter::get_number(string str)
 
 };
 
-/*
 int GlobalRouter::ILPSolveRouting() {
   std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
   # if defined ERROR
@@ -571,7 +555,7 @@ int GlobalRouter::ILPSolveRouting() {
 
   // 6. Solve with lp
   set_minim(lp);
-  set_solutionlimit(lp, 10); // return the 3rd solution 
+  set_solutionlimit(lp, 10); /* return the 3rd solution */
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   print_lp(lp);
 
@@ -611,7 +595,7 @@ int GlobalRouter::ILPSolveRouting() {
   delete_lp(lp);
   return ret;
 } 
-*/
+
 
 void GlobalRouter::CreateMetalViaPieces() {
   //MetalPieces.clear(); ViaPieces.clear();
@@ -752,8 +736,6 @@ void GlobalRouter::CreateMetalViaPieces() {
   }
 }
 
-// wbxu: 20190708 the following codes are to use ILP to choose candidates
-/*
 void GlobalRouter::ViaSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& checked) {
   int val=0;
   int Midx, MLLx, MLLy, MURx, MURy, Mspc, ALLx, ALLy, AURx, AURy;
@@ -784,9 +766,7 @@ void GlobalRouter::ViaSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& c
   }
   std::cout<<"Quit vai check\n";
 }
-*/
-// wbxu: 20190708 the following codes are to use ILP to choose candidates
-/*
+
 void GlobalRouter::MetalSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& checked) {
   //slackInfo tmpSI;
   int val=0;
@@ -841,9 +821,7 @@ void GlobalRouter::MetalSpacingCheck(std::set<std::pair<int,int>, IntPairComp >&
     }
   }
 }
-*/
-// wbxu: 20190708 the following codes are to use ILP to choose candidates
-/*
+
 void GlobalRouter::ViaSpacingCheckFunc(std::set< std::pair<int,int>, IntPairComp >& checked, int val, int Midx, int ALLx, int ALLy, int AURx, int AURy, int h, int i, int j) {
   slackInfo tmpSI;
   std::pair<int,int> tpair;
@@ -1005,7 +983,6 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
     }
   }
 }
-*/
 
 //added by yg
 void GlobalRouter::UpdateCandidate(std::vector<std::vector<RouterDB::Metal> >& phsical_path, int i, int j){
