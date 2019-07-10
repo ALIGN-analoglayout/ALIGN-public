@@ -1,10 +1,15 @@
 import json
 import argparse
+import sys
+import datetime
+import itertools
+
+sys.path.append('./Cell_Fabric_FinFET__Mock')
+
 import gen_gds_json
 import fabric_NMOS
 import pattern_generator
-import datetime 
-import itertools
+
 def test_fabric_Dp():
     fin_u = 12
     fin = 12
@@ -21,7 +26,7 @@ def test_fabric_Dp():
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
 
-    uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
+    uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
    
     for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
         Routing = [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
