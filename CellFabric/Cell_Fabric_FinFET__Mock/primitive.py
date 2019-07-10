@@ -3,13 +3,14 @@ from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 
-class CanvasNMOS(DefaultCanvas):    
-    def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        p = Pdk().load('../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json') 
-        super().__init__(p)                                           
+class CanvasNMOS(DefaultCanvas):
+    def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
+                  pdkfile='../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json'):
+        p = Pdk().load(pdkfile)
+        super().__init__(p)
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 
-######### Derived Parameters ############        
+######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
         self.finsPerUnitCell = fin + 2*finDummy
        # Should be a multiple of 4 for maximum utilization
