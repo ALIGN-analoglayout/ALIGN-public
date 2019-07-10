@@ -2226,6 +2226,7 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
   std::cout<<"AddConnectedContactToNodeNet net "<<net_index<<std::endl;
   HierNode.Nets.at(net_index).connectedContact.clear();
   HierNode.Nets.at(net_index).connectedContact.resize( HierNode.Nets.at(net_index).connected.size() );
+  int currM=0;
   for(int i=0;i<net.seg.size();i++){ // for each net segment
     std::cout<<"seg "<<i<<std::endl;
     int sel=net.seg.at(i).chosenCand;
@@ -2237,8 +2238,8 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
     int smetal=net.seg.at(i).candis.at(sel).metals.at(0).MetalIdx;
     int sx=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).x;
     int sy=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).y;
-    std::cout<<"\tsource type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" "<<std::endl;
-    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy);
+    std::cout<<"\tsource type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
     // 2. segment dest
     stype=net.seg.at(i).destType.type;
     siter=net.seg.at(i).destType.iter;
@@ -2246,12 +2247,16 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
     smetal=net.seg.at(i).candis.at(sel).metals.back().MetalIdx;
     sx=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().x;
     sy=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().y;
-    std::cout<<"\tdest type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" "<<std::endl;
-    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy);
+    currM+=(net.seg.at(i).candis.at(sel).metals.size()-1);
+    std::cout<<"\tdest type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
+    ++currM;
   }
 }
 
-void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy) {
+void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy, int mIdx) {
+    PnRDB::globalContact tmpC;
+    tmpC.metalIdx=mIdx;
     if(stype==RouterDB::BLOCK) { // block pin
       int pos=-1;
       for(int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
@@ -2265,7 +2270,9 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
         for(std::vector<PnRDB::contact>::iterator cit=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.begin();cit!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end(); ++cit) {
           if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
           if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
-            HierNode.Nets.at(net_index).connectedContact.at(pos)=(*cit); mark=true; break;
+            tmpC.conTact=(*cit);
+            HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
+            mark=true; break;
           } else {
             if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
               dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
@@ -2281,7 +2288,10 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
             }
           }
         }
-        if(!mark and target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {HierNode.Nets.at(net_index).connectedContact.at(pos)=(*target);}
+        if(!mark and target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {
+          tmpC.conTact=(*target);
+          HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
+        }
       }
     } else if (stype==RouterDB::TERMINAL and this->isTop ) {
       int pos=-1;
@@ -2296,7 +2306,9 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
         for(std::vector<PnRDB::contact>::iterator cit=HierNode.Terminals.at(siter).termContacts.begin(); cit!=HierNode.Terminals.at(siter).termContacts.end(); ++cit) {
           if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
           if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
-            HierNode.Nets.at(net_index).connectedContact.at(pos)=(*cit); mark=true; break;
+            tmpC.conTact=(*cit);
+            HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
+            mark=true; break;
           } else {
             if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
               dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
@@ -2312,7 +2324,10 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
             }
           }
         }
-        if(!mark and target!=HierNode.Terminals.at(siter).termContacts.end()) {HierNode.Nets.at(net_index).connectedContact.at(pos)=(*target);}
+        if(!mark and target!=HierNode.Terminals.at(siter).termContacts.end()) {
+          tmpC.conTact=(*target);
+          HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
+        }
       }
     } else {
       std::cout<<"Router-Error: incorrect source type\n";

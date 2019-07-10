@@ -3779,37 +3779,51 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
   int i=0;
   for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
     for(vector<PnRDB::Metal>::iterator it2=it->path_metal.begin(); it2!=it->path_metal.end(); ++it2) {
-      if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
-      if(i!=0) {OF2<<","<<std::endl;}
+      //if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
+      //if(i!=0) {OF2<<","<<std::endl;}
       i++;
       OF2<<"    { \"layer\": \""<<DRC_info.Metal_info.at(it2->MetalIdx).name;
       OF2<<"\", \"net_name\": \""<<it->name<<"\", \"width\": "<<it2->width;
-      OF2<<", \"rect\": [ "<<it2->LinePoint.at(0).x<<", "<<it2->LinePoint.at(0).y<<", "<<it2->LinePoint.at(1).x<<", "<<it2->LinePoint.at(1).y<<"] }";
-      //OF2<<"] }";
+      OF2<<", \"rect\": [ "<<it2->LinePoint.at(0).x<<", "<<it2->LinePoint.at(0).y<<", "<<it2->LinePoint.at(1).x<<", "<<it2->LinePoint.at(1).y<<"],"<<std::endl;
+      OF2<<"      \"connected_pins\": ["<<std::endl;
+      int mIdx=it2-it->path_metal.begin();
+      for(int k=0;k<it->connectedContact.size();++k) {
+        if(it->connectedContact.at(k).metalIdx!=mIdx) {continue;}
+        if(it->connected.at(k).type==PnRDB::Block) {
+          OF2<<"          { "<<"\"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+          //OF2<<"          { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+        } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+          OF2<<"          { "<<"\"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+          //OF2<<"          { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+        } else {continue;}
+        OF2<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] },"<<endl;
+        //OF2<<", metalIdx: "<<it->connectedContact.at(k).metalIdx<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] },"<<endl;
+      }
+      OF2<<"      ]"<<std::endl;
+      OF2<<"    },"<<endl;
       //if(it!=node.Nets.end()-1 or it2!=it->segments.end()-1) {OF2<<",";}
       //OF2<<endl;
     }
-    //OF2<<endl;
   }
-  OF2<<std::endl<<"  ],"<<endl;
-  OF2<<"  \"rects\": ["<<endl;
-  for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
-    if(node.isTop) {
-      if(it->connected.size()<=1) {continue;}
-    } else {
-      if(!it->sink2Terminal and it->connected.size()<=1) {continue;}
-      if(it->sink2Terminal and it->connected.size()<=2) {continue;}
-    }
-    for(int k=0;k<it->connectedContact.size();++k) {
-      if(it->connected.at(k).type==PnRDB::Block) {
-        OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
-      } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
-        OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
-      } else {continue;}
-      OF2<<", \"layer\": \""<<it->connectedContact.at(k).metal<<"\", \"rect\": ["<<it->connectedContact.at(k).placedBox.LL.x<<", "<<it->connectedContact.at(k).placedBox.LL.y<<", "<<it->connectedContact.at(k).placedBox.UR.x<<", "<<it->connectedContact.at(k).placedBox.UR.y<<"] },"<<endl;
-    }
-  }
-  OF2<<"  ]"<<endl<<"}";
+  OF2<<std::endl<<"  ]"<<endl;
+  //OF2<<"  \"rects\": ["<<endl;
+  //for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+  //  if(node.isTop) {
+  //    if(it->connected.size()<=1) {continue;}
+  //  } else {
+  //    if(!it->sink2Terminal and it->connected.size()<=1) {continue;}
+  //    if(it->sink2Terminal and it->connected.size()<=2) {continue;}
+  //  }
+  //  for(int k=0;k<it->connectedContact.size();++k) {
+  //    if(it->connected.at(k).type==PnRDB::Block) {
+  //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+  //    } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+  //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+  //    } else {continue;}
+  //    OF2<<", metalIdx: "<<it->connectedContact.at(k).metalIdx<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] },"<<endl;
+  //  }
+  //}
+  OF2<<endl<<"}";
   OF2.close();
 }
 
