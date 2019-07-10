@@ -9,13 +9,12 @@ from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(DefaultCanvas):
 
-    
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json') 
+        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
         super().__init__(p)
         assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
 
-######### Derived Parameters ############        
+######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
         self.finsPerUnitCell = fin + 2*finDummy
         # Must be a multiple of 2
@@ -75,7 +74,7 @@ class CanvasNMOS(DefaultCanvas):
                                     h_clg=CenterLineGrid(),
                                     v_clg=self.m1.clg))
 
-        self.v0.h_clg.addCenterLine( 0,                 p['Feol']['v0Width'], False)       
+        self.v0.h_clg.addCenterLine( 0,                 p['Feol']['v0Width'], False)
         for i in range(activeWidth//(2* p['M2']['Pitch'])):
             self.v0.h_clg.addCenterLine( v0x_offset+i*  p['Feol']['v0Pitch'],    p['Feol']['v0Width'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['Feol']['v0Width'], False)
@@ -94,7 +93,7 @@ class UnitCell(CanvasNMOS):
         fin = self.finsPerUnitCell
         h = self.m2PerUnitCell
 
-        SA, SB, DA, DB, GA, GB = ([] for i in range(6))       
+        SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         for k in range(x_cells//2):
             (p,q) = (gateDummy,gu+gateDummy) if k%2 == 0 else (gu+gateDummy,gateDummy)
             (lSa,lSb) = (2*k*gu+p,2*k*gu+q)
@@ -108,17 +107,16 @@ class UnitCell(CanvasNMOS):
             DB.append(lDb)
 
         (S,D,G) = (SA+SB,DA+DB,GA+GB)
-               
-        self.addWire( self.active, 'active', None, y, (x,1), (x+1,-1)) 
-        self.addWire( self.RVT,    'RVT',    None, y, (x, 1), (x+1, -1)) 
- 
+
+        self.addWire( self.active, 'active', None, y, (x,1), (x+1,-1))
+        self.addWire( self.RVT,    'RVT',    None, y, (x, 1), (x+1, -1))
+
         for i in range(fin):
             self.addWire( self.fin, 'fin', None, fin*y+i, x, x+1)
 
-        #####   Gate Placement   #####                       
-        for i in range(gu):        
+        #####   Gate Placement   #####
+        for i in range(gu):
             self.addWire( self.pl, 'g', None, gu*x+i,   (y,0), (y,1))
-            
 
         CcM3 = (min(S)+max(S))//2
         Routing = [('SA', SA if y%2==0 else SB, 1, CcM3-1), ('DA', DA if y%2==0 else DB, 2, CcM3-2), ('SB', SB if y%2==0 else SA, 3, CcM3+1), ('DB', DB if y%2==0 else DA, 4, CcM3+2), ('G', G, 5, CcM3)]
@@ -126,35 +124,35 @@ class UnitCell(CanvasNMOS):
             grid_y0 = y*h + finDummy//2-1
             grid_y1 = grid_y0+(fin_u+2)//2
             for i in G:
-                self.addWire( self.m1, '_', None, i, (grid_y0, -1), (grid_y1, 1))
+                self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
             for i in S+D:
                 SD = 'S' if i in S else 'D'
-                self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1)) 
+                self.addWire( self.m1, SD, None, i, (grid_y0, -1), (grid_y1, 1))
                 for j in range(1,self.v0.h_clg.n):
                     self.addVia( self.v0, 'v0', None, i, (y, j))
 
-            #pin = 'VDD' if y%2==0 else 'GND'    
+            #pin = 'VDD' if y%2==0 else 'GND'
             #self.addWire( self.m2, pin, pin, h*(y+1), (0, 1), (x_cells*gu, -1))
-                                 
+
             for (pin, contact, track, m3route) in Routing:
-                self.addWire( self.m2,'_', pin, y*h+track, (min(contact), -1), (max(contact), 1))
+                self.addWire( self.m2, pin, pin, y*h+track, (min(contact), -1), (max(contact), 1))
                 if y_cells > 1:
-                   self.addWire( self.m3,'_', None, m3route, (track, -1), (y*h+track, 1))
-                   self.addVia( self.v2,'_', None, m3route, track)
-                   self.addVia( self.v2,'_', None, m3route, y*h+track)
+                   self.addWire( self.m3, None, None, m3route, (track, -1), (y*h+track, 1))
+                   self.addVia( self.v2, None, None, m3route, track)
+                   self.addVia( self.v2, None, None, m3route, y*h+track)
 
                 for i in contact:
-                    self.addVia( self.v1, '_', None, i, y*h + track) 
-   
+                    self.addVia( self.v1, None, None, i, y*h + track)
+
         #####   Nselect Placement   #####
-        if x == x_cells -1 and y == y_cells -1:      
-            self.addRegion( self.nselect, 'ns', None, (0, -1), -1, ((1+x)*gu, -1), (y+1)*fin+1)                                                
+        if x == x_cells -1 and y == y_cells -1:
+            self.addRegion( self.nselect, 'ns', None, (0, -1), -1, ((1+x)*gu, -1), (y+1)*fin+1)
             #self.addWire( self.m2, 'GND', 'GND', 0, (0, 1), (x_cells*gu, -1))
 
-                                      
-                                   
+
+
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
     parser.add_argument( "-b", "--block_name", type=str, required=True)
     parser.add_argument( "-n", "--nfin", type=int, required=True)
