@@ -330,7 +330,7 @@ void GcellDetailRouter::create_detailrouter(){
        Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
 //////QQQ1 end of grid creation
        //grid.CheckVerticesTotal();
-       grid.CreateGridData();
+       //grid.CreateGridData();
        //collect pins & collect metal path
        std::cout<<"starting check find pin"<<std::endl;
        RouterDB::point gridll=grid.GetGridLL();
@@ -353,7 +353,7 @@ void GcellDetailRouter::create_detailrouter(){
        int sym_flag = 0;
 
        std::cout<<"Gcell Detail Router Check point 7"<<std::endl;
-       CheckTile(Nets[i], Gcell);
+       //CheckTile(Nets[i], Gcell);
 
        if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < Nets.size()-1){       
            sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
@@ -2358,9 +2358,8 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
         URy=cit->UpperMetalRect.placedUR.y;
         //std::cout<<"check point createplistBlocks 2 "<<mIdx<<std::endl;
 
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
+        if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+           
             Contacts.push_back(cit->UpperMetalRect);
           }
 
@@ -2406,9 +2405,8 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
         URy=pit->UpperMetalRect.placedUR.y;
         //std::cout<<"check point createplistBlocks 5 "<<mIdx<<std::endl;
         
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
+        if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+           
             Contacts.push_back(pit->UpperMetalRect);
           }
 
@@ -2572,7 +2570,181 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
           ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
          }
      }
+
+  std::vector<RouterDB::contact> temp_via_contact;
+  GetPhsical_Via_contacts(physical_path, temp_via_contact);
+
+  for(int i=0;i<temp_via_contact.size();i++){
+
+          mIdx = temp_via_contact[i].metal;
+          LLx = temp_via_contact[i].placedLL.x;
+          LLy = temp_via_contact[i].placedLL.y;
+          URx = temp_via_contact[i].placedUR.x;
+          URy = temp_via_contact[i].placedUR.y;
+          ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+      
+     }
+
+
   
+
+};
+
+void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact){
+
+
+  RouterDB::Via temp_via;
+  std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
+
+  for(int i=0;i<physical_path.size();i++){
+       
+      std::vector<RouterDB::Metal> temp_path = physical_path[i];
+
+      for(int j=0;j<temp_path.size();j++){
+
+           int temp_metal_index = temp_path[j].MetalIdx;
+           
+           for(int h=0;h<temp_path.size();h++){
+
+               int next_metal_index = temp_path[h].MetalIdx;
+
+               if(j==h){continue;}
+
+               if(temp_metal_index == next_metal_index -1){
+                
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[0].y){
+                  temp_via.position = temp_path[j].LinePoint[0];
+                  temp_via.model_index = temp_metal_index;
+
+                  //ViaRect
+                  temp_via.ViaRect.metal = temp_metal_index;
+                  temp_via.ViaRect.placedCenter = temp_via.position;
+                  temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
+                  temp_via.ViaRect.placedLL.y = drc_info.Via_model[temp_via.model_index].ViaRect[0].y + temp_via.position.y;
+                  temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
+                  temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
+                  //LowerMetalRect
+                  temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
+                  temp_via.LowerMetalRect.placedCenter = temp_via.position;
+                  temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].LowerRect[0].y + temp_via.position.y;
+                  temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
+                  //UpperMetalRect
+                  temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
+                  temp_via.UpperMetalRect.placedCenter = temp_via.position;
+                  temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].UpperRect[0].y + temp_via.position.y;
+                  temp_via.UpperMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].UpperRect[1].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].UpperRect[1].y + temp_via.position.y;
+
+                  set_via.insert(temp_via);
+                  }
+
+                if(temp_path[j].LinePoint[0].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[0].y==temp_path[h].LinePoint[1].y){
+                  temp_via.position = temp_path[j].LinePoint[0];
+                  temp_via.model_index = temp_metal_index;
+
+                  //ViaRect
+                  temp_via.ViaRect.metal = temp_metal_index;
+                  temp_via.ViaRect.placedCenter = temp_via.position;
+                  temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
+                  temp_via.ViaRect.placedLL.y = drc_info.Via_model[temp_via.model_index].ViaRect[0].y + temp_via.position.y;
+                  temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
+                  temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
+                  //LowerMetalRect
+                  temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
+                  temp_via.LowerMetalRect.placedCenter = temp_via.position;
+                  temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].LowerRect[0].y + temp_via.position.y;
+                  temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
+                  //UpperMetalRect
+                  temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
+                  temp_via.UpperMetalRect.placedCenter = temp_via.position;
+                  temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].UpperRect[0].y + temp_via.position.y;
+                  temp_via.UpperMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].UpperRect[1].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].UpperRect[1].y + temp_via.position.y;
+
+                  set_via.insert(temp_via);
+                  }
+
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[0].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[0].y){
+                  temp_via.position = temp_path[j].LinePoint[1];
+                  temp_via.model_index = temp_metal_index;
+
+                  //ViaRect
+                  temp_via.ViaRect.metal = temp_metal_index;
+                  temp_via.ViaRect.placedCenter = temp_via.position;
+                  temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
+                  temp_via.ViaRect.placedLL.y = drc_info.Via_model[temp_via.model_index].ViaRect[0].y + temp_via.position.y;
+                  temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
+                  temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
+                  //LowerMetalRect
+                  temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
+                  temp_via.LowerMetalRect.placedCenter = temp_via.position;
+                  temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].LowerRect[0].y + temp_via.position.y;
+                  temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
+                  //UpperMetalRect
+                  temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
+                  temp_via.UpperMetalRect.placedCenter = temp_via.position;
+                  temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].UpperRect[0].y + temp_via.position.y;
+                  temp_via.UpperMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].UpperRect[1].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].UpperRect[1].y + temp_via.position.y;
+
+                  set_via.insert(temp_via);
+                  }
+
+                if(temp_path[j].LinePoint[1].x==temp_path[h].LinePoint[1].x and temp_path[j].LinePoint[1].y==temp_path[h].LinePoint[1].y){
+                  temp_via.position = temp_path[j].LinePoint[1];
+                  temp_via.model_index = temp_metal_index;
+
+                  //ViaRect
+                  temp_via.ViaRect.metal = temp_metal_index;
+                  temp_via.ViaRect.placedCenter = temp_via.position;
+                  temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
+                  temp_via.ViaRect.placedLL.y = drc_info.Via_model[temp_via.model_index].ViaRect[0].y + temp_via.position.y;
+                  temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
+                  temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
+                  //LowerMetalRect
+                  temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
+                  temp_via.LowerMetalRect.placedCenter = temp_via.position;
+                  temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].LowerRect[0].y + temp_via.position.y;
+                  temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
+                  temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
+                  //UpperMetalRect
+                  temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
+                  temp_via.UpperMetalRect.placedCenter = temp_via.position;
+                  temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedLL.y = drc_info.Via_model[temp_via.model_index].UpperRect[0].y + temp_via.position.y;
+                  temp_via.UpperMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].UpperRect[1].x + temp_via.position.x;
+                  temp_via.UpperMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].UpperRect[1].y + temp_via.position.y;
+
+                  set_via.insert(temp_via);
+                  }                
+
+                }
+              }
+         }
+
+     }
+
+
+  std::set<RouterDB::Via, RouterDB::ViaComp>::iterator via_begin, via_end, via_it;
+  via_begin = set_via.begin();
+  via_end = set_via.end();
+
+  for(via_it=via_begin;via_it!=via_end;++via_it){
+      
+      temp_via_contact.push_back(via_it->UpperMetalRect);
+      temp_via_contact.push_back(via_it->LowerMetalRect);
+
+     }
 
 };
 
@@ -2593,7 +2765,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
       std::vector<std::vector<RouterDB::Metal> > physical_path;
       physical_path.push_back(Nets[k].path_metal); 
       GetPhsical_Metal(physical_path);
-
+      
       for(int i=0;i<physical_path.size();i++){
          for(int j=0;j<physical_path[i].size();j++){
              mIdx = physical_path[i][j].MetalIdx;
@@ -2610,6 +2782,24 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
 
             }
         }
+
+      std::vector<RouterDB::contact> temp_via_contact;
+      GetPhsical_Via_contacts(physical_path, temp_via_contact);
+      
+      for(int i=0;i<temp_via_contact.size();i++){
+
+           mIdx = temp_via_contact[i].metal;
+           LLx = temp_via_contact[i].placedLL.x;
+           LLy = temp_via_contact[i].placedLL.y;
+           URx = temp_via_contact[i].placedUR.x;
+           URy = temp_via_contact[i].placedUR.y;          
+
+           if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+                Contacts.push_back(temp_via_contact[i]);
+               } 
+        
+         }
+      
 
      }
     
