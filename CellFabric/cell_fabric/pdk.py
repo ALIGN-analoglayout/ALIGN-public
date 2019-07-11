@@ -137,3 +137,6 @@ class Pdk(object):
             if l.startswith('V'):
                 layer_stack.append( (l, tuple(info['Stack'])) )
         return layer_stack
+
+    def get_gds_map(self):
+        return {x: self.pdk[x]['LayerNo'] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x]}

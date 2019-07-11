@@ -1,27 +1,9 @@
 #!/usr/bin/python
 import re
 import json
-import argparse
 import datetime
 
-def translate_data( macro_name, exclude_pattern, data, timestamp=None):
-
-  gds_layer_tbl = { 
-                    "polycon" : 1,
-                    "fin" : 2, 	
-                    "poly" : 3, 	
-                    "active" : 4,	
-                    "nselect" : 5,
-                    "pselect" : 6,
-                    "M0"   : 10,
-                    "via0" : 11,
-                    "M1"   : 12,
-                    "via1" : 13,
-                    "M2"   : 14,
-                    "via2" : 15,
-                    "M3"   : 16,
-                    "bbox" : 50
-                  }
+def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
 
   def rect_to_boundary( r):
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
@@ -50,34 +32,24 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
   lib["bgnstr"] = structures
 
 
-  def genVia( via, m_under, m_over, via_rect, m_under_rect, m_over_rect):
-    nm = via_tbl[via]
+  def createViaSref(via, nm, layers):
 
     strct = {"time" : tme, "strname" : nm, "elements" : []}
 
-    strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[via], "datatype" : 0,
-                               "xy" : flat_rect_to_boundary( via_rect)})
-    strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[m_under], "datatype" : 0,
-                               "xy" : flat_rect_to_boundary( m_under_rect)})
-    strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[m_over], "datatype" : 0,
-                               "xy" :  flat_rect_to_boundary( m_over_rect)})
+    for layer, rect in layers.items():
+      strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[layer], "datatype" : 0,
+                                 "xy" : flat_rect_to_boundary( rect)})
 
     return strct
 
-  via_tbl = { "via1": "M2_M1_CDNS_543864435521", "via2": "M3_M2_CDNS_543864435520"}
-
-
-  structures.append( genVia( "via2", "M2", "M3",
-                             [-640,-640,640,640], [-1440,-640,1440,640], [-640,-1440,640,1440]))
-
-  structures.append( genVia( "via1", "M1", "M2",
-                             [-640,-640,640,640], [-640,-1440,640,1440], [-1440,-640,1440,640]))
+  for via, (gen_name, layers) in via_gen_tbl.items():
+    structures.append( createViaSref(via, gen_name, layers) )
 
   strct = {"time" : tme, "strname" : macro_name, "elements" : []}
   structures.append (strct)
-  
+
   def scale(x):
-    
+
     result = x*4
     if type(result) == float:
       print("-W- gen_gds_json:translate_data: Coord %s (%s) not integral" % (str(x),str(result)))
@@ -94,7 +66,7 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
   # non-vias
   for obj in data['terminals']:
-      if obj['layer'] in via_tbl: continue
+      if obj['layer'] in via_gen_tbl: continue
       if pat and pat.match( obj['netName']): continue
 
       strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[obj['layer']],
@@ -103,38 +75,23 @@ def translate_data( macro_name, exclude_pattern, data, timestamp=None):
 
   # vias 
   for obj in data['terminals']:
-      if obj['layer'] not in via_tbl: continue
+      if obj['layer'] not in via_gen_tbl: continue
       if pat and pat.match( obj['netName']): continue
 
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
 
-      strct["elements"].append ({"type": "sref", "sname" : via_tbl[obj['layer']], "xy" : [xc, yc]})
+      strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[obj['layer']][0], "xy" : [xc, yc]})
 
   strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'], "datatype" : 5,
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
 
   return top
 
-def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
-  json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, via_gen_tbl=None, timestamp=None):
 
-if __name__ == "__main__":
+  if via_gen_tbl is None:
+    via_gen_tbl = {}
 
-  parser = argparse.ArgumentParser( description="Convert design json to GDS JSON")
-
-  parser.add_argument( "-n", "--block_name", type=str, required=True)
-  parser.add_argument( "-j", "--json_file_name", type=str, required=True)
-  parser.add_argument( "-e", "--exclude_pattern", type=str, default='')
-
-  args = parser.parse_args()
-
-  ofile = open (args.block_name + ".gds.json", 'wt')
-
-  with open( args.json_file_name, "rt") as fp:
-    translate( args.block_name, args.exclude_pattern, fp, ofile, timestamp=datatime.now())
-
-
-
-
+  json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), gds_layer_tbl, via_gen_tbl, timestamp), ofile, indent=4)

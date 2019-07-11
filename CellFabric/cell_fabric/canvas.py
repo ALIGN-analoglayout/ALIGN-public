@@ -171,7 +171,7 @@ class Canvas:
                         else:
                             nm = c + nm
 
-    def __init__( self, pdk=None):
+    def __init__( self, pdk=None, gds_layer_map=None):
         self.pdk = pdk
         self.terminals = []
         self.postprocessor = PostProcessor()
@@ -179,8 +179,9 @@ class Canvas:
         self.trStack = [transformation.Transformation()]
         self.rd = None
         self.drc = None
-        self.layer_stack = [( "via1", ("M1", "M2")), 
+        self.layer_stack = [( "via1", ("M1", "M2")),
                             ( "via2", ("M3", "M2"))]
+        self.gds_layer_map = gds_layer_map
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))
@@ -219,13 +220,15 @@ class Canvas:
 
     def writeGDS(self, fp1, timestamp=None):
 
+        assert self.gds_layer_map is not None
+
         with io.StringIO() as fp0:
             self.writeJSON(fp0)
             contents = fp0.getvalue()
 
         with io.StringIO( contents) as fp0, \
              io.StringIO() as fp_tmp:
-            translate( 'foo', '', fp0, fp_tmp, timestamp=timestamp)
+            translate( 'foo', '', fp0, fp_tmp, self.gds_layer_map, timestamp=timestamp)
             contents2 = fp_tmp.getvalue()
 
         with io.StringIO( contents2) as fp0:

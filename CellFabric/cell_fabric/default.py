@@ -8,6 +8,7 @@ class DefaultCanvas(Canvas):
         super().__init__(pdk)
         assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
         self._initialize_layer_stack()
+        self.gds_layer_map = self.pdk.get_gds_map()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):
                 self._create_metal(layer, info)

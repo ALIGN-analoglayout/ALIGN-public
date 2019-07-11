@@ -3,42 +3,39 @@ import argparse
 import gen_gds_json
 import gen_lef
 import fabric_NMOS
+import pattern_generator
 from datetime import datetime
                                                            
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
     parser.add_argument( "-b", "--block_name", type=str, required=True)
+    parser.add_argument( "-u", "--height", type=int, required=False, default=12)
     parser.add_argument( "-n", "--nfin", type=int, required=True)
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
+    parser.add_argument( "-p", "--pattern", type=int, required=False, default=1)
     args = parser.parse_args()
-    fin_u = args.nfin
+    fin_u = 2*((args.nfin+1)//2)
+    fin = args.height
     x_cells = 2*args.Xcells
     y_cells = args.Ycells
+    pattern = args.pattern
     gate = 2
-    fin = 2*((fin_u+1)//2)
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
     gu = gate + 2*gateDummy
      ##### Routing
-    SA, SB, DA, DB, GA, GB = ([] for i in range(6))
-    for k in range(x_cells//2):
-        (p,q) = (gateDummy,gu+gateDummy) if k%2 == 0 else (gu+gateDummy,gateDummy)
-        (lSa,lSb) = (2*k*gu+p,2*k*gu+q)
-        (lGa,lGb) = (lSa+1,lSb+1)
-        (lDa,lDb) = (lSa+gate,lSb+gate)
-        SA.append(lSa)
-        GA.append(lGa)
-        DA.append(lDa)
-        SB.append(lSb)
-        GB.append(lGb)
-        DB.append(lDb)
+
+    pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
        
-    SDG =(SA, GA, DA, SB, GB, DB)
+    if pattern == 1:  
+        SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
+    else:
+        SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.interdigitated(x_cells, gu, gate, gateDummy)
+
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
-    
 
     uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
    
