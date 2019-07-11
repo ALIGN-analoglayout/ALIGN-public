@@ -138,7 +138,7 @@ int main(int argc, char** argv ){
 
     DB.AddingPowerPins(current_node);
 
-    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 0, 1, 4); //dummy, aspect ratio, number of aspect retio
+    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 0, 1, 6); //dummy, aspect ratio, number of aspect retio
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
@@ -161,7 +161,7 @@ int main(int argc, char** argv ){
 
       Router curr_route;
 
-      #ifdef GROUTER
+      #ifndef GROUTER
       std::cout<<"Starting Gcell Global Routing"<<std::endl;
       // Gcell Global Routing
       curr_route.RouteWork(4, current_node, drcInfo, 0, 6, binary_directory);
@@ -171,8 +171,33 @@ int main(int argc, char** argv ){
       curr_route.RouteWork(5, current_node, drcInfo, 0, 6, binary_directory);
       DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Ending Gcell Detail Routing"<<std::endl;
+
+
+      if(current_node.isTop){
+        std::cout<<"Checkpoint : Starting Power Grid Creation"<<std::endl;
+        curr_route.RouteWork(2, current_node, drcInfo, 5, 6, binary_directory);
+        std::cout<<"Checkpoint : End Power Grid Creation"<<std::endl;
+
+        //      DB.WriteGDS(current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
+        DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
+        
+        std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
+        curr_route.RouteWork(3, current_node, drcInfo, 1, 6, binary_directory);
+        std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
+
+        //      DB.WriteGDS(current_node, true, false, true, true, current_node.name+"_PR", drcInfo);
+        DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
+        
+        }
+  
+      //    DB.WriteGDS(current_node, true, true, true, true, current_node.name, drcInfo);
+      DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
+      std::cout<<"Check point : before checkin\n";
+      DB.PrintHierNode(current_node);
+
+
       #endif
-      #ifndef GROUTER      
+      #ifdef GROUTER      
       // wbxu: The following codes are for old version of global router
       //
       // Global Routing

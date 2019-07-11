@@ -2821,14 +2821,20 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                                sum = sum+ ki[k];
                              }
                          temp_r = ceil(sqrt(sum));
+                         double temp_s = ceil(sum/temp_r);
                          //temp_s = ceil(sum/temp_r); 
                          int aspect_num = num_aspect;
                          while(aspect_num > 0 and temp_r > 0){
-                                double temp_s = ceil(sum/temp_r);
+                               
                                 cap_r.push_back(temp_r);
+                                cap_s.push_back(ceil(sum/temp_r));
+                                cap_r.push_back(ceil(sum/temp_s));
                                 cap_s.push_back(temp_s);
-                                aspect_num = aspect_num - 1;
+
+                                aspect_num = aspect_num - 2;
                                 temp_r = temp_r - 1;
+                                temp_s = temp_s + 1;
+
                                }
                                                   
                          }
