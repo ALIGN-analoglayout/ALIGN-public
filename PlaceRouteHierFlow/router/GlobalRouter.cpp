@@ -29,7 +29,7 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
   std::cout<<"Router-Info: start to create global grid "<<std::endl;
   Grid grid(this->drc_info, this->LL, this->UR, Lmetal, Hmetal, this->grid_scale);
   std::cout<<"Router-Info: handling internal metals "<<std::endl;
-  grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
+  //grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
   std::cout<<"Router-Info: end of creating grid "<<std::endl;
 //  
 //
