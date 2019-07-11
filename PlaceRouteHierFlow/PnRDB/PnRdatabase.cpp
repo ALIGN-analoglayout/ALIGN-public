@@ -394,6 +394,7 @@ bool PnRdatabase::ReadDesignRule_via(string via_name, vector<string>& jason_file
 bool PnRdatabase::ReadPDKJSON(std::string drfile) {
     //std::cout<<"inside "<<drfile<<std::endl;
     //std::string jsonFileName = GDSData + ".json";
+    int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
@@ -436,13 +437,13 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
-            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=lpitch; tmp_metal.grid_unit_y=-1;
-            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=lpitch; tmp_metal.grid_unit_x=-1;
+            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
+            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
             } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
-            tmp_metal.width=lwidth;
-            tmp_metal.dist_ss=lpitch-lwidth;
-            tmp_metal.minL=lminL;
-            tmp_metal.dist_ee=le2e;
+            tmp_metal.width=times*lwidth;
+            tmp_metal.dist_ss=times*(lpitch-lwidth);
+            tmp_metal.minL=times*lminL;
+            tmp_metal.dist_ee=times*le2e;
             metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
             //std::cout<<tmp_metal.name<<std::endl;
             //std::cout<<tmp_metal.layerNo<<std::endl;
@@ -482,14 +483,14 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
-            tmp_via.width=lwidthx;
-            tmp_via.width_y=lwidthy;
-            tmp_via.cover_l=lvencal;
-            tmp_via.cover_l_P=lvencpl;
-            tmp_via.cover_u=lvencah;
-            tmp_via.cover_u_P=lvencph;
-            tmp_via.dist_ss=lspacex;
-            tmp_via.dist_ss_y=lspacey;
+            tmp_via.width=times*lwidthx;
+            tmp_via.width_y=times*lwidthy;
+            tmp_via.cover_l=times*lvencal;
+            tmp_via.cover_l_P=times*lvencpl;
+            tmp_via.cover_u=times*lvencah;
+            tmp_via.cover_u_P=times*lvencph;
+            tmp_via.dist_ss=times*lspacex;
+            tmp_via.dist_ss_y=times*lspacey;
             std::set<int> viaMSet; 
             std::set<int>::iterator vit;
             std::set<int>::reverse_iterator rvit;

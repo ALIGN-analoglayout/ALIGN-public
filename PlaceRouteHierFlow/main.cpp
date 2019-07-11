@@ -164,11 +164,11 @@ int main(int argc, char** argv ){
       #ifndef GROUTER
       std::cout<<"Starting Gcell Global Routing"<<std::endl;
       // Gcell Global Routing
-      curr_route.RouteWork(4, current_node, drcInfo, 0, 6, binary_directory);
+      curr_route.RouteWork(4, current_node, drcInfo, 1, 6, binary_directory);
       std::cout<<"Ending Gcell Global Routing"<<std::endl;
 
       std::cout<<"Starting Gcell Detail Routing"<<std::endl;
-      curr_route.RouteWork(5, current_node, drcInfo, 0, 6, binary_directory);
+      curr_route.RouteWork(5, current_node, drcInfo, 1, 6, binary_directory);
       DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Ending Gcell Detail Routing"<<std::endl;
 
