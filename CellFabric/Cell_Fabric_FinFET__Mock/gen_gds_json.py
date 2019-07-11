@@ -1,6 +1,4 @@
 #!/usr/bin/python
-import re
-import json
 import argparse
 from datetime import datetime
 from cell_fabric import gen_gds_json

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import re
 import json
-import argparse
 import datetime
 
 def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
@@ -90,5 +89,9 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
   return top
 
-def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, via_gen_tbl={}, timestamp=None):
+def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, via_gen_tbl=None, timestamp=None):
+
+  if via_gen_tbl is None:
+    via_gen_tbl = {}
+
   json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), gds_layer_tbl, via_gen_tbl, timestamp), ofile, indent=4)
