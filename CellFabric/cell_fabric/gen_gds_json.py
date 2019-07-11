@@ -92,22 +92,3 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
 def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, via_gen_tbl={}, timestamp=None):
   json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), gds_layer_tbl, via_gen_tbl, timestamp), ofile, indent=4)
-
-if __name__ == "__main__":
-
-  parser = argparse.ArgumentParser( description="Convert design json to GDS JSON")
-
-  parser.add_argument( "-n", "--block_name", type=str, required=True)
-  parser.add_argument( "-j", "--json_file_name", type=str, required=True)
-  parser.add_argument( "-e", "--exclude_pattern", type=str, default='')
-
-  args = parser.parse_args()
-
-  ofile = open (args.block_name + ".gds.json", 'wt')
-
-  with open( args.json_file_name, "rt") as fp:
-    translate( args.block_name, args.exclude_pattern, fp, ofile, timestamp=datatime.now())
-
-
-
-
