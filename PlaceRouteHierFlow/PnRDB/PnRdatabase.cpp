@@ -3770,6 +3770,61 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
 
 }
 
+bool PnRdatabase::WriteLef(PnRDB::hierNode &node, string file, string opath){
+
+  std::ofstream leffile;
+  string leffile_name = opath + file;
+
+  leffile.open(leffile_name);
+
+  double time = 2000;
+  
+  leffile<<"MACRO "<<node.name<<std::endl;
+  leffile<<"  ORIGIN 0 0 ;"<<std::endl;
+  leffile<<"  FOREIGN "<<node.name<<" 0 0 ;"<<std::endl;
+  leffile<<"  SIZE "<< (double) node.width/time<<" BY "<<(double) node.height/time <<" ;"<<std::endl;
+
+  //pins
+  for(int i=0;i<node.blockPins.size();i++){
+
+      leffile<<"  PIN "<<node.blockPins[i].name<<std::endl;
+      leffile<<"    DIRECTION INOUT ;"<<std::endl;
+      leffile<<"    USE SIGNAL ;"<<std::endl;
+      //leffile<<"    DIRECTION "<<node.blockPins[i].type<<" ;"<<std::endl;
+      //leffile<<"    USE "<<node.blockPins[i].use<<" 0 0 ;"<<std::endl;
+      leffile<<"    PORT "<<std::endl;
+
+      for(int j=0;j<node.blockPins[i].pinContacts.size();j++){
+
+         leffile<<"      LAYER "<<node.blockPins[i].pinContacts[j].metal<<" ;"<<std::endl;
+         leffile<<"        RECT "<<(double) node.blockPins[i].pinContacts[j].originBox.LL.x/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.LL.y/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.UR.x/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.UR.y/time<<" ;"<<std::endl;
+
+         }
+      
+      leffile<<"    END"<<std::endl;
+      leffile<<"  END "<<node.blockPins[i].name<<std::endl;  
+      
+ 
+     }
+
+  leffile<<"  OBS "<<std::endl;
+  for(int i=0;i<node.interMetals.size();i++){
+
+     
+     leffile<<"  LAYER "<<node.interMetals[i].metal<<" ;"<<std::endl;
+     leffile<<"        RECT"<<(double) node.interMetals[i].originBox.LL.x/time<<" "<<(double) node.interMetals[i].originBox.LL.y/time<<" "<<(double) node.interMetals[i].originBox.UR.x/time<<" "<<(double) node.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
+
+     }
+  leffile<<"  END "<<std::endl;
+
+  leffile<<"END "<<node.name<<std::endl;
+  
+  leffile.close();
+  
+
+
+}
+
 void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath) {
   std::ofstream OF2(opath+rofile);
   if(OF2.fail()) {

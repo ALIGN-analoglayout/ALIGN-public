@@ -244,6 +244,7 @@ class PnRdatabase
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
     std::map<string, PnRDB::lefMacro> checkoutSingleLEF();
     void WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath);
+    bool WriteLef(PnRDB::hierNode &node, string file, string opath);
     //design(string blockfile, string netfile);
     //design(string blockfile, string netfile, string cfile);
     //

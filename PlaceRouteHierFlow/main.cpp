@@ -244,6 +244,7 @@ int main(int argc, char** argv ){
       DB.PrintHierNode(current_node);
       // Update node
       #endif
+      DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
       DB.CheckinHierNode(idx, current_node);
       //return 0;
     }

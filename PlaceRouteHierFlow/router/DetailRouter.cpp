@@ -1872,6 +1872,15 @@ void DetailRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& 
   if(net.terminal_idx==-1) {std::cout<<"Router-Warning: cannot found terminal conntecting to net"<<std::endl; return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
+  if(this->isTop){
+
+             PnRDB::contact temp_contact;
+ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).termContacts[0]);
+             temp_pin.pinContacts.push_back(temp_contact);
+
+    }
+  
+
   //blockspin to intermetal
   for(int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
