@@ -1,11 +1,13 @@
 #include "GlobalRouter.h"
-extern "C"
-{
-#include <stdio.h>
-#include "lp_lib.h"
-#define LPSOLVEAPIFROMLIBDEF
-#include "lp_explicit.h"
-}
+// wbxu: 20190708 the following codes are to enable ILP to choose candidates
+//extern "C"
+//{
+//#include <stdio.h>
+//#include "lp_lib.h"
+//#define LPSOLVEAPIFROMLIBDEF
+//#include "lp_explicit.h"
+//}
+// wbxu-end
 
 GlobalRouter::GlobalRouter(){
 
@@ -27,7 +29,7 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
   std::cout<<"Router-Info: start to create global grid "<<std::endl;
   Grid grid(this->drc_info, this->LL, this->UR, Lmetal, Hmetal, this->grid_scale);
   std::cout<<"Router-Info: handling internal metals "<<std::endl;
-  grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
+  //grid.InactiveGlobalInternalMetal(this->Blocks); //move this to two part plist create by glocal router, inactive by grid with plist
   std::cout<<"Router-Info: end of creating grid "<<std::endl;
 //  
 //
@@ -38,8 +40,10 @@ for(int i=0;i<(int)this->Nets.size();i++) {
     std::cout<<"Info: set source dest"<<std::endl;
     if(this->isTop and Nets[i].isTerminal and Terminal_contact.size()>0){
        Terminals[Nets[i].terminal_idx].termContacts.clear();
+       //std::cout<<"Info:: update terminal "<<Nets[i].terminal_idx<<" contact\n";
        for(int k=0;k<Terminal_contact.size();k++){
              Terminals[Nets[i].terminal_idx].termContacts.push_back(Terminal_contact[k]);
+             //std::cout<<"\tinsert terminal metal "<<Terminals[Nets[i].terminal_idx].termContacts.back().metal<<" "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedLL.x<<", "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedLL.y<<" "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedUR.x<<", "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedUR.y<<std::endl;
        }
     }  
     grid.ActivateSourceDest();
@@ -83,8 +87,21 @@ for(int i=0;i<(int)this->Nets.size();i++) {
 //    //after this return path to Nets
 //    } 
 //
-  int sb=250;
-  ILPSolveRouting();
+
+  // wbxu: 20190708 the following codes is set to always choose the first candidate for each segment
+  for(int i=0;i<this->Nets.size();++i) {
+    for(int j=0;j<this->Nets.at(i).seg.size();++j) {
+      this->Nets.at(i).seg.at(j).candis.at(0).chosen=true;
+      this->Nets.at(i).seg.at(j).chosenCand=0;
+      std::cout<<"choose: "<<i<<" net "<<j<<" seg "<<0<<" cand "<<std::endl;
+    }
+  }
+  // wbxu-end
+  // wbxu: 20190708 the following codes are to use ILP to choose candidates
+  //int sb=250;
+  //ILPSolveRouting();
+  // wbxu-end 
+
 //  DesignRuleCheck();
 //  //LP solver
 //  LP_solver();
@@ -256,6 +273,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
                 newnode.y=this->Blocks[iter2].pins[iter].pinContacts[w].placedUR.y;
                 tempSeg.sourceList.back().coord.push_back(newnode);
               }
+              tempSeg.sourceType.type=RouterDB::BLOCK;
+              tempSeg.sourceType.iter=iter;
+              tempSeg.sourceType.iter2=iter2;
             } else if (tmpdest.x==xx and tmpdest.y==yy) { // dest matched
               for(int w=0;w<csize;w++) {
                 tempSeg.destList.resize(tempSeg.destList.size()+1);
@@ -268,6 +288,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
                 tempSeg.destList.back().coord.push_back(newnode);
                 
               }
+              tempSeg.destType.type=RouterDB::BLOCK;
+              tempSeg.destType.iter=iter;
+              tempSeg.destType.iter2=iter2;
             }
           } else if (this->Nets.at(i).connected.at(p).type==RouterDB::TERMINAL and this->isTop) {
             // only top level has terminals
@@ -278,11 +301,17 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
               tempSeg.sourceList.back().metalIdx=0;
               newnode.x=xx; newnode.y=yy;
               tempSeg.sourceList.back().coord.push_back(newnode);
+              tempSeg.sourceType.type=RouterDB::TERMINAL;
+              tempSeg.sourceType.iter=iter;
+              tempSeg.sourceType.iter2=-1;
             } else if ( tmpdest.x==xx and tmpdest.y==yy ) {
               tempSeg.destList.resize(tempSeg.destList.size()+1);
               tempSeg.destList.back().metalIdx=0;
               newnode.x=xx; newnode.y=yy;
               tempSeg.destList.back().coord.push_back(newnode);
+              tempSeg.destType.type=RouterDB::TERMINAL;
+              tempSeg.destType.iter=iter;
+              tempSeg.destType.iter2=-1;
             }
           } 
         }
@@ -291,12 +320,18 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
           tempSeg.sourceList.back().metalIdx=-1;
           newnode.x=tmpsource.x; newnode.y=tmpsource.y;
           tempSeg.sourceList.back().coord.push_back(newnode);
+          tempSeg.sourceType.type=RouterDB::TERMINAL;
+          tempSeg.sourceType.iter=-2;
+          tempSeg.sourceType.iter2=-1;
         }
         if(tempSeg.destList.empty()) {
           tempSeg.destList.resize(tempSeg.destList.size()+1);
           tempSeg.destList.back().metalIdx=-1;
           newnode.x=tmpdest.x; newnode.y=tmpdest.y;
           tempSeg.destList.back().coord.push_back(newnode);
+          tempSeg.destType.type=RouterDB::TERMINAL;
+          tempSeg.destType.iter=-2;
+          tempSeg.destType.iter2=-1;
         }
         input>>dummy;
         //temp=a+1;
@@ -331,6 +366,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
           newnode.y=this->Blocks[iter2].pins[iter].pinContacts[w].placedUR.y;
           tempSeg.sourceList.back().coord.push_back(newnode);
         }
+        tempSeg.sourceType.type=RouterDB::BLOCK;
+        tempSeg.sourceType.iter=iter;
+        tempSeg.sourceType.iter2=iter2;
       } else if (this->Nets.at(i).connected.at(0).type==RouterDB::TERMINAL and isTop ) {
         tempSeg.sourceList.resize(tempSeg.sourceList.size()+1);
         tempSeg.sourceList.back().metalIdx=0;
@@ -340,6 +378,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         coord.first=newnode.x;
         coord.second=newnode.y;
         original_coord.push_back(coord);
+        tempSeg.sourceType.type=RouterDB::TERMINAL;
+        tempSeg.sourceType.iter=Nets[i].connected[0].iter;
+        tempSeg.sourceType.iter2=-1;
       }
       //dest
       if(this->Nets.at(i).connected.at(1).type==RouterDB::BLOCK) {
@@ -360,6 +401,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
           newnode.y=this->Blocks[iter2].pins[iter].pinContacts[w].placedUR.y;
           tempSeg.destList.back().coord.push_back(newnode);
         }
+        tempSeg.destType.type=RouterDB::BLOCK;
+        tempSeg.destType.iter=iter;
+        tempSeg.destType.iter2=iter2;
       } else if (this->Nets.at(i).connected.at(1).type==RouterDB::TERMINAL and isTop ) {
         tempSeg.destList.resize(tempSeg.destList.size()+1);
         tempSeg.destList.back().metalIdx=0;
@@ -369,6 +413,9 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         coord.first=newnode.x;
         coord.second=newnode.y;
         original_coord.push_back(coord);
+        tempSeg.destType.type=RouterDB::TERMINAL;
+        tempSeg.destType.iter=Nets[i].connected[1].iter;
+        tempSeg.destType.iter2=-1;
       }
       this->Nets.at(i).seg.push_back(tempSeg);
       //segnaming=this->Nets.at(i).netName+"_1";
@@ -400,6 +447,7 @@ long int GlobalRouter::get_number(string str)
 
 };
 
+/*
 int GlobalRouter::ILPSolveRouting() {
   std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
   # if defined ERROR
@@ -555,7 +603,7 @@ int GlobalRouter::ILPSolveRouting() {
 
   // 6. Solve with lp
   set_minim(lp);
-  set_solutionlimit(lp, 10); /* return the 3rd solution */
+  set_solutionlimit(lp, 10); // return the 3rd solution 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   print_lp(lp);
 
@@ -595,7 +643,7 @@ int GlobalRouter::ILPSolveRouting() {
   delete_lp(lp);
   return ret;
 } 
-
+*/
 
 void GlobalRouter::CreateMetalViaPieces() {
   //MetalPieces.clear(); ViaPieces.clear();
@@ -736,6 +784,8 @@ void GlobalRouter::CreateMetalViaPieces() {
   }
 }
 
+// wbxu: 20190708 the following codes are to use ILP to choose candidates
+/*
 void GlobalRouter::ViaSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& checked) {
   int val=0;
   int Midx, MLLx, MLLy, MURx, MURy, Mspc, ALLx, ALLy, AURx, AURy;
@@ -766,7 +816,9 @@ void GlobalRouter::ViaSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& c
   }
   std::cout<<"Quit vai check\n";
 }
-
+*/
+// wbxu: 20190708 the following codes are to use ILP to choose candidates
+/*
 void GlobalRouter::MetalSpacingCheck(std::set<std::pair<int,int>, IntPairComp >& checked) {
   //slackInfo tmpSI;
   int val=0;
@@ -821,7 +873,9 @@ void GlobalRouter::MetalSpacingCheck(std::set<std::pair<int,int>, IntPairComp >&
     }
   }
 }
-
+*/
+// wbxu: 20190708 the following codes are to use ILP to choose candidates
+/*
 void GlobalRouter::ViaSpacingCheckFunc(std::set< std::pair<int,int>, IntPairComp >& checked, int val, int Midx, int ALLx, int ALLy, int AURx, int AURy, int h, int i, int j) {
   slackInfo tmpSI;
   std::pair<int,int> tpair;
@@ -983,6 +1037,7 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
     }
   }
 }
+*/
 
 //added by yg
 void GlobalRouter::UpdateCandidate(std::vector<std::vector<RouterDB::Metal> >& phsical_path, int i, int j){
@@ -1023,13 +1078,24 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   //grid_alpha should be adjusted according to the size of node
   //more adjust is necessry for detail router?
-  if(max_height*max_width<=100000000){
+  if(max_height*max_width<=10000){
      grid_scale = 1;
-    }else if (max_height*max_width<=1000000000000){
+    }else if (max_height*max_width<=1000000){
+     grid_scale = 2;
+    }else if (max_height*max_width<=100000000){
      grid_scale = 4;
-    } else {
+    }else if (max_height*max_width<=10000000000){
      grid_scale = 10;
+    } else {
+     grid_scale = 20;
     }
+  //if(max_height*max_width<=100000000){
+  //   grid_scale = 1;
+  //  }else if (max_height*max_width<=1000000000000){
+  //   grid_scale = 4;
+  //  } else {
+  //   grid_scale = 10;
+  //  }
 
   //For terminals	
   for(int i=0;i<node.Terminals.size();i++){	
@@ -2091,6 +2157,7 @@ void GlobalRouter::TerminalToNodeTerminal(PnRDB::hierNode& HierNode){
 
   for(int i=0;i<this->Terminals.size();i++){
        //pins
+               //std::cout<<"Info:: update terminal "<<i<<std::endl;
        for(int j=0;j<this->Terminals[i].termContacts.size();j++){
              
              PnRDB::contact temp_contact;
@@ -2155,7 +2222,117 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].pins[j].pinContacts[k
        
 };
 
+void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index) {
+  std::cout<<"AddConnectedContactToNodeNet net "<<net_index<<std::endl;
+  HierNode.Nets.at(net_index).connectedContact.clear();
+  HierNode.Nets.at(net_index).connectedContact.resize( HierNode.Nets.at(net_index).connected.size() );
+  int currM=0;
+  for(int i=0;i<net.seg.size();i++){ // for each net segment
+    std::cout<<"seg "<<i<<std::endl;
+    int sel=net.seg.at(i).chosenCand;
+    if(sel==-1) {continue;}
+    // 1. segment source 
+    RouterDB::NType stype=net.seg.at(i).sourceType.type;
+    int siter=net.seg.at(i).sourceType.iter;
+    int siter2=net.seg.at(i).sourceType.iter2;
+    int smetal=net.seg.at(i).candis.at(sel).metals.at(0).MetalIdx;
+    int sx=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).x;
+    int sy=net.seg.at(i).candis.at(sel).metals.at(0).LinePoint.at(0).y;
+    std::cout<<"\tsource type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
+    // 2. segment dest
+    stype=net.seg.at(i).destType.type;
+    siter=net.seg.at(i).destType.iter;
+    siter2=net.seg.at(i).destType.iter2;
+    smetal=net.seg.at(i).candis.at(sel).metals.back().MetalIdx;
+    sx=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().x;
+    sy=net.seg.at(i).candis.at(sel).metals.back().LinePoint.back().y;
+    currM+=(net.seg.at(i).candis.at(sel).metals.size()-1);
+    std::cout<<"\tdest type: "<<stype<<" iter: "<<siter<<" iter2: "<<siter2<<" metal: "<<smetal<<" x: "<<sx<<" y: "<<sy<<" current metal: "<<currM<<std::endl;
+    AddConnectedContactFunc(HierNode,net,net_index,stype,siter,siter2,smetal, sx, sy, currM);
+    ++currM;
+  }
+}
 
+void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy, int mIdx) {
+    PnRDB::globalContact tmpC;
+    tmpC.metalIdx=mIdx;
+    if(stype==RouterDB::BLOCK) { // block pin
+      int pos=-1;
+      for(int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
+        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Block and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
+          pos=k; break;
+        }
+      }
+      if(pos!=-1) {
+        int dist=INT_MAX; bool mark=false;
+        std::vector<PnRDB::contact>::iterator target=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end();
+        for(std::vector<PnRDB::contact>::iterator cit=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.begin();cit!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end(); ++cit) {
+          if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
+          if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
+            tmpC.conTact=(*cit);
+            HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
+            mark=true; break;
+          } else {
+            if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
+              dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y)) {
+              dist=std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y)) {
+              dist=std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y)) {
+              dist=std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y); target=cit;
+            }
+          }
+        }
+        if(!mark and target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {
+          tmpC.conTact=(*target);
+          HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
+        }
+      }
+    } else if (stype==RouterDB::TERMINAL and this->isTop ) {
+      int pos=-1;
+      for(int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
+        if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Terminal and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
+          pos=k; break;
+        }
+      }
+      if(pos!=-1) {
+        int dist=INT_MAX; bool mark=false;
+        std::vector<PnRDB::contact>::iterator target=HierNode.Terminals.at(siter).termContacts.end();
+        for(std::vector<PnRDB::contact>::iterator cit=HierNode.Terminals.at(siter).termContacts.begin(); cit!=HierNode.Terminals.at(siter).termContacts.end(); ++cit) {
+          if(drc_info.Metalmap[cit->metal]!=smetal) { continue; }
+          if(  sx>=cit->placedBox.LL.x and sx<=cit->placedBox.UR.x and sy>=cit->placedBox.LL.y and sy<=cit->placedBox.UR.y) {
+            tmpC.conTact=(*cit);
+            HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
+            mark=true; break;
+          } else {
+            if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
+              dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y)) {
+              dist=std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y)) {
+              dist=std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y); target=cit;
+            }
+            if(dist>std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y)) {
+              dist=std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y); target=cit;
+            }
+          }
+        }
+        if(!mark and target!=HierNode.Terminals.at(siter).termContacts.end()) {
+          tmpC.conTact=(*target);
+          HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC;
+        }
+      }
+    } else {
+      std::cout<<"Router-Error: incorrect source type\n";
+    }
+}
 
 void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
 {
@@ -2168,6 +2345,12 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
         HierNode.Nets[i].path_via.clear();
      }
 
+  if(isTop==1){
+    //return terminal to node terminal
+    std::cout<<"starting: terminal to node terminal"<<std::endl;
+    TerminalToNodeTerminal(HierNode);
+    std::cout<<"starting: terminal to node terminal"<<std::endl;
+    }
   //distinguish those two net
   //std::cout<<"Start ReturnHierNode"<<std::endl;
   for(int i=0;i<Nets.size();i++){
@@ -2195,6 +2378,7 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
               HierNode.Nets.at(j).path_via.clear();
               std::cout<<"starting: Net to node net"<<std::endl;
               NetToNodeNet(HierNode, Nets[i], j);
+              AddConnectedContactToNodeNet(HierNode, Nets.at(i), j);
               std::cout<<"end: Net to node net"<<std::endl;
               break;
             }
@@ -2218,12 +2402,6 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   PowerGridToNodeInterMetal(HierNode, Gnd_grid);
 */
   
-  if(isTop==1){
-    //return terminal to node terminal
-    std::cout<<"starting: terminal to node terminal"<<std::endl;
-    TerminalToNodeTerminal(HierNode);
-    std::cout<<"starting: terminal to node terminal"<<std::endl;
-    }
   std::cout<<"starting: block intermetal to block intermetal"<<std::endl;
   BlockInterMetalToNodeInterMetal(HierNode);
   std::cout<<"end: block intermetal to block intermetal"<<std::endl;

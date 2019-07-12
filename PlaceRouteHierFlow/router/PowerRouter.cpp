@@ -615,40 +615,40 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //For blocks	
   for(int i=0;i<node.Blocks.size();i++){
       RouterDB::Block temp_block;
-      int sel=node.Blocks[i].selectedInstance;
-      temp_block.blockName=node.Blocks[i].instance[sel].name;
-      temp_block.blockMaster=node.Blocks[i].instance[sel].master;
-      temp_block.gdsfile=node.Blocks[i].instance[sel].gdsFile;
-      temp_block.numTerminals=node.Blocks[i].instance[sel].blockPins.size();
-      temp_block.orient=RouterDB::Omark(node.Blocks[i].instance[sel].orient);
-      temp_block.isLeaf=node.Blocks[i].instance[sel].isLeaf;
-      temp_block.width=node.Blocks[i].instance[sel].width;
-      temp_block.height=node.Blocks[i].instance[sel].height;
+      int slcNumber = node.Blocks[i].selectedInstance;
+      temp_block.blockName=node.Blocks[i].instance[slcNumber].name;
+      temp_block.blockMaster=node.Blocks[i].instance[slcNumber].master;
+      temp_block.gdsfile=node.Blocks[i].instance[slcNumber].gdsFile;
+      temp_block.numTerminals=node.Blocks[i].instance[slcNumber].blockPins.size();
+      temp_block.orient=RouterDB::Omark(node.Blocks[i].instance[slcNumber].orient);
+      temp_block.isLeaf=node.Blocks[i].instance[slcNumber].isLeaf;
+      temp_block.width=node.Blocks[i].instance[slcNumber].width;
+      temp_block.height=node.Blocks[i].instance[slcNumber].height;
       temp_block.area=temp_block.width*temp_block.height;
-      temp_block.placedLL.x=node.Blocks[i].instance[sel].placedBox.LL.x;
-      temp_block.placedLL.y=node.Blocks[i].instance[sel].placedBox.LL.y;
-      temp_block.placedUR.x=node.Blocks[i].instance[sel].placedBox.UR.x;
-      temp_block.placedUR.y=node.Blocks[i].instance[sel].placedBox.UR.y;
-      //temp_block.originLL.x=node.Blocks[i].instance[sel].originBox.LL.x;
-      //temp_block.originLL.y=node.Blocks[i].instance[sel].originBox.LL.y;
-      //temp_block.originUR.x=node.Blocks[i].instance[sel].originBox.UR.x;
-      //temp_block.originUR.y=node.Blocks[i].instance[sel].originBox.UR.y;
+      temp_block.placedLL.x=node.Blocks[i].instance[slcNumber].placedBox.LL.x;
+      temp_block.placedLL.y=node.Blocks[i].instance[slcNumber].placedBox.LL.y;
+      temp_block.placedUR.x=node.Blocks[i].instance[slcNumber].placedBox.UR.x;
+      temp_block.placedUR.y=node.Blocks[i].instance[slcNumber].placedBox.UR.y;
+      //temp_block.originLL.x=node.Blocks[i].instance.originBox.LL.x;
+      //temp_block.originLL.y=node.Blocks[i].instance.originBox.LL.y;
+      //temp_block.originUR.x=node.Blocks[i].instance.originBox.UR.x;
+      //temp_block.originUR.y=node.Blocks[i].instance.originBox.UR.y;
 
-      for(int j=0;j<node.Blocks[i].instance[sel].blockPins.size();j++){
+      for(int j=0;j<node.Blocks[i].instance[slcNumber].blockPins.size();j++){
           RouterDB::Pin temp_pin;
-          ConvertPin(temp_pin,node.Blocks[i].instance[sel].blockPins[j]);
+          ConvertPin(temp_pin,node.Blocks[i].instance[slcNumber].blockPins[j]);
           temp_block.pins.push_back(temp_pin);
       }
 
-   for(int j=0;j<node.Blocks[i].instance[sel].interMetals.size();j++){
+   for(int j=0;j<node.Blocks[i].instance[slcNumber].interMetals.size();j++){
        RouterDB::contact temp_metal;
-       ConvertContact(temp_metal,node.Blocks[i].instance[sel].interMetals[j]);
+       ConvertContact(temp_metal,node.Blocks[i].instance[slcNumber].interMetals[j]);
        temp_block.InternalMetal.push_back(temp_metal);
       }
 	
-   for(int j=0;j<node.Blocks[i].instance[sel].interVias.size();j++){
+   for(int j=0;j<node.Blocks[i].instance[slcNumber].interVias.size();j++){
        RouterDB::Via temp_via;
-       ConvertVia(temp_via,node.Blocks[i].instance[sel].interVias[j]);
+       ConvertVia(temp_via,node.Blocks[i].instance[slcNumber].interVias[j]);
        temp_block.InternalVia.push_back(temp_via);
       }
    Blocks.push_back(temp_block);

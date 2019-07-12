@@ -394,6 +394,7 @@ bool PnRdatabase::ReadDesignRule_via(string via_name, vector<string>& jason_file
 bool PnRdatabase::ReadPDKJSON(std::string drfile) {
     //std::cout<<"inside "<<drfile<<std::endl;
     //std::string jsonFileName = GDSData + ".json";
+    int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
@@ -436,13 +437,13 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
-            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=lpitch; tmp_metal.grid_unit_y=-1;
-            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=lpitch; tmp_metal.grid_unit_x=-1;
+            if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
+            } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
             } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
-            tmp_metal.width=lwidth;
-            tmp_metal.dist_ss=lpitch-lwidth;
-            tmp_metal.minL=lminL;
-            tmp_metal.dist_ee=le2e;
+            tmp_metal.width=times*lwidth;
+            tmp_metal.dist_ss=times*(lpitch-lwidth);
+            tmp_metal.minL=times*lminL;
+            tmp_metal.dist_ee=times*le2e;
             metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
             //std::cout<<tmp_metal.name<<std::endl;
             //std::cout<<tmp_metal.layerNo<<std::endl;
@@ -482,14 +483,14 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
-            tmp_via.width=lwidthx;
-            tmp_via.width_y=lwidthy;
-            tmp_via.cover_l=lvencal;
-            tmp_via.cover_l_P=lvencpl;
-            tmp_via.cover_u=lvencah;
-            tmp_via.cover_u_P=lvencph;
-            tmp_via.dist_ss=lspacex;
-            tmp_via.dist_ss_y=lspacey;
+            tmp_via.width=times*lwidthx;
+            tmp_via.width_y=times*lwidthy;
+            tmp_via.cover_l=times*lvencal;
+            tmp_via.cover_l_P=times*lvencpl;
+            tmp_via.cover_u=times*lvencah;
+            tmp_via.cover_u_P=times*lvencph;
+            tmp_via.dist_ss=times*lspacex;
+            tmp_via.dist_ss_y=times*lspacey;
             std::set<int> viaMSet; 
             std::set<int>::iterator vit;
             std::set<int>::reverse_iterator rvit;
@@ -3050,6 +3051,7 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
              }
              //added one nodes to the class
              if(!ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
+             else{std::cout<<"Finished reading contraint file"<<std::endl;}
              
              hierTree.push_back(temp_node);
              temp_node = clear_node;
@@ -3209,17 +3211,14 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     //update hiear tree here for the class Nodes.
     for(int i=0;i<hierTree.size();i++){
         for(int j=0;j<hierTree.size();j++){
-            for(int k=0;k<hierTree[i].Blocks.size();k++)
-                if(hierTree[i].Blocks[k].instance.back().master.compare(hierTree[j].name)==0){
-                   hierTree[i].Blocks[k].child = j;
-                   
+            for(int k=0;k<hierTree[j].Blocks.size();k++)
+                if(hierTree[j].Blocks[k].instance.back().master.compare(hierTree[i].name)==0){
+                   hierTree[j].Blocks[k].child = i;
                    int parent_found = 0;
-                   for(int p=0;p<hierTree[j].parent.size();p++){
-                       if(hierTree[j].parent[p] == i){parent_found=1;} 
+                   for(int p=0;p<hierTree[i].parent.size();p++){
+                       if(hierTree[i].parent[p] == j){parent_found=1;} 
                       }
-                   if(parent_found==0){hierTree[j].parent.push_back(i);}
-                   
-                   //hierTree[j].parent.push_back(i);
+                   if(parent_found==0){hierTree[i].parent.push_back(j);}                   
                   }
             }
         if(hierTree[i].name.compare(topcell)==0){
@@ -3258,6 +3257,8 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
     for(int i=0;i<hierTree.size();i++){
     //cout<<"hierTree node "<<i<<endl;
     if(!MergeLEFMapData(hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<hierTree[i].name<<endl;
+      }else{
+      std::cout<<"Finished merge lef data"<<std::endl;
       }
       }
   // wbxu: following lines need modifications to reflect changes of block instance vector
@@ -3769,6 +3770,61 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
 
 }
 
+bool PnRdatabase::WriteLef(PnRDB::hierNode &node, string file, string opath){
+
+  std::ofstream leffile;
+  string leffile_name = opath + file;
+
+  leffile.open(leffile_name);
+
+  double time = 2000;
+  
+  leffile<<"MACRO "<<node.name<<std::endl;
+  leffile<<"  ORIGIN 0 0 ;"<<std::endl;
+  leffile<<"  FOREIGN "<<node.name<<" 0 0 ;"<<std::endl;
+  leffile<<"  SIZE "<< (double) node.width/time<<" BY "<<(double) node.height/time <<" ;"<<std::endl;
+
+  //pins
+  for(int i=0;i<node.blockPins.size();i++){
+
+      leffile<<"  PIN "<<node.blockPins[i].name<<std::endl;
+      leffile<<"    DIRECTION INOUT ;"<<std::endl;
+      leffile<<"    USE SIGNAL ;"<<std::endl;
+      //leffile<<"    DIRECTION "<<node.blockPins[i].type<<" ;"<<std::endl;
+      //leffile<<"    USE "<<node.blockPins[i].use<<" 0 0 ;"<<std::endl;
+      leffile<<"    PORT "<<std::endl;
+
+      for(int j=0;j<node.blockPins[i].pinContacts.size();j++){
+
+         leffile<<"      LAYER "<<node.blockPins[i].pinContacts[j].metal<<" ;"<<std::endl;
+         leffile<<"        RECT "<<(double) node.blockPins[i].pinContacts[j].originBox.LL.x/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.LL.y/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.UR.x/time<<" "<<(double) node.blockPins[i].pinContacts[j].originBox.UR.y/time<<" ;"<<std::endl;
+
+         }
+      
+      leffile<<"    END"<<std::endl;
+      leffile<<"  END "<<node.blockPins[i].name<<std::endl;  
+      
+ 
+     }
+
+  leffile<<"  OBS "<<std::endl;
+  for(int i=0;i<node.interMetals.size();i++){
+
+     
+     leffile<<"  LAYER "<<node.interMetals[i].metal<<" ;"<<std::endl;
+     leffile<<"        RECT "<<(double) node.interMetals[i].originBox.LL.x/time<<" "<<(double) node.interMetals[i].originBox.LL.y/time<<" "<<(double) node.interMetals[i].originBox.UR.x/time<<" "<<(double) node.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
+
+     }
+  leffile<<"  END "<<std::endl;
+
+  leffile<<"END "<<node.name<<std::endl;
+  
+  leffile.close();
+  
+
+
+}
+
 void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath) {
   std::ofstream OF2(opath+rofile);
   if(OF2.fail()) {
@@ -3779,19 +3835,53 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
   int i=0;
   for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
     for(vector<PnRDB::Metal>::iterator it2=it->path_metal.begin(); it2!=it->path_metal.end(); ++it2) {
-      if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
+      //if(it2->LinePoint.at(0).x==it2->LinePoint.at(1).x and it2->LinePoint.at(0).y==it2->LinePoint.at(1).y) {continue;}
       if(i!=0) {OF2<<","<<std::endl;}
       i++;
       OF2<<"    { \"layer\": \""<<DRC_info.Metal_info.at(it2->MetalIdx).name;
       OF2<<"\", \"net_name\": \""<<it->name<<"\", \"width\": "<<it2->width;
-      OF2<<", \"rect\": [ "<<it2->LinePoint.at(0).x<<", "<<it2->LinePoint.at(0).y<<", "<<it2->LinePoint.at(1).x<<", "<<it2->LinePoint.at(1).y<<"] }";
-      //OF2<<"] }";
+      OF2<<", \"rect\": [ "<<it2->LinePoint.at(0).x<<", "<<it2->LinePoint.at(0).y<<", "<<it2->LinePoint.at(1).x<<", "<<it2->LinePoint.at(1).y<<"],"<<std::endl;
+      OF2<<"      \"connected_pins\": ["<<std::endl;
+      int mIdx=it2-it->path_metal.begin();
+      int sinkCount=0;
+      for(int k=0;k<it->connectedContact.size();++k) {
+        if(it->connectedContact.at(k).metalIdx!=mIdx) {continue;}
+        if(it->connected.at(k).type==PnRDB::Block) {
+          if(sinkCount!=0) {OF2<<","<<std::endl;}
+          OF2<<"          { "<<"\"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+        } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+          if(sinkCount!=0) {OF2<<","<<std::endl;}
+          OF2<<"          { "<<"\"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+        } else {continue;}
+        ++sinkCount;
+        OF2<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] }";
+      }
+      if(sinkCount>0) {OF2<<std::endl;}
+      OF2<<"      ]"<<std::endl;
+      OF2<<"    }";
       //if(it!=node.Nets.end()-1 or it2!=it->segments.end()-1) {OF2<<",";}
       //OF2<<endl;
     }
-    //OF2<<endl;
   }
-  OF2<<std::endl<<"  ]"<<endl<<"}";
+  OF2<<std::endl<<"  ]"<<endl;
+  //OF2<<"  \"rects\": ["<<endl;
+  //for(vector<PnRDB::net>::iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+  //  if(node.isTop) {
+  //    if(it->connected.size()<=1) {continue;}
+  //  } else {
+  //    if(!it->sink2Terminal and it->connected.size()<=1) {continue;}
+  //    if(it->sink2Terminal and it->connected.size()<=2) {continue;}
+  //  }
+  //  for(int k=0;k<it->connectedContact.size();++k) {
+  //    if(it->connected.at(k).type==PnRDB::Block) {
+  //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Blocks.at(it->connected.at(k).iter2).instance.back().name<<"/"<<node.Blocks.at(it->connected.at(k).iter2).instance.back().blockPins.at(it->connected.at(k).iter).name<<"\"";
+  //    } else if (it->connected.at(k).type==PnRDB::Terminal and node.isTop) {
+  //      OF2<<"    { \"net_name\": \""<<it->name<<"\", \"sink_name\": \""<<node.Terminals.at(it->connected.at(k).iter).name<<"\"";
+  //    } else {continue;}
+  //    OF2<<", metalIdx: "<<it->connectedContact.at(k).metalIdx<<", \"layer\": \""<<it->connectedContact.at(k).conTact.metal<<"\", \"rect\": ["<<it->connectedContact.at(k).conTact.placedBox.LL.x<<", "<<it->connectedContact.at(k).conTact.placedBox.LL.y<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.x<<", "<<it->connectedContact.at(k).conTact.placedBox.UR.y<<"] },"<<endl;
+  //  }
+  //}
+  OF2<<endl<<"}";
   OF2.close();
 }
 
@@ -5041,6 +5131,28 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_i
     return false;
 }
 
+bool
+addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, PnRDB::Drc_info& drc_info, int unit) {
+
+    int x[5], y[5];
+    assignBoxPoints (x, y, Contact.placedBox, unit);
+    json bound0;
+    bound0["type"] = "boundary";
+    bound0["layer"] = stoi(drc_info.MaskID_Metal[drc_info.Metalmap[Contact.metal]]);
+    bound0["datatype"] = 0;
+    json xy = json::array();
+    for (size_t i = 0; i < 5; i++) {
+	 xy.push_back (x[i]);
+	 xy.push_back (y[i]);
+       }
+    bound0["xy"] = xy; 
+    jsonElements.push_back (bound0);
+
+
+}
+
+
+
 void
 addOABoundaries (json& jsonElements, int width, int height) {
   int x[5],y[5];
@@ -5068,6 +5180,8 @@ addOABoundaries (json& jsonElements, int width, int height) {
 //       endel
 
 }
+
+
 
 void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, PnRDB::Drc_info& drc_info, double unit) {
     int x[5], y[5];
@@ -5264,6 +5378,14 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     if (includeBlock) {
 	int bOrient;
+   
+        //for(int i = 0;i < node.Blocks.size(); i++){
+        //    //int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
+        //    for( int j=0;j<node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).interMetals.size();j++){
+        //         addContactBoundaries(jsonElements, node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).interMetals[j], drc_info, unitScale);
+        //       }
+        //   }
+
 	for (int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 

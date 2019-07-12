@@ -19,6 +19,7 @@ double ConstGraph::LAMBDA=1000;
 double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
+double ConstGraph::PHI=1500;
 
 //template<class T>
 //std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
@@ -137,7 +138,7 @@ int main(int argc, char** argv ){
 
     DB.AddingPowerPins(current_node);
 
-    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 0, 1, 4); //dummy, aspect ratio, number of aspect retio
+    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 0, 1, 6); //dummy, aspect ratio, number of aspect retio
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
@@ -160,6 +161,45 @@ int main(int argc, char** argv ){
 
       Router curr_route;
 
+      #ifndef GROUTER
+      std::cout<<"Starting Gcell Global Routing"<<std::endl;
+      // Gcell Global Routing
+      curr_route.RouteWork(4, current_node, drcInfo, 1, 6, binary_directory);
+      std::cout<<"Ending Gcell Global Routing"<<std::endl;
+
+      std::cout<<"Starting Gcell Detail Routing"<<std::endl;
+      curr_route.RouteWork(5, current_node, drcInfo, 1, 6, binary_directory);
+      DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
+      std::cout<<"Ending Gcell Detail Routing"<<std::endl;
+
+
+      if(current_node.isTop){
+        std::cout<<"Checkpoint : Starting Power Grid Creation"<<std::endl;
+        curr_route.RouteWork(2, current_node, drcInfo, 5, 6, binary_directory);
+        std::cout<<"Checkpoint : End Power Grid Creation"<<std::endl;
+
+        //      DB.WriteGDS(current_node, true, true, false, true, current_node.name+"_PG", drcInfo);
+        DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
+        
+        std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
+        curr_route.RouteWork(3, current_node, drcInfo, 1, 6, binary_directory);
+        std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
+
+        //      DB.WriteGDS(current_node, true, false, true, true, current_node.name+"_PR", drcInfo);
+        DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
+        
+        }
+  
+      //    DB.WriteGDS(current_node, true, true, true, true, current_node.name, drcInfo);
+      DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
+      std::cout<<"Check point : before checkin\n";
+      DB.PrintHierNode(current_node);
+
+
+      #endif
+      #ifdef GROUTER      
+      // wbxu: The following codes are for old version of global router
+      //
       // Global Routing
 
       curr_route.RouteWork(0, current_node, drcInfo, 1, 6, binary_directory);
@@ -168,6 +208,8 @@ int main(int argc, char** argv ){
 
       //    DB.WriteGDS(current_node, true, true, false, false, current_node.name+"_GR", drcInfo);
       DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
+      // wbxu: the following line is used to write global route results for Intel router
+      // Old version of global router should be used.
       DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
 
       // Detail Routing
@@ -201,6 +243,8 @@ int main(int argc, char** argv ){
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
       // Update node
+      #endif
+      DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
       DB.CheckinHierNode(idx, current_node);
       //return 0;
     }

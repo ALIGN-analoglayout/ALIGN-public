@@ -105,6 +105,7 @@ class ConstGraph
     double CalculateWireLengthAP(design& caseNL, Aplace& caseAP);
     double CalculateArea();
     double CalculateRatio();
+    double CalculateDeadArea(design& caseNL, SeqPair& caseSP);
     bool CheckPositiveCycle(vector<Vertex> &graph);
     vector<int> GenerateSlack(vector<int>& x);
     void UpdateLslackElement(design& caseNL, vector< pair<int,int> >& sympair, vector< pair<int,placerDB::Smark> >& selfsym, vector<int>& Lslack, vector<int>& xL, int j, placerDB::Smark axis);
@@ -141,6 +142,7 @@ class ConstGraph
     static double GAMAR;
     static double BETA;
     static double SIGMA;
+    static double PHI;
     ConstGraph();
     ConstGraph(design& caseNL, SeqPair& caseSP);
     ConstGraph(design& caseNL, SeqPair& caseSP, int mode);
