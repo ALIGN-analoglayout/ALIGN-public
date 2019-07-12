@@ -3812,7 +3812,7 @@ bool PnRdatabase::WriteLef(PnRDB::hierNode &node, string file, string opath){
 
      
      leffile<<"  LAYER "<<node.interMetals[i].metal<<" ;"<<std::endl;
-     leffile<<"        RECT"<<(double) node.interMetals[i].originBox.LL.x/time<<" "<<(double) node.interMetals[i].originBox.LL.y/time<<" "<<(double) node.interMetals[i].originBox.UR.x/time<<" "<<(double) node.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
+     leffile<<"        RECT "<<(double) node.interMetals[i].originBox.LL.x/time<<" "<<(double) node.interMetals[i].originBox.LL.y/time<<" "<<(double) node.interMetals[i].originBox.UR.x/time<<" "<<(double) node.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
 
      }
   leffile<<"  END "<<std::endl;

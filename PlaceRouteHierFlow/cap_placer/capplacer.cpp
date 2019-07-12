@@ -2889,6 +2889,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                                      }
                                }
                             current_node.Blocks[i].instNum++;
+                            WriteLef(current_node.Blocks[i].instance[q], cc_gds_file+".lef", opath);
                             std::cout<<"End feed blocks"<<std::endl;
                             continue;
                           }else{
@@ -2914,7 +2915,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                                     }
                                 }
                        
-                        
+                             WriteLef(current_node.Blocks[i].instance[q], cc_gds_file+".lef", opath);                        
                              std::cout<<"End feed blocks"<<std::endl;
                              continue;
                           }
@@ -3093,3 +3094,58 @@ fout<<endl;
 // Local Variables:
 // c-basic-offset: 4
 // End:
+
+bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string opath){
+
+  std::ofstream leffile;
+  string leffile_name = opath + file;
+
+  leffile.open(leffile_name);
+
+  double time = 2000;
+  
+  leffile<<"MACRO "<<temp_block.master<<std::endl;
+  leffile<<"  ORIGIN 0 0 ;"<<std::endl;
+  leffile<<"  FOREIGN "<<temp_block.master<<" 0 0 ;"<<std::endl;
+  leffile<<"  SIZE "<< (double) temp_block.width/time<<" BY "<<(double) temp_block.height/time <<" ;"<<std::endl;
+
+  //pins
+  for(int i=0;i<temp_block.blockPins.size();i++){
+
+      leffile<<"  PIN "<<temp_block.blockPins[i].name<<std::endl;
+      leffile<<"    DIRECTION INOUT ;"<<std::endl;
+      leffile<<"    USE SIGNAL ;"<<std::endl;
+      //leffile<<"    DIRECTION "<<node.blockPins[i].type<<" ;"<<std::endl;
+      //leffile<<"    USE "<<node.blockPins[i].use<<" 0 0 ;"<<std::endl;
+      leffile<<"    PORT "<<std::endl;
+
+      for(int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+
+         leffile<<"      LAYER "<<temp_block.blockPins[i].pinContacts[j].metal<<" ;"<<std::endl;
+         leffile<<"        RECT "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.y/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.y/time<<" ;"<<std::endl;
+
+         }
+      
+      leffile<<"    END"<<std::endl;
+      leffile<<"  END "<<temp_block.blockPins[i].name<<std::endl;  
+      
+ 
+     }
+
+  leffile<<"  OBS "<<std::endl;
+  for(int i=0;i<temp_block.interMetals.size();i++){
+
+     
+     leffile<<"  LAYER "<<temp_block.interMetals[i].metal<<" ;"<<std::endl;
+     leffile<<"        RECT "<<(double) temp_block.interMetals[i].originBox.LL.x/time<<" "<<(double) temp_block.interMetals[i].originBox.LL.y/time<<" "<<(double) temp_block.interMetals[i].originBox.UR.x/time<<" "<<(double) temp_block.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
+
+     }
+  leffile<<"  END "<<std::endl;
+
+  leffile<<"END "<<temp_block.master<<std::endl;
+  
+  leffile.close();
+  
+
+
+}
