@@ -571,9 +571,26 @@ void Graph::CreateAdjacentList(Grid& grid){
 std::vector<int>  Graph::dijkstra(Grid& grid){
 
   std::vector<int> temp_path;
-  double dist[graph.size()];
-  int parent[graph.size()];
-  int status[graph.size()];
+
+  std::cout<<"checkpoint 0"<<std::endl;
+ 
+  std::cout<<"graph.size() "<<graph.size()<<std::endl;
+
+  std::vector<double> dist;
+  dist.resize(graph.size());
+  //double dist[graph.size()];
+
+  std::cout<<"check point 0.1"<<std::endl;
+  std::vector<int> parent;
+  parent.resize(graph.size());
+  //int parent[graph.size()];
+
+  std::cout<<"check point 0.2"<<std::endl;
+  std::vector<int> status;
+  status.resize(graph.size());
+  //int status[graph.size()];
+
+  std::cout<<"check point 0.3"<<std::endl;
     
   for(int i = 0; i < graph.size(); ++i)
      {
@@ -582,8 +599,10 @@ std::vector<int>  Graph::dijkstra(Grid& grid){
         status[i] = 0;
      }
 
+  std::cout<<"checkpoint 1"<<std::endl;
   dist[source] = 0;
   status[source] = 1;
+  std::cout<<"checkpoint 2"<<std::endl;
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
@@ -617,15 +636,89 @@ std::vector<int>  Graph::dijkstra(Grid& grid){
           count++;
        }
 
-  
+  std::cout<<"checkpoint 3"<<std::endl;
   printPath(parent, dest, graph.size(), temp_path);
+  std::cout<<"checkpoint 4"<<std::endl;
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;
 
 };
 
-void Graph::printPath(int parent[], int j, int Vsize, std::vector<int> & temp_path)
+/*
+std::vector<int>  Graph::dijkstra(Grid& grid){
+
+  std::vector<int> temp_path;
+
+  std::cout<<"checkpoint 0"<<std::endl;
+ 
+  std::cout<<"graph.size() "<<graph.size()<<std::endl;
+
+  double dist[graph.size()];
+
+  std::cout<<"check point 0.1"<<std::endl;
+  int parent[graph.size()];
+
+  std::cout<<"check point 0.2"<<std::endl;
+  int status[graph.size()];
+
+  std::cout<<"check point 0.3"<<std::endl;
+    
+  for(int i = 0; i < graph.size(); ++i)
+     {
+        parent[i] = -1;
+        dist[i] = INT_MAX;
+        status[i] = 0;
+     }
+
+  std::cout<<"checkpoint 1"<<std::endl;
+  dist[source] = 0;
+  status[source] = 1;
+  std::cout<<"checkpoint 2"<<std::endl;
+  int count=0;
+  int v;
+  //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
+  while(status[dest]!=2 and count<graph.size()-1)
+       {
+          std::vector<int> ulist = minDistance(dist, status, graph.size());
+          //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
+          if(ulist.empty()) {temp_path.clear(); return temp_path;}
+          int u=ulist[0];
+          //std::cout<<"check u: "<<u<<" x: "<<grid.vertices_graph[u].x<<" y: "<<grid.vertices_graph[u].y <<std::endl;
+          status[u] = 2;
+          
+          for (int j = 0; j < graph[u].list.size(); ++j)
+              {
+                 v=graph[u].list[j].dest;
+                 if(v!=u)
+                   {
+                      if(status[v]==0)
+                        {
+                           parent[v] = u;
+                           dist[v] = dist[u]+graph[u].list[j].weight;
+                           status[v]=1;
+                         }
+                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                         {
+                            parent[v] = u;
+                            dist[v] = dist[u]+graph[u].list[j].weight;
+                         }
+                    }
+               }
+          count++;
+       }
+
+  std::cout<<"checkpoint 3"<<std::endl;
+  printPath(parent, dest, graph.size(), temp_path);
+  std::cout<<"checkpoint 4"<<std::endl;
+  //std::cout<<"temp path"<<std::endl;
+  //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
+  return temp_path;
+
+};
+*/
+
+void Graph::printPath(std::vector<int> &parent, int j, int Vsize, std::vector<int> & temp_path)
 {
   if(j == -1)
     {
@@ -639,7 +732,7 @@ void Graph::printPath(int parent[], int j, int Vsize, std::vector<int> & temp_pa
     }
 }
 
-std::vector<int> Graph::minDistance(double dist[], int status[], int V)
+std::vector<int> Graph::minDistance(std::vector<double> &dist, std::vector<int> &status, int V)
 {
   double min = INT_MAX;
   std::vector<int> min_index;

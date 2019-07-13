@@ -26,7 +26,22 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
   //2. create GcellGlobalGrid
   //CreateGrid for within the region LL, UR
-  GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, Hmetal-Lmetal, 20);
+  int tile_size = 0;
+  if(UR.x*UR.y<1000000){
+      tile_size = 20;
+    }else if(UR.x*UR.y<10000000000){
+      tile_size = 100;
+    }else if(UR.x*UR.y<1000000000000){
+      tile_size = 1000;
+    }else if(UR.x*UR.y<100000000000000){
+      tile_size = 10000;
+    }else {
+      tile_size = 100000;
+    }
+
+
+
+  GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, Hmetal-Lmetal + 1, tile_size);
   std::cout<<"Test 3"<<std::endl;
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
   std::cout<<"Test 4"<<std::endl;
