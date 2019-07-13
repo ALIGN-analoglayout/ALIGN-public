@@ -568,6 +568,36 @@ void Graph::CreateAdjacentList(Grid& grid){
 
 };
 
+void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx) {
+  std::multimap<double, int>::iterator low=mmap.lower_bound(dist);
+  std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
+  std::multimap<double, int>::iterator tar;
+  bool mark=false;
+  for(tar=low; tar!=high; ++tar) {
+    if(tar->second==idx) {mark=true; break;}
+  }
+  if(mark) {mmap.erase(tar);}
+  else {std::cout<<"Graph-Info: cannot found element in map\n";}
+}
+
+void Graph::UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist) {
+  this->RemovefromMultMap(mmap, olddist, idx);
+  mmap.insert(std::pair<double, int>(newdist, idx));
+}
+
+std::vector<int> Graph::minDistancefromMultiMap(std::multimap<double, int> &mmap)
+{
+  std::vector<int> min_index;
+  std::multimap<double, int>::iterator miter=mmap.begin();
+  double min = miter->first;
+  std::multimap<double, int>::iterator low=mmap.lower_bound(min);
+  std::multimap<double, int>::iterator high=mmap.upper_bound(min);
+  for(std::multimap<double, int>::iterator it=low; it!=high; ++it) {
+    min_index.push_back(it->second);
+  }
+  return min_index;
+};
+
 std::vector<int>  Graph::dijkstra(Grid& grid){
 
   std::vector<int> temp_path;
@@ -591,7 +621,91 @@ std::vector<int>  Graph::dijkstra(Grid& grid){
   //int status[graph.size()];
 
   std::cout<<"check point 0.3"<<std::endl;
+
+  std::multimap<double, int> distMap;
     
+  for(int i = 0; i < graph.size(); ++i)
+     {
+        parent[i] = -1;
+        dist[i] = INT_MAX;
+        status[i] = 0;
+     }
+
+  std::cout<<"checkpoint 1"<<std::endl;
+  dist[source] = 0;
+  status[source] = 1;
+  distMap.insert ( std::pair<double,int>(dist[source], source) );
+  std::cout<<"checkpoint 2"<<std::endl;
+  int count=0;
+  int v;
+  //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
+  while(status[dest]!=2 and count<graph.size()-1)
+       {
+          std::vector<int> ulist = minDistancefromMultiMap (distMap);
+          //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
+          if(ulist.empty()) {temp_path.clear(); return temp_path;}
+          int u=ulist[0];
+          RemovefromMultMap(distMap, dist[u], u);
+          //std::cout<<"check u: "<<u<<" x: "<<grid.vertices_graph[u].x<<" y: "<<grid.vertices_graph[u].y <<std::endl;
+          status[u] = 2;
+          
+          for (int j = 0; j < graph[u].list.size(); ++j)
+              {
+                 v=graph[u].list[j].dest;
+                 if(v!=u)
+                   {
+                      if(status[v]==0)
+                        {
+                           parent[v] = u;
+                           dist[v] = dist[u]+graph[u].list[j].weight;
+                           status[v]=1;
+                           distMap.insert( std::pair<double,int>(dist[v], v) );
+                         }
+                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
+                         {
+                            parent[v] = u;
+                            double olddist=dist[v];
+                            dist[v] = dist[u]+graph[u].list[j].weight;
+                            UpdateMultMap(distMap, olddist, v, dist[v]);
+                         }
+                    }
+               }
+          count++;
+       }
+
+  std::cout<<"checkpoint 3"<<std::endl;
+  printPath(parent, dest, graph.size(), temp_path);
+  std::cout<<"checkpoint 4"<<std::endl;
+  //std::cout<<"temp path"<<std::endl;
+  //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
+  return temp_path;
+
+};
+
+std::vector<int>  Graph::dijkstraRetire(Grid& grid){
+
+  std::vector<int> temp_path;
+
+  std::cout<<"checkpoint 0"<<std::endl;
+ 
+  std::cout<<"graph.size() "<<graph.size()<<std::endl;
+
+  std::vector<double> dist;
+  dist.resize(graph.size());
+  //double dist[graph.size()];
+
+  std::cout<<"check point 0.1"<<std::endl;
+  std::vector<int> parent;
+  parent.resize(graph.size());
+  //int parent[graph.size()];
+
+  std::cout<<"check point 0.2"<<std::endl;
+  std::vector<int> status;
+  status.resize(graph.size());
+  //int status[graph.size()];
+
+  std::cout<<"check point 0.3"<<std::endl;
+
   for(int i = 0; i < graph.size(); ++i)
      {
         parent[i] = -1;

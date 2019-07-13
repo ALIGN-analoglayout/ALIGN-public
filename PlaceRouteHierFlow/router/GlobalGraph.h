@@ -39,7 +39,9 @@ class GlobalGraph {
     std::vector<Node> graph;
     std::vector<std::vector<std::pair<int,int> > > Path; //index of Edge, MST of mutil-pin net; mutil candidates
     int path_number;
-
+    void RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx);
+    void UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist);
+    std::vector<int> minDistancefromMultiMap(std::multimap<double, int> &mmap);
 
 
   public:
@@ -47,6 +49,7 @@ class GlobalGraph {
     void FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node); //use grid information to find shortest path;
     void CreateAdjacentList(GlobalGrid& grid); //based on LL_graph and UR_graph
     std::vector<int> dijkstra(GlobalGrid & grid); // return path
+    std::vector<int> dijkstraRetire(GlobalGrid & grid); // return path
     void UpdateEdgeWeight(std::vector<std::pair<int,int> > temp_path);
     void refreshWeight(GlobalGrid &grid);
     void ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> temp_single_path, std::vector<int> &pin_access);
@@ -59,7 +62,7 @@ class GlobalGraph {
     std::vector<std::pair<int,int> > Get_MST_Edges(std::vector<std::vector<int> > temp_path);
     void SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
     void RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
-    void printPath(int parent[], int j, int Vsize, std::vector<int> & temp_path);
+    void printPath(std::vector<int>& parent, int j, int Vsize, std::vector<int> & temp_path);
     std::vector<int> minDistance(double dist[], int status[], int V);
     void setTerminals(const std::vector<std::vector<int> >& t);
     void setterminals(const std::vector<int>& t);
