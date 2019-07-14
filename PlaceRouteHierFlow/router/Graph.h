@@ -34,6 +34,9 @@ class Graph {
 
     RouterDB::PowerGrid Vdd_grid;
     RouterDB::PowerGrid Gnd_grid;
+    void RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx);
+    void UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist);
+    std::vector<int> minDistancefromMultiMap(std::multimap<double, int> &mmap);
 
   public:
     Graph(Grid& grid);
@@ -46,9 +49,10 @@ class Graph {
 
     void CreateAdjacentList(Grid& grid); //based on LL_graph and UR_graph
     std::vector<int> dijkstra(Grid& grid); // return path
+    std::vector<int> dijkstraRetire(Grid& grid); // return path
     void UpdateEdgeWeight(std::vector<int>& path);
-    void printPath(int parent[], int j, int Vsize, std::vector<int> & temp_path);
-    std::vector<int> minDistance(double dist[], int status[], int V);
+    void printPath(std::vector<int> &parent, int j, int Vsize, std::vector<int> & temp_path);
+    std::vector<int> minDistance(std::vector<double> &dist, std::vector<int> &status, int V);
     //void UpdateEdgeWeight(std::vector<int>& path);
     void Path_graph_total(Grid& grid, std::vector<int> &temp_path);
     //vector<RouterDB:Metal> Get_Physical_Path(vector<int>& path);

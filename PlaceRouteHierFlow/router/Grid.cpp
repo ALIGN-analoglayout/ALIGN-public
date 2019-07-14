@@ -1169,21 +1169,48 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
 void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
   vertices_graph.clear(); total2graph.clear(); graph2total.clear();
   SourceGraph.clear(); DestGraph.clear();
-  for(int i=0; i<(int)vertices_total.size(); i++) {
-    if(vertices_total.at(i).active) {
-      if(vertices_total.at(i).x>=LLx and vertices_total.at(i).x<=URx and vertices_total.at(i).y>=LLy and vertices_total.at(i).y<=URy) {
-        vertices_graph.push_back(vertices_total.at(i));
-        total2graph[i]=vertices_graph.size()-1;
-        graph2total[vertices_graph.size()-1]=i;
-      }
-      for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
-        if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
-      }
-      for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
-        if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
+  RouterDB::point minP, maxP;
+  minP.x=LLx; minP.y=LLy; maxP.x=URx; maxP.y=URy;
+  for(int k=0;k<this->layerNo;++k) {
+    if(vertices_total_map.at(k).empty()) {continue;}
+    std::set<int> vSet;
+    std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator low=vertices_total_map.at(k).lower_bound(minP);
+    std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator high=vertices_total_map.at(k).upper_bound(maxP);
+    for(std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator pit=low; pit!=high; ++pit) {
+      vSet.insert( pit->second );
+    }
+    for(std::set<int>::iterator sit=vSet.begin(); sit!=vSet.end(); ++sit) {
+      int i=*sit;
+      if(vertices_total.at(i).active) {
+        if(vertices_total.at(i).x>=LLx and vertices_total.at(i).x<=URx and vertices_total.at(i).y>=LLy and vertices_total.at(i).y<=URy) {
+          vertices_graph.push_back(vertices_total.at(i));
+          total2graph[i]=vertices_graph.size()-1;
+          graph2total[vertices_graph.size()-1]=i;
+        }
+        for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
+          if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
+        }
+        for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
+          if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
+        }
       }
     }
   }
+  //for(int i=0; i<(int)vertices_total.size(); i++) {
+  //  if(vertices_total.at(i).active) {
+  //    if(vertices_total.at(i).x>=LLx and vertices_total.at(i).x<=URx and vertices_total.at(i).y>=LLy and vertices_total.at(i).y<=URy) {
+  //      vertices_graph.push_back(vertices_total.at(i));
+  //      total2graph[i]=vertices_graph.size()-1;
+  //      graph2total[vertices_graph.size()-1]=i;
+  //    }
+  //    for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
+  //      if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
+  //    }
+  //    for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
+  //      if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
+  //    }
+  //  }
+  //}
   //CheckVerticesGraph();
   //CheckMaptotal2graph();
 }
