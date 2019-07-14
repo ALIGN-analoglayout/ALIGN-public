@@ -61,8 +61,8 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   //}
   std::cout<<"Test 10"<<std::endl;
   Gcell.SetNetSink(Blocks, Nets, Terminals);
-  Gcell.CreateGridDataNCap();
-  Gcell.CreateGridDataCap();
+  //Gcell.CreateGridDataNCap();
+  //Gcell.CreateGridDataCap();
 
   for(int i=0;i<Nets.size();++i){
      //for(int j=0;j<Nets[i].connectedTile.size();++j){
