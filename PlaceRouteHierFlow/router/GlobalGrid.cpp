@@ -4,6 +4,314 @@ GlobalGrid::GlobalGrid(){
 
 }
 
+void GlobalGrid::CreateGridDataCap(){
+
+  std::ofstream matlabfile;
+  matlabfile.open("GlobalGrid_Cap.txt");
+
+  for(int i=0;i<tiles_total.size();i++){
+
+      for(int j=0;j<tiles_total[i].north.size();j++){
+
+           if(tiles_total[i].north[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].south.size();j++){
+
+           if(tiles_total[i].south[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].east.size();j++){
+
+           if(tiles_total[i].east[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+
+      for(int j=0;j<tiles_total[i].west.size();j++){
+
+           if(tiles_total[i].west[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+
+      for(int j=0;j<tiles_total[i].down.size();j++){
+
+           if(tiles_total[i].down[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].up.size();j++){
+
+           if(tiles_total[i].up[j].capacity>0){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+       }
+
+
+  matlabfile.close();
+
+}
+
+void GlobalGrid::CreateGridDataNCap(){
+
+  std::ofstream matlabfile;
+  matlabfile.open("GlobalGrid_NCap.txt");
+
+  for(int i=0;i<tiles_total.size();i++){
+
+      for(int j=0;j<tiles_total[i].north.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].north[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].south.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].south[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].east.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].east[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+
+      for(int j=0;j<tiles_total[i].west.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].west[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+
+      for(int j=0;j<tiles_total[i].down.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].down[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+      for(int j=0;j<tiles_total[i].up.size();j++){
+
+           if(1){    
+               
+              matlabfile<<tiles_total[i].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[i].tileLayer;
+              matlabfile<<" ";
+
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].x;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].y;
+              matlabfile<<" ";
+              matlabfile<<tiles_total[tiles_total[i].up[j].next].tileLayer;
+              matlabfile<<" ";
+              
+              matlabfile<<std::endl;
+
+             }
+          }
+
+       }
+
+
+  matlabfile.close();
+
+}
+
 GlobalGrid::GlobalGrid(const GlobalGrid& other):x_unit(other.x_unit), y_unit(other.y_unit), metal2tile(other.metal2tile), tile2metal(other.tile2metal), Start_index(other.Start_index), End_index(other.End_index), tiles_total(other.tiles_total), drc_info(other.drc_info), layerNo(other.layerNo), metalLayerNo(other.metalLayerNo), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), LL(other.LL), UR(other.UR), XYmap(other.XYmap), YXmap(other.YXmap), XYSet(other.XYSet), YXSet(other.YXSet), maxXidx(other.maxXidx), maxYidx(other.maxYidx) {
    ////this->x_unit         =other.x_unit;
    //this->y_unit         =other.y_unit;

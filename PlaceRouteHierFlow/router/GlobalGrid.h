@@ -5,6 +5,7 @@
 #include "../PnRDB/datatype.h"
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <vector>
 #include <map>
 #include <set>
@@ -78,6 +79,8 @@ class GlobalGrid {
       void AdjustVerticalEdgeCapacityfromInternalMetal(std::vector<RouterDB::Block>& Blocks);
       void AdjustVerticalEdgeCapacityfromBlockPin(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, int excNet);
       void SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, std::vector<RouterDB::terminal>& Terminals);
+      void CreateGridDataNCap();
+      void CreateGridDataCap();
       inline int GetTileLayerNum() {return this->layerNo;}
       inline int GetMaxXidx() {return this->maxXidx;}
       inline int GetMaxYidx() {return this->maxYidx;}
