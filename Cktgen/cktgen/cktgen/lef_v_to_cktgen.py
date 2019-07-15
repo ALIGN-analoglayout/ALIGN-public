@@ -100,6 +100,10 @@ def convert( lef_str, verilog_str, pl_str):
                 terminal = { 'net_name' : pin.nm, 'layer' : port[0], 'rect' : list(port[1]) }
                 terminals.append(terminal)
 
+        for port in m.obs.ports:
+            terminal = { 'net_name' : '!kor', 'layer' : port[0], 'rect' : list(port[1]) }
+            terminals.append(terminal)
+
         leaf['terminals'] = terminals
         leaves.append(leaf)
 

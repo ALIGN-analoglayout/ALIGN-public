@@ -92,7 +92,7 @@ def gr_hints(parser_results):
       assert formal in pin_map
       lst = [trans.hitRect( tRect( *terminal['rect'])).canonical() for terminal in pin_map[formal]]
 
-      gr_lst = [ [ int(t//(4*840)) for t in r.toList()] for r in lst]
+      gr_lst = [ [ int(t//(10*840)) for t in r.toList()] for r in lst]
 
       net_map[actual].append( (i,formal,gr_lst))
 
@@ -104,20 +104,147 @@ def gr_hints(parser_results):
   return wires
 
 
-def hack_gr( results):
+def hack_gr( results, bbox):
   wires = results['wires']
 
   layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+# change metal2 grs to metal4 (big runtime issue otherwise)
+#  layer_map['M2'] = 'metal4'
+
+  horizontal_layers = ["metal2","metal4"]
+  vertical_layers = ["metal1","metal3"]
+
+  binsize = 84*2*10
+  def bin(v):
+    return v//binsize
+
+  assert bbox[2] % 5 == 0
+  assert bbox[3] % 5 == 0
+
+  bbox_urx = bbox[2]//5
+  bbox_ury = bbox[3]//5
+ 
+  print("bin of bbox_urx", bin(bbox_urx))
+  print("bin of bbox_ury", bin(bbox_ury))
+
+  def dnx(v):
+    return max(bin(bbox[0]),bin(v))
+
+  def dny(v):
+    return max(bin(bbox[1]),bin(v))
+
+  def upx(v):
+    return min(bin(bbox_urx)-1,bin(v))
+
+  def upy(v):
+    return min(bin(bbox_ury)-1,bin(v))
+
+  expand_null_routes = True
 
   new_wires = []
   for wire in wires:
-    new_wire = { 'layer': layer_map[wire['layer']],
+    r = [ v+0 for v in Rect( *wire['rect']).canonical().toList() ]
+
+    tuples = []
+    for v in r:
+      rem = v % binsize
+      gcd = math.gcd(rem,binsize)
+      tuples.append( (v//binsize, rem//gcd, binsize//gcd))
+
+    print( "module grid", tuples[1], tuples[3])
+
+    ly = layer_map[wire['layer']]
+
+    nr = [ bin(r[0]), bin(r[1]), bin(r[2]), bin(r[3])]
+
+    # Make sure everything is within bounds
+
+    if ly in vertical_layers:
+      if nr[2] >= bin(bbox_urx)-1:
+        nr[0] = nr[2] = bin(bbox_urx)-1
+      assert 0 <= nr[0] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
+      assert 0 <= nr[2] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
+
+      if nr[1] > bin(bbox_ury)-1:
+        nr[1] = bin(bbox_ury)-1
+      if nr[3] > bin(bbox_ury)-1:
+        nr[3] = bin(bbox_ury)-1
+
+    elif ly in horizontal_layers:
+      if nr[3] >= bin(bbox_ury)-1:
+        nr[1] = nr[3] = bin(bbox_ury)-1
+      assert 0 <= nr[1] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+      assert 0 <= nr[3] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+
+      if nr[0] > bin(bbox_urx)-1:
+        nr[0] = bin(bbox_urx)-1
+      if nr[2] > bin(bbox_urx)-1:
+        nr[2] = bin(bbox_urx)-1
+
+    else:
+      assert False, ly
+
+    # Make sure we don't have 2d routes
+    assert nr[0] == nr[2] or nr[1] == nr[3], (r,nr)
+
+#    if expand_null_routes and (nr[0] == nr[2] and nr[1] == nr[3]):
+    if expand_null_routes:
+      if ly in vertical_layers:
+        # extend the wire to be at least a grid long
+        dy = r[3]-r[1]
+        if dy < binsize:
+          extend = (binsize-dy)//2
+          nr = [ nr[0], dny(r[1]-extend), nr[2], upy(r[3]+extend)]
+
+        if nr[1] == nr[3]:
+          if nr[3] == 0:
+            nr[3] += 1
+          if nr[1] == bin(bbox_ury)-1:
+            nr[1] -= 1
+
+        assert nr[1] != nr[3], (r,nr)
+
+      elif ly in horizontal_layers:
+
+        dx = r[2]-r[0]
+        if dx < binsize:
+          extend = (binsize-dx)//2
+          nr = [ dnx(r[0]-extend), nr[1], upx(r[2]+extend), nr[3]]
+
+        if nr[0] == nr[2]:
+          if nr[2] == 0:
+            nr[2] += 1
+          if nr[0] == bin(bbox_urx)-1:
+            nr[0] -= 1
+
+        assert nr[0] != nr[2], (r,nr)
+
+      else:
+        assert False, ly
+
+    # Not a point
+    assert nr[0] != nr[2] or nr[1] != nr[3], (r,nr)
+    # Not 2D
+    assert nr[0] == nr[2] or nr[1] == nr[3], (r,nr)
+    # in range
+    assert 0 <= nr[0] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
+    assert 0 <= nr[2] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
+    assert 0 <= nr[1] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+    assert 0 <= nr[3] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+
+    new_wire = { 'layer': ly,
                  'net_name': wire['net_name'],
                  'width': 320,
-                 'rect': [ x//(84*2*4) for x in wire['rect']]
+                 'rect': nr
     }
-    new_wires.append(new_wire)
+    if "connected_pins" in wire:
+      new_wire['connected_pins'] = wire['connected_pins']
 
+    if not expand_null_routes or nr[0] != nr[2] or nr[1] != nr[3]:
+      new_wires.append(new_wire)
+    else:
+      assert not expand_null_routes
+      print("Removing zero size global route", new_wire)
 
   results['wires'] = new_wires
 
@@ -137,11 +264,19 @@ if __name__ == "__main__":
   with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
     global_router_results = json.load( fp)
 
-  hack_gr( global_router_results)
+  hack_gr( global_router_results, placer_results['bbox'])
 
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
+  layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
+  for leaf in placer_results['leaves']:
+    for term in leaf['terminals']:
+      term['layer'] = layer_map[term['layer']]
+
+  m1_pitch = 800
+
+  global_xcs2 = set()
   global_ycs2 = set()
   for leaf in placer_results['leaves']:
 
@@ -152,27 +287,54 @@ if __name__ == "__main__":
     ycs2.add( leaf['bbox'][1]%840)
     ycs2.add( leaf['bbox'][3]%840)
 
-    for term in leaf['terminals']:
-      ly = term['layer']
-      term['layer'] = 'metal2' if ly == 'M2' else ly
+    xcs = set()
+    xcs2 = set()
+    xcs.add( leaf['bbox'][0])
+    xcs.add( leaf['bbox'][2])
+    xcs2.add( leaf['bbox'][0]%m1_pitch)
+    xcs2.add( leaf['bbox'][2]%m1_pitch)
+    print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
 
-      yc = (term['rect'][1]+term['rect'][3])//2
-      ycs.add(yc)
-      ycs2.add(yc%840)
-      global_ycs2.add(yc%840)
-#    print('XXX template_name',leaf['template_name'], ycs, ycs2)    
-#  print('XXX', global_ycs2)
+    for term in leaf['terminals']:
+      if term['layer'] in ["metal2"]:
+        if term['net_name'] in ["!kor"]: continue
+        yc = (term['rect'][1]+term['rect'][3])//2
+        ycs.add(yc)
+        cand = yc%840
+        ycs2.add(cand)
+        if cand != 0:
+          print("YYY", leaf['template_name'], term)
+
+        global_ycs2.add(cand)
+
+      if term['layer'] in ["metal1","metal3"]:
+        xc = (term['rect'][0]+term['rect'][2])//2
+        xcs.add(xc)
+        cand = xc%m1_pitch
+        xcs2.add(cand)
+        if cand != 0:
+          print("YYY", leaf['template_name'], term)
+
+        global_xcs2.add(cand)
+
+    print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
+    print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
+
+  print('XXX global_ycs2', global_ycs2)
+  print('XXX global_xcs2', global_xcs2)
 
 
   ycs2 = set()
+  xcs2 = set()
   for inst in placer_results['instances']:
+    
+
     m840 = inst['transformation']['oY']%840
-#    print(inst['instance_name'], m840)
+    m800 = inst['transformation']['oX']%800
+    print(inst['instance_name'], m840, m800, inst['transformation'])
     ycs2.add(m840)
-#  print('Transform ycs2', ycs2)
-
-
-
+    xcs2.add(m800)
+  print('Transform ycs2 xcs2', ycs2, xcs2)
 
   adts = {}
 
@@ -182,7 +344,8 @@ if __name__ == "__main__":
     adts[nm] = adt
 
     for term in leaf['terminals']:
-      adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
+      if False or term['net_name'] != '!kor':
+        adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
 
   bbox = placer_results['bbox']
 
@@ -209,7 +372,13 @@ if __name__ == "__main__":
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
-    netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'])
+    connected_pins = wire.get('connected_pins',None)
+# Enforce the new format
+    assert connected_pins is not None
+
+    netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
+
+  netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

@@ -21,8 +21,8 @@
     "halfWidthM4" : [200],
     "halfWidthM5" : [200],
 
-    "halfXGRGrid" : 2,
-    "halfYGRGrid" : 2,
+    "halfXGRGrid" : 5,
+    "halfYGRGrid" : 5,
 
     "halfXADTGrid" : 1,
     "halfYADTGrid" : 1,

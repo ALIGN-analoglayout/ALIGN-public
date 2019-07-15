@@ -144,8 +144,11 @@ if [ ${SKIPGENERATE} = "NO" ]; then
     fi
 fi
 
+#ROUTER_IMAGE=darpaalign/detailed_router
+ROUTER_IMAGE=intel_detailed_router
+
 if [ ${SKIPROUTER} = "NO" ]; then
-    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} darpaalign/detailed_router bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
+    docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} ${ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
     if [ $? -ne 0 ]; then
 	echo "ERROR: Failed to run detailed_router"
 	exit $?
