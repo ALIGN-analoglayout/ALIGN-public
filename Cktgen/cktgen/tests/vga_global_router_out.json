@@ -1,67 +1,478 @@
 {
   "wires": [
-    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 20480, 29568, 14080, 29568] },
-    { "layer": "M3", "net_name": "vgnd", "width": 80, "rect": [ 14080, 12768, 14080, 29568] },
-    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 0, 29568, 1280, 29568] },
-    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 14080, 29568, 7680, 29568] },
-    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 640, 35616, 7040, 35616] },
-    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 8320, 28896, 8320, 30912] },
-    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 7680, 21504, 7680, 28224] },
-    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 8320, 30912, 8320, 34272] },
-    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 7680, 34944, 7680, 35616] },
-    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 7680, 35616, 7040, 35616] },
-    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 0, 24192, 0, 34944] },
-    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 27520, 35616, 21120, 35616] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 21120, 35616, 21120, 34944] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 7680, 28896, 7680, 30240] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 7680, 22176, 7680, 28224] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 8320, 30912, 8320, 34272] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 19840, 34272, 19840, 34560] },
-    { "layer": "M4", "net_name": "vga_out2", "width": 80, "rect": [ 19840, 34560, 21120, 34560] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 21120, 34560, 21120, 34944] },
-    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 34560, 24192, 33920, 24192] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 33920, 24192, 33920, 34944] },
-    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 33920, 34944, 28160, 34944] },
-    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 21120, 34944, 21120, 35616] },
-    { "layer": "M3", "net_name": "net5", "width": 80, "rect": [ 30720, 30912, 30720, 30720] },
-    { "layer": "M4", "net_name": "net5", "width": 80, "rect": [ 30720, 30720, 21120, 30720] },
-    { "layer": "M3", "net_name": "net5", "width": 80, "rect": [ 21120, 30720, 21120, 30912] },
-    { "layer": "M2", "net_name": "net5", "width": 64, "rect": [ 21120, 30912, 20480, 30912] },
-    { "layer": "M3", "net_name": "net5p", "width": 80, "rect": [ 30080, 30912, 30080, 13440] },
-    { "layer": "M2", "net_name": "net5p", "width": 64, "rect": [ 30080, 13440, 20480, 13440] },
-    { "layer": "M3", "net_name": "net4", "width": 80, "rect": [ 6400, 28224, 6400, 28160] },
-    { "layer": "M4", "net_name": "net4", "width": 80, "rect": [ 6400, 28160, 8960, 28160] },
-    { "layer": "M3", "net_name": "net4", "width": 80, "rect": [ 8960, 28160, 8960, 28224] },
-    { "layer": "M2", "net_name": "s1", "width": 64, "rect": [ 1280, 28224, 0, 28224] },
-    { "layer": "M3", "net_name": "net4p", "width": 80, "rect": [ 5760, 28224, 5760, 26880] },
-    { "layer": "M2", "net_name": "net4p", "width": 64, "rect": [ 5760, 26880, 6400, 26880] },
-    { "layer": "M3", "net_name": "net4p", "width": 80, "rect": [ 6400, 26880, 6400, 13440] },
-    { "layer": "M2", "net_name": "net4p", "width": 64, "rect": [ 6400, 13440, 7680, 13440] },
-    { "layer": "M3", "net_name": "net6", "width": 80, "rect": [ 24320, 20160, 24320, 20832] },
-    { "layer": "M2", "net_name": "s2", "width": 64, "rect": [ 29440, 19488, 34560, 19488] },
-    { "layer": "M3", "net_name": "net6p", "width": 80, "rect": [ 25600, 19488, 25600, 13440] },
-    { "layer": "M2", "net_name": "net6p", "width": 64, "rect": [ 25600, 13440, 20480, 13440] },
-    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 26880, 32928, 26880, 32640] },
-    { "layer": "M4", "net_name": "vps", "width": 80, "rect": [ 26880, 32640, 1920, 32640] },
-    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 1920, 32640, 1920, 32928] },
-    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 1920, 32928, 1280, 32928] },
-    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 0, 22848, 0, 32928] },
-    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 0, 32928, 640, 32928] },
-    { "layer": "M2", "net_name": "vmirror", "width": 64, "rect": [ 7680, 12768, 0, 12768] },
-    { "layer": "M3", "net_name": "net3", "width": 80, "rect": [ 8960, 12768, 8960, 34272] },
-    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 7680, 21504, 7680, 27552] },
-    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 7680, 30912, 7680, 28224] },
-    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 8960, 34944, 8960, 31584] },
-    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 0, 27552, 0, 28160] },
-    { "layer": "M4", "net_name": "vin1", "width": 80, "rect": [ 0, 28160, 7040, 28160] },
-    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 7040, 28160, 7040, 27552] },
-    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 7040, 27552, 7680, 27552] },
-    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 7680, 21504, 7680, 28224] },
-    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 7680, 30240, 7680, 28896] },
-    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 7680, 34272, 7680, 30912] },
-    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 0, 28896, 0, 29440] },
-    { "layer": "M4", "net_name": "vin2", "width": 80, "rect": [ 0, 29440, 7040, 29440] },
-    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 7040, 29440, 7040, 28896] },
-    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 7040, 28896, 7680, 28896] }
+    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 8000, 28560, 14400, 28560],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 14400, 25200, 14400, 25200],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/S", "layer": "M2", "rect": [8152, 24664, 20136, 24728] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vgnd", "width": 80, "rect": [ 14400, 25200, 14400, 28560],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 14400, 28560, 14400, 28560],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 0, 28560, 1600, 28560],
+      "connected_pins": [
+          { "sink_name": "C2/MINUS", "layer": "M2", "rect": [1848, 29032, 1992, 29096] },
+          { "sink_name": "vgnd", "layer": "M2", "rect": [-32, 28528, 32, 28592] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vgnd", "width": 64, "rect": [ 14400, 28560, 19200, 28560],
+      "connected_pins": [
+          { "sink_name": "C1/MINUS", "layer": "M2", "rect": [20760, 29032, 20904, 29096] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 27200, 20160, 20800, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 15120, 8000, 15120],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 8000, 15120, 8000, 16800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 16800, 8000, 16800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 8400, 8000, 8400],
+      "connected_pins": [
+          { "sink_name": "xM30|MN0_xM31|MN0/D1", "layer": "M2", "rect": [4312, 7528, 23976, 7592] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 8000, 8400, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 13440, 8000, 13440],
+      "connected_pins": [
+          { "sink_name": "xM20|MN0_xM21|MN0/D1", "layer": "M2", "rect": [8152, 14584, 20136, 14648] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 16800, 8000, 16800],
+      "connected_pins": [
+          { "sink_name": "xM10|MN0_xM11|MN0/D1", "layer": "M2", "rect": [8152, 18280, 20136, 18344] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 8000, 16800, 8000, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 8000, 20160, 8000, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 20800, 20160, 20800, 20160],
+      "connected_pins": [
+          { "sink_name": "xM00|MN0_xM01|MN0/D1", "layer": "M2", "rect": [8152, 20800, 20136, 20864] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 28800, 21840, 28800, 21840],
+      "connected_pins": [
+          { "sink_name": "vga_out1", "layer": "M2", "rect": [28768, 21808, 28832, 21872] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 28800, 21840, 28800, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 28800, 20160, 28800, 20160],
+      "connected_pins": [
+          { "sink_name": "R0/MINUS", "layer": "M2", "rect": [27928, 19792, 28128, 19856] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 20800, 20160, 20800, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out1", "width": 80, "rect": [ 20800, 20160, 20800, 21840],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out1", "width": 64, "rect": [ 20800, 21840, 20800, 21840],
+      "connected_pins": [
+          { "sink_name": "C1/PLUS", "layer": "M2", "rect": [21176, 23152, 21320, 23216] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 1600, 20160, 6400, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 15120, 8000, 15120],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 8000, 15120, 8000, 18480],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 18480, 8000, 18480],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 8400, 8000, 8400],
+      "connected_pins": [
+          { "sink_name": "xM30|MN0_xM31|MN0/D2", "layer": "M2", "rect": [4312, 7864, 23976, 7928] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 8000, 8400, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 13440, 8000, 13440],
+      "connected_pins": [
+          { "sink_name": "xM20|MN0_xM21|MN0/D2", "layer": "M2", "rect": [8152, 14920, 20136, 14984] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 20160, 8000, 20160],
+      "connected_pins": [
+          { "sink_name": "xM10|MN0_xM11|MN0/D2", "layer": "M2", "rect": [8152, 18616, 20136, 18680] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 8000, 20160, 6400, 20160],
+      "connected_pins": [
+          { "sink_name": "xM00|MN0_xM01|MN0/D2", "layer": "M2", "rect": [8152, 20464, 20136, 20528] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 0, 21840, 0, 21840],
+      "connected_pins": [
+          { "sink_name": "vga_out2", "layer": "M2", "rect": [-32, 21808, 32, 21872] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 0, 21840, 0, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 0, 20160, 0, 20160],
+      "connected_pins": [
+          { "sink_name": "R1/MINUS", "layer": "M2", "rect": [160, 19792, 360, 19856] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 6400, 20160, 6400, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vga_out2", "width": 80, "rect": [ 6400, 20160, 6400, 21840],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vga_out2", "width": 64, "rect": [ 6400, 21840, 6400, 21840],
+      "connected_pins": [
+          { "sink_name": "C2/PLUS", "layer": "M2", "rect": [6968, 23152, 7112, 23216] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net5", "width": 64, "rect": [ 20800, 20160, 20800, 20160],
+      "connected_pins": [
+          { "sink_name": "Nsw0/D", "layer": "M2", "rect": [21112, 21640, 25416, 21704] }
+      ]
+    },
+    { "layer": "M3", "net_name": "net5", "width": 80, "rect": [ 20800, 20160, 20800, 16800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net5", "width": 64, "rect": [ 20800, 16800, 20800, 16800],
+      "connected_pins": [
+          { "sink_name": "xM10|MN0_xM11|MN0/S", "layer": "M2", "rect": [8152, 18112, 20136, 18176] }
+      ]
+    },
+    { "layer": "M2", "net_name": "s0", "width": 64, "rect": [ 24000, 21840, 24000, 21840],
+      "connected_pins": [
+          { "sink_name": "Nsw0/G", "layer": "M2", "rect": [21112, 21304, 25416, 21368] }
+      ]
+    },
+    { "layer": "M3", "net_name": "s0", "width": 80, "rect": [ 24000, 21840, 24000, 20800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M4", "net_name": "s0", "width": 80, "rect": [ 24000, 20800, 28800, 20800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "s0", "width": 80, "rect": [ 28800, 20800, 28800, 23520],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "s0", "width": 64, "rect": [ 28800, 23520, 28800, 23520],
+      "connected_pins": [
+          { "sink_name": "s0", "layer": "M2", "rect": [28768, 23488, 28832, 23552] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net5p", "width": 64, "rect": [ 20800, 21840, 20800, 21840],
+      "connected_pins": [
+          { "sink_name": "Nsw0/S", "layer": "M2", "rect": [21112, 21472, 25416, 21536] }
+      ]
+    },
+    { "layer": "M3", "net_name": "net5p", "width": 80, "rect": [ 20800, 21840, 20800, 23520],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net5p", "width": 64, "rect": [ 20800, 23520, 20800, 23520],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/D3", "layer": "M2", "rect": [8152, 23992, 20136, 24056] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net4", "width": 64, "rect": [ 6400, 13440, 8000, 13440],
+      "connected_pins": [
+          { "sink_name": "Nsw1/D", "layer": "M2", "rect": [568, 14584, 4872, 14648] },
+          { "sink_name": "xM20|MN0_xM21|MN0/S", "layer": "M2", "rect": [8152, 14416, 20136, 14480] }
+      ]
+    },
+    { "layer": "M2", "net_name": "s1", "width": 64, "rect": [ 0, 13440, 0, 13440],
+      "connected_pins": [
+          { "sink_name": "Nsw1/G", "layer": "M2", "rect": [568, 14248, 4872, 14312] }
+      ]
+    },
+    { "layer": "M3", "net_name": "s1", "width": 80, "rect": [ 0, 13440, 0, 11760],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "s1", "width": 64, "rect": [ 0, 11760, 0, 11760],
+      "connected_pins": [
+          { "sink_name": "s1", "layer": "M2", "rect": [-32, 11728, 32, 11792] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net4p", "width": 64, "rect": [ 6400, 15120, 6400, 15120],
+      "connected_pins": [
+          { "sink_name": "Nsw1/S", "layer": "M2", "rect": [568, 14416, 4872, 14480] }
+      ]
+    },
+    { "layer": "M3", "net_name": "net4p", "width": 80, "rect": [ 6400, 15120, 6400, 16000],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M4", "net_name": "net4p", "width": 80, "rect": [ 6400, 16000, 8000, 16000],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "net4p", "width": 80, "rect": [ 8000, 16000, 8000, 23520],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net4p", "width": 64, "rect": [ 8000, 23520, 8000, 23520],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/D4", "layer": "M2", "rect": [8152, 23824, 20136, 23888] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net6", "width": 64, "rect": [ 24000, 6720, 24000, 6720],
+      "connected_pins": [
+          { "sink_name": "Nsw2/D", "layer": "M2", "rect": [24952, 5848, 29256, 5912] },
+          { "sink_name": "xM30|MN0_xM31|MN0/S", "layer": "M2", "rect": [4312, 7360, 23976, 7424] }
+      ]
+    },
+    { "layer": "M2", "net_name": "s2", "width": 64, "rect": [ 27200, 5040, 27200, 5040],
+      "connected_pins": [
+          { "sink_name": "Nsw2/G", "layer": "M2", "rect": [24952, 5512, 29256, 5576] }
+      ]
+    },
+    { "layer": "M3", "net_name": "s2", "width": 80, "rect": [ 27200, 5040, 27200, 3360],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "s2", "width": 64, "rect": [ 27200, 3360, 28800, 3360],
+      "connected_pins": [
+          { "sink_name": "s2", "layer": "M2", "rect": [28768, 3328, 28832, 3392] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net6p", "width": 64, "rect": [ 25600, 6720, 25600, 6720],
+      "connected_pins": [
+          { "sink_name": "Nsw2/S", "layer": "M2", "rect": [24952, 5680, 29256, 5744] }
+      ]
+    },
+    { "layer": "M3", "net_name": "net6p", "width": 80, "rect": [ 25600, 6720, 25600, 10080],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net6p", "width": 64, "rect": [ 25600, 10080, 20800, 10080],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "net6p", "width": 80, "rect": [ 20800, 10080, 20800, 23520],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net6p", "width": 64, "rect": [ 20800, 23520, 20800, 23520],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/D2", "layer": "M2", "rect": [8152, 24160, 20136, 24224] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 1600, 20160, 1600, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 1600, 20160, 1600, 19200],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M4", "net_name": "vps", "width": 80, "rect": [ 1600, 19200, 25600, 19200],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 25600, 19200, 25600, 20160],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 25600, 20160, 25600, 20160],
+      "connected_pins": [
+          { "sink_name": "R0/PLUS", "layer": "M2", "rect": [27104, 21472, 27304, 21536] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 0, 25200, 0, 25200],
+      "connected_pins": [
+          { "sink_name": "vps", "layer": "M2", "rect": [-32, 25168, 32, 25232] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vps", "width": 80, "rect": [ 0, 25200, 0, 21840],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vps", "width": 64, "rect": [ 0, 21840, 0, 21840],
+      "connected_pins": [
+          { "sink_name": "R1/PLUS", "layer": "M2", "rect": [984, 21472, 1184, 21536] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vmirror", "width": 64, "rect": [ 14400, 25200, 14400, 25200],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/D0", "layer": "M2", "rect": [8152, 24496, 20136, 24560] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vmirror", "width": 80, "rect": [ 14400, 25200, 14400, 36960],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vmirror", "width": 64, "rect": [ 14400, 36960, 14400, 36960],
+      "connected_pins": [
+          { "sink_name": "vmirror", "layer": "M2", "rect": [14368, 36928, 14432, 36992] }
+      ]
+    },
+    { "layer": "M2", "net_name": "net3", "width": 64, "rect": [ 8000, 23520, 8000, 23520],
+      "connected_pins": [
+          { "sink_name": "xM03|MN0_xM02|MN0_xM32|MN0_xM12|MN0_xM22|MN0/D1", "layer": "M2", "rect": [8152, 24328, 20136, 24392] }
+      ]
+    },
+    { "layer": "M3", "net_name": "net3", "width": 80, "rect": [ 8000, 23520, 8000, 21840],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "net3", "width": 64, "rect": [ 8000, 21840, 8000, 21840],
+      "connected_pins": [
+          { "sink_name": "xM00|MN0_xM01|MN0/S", "layer": "M2", "rect": [8152, 20968, 20136, 21032] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 8400, 8000, 8400],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 8000, 8400, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 13440, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 16800, 8000, 16800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 8000, 16800, 8000, 15120],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 15120, 8000, 15120],
+      "connected_pins": [
+          { "sink_name": "xM20|MN0_xM21|MN0/G1", "layer": "M2", "rect": [8152, 14248, 20136, 14312] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 20160, 8000, 20160],
+      "connected_pins": [
+          { "sink_name": "xM00|MN0_xM01|MN0/G1", "layer": "M2", "rect": [8152, 21136, 20136, 21200] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 8000, 20160, 8000, 16800],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 8000, 16800, 8000, 16800],
+      "connected_pins": [
+          { "sink_name": "xM10|MN0_xM11|MN0/G1", "layer": "M2", "rect": [8152, 17944, 20136, 18008] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 14400, 0, 14400, 0],
+      "connected_pins": [
+          { "sink_name": "vin1", "layer": "M2", "rect": [14368, -32, 14432, 32] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vin1", "width": 80, "rect": [ 14400, 0, 14400, 6720],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin1", "width": 64, "rect": [ 14400, 6720, 14400, 6720],
+      "connected_pins": [
+          { "sink_name": "xM30|MN0_xM31|MN0/G1", "layer": "M2", "rect": [4312, 7192, 23976, 7256] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 8000, 8400, 8000, 8400],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 8000, 8400, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 8000, 13440, 8000, 13440],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 11200, 18480, 11200, 18480],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 11200, 18480, 11200, 15120],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 11200, 15120, 11200, 15120],
+      "connected_pins": [
+          { "sink_name": "xM20|MN0_xM21|MN0/G2", "layer": "M2", "rect": [8152, 14752, 20136, 14816] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 11200, 20160, 11200, 20160],
+      "connected_pins": [
+          { "sink_name": "xM00|MN0_xM01|MN0/G2", "layer": "M2", "rect": [8152, 20632, 20136, 20696] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 11200, 20160, 11200, 18480],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 11200, 18480, 11200, 18480],
+      "connected_pins": [
+          { "sink_name": "xM10|MN0_xM11|MN0/G2", "layer": "M2", "rect": [8152, 18448, 20136, 18512] }
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 12800, 0, 12800, 0],
+      "connected_pins": [
+          { "sink_name": "vin2", "layer": "M2", "rect": [12768, -32, 12832, 32] }
+      ]
+    },
+    { "layer": "M3", "net_name": "vin2", "width": 80, "rect": [ 12800, 0, 12800, 6720],
+      "connected_pins": [
+      ]
+    },
+    { "layer": "M2", "net_name": "vin2", "width": 64, "rect": [ 12800, 6720, 12800, 6720],
+      "connected_pins": [
+          { "sink_name": "xM30|MN0_xM31|MN0/G2", "layer": "M2", "rect": [4312, 7696, 23976, 7760] }
+      ]
+    }
   ]
+
 }
