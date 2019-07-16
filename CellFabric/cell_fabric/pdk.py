@@ -120,7 +120,7 @@ class Pdk(object):
         assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
         assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
-        assert all(x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
+        assert all(x is None or x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
         # 2. DesignRules
         if isinstance(kwargs['DesignRules'], list):
             for rule in kwargs['DesignRules']:
@@ -134,7 +134,7 @@ class Pdk(object):
     def get_via_stack(self):
         layer_stack = []
         for l, info in self.pdk.items():
-            if l.startswith('V'):
+            if l.startswith('V') and not any(x is None for x in info['Stack']):
                 layer_stack.append( (l, tuple(info['Stack'])) )
         return layer_stack
 

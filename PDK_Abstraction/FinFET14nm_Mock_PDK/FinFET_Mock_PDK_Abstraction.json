@@ -39,6 +39,23 @@
 "Offset": 0
 },
 
+
+{
+    "Layer": "V0",
+    "LayerNo": 12,
+    "Stack": [null, "M1"],
+    "SpaceX": 76,
+    "SpaceY": 76,
+    "WidthX": 32,
+    "WidthY": 32,
+    "VencA_L": 20,
+    "VencA_H": 20,
+    "VencP_L": 0,
+    "VencP_H": 0,
+    "MinNo":1,
+    "DesignRules": []
+    },
+
 {
 "Layer": "M2",
 "LayerNo": 15,

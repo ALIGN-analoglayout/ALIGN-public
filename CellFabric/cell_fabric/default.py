@@ -83,6 +83,10 @@ class DefaultCanvas(Canvas):
             ))
 
     def _create_via( self, layer, info):
+        if any(x is None for x in info['Stack']):
+            print(f"WARNING: Cannot create {layer} via automatically. One or more metal layers are None.")
+            return
+
         if self.pdk[info['Stack'][0]]['Direction'] == 'h':
             assert self.pdk[info['Stack'][1]]['Direction'] == 'v', f"{info['Stack']} both appear to be horizontal"
             h_clg = getattr(self, info['Stack'][0].lower()).clg
