@@ -11,10 +11,10 @@ M0 (DA DA S 0) NMOS_VTL w=w l=90n
 M1 (DB DA S 0) NMOS_VTL w=w l=90n
 .ends SCM_NMOS
 
-.subckt SCM_CMFB_NMOS DA DB GB S
+.subckt CMFB_NMOS DA DB GB S
 M0 (DA DA S 0) NMOS_VTL w=w l=90n
 M1 (DB GB S 0) NMOS_VTL w=w l=90n
-.ends SCM_CMFB_NMOS
+.ends CMFB_NMOS
 
 .subckt CMC_PMOS_S  DA DB G S
 M0 (DA G S 0) PMOS_VTL w=w l=90n
