@@ -1,10 +1,14 @@
 #!/usr/bin/python
 import argparse
 from datetime import datetime
-from cell_fabric import gen_gds_json
+from cell_fabric import gen_gds_json, pdk
 
-def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
-  gds_layer_map = {
+def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
+  if p is None:
+    p = pdk.Pdk().load('../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+  gds_layer_map = p.get_gds_map()
+
+  gds_layer_map.update( {
           "nwell" : 1,
           "fin" : 2,
           "poly" : 3,
@@ -17,32 +21,12 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None):
           "LVT" : 10,
           "polycon" : 11,
           "V0" : 12,
-          "M1" : 13,
-          "V1" : 14,
-          "M2" : 15,
-          "V2" : 16,
-          "V3" : 17,
-          "V4" : 18,
-          "M3" : 19,
-          #"V3" : 20,
-          "M4" : 21,
-          #"V4" : 22,
-          "M5" : 23,
-          "V5" : 24,
-          "M6" : 25,
-          "V6" : 26,
-          "M7" : 27,
-          "V7" : 28,
-          "M8" : 29,
-          "V8" : 30,
-          "M9" : 31,
-          "V9" : 32,
           "cellarea" : 100,
           "BOUNDARY" : 100,
           "boundary" : 100,
           "bbox" : 100,
           "diearea" : 100
-      }
+      } )
 
   via_gen_tbl = {
       "V2": (

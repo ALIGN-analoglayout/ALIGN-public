@@ -48,15 +48,16 @@ def test_fabric_Dp(setup):
         assert data['bbox'] == data_golden['bbox']
         assert data == data_golden
 
-def test_fabric_gds_json():
+def test_fabric_gds_json(setup):
 
+    uc = setup
 
     fn = "tests/__json_dp_nmos"
 
 
     with open( fn + "_cand", "rt") as fp0, \
          open(fn + "_gds_cand", 'wt') as fp1:
-        gen_gds_json.translate("test", '', fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate("test", '', fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)
 
     with open( fn + "_gds_cand", "rt") as fp0, \
          open( fn + "_gds_gold", "rt") as fp1:
