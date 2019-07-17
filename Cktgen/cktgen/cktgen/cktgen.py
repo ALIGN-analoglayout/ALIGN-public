@@ -622,8 +622,9 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-Option name=nets_to_route value=net4
-#Option name=nets_not_to_route value=!kor
+#Option name=nets_to_route value=net3
+#Option name=nets_to_route value=net3,net4,net4p,net5,net5p,net6,net6p,s0,s1,s2,vga_out1,vga_out2,vin1,vin2,vmirror,vps
+Option name=nets_not_to_route value=!kor
 
 #Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
 
@@ -713,19 +714,24 @@ Option name=upper_layer                          value=metal4
                 print( 'connected pin not found for:', k, hier_name, cand)
                 assert hier_name[0] in ["C1","C2","R1","R2"]
               else:
-                print( 'connected top-level pin not found for:', k, hier_name, cand)
-                
+                 print( 'connected top-level pin not found for:', k, hier_name, cand)
 
-        for lst in ces:
-          if pin_ids:
-            nlst = [ gid for gid in lst if gid in pin_ids]
-          else:
-            nlst = lst
-            
-          if not nlst:
-            nlst = lst
 
-          fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
+        if False:
+          for lst in ces:
+            if pin_ids:
+              nlst = [ gid for gid in lst if gid in pin_ids]
+            else:
+              nlst = lst
+
+            if not nlst:
+              nlst = lst
+
+            fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
+        else:
+          # connect everything
+          for w in v.wires:
+            fp.write( "ConnectedEntity terms=%s\n" % w.gid)
 
         grs = []
         for gr in v.grs:
@@ -742,7 +748,7 @@ Option name=upper_layer                          value=metal4
 
         fp.write( "GlobalRouting net=%s routes=%s\n" % (k,';'.join(grs)))
 
-        if True:
+        if False:
           for gr in v.grs:
             if not hasattr(gr,'gid'): continue
             if gr.rect.llx == gr.rect.urx and gr.rect.lly == gr.rect.ury: continue
@@ -754,6 +760,14 @@ Option name=upper_layer                          value=metal4
                 if cand in self.wire_cache:
                   wire = self.wire_cache[cand]
                   fp.write( "Tie term0=%d gr0=%d\n" % (wire.gid, gr.gid))
+        else:
+          for gr in v.grs:
+            if gr.layer != "metal3": continue
+            x = (gr.rect.llx + gr.rect.urx)*840*10//2
+            print( "SMB", x, gr.rect, w.rect)
+            for w in v.wires:
+              if w.rect.llx <= x <= w.rect.urx:
+                fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
 
         fp.write( "#end of net %s\n" % k)
 

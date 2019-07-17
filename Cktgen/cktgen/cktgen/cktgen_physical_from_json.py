@@ -264,7 +264,7 @@ if __name__ == "__main__":
   with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
     global_router_results = json.load( fp)
 
-  hack_gr( global_router_results, placer_results['bbox'])
+#  hack_gr( global_router_results, placer_results['bbox'])
 
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
