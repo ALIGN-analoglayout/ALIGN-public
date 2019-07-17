@@ -2,8 +2,17 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 
  This the main repository for the DARPA IDEA ALIGN project led by University of Minnesota.
- 
 
+# Push Button Flow
+ * make ALIGN : Runs the full flow using single command
+ * make ALIGN_docker : Runs the full flow on Docker 
+```bash
+  - update Makefile paths before running the tool [line 1-7]
+  - make : lists all available commands 
+  - make compile : required once for setting up the tool
+```
+
+make compile
 # Design Flow 
 ## Continuous Integration
 ```bash
