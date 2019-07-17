@@ -37,11 +37,13 @@ struct ViaModel;
 struct Via;
 struct PowerGrid;
 struct PowerNet;
+struct PortPos;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
+enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 
 /// Part 2: declaration of sturctures for placer and router
 struct point {
@@ -68,6 +70,11 @@ struct connectNode {
   int iter2; // 1: #block
 }; // structure of connected component of nets
 
+struct globalContact {
+  contact conTact;
+  int metalIdx;
+};
+
 struct net {
   string name="";
   bool shielding=false; // shielding constraint
@@ -81,6 +88,9 @@ struct net {
   vector<contact> interVias;////TEMPORARY!!!+Jinhyun
   vector<Metal> path_metal;
   vector<Via> path_via;
+  vector<globalContact> connectedContact; // for writing global route results
+  Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
+  int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
 }; // structure of nets
 
 struct Metal{
@@ -111,6 +121,7 @@ struct block {
   // Basic information
   string name="";
   string master="";
+  string lefmaster="";
   string type="";
   int width=0;
   int height=0;
@@ -129,6 +140,7 @@ struct block {
   vector<pin> blockPins;
   vector<contact> interMetals;
   vector<Via> interVias;
+  vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
 }; // structure of block
 
 struct terminal {
@@ -139,8 +151,10 @@ struct terminal {
 }; // structure of terminal
 
 struct blockComplex {
-  block instance;
+  std::vector<block> instance;
+  int selectedInstance=-1;
   int child=-1;
+  int instNum=0;
 };
 
 struct PowerGrid{
@@ -168,6 +182,18 @@ struct PowerNet {
   vector<Via> path_via;
 }; // structure of nets
 
+struct layoutAS {
+  int width=0;
+  int height=0;
+  string gdsFile="";
+  vector<blockComplex> Blocks;
+  vector<net> Nets;
+  vector<terminal> Terminals;
+  //vector<pin> blockPins;
+  //vector<contact> interMetals;
+  //vector<Via> interVias;
+};
+
 struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
@@ -191,6 +217,7 @@ struct hierNode {
   vector<contact> interMetals;
   vector<Via> interVias;
 
+  vector<layoutAS> PnRAS;
 
   // Member variables for constratins
   vector<SymmNet> SNets;
@@ -202,7 +229,9 @@ struct hierNode {
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
-  int bias_graph=92;
+  vector<PortPos> Port_Location;
+  int bias_Hgraph=92;
+  int bias_Vgraph=92;
 
 }; // structure of vertex in heirarchical tree
 
@@ -260,6 +289,11 @@ struct AlignBlock {
   int horizon; // 1 is h, 0 is v.
 };
 
+struct PortPos {
+  int tid;
+  Bmark pos;
+};
+
 struct CCCap {
   vector<int> size;
   string CCCap_name;
@@ -275,6 +309,7 @@ struct lefMacro {
   string name="";
   vector<pin> macroPins;
   vector<contact> interMetals;
+  string master="";
 };
 
 /// PArt 5: declaration of structures for design rule data
@@ -295,6 +330,7 @@ struct ViaModel {
 
 struct metal_info {
   string name;
+  int layerNo;
   int width;  //from minwidth MinWidth["M1"]
   int dist_ss;//side to side distance  from SpaceNumTem found the minimim one SpaceNumTem["M1"]
   int direct;//direction, 1 is H, 0 is V  added it by your self
@@ -307,6 +343,7 @@ struct metal_info {
 
 struct via_info {
   string name;
+  int layerNo;
   int lower_metal_index;
   int upper_metal_index;
   int width;  //drData.MinWidth["V6"], X direction width

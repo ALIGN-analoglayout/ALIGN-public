@@ -31,6 +31,7 @@ class DetailRouter : public GlobalRouter {
   friend class PowerRouter;
 
   private:
+   int global_grid_scale;
    
 /*
    int End_Metal_Flag = 1;
@@ -96,6 +97,7 @@ class DetailRouter : public GlobalRouter {
     //void ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterDB::Via& router_via);
     //void TerminalToNodeTerminal(PnRDB::hierNode& HierNode);
     void GetPhsical_Metal_Via(int i);
+    void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
     
 };
 

@@ -90,6 +90,23 @@ def test_fabric_no_duplicates_gds():
     for (x,y) in itertools.product( range(x_cells), range(y_cells)):
         uc.unit( x, y, x_cells, y_cells, fin_u, gate_u)
 
+    uc.gds_layer_map = {
+        "polycon" : 1,
+        "fin" : 2,
+        "poly" : 3,
+        "active" : 4,
+        "nselect" : 5,
+        "pselect" : 6,
+        "M0"   : 10,
+        "via0" : 11,
+        "M1"   : 12,
+        "via1" : 13,
+        "M2"   : 14,
+        "via2" : 15,
+        "M3"   : 16,
+        "bbox" : 50
+        }
+
     with open( "tests/test_gds.gds", 'wb') as fp:
         uc.writeGDS( fp)
 

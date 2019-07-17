@@ -17,7 +17,9 @@
 
 #include "Rdatatype.h"
 #include "GlobalRouter.h"
+#include "GcellGlobalRouter.h"
 #include "DetailRouter.h"
+#include "GcellDetailRouter.h"
 #include "PowerRouter.h"
 #include "../PnRDB/datatype.h"
 //using std::cout;
@@ -27,6 +29,7 @@
 class Router {
   private:
     GlobalRouter *GR;
+    GcellGlobalRouter *GGR;
   public:
     Router() {};
     Router(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR);

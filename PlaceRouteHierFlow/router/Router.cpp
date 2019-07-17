@@ -10,7 +10,7 @@ Router::Router(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int 
 void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, std::string binaryDIR) {
   //GlobalRouter GR(node, drcData, Lmetal, Hmetal, binaryDIR);
   //DetailRouter(node, GR, 1, 1);
-  //mode 0 global router, 1 detail router, 2 power grid router, 3 power net router
+  //mode 0 global router, 1 detail router, 2 power grid router, 3 power net router, 4 gcell global router, 5 gcell detail router
   if(mode==0) {
     std::cout<<"RouteWork "<<mode<<std::endl;
     this->GR=new GlobalRouter(node, drcData, Lmetal, Hmetal, binaryDIR);
@@ -23,6 +23,12 @@ void Router::RouteWork(int mode, PnRDB::hierNode& node, PnRDB::Drc_info& drcData
   } else if(mode==3){
     std::cout<<"RouteWork "<<mode<<std::endl;
     PowerRouter(node, drcData, Lmetal, Hmetal, 0);
+  } else if(mode==4){
+    std::cout<<"RouteWork "<<mode<<std::endl;
+    this->GGR = new GcellGlobalRouter(node, drcData, Lmetal, Hmetal, binaryDIR);
+  } else if(mode==5){
+    std::cout<<"RouteWork "<<mode<<std::endl;
+    GcellDetailRouter(node, *(this->GGR), 1, 1);
   }
  
 };

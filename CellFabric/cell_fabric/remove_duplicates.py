@@ -162,7 +162,7 @@ class RemoveDuplicates():
             netName = d['netName']
             isPorted = 'pin' in d
             if isPorted:
-                assert netName == d['pin']
+                assert netName == d['pin'], f"{netName} does not match {d['pin']}"
 
             if layer in self.skip_layers: continue
 

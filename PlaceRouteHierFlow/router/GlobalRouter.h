@@ -31,18 +31,20 @@
 //#include "lp_explicit.h"
 //}
 
-extern "C"
-{
-#include <stdio.h>
-#include "lp_lib.h"
-}
+// wbxu: 20190708 the following codes are to enable ILP to choose candidates
+//extern "C"
+//{
+//#include <stdio.h>
+//#include "lp_lib.h"
+//}
 
 
 class GlobalRouter : public RawRouter {
  
   friend class Grid;
   friend class DetailRouter;
-  
+  friend class GcellDetailRouter;
+
   private:
     struct IntPairComp {
       bool operator() (const std::pair<int,int>& lhs, const std::pair<int,int>& rhs) const
@@ -57,6 +59,7 @@ class GlobalRouter : public RawRouter {
     struct valInfo {
       int netIter;
       int segIter;
+      int STiter;
       int candIter;
       int valIter;
     };
@@ -70,7 +73,9 @@ class GlobalRouter : public RawRouter {
     char cwd[PATH_MAX];
     int NumOfVar;
     int SlackCounter;
-    lprec *lp;//Data structure for lp_solve
+    // wbxu: 20190708 the following codes are to enable ILP to choose candidates
+    //lprec *lp;//Data structure for lp_solve
+    // wbxu-end
     std::vector<std::vector<RouterDB::SegPiece> > MetalPieces, ViaPieces;
     std::vector<valInfo> ValArray;
     std::vector<slackInfo>  SlackArray;
@@ -87,6 +92,8 @@ class GlobalRouter : public RawRouter {
     //vector<PnRDB::Drc_info> drc_info;
     //int lowest_metal, highest_metal; //index of lowest metal & highest metal
     //int grid_scale; //dynamic grid_scal
+    void AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
+    void AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index, RouterDB::NType stype, int siter, int siter2, int smetal, int sx, int sy, int mIdx);
 
   public:
     GlobalRouter();

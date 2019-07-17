@@ -12,6 +12,9 @@ class Pdk(object):
             ret += f"{key}: {value}\n"
         return ret
 
+    def __contains__(self, key):
+        return key in self.pdk
+
     def __getitem__(self, key):
         """Act like a read-only dict"""
         assert key in self.pdk
@@ -63,7 +66,8 @@ class Pdk(object):
                   'Width',
                   'MinL',
                   'MaxL',
-                  'EndToEnd']
+                  'EndToEnd',
+                  'Offset']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
@@ -107,6 +111,7 @@ class Pdk(object):
                   'VencA_H',
                   'VencP_L',
                   'VencP_H',
+                  'MinNo',
                   'DesignRules']
         self._check(params, **kwargs)
         # Attributes that need additional processing
@@ -126,9 +131,12 @@ class Pdk(object):
         assert 'Layer' in kwargs, '"Layer" is required parameter for all layers in PDK abstraction'
         self._add(None, **kwargs)
 
-    def get_electrical_connectivity(self):
+    def get_via_stack(self):
         layer_stack = []
         for l, info in self.pdk.items():
             if l.startswith('V'):
                 layer_stack.append( (l, tuple(info['Stack'])) )
         return layer_stack
+
+    def get_gds_map(self):
+        return {x: self.pdk[x]['LayerNo'] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x]}
