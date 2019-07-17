@@ -138,7 +138,7 @@ int main(int argc, char** argv ){
 
     DB.AddingPowerPins(current_node);
 
-    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 0, 1, 6); //dummy, aspect ratio, number of aspect retio
+    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);

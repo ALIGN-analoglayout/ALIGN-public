@@ -3340,6 +3340,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   for(int i=0;i<node.Blocks.size();i++){
     string master=node.Blocks[i].instance.back().master;
     if(lefData.find(master)==lefData.end()){
+    if(master.find("Cap")!=std::string::npos or master.find("cap")!=std::string::npos) {continue;}
     if(node.Blocks[i].instance.back().isLeaf) {
       cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
     }
