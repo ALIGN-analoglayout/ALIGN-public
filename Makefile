@@ -1,10 +1,10 @@
 SHELL = bash
 PC=python3
 HOME = /home/kunal001/Desktop/research_work/alpha_release/ALIGN-public/
-#INPUT_DIR = $(HOME)/examples/telescopic_ota
-#DESIGN_NAME =telescopic_ota
-INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
-DESIGN_NAME = switched_capacitor_filter
+INPUT_DIR = $(HOME)/examples/telescopic_ota
+DESIGN_NAME =telescopic_ota
+#INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
+#DESIGN_NAME = switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE = FinFET_Mock_PDK_Abstraction.json
 Cell_generator = CellFabric/Cell_Fabric_FinFET__Mock
@@ -57,8 +57,8 @@ clean_docker:
 build_docker:  
 	cd Build && docker build -f Dockerfile.build -t with_protobuf . 
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
-	if [ -d "./PlaceRouteHierFlow/results" ]; then \
-		rm -rf ./PlaceRouteHierFlow/results; \
+	if [ -d "./PlaceRouteHierFlow/Results" ]; then \
+		rm -rf ./PlaceRouteHierFlow/Results; \
 	fi
 	cd PlaceRouteHierFlow && docker build -f Dockerfile -t placeroute_image .
 	
@@ -94,6 +94,9 @@ annotate:
 	@echo "#########################################"
 
 create_cell_docker: 
+	@echo Cell Generation
+	@echo ""
+	@echo Creating primitive cells for PnR
 	@if [ -a  "$(Cell_generator)/$(DESIGN_NAME).lef" ]; \
 		then \
 		rm $(Cell_generator)/$(DESIGN_NAME).lef; \
@@ -137,8 +140,11 @@ PnR_docker: create_PnR_data
 	if [ ! "$$(docker ps -a -f name=PnR)" ]; then docker stop PnR; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=PnR)" ]; then docker rm PnR; fi
 	(cd testcase_latest; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
-	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0| tee > PnR.log; mkdir results;cp $(DESIGN_NAME)* results/"
-	docker cp PnR:/PlaceRouteHierFlow/results/ ./testcase_latest/
+	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0| tee > PnR.log; "
+	docker cp PnR:/PlaceRouteHierFlow/Results/ ./testcase_latest/
+	@echo "Creating gds"
+	@echo Check results at: testcase_latest/Results/$(DESIGN_NAME).gds;
+	@$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
 
 PnR:
 	@echo ""
@@ -146,21 +152,21 @@ PnR:
 	@cp -rp testcase_latest ./PlaceRouteHierFlow
 	export LD_LIBRARY_PATH=$(HOME)/lpsolve/lp_solve_5.5.2.5_dev_ux64 && \
 	cd PlaceRouteHierFlow/ && time ./pnr_compiler ./testcase_latest $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0|tee > PnR.log 
-	@if [ ! -d "./testcase_latest/results" ]; then \
-		mkdir ./testcase_latest/results; \
+	@if [ ! -d "./testcase_latest/Results" ]; then \
+		mkdir ./testcase_latest/Results; \
 	fi
-	@cp -f PlaceRouteHierFlow/Results/$(DESIGN_NAME)* testcase_latest/results/
-	@if [ ! -a "testcase_latest/results/$(DESIGN_NAME).gds" ]; then \
+	@cp -f PlaceRouteHierFlow/Results/$(DESIGN_NAME)* testcase_latest/Results/
+	@if [ ! -a "testcase_latest/Results/$(DESIGN_NAME).gds" ]; then \
 		echo PnR finished successfully; \
 		echo "#########################################"; \
 	fi
 	@echo "Creating gds"
-	@echo Check results at: testcase_latest/results/$(DESIGN_NAME).gds;
-	@$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/results/$(DESIGN_NAME).gds
+	@echo Check results at: testcase_latest/Results/$(DESIGN_NAME).gds;
+	@$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
 
 view_result: 
 ifneq (, $(shell which klayout))
-	@klayout ./testcase_latest/results/$(DESIGN_NAME).gds &
+	@klayout ./testcase_latest/Results/$(DESIGN_NAME)_0.gds &
 endif
 	
 ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker view_result

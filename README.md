@@ -7,17 +7,16 @@
  * make ALIGN : Runs the full flow using single command
  * make ALIGN_docker : Runs the full flow on Docker 
 ```bash
-  - update Makefile paths before running the tool [line 1-7]
+  - update local paths in Makefile before running the tool [line 1-7]
   - make : lists all available commands 
   - make compile : required once for setting up the tool
 ```
 
-make compile
 # Design Flow 
 ## Continuous Integration
 ```bash
   - Circleci to integrate code from multiple developers. 
-  - Each checkin is verified automatically.
+  - Each check-in is verified automatically.
   - Code coverage and quality checks are done before merging.
   - Cross platform using Docker.
 ```
@@ -59,7 +58,7 @@ Final output is stored in gds format
 ```
 * Cktgen: Intel detail router example
 ```bash
-  - Takes leaf cell placement and global routing information and setups up the detailed routing task.
+  - Takes leaf cell placement and global routing information and sets up the detailed routing task.
   - Run Intel’s detailed router. 
 ```
 ## Viewer :
