@@ -210,6 +210,8 @@ class Canvas:
         if self.pdk is not None:
             self.drc = DesignRuleCheck( self)
             self.drc.run()
+            self.pex = ParasiticExtraction( self)
+            self.pex.run()
 
         return data
 
