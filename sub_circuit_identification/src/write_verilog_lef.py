@@ -190,8 +190,10 @@ def generate_lef(fp, name, values, available_block_lef,
         
     else:
         #print("other param",values)
-        if "fin" in values.keys():
-            size = int(values["fin"])
+        if "nfin" in values.keys():
+            size = int(values["nfin"])
+            if 'nf' in values.keys():
+                size=size*int(values["nf"])
             no_units = ceil(size / unit_size_mos)
 
         elif "l" in values.keys():
@@ -274,7 +276,7 @@ if __name__ == '__main__':
     logging.info("Reading available lef: %s", ", ".join(ALL_LEF))
 
     UNIT_SIZE_CAP = ARGS.unit_size_cap
-    UNIT_SIZE_MOS = ARGS.unit_size_cap
+    UNIT_SIZE_MOS = ARGS.unit_size_mos
     logging.info("Unit cap cell size: %s", str(UNIT_SIZE_CAP))
     logging.info("Unit mos cell size: %s", str(UNIT_SIZE_MOS))
     logging.info("Reading file: %s", RESULT_DIR + INPUT_PICKLE + '.p')
@@ -316,10 +318,11 @@ if __name__ == '__main__':
         else:
             inoutpin = []
         #print("inout pins:",inoutpin)
-        logging.info("writing verilog for block: %s", name)
-        wv = WriteVerilog(graph, name, inoutpin)
-        wv.print_module(VERILOG_FP)
-        generated_module.append(name)
+        if name not in  generated_module:
+            logging.info("writing verilog for block: %s", name)
+            wv = WriteVerilog(graph, name, inoutpin)
+            wv.print_module(VERILOG_FP)
+            generated_module.append(name)
 
     LEF_FP.close()
 
