@@ -12,7 +12,7 @@ class CanvasNMOS(DefaultCanvas):
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
         p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
         super().__init__(p)
-        assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
+        assert   3*p['Fin']['Pitch'] < 2*p['M2']['Pitch']
 
 ######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
@@ -76,7 +76,7 @@ class CanvasNMOS(DefaultCanvas):
 
         self.v0.h_clg.addCenterLine( 0,                 p['V0']['WidthY'], False)
         for i in range(activeWidth//(2* p['M2']['Pitch'])):
-            self.v0.h_clg.addCenterLine( v0x_offset+i*  p['Feol']['v0Pitch'],    p['V0']['WidthY'], True)
+            self.v0.h_clg.addCenterLine( v0x_offset+i*  3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
 
