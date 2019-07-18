@@ -20,7 +20,6 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
           "SLVT" : 9,
           "LVT" : 10,
           "polycon" : 11,
-          "V0" : 12,
           "cellarea" : 100,
           "BOUNDARY" : 100,
           "boundary" : 100,
