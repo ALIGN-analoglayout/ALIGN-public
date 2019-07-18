@@ -109,10 +109,19 @@ class ParasiticExtraction():
                 self._stamp_port(self.canvas.pdk[layer]['Stack'][1], x0, x1)
 
     def _extract_via_parasitics(self, layer, vv):
-        pass
+        for v in vv.values():
+            for slr in v.rects:
+                self._create_via_netcells(slr.root().netName, layer, slr.rect)
 
-    def _gen_netcell_node_name(self, net, layer, twice_center, index):
-        return f'{net}_{layer}_{twice_center // 2}_{index}'.replace('-', '_')
+    def _create_via_netcells(self, net, layer, rect):
+        x = ( rect[0] + rect[2] ) // 2
+        y = ( rect[1] + rect[3] ) // 2
+        node1 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][0], x, y)
+        node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
+        self.netCells[ (node1, node2) ] = (layer, rect)
+
+    def _gen_netcell_node_name(self, net, layer, x, y):
+        return f'{net}_{layer}_{x}_{y}'.replace('-', '_')
 
     def _extract_metal_parasitics(self, layer, vv):
         for twice_center, v in vv.items():
@@ -120,7 +129,7 @@ class ParasiticExtraction():
 
     def _extract_mline_parasitics(self, layer, slrects, dIndex, twice_center):
         for slr in slrects:
-            self._create_netcells(slr.root().netName, layer, twice_center, slr.rect, dIndex)
+            self._create_metal_netcells(slr.root().netName, layer, twice_center, slr.rect, dIndex)
 
     def _stamp_netcells(self, net, layer, twice_center, starti, endi, rect, dIndex):
         numcells = math.ceil( (endi - starti) / self.canvas.pdk['Poly']['Pitch'] )
@@ -130,15 +139,19 @@ class ParasiticExtraction():
                 cellend = endi
             else:
                 cellend = cellstart + self.canvas.pdk['Poly']['Pitch']
-            node1 = self._gen_netcell_node_name(net, layer, twice_center, cellstart)
-            node2 = self._gen_netcell_node_name(net, layer, twice_center, cellend)
+            if self.canvas.pdk[layer]['Direction'] == 'v':
+                node1 = self._gen_netcell_node_name(net, layer, twice_center // 2, cellstart)
+                node2 = self._gen_netcell_node_name(net, layer, twice_center // 2, cellend)
+            else:
+                node1 = self._gen_netcell_node_name(net, layer, cellstart, twice_center // 2)
+                node2 = self._gen_netcell_node_name(net, layer, cellend, twice_center // 2)
             cell_rect = rect.copy()
             cell_rect[dIndex] = cellstart
             cell_rect[dIndex + 2] = cellend
             self.netCells[ (node1, node2) ] = (layer, cell_rect)
         return endi
 
-    def _create_netcells(self, net, layer, twice_center, rect, dIndex):
+    def _create_metal_netcells(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
         for port in self._terms[layer][twice_center]:
