@@ -198,15 +198,20 @@ class SpiceParser:
     def _remove_source(self):
         no_of_source = 0
         #source_ports = []
-        reduced_subckt = []
         for ckt_name, elements in self.subckts.items():
-            reduced_subckt = [
-                node for node in elements["nodes"]
-                if 'source' not in node["inst_type"]
-            ]
+            reduced_subckt = []
+            source_ports =[]
+            for node in elements["nodes"]:
+                if 'source' in node["inst_type"]:
+                    source_ports +=node["ports"]
+                else:
+                    reduced_subckt.append(node)
+
             no_of_source += len(
                 self.subckts[ckt_name]["nodes"]) - len(reduced_subckt)
             self.subckts[ckt_name]["nodes"] = reduced_subckt
+            self.subckts[ckt_name]["ports"] += source_ports
+            print(source_ports)
 
         logging.error('REMOVED %i sources from circuit.\n', no_of_source)
 
