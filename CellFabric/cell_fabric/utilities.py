@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
@@ -61,7 +63,8 @@ class DesignRuleCheck():
 class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
-        self.netCells = {} # instance: (type, start)
+        self._ports = defaultdict(lambda: defaultdict(list)) # layer: {clg: [spg, spg, spg]}
+        self.netCells = [] # (type, startnode, endnode)
 
     def run(self):
         '''
@@ -72,6 +75,10 @@ class ParasiticExtraction():
         '''
 
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
+            if self.canvas.rd.layers[layer] == '*':
+                self._compute_port_locations(layer, vv)
+
+        for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if layer not in self.canvas.pdk:
                 continue
             if self.canvas.rd.layers[layer] == '*':
@@ -79,6 +86,23 @@ class ParasiticExtraction():
             else:
                 self._extract_metal_parasitics(layer, vv)
         return self.netCells
+
+    def _stamp_port(self, layer, x0, x1):
+        if layer is None:
+            return
+        if 'Direction' not in self.canvas.pdk[layer] or self.canvas.pdk[layer]['Direction'] == 'v':
+            self._ports[layer][x1].append(x0)
+        else:
+            self._ports[layer][x0].append(x1)
+
+    def _compute_port_locations(self, layer, vv):
+        for x1, v in vv.items():
+            for slr in v.rects:
+                rect = slr.rect
+                x0 = ( rect[v.dIndex] + rect[v.dIndex + 2] ) // 2
+                self._stamp_port(layer, x0, x1)
+                self._stamp_port(self.canvas.pdk[layer]['Stack'][0], x0, x1)
+                self._stamp_port(self.canvas.pdk[layer]['Stack'][1], x0, x1)
 
     def _extract_via_parasitics(self, layer, vv):
         pass
@@ -96,5 +120,7 @@ class ParasiticExtraction():
         for v in vv.values():
             self._extract_line_parasitics(layer, v.rects, v.dIndex)
 
-    def _extract_line_parasitics(self, layer, rects, dIndex):
-        pass
+    def _extract_line_parasitics(self, layer, slrects, dIndex):
+        (start, end) = (dIndex, dIndex + 2)
+        for slr in slrects:
+            pass
