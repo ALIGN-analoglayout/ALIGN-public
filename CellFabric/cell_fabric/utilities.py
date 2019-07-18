@@ -61,6 +61,31 @@ class DesignRuleCheck():
 class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
+        self.netCells = {} # instance: (type, start)
 
     def run(self):
-        raise NotImplementedError("Work in Progress")
+        '''
+        Run PEX on self.canvas
+
+        Note: self.canvas must already contain 'rd'
+              (aka removeDuplicates has been run)
+        '''
+
+        for (layer, vv) in self.canvas.rd.store_scan_lines.items():
+            if layer not in self.canvas.pdk:
+                continue
+            if self.canvas.rd.layers[layer] == '*':
+                self._extract_via_netCells(layer, vv)
+            else:
+                self._extract_metal_netCells(layer, vv)
+        return self.netCells
+
+    def _extract_via_parasitics(self, layer, vv):
+        pass
+
+    def _extract_metal_parasitics(self, layer, vv):
+        for v in vv.values():
+            self._extract_line_parasitics(layer, v.rects, v.dIndex)
+
+    def _extract_line_parasitics():
+        pass
