@@ -2,7 +2,7 @@ import pytest
 import itertools
 import math
 
-from cell_fabric import DefaultCanvas, Pdk, Wire, Via
+from cell_fabric import DefaultCanvas, Pdk
 
 @pytest.fixture
 def setup():

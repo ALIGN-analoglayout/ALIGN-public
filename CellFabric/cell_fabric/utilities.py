@@ -120,7 +120,8 @@ class ParasiticExtraction():
         node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
         self.netCells[ (node1, node2) ] = (layer, rect)
 
-    def _gen_netcell_node_name(self, net, layer, x, y):
+    @staticmethod
+    def _gen_netcell_node_name(net, layer, x, y):
         return f'{net}_{layer}_{x}_{y}'.replace('-', '_')
 
     def _extract_metal_parasitics(self, layer, vv):
