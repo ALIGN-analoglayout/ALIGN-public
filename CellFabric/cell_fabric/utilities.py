@@ -1,4 +1,4 @@
-from collections import defaultdict
+import collections
 
 class DesignRuleCheck():
     def __init__(self, canvas):
@@ -63,8 +63,8 @@ class DesignRuleCheck():
 class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
-        self._terms = defaultdict(lambda: defaultdict(list)) # layer: {clg: [spg, spg, spg]}
-        self.netCells = [] # (type, startnode, endnode)
+        self._terms = collections.defaultdict(lambda: collections.defaultdict(list)) # layer: {scanline: [p1...pn]}
+        self.netCells = collections.OrderedDict() # (node1, node2) : (layer, rect)
 
     def run(self):
         '''
@@ -118,23 +118,23 @@ class ParasiticExtraction():
             self._extract_mline_parasitics(layer, v.rects, v.dIndex, line)
 
     def _extract_mline_parasitics(self, layer, slrects, dIndex, line):
-        (start, end) = (dIndex, dIndex + 2)
         for slr in slrects:
-            self._create_netcells(slr.root(), layer, line, slr.rect[start], slr.rect[end])
+            self._create_netcells(slr.root(), layer, line, slr.rect, dIndex)
 
-    def _stamp_netcells(self, net, layer, line, starti, endi):
+    def _stamp_netcells(self, net, layer, line, starti, endi, rect):
         node1 = self._gen_netcell_node_name(net, layer, line, starti)
         node2 = self._gen_netcell_node_name(net, layer, line, endi)
-        self.netCells.append( (node1, node2) )
+        self.netCells[ (node1, node2) ] = (layer, rect)
         return node2
 
-    def _create_netcells(self, net, layer, line, starti, endi):
+    def _create_netcells(self, net, layer, line, rect, dIndex):
+        (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
         for port in self._terms[layer][line]:
             if prev_port is None and port > starti:
-                prev_port = self._stamp_netcells(net, layer, line, starti, port)
+                prev_port = self._stamp_netcells(net, layer, line, starti, port, rect)
             elif port > endi:
-                self._stamp_netcells(net, layer, line, prev_port, endi)
+                self._stamp_netcells(net, layer, line, prev_port, endi, rect)
                 break
             else:
-                prev_port = self._stamp_netcells(net, layer, line, prev_port, port)
+                prev_port = self._stamp_netcells(net, layer, line, prev_port, port, rect)
