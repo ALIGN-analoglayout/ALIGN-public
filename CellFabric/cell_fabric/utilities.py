@@ -75,9 +75,9 @@ class ParasiticExtraction():
             if layer not in self.canvas.pdk:
                 continue
             if self.canvas.rd.layers[layer] == '*':
-                self._extract_via_netCells(layer, vv)
+                self._extract_via_parasitics(layer, vv)
             else:
-                self._extract_metal_netCells(layer, vv)
+                self._extract_metal_parasitics(layer, vv)
         return self.netCells
 
     def _extract_via_parasitics(self, layer, vv):
