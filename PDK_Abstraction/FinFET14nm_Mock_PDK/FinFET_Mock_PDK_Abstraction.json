@@ -471,12 +471,11 @@
 },
 
 {
-"Layer": "Feol",    
+"Layer": "Feol",
 "m0Pitch": 80,
-"m0Width": 34,    
+"m0Width": 34,
 "pcWidth": 200,
 "dcWidth": 200,
-"v0Width": 32,
 "v0Pitch": 126,
 "v_enclosure": 20,
 "active_enclosure": 42,
@@ -491,7 +490,7 @@
 "m1Width": 32,
 "m2Width": 32,
 "m3Width": 32
-} 
+}
 
 
 ]
