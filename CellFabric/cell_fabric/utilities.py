@@ -83,9 +83,18 @@ class ParasiticExtraction():
     def _extract_via_parasitics(self, layer, vv):
         pass
 
+    def _flatten(self, i):
+        if isinstance(i, int):
+            return int
+        else:
+            return '_'.join([str(x) for x in i])
+
+    def _gen_netcell_node_name(self, net, layer, starti, endi):
+        return f'{net}_{layer}_{self._flatten(starti)}_{self._flatten(endi)}'
+
     def _extract_metal_parasitics(self, layer, vv):
         for v in vv.values():
             self._extract_line_parasitics(layer, v.rects, v.dIndex)
 
-    def _extract_line_parasitics():
+    def _extract_line_parasitics(self, layer, rects, dIndex):
         pass
