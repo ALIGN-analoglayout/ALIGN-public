@@ -1663,7 +1663,12 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Warning: terminal "<<i<<" is dangling\n"; continue;}
+    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      //caseNL.Terminals.at(i).center.x = 0;
+      //caseNL.Terminals.at(i).center.y = 0;
+      continue;
+    }
     //pos.clear();
     if((caseNL.Nets.at(netIdx).priority).compare("min")==0) { alpha=4;
     } else if((caseNL.Nets.at(netIdx).priority).compare("mid")==0) { alpha=2;
@@ -1712,7 +1717,14 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; continue;}
+        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          //caseNL.Terminals.at(i).center.x = 0;
+          //caseNL.Terminals.at(i).center.y = 0;
+          //caseNL.Terminals.at(cp).center.x = 0;
+          //caseNL.Terminals.at(cp).center.y = 0;
+          continue;
+        }
         int alpha2;
         if((caseNL.Nets.at(netIdx2).priority).compare("min")==0) { alpha2=4;
         } else if((caseNL.Nets.at(netIdx2).priority).compare("mid")==0) { alpha2=2;
@@ -2120,7 +2132,12 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Warning: terminal "<<i<<" is dangling\n"; continue;}
+    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      //caseNL.Terminals.at(i).center.x = 0;
+      //caseNL.Terminals.at(i).center.y = 0;
+      continue;
+    }
     //pos.clear();
     if((caseNL.Nets.at(netIdx).priority).compare("min")==0) { alpha=4;
     } else if((caseNL.Nets.at(netIdx).priority).compare("mid")==0) { alpha=2;
@@ -2169,7 +2186,12 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; continue;}
+        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; 
+          //caseNL.Terminals.at(i).center.x = 0;
+          //caseNL.Terminals.at(i).center.y = 0;
+          continue;
+        }
         int alpha2;
         if((caseNL.Nets.at(netIdx2).priority).compare("min")==0) { alpha2=4;
         } else if((caseNL.Nets.at(netIdx2).priority).compare("mid")==0) { alpha2=2;
@@ -4323,7 +4345,12 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Warning: terminal "<<i<<" is dangling\n"; continue;}
+    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      caseNL.Terminals.at(i).center.x = 0;
+      caseNL.Terminals.at(i).center.y = 0;
+      continue;
+    }
     //pos.clear();
     if((caseNL.Nets.at(netIdx).priority).compare("min")==0) { alpha=4;
     } else if((caseNL.Nets.at(netIdx).priority).compare("mid")==0) { alpha=2;
@@ -4376,7 +4403,14 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; continue;}
+        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          caseNL.Terminals.at(i).center.x = 0;
+          caseNL.Terminals.at(i).center.y = 0;
+          caseNL.Terminals.at(cp).center.x = 0;
+          caseNL.Terminals.at(cp).center.y = 0;
+          continue;
+        }
         int alpha2;
         if((caseNL.Nets.at(netIdx2).priority).compare("min")==0) { alpha2=4;
         } else if((caseNL.Nets.at(netIdx2).priority).compare("mid")==0) { alpha2=2;
@@ -4788,7 +4822,12 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
     int netIdx=caseNL.Terminals.at(i).netIter;
     int sbIdx=caseNL.Terminals.at(i).SBidx;
     int cp=caseNL.Terminals.at(i).counterpart;
-    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Warning: terminal "<<i<<" is dangling\n"; continue;}
+    if(netIdx<0 or netIdx>=caseNL.GetSizeofNets()) {
+      std::cout<<"Placer-Warning: terminal "<<i<<" is dangling; set it on origin\n"; 
+      caseNL.Terminals.at(i).center.x = 0;
+      caseNL.Terminals.at(i).center.y = 0;
+      continue;
+    }
     //pos.clear();
     if((caseNL.Nets.at(netIdx).priority).compare("min")==0) { alpha=4;
     } else if((caseNL.Nets.at(netIdx).priority).compare("mid")==0) { alpha=2;
@@ -4841,7 +4880,14 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
         if(solved_terminals.find(cp)!=solved_terminals.end()) {std::cout<<"Placer-Error: terminal "<<i<<" and "<<cp<<" are not solved simultaneously!\n"; continue;}
         solved_terminals.insert(cp);
         int netIdx2=caseNL.Terminals.at(cp).netIter;
-        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling\n"; continue;}
+        if(netIdx2<0 or netIdx2>=caseNL.GetSizeofNets()) {
+          std::cout<<"Placer-Error: terminal "<<i<<" is not dangling, but its counterpart "<<cp<<" is dangling; set them on origin\n"; 
+          caseNL.Terminals.at(i).center.x = 0;
+          caseNL.Terminals.at(i).center.y = 0;
+          caseNL.Terminals.at(cp).center.x = 0;
+          caseNL.Terminals.at(cp).center.y = 0;
+          continue;
+        }
         int alpha2;
         if((caseNL.Nets.at(netIdx2).priority).compare("min")==0) { alpha2=4;
         } else if((caseNL.Nets.at(netIdx2).priority).compare("mid")==0) { alpha2=2;
