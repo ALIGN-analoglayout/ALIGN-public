@@ -8,7 +8,7 @@ class CanvasNMOS(DefaultCanvas):
                   pdkfile='../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json'):
         p = Pdk().load(pdkfile)
         super().__init__(p)
-        assert   p['Feol']['v0Pitch'] < 2*p['M2']['Pitch']
+        assert   3*p['Fin']['Pitch'] < 2*p['M2']['Pitch']
 
 ######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
@@ -66,10 +66,10 @@ class CanvasNMOS(DefaultCanvas):
                                     h_clg=CenterLineGrid(),
                                     v_clg=self.m1.clg))
 
-        self.v0.h_clg.addCenterLine( 0,                 p['Feol']['v0Width'], False)       
+        self.v0.h_clg.addCenterLine( 0,                 p['V0']['WidthY'], False)
         for i in range(max(activeWidth1//(2*p['M2']['Pitch']), 1) + ((fin-fin_u)//2 + finDummy+1)//2):
-            self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*p['Feol']['v0Pitch'],    p['Feol']['v0Width'], True)
-        self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['Feol']['v0Width'], False)
+            self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
+        self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
 
 
