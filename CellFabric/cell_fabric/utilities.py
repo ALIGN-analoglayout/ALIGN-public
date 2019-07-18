@@ -1,4 +1,5 @@
 import collections
+import math
 
 class DesignRuleCheck():
     def __init__(self, canvas):
@@ -111,7 +112,7 @@ class ParasiticExtraction():
         pass
 
     def _gen_netcell_node_name(self, net, layer, twice_center, index):
-        return f'{net}_{layer}_{twice_center // 2}_{index}'
+        return f'{net}_{layer}_{twice_center // 2}_{index}'.replace('-', '_')
 
     def _extract_metal_parasitics(self, layer, vv):
         for twice_center, v in vv.items():
@@ -121,22 +122,33 @@ class ParasiticExtraction():
         for slr in slrects:
             self._create_netcells(slr.root().netName, layer, twice_center, slr.rect, dIndex)
 
-    def _stamp_netcells(self, net, layer, twice_center, starti, endi, rect):
-        node1 = self._gen_netcell_node_name(net, layer, twice_center, starti)
-        node2 = self._gen_netcell_node_name(net, layer, twice_center, endi)
-        self.netCells[ (node1, node2) ] = (layer, rect)
-        return node2
+    def _stamp_netcells(self, net, layer, twice_center, starti, endi, rect, dIndex):
+        numcells = math.ceil( (endi - starti) / self.canvas.pdk['Poly']['Pitch'] )
+        for i in range(numcells):
+            cellstart = starti + i * self.canvas.pdk['Poly']['Pitch']
+            if i == numcells - 1:
+                cellend = endi
+            else:
+                cellend = cellstart + self.canvas.pdk['Poly']['Pitch']
+            node1 = self._gen_netcell_node_name(net, layer, twice_center, cellstart)
+            node2 = self._gen_netcell_node_name(net, layer, twice_center, cellend)
+            cell_rect = rect.copy()
+            cell_rect[dIndex] = cellstart
+            cell_rect[dIndex + 2] = cellend
+            self.netCells[ (node1, node2) ] = (layer, cell_rect)
+        return endi
 
     def _create_netcells(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
         for port in self._terms[layer][twice_center]:
-            if prev_port is None and port > starti:
-                prev_port = self._stamp_netcells(net, layer, twice_center, starti, port, rect)
+            if prev_port is None:
+                if port > starti:
+                    prev_port = self._stamp_netcells(net, layer, twice_center, starti, port, rect, dIndex)
             elif port > endi:
-                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect)
+                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
                 return
             else:
-                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, port, rect)
+                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, port, rect, dIndex)
         if prev_port is None:
-                self._stamp_netcells(net, layer, twice_center, starti, endi, rect)
+                self._stamp_netcells(net, layer, twice_center, starti, endi, rect, dIndex)

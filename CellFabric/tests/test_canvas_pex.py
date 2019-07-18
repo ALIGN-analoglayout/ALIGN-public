@@ -1,5 +1,6 @@
 import pytest
 import itertools
+import math
 
 from cell_fabric import DefaultCanvas, Pdk, Wire, Via
 
@@ -11,16 +12,15 @@ def setup():
 
 def test_m1_pex(setup):
     c = setup
-    # L(300) > MinL(180)
     c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300]}]
     c.gen_data()
-    assert c.drc.num_errors == 0
+    assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 
 def test_m2_pex(setup):
     c = setup
     c.terminals = [{'layer': 'M2', 'netName': 'x', 'rect': [0, 0, 300, 100]}]
     c.gen_data()
-    assert c.drc.num_errors == 0
+    assert len(c.pex.netCells) == math.ceil(300 / c.pdk['Poly']['Pitch'])
 
 def test_via_pex(setup):
     c = setup
@@ -34,4 +34,4 @@ def test_via_pex(setup):
     +b======+=======/
 """)
     c.gen_data()
-    assert c.drc.num_errors == 0
+    assert len(c.pex.netCells) == 38
