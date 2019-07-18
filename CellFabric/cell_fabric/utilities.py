@@ -63,7 +63,7 @@ class DesignRuleCheck():
 class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
-        self._ports = defaultdict(lambda: defaultdict(list)) # layer: {clg: [spg, spg, spg]}
+        self._terms = defaultdict(lambda: defaultdict(list)) # layer: {clg: [spg, spg, spg]}
         self.netCells = [] # (type, startnode, endnode)
 
     def run(self):
@@ -78,6 +78,9 @@ class ParasiticExtraction():
             if self.canvas.rd.layers[layer] == '*':
                 self._compute_port_locations(layer, vv)
 
+        # Topological sort is not needed since coordinates are already sorted
+        # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
+
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if layer not in self.canvas.pdk:
                 continue
@@ -91,9 +94,9 @@ class ParasiticExtraction():
         if layer is None:
             return
         if 'Direction' not in self.canvas.pdk[layer] or self.canvas.pdk[layer]['Direction'] == 'v':
-            self._ports[layer][x1].append(x0)
+            self._terms[layer][x1].append(x0)
         else:
-            self._ports[layer][x0].append(x1)
+            self._terms[layer][x0].append(x1)
 
     def _compute_port_locations(self, layer, vv):
         for x1, v in vv.items():
@@ -107,20 +110,31 @@ class ParasiticExtraction():
     def _extract_via_parasitics(self, layer, vv):
         pass
 
-    def _flatten(self, i):
-        if isinstance(i, int):
-            return int
-        else:
-            return '_'.join([str(x) for x in i])
-
-    def _gen_netcell_node_name(self, net, layer, starti, endi):
-        return f'{net}_{layer}_{self._flatten(starti)}_{self._flatten(endi)}'
+    def _gen_netcell_node_name(self, net, layer, line, index):
+        return f'{net}_{layer}_{line}_{index}'
 
     def _extract_metal_parasitics(self, layer, vv):
-        for v in vv.values():
-            self._extract_line_parasitics(layer, v.rects, v.dIndex)
+        for line, v in vv.items():
+            self._extract_mline_parasitics(layer, v.rects, v.dIndex, line)
 
-    def _extract_line_parasitics(self, layer, slrects, dIndex):
+    def _extract_mline_parasitics(self, layer, slrects, dIndex, line):
         (start, end) = (dIndex, dIndex + 2)
         for slr in slrects:
-            pass
+            self._create_netcells(slr.root(), layer, line, slr.rect[start], slr.rect[end])
+
+    def _stamp_netcells(self, net, layer, line, starti, endi):
+        node1 = self._gen_netcell_node_name(net, layer, line, starti)
+        node2 = self._gen_netcell_node_name(net, layer, line, endi)
+        self.netCells.append( (node1, node2) )
+        return node2
+
+    def _create_netcells(self, net, layer, line, starti, endi):
+        prev_port = None
+        for port in self._terms[layer][line]:
+            if prev_port is None and port > starti:
+                prev_port = self._stamp_netcells(net, layer, line, starti, port)
+            elif port > endi:
+                self._stamp_netcells(net, layer, line, prev_port, endi)
+                break
+            else:
+                prev_port = self._stamp_netcells(net, layer, line, prev_port, port)
