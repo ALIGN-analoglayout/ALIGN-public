@@ -17,7 +17,7 @@ def check_const(sub_block_const):
     const_path='input_circuit/'+sub_block_const
     if os.path.isfile(const_path): 
         print('Reading const file', const_path) 
-        new_const_path=os.path.join('results/'+sub_block_const)
+        new_const_path=os.path.join('Results/'+sub_block_const)
         const_fp = open(const_path, "r")
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
@@ -44,7 +44,7 @@ def fix_verilog(design_name):
     #for file in os.listdir(verilog_dir):
     #    if file.endswith(".verilog"):
     #        verilog_path = os.path.join(verilog_dir, file)
-    verilog_path = './results/'+design_name+'.v'
+    verilog_path = './Results/'+design_name+'.v'
     if os.path.isfile(verilog_path): 
 
         print('Reading verilog file', verilog_path)
