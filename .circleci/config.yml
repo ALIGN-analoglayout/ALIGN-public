@@ -43,6 +43,7 @@ jobs:
           pip install wheel pytest coverage pytest-cov networkx pyyaml
 
           (cd CellFabric && pip install .)
+          (cd GDSConv && pip install .)
 
           make HOME=/work/workspace/ ALIGN_docker
 
