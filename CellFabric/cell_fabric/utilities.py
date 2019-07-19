@@ -77,7 +77,7 @@ class ParasiticExtraction():
 
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if self.canvas.rd.layers[layer] == '*':
-                self._compute_port_locations(layer, vv)
+                self._compute_via_intersections(layer, vv)
 
         # Topological sort is not needed since coordinates are already sorted
         # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
@@ -88,22 +88,25 @@ class ParasiticExtraction():
             if self.canvas.rd.layers[layer] == '*':
                 self._extract_via_parasitics(layer, vv)
             else:
-                self._extract_metal_parasitics(layer, vv)
+                self._extract_metal_layer(layer, vv)
         return self.netCells
 
     def _stamp_port(self, layer, x0, x1):
         if layer is None:
             return
-        if 'Direction' not in self.canvas.pdk[layer] or self.canvas.pdk[layer]['Direction'] == 'v':
-            self._terms[layer][x1].append(x0)
+        if self.canvas.rd.layers[layer] == 'h':
+            if x1 not in self._terms[layer][x0 * 2]:
+                self._terms[layer][x0 * 2].append(x1)
         else:
-            self._terms[layer][x0].append(x1)
+            if x0 not in self._terms[layer][x1 * 2]:
+                self._terms[layer][x1 * 2].append(x0)
 
-    def _compute_port_locations(self, layer, vv):
-        for x1, v in vv.items():
+    def _compute_via_intersections(self, layer, vv):
+        for twice_center, v in vv.items():
             for slr in v.rects:
                 rect = slr.rect
                 x0 = ( rect[v.dIndex] + rect[v.dIndex + 2] ) // 2
+                x1 = twice_center // 2
                 self._stamp_port(layer, x0, x1)
                 self._stamp_port(self.canvas.pdk[layer]['Stack'][0], x0, x1)
                 self._stamp_port(self.canvas.pdk[layer]['Stack'][1], x0, x1)
@@ -124,13 +127,13 @@ class ParasiticExtraction():
     def _gen_netcell_node_name(net, layer, x, y):
         return f'{net}_{layer}_{x}_{y}'.replace('-', '_')
 
-    def _extract_metal_parasitics(self, layer, vv):
+    def _extract_metal_layer(self, layer, vv):
         for twice_center, v in vv.items():
-            self._extract_mline_parasitics(layer, v.rects, v.dIndex, twice_center)
+            self._extract_metal_scanline(layer, v.rects, v.dIndex, twice_center)
 
-    def _extract_mline_parasitics(self, layer, slrects, dIndex, twice_center):
+    def _extract_metal_scanline(self, layer, slrects, dIndex, twice_center):
         for slr in slrects:
-            self._create_metal_netcells(slr.root().netName, layer, twice_center, slr.rect, dIndex)
+            self._extract_metal_rectangle(slr.root().netName, layer, twice_center, slr.rect, dIndex)
 
     def _stamp_netcells(self, net, layer, twice_center, starti, endi, rect, dIndex):
         numcells = math.ceil( (endi - starti) / self.canvas.pdk['Poly']['Pitch'] )
@@ -152,7 +155,7 @@ class ParasiticExtraction():
             self.netCells[ (node1, node2) ] = (layer, cell_rect)
         return endi
 
-    def _create_metal_netcells(self, net, layer, twice_center, rect, dIndex):
+    def _extract_metal_rectangle(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
         for port in self._terms[layer][twice_center]:
@@ -160,9 +163,9 @@ class ParasiticExtraction():
                 if port > starti:
                     prev_port = self._stamp_netcells(net, layer, twice_center, starti, port, rect, dIndex)
             elif port > endi:
-                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
-                return
+                break
             else:
                 prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, port, rect, dIndex)
         if prev_port is None:
-                self._stamp_netcells(net, layer, twice_center, starti, endi, rect, dIndex)
+            prev_port = starti
+        self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
