@@ -40,7 +40,7 @@ jobs:
           source general/bin/activate	  
 
           pip install --upgrade pip
-          pip install wheel pytest coverage pytest-cov networkx pyyaml
+          pip install wheel pytest coverage pytest-cov networkx pyyaml python-gdsii
 
           (cd CellFabric && pip install .)
           (cd GDSConv && pip install .)
