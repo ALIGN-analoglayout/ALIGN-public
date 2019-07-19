@@ -77,7 +77,7 @@ class ParasiticExtraction():
 
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if self.canvas.rd.layers[layer] == '*':
-                self._compute_port_locations(layer, vv)
+                self._compute_via_intersections(layer, vv)
 
         # Topological sort is not needed since coordinates are already sorted
         # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
@@ -99,7 +99,7 @@ class ParasiticExtraction():
         else:
             self._terms[layer][x0].append(x1)
 
-    def _compute_port_locations(self, layer, vv):
+    def _compute_via_intersections(self, layer, vv):
         for x1, v in vv.items():
             for slr in v.rects:
                 rect = slr.rect
@@ -155,14 +155,18 @@ class ParasiticExtraction():
     def _extract_metal_rectangle(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
+        print(self._terms[layer][twice_center])
         for port in self._terms[layer][twice_center]:
             if prev_port is None:
                 if port > starti:
+                    print(f"Stamping {net} on {layer} clg {twice_center} from {starti} to {port} for {rect}")
                     prev_port = self._stamp_netcells(net, layer, twice_center, starti, port, rect, dIndex)
             elif port > endi:
-                prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
-                return
+                break
             else:
+                print(f"Stamping {net} on {layer} clg {twice_center} from {prev_port} to {port} for {rect}")
                 prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, port, rect, dIndex)
         if prev_port is None:
-                self._stamp_netcells(net, layer, twice_center, starti, endi, rect, dIndex)
+            prev_port = starti
+        print(f"Stamping {net} on {layer} clg {twice_center} from {prev_port} to {endi} for {rect}")
+        self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
