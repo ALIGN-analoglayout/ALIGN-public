@@ -1,0 +1,3 @@
+# Reclassify .sp file as Spice
+*.sp linguist-language=Spice
+*.cir linguist-language=Spice
