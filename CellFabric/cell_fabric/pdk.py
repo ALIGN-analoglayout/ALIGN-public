@@ -67,7 +67,9 @@ class Pdk(object):
                   'MinL',
                   'MaxL',
                   'EndToEnd',
-                  'Offset']
+                  'Offset',
+                  'Kappa',
+                  'Rho']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.

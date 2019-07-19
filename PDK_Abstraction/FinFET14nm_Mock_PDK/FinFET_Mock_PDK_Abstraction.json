@@ -11,7 +11,9 @@
 "MinL": 60,
 "MaxL": null,
 "EndToEnd": null,
-"Offset": 40
+"Offset": 40,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -23,7 +25,9 @@
 "MinL": 100,
 "MaxL": null,
 "EndToEnd": null,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -36,7 +40,9 @@
 "MinL": 180,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 
@@ -66,7 +72,9 @@
 "MinL": 200,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -103,7 +111,9 @@
 "MinL": 210,
 "MaxL": null,
 "EndToEnd": 48,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -132,7 +142,9 @@
 "MinL": 140,
 "MaxL": null,
 "EndToEnd": 65,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -161,7 +173,9 @@
 "MinL": 100,
 "MaxL": null,
 "EndToEnd": 65,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -190,7 +204,9 @@
 "MinL": 360,
 "MaxL": null,
 "EndToEnd": 70,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -219,7 +235,9 @@
 "MinL": 360,
 "MaxL": null,
 "EndToEnd": 70,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -248,7 +266,9 @@
 "MinL": 360,
 "MaxL": null,
 "EndToEnd": 70,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -277,7 +297,9 @@
 "MinL": 200,
 "MaxL": null,
 "EndToEnd": 70,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -306,7 +328,9 @@
 "MinL": 500,
 "MaxL": null,
 "EndToEnd": 128,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -335,7 +359,9 @@
 "MinL": 260,
 "MaxL": null,
 "EndToEnd": 128,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -364,7 +390,9 @@
 "MinL": 1200,
 "MaxL": null,
 "EndToEnd":280,
-"Offset": 0 
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -393,7 +421,9 @@
 "MinL": 400,
 "MaxL": null,
 "EndToEnd": 280,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -422,7 +452,9 @@
 "MinL": 1400,
 "MaxL": null,
 "EndToEnd": 1200,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
@@ -451,7 +483,9 @@
 "MinL": 1400,
 "MaxL": null,
 "EndToEnd": 1200,
-"Offset": 0
+"Offset": 0,
+"Kappa": 0,
+"Rho": 0
 },
 
 {
