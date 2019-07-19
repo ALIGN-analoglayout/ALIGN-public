@@ -36,4 +36,4 @@ def test_via_pex(setup):
     c.gen_data()
     from pprint import pprint
     pprint(c.pex.netCells)
-    assert len(c.pex.netCells) == 48
+    assert len(c.pex.netCells) == 59

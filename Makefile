@@ -1,15 +1,19 @@
 SHELL = bash
 PC=python3
-HOME = /home/smburns/DARPA/ALIGN-public/
-INPUT_DIR = $(HOME)/examples/telescopic_ota
+HOME = $(PWD)
 DESIGN_NAME = telescopic_ota
+INPUT_DIR = $(HOME)/examples/$(DESIGN_NAME)
 #INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
 #DESIGN_NAME = switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE = FinFET_Mock_PDK_Abstraction.json
 Cell_generator = CellFabric/Cell_Fabric_FinFET__Mock
+FLAT=0
+UNIT_MOS_HEIGHT=12
+UNIT_CAP_HEIGHT=12
 CELL_PATH?= CellFabric/Viewer/larger_example/mydesign_dr_globalrouting.json
 DEFAULT_PATH = CellFabric/Viewer/larger_example/mydesign_dr_globalrouting.json
+
 .SILENT: list clean create_PnR_data
 list:
 	echo make clean
@@ -20,11 +24,13 @@ list:
 	echo make PnR
 	echo make ALIGN
 	echo make ALIGN_docker
+	echo PWD
 clean:
 	rm -rf ./sub_circuit_identification/input_circuit/*
 	rm -rf ./sub_circuit_identification/library_graphs/*
 	rm -rf ./sub_circuit_identification/circuit_graphs/*
-	rm -rf ./sub_circuit_identification/results/*
+	rm -rf ./sub_circuit_identification/Results/*
+	rm -rf ./sub_circuit_identification/LOG/*
 	rm -rf $(Cell_generator)/*gds
 	rm -rf $(Cell_generator)/*.json
 	rm -rf $(Cell_generator)/*gds.json
@@ -34,14 +40,19 @@ clean:
 	rm -rf PlaceRouteHierFlow/Results
 	rm -rf testcase_latest
 compile:
-#	pip install --quiet -r sub_circuit_identification/requirements.txt
-#	@if [ ! -d "./lpsolve" ]; then \
-#		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
-#	fi
-#	@if [ ! -d "./json" ]; then \
-#		git clone https://github.com/nlohmann/json.git; \
-#	fi
-#	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
+	pip install --quiet -r sub_circuit_identification/requirements.txt
+	@if [ ! -d "./lpsolve" ]; then \
+		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
+	fi
+	@if [ ! -d "./json" ]; then \
+		git clone https://github.com/nlohmann/json.git; \
+	fi
+	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
+	@if [ ! -d "./boost" ]; then \
+		git clone --recursive https://github.com/boostorg/boost.git
+		cd boost && ./bootstrap.sh -prefix=$(HOME) && ./b2 headers
+	fi
+
 	pip install python-gdsii
 	cd GDSConv && pip install -e .
 	cd CellFabric && pip install -e . && pytest
@@ -67,8 +78,8 @@ annotate_docker:
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
-	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./results /INPUT"
-	docker cp topology_container:/INPUT/results ./sub_circuit_identification/
+	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
+	docker cp topology_container:/INPUT/Results ./sub_circuit_identification/
 
 annotate: 
 	@echo '-----------------------------------------------------------------------'
@@ -87,7 +98,11 @@ annotate:
 	@echo Starting sub circuit annotation
 	@echo ""
 	@cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
-	@cp $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
+	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
+	cd sub_circuit_identification/ && $(PC) ./src/read_library.py --dir basic_library && \
+	$(PC) ./src/read_netlist.py --dir input_circuit -f $(DESIGN_NAME).sp --subckt $(DESIGN_NAME) --flat $(FLAT) && \
+	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT)
+	-cd sub_circuit_identification/ && $(PC) ./src/check_const.py --name $(DESIGN_NAME)
 	cd ./sub_circuit_identification/ && time ./runme.sh $(DESIGN_NAME)
 	@echo Sub circuit annotation finished successfully
 	@echo Check logs at sub_circuit_identification/LOG
@@ -101,8 +116,8 @@ create_cell_docker:
 		then \
 		rm $(Cell_generator)/$(DESIGN_NAME).lef; \
 		fi
-	cp ./sub_circuit_identification/results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
-	cd  $(Cell_generator) && source $(DESIGN_NAME)_lef.sh
+	cp ./sub_circuit_identification/Results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
+	cd  $(Cell_generator) && source $(DESIGN_NAME)_lef.sh $(PC)
 	cat $(Cell_generator)/*lef > $(Cell_generator)/$(DESIGN_NAME).lef
 
 create_cell:
@@ -113,8 +128,8 @@ create_cell:
 		then \
 		rm  $(Cell_generator)/$(DESIGN_NAME).lef; \
 		fi
-	@cp ./sub_circuit_identification/results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
-	cd  $(Cell_generator) && time source $(DESIGN_NAME)_lef.sh > cell_geneation.log
+	cp ./sub_circuit_identification/Results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
+	cd  $(Cell_generator) && time source $(DESIGN_NAME)_lef.sh $(PC) > cell_geneation.log
 	@cat  $(Cell_generator)/*lef >  $(Cell_generator)/$(DESIGN_NAME).lef
 	@echo Cell generation finished successfully
 	@echo Check logs at cell_generation.log 
@@ -129,10 +144,10 @@ create_PnR_data:
 	mkdir testcase_latest 
 	echo 'Copying all data to testcase_latest directory'
 	cp $(Cell_generator)/$(DESIGN_NAME).lef ./testcase_latest
-	cp ./sub_circuit_identification/results/$(DESIGN_NAME).v ./testcase_latest
+	cp ./sub_circuit_identification/Results/$(DESIGN_NAME).v ./testcase_latest
 	cp $(PDK_DIR)/$(PDK_FILE) ./testcase_latest
-	cp $(INPUT_DIR)/*.const ./testcase_latest/
-	-cp ./sub_circuit_identification/results/*.const ./testcase_latest/
+	-cp -r $(INPUT_DIR)/*.const ./testcase_latest/
+	-cp -r ./sub_circuit_identification/Results/*.const ./testcase_latest/
 	cp -r $(Cell_generator)/*gds* ./testcase_latest/
 	ls ./testcase_latest/*gds.json -l | awk -F'/' '{print $$(NF)}' | awk -F'.' '{print $$1, $$1".gds"}' > ./testcase_latest/$(DESIGN_NAME).map
 
@@ -143,8 +158,8 @@ PnR_docker: create_PnR_data
 	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0| tee > PnR.log; "
 	docker cp PnR:/PlaceRouteHierFlow/Results/ ./testcase_latest/
 	@echo "Creating gds"
+	$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
 	@echo Check results at: testcase_latest/Results/$(DESIGN_NAME).gds;
-	@$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
 
 PnR:
 	@echo ""
@@ -161,15 +176,16 @@ PnR:
 		echo "#########################################"; \
 	fi
 	@echo "Creating gds"
-	@echo Check results at: testcase_latest/Results/$(DESIGN_NAME).gds;
-	@$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
+	$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
+	@echo Check Results at: testcase_latest/Results/$(DESIGN_NAME).gds;
 
 view_result: 
 ifneq (, $(shell which klayout))
-	@klayout ./testcase_latest/Results/$(DESIGN_NAME)_0.gds &
+	@klayout ./testcase_latest/Results/$(DESIGN_NAME).gds &
 endif
 
-ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker view_result
+ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker
+
 	echo "Done"
 
 ALIGN:annotate create_cell create_PnR_data PnR

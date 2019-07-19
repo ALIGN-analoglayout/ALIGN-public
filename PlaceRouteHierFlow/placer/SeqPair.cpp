@@ -755,6 +755,7 @@ void SeqPair::PerturbationNew(design& caseNL) {
   // 7:ChangeSymmetryBlockOrient
   // 8:SwapMultiBlocksofSameGroup
   // 9:RotateSymmetryGroup
+  if(caseNL.GetSizeofBlocks()<=1) {return;}
   if(caseNL.noBlock4Move>0) {pool.insert(0);}
   if(caseNL.noAsymBlock4Move>0) { pool.insert(1); pool.insert(2); pool.insert(3); pool.insert(4);}
   if(caseNL.noSymGroup4PartMove>0) {pool.insert(5); pool.insert(7); pool.insert(8);} // pool.insert(9);}
