@@ -94,16 +94,19 @@ class ParasiticExtraction():
     def _stamp_port(self, layer, x0, x1):
         if layer is None:
             return
-        if 'Direction' not in self.canvas.pdk[layer] or self.canvas.pdk[layer]['Direction'] == 'v':
-            self._terms[layer][x1].append(x0)
+        if self.canvas.rd.layers[layer] == 'h':
+            if x1 not in self._terms[layer][x0 * 2]:
+                self._terms[layer][x0 * 2].append(x1)
         else:
-            self._terms[layer][x0].append(x1)
+            if x0 not in self._terms[layer][x1 * 2]:
+                self._terms[layer][x1 * 2].append(x0)
 
     def _compute_via_intersections(self, layer, vv):
-        for x1, v in vv.items():
+        for twice_center, v in vv.items():
             for slr in v.rects:
                 rect = slr.rect
                 x0 = ( rect[v.dIndex] + rect[v.dIndex + 2] ) // 2
+                x1 = twice_center // 2
                 self._stamp_port(layer, x0, x1)
                 self._stamp_port(self.canvas.pdk[layer]['Stack'][0], x0, x1)
                 self._stamp_port(self.canvas.pdk[layer]['Stack'][1], x0, x1)
@@ -155,18 +158,14 @@ class ParasiticExtraction():
     def _extract_metal_rectangle(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
-        print(self._terms[layer][twice_center])
         for port in self._terms[layer][twice_center]:
             if prev_port is None:
                 if port > starti:
-                    print(f"Stamping {net} on {layer} clg {twice_center} from {starti} to {port} for {rect}")
                     prev_port = self._stamp_netcells(net, layer, twice_center, starti, port, rect, dIndex)
             elif port > endi:
                 break
             else:
-                print(f"Stamping {net} on {layer} clg {twice_center} from {prev_port} to {port} for {rect}")
                 prev_port = self._stamp_netcells(net, layer, twice_center, prev_port, port, rect, dIndex)
         if prev_port is None:
             prev_port = starti
-        print(f"Stamping {net} on {layer} clg {twice_center} from {prev_port} to {endi} for {rect}")
         self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
