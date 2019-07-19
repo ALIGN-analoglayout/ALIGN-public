@@ -93,7 +93,7 @@ class Stitch:
                 fp.write( f"{nm} {t0} {t1} {v}\n")
             elif tup[0][0] == 'c':
                 (nm, t0, t1, v) = tup
-                fp.write( f"{nm} {t0} {t1} {v}\n")
+                fp.write( f"{nm} {t0} {t1} {v}f\n")
             else:
                 assert False
 
@@ -111,5 +111,9 @@ def test_via_pex(setup):
 """)
     c.gen_data()
 
-    Stitch().stitch(c.pex.netCells)
-    print(c.pex.netCells)
+    netcells = c.pex.netCells
+    import pprint
+    pprint.pprint(netcells)
+
+    Stitch().stitch(netcells)
+
