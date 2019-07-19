@@ -16,19 +16,19 @@ class Stitch:
 
     def __init__(self, canvas):
         self.canvas = canvas
-        self.c_count = 0
-        self.r_count = 0
+        self._c_count = 0
+        self._r_count = 0
 
         self.components = []
 
     def resistor(self):
-        result = f"r{self.r_count}"
-        self.r_count += 1
+        result = f"r{self._r_count}"
+        self._r_count += 1
         return result
 
     def capacitor(self):
-        result = f"c{self.c_count}"
-        self.c_count += 1
+        result = f"c{self._c_count}"
+        self._c_count += 1
         return result
 
     @staticmethod
@@ -46,6 +46,16 @@ class Stitch:
         self.components.append( (self.resistor(), tm, t1, R/2))
         self.components.append( (self.capacitor(), tm, 0, C))
 
+    def writePex(self, fp):
+        for tup in self.components:
+            if tup[0][0] == 'r':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}\n")
+            elif tup[0][0] == 'c':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}f\n")
+            else:
+                assert False
 
     def stitch(self, netcell):
 
@@ -65,16 +75,7 @@ class Stitch:
                assert False, ly
 
         with open( "tests/foo.sp", "wt") as fp:
-
-          for tup in self.components:
-            if tup[0][0] == 'r': 
-                (nm, t0, t1, v) = tup
-                fp.write( f"{nm} {t0} {t1} {v}\n")
-            elif tup[0][0] == 'c':
-                (nm, t0, t1, v) = tup
-                fp.write( f"{nm} {t0} {t1} {v}f\n")
-            else:
-                assert False
+            self.writePex(fp)
 
 def test_via_pex(setup):
     c = setup
