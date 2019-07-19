@@ -29,7 +29,7 @@ python ./src/match_graph.py
 #store the matches and reduced graph in pickle binary format 
 
 ## GENERATE VERILOG
-python ./src/write_verilog_lef.py -U_cap 10 -U_mos 10
+python ./src/write_verilog_lef.py -U_cap 12 -U_mos 12
 #store output in verilog format in results dir
 
 #python ./src/write_constraints.py

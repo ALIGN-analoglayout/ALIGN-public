@@ -1,10 +1,10 @@
 SHELL = bash
 PC=python3
 HOME = /home/kunal001/Desktop/research_work/alpha_release/ALIGN-public/
-#INPUT_DIR = $(HOME)/examples/telescopic_ota
-#DESIGN_NAME =telescopic_ota
-INPUT_DIR = $(HOME)/examples/cs_amp
-DESIGN_NAME =cs_amp
+INPUT_DIR = $(HOME)/examples/telescopic_ota
+DESIGN_NAME =telescopic_ota
+#INPUT_DIR = $(HOME)/examples/cs_amp
+#DESIGN_NAME =cs_amp
 #INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
 #DESIGN_NAME = switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
@@ -50,6 +50,10 @@ compile:
 		git clone https://github.com/nlohmann/json.git; \
 	fi
 	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
+	@if [ ! -d "./boost" ]; then \
+		git clone --recursive https://github.com/boostorg/boost.git
+		cd boost && ./bootstrap.sh -prefix=$(HOME) && ./b2 headers
+	fi
 	pip install python-gdsii
 	cd GDSConv && pip install -e .
 	cd CellFabric && pip install -e . && pytest
@@ -98,8 +102,8 @@ annotate:
 	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
 	cd sub_circuit_identification/ && $(PC) ./src/read_library.py --dir basic_library && \
 	$(PC) ./src/read_netlist.py --dir input_circuit -f $(DESIGN_NAME).sp --subckt $(DESIGN_NAME) --flat $(FLAT) && \
-	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT) && \
-	$(PC) ./src/check_const.py --name $(DESIGN_NAME)
+	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT)
+	-cd sub_circuit_identification/ && $(PC) ./src/check_const.py --name $(DESIGN_NAME)
 	cd ./sub_circuit_identification/ && time ./runme.sh $(DESIGN_NAME)
 	@echo Sub circuit annotation finished successfully
 	@echo Check logs at sub_circuit_identification/LOG
