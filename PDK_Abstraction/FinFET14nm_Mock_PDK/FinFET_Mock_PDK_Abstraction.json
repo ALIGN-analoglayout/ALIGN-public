@@ -12,8 +12,8 @@
 "MaxL": null,
 "EndToEnd": null,
 "Offset": 40,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -39,8 +39,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 100
+"UnitC": 0.2,
+"UnitR": 100
 },
 
 
@@ -71,8 +71,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 60
+"UnitC": 0.2,
+"UnitR": 60
 },
 
 {
@@ -102,8 +102,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 40
+"UnitC": 0.2,
+"UnitR": 40
 },
 
 {
@@ -133,8 +133,8 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 30
+"UnitC": 0.2,
+"UnitR": 30
 },
 
 {
@@ -164,8 +164,8 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 20
+"UnitC": 0.2,
+"UnitR": 20
 },
 
 {
@@ -195,8 +195,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 20
+"UnitC": 0.2,
+"UnitR": 20
 },
 
 {
@@ -226,8 +226,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -257,8 +257,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 20
+"UnitC": 0.2,
+"UnitR": 20
 },
 
 {
@@ -288,8 +288,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 20
+"UnitC": 0.2,
+"UnitR": 20
 },
 
 {
@@ -319,8 +319,8 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -350,8 +350,8 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -381,8 +381,8 @@
 "MaxL": null,
 "EndToEnd":280,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -412,8 +412,8 @@
 "MaxL": null,
 "EndToEnd": 280,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -443,8 +443,8 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
@@ -474,8 +474,8 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"Kappa": 0.2,
-"Rho": 10
+"UnitC": 0.2,
+"UnitR": 10
 },
 
 {
