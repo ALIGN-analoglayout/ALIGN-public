@@ -4,7 +4,8 @@ import json
 
 from . import transformation
 from .remove_duplicates import RemoveDuplicates
-from .utilities import DesignRuleCheck, ParasiticExtraction
+from .drc import DesignRuleCheck
+from .pex import ParasiticExtraction
 from .postprocess import PostProcessor
 from .pdk import Pdk
 from .generators import *

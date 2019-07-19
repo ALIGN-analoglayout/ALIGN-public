@@ -1,71 +1,14 @@
 import collections
 import math
 
-class DesignRuleCheck():
-    def __init__(self, canvas):
-        self.canvas = canvas
-        self.errors = []
-
-    @property
-    def num_errors(self):
-        return len(self.errors)
-
-    def run(self):
-        '''
-        Run DRC on self.canvas & report errors if any
-
-        Note: self.canvas must already contain 'rd'
-              (aka removeDuplicates has been run)
-        '''
-
-        for (layer, vv) in self.canvas.rd.store_scan_lines.items():
-            if layer not in self.canvas.pdk:
-                continue
-            if self.canvas.rd.layers[layer] == '*':
-                self._check_via_rules(layer, vv)
-            else:
-                self._check_metal_rules(layer, vv)
-        return self.num_errors
-
-    def _check_via_rules(self, layer, vv):
-        '''TODO : Add via pattern checking rules '''
-        space = self.canvas.pdk[layer]['SpaceX']
-        return space
-
-    def _check_metal_rules(self, layer, vv):
-        '''Check metal min-length / min-spacing rules'''
-        for v in vv.values():
-            self._check_min_length(
-                layer, v.rects, v.dIndex)
-            self._check_min_spacing(
-                layer, v.rects, v.dIndex)
-
-    def _check_min_length(self, layer, slrects, dIndex):
-        min_length = self.canvas.pdk[layer]['MinL']
-        (start, end) = (dIndex, dIndex + 2)
-        for slr in slrects:
-            rect = slr.rect
-            if rect[end] - rect[start] < min_length:
-                root = slr.root()
-                self.errors.append(
-                    f"MinLength violation on {layer}: {root.netName}{rect}")
-
-    def _check_min_spacing(self, layer, slrects, dIndex):
-        min_space = self.canvas.pdk[layer]['EndToEnd']
-        (start, end) = (dIndex, dIndex + 2)
-        prev_slr = None
-        for slr in slrects:
-            if prev_slr is not None and slr.rect[start] - prev_slr.rect[end] < min_space:
-                self.errors.append(
-                    f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
-            prev_slr = slr
-        return
-
 class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
         self._terms = collections.defaultdict(lambda: collections.defaultdict(list)) # layer: {scanline: [p1...pn]}
+        self._c_count = 0
+        self._r_count = 0
         self.netCells = collections.OrderedDict() # (node1, node2) : (layer, rect)
+        self.components = []
 
     def run(self):
         '''
@@ -75,6 +18,7 @@ class ParasiticExtraction():
               (aka removeDuplicates has been run)
         '''
 
+        # Compute Via intersections with metal lines
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if self.canvas.rd.layers[layer] == '*':
                 self._compute_via_intersections(layer, vv)
@@ -82,6 +26,7 @@ class ParasiticExtraction():
         # Topological sort is not needed since coordinates are already sorted
         # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
 
+        # Create OrderedDict with NodeName -> layer, rect mappings
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if layer not in self.canvas.pdk:
                 continue
@@ -89,7 +34,21 @@ class ParasiticExtraction():
                 self._extract_via_parasitics(layer, vv)
             else:
                 self._extract_metal_layer(layer, vv)
-        return self.netCells
+
+        # Stamp out R, C components
+        # mode = "Tee"
+        mode = "Pi"
+        for tup in self.netCells.items():
+            ((t0,t1),(ly,rect)) = tup
+            if ly.startswith('M'):
+                dist = self.compute_dist( rect[0], rect[2]) \
+                        if self.canvas.pdk[ly]['Direction'] == 'h' \
+                        else self.compute_dist( rect[1], rect[3])
+                (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['UnitR']*dist, self.canvas.pdk[ly]['UnitC']*dist )
+            elif ly.startswith('V'):
+                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['R']))
+            else:
+               assert False, ly
 
     def _stamp_port(self, layer, x0, x1):
         if layer is None:
@@ -169,3 +128,39 @@ class ParasiticExtraction():
         if prev_port is None:
             prev_port = starti
         self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
+
+    def resistor(self):
+        result = f"r{self._r_count}"
+        self._r_count += 1
+        return result
+
+    def capacitor(self):
+        result = f"c{self._c_count}"
+        self._c_count += 1
+        return result
+
+    @staticmethod
+    def compute_dist(p, q):
+        return abs(p - q)/1000
+
+    def pi( self, t0, t1, R, C):
+        self.components.append( (self.resistor(), t0, t1, R))
+        self.components.append( (self.capacitor(), t0, 0, C/2))
+        self.components.append( (self.capacitor(), t1, 0, C/2))
+
+    def tee( self, t0, t1, R, C):
+        tm = t0+t1
+        self.components.append( (self.resistor(), t0, tm, R/2))
+        self.components.append( (self.resistor(), tm, t1, R/2))
+        self.components.append( (self.capacitor(), tm, 0, C))
+
+    def writePex(self, fp):
+        for tup in self.components:
+            if tup[0][0] == 'r':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}\n")
+            elif tup[0][0] == 'c':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}f\n")
+            else:
+                assert False
