@@ -75,8 +75,8 @@ class Pdk(object):
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
         assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
             if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
-            for x in params[4:] if kwargs[x] is not None), \
-            f"One or more of {params[4:]} not an integer in {kwargs}"
+            for x in params[4:10] if kwargs[x] is not None), \
+            f"One or more of {params[4:10]} not an integer in {kwargs}"
         assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[4:6] if kwargs[x] is not None), \

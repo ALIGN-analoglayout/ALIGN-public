@@ -12,8 +12,8 @@
 "MaxL": null,
 "EndToEnd": null,
 "Offset": 40,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -25,9 +25,7 @@
 "MinL": 100,
 "MaxL": null,
 "EndToEnd": null,
-"Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Offset": 0
 },
 
 {
@@ -41,8 +39,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 100
 },
 
 
@@ -59,7 +57,7 @@
     "VencP_L": 0,
     "VencP_H": 0,
     "MinNo":1,
-    "R": 0
+    "R": 50
     },
 
 {
@@ -73,8 +71,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 60
 },
 
 {
@@ -90,7 +88,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo":1,
-"R": 0
+"R": 50
 },
 
 {
@@ -104,8 +102,8 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 40
 },
 
 {
@@ -121,7 +119,7 @@
 "VencP_L": 0,
 "VencP_H": 4,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -135,8 +133,8 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 30
 },
 
 {
@@ -152,7 +150,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -166,8 +164,8 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 20
 },
 
 {
@@ -183,7 +181,7 @@
 "VencP_L": 0,
 "VencP_H": 12,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -197,8 +195,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 20
 },
 
 {
@@ -214,7 +212,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -228,8 +226,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -245,7 +243,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -259,8 +257,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 20
 },
 
 {
@@ -276,7 +274,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -290,8 +288,8 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 20
 },
 
 {
@@ -307,7 +305,7 @@
 "VencP_L": 0,
 "VencP_H": 32,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -321,8 +319,8 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -338,7 +336,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -352,8 +350,8 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -369,7 +367,7 @@
 "VencP_L": 0,
 "VencP_H": 64,
 "MinNo":1,
-"R": 0
+"R": 50
 },
 
 {
@@ -383,8 +381,8 @@
 "MaxL": null,
 "EndToEnd":280,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -400,7 +398,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -414,8 +412,8 @@
 "MaxL": null,
 "EndToEnd": 280,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -431,7 +429,7 @@
 "VencP_L": 0,
 "VencP_H": 472,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -445,8 +443,8 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -462,7 +460,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
@@ -476,8 +474,8 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"Kappa": 0,
-"Rho": 0
+"Kappa": 0.2,
+"Rho": 10
 },
 
 {
@@ -493,7 +491,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 0
+"R": 50
 },
 
 {
