@@ -1,6 +1,7 @@
 import pytest
 import itertools
 import math
+import filecmp
 
 from cell_fabric import DefaultCanvas, Pdk
 
@@ -33,7 +34,12 @@ def test_via_pex(setup):
                     |
     +b======+=======/
 """)
+
     c.gen_data()
-    from pprint import pprint
-    pprint(c.pex.netCells)
-    assert len(c.pex.netCells) == 59
+
+    fn = "tests/__sp_via_set_m2_m3_sticks"
+
+    with open( fn + "_cand", "wt") as fp:
+        c.pex.writePex(fp)
+
+    assert filecmp.cmp(fn + "_cand", fn + "_gold")

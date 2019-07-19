@@ -5,7 +5,10 @@ class ParasiticExtraction():
     def __init__(self, canvas):
         self.canvas = canvas
         self._terms = collections.defaultdict(lambda: collections.defaultdict(list)) # layer: {scanline: [p1...pn]}
+        self._c_count = 0
+        self._r_count = 0
         self.netCells = collections.OrderedDict() # (node1, node2) : (layer, rect)
+        self.components = []
 
     def run(self):
         '''
@@ -15,6 +18,7 @@ class ParasiticExtraction():
               (aka removeDuplicates has been run)
         '''
 
+        # Compute Via intersections with metal lines
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if self.canvas.rd.layers[layer] == '*':
                 self._compute_via_intersections(layer, vv)
@@ -22,6 +26,7 @@ class ParasiticExtraction():
         # Topological sort is not needed since coordinates are already sorted
         # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
 
+        # Create OrderedDict with NodeName -> layer, rect mappings
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if layer not in self.canvas.pdk:
                 continue
@@ -29,7 +34,21 @@ class ParasiticExtraction():
                 self._extract_via_parasitics(layer, vv)
             else:
                 self._extract_metal_layer(layer, vv)
-        return self.netCells
+
+        # Stamp out R, C components
+        # mode = "Tee"
+        mode = "Pi"
+        for tup in self.netCells.items():
+            ((t0,t1),(ly,rect)) = tup
+            if ly.startswith('M'):
+                dist = self.compute_dist( rect[0], rect[2]) \
+                        if self.canvas.pdk[ly]['Direction'] == 'h' \
+                        else self.compute_dist( rect[1], rect[3])
+                (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['Rho']*dist, self.canvas.pdk[ly]['Kappa']*dist )
+            elif ly.startswith('V'):
+                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['R']))
+            else:
+               assert False, ly
 
     def _stamp_port(self, layer, x0, x1):
         if layer is None:
@@ -109,3 +128,39 @@ class ParasiticExtraction():
         if prev_port is None:
             prev_port = starti
         self._stamp_netcells(net, layer, twice_center, prev_port, endi, rect, dIndex)
+
+    def resistor(self):
+        result = f"r{self._r_count}"
+        self._r_count += 1
+        return result
+
+    def capacitor(self):
+        result = f"c{self._c_count}"
+        self._c_count += 1
+        return result
+
+    @staticmethod
+    def compute_dist(p, q):
+        return abs(p - q)/1000
+
+    def pi( self, t0, t1, R, C):
+        self.components.append( (self.resistor(), t0, t1, R))
+        self.components.append( (self.capacitor(), t0, 0, C/2))
+        self.components.append( (self.capacitor(), t1, 0, C/2))
+
+    def tee( self, t0, t1, R, C):
+        tm = t0+t1
+        self.components.append( (self.resistor(), t0, tm, R/2))
+        self.components.append( (self.resistor(), tm, t1, R/2))
+        self.components.append( (self.capacitor(), tm, 0, C))
+
+    def writePex(self, fp):
+        for tup in self.components:
+            if tup[0][0] == 'r':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}\n")
+            elif tup[0][0] == 'c':
+                (nm, t0, t1, v) = tup
+                fp.write( f"{nm} {t0} {t1} {v}f\n")
+            else:
+                assert False
