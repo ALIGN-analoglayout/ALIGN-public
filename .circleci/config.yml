@@ -22,6 +22,29 @@ jobs:
           root: /work/workspace
           paths: .
 
+  build-make:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          make HOME=/work/workspace/ build_docker
+
+	  apt-get update
+	  apt-get install -y python3 python3-pip python3-venv
+
+	  python3 -m venv general
+	  source general/bin/activate	  
+
+	  pip install --upgrade pip
+	  pip install wheel pytest coverage pytest-cov networkx pyyaml
+
+	  (cd CellFabric && pip install .)
+
+	  make HOME=/work/workspace/ ALIGN_docker
 
   build-tally:
     executor: docker-executor
@@ -386,6 +409,9 @@ workflows:
   full:
     jobs:
       - start
+      - build-make:
+          requires:
+            - start 
       - build-tally:
           requires:
             - start 
@@ -418,6 +444,7 @@ workflows:
             - start 
       - finish:
           requires:
+	    - build-make
             - build-tally 
             - build-sgi 
             - build-PlacementEditor 

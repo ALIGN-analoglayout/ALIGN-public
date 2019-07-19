@@ -1,8 +1,8 @@
 SHELL = bash
 PC=python3
-HOME = /home/kunal001/Desktop/research_work/alpha_release/ALIGN-public/
+HOME = /home/smburns/DARPA/ALIGN-public/
 INPUT_DIR = $(HOME)/examples/telescopic_ota
-DESIGN_NAME =telescopic_ota
+DESIGN_NAME = telescopic_ota
 #INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
 #DESIGN_NAME = switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
@@ -34,14 +34,14 @@ clean:
 	rm -rf PlaceRouteHierFlow/Results
 	rm -rf testcase_latest
 compile:
-	pip install --quiet -r sub_circuit_identification/requirements.txt
-	@if [ ! -d "./lpsolve" ]; then \
-		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
-	fi
-	@if [ ! -d "./json" ]; then \
-		git clone https://github.com/nlohmann/json.git; \
-	fi
-	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
+#	pip install --quiet -r sub_circuit_identification/requirements.txt
+#	@if [ ! -d "./lpsolve" ]; then \
+#		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
+#	fi
+#	@if [ ! -d "./json" ]; then \
+#		git clone https://github.com/nlohmann/json.git; \
+#	fi
+#	cd PlaceRouteHierFlow/ && make clean && make LP_DIR=$(HOME)/lpsolve JSON=$(HOME)/json;
 	pip install python-gdsii
 	cd GDSConv && pip install -e .
 	cd CellFabric && pip install -e . && pytest
@@ -61,7 +61,7 @@ build_docker:
 		rm -rf ./PlaceRouteHierFlow/Results; \
 	fi
 	cd PlaceRouteHierFlow && docker build -f Dockerfile -t placeroute_image .
-	
+
 annotate_docker:
 	cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
@@ -132,7 +132,7 @@ create_PnR_data:
 	cp ./sub_circuit_identification/results/$(DESIGN_NAME).v ./testcase_latest
 	cp $(PDK_DIR)/$(PDK_FILE) ./testcase_latest
 	cp $(INPUT_DIR)/*.const ./testcase_latest/
-	cp ./sub_circuit_identification/results/*.const ./testcase_latest/
+	-cp ./sub_circuit_identification/results/*.const ./testcase_latest/
 	cp -r $(Cell_generator)/*gds* ./testcase_latest/
 	ls ./testcase_latest/*gds.json -l | awk -F'/' '{print $$(NF)}' | awk -F'.' '{print $$1, $$1".gds"}' > ./testcase_latest/$(DESIGN_NAME).map
 
@@ -168,10 +168,9 @@ view_result:
 ifneq (, $(shell which klayout))
 	@klayout ./testcase_latest/Results/$(DESIGN_NAME)_0.gds &
 endif
-	
+
 ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker view_result
 	echo "Done"
-	
 
 ALIGN:annotate create_cell create_PnR_data PnR
 
