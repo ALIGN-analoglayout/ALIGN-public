@@ -27,6 +27,7 @@ class BasicElement:
         if '(' in  self.line.strip().split()[1]:
             self.pins = self.line.strip().split('(')[1].split(')')[0].split()
             self.num_pins = len(self.pins)
+            self.line = self.line.replace('(','').replace(')','')
         elif '=' in self.line.strip():
             all_words = self.line.strip().split()
             for word in all_words[1:]:
@@ -159,6 +160,9 @@ class BasicElement:
             inst_type = "nmos"
         elif 'p' in self.real_inst_type.lower():
             inst_type = "pmos"
+        else:
+            print("Error: undefined inst format", self.line)
+
 
         if self.pins[0] == self.pins[2]:
             inst_type = "dummy"

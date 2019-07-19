@@ -369,9 +369,9 @@ if __name__ == '__main__':
 
     #plt_graph(Grest, "Final reduced graph")
 
-    if not os.path.exists("results"):
-        os.mkdir("results")
-    with open('results/' + CIRCUIT_GRAPH[:-5] + '.p', 'wb') as handle:
+    if not os.path.exists("Results"):
+        os.mkdir("Results")
+    with open('Results/' + CIRCUIT_GRAPH[:-5] + '.p', 'wb') as handle:
         pickle.dump(UPDATED_CIRCUIT_LIST,
                     handle,
                     protocol=pickle.HIGHEST_PROTOCOL)
