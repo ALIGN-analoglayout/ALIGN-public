@@ -31,10 +31,10 @@ jobs:
           at: /work/workspace
 
       - run: |
-          make HOME=/work/workspace/ build_docker
-
           apt-get update
-          apt-get install -y python3 python3-pip python3-venv
+          apt-get install -y python3 python3-pip python3-venv make
+
+          make HOME=/work/workspace/ build_docker
 
           python3 -m venv general
           source general/bin/activate	  
@@ -412,55 +412,55 @@ workflows:
       - build-make:
           requires:
             - start 
-      - build-tally:
-          requires:
-            - start 
-      - build-sgi:
-          requires:
-            - start 
-      - build-PlacementEditor:
-          requires:
-            - start 
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start 
-      - build-GDSConv:
-          requires:
-            - start 
-      - build-sci:
-          requires:
-            - start 
-      - build-cktgen:
-          requires:
-            - start 
-      - build-cellfabric:
-          requires:
-            - start 
-      - build-satplacer:
-          requires:
-            - start 
-      - build-pdk:
-          requires:
-            - start 
+      # - build-tally:
+      #     requires:
+      #       - start 
+      # - build-sgi:
+      #     requires:
+      #       - start 
+      # - build-PlacementEditor:
+      #     requires:
+      #       - start 
+      # - build-PlaceRouteHierFlow:
+      #     requires:
+      #       - start 
+      # - build-GDSConv:
+      #     requires:
+      #       - start 
+      # - build-sci:
+      #     requires:
+      #       - start 
+      # - build-cktgen:
+      #     requires:
+      #       - start 
+      # - build-cellfabric:
+      #     requires:
+      #       - start 
+      # - build-satplacer:
+      #     requires:
+      #       - start 
+      # - build-pdk:
+      #     requires:
+      #       - start 
       - finish:
           requires:
             - build-make
-            - build-tally 
-            - build-sgi 
-            - build-PlacementEditor 
-            - build-GDSConv 
-            - build-sci 
-            - build-cellfabric
-            - build-cktgen 
-            - build-pdk 
-            - build-satplacer
+      #       - build-tally 
+      #       - build-sgi 
+      #       - build-PlacementEditor 
+      #       - build-GDSConv 
+      #       - build-sci 
+      #       - build-cellfabric
+      #       - build-cktgen 
+      #       - build-pdk 
+      #       - build-satplacer
 
-  end_to_end:
-    jobs:
-      - start
-      - mono_end_to_end:
-          requires:
-            - start
-      - multi_end_to_end:
-          requires:
-            - start
+  # end_to_end:
+  #   jobs:
+  #     - start
+  #     - mono_end_to_end:
+  #         requires:
+  #           - start
+  #     - multi_end_to_end:
+  #         requires:
+  #           - start
