@@ -32,7 +32,7 @@ jobs:
 
       - run: |
           apk update
-          apk add python3 make
+          apk add python3 make bash
 
           make HOME=/work/workspace/ build_docker
 
