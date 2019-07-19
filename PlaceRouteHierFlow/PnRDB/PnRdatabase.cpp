@@ -2513,7 +2513,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           //cout<<"Stage "<<stage<<" @ pin type"<<macroPins.back().type<<endl;
         } else if((found=def.find("PORT"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
-          macroPins.back().pinContacts.resize( macroPins.back().pinContacts.size()+1 );
+          //macroPins.back().pinContacts.resize( macroPins.back().pinContacts.size()+1 );
           //cout<<"Stage "<<stage<<" @ new contact for pin"<<endl;
           stage=3;
         } else if((found=def.find(pinEnd))!=string::npos) {
@@ -2523,6 +2523,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
       } else if (stage==3) { // within PORT
         if((found=def.find("LAYER"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
+          macroPins.back().pinContacts.resize( macroPins.back().pinContacts.size()+1 );
           macroPins.back().pinContacts.back().metal=temp[1];
           //cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
         } else if((found=def.find("RECT"))!=string::npos) {
