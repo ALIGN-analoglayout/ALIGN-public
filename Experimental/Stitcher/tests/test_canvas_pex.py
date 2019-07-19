@@ -13,23 +13,13 @@ def setup():
 from collections import OrderedDict
 
 class Stitch:
-    
-    def __init__(self):
+
+    def __init__(self, canvas):
+        self.canvas = canvas
         self.c_count = 0
         self.r_count = 0
 
-        self.rho = { "metal1": 100.0,
-                     "metal2": 60.0,
-                     "metal3": 40.0}
-
-        self.kappa = { "metal1": 0.2,
-                       "metal2": 0.2,
-                       "metal3": 0.2}
-
-        self.r = { "via1": 50.0, "via2": 50.0}
-
         self.components = []
-
 
     def resistor(self):
         result = f"r{self.r_count}"
@@ -41,47 +31,36 @@ class Stitch:
         self.c_count += 1
         return result
 
-    def lumped( self, ly, rect):
-        def compute_dist(p, q):
-            return abs(p - q)/1000
+    @staticmethod
+    def compute_dist(p, q):
+        return abs(p - q)/1000
 
-        if   ly in ["metal2"]:
-            dist = compute_dist( rect[0], rect[2])
-            return (self.rho[ly]*dist,self.kappa[ly]*dist)
-        elif ly in ["metal1","metal3"]:
-            dist = compute_dist( rect[1], rect[3])
-            return (self.rho[ly]*dist,self.kappa[ly]*dist)
-        elif ly in ["via1","via2"]:
-            return (self.r[ly],)
-        else:
-            assert False, ly
+    def pi( self, t0, t1, R, C):
+        self.components.append( (self.resistor(), t0, t1, R))
+        self.components.append( (self.capacitor(), t0, 0, C/2))
+        self.components.append( (self.capacitor(), t1, 0, C/2))
 
-
-    def pi( self, t0, t1, pair):
-        self.components.append( (self.resistor(), t0, t1, pair[0]))
-        self.components.append( (self.capacitor(), t0, 0, pair[1]/2))
-        self.components.append( (self.capacitor(), t1, 0, pair[1]/2))
-        
-    def tee( self, t0, t1, pair):
+    def tee( self, t0, t1, R, C):
         tm = t0+t1
-        self.components.append( (self.resistor(), t0, tm, pair[0]/2))
-        self.components.append( (self.resistor(), tm, t1, pair[0]/2))
-        self.components.append( (self.capacitor(), tm, 0, pair[1]))
+        self.components.append( (self.resistor(), t0, tm, R/2))
+        self.components.append( (self.resistor(), tm, t1, R/2))
+        self.components.append( (self.capacitor(), tm, 0, C))
 
 
     def stitch(self, netcell):
 
-    #    mode = "Tee"
+        # mode = "Tee"
         mode = "Pi"
 
         for tup in netcell.items():
             ((t0,t1),(ly,rect)) = tup
-            ly = { 'M1': "metal1", 'M2': "metal2", 'M3': "metal3", 'V1': "via1", 'V2': "via2"}[ly]
-            pair = self.lumped(ly,rect)
-            if ly in ["metal1","metal2","metal3"]:
-                (self.pi if mode == "Pi" else self.tee)( t0, t1, pair)
-            elif ly in ["via1","via2"]:
-                self.components.append( (self.resistor(), t0, t1, pair[0]))
+            if ly.startswith('M'):
+                dist = self.compute_dist( rect[0], rect[2]) \
+                        if self.canvas.pdk[ly]['Direction'] == 'h' \
+                        else self.compute_dist( rect[1], rect[3])
+                (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['Rho']*dist, self.canvas.pdk[ly]['Kappa']*dist )
+            elif ly.startswith('V'):
+                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['R']))
             else:
                assert False, ly
 
@@ -96,7 +75,6 @@ class Stitch:
                 fp.write( f"{nm} {t0} {t1} {v}f\n")
             else:
                 assert False
-
 
 def test_via_pex(setup):
     c = setup
@@ -115,5 +93,5 @@ def test_via_pex(setup):
     import pprint
     pprint.pprint(netcells)
 
-    Stitch().stitch(netcells)
+    Stitch(c).stitch(netcells)
 
