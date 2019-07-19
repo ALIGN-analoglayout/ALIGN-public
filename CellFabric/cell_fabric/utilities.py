@@ -88,7 +88,7 @@ class ParasiticExtraction():
             if self.canvas.rd.layers[layer] == '*':
                 self._extract_via_parasitics(layer, vv)
             else:
-                self._extract_metal_parasitics(layer, vv)
+                self._extract_metal_layer(layer, vv)
         return self.netCells
 
     def _stamp_port(self, layer, x0, x1):
@@ -124,13 +124,13 @@ class ParasiticExtraction():
     def _gen_netcell_node_name(net, layer, x, y):
         return f'{net}_{layer}_{x}_{y}'.replace('-', '_')
 
-    def _extract_metal_parasitics(self, layer, vv):
+    def _extract_metal_layer(self, layer, vv):
         for twice_center, v in vv.items():
-            self._extract_mline_parasitics(layer, v.rects, v.dIndex, twice_center)
+            self._extract_metal_scanline(layer, v.rects, v.dIndex, twice_center)
 
-    def _extract_mline_parasitics(self, layer, slrects, dIndex, twice_center):
+    def _extract_metal_scanline(self, layer, slrects, dIndex, twice_center):
         for slr in slrects:
-            self._create_metal_netcells(slr.root().netName, layer, twice_center, slr.rect, dIndex)
+            self._extract_metal_rectangle(slr.root().netName, layer, twice_center, slr.rect, dIndex)
 
     def _stamp_netcells(self, net, layer, twice_center, starti, endi, rect, dIndex):
         numcells = math.ceil( (endi - starti) / self.canvas.pdk['Poly']['Pitch'] )
@@ -152,7 +152,7 @@ class ParasiticExtraction():
             self.netCells[ (node1, node2) ] = (layer, cell_rect)
         return endi
 
-    def _create_metal_netcells(self, net, layer, twice_center, rect, dIndex):
+    def _extract_metal_rectangle(self, net, layer, twice_center, rect, dIndex):
         (starti, endi) = (rect[dIndex], rect[dIndex + 2])
         prev_port = None
         for port in self._terms[layer][twice_center]:
