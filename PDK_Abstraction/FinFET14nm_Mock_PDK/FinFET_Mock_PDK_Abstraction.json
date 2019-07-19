@@ -59,7 +59,7 @@
     "VencP_L": 0,
     "VencP_H": 0,
     "MinNo":1,
-    "DesignRules": []
+    "R": 0
     },
 
 {
@@ -90,15 +90,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo":1,
-"DesignRules": [
-    {
-        "Name": "ViaHole",
-        "Present": [[0,0], [0,1], [0,2],
-                    [1,0], [1, 2],
-                    [2, 0], [2, 1], [2, 2]],
-        "Absent": [[1,1]]
-    }
-]
+"R": 0
 },
 
 {
@@ -129,7 +121,7 @@
 "VencP_L": 0,
 "VencP_H": 4,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -160,7 +152,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -191,7 +183,7 @@
 "VencP_L": 0,
 "VencP_H": 12,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -222,7 +214,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -253,7 +245,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -284,7 +276,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -315,7 +307,7 @@
 "VencP_L": 0,
 "VencP_H": 32,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -346,7 +338,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -377,7 +369,7 @@
 "VencP_L": 0,
 "VencP_H": 64,
 "MinNo":1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -408,7 +400,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -439,7 +431,7 @@
 "VencP_L": 0,
 "VencP_H": 472,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -470,7 +462,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
@@ -501,7 +493,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"DesignRules": []
+"R": 0
 },
 
 {
