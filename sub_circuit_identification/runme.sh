@@ -7,7 +7,8 @@ else
     DESIGN=$1
 fi
 # cleaning all files
-rm -rf ./circuit_graphs/* LOG/* ./results/*.p library_graphs/* 
+rm -rf ./circuit_graphs/* LOG/* ./Results/*.p library_graphs/* 
+
 ## READ LIBRARY 
 ## Reads inputs netlist of spice format (".sp") from basic_library folder
 ## There is basic template of libraries which we provide: basic_template.sp

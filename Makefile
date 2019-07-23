@@ -1,10 +1,10 @@
 SHELL = bash
 PC=python3
 HOME = $(PWD)
+#DESIGN_NAME = switched_capacitor_filter
 DESIGN_NAME = telescopic_ota
 INPUT_DIR = $(HOME)/examples/$(DESIGN_NAME)
 #INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
-#DESIGN_NAME = switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE = FinFET_Mock_PDK_Abstraction.json
 Cell_generator = CellFabric/Cell_Fabric_FinFET__Mock
@@ -39,7 +39,14 @@ clean:
 	rm -rf PlaceRouteHierFlow/testcase_latest
 	rm -rf PlaceRouteHierFlow/Results
 	rm -rf testcase_latest
-compile:
+compile_cell_generator:
+	@if ! pip list| grep -F python-gdsii; then \
+		pip install python-gdsii; \
+	fi
+	cd GDSConv && pip install -e .
+	cd CellFabric && pip install -e . && pytest
+
+compile:compile_cell_generator
 	pip install --quiet -r sub_circuit_identification/requirements.txt
 	@if [ ! -d "./lpsolve" ]; then \
 		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
@@ -52,10 +59,6 @@ compile:
 		git clone --recursive https://github.com/boostorg/boost.git
 		cd boost && ./bootstrap.sh -prefix=$(HOME) && ./b2 headers
 	fi
-
-	pip install python-gdsii
-	cd GDSConv && pip install -e .
-	cd CellFabric && pip install -e . && pytest
 
 clean_docker:
 	docker container prune
@@ -78,7 +81,7 @@ annotate_docker:
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
-	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
+	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && find . && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
 	docker cp topology_container:/INPUT/Results ./sub_circuit_identification/
 
 annotate: 
@@ -108,7 +111,7 @@ annotate:
 	@echo Check logs at sub_circuit_identification/LOG
 	@echo "#########################################"
 
-create_cell_docker: 
+create_cell_docker: compile_cell_generator
 	@echo Cell Generation
 	@echo ""
 	@echo Creating primitive cells for PnR
@@ -119,6 +122,9 @@ create_cell_docker:
 	cp ./sub_circuit_identification/Results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
 	cd  $(Cell_generator) && source $(DESIGN_NAME)_lef.sh $(PC)
 	cat $(Cell_generator)/*lef > $(Cell_generator)/$(DESIGN_NAME).lef
+	@echo Cell generation finished successfully
+	@echo Check logs at cell_generation.log 
+	@echo "#########################################"
 
 create_cell:
 	@echo Cell Generation
