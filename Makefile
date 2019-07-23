@@ -1,5 +1,6 @@
 SHELL = bash
 PC=python3
+PIP=pip3
 HOME = $(PWD)
 #DESIGN_NAME = switched_capacitor_filter
 DESIGN_NAME = telescopic_ota
@@ -39,15 +40,19 @@ clean:
 	rm -rf PlaceRouteHierFlow/testcase_latest
 	rm -rf PlaceRouteHierFlow/Results
 	rm -rf testcase_latest
+
 compile_cell_generator:
-	@if ! pip list| grep -F python-gdsii; then \
-		pip install python-gdsii; \
+	@if ! $(PIP) list| grep -F python-gdsii; then \
+		$(PIP) install python-gdsii; \
 	fi
-	cd GDSConv && pip install -e .
-	cd CellFabric && pip install -e . && pytest
+	@if ! $(PIP) list| grep -F pytest; then \
+		$(PIP) install pytest; \
+	fi
+	cd GDSConv && $(PIP) install -e .
+	cd CellFabric && $(PIP) install -e . && $(PC) -m pytest
 
 compile:compile_cell_generator
-	pip install --quiet -r sub_circuit_identification/requirements.txt
+	$(PIP) install --quiet -r sub_circuit_identification/requirements.txt
 	@if [ ! -d "./lpsolve" ]; then \
 		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
 	fi
@@ -102,6 +107,7 @@ annotate:
 	@echo ""
 	@cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
 	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
+	$(PIP) install --quiet -r sub_circuit_identification/requirements.txt
 	cd sub_circuit_identification/ && $(PC) ./src/read_library.py --dir basic_library && \
 	$(PC) ./src/read_netlist.py --dir input_circuit -f $(DESIGN_NAME).sp --subckt $(DESIGN_NAME) --flat $(FLAT) && \
 	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT)
