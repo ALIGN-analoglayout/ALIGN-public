@@ -22,6 +22,36 @@ jobs:
           root: /work/workspace
           paths: .
 
+  build-make:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          apk update
+          apk add python3 make bash
+
+          make build_docker
+
+          python3 -m venv general
+          source general/bin/activate	  
+
+          pip install --upgrade pip
+          pip install wheel pytest coverage pytest-cov networkx pyyaml python-gdsii
+
+          (cd CellFabric && pip install .)
+          (cd GDSConv && pip install .)
+
+          make DESIGN_NAME=telescopic_ota ALIGN_docker
+          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
+          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker
+          make DESIGN_NAME=current_mirror_ota ALIGN_docker
+          make DESIGN_NAME=five_transistor_ota ALIGN_docker
+# Currently failing
+#          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker
 
   build-tally:
     executor: docker-executor
@@ -383,6 +413,13 @@ jobs:
 workflows:
   version: 2.1
 
+  make:
+    jobs:
+      - start
+      - build-make:
+          requires:
+            - start 
+
   full:
     jobs:
       - start
@@ -428,12 +465,12 @@ workflows:
             - build-pdk 
             - build-satplacer
 
-  end_to_end:
-    jobs:
-      - start
-      - mono_end_to_end:
-          requires:
-            - start
-      - multi_end_to_end:
-          requires:
-            - start
+  # end_to_end:
+  #   jobs:
+  #     - start
+  #     - mono_end_to_end:
+  #         requires:
+  #           - start
+  #     - multi_end_to_end:
+  #         requires:
+  #           - start

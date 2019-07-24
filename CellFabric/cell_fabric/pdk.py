@@ -67,14 +67,16 @@ class Pdk(object):
                   'MinL',
                   'MaxL',
                   'EndToEnd',
-                  'Offset']
+                  'Offset',
+                  'UnitC',
+                  'UnitR']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
         assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
             if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
-            for x in params[4:] if kwargs[x] is not None), \
-            f"One or more of {params[4:]} not an integer in {kwargs}"
+            for x in params[4:10] if kwargs[x] is not None), \
+            f"One or more of {params[4:10]} not an integer in {kwargs}"
         assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[4:6] if kwargs[x] is not None), \
@@ -112,7 +114,8 @@ class Pdk(object):
                   'VencP_L',
                   'VencP_H',
                   'MinNo',
-                  'DesignRules']
+                  #'DesignRules',
+                  'R']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
@@ -122,9 +125,10 @@ class Pdk(object):
         assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
         assert all(x is None or x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
         # 2. DesignRules
-        if isinstance(kwargs['DesignRules'], list):
-            for rule in kwargs['DesignRules']:
-                self._check(['Name', 'Present', 'Absent'], **rule)
+        # TODO: Figure out if we should be specifying positives or negatives
+        # if isinstance(kwargs['DesignRules'], list):
+        #     for rule in kwargs['DesignRules']:
+        #         self._check(['Name', 'Present', 'Absent'], **rule)
         self._add(params, **kwargs)
 
     def add(self, **kwargs):
