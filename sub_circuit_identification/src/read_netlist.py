@@ -211,7 +211,7 @@ class SpiceParser:
                 self.subckts[ckt_name]["nodes"]) - len(reduced_subckt)
             self.subckts[ckt_name]["nodes"] = reduced_subckt
             self.subckts[ckt_name]["ports"] += source_ports
-            print(source_ports)
+            #print(source_ports)
 
         logging.error('REMOVED %i sources from circuit.\n', no_of_source)
 

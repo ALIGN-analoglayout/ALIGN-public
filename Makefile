@@ -1,12 +1,10 @@
 SHELL = bash
 PC=python3
-HOME = /home/kunal001/Desktop/research_work/alpha_release/ALIGN-public/
-INPUT_DIR = $(HOME)/examples/telescopic_ota
-DESIGN_NAME =telescopic_ota
-#INPUT_DIR = $(HOME)/examples/cs_amp
-#DESIGN_NAME =cs_amp
-#INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
+PIP=pip3
+HOME = $(PWD)
 #DESIGN_NAME = switched_capacitor_filter
+DESIGN_NAME = telescopic_ota
+INPUT_DIR = $(HOME)/examples/$(DESIGN_NAME)
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE = FinFET_Mock_PDK_Abstraction.json
 Cell_generator = CellFabric/Cell_Fabric_FinFET__Mock
@@ -41,8 +39,19 @@ clean:
 	rm -rf PlaceRouteHierFlow/testcase_latest
 	rm -rf PlaceRouteHierFlow/Results
 	rm -rf testcase_latest
-compile:
-	pip install --quiet -r sub_circuit_identification/requirements.txt
+
+compile_cell_generator:
+	@if ! $(PIP) list| grep -F python-gdsii; then \
+		$(PIP) install python-gdsii; \
+	fi
+	@if ! $(PIP) list| grep -F pytest; then \
+		$(PIP) install pytest; \
+	fi
+	cd GDSConv && $(PIP) install -e .
+	cd CellFabric && $(PIP) install -e . && $(PC) -m pytest
+
+compile:compile_cell_generator
+	$(PIP) install --quiet -r sub_circuit_identification/requirements.txt
 	@if [ ! -d "./lpsolve" ]; then \
 		git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git; \
 	fi
@@ -54,9 +63,6 @@ compile:
 		git clone --recursive https://github.com/boostorg/boost.git
 		cd boost && ./bootstrap.sh -prefix=$(HOME) && ./b2 headers
 	fi
-	pip install python-gdsii
-	cd GDSConv && pip install -e .
-	cd CellFabric && pip install -e . && pytest
 
 clean_docker:
 	docker container prune
@@ -73,9 +79,10 @@ build_docker:
 		rm -rf ./PlaceRouteHierFlow/Results; \
 	fi
 	cd PlaceRouteHierFlow && docker build -f Dockerfile -t placeroute_image .
-	
+
 annotate_docker:
 	cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
+	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
@@ -100,16 +107,16 @@ annotate:
 	@echo ""
 	@cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
 	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
+	$(PIP) install --quiet -r sub_circuit_identification/requirements.txt
 	cd sub_circuit_identification/ && $(PC) ./src/read_library.py --dir basic_library && \
 	$(PC) ./src/read_netlist.py --dir input_circuit -f $(DESIGN_NAME).sp --subckt $(DESIGN_NAME) --flat $(FLAT) && \
 	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT)
 	-cd sub_circuit_identification/ && $(PC) ./src/check_const.py --name $(DESIGN_NAME)
-	cd ./sub_circuit_identification/ && time ./runme.sh $(DESIGN_NAME)
 	@echo Sub circuit annotation finished successfully
 	@echo Check logs at sub_circuit_identification/LOG
 	@echo "#########################################"
 
-create_cell_docker: 
+create_cell_docker: compile_cell_generator
 	@echo Cell Generation
 	@echo ""
 	@echo Creating primitive cells for PnR
@@ -120,6 +127,9 @@ create_cell_docker:
 	cp ./sub_circuit_identification/Results/$(DESIGN_NAME)_lef.sh ./$(Cell_generator)/ && \
 	cd  $(Cell_generator) && source $(DESIGN_NAME)_lef.sh $(PC)
 	cat $(Cell_generator)/*lef > $(Cell_generator)/$(DESIGN_NAME).lef
+	@echo Cell generation finished successfully
+	@echo Check logs at cell_generation.log 
+	@echo "#########################################"
 
 create_cell:
 	@echo Cell Generation
@@ -156,7 +166,7 @@ PnR_docker: create_PnR_data
 	if [ ! "$$(docker ps -a -f name=PnR)" ]; then docker stop PnR; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=PnR)" ]; then docker rm PnR; fi
 	(cd testcase_latest; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
-	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0| tee > PnR.log; "
+	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow && mkdir -p Results && ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0 |& tee Results/PnR.log"
 	docker cp PnR:/PlaceRouteHierFlow/Results/ ./testcase_latest/
 	@echo "Creating gds"
 	$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
@@ -184,10 +194,10 @@ view_result:
 ifneq (, $(shell which klayout))
 	@klayout ./testcase_latest/Results/$(DESIGN_NAME).gds &
 endif
-	
+
 ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker
+
 	echo "Done"
-	
 
 ALIGN:annotate create_cell create_PnR_data PnR
 
