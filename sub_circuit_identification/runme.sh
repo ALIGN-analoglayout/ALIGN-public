@@ -33,3 +33,5 @@ python3 ./src/write_verilog_lef.py -U_cap 12 -U_mos 12
 #store output in verilog format in results dir
 
 #python ./src/write_constraints.py
+## CHecks for common centroid constraint
+python3 ./src/check_const.py
