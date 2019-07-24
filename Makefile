@@ -5,7 +5,6 @@ HOME = $(PWD)
 #DESIGN_NAME = switched_capacitor_filter
 DESIGN_NAME = telescopic_ota
 INPUT_DIR = $(HOME)/examples/$(DESIGN_NAME)
-#INPUT_DIR = $(HOME)/examples/switched_capacitor_filter
 PDK_DIR = PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE = FinFET_Mock_PDK_Abstraction.json
 Cell_generator = CellFabric/Cell_Fabric_FinFET__Mock
@@ -167,7 +166,7 @@ PnR_docker: create_PnR_data
 	if [ ! "$$(docker ps -a -f name=PnR)" ]; then docker stop PnR; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=PnR)" ]; then docker rm PnR; fi
 	(cd testcase_latest; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
-	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0| tee > PnR.log; "
+	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow && ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0 |& tee > Results/PnR.log"
 	docker cp PnR:/PlaceRouteHierFlow/Results/ ./testcase_latest/
 	@echo "Creating gds"
 	$(PC) GDSConv/gdsconv/json2gds.py ./testcase_latest/Results/$(DESIGN_NAME)_0.gds.json ./testcase_latest/Results/$(DESIGN_NAME).gds
