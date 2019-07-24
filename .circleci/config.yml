@@ -46,7 +46,7 @@ jobs:
           (cd GDSConv && pip install .)
 
           make DESIGN_NAME=telescopic_ota ALIGN_docker
-#          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
+          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
 
   build-tally:
     executor: docker-executor
