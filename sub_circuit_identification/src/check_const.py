@@ -82,7 +82,7 @@ def fix_verilog(design_name):
 
         verilog_fp.close()
         new_verilog_fp.close()
-    os.rename(new_verilog_path,verilog_path)
+        os.rename(new_verilog_path,verilog_path)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(

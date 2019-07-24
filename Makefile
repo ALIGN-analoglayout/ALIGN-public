@@ -82,10 +82,11 @@ build_docker:
 
 annotate_docker:
 	cp $(INPUT_DIR)/$(DESIGN_NAME).sp ./sub_circuit_identification/input_circuit/
+	@-cp -r $(INPUT_DIR)/*.const ./sub_circuit_identification/input_circuit/
 	cd sub_circuit_identification && docker build -f Dockerfile -t topology .
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
-	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && find . && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
+	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
 	docker cp topology_container:/INPUT/Results ./sub_circuit_identification/
 
 annotate: 
@@ -111,7 +112,6 @@ annotate:
 	$(PC) ./src/read_netlist.py --dir input_circuit -f $(DESIGN_NAME).sp --subckt $(DESIGN_NAME) --flat $(FLAT) && \
 	$(PC) ./src/match_graph.py && $(PC) ./src/write_verilog_lef.py -U_cap $(UNIT_CAP_HEIGHT) -U_mos $(UNIT_MOS_HEIGHT)
 	-cd sub_circuit_identification/ && $(PC) ./src/check_const.py --name $(DESIGN_NAME)
-	cd ./sub_circuit_identification/ && time ./runme.sh $(DESIGN_NAME)
 	@echo Sub circuit annotation finished successfully
 	@echo Check logs at sub_circuit_identification/LOG
 	@echo "#########################################"
