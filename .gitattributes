@@ -1,5 +1,5 @@
 # Reclassify .sp file as Spice
-*.sp linguist-language=Spice
+*.sp  linguist-language=Spice
 *.cir linguist-language=Spice
 
 # Auto detect text files and perform LF normalization
@@ -7,7 +7,7 @@
 * text=auto
 
 #
-# Explicitly defining text vs. binary for expected file formats
+# Explicitly override text vs. binary for expected file formats
 #
 
 # C / C++
