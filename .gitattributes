@@ -62,6 +62,7 @@
 # Shell Scripts
 # =============
 *.bat      text eol=crlf
+*.cmd      text eol=crlf
 *.sh       text eol=lf
 
 # Configuration / Data
@@ -71,6 +72,7 @@ Dockerfile      text
 Dockerfile.*    text
 
 *.json         text
+*.xml          text
 *.csv          text
 *.tab          text
 *.tsv          text
