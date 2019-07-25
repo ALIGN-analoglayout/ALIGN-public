@@ -28,7 +28,6 @@ python3 ./src/read_netlist.py --dir input_circuit -f $SPICE_FILE --subckt $DESIG
 python3 ./src/match_graph.py
 #store the matches and reduced graph in pickle binary format 
 
-## GENERATE VERILOG
 python3 ./src/write_verilog_lef.py -U_cap 12 -U_mos 12
 #store output in verilog format in results dir
 

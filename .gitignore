@@ -6,3 +6,5 @@ htmlcov/
 *.egg-info/
 junit.xml
 tests/__json*_cand
+
+testcase_latest/

@@ -47,6 +47,11 @@ jobs:
 
           make DESIGN_NAME=telescopic_ota ALIGN_docker
           make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
+# Currently failing
+#          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker
+#          make DESIGN_NAME=current_mirror_ota ALIGN_docker
+#          make DESIGN_NAME=five_transistor_ota ALIGN_docker
+#          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker
 
   build-tally:
     executor: docker-executor
