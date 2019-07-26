@@ -199,6 +199,13 @@ ifneq (, $(shell which klayout))
 	@klayout ./testcase_latest/Results/$(DESIGN_NAME).gds &
 endif
 
+generate_png:
+	docker run --name layout_container --mount source=layoutVol,target=/layout ubuntu
+	docker cp testcase_latest/Results/$(DESIGN_NAME).gds layout_container:/layout
+	docker run --rm --mount source=layoutVol,target=/layout -it layout_convert /bin/bash -c "/gds2png.sh /layout/$(DESIGN_NAME).gds /layout/$(DESIGN_NAME).png"
+	docker cp layout_container:/layout/$(DESIGN_NAME).png testcase_latest/Results
+	docker rm layout_container
+
 ALIGN_docker:build_docker annotate_docker create_cell_docker PnR_docker
 	echo "Done"
 
