@@ -59,8 +59,8 @@ jobs:
       - persist_to_workspace:
           root: /work/workspace
           paths:
-	    - testcase_latest/Results/telescopic_ota.png
-	    - testcase_latest/Results/switched_capacitor_filter.png
+            - testcase_latest/Results/telescopic_ota.png
+            - testcase_latest/Results/switched_capacitor_filter.png
 
   build-tally:
     executor: docker-executor
