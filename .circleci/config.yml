@@ -34,6 +34,7 @@ jobs:
           apk update
           apk add python3 make bash
 
+          (cd Build/ThirdParty/Klayout && docker build . -t layout_png -f Dockerfile.convert)
           make build_docker
 
           python3 -m venv general
@@ -45,8 +46,10 @@ jobs:
           (cd CellFabric && pip install .)
           (cd GDSConv && pip install .)
 
+      - run: |
           make DESIGN_NAME=telescopic_ota ALIGN_docker
           make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
+          
 # Currently failing
 #          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker
 #          make DESIGN_NAME=current_mirror_ota ALIGN_docker

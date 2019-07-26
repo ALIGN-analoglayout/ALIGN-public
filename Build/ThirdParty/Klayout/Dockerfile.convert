@@ -1,0 +1,6 @@
+FROM darpaalign/klayout:latest as layout_convert
+
+RUN apt-get update && apt-get install -yq xvfb && apt-get clean
+
+COPY gds2png.sh /gds2png.sh
+COPY image_png.rb /image_png.rb
