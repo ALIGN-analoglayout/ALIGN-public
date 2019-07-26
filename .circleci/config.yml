@@ -46,21 +46,25 @@ jobs:
           (cd CellFabric && pip install .)
           (cd GDSConv && pip install .)
 
-      - run: |
+      - run:
           make DESIGN_NAME=telescopic_ota ALIGN_docker generate_png
+
+      - store_artifacts:
+          path: testcase_latest/Results/telescopic_ota.png
+
+      - run:
           make DESIGN_NAME=switched_capacitor_filter ALIGN_docker generate_png
           
+      - store_artifacts:
+          path: testcase_latest/Results/switched_capacitor_filter.png
+
+
 # Currently failing
 #          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
 #          make DESIGN_NAME=current_mirror_ota ALIGN_docker generate_png
 #          make DESIGN_NAME=five_transistor_ota ALIGN_docker generate_png
 #          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
 
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - testcase_latest/Results/telescopic_ota.png
-            - testcase_latest/Results/switched_capacitor_filter.png
 
   build-tally:
     executor: docker-executor
