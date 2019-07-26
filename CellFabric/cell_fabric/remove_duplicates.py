@@ -79,11 +79,7 @@ class Scanline:
                 result = metal_rect
                 break
 
-        if result is None:
-            cx = divmod((via_rect.rect[0]+via_rect.rect[2])//2,80)
-            cy = divmod((via_rect.rect[1]+via_rect.rect[3])//2,84)
-            assert False, f"No touching wires: {cx,cy}"
-
+        assert result is not None
         return result
 
 class RemoveDuplicates():
