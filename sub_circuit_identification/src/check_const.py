@@ -38,6 +38,8 @@ def check_const(sub_block_const):
     return(cc_pair)
 
 def fix_verilog(design_name):
+    print("SMB",design_name)
+
     """ Reads available lef in LEF dir
     Reads .lef files or param_lef files
     """
@@ -71,7 +73,9 @@ def fix_verilog(design_name):
                             new_verilog_fp.write(line)
                         line = verilog_fp.readline()
                 for ele in cc_block.keys():
+                    assert ele in match_block, (ele, match_block)
                     b1 = match_block[ele].strip().replace('(','1(').split()
+                    assert cc_block[ele] in match_block, (cc_block[ele], match_block)
                     b2 = match_block[cc_block[ele]].strip().replace('(','2(').split()
                     new_b = b1[0]+'_'+b2[0]+' '+ b1[1]+'_'+b2[1]+' ( '+' '.join(b1[3:-1])+', '+' '.join(b2[3:-1])+' );'
                     new_verilog_fp.write(new_b)
