@@ -5,8 +5,8 @@
 module sc_dc_dc_converter ( vss, vin, phi2, phi1, vout ); 
 input vss, vin, phi2, phi1, vout;
 
-Cap_1e+06fF c0 ( .MINUS(net9), .PLUS(net10) ); 
-Cap_1e+06fF c1 ( .MINUS(net7), .PLUS(net8) ); 
+Cap_1000fF c0 ( .MINUS(net9), .PLUS(net10) ); 
+Cap_1000fF c1 ( .MINUS(net7), .PLUS(net8) ); 
 Switch_NMOS_n10_X40_Y25 m4 ( .D(net9), .G(phi2), .S(vss) ); 
 DP_NMOS_n10_X40_Y25 m5_m6 ( .DA(net9), .GA(phi1), .S(net8), .DB(vout), .GB(phi2) ); 
 CMC_NMOS_n10_X40_Y25 m0_m8 ( .DA(net10), .G(phi1), .DB(vout), .SA(vin), .SB(net7) ); 

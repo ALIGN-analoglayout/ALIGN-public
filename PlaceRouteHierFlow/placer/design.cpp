@@ -1365,9 +1365,19 @@ void design::PrintNets() {
     cout<<"Name: "<<(*it).name<<" Weight: "<<it->weight<<" Priority: "<<it->priority<<endl;
     cout<<"Name: "<<(*it).name<<" Priority: "<<it->priority<<" Margin: "<<it->margin<<endl;
     cout<<"\tConnected: "<<endl;
-    for(vector<placerDB::Node>::iterator it2=(*it).connected.begin(); it2!=(*it).connected.end(); ++it2) {
-      cout<<"\t\ttype: "<<(*it2).type<<"; iter: "<<(*it2).iter<<"; iter2:"<<(*it2).iter2;
-      if(it2->type==placerDB::Block) {cout<<" "<<Blocks.at(it2->iter2).back().name<<"/"<<Blocks.at(it2->iter2).back().blockPins.at(it2->iter).name<<endl;}
+    for(vector<placerDB::Node>::iterator it2=it->connected.begin(); it2!=it->connected.end(); ++it2) {
+      cout<<"\t\ttype: "<<it2->type<<"; iter: "<<it2->iter<<"; iter2:"<<it2->iter2;
+
+      if(it2->type==placerDB::Block) {
+	auto blk=Blocks.at(it2->iter2);
+	if ( blk.size() == 0) {  
+	  cout<<" <empty>"<<endl;
+	} else {
+	  auto tmp=blk.back();
+	  auto tmp2=tmp.blockPins.at(it2->iter);
+	  cout<<" "<<tmp.name<<"/"<<tmp2.name<<endl;
+	}
+      }
       if(it2->type==placerDB::Terminal) {cout<<" "<<Terminals.at(it2->iter).name<<endl;}
     }
   }
