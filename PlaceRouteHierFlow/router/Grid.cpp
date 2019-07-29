@@ -1167,6 +1167,16 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
 }
 
 void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
+
+  std::set<int> Source_set;
+  for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
+    Source_set.insert( *it);
+  }
+  std::set<int> Dest_set;
+  for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
+    Dest_set.insert( *it);
+  }
+
   vertices_graph.clear(); total2graph.clear(); graph2total.clear();
   SourceGraph.clear(); DestGraph.clear();
   RouterDB::point minP, maxP;
@@ -1187,12 +1197,27 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
           total2graph[i]=vertices_graph.size()-1;
           graph2total[vertices_graph.size()-1]=i;
         }
+	{
+	  auto fit = Source_set.find( i);
+	  if ( fit != Source_set.end()) {
+	    SourceGraph.push_back(vertices_graph.size()-1);
+	  }
+	}
+	{
+	  auto fit = Dest_set.find( i);
+	  if ( fit != Dest_set.end()) {
+	    DestGraph.push_back(vertices_graph.size()-1);
+	  }
+	}
+	    
+	/*
         for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
           if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
         }
         for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
           if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
         }
+	*/
       }
     }
   }

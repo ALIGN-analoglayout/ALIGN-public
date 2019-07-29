@@ -573,11 +573,14 @@ void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
   bool mark=false;
+  //  unsigned int count=0;
   for(tar=low; tar!=high; ++tar) {
+    //    ++count;
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
   else {std::cout<<"Graph-Info: cannot found element in map\n";}
+  //  std::cout << "RemovefromMultMap: searched through " << count << " multmap nodes." << std::endl;
 }
 
 void Graph::UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist) {
@@ -594,8 +597,9 @@ std::vector<int> Graph::minDistancefromMultiMap(std::multimap<double, int> &mmap
   std::multimap<double, int>::iterator high=mmap.upper_bound(min);
   for(std::multimap<double, int>::iterator it=low; it!=high; ++it) {
     min_index.push_back(it->second);
+    break; // only using the first later on, so we will stop early
   }
-  return min_index;
+  return min_index; // Has zero or one entry.
 };
 
 std::vector<int>  Graph::dijkstra(Grid& grid){
