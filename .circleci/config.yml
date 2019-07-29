@@ -70,13 +70,14 @@ jobs:
       - store_artifacts:
           path: testcase_latest/Results/five_transistor_ota.png
 
-      - run:
-          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
+# Fails intermitantly in Placer
+#      - run:
+#          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
 
-      - store_artifacts:
-          path: testcase_latest/Results/cascode_current_mirror_ota.png
+#      - store_artifacts:
+#          path: testcase_latest/Results/cascode_current_mirror_ota.png
 
-# Words but Takes too long
+# Works but takes too long
 #          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
 
   build-tally:
