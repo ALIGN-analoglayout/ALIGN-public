@@ -84,6 +84,8 @@ jobs:
     executor: docker-executor
     steps:
       - run:
+          apk update
+          apk add curl
           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -
 
       - setup_remote_docker
