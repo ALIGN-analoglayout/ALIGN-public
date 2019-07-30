@@ -27,7 +27,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${
 ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 	docker-compose exec cellfabric-service /bin/bash -c "source /general/bin/activate && cd /dataVolume/ && mkdir -p ${GEN_OUTPUT} && cd ${GEN_OUTPUT} && make -f /CellFabric/Makefile INPUT=/dataVolume/${TPO_OUTPUT} DESIGN=${DESIGN}"
 
-${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp ${DESIGN}/${DESIGN}.const docker-compose.yml
+${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp docker-compose.yml
 	docker-compose exec topology-service /bin/bash -c "source /sympy/bin/activate && cd /dataVolume/ && mkdir -p ${TPO_OUTPUT} && cd ${TPO_OUTPUT}/.. && make -f /DEMO/Makefile INPUT=/dataVolume/${DESIGN} DESIGN=${DESIGN}"
 
 docker-compose.yml:	${ALIGN_HOME}/compose/docker-compose.yml
@@ -35,7 +35,7 @@ docker-compose.yml:	${ALIGN_HOME}/compose/docker-compose.yml
 	docker-compose up -d
 
 ${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	cp $< ${DESIGN}/
+	cp ${EXAMPLES}/${DESIGN}/`basename $< .sp`.* ${DESIGN}/
 
 ${DESIGN}/${DESIGN}.const:	${EXAMPLES}/${DESIGN}/${DESIGN}.const  ${DESIGN}
 	cp $< ${DESIGN}/

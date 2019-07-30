@@ -17,7 +17,7 @@ circuit_graphs/${DESIGN}.yaml: ${INPUT}/${DESIGN}.sp library_graphs
 Results/${DESIGN}.p:	circuit_graphs/${DESIGN}.yaml
 	python3 $(SRC)/match_graph.py
 
-Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p ${INPUT}/${DESIGN}.const LEF
+Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p LEF
 	python3 $(SRC)/write_verilog_lef.py -U_cap 12 -U_mos 12
 	python3 $(SRC)/check_const.py
 

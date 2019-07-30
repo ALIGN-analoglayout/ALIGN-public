@@ -80,6 +80,26 @@ jobs:
 # Works but takes too long
 #          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
 
+  build-make-compose:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          apk update
+          apk add python3 make bash
+          apk add docker-compose
+
+      - run: |
+        mkdir /tmp/work
+        cd /tmp/work
+        export ALIGN_HOME=/
+        ln -s /compose/Makefile .
+        make DESIGN=telescopic_ota
+
   build-tally:
     executor: docker-executor
     steps:
@@ -446,51 +466,54 @@ workflows:
       - build-make:
           requires:
             - start 
+      - build-make-compose:
+          requires:
+            - start 
 
-  full:
-    jobs:
-      - start
-      - build-tally:
-          requires:
-            - start 
-      - build-sgi:
-          requires:
-            - start 
-      - build-PlacementEditor:
-          requires:
-            - start 
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start 
-      - build-GDSConv:
-          requires:
-            - start 
-      - build-sci:
-          requires:
-            - start 
-      - build-cktgen:
-          requires:
-            - start 
-      - build-cellfabric:
-          requires:
-            - start 
-      - build-satplacer:
-          requires:
-            - start 
-      - build-pdk:
-          requires:
-            - start 
-      - finish:
-          requires:
-            - build-tally 
-            - build-sgi 
-            - build-PlacementEditor 
-            - build-GDSConv 
-            - build-sci 
-            - build-cellfabric
-            - build-cktgen 
-            - build-pdk 
-            - build-satplacer
+  # full:
+  #   jobs:
+  #     - start
+  #     - build-tally:
+  #         requires:
+  #           - start 
+  #     - build-sgi:
+  #         requires:
+  #           - start 
+  #     - build-PlacementEditor:
+  #         requires:
+  #           - start 
+  #     - build-PlaceRouteHierFlow:
+  #         requires:
+  #           - start 
+  #     - build-GDSConv:
+  #         requires:
+  #           - start 
+  #     - build-sci:
+  #         requires:
+  #           - start 
+  #     - build-cktgen:
+  #         requires:
+  #           - start 
+  #     - build-cellfabric:
+  #         requires:
+  #           - start 
+  #     - build-satplacer:
+  #         requires:
+  #           - start 
+  #     - build-pdk:
+  #         requires:
+  #           - start 
+  #     - finish:
+  #         requires:
+  #           - build-tally 
+  #           - build-sgi 
+  #           - build-PlacementEditor 
+  #           - build-GDSConv 
+  #           - build-sci 
+  #           - build-cellfabric
+  #           - build-cktgen 
+  #           - build-pdk 
+  #           - build-satplacer
 
   # end_to_end:
   #   jobs:
