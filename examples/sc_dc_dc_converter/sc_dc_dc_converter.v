@@ -5,10 +5,10 @@
 module sc_dc_dc_converter ( vss, vin, phi2, phi1, vout ); 
 input vss, vin, phi2, phi1, vout;
 //common centroid capacitor style1, c0 and c1 are two seperate common centroid capacitor
-Cap_1000fF c0 ( .MINUS(net9), .PLUS(net10) ); 
-Cap_1000fF c1 ( .MINUS(net7), .PLUS(net8) );
+Cap_400fF c0 ( .MINUS(net9), .PLUS(net10) ); 
+Cap_500fF c1 ( .MINUS(net7), .PLUS(net8) );
 //common centroid capacitor style2. c0 and c1 are combined as a single commoncentorid capacitor c2. At the same time, pins of c2 is the combination of the pins of both c0 and c1
-//Cap_1000fF c2 ( .MINUS(net9), .PLUS(net10), .MINUS(net7), .PLUS(net8) );
+//Cap_900fF c2 ( .MINUS(net9), .PLUS(net10), .MINUS(net7), .PLUS(net8) );
 Switch_NMOS_n10_X40_Y25 m4 ( .D(net9), .G(phi2), .S(vss) ); 
 DP_NMOS_n10_X40_Y25 m5_m6 ( .DA(net9), .GA(phi1), .S(net8), .DB(vout), .GB(phi2) ); 
 CMC_NMOS_n10_X40_Y25 m0_m8 ( .DA(net10), .G(phi1), .DB(vout), .SA(vin), .SB(net7) ); 
