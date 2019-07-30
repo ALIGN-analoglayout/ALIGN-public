@@ -84,9 +84,7 @@ jobs:
     executor: docker-executor
     steps:
       - run:
-          name: Install Docker Compose
-          comand: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -
+          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -
 
       - setup_remote_docker
 
