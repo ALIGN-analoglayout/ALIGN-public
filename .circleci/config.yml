@@ -96,7 +96,6 @@ jobs:
       - run: |
           apk update
           apk add python3 make bash
-          apk add docker-compose
 
       - run: |
           mkdir /tmp/work
@@ -468,9 +467,9 @@ workflows:
   make:
     jobs:
       - start
-      - build-make:
-          requires:
-            - start 
+      # - build-make:
+      #     requires:
+      #       - start 
       - build-make-compose:
           requires:
             - start 
