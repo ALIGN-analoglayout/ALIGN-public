@@ -1,0 +1,25 @@
+#
+PDK_FILE=FinFET_Mock_PDK_Abstraction.json
+PDKINPUT=/dataVolume/${DESIGN}
+LAYINPUT=/dataVolume/${DESIGN}
+NETINPUT=/dataVolume/${DESIGN}
+
+Results/${DESIGN}_0.lef:	${DESIGN}.lef ${DESIGN}.v ${DESIGN}.map ${PDK_FILE}
+	mkdir -p Results/
+	/PlaceRouteHierFlow/pnr_compiler . ${DESIGN}.lef ${DESIGN}.v \
+	${DESIGN}.map ${PDK_FILE} ${DESIGN} 1 0
+
+
+${PDK_FILE}:	${PDKINPUT}/${PDK_FILE}
+	echo "copy $< to $@"
+	cp $< .
+
+${DESIGN}.v:	${NETINPUT}/${DESIGN}.v
+	cp $< .
+
+${DESIGN}.lef:	${LAYINPUT}/${DESIGN}.lef
+	cp $< .
+
+${DESIGN}.map:	${LAYINPUT}/${DESIGN}.map
+	cp $< .
+	cp `dirname $<`/*.gds.json .
