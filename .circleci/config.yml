@@ -94,11 +94,11 @@ jobs:
           apk add docker-compose
 
       - run: |
-        mkdir /tmp/work
-        cd /tmp/work
-        export ALIGN_HOME=/
-        ln -s /compose/Makefile .
-        make DESIGN=telescopic_ota
+          mkdir /tmp/work
+          cd /tmp/work
+          export ALIGN_HOME=/
+          ln -s /compose/Makefile .
+          make DESIGN=telescopic_ota
 
   build-tally:
     executor: docker-executor
