@@ -1,6 +1,6 @@
 # Makefile which uses docker-compose
 
-export ALIGN_HOME=~/src/ALIGN-public/
+#export ALIGN_HOME=~/src/ALIGN-public/
 
 EXAMPLES=${ALIGN_HOME}/examples
 
