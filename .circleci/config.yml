@@ -95,12 +95,17 @@ jobs:
           sudo apt-get install python3 make bash
 
       - run: |
+          echo 'export ALIGN_HOME=/tmp/workspace' >> $BASH_ENV
+          echo 'export ALIGN_WORK_DIR=/tmp/workspace/runs' >> $BASH_ENV
+
+      - run: |
           pwd
-          echo "wd:"
-          ls .
-          echo "home:"
-          ls /
-          ln -s ../compose/Makefile .
+          echo "ALIGN_WORK_DIR=$ALIGN_WORK_DIR"
+          echo "ALIGN_HOME=$ALIGN_HOME"
+          ln -s $ALIGN_HOME/compose/Makefile .
+          ls -l .
+          
+      - run: |
           make DESIGN=telescopic_ota
   
       - store_artifacts:
