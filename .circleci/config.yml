@@ -103,7 +103,7 @@ jobs:
           ls ..
           ln -s $ALIGN_HOME/compose/Makefile .
           make DESIGN=telescopic_ota
-	  
+  
       - store_artifacts:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
