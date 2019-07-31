@@ -101,6 +101,8 @@ jobs:
           mkdir /tmp/work
           cd /tmp/work
           export ALIGN_HOME=/
+          ls /
+          ls .
           ln -s /compose/Makefile .
           make DESIGN=telescopic_ota
 
