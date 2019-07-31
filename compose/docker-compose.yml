@@ -23,7 +23,7 @@ x-service: &default-service
   environment: *default-environment
   network_mode: host
   command: /bin/bash -c "/usr/bin/tail -f /dev/null"
-  user: "1000:1000"
+#  user: "1000:1000"
   volumes:
     - ${ALIGN_WORK_DIR}:/dataVolume
     

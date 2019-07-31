@@ -82,24 +82,17 @@ jobs:
 
   build-make-compose:
     machine:
+      image: ubuntu-1604:201903-01
       docker_layer_caching: true
     working_directory: /tmp/workspace
+    
     steps:
-      - run: |
-          uname -a
-      - run: |
-          apk update
-          apk add curl
-          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -`uname -m` > ~/docker-compose
-          chmod +x ~/docker-compose
-          sudo mv ~/docker-compose /usr/local/bin/docker-compose
-
       - attach_workspace:
           at: /tmp/workspace
 
       - run: |
-          apk update
-          apk add python3 make bash
+          sudo apt-get update
+          sudo apt-get install python3 make bash
 
       - run: |
           export ALIGN_HOME=/tmp/workspace/
@@ -109,7 +102,30 @@ jobs:
           pwd
           ls ..
           ln -s $ALIGN_HOME/compose/Makefile .
+          
+      - run: |
           make DESIGN=telescopic_ota
+  
+      - store_artifacts:
+          path: tmp/telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+
+      - run:
+          make DESIGN=switched_capacitor_filter
+          
+      - store_artifacts:
+          path: tmp/switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+
+      - run:
+          make DESIGN=current_mirror_ota
+
+      - store_artifacts:
+          path: tmp/current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+
+      - run:
+          make DESIGN=five_transistor_ota
+
+      - store_artifacts:
+          path: tmp/five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
   build-tally:
     executor: docker-executor
@@ -474,57 +490,57 @@ workflows:
   make:
     jobs:
       - start
-      # - build-make:
-      #     requires:
-      #       - start 
+      - build-make:
+          requires:
+            - start 
       - build-make-compose:
           requires:
             - start 
 
-  # full:
-  #   jobs:
-  #     - start
-  #     - build-tally:
-  #         requires:
-  #           - start 
-  #     - build-sgi:
-  #         requires:
-  #           - start 
-  #     - build-PlacementEditor:
-  #         requires:
-  #           - start 
-  #     - build-PlaceRouteHierFlow:
-  #         requires:
-  #           - start 
-  #     - build-GDSConv:
-  #         requires:
-  #           - start 
-  #     - build-sci:
-  #         requires:
-  #           - start 
-  #     - build-cktgen:
-  #         requires:
-  #           - start 
-  #     - build-cellfabric:
-  #         requires:
-  #           - start 
-  #     - build-satplacer:
-  #         requires:
-  #           - start 
-  #     - build-pdk:
-  #         requires:
-  #           - start 
-  #     - finish:
-  #         requires:
-  #           - build-tally 
-  #           - build-sgi 
-  #           - build-PlacementEditor 
-  #           - build-GDSConv 
-  #           - build-sci 
-  #           - build-cellfabric
-  #           - build-cktgen 
-  #           - build-pdk 
-  #           - build-satplacer
+  full:
+    jobs:
+      - start
+      - build-tally:
+          requires:
+            - start 
+      - build-sgi:
+          requires:
+            - start 
+      - build-PlacementEditor:
+          requires:
+            - start 
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start 
+      - build-GDSConv:
+          requires:
+            - start 
+      - build-sci:
+          requires:
+            - start 
+      - build-cktgen:
+          requires:
+            - start 
+      - build-cellfabric:
+          requires:
+            - start 
+      - build-satplacer:
+          requires:
+            - start 
+      - build-pdk:
+          requires:
+            - start 
+      - finish:
+          requires:
+            - build-tally 
+            - build-sgi 
+            - build-PlacementEditor 
+            - build-GDSConv 
+            - build-sci 
+            - build-cellfabric
+            - build-cktgen 
+            - build-pdk 
+            - build-satplacer
 
   # end_to_end:
   #   jobs:

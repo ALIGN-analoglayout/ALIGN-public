@@ -19,7 +19,7 @@ Results/${DESIGN}.p:	circuit_graphs/${DESIGN}.yaml
 
 Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p LEF
 	python3 $(SRC)/write_verilog_lef.py -U_cap 12 -U_mos 12
-	python3 $(SRC)/check_const.py
+	python3 $(SRC)/check_const.py --name ${DESIGN}
 
 LEF:	/DEMO/LEF
 	cp -r /DEMO/LEF .
