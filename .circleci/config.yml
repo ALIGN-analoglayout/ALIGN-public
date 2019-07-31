@@ -84,20 +84,20 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
       docker_layer_caching: true
-    working_directory: /work/workspace
+    working_directory: /tmp/workspace
     
     steps:
       - attach_workspace:
-          at: /work/workspace
+          at: /tmp/workspace
 
       - run: |
           sudo apt-get update
           sudo apt-get install python3 make bash
 
       - run: |
-          export ALIGN_HOME=/work/workspace/
+          export ALIGN_HOME=/tmp/workspace/
           mkdir tmp
-          export ALIGN_WORK_DIR=/work/workspace/tmp/
+          export ALIGN_WORK_DIR=/tmp/workspace/tmp/
           cd tmp
           pwd
           ls ..
