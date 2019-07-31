@@ -92,8 +92,8 @@ jobs:
           at: /tmp/workspace
 
       - run: |
-          apk update
-          apk add python3 make bash
+          sudo apt-get update
+          sudo apt-get install python3 make bash
 
       - run: |
           export ALIGN_HOME=/tmp/workspace/
