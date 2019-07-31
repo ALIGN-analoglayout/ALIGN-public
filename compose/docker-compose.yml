@@ -10,7 +10,7 @@
 #
 # To rebuild incremental step engine:
 #   docker-compose up -d --build <step> 
-version: '3.2'
+version: '3.4'
 
 
 # YAML anchors for creating defaults
