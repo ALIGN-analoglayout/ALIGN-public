@@ -320,7 +320,7 @@ class ADNetlist:
   def genNetlist( self, netl): 
     self.ces = OrderedDict()
     self.kors = []
-    for (k,v) in self.instances.items():
+    for (_,v) in self.instances.items():
       for w in v.template.terminals:
         fN = w.netName
         if fN in v.formalActualMap:
@@ -481,7 +481,7 @@ class Netlist:
         for p in range(p_nticks):
           argmin = None
         
-          for (ceName,lst) in net.ces.items():
+          for (_,lst) in net.ces.items():
             for w in lst:
               for q in range(q_nticks):
                 cand = dist( w, p/(p_nticks-1), q/(q_nticks-1))
@@ -493,13 +493,11 @@ class Netlist:
             print( "    " + json.dumps( {"layer": "M2", "rect": [v//5 for v in argmin.rect.toList()]}))
 
 
-  def dumpGR( self, tech, fn, cell_instances=[], no_grid=False):
+  def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
       grs = []
       terminals = []
-
-      print( cell_instances)
 
       wire = Wire()
       wire.netName = 'top'
@@ -516,10 +514,11 @@ class Netlist:
         wire.gid = -1
         terminals.append( wire)
 
-      for ci in cell_instances:
-        terminals.append( ci)
+      if cell_instances is not None:
+        for ci in cell_instances:
+          terminals.append( ci)
 
-      for (netName,net) in self.nets.items():
+      for (_,net) in self.nets.items():
         for gr in net.grs:
           grs.append(gr)
         for wire in net.wires:
@@ -643,7 +642,7 @@ Option name=upper_layer                          value=metal4
   def write_input_file( self, fn):
     with open( fn, "w") as fp:
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
-      for (k,v) in self.nets.items():
+      for (_,v) in self.nets.items():
         for w in v.wires:
           fp.write( str(w) + "\n")
 
@@ -770,11 +769,11 @@ Option name=upper_layer                          value=metal4
         fp.write( "#end of net %s\n" % k)
 
 
-  def write_files( self, tech, dir, args):
-    self.write_ctrl_file( dir + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
-    self.write_input_file( dir + "/" + self.nm + "_dr_netlist.txt")
-    self.write_global_routing_file( dir + "/" + self.nm + "_dr_globalrouting.txt")
-    self.dumpGR( tech, dir + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
+  def write_files( self, tech, dirname, args):
+    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
+    self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
+    self.write_global_routing_file( dirname + "/" + self.nm + "_dr_globalrouting.txt")
+    self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
 
 
@@ -844,17 +843,11 @@ def parse_lgf( fp):
       m = p_obj.match( line)
       if m:
         net = m.groups()[0]
-        gen = m.groups()[1]
-        x = int(m.groups()[2])
-        y = int(m.groups()[3])
         continue
 
       m = p_obj_lbrace.match( line)
       if m:
         net = m.groups()[0]
-        gen = m.groups()[1]
-        x = int(m.groups()[2])
-        y = int(m.groups()[3])
         continue
 
       m = p_wire_in_obj.match( line)
@@ -918,8 +911,6 @@ def removeDuplicates( data):
 
     viaLayers = {'via0','via1','via2','via3','via4','via5','via6'}
 
-    hLayers = {layer for (layer, dir) in layers if dir == 'h'}
-    vLayers = {layer for (layer, dir) in layers if dir == 'v'}
     layersDict = dict(layers)
 
     indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
@@ -969,10 +960,10 @@ def removeDuplicates( data):
         for p in v[:1]:
           terminals.append({'layer': layer, 'net_name': p[1], 'rect': p[0]})
 
-    for (layer, dir) in layers:
+    for (layer, dirname) in layers:
         if layer not in tbl:
             continue
-        (indices, dIndex) = indicesTbl[dir]
+        (indices, dIndex) = indicesTbl[dirname]
 
         for (twice_center, v) in tbl[layer].items():
 
