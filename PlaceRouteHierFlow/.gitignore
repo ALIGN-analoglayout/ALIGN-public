@@ -1,0 +1,10 @@
+pnr_compiler
+*.o
+PnRDB/*.o
+cap_placer/*.o
+router/*.o
+placer/*.o
+router/FastSteinerUM/*.o
+router/FastSteinerUM/*.a
+router/FastSteinerUM/gen
+router/FastSteinerUM/steiner

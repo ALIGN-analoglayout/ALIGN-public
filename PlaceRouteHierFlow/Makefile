@@ -6,7 +6,8 @@ LP_DIR?=/usr/local/lib/lpsolve
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 BOOST_LP?=/usr/include
 
-CC=g++ -g -w -Wall -std=c++11 -O1 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP)
+CC=g++ -g -w -Wall -std=c++14 -O3 -lm -ldl -m64 -pthread -I$(SOURCE_LP) -I$(BOOST_LP)
+CXX=$(CC)
 
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 
@@ -23,7 +24,7 @@ router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o r
 
 all: subsystem main.o pnr_compiler
 
-pnr_compiler::
+pnr_compiler: $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o
 	$(CC) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -ldl
 
 subsystem:

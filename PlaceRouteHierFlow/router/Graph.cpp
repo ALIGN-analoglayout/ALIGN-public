@@ -435,93 +435,49 @@ void Graph::CreateAdjacentList(Grid& grid){
              tempNode.src=i;
              Edge tempEdge;
 
+	     auto fx = [&](RouterDB::vertex& u, RouterDB::vertex& v) {
+	       return (double) abs(v.x-u.x)*grid.drc_info.metal_weight[u.metal];
+	     };
+	     auto fy = [&](RouterDB::vertex& u, RouterDB::vertex& v) {
+	       return (double) abs(v.y-u.y)*grid.drc_info.metal_weight[u.metal];
+	     };
+	     auto f1 = [&](RouterDB::vertex& u, RouterDB::vertex& v) {
+	       return (double) 1.0;
+	     };
+
+	     auto process = [&](RouterDB::vertex& u, int index, auto f) {
+	       auto it = grid.total2graph.find(index);
+	       if(it!=grid.total2graph.end())
+		 {
+		   int graph_index = it->second;
+		   auto v = grid.vertices_graph[graph_index];
+		   if(v.active == 1) 
+		     {  
+		       tempEdge.dest=graph_index;
+		       tempEdge.weight = f( u, v);
+		       tempNode.list.push_back(tempEdge);	
+		     }
+		 }
+	     };
+
              for(int j=0;j<grid.vertices_graph[i].north.size();++j) 
-                {  	
-                   if(grid.total2graph.find(grid.vertices_graph[i].north[j])!=grid.total2graph.end())
-                     {
-                       int graph_index = grid.total2graph[grid.vertices_graph[i].north[j]];
-                       if(grid.vertices_graph[graph_index].active == 1) 
-                          {  
-                             tempEdge.dest=graph_index;
-                             tempEdge.weight = (double) abs(grid.vertices_graph[graph_index].y-grid.vertices_graph[i].y)*grid.drc_info.metal_weight[grid.vertices_graph[i].metal];
-                             tempNode.list.push_back(tempEdge);	
-                           }
-                      }
-                   
-                }
-             
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].north[j], fy);
 
              for(int j=0;j<grid.vertices_graph[i].south.size();++j) 
-                {  	
-                   if(grid.total2graph.find(grid.vertices_graph[i].south[j])!=grid.total2graph.end())
-                     {
-                        int graph_index = grid.total2graph[grid.vertices_graph[i].south[j]];
-                        if(grid.vertices_graph[graph_index].active == 1) 
-                          {	
-                             tempEdge.dest=graph_index;
-                             tempEdge.weight = (double) abs(grid.vertices_graph[graph_index].y-grid.vertices_graph[i].y)*grid.drc_info.metal_weight[grid.vertices_graph[i].metal];
-                             tempNode.list.push_back(tempEdge);	
-                          }
-                      }
-                   
-                 }
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].south[j], fy);
 
              for(int j=0;j<grid.vertices_graph[i].east.size();++j) 
-                {  	
-                   if(grid.total2graph.find(grid.vertices_graph[i].east[j])!=grid.total2graph.end())
-                     {
-                        int graph_index = grid.total2graph[grid.vertices_graph[i].east[j]];
-                        if(grid.vertices_graph[graph_index].active == 1) 
-                          {	
-                             tempEdge.dest=graph_index;
-                             tempEdge.weight = (double) abs(grid.vertices_graph[graph_index].x-grid.vertices_graph[i].x)*grid.drc_info.metal_weight[grid.vertices_graph[i].metal];
-                             tempNode.list.push_back(tempEdge);	
-                          }
-                      }
-                   
-                 }
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].east[j], fx);
 
              for(int j=0;j<grid.vertices_graph[i].west.size();++j) 
-                {  	
-                   if(grid.total2graph.find(grid.vertices_graph[i].west[j])!=grid.total2graph.end())
-                     {
-                        int graph_index = grid.total2graph[grid.vertices_graph[i].west[j]];
-                        if(grid.vertices_graph[graph_index].active == 1) 
-                          {	
-                             tempEdge.dest=graph_index;
-                             tempEdge.weight = (double) abs(grid.vertices_graph[graph_index].x-grid.vertices_graph[i].x)*grid.drc_info.metal_weight[grid.vertices_graph[i].metal];
-                             tempNode.list.push_back(tempEdge);	
-                          }
-                      }
-                   
-                 }
-
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].west[j], fx);
  	
              if(grid.vertices_graph[i].down!=-1)
-               {  
-                  if(grid.total2graph.find(grid.vertices_graph[i].down)!=grid.total2graph.end()){
-                      int graph_index = grid.total2graph[grid.vertices_graph[i].down];
-                      if(grid.vertices_graph[graph_index].active == 1) 
-                        {	
-                          tempEdge.dest=graph_index;
-                          tempEdge.weight = (double) 1;
-                          tempNode.list.push_back(tempEdge);	
-                        }
-                    }
-                }
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].down, f1);
 
              if(grid.vertices_graph[i].up!=-1)
-               {
-                  if(grid.total2graph.find(grid.vertices_graph[i].up)!=grid.total2graph.end()){
-                        int graph_index = grid.total2graph[grid.vertices_graph[i].up];
-                        if(grid.vertices_graph[graph_index].active == 1) 
-                          {	
-                            tempEdge.dest=graph_index;
-                            tempEdge.weight = (double) 1;
-                            tempNode.list.push_back(tempEdge);	
-                          }
-                     }
-                }
+	       process( grid.vertices_graph[i], grid.vertices_graph[i].up, f1);
+
              graph.push_back(tempNode); 
           }
      }
@@ -573,11 +529,14 @@ void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int
   std::multimap<double, int>::iterator high=mmap.upper_bound(dist);
   std::multimap<double, int>::iterator tar;
   bool mark=false;
+  //  unsigned int count=0;
   for(tar=low; tar!=high; ++tar) {
+    //    ++count;
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
   else {std::cout<<"Graph-Info: cannot found element in map\n";}
+  //  std::cout << "RemovefromMultMap: searched through " << count << " multmap nodes." << std::endl;
 }
 
 void Graph::UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist) {
@@ -594,8 +553,9 @@ std::vector<int> Graph::minDistancefromMultiMap(std::multimap<double, int> &mmap
   std::multimap<double, int>::iterator high=mmap.upper_bound(min);
   for(std::multimap<double, int>::iterator it=low; it!=high; ++it) {
     min_index.push_back(it->second);
+    break; // only using the first later on, so we will stop early
   }
-  return min_index;
+  return min_index; // Has zero or one entry.
 };
 
 std::vector<int>  Graph::dijkstra(Grid& grid){
