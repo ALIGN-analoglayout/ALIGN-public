@@ -1,0 +1,11 @@
+Rule name=metal1_minete type=minete value=840 layer=metal1
+Rule name=metal2_minete type=minete value=840 layer=metal2
+Rule name=metal3_minete type=minete value=840 layer=metal3
+Rule name=metal4_minete type=minete value=840 layer=metal4
+Rule name=metal5_minete type=minete value=840 layer=metal5
+
+Rule name=metal1_minlength type=minlength value=2520 layer=metal1
+Rule name=metal2_minlength type=minlength value=2520 layer=metal2
+Rule name=metal3_minlength type=minlength value=2520 layer=metal3
+Rule name=metal4_minlength type=minlength value=2520 layer=metal4
+Rule name=metal5_minlength type=minlength value=2520 layer=metal5

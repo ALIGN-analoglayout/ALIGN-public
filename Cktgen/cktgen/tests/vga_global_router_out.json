@@ -1,0 +1,57 @@
+{
+  "wires": [
+      { "layer": "metal3", "net_name": "net3", "width": 320, "rect": [ 8, 12, 8, 21], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net4", "width": 320, "rect": [ 1, 5, 1, 8], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net4", "width": 320, "rect": [ 8, 5, 8, 8], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net4", "width": 320, "rect": [ 1, 7, 8, 7], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net4p", "width": 320, "rect": [ 1, 5, 1, 8], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net4p", "width": 320, "rect": [ 8, 5, 8, 21], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net4p", "width": 320, "rect": [ 1, 6, 8, 6], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net5", "width": 320, "rect": [ 9, 9, 9, 11], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net5", "width": 320, "rect": [ 14, 9, 14, 12], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net5", "width": 320, "rect": [ 9, 11, 14, 11], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net5p", "width": 320, "rect": [ 8, 11, 8, 21], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net5p", "width": 320, "rect": [ 13, 9, 13, 12], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net5p", "width": 320, "rect": [ 8, 11, 13, 11], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net6", "width": 320, "rect": [ 8, 0, 8, 4], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net6", "width": 320, "rect": [ 16, 0, 16, 3], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net6", "width": 320, "rect": [ 8, 2, 16, 2], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "net6p", "width": 320, "rect": [ 9, 0, 9, 21], "connected_pins": []},
+      { "layer": "metal3", "net_name": "net6p", "width": 320, "rect": [ 16, 0, 16, 3], "connected_pins": []},
+      { "layer": "metal4", "net_name": "net6p", "width": 320, "rect": [ 9, 1, 16, 1], "connected_pins": []},
+
+
+      { "layer": "metal3", "net_name": "s0", "width": 320, "rect": [ 13, 9, 13, 12], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "s1", "width": 320, "rect": [ 1, 5, 1, 8], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "s2", "width": 320, "rect": [ 16, 0, 16, 3], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vga_out1", "width": 320, "rect": [ 8, 0, 8, 13], "connected_pins": []},
+      { "layer": "metal3", "net_name": "vga_out1", "width": 320, "rect": [ 14, 11, 14, 13], "connected_pins": []},
+      { "layer": "metal4", "net_name": "vga_out1", "width": 320, "rect": [ 8, 11, 16, 11], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vga_out2", "width": 320, "rect": [ 8, 0, 8, 13], "connected_pins": []},
+      { "layer": "metal3", "net_name": "vga_out2", "width": 320, "rect": [ 2, 11, 2, 13], "connected_pins": []},
+      { "layer": "metal4", "net_name": "vga_out2", "width": 320, "rect": [ 0, 11, 8, 11], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vgnd", "width": 320, "rect": [ 8, 14, 8, 21], "connected_pins": []},
+      { "layer": "metal4", "net_name": "vgnd", "width": 320, "rect": [ 3, 16, 13, 16], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vin1", "width": 320, "rect": [ 6, 0, 6, 13], "connected_pins": []},
+      { "layer": "metal3", "net_name": "vin1", "width": 320, "rect": [ 10, 0, 10, 13], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vin2", "width": 320, "rect": [ 6, 0, 6, 13], "connected_pins": []},
+      { "layer": "metal3", "net_name": "vin2", "width": 320, "rect": [ 10, 0, 10, 13], "connected_pins": []},
+
+      { "layer": "metal3", "net_name": "vmirror", "width": 320, "rect": [ 8, 14, 8, 21], "connected_pins": []},
+
+      { "layer": "metal4", "net_name": "vps", "width": 320, "rect": [ 0, 12, 16, 12], "connected_pins": []}
+  ]
+}

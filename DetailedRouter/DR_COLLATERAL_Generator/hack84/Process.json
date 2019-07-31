@@ -1,0 +1,76 @@
+{
+    "verticalMetals" : [ "metal1", "metal3", "metal5"],
+    "horizontalMetals" : [ "metal2", "metal4"],
+
+    "pitchDG" : 840,
+    "dgPerRow" :  4,
+    "pitchPoly" : 840,
+    "pitchM1" : 840,
+    "pitchM3" : 840,
+    "pitchM5" : 840,
+
+    "halfMinETESpaceM1" : 420,
+    "halfMinETESpaceM2" : 420,
+    "halfMinETESpaceM3" : 420,
+    "halfMinETESpaceM4" : 420,
+    "halfMinETESpaceM5" : 420,
+
+    "halfWidthM1" : [200],
+    "halfWidthM2" : [200],
+    "halfWidthM3" : [200],
+    "halfWidthM4" : [200],
+    "halfWidthM5" : [200],
+
+    "halfXGRGrid" : 5,
+    "halfYGRGrid" : 5,
+
+    "halfXADTGrid" : 1,
+    "halfYADTGrid" : 1,
+
+    "metalTemplates" : [
+                   {
+                     "layer":"metal5", "name":"m5",
+                     "widths":[320,320],
+                     "spaces":[520],
+                       "colors":[],
+		       "stops":[840],
+		       "stop_offset":420
+                  },
+                   {
+                     "layer":"metal4", "name":"m4",
+                     "widths":[320,320],
+                     "spaces":[520],
+                       "colors":[],
+		       "stops":[840],
+		       "stop_offset":420
+
+                  },
+                  {
+                     "layer":"metal3", "name":"m3",
+                     "widths":[320,320],
+                     "spaces":[520],
+                      "colors":[],
+		       "stops":[840],
+		       "stop_offset":420
+
+                  },
+                  {
+                     "layer":"metal2", "name":"m2",
+                     "widths":[320,320],
+                     "spaces":[520],
+                      "colors":[],
+		       "stops":[840],
+		       "stop_offset":420
+
+                  },
+                  {
+                     "layer":"metal1", "name":"m1",
+                     "widths":[320,320],
+                     "spaces":[520],
+                      "colors":[],
+		       "stops":[840],
+		       "stop_offset":420
+
+                  }
+    ]
+}

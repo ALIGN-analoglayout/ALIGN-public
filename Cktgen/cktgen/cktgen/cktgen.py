@@ -1,6 +1,7 @@
 
 import argparse
 import pathlib
+import math
 from collections import OrderedDict
 
 import json
@@ -8,10 +9,14 @@ import json
 from . import techfile
 
 class ADT:
-  def __init__( self, tech, nm, npp=10, nr=1):
+  def __init__( self, tech, nm, npp=10, nr=1, *, physical_bbox=None):
     self.tech = tech
     self.nm = nm
-    self.bbox = Rect( 0, 0, npp*self.tech.pitchPoly, nr*self.tech.dgPerRow*self.tech.pitchDG)
+    if physical_bbox is None:
+      self.bbox = Rect( 0, 0, npp*self.tech.pitchPoly, nr*self.tech.dgPerRow*self.tech.pitchDG)
+    else:
+      self.bbox = Rect( *physical_bbox)
+
     self.terminals = []
 
   @property
@@ -312,20 +317,34 @@ class ADNetlist:
     self.nets[a].append( (instanceName,f))
     self.instances[instanceName].formalActualMap[f] = a
 
-  def genNetlist( self, netl):
-    for (k,v) in self.instances.items():
-      print( "templateName", v.template.nm, "instanceName", v.instanceName)
-      netl.instances[v.instanceName] = v.bbox
-
+  def genNetlist( self, netl): 
+    self.ces = OrderedDict()
+    self.kors = []
+    for (_,v) in self.instances.items():
       for w in v.template.terminals:
-        if w.netName not in v.formalActualMap:
-          print( "Converting disconnected net to !kor", w.netName)
+        fN = w.netName
+        if fN in v.formalActualMap:
+          aN = v.formalActualMap[fN]
+          if aN not in self.ces: self.ces[aN] = {}
+          pN = (v.instanceName, w.netName)
+          if pN not in self.ces[aN]: self.ces[aN][pN] = []
+          self.ces[aN][pN].append( (v.hit( w.rect), w.layer))
+        else:
+          self.kors.append( (v.hit(w.rect), w.layer))
 
-        a = "!kor" if w.netName not in v.formalActualMap else v.formalActualMap[w.netName]
-        if True or a not in ["vcc","vss"]:
-          netl.newWire( a, v.hit( w.rect), w.layer)
-          print( "genNetlist", w, v.hit( w.rect))
+    internally_connected = True
+    for (aN,v) in self.ces.items():
+      for ((iN,fN),vv) in v.items():
+        for (r,l) in vv:
+          if internally_connected:
+            netl.newWire( aN, r, l, ceName=(iN,fN))
+          else:
+            netl.newWire( aN, r, l)
 
+    for (r,l) in self.kors:
+      assert l in ["metal1","metal2","metal3"], l
+      netl.newWire( '!kor', r, l)
+      
     for p in self.ports:
       print( "Port", p)
       r = p['rect']
@@ -379,10 +398,16 @@ class GR:
     self.rect = None
     self.layer = None
     self.width = None
+    self.connected_pins = None
+
+  def __repr__(self):
+    return f"{self.netName} {self.rect} {self.layer} {self.width}"
 
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
 # Convert global route coords to physical coords
+    if obj.rect.llx == obj.rect.urx and obj.rect.lly == obj.rect.ury:
+      raise RuntimeError( f"{obj} is a point.")
     if obj.rect.llx == obj.rect.urx: # vertical wire
       xc = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
       llx = xc - obj.width//2
@@ -396,7 +421,7 @@ def encode_GR( tech, obj):
       llx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.llx + tech.halfXGRGrid)
       urx = tech.pitchPoly*(tech.halfXGRGrid*2*obj.rect.urx + tech.halfXGRGrid)
     else:
-      raise RuntimeError(repr(obj) + "is not horizontal nor vertical.")
+      raise RuntimeError( f"{obj} is not a horizontal or vertical line.")
 
     return { "netName" : obj.netName, "layer" : obj.layer, "width" : obj.width, "rect" : [llx, lly, urx, ury]}
   elif isinstance(obj, Wire):
@@ -409,6 +434,7 @@ class Net:
     self.nm = nm
     self.wires = []
     self.grs = []
+    self.ces = OrderedDict()
 
 class Netlist:
   def __init__( self, nm, bbox):
@@ -417,15 +443,61 @@ class Netlist:
     self.nets = OrderedDict()
     self.gidIndex = 0
     self.instances = OrderedDict()
-    self.wires = {}
+    self.wire_cache = {}
 
-  def dumpGR( self, tech, fn, cell_instances=[], no_grid=False):
+
+  def semantic( self):
+    def is_horiz( ly):
+      return ly in ["metal2","metal4","metal6"]
+    def is_vert( ly):
+      return ly in ["metal1","metal2","metal3"]
+
+    for (k,net) in self.nets.items():
+      print("Net",k)
+      for gr in net.grs:
+        gr_r = [ v*10*840 + 5*840 for v in gr.rect.toList()]
+        print("GR", gr.layer, gr.rect, gr_r)
+        p_nticks = 2
+        q_nticks = 10
+
+        def pnt( theta, rlst, ly):
+          if is_horiz(ly):
+            y = (rlst[1]+rlst[3])//2
+            x = rlst[0]*(1.0-theta) + rlst[2]*theta
+            return (x,y)
+          elif is_vert(ly):
+            x = (rlst[0]+rlst[2])//2
+            y = rlst[1]*(1.0-theta) + rlst[3]*theta
+            return (x,y)
+          else:
+            assert False
+
+        def dist( w, p, q):
+          gx,gy = pnt( p, gr_r, gr.layer)
+          x,y = pnt( q, w.rect.toList(), w.layer)
+
+          return math.sqrt((x-gx)**2 + (y-gy)**2)
+
+        for p in range(p_nticks):
+          argmin = None
+        
+          for (_,lst) in net.ces.items():
+            for w in lst:
+              for q in range(q_nticks):
+                cand = dist( w, p/(p_nticks-1), q/(q_nticks-1))
+                #pylint: disable=used-before-assignment
+                if argmin is None or cand < best:
+                  argmin,best = w,cand
+              
+          if best < 840*10:
+            print( "    " + json.dumps( {"layer": "M2", "rect": [v//5 for v in argmin.rect.toList()]}))
+
+
+  def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
       grs = []
       terminals = []
-
-      print( cell_instances)
 
       wire = Wire()
       wire.netName = 'top'
@@ -442,10 +514,11 @@ class Netlist:
         wire.gid = -1
         terminals.append( wire)
 
-      for ci in cell_instances:
-        terminals.append( ci)
+      if cell_instances is not None:
+        for ci in cell_instances:
+          terminals.append( ci)
 
-      for (netName,net) in self.nets.items():
+      for (_,net) in self.nets.items():
         for gr in net.grs:
           grs.append(gr)
         for wire in net.wires:
@@ -467,9 +540,25 @@ class Netlist:
 
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
-  def newWire( self, netName, r, l):
+      ys = set()
+      ys2 = set()
+
+      for term in data['terminals']:
+        if isinstance( term, Wire):
+          if term.layer == 'M2':
+            r = term.rect
+            yc = (r.lly+r.ury)//2
+            ys.add(yc)
+            ys2.add(yc%840)
+
+      print(sorted(list(ys)))
+      print(sorted(list(ys2)))
+
+  def newWire( self, netName, r, l, *, ceName=None):
+    """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire
+"""
     cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)
-    if cand not in self.wires:
+    if cand not in self.wire_cache:
       w = Wire()
       w.netName = netName
       w.rect = r
@@ -481,19 +570,26 @@ class Netlist:
         self.nets[netName] = Net( netName)
 
       self.nets[netName].wires.append( w)
-      self.wires[cand] = w
+      self.wire_cache[cand] = w
     else:
-      w = self.wires[cand]
+      w = self.wire_cache[cand]
       
+    if ceName is not None:
+      if ceName not in self.nets[netName].ces:
+        self.nets[netName].ces[ceName] = []
+
+      self.nets[netName].ces[ceName].append( w)
+
     return w
 
-  def newGR( self, netName, r, l, w):
+  def newGR( self, netName, r, l, w, *, connected_pins=None):
     gr = GR()
 
     gr.netName = netName
     gr.layer = l
     gr.rect = r.canonical()
     gr.width = w
+    gr.connected_pins = connected_pins
 
     if netName not in self.nets:
       self.nets[netName] = Net( netName)
@@ -504,74 +600,181 @@ class Netlist:
 
   def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates):
     with open( fn, "w") as fp:
-      fp.write( """# circuit-independent technology collateral
-Option name=layer_file          value={4}/layers.txt
-Option name=arch_file           value={4}/arch.txt
-Option name=generator_file      value={4}/car_generators.txt
-Option name=pattern_file        value={4}/v2_patterns.txt
-Option name=option_file         value={4}/design_rules.txt
+      fp.write( f"""# circuit-independent technology collateral
+Option name=layer_file          value=DR_COLLATERAL/layers.txt
+Option name=arch_file           value=DR_COLLATERAL/arch.txt
+Option name=generator_file      value=DR_COLLATERAL/car_generators.txt
+Option name=pattern_file        value=DR_COLLATERAL/v2_patterns.txt
+Option name=option_file         value=DR_COLLATERAL/design_rules.txt
 
 # technology collateral may vary for different circuits
-Option name=metal_template_file value=INPUT/{0}_dr_metal_templates.txt
+Option name=metal_template_file value=INPUT/{self.nm}_dr_metal_templates.txt
 
 # circuit-specific collateral
-Option name=global_routing_file value=INPUT/{0}_dr_globalrouting.txt
-Option name=input_file          value=INPUT/{0}_dr_netlist.txt
-Option name=option_file         value=INPUT/{0}_dr_mti.txt
+Option name=global_routing_file value=INPUT/{self.nm}_dr_globalrouting.txt
+Option name=input_file          value=INPUT/{self.nm}_dr_netlist.txt
+Option name=option_file         value=INPUT/{self.nm}_dr_mti.txt
 
 # primary synthesis options
-Option name=route       value={1}
+Option name=route       value={1 if route else 0}
 Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=i,o
-Option name=nets_not_to_route value=!kor,vss,vcc
+#Option name=nets_to_route value=net3
+#Option name=nets_to_route value=net3,net4,net4p,net5,net5p,net6,net6p,s0,s1,s2,vga_out1,vga_out2,vin1,vin2,vmirror,vps
+Option name=nets_not_to_route value=!kor
+
+#Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
 
 # debug options
-Option name=create_fake_global_routes            value={2}
+Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
 Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
-Option name=create_fake_metal_template_instances value={3}
+Option name=create_fake_metal_template_instances value={1 if show_metal_templates else 0}
 Option name=create_fake_line_end_grids           value=1
-""".format( self.nm,
-            "1" if route else "0",
-            "1" if show_global_routes else "0",
-            "1" if show_metal_templates else "0",
-            "DR_COLLATERAL"))
+Option name=auto_fix_global_routing              value=1
+Option name=pin_checker_mode                     value=0
+Option name=upper_layer                          value=metal4
+""")
+
 
   def write_input_file( self, fn):
     with open( fn, "w") as fp:
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
-      for (k,v) in self.nets.items():
+      for (_,v) in self.nets.items():
         for w in v.wires:
           fp.write( str(w) + "\n")
 
+
+      #metal1 obstruction
+      for x in range(1, (self.bbox.urx-160-1)//840):
+        xc = x*840
+        y0 = self.bbox.lly+420
+        y1 = self.bbox.ury-420
+        fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")
+        
+
   def write_global_routing_file( self, fn):
+    global_gr_id = 0
+
     with open( fn, "w") as fp:
       for (k,v) in self.nets.items():
+        print("write_global_routing_file:Net:", k)
         fp.write( "#start of regular net %s\n" % k)
 
-        for w in v.wires:
-          fp.write( "ConnectedEntity terms=%d {\n" % w.gid)
-          fp.write( " }\n")
-          fp.write( "\n")
+        if v.ces.values() is not []:
+          ces = [ [ w.gid for w in vv] for vv in v.ces.values()]
+        else:
+          ces = [[w.gid] for w in v.wires]
 
-        s = ';'.join( ["(%d,%d,%d,%d,%s,minw=%d)" % (gr.rect.llx,
-                                                gr.rect.lly,
-                                                gr.rect.urx,
-                                                gr.rect.ury,
-                                                gr.layer,gr.width) for gr in v.grs])
-        fp.write( "GlobalRouting net=%s routes=%s\n" % (k,s))
+
+        pin_ids = set()
+
+        for gr in v.grs:
+          if gr.connected_pins is not None:
+            print(gr.rect,gr.connected_pins)
+
+
+            for cp in gr.connected_pins:
+              assert cp['layer'] == 'M2'
+# convert to Angstroms (probably should do this elsewhere)
+              rect = [ v*5 for v in cp['rect']]
+
+              cand = ( gr.netName, tuple(rect), "metal2")
+
+              x0 = rect[0]/(840*10)
+              x2 = rect[2]/(840*10)
+
+              pin_gr_pitches_long = abs(x2 - x0)
+              if pin_gr_pitches_long > 0.5 and gr.layer in ["metal2","metal4"]:
+                print( f"Long ({round(pin_gr_pitches_long,2)} pitches) horizonal pin found", cand, gr)
+
+                min_x = None, None
+                for x_gr in range(gr.rect.llx,gr.rect.urx+1):
+                  for x_pin in range(int(x0),int(x2)+1):
+                    cand2 = abs(x_gr-x_pin)
+                    #pylint: disable=used-before-assignment
+                    if min_x[0] is None or cand2 < best:
+                      min_x = x_gr,x_pin
+                      best = cand2
+                print( "best", cand, min_x, best, gr.rect, x0, x2)
+
+
+              hier_name = cp['sink_name'].split('/')
+
+              if cand in self.wire_cache:
+                print( 'connected pin found for:', k, hier_name, cand)
+                wire = self.wire_cache[cand]
+                pin_ids.add( wire.gid)
+              elif len(hier_name)>1:
+                print( 'connected pin not found for:', k, hier_name, cand)
+                assert hier_name[0] in ["C1","C2","R1","R2"]
+              else:
+                 print( 'connected top-level pin not found for:', k, hier_name, cand)
+
+
+        if False:
+          for lst in ces:
+            if pin_ids:
+              nlst = [ gid for gid in lst if gid in pin_ids]
+            else:
+              nlst = lst
+
+            if not nlst:
+              nlst = lst
+
+            fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
+        else:
+          # connect everything
+          for w in v.wires:
+            fp.write( "ConnectedEntity terms=%s\n" % w.gid)
+
+        grs = []
+        for gr in v.grs:
+          if gr.rect.llx == gr.rect.urx and gr.rect.lly == gr.rect.ury: continue
+          gr.gid = global_gr_id
+          grs.append( "(%d,%d,%d,%d,%s,gid=%d,minw=%d)" % (gr.rect.llx,
+                                                           gr.rect.lly,
+                                                           gr.rect.urx,
+                                                           gr.rect.ury,
+                                                           gr.layer,
+                                                           gr.gid,
+                                                           gr.width))
+          global_gr_id += 1
+
+        fp.write( "GlobalRouting net=%s routes=%s\n" % (k,';'.join(grs)))
+
+        if False:
+          for gr in v.grs:
+            if not hasattr(gr,'gid'): continue
+            if gr.rect.llx == gr.rect.urx and gr.rect.lly == gr.rect.ury: continue
+            if gr.connected_pins is not None:
+              for cp in gr.connected_pins:
+                assert cp['layer'] == 'M2'
+                rect = [ v*5 for v in cp['rect']]
+                cand = ( gr.netName, tuple(rect), "metal2")
+                if cand in self.wire_cache:
+                  wire = self.wire_cache[cand]
+                  fp.write( "Tie term0=%d gr0=%d\n" % (wire.gid, gr.gid))
+        else:
+          for gr in v.grs:
+            if gr.layer != "metal3": continue
+            x = (gr.rect.llx + gr.rect.urx)*840*10//2
+            print( "SMB", x, gr.rect, w.rect)
+            for w in v.wires:
+              if w.rect.llx <= x <= w.rect.urx:
+                fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
 
         fp.write( "#end of net %s\n" % k)
-      pass
 
-  def write_files( self, tech, dir, args):
-    self.write_ctrl_file( dir + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
-    self.write_input_file( dir + "/" + self.nm + "_dr_netlist.txt")
-    self.write_global_routing_file( dir + "/" + self.nm + "_dr_globalrouting.txt")
-    self.dumpGR( tech, dir + "/" + self.nm + "_dr_globalrouting.json")
+
+  def write_files( self, tech, dirname, args):
+    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
+    self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
+    self.write_global_routing_file( dirname + "/" + self.nm + "_dr_globalrouting.txt")
+    self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
+
 
 
 import re
@@ -640,17 +843,11 @@ def parse_lgf( fp):
       m = p_obj.match( line)
       if m:
         net = m.groups()[0]
-        gen = m.groups()[1]
-        x = int(m.groups()[2])
-        y = int(m.groups()[3])
         continue
 
       m = p_obj_lbrace.match( line)
       if m:
         net = m.groups()[0]
-        gen = m.groups()[1]
-        x = int(m.groups()[2])
-        y = int(m.groups()[3])
         continue
 
       m = p_wire_in_obj.match( line)
@@ -714,8 +911,6 @@ def removeDuplicates( data):
 
     viaLayers = {'via0','via1','via2','via3','via4','via5','via6'}
 
-    hLayers = {layer for (layer, dir) in layers if dir == 'h'}
-    vLayers = {layer for (layer, dir) in layers if dir == 'v'}
     layersDict = dict(layers)
 
     indicesTbl = {'h': ([1, 3], 0), 'v': ([0, 2], 1)}
@@ -765,10 +960,10 @@ def removeDuplicates( data):
         for p in v[:1]:
           terminals.append({'layer': layer, 'net_name': p[1], 'rect': p[0]})
 
-    for (layer, dir) in layers:
+    for (layer, dirname) in layers:
         if layer not in tbl:
             continue
-        (indices, dIndex) = indicesTbl[dir]
+        (indices, dIndex) = indicesTbl[dirname]
 
         for (twice_center, v) in tbl[layer].items():
 
@@ -807,25 +1002,7 @@ def removeDuplicates( data):
     return terminals
 
 
-def parse_args():
-  parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
-
-  parser.add_argument( "-n", "--block_name", type=str, required=True)
-  parser.add_argument( "--route", action='store_true')
-  parser.add_argument( "--show_global_routes", action='store_true')
-  parser.add_argument( "--show_metal_templates", action='store_true')
-  parser.add_argument( "--consume_results", action='store_true')
-  parser.add_argument( "--placer_json", type=str, default='')
-  parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
-  parser.add_argument( "-s", "--source", type=str, default='')
-  parser.add_argument( "--small", action='store_true')
-
-  args = parser.parse_args()
-
-  with open( args.technology_file) as fp:
-    tech = techfile.TechFile( fp)
-
-  if args.consume_results:
+def consume_results(args,tech):
     with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  
       netl = parse_lgf( fp)
 
@@ -837,9 +1014,10 @@ def parse_args():
         
     terminals = []
     if placer_results is not None:
-      globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
-#      b = globalScale.hitRect( Rect( *placer_results['bbox'])).canonical()
-#      terminals.append( { "netName" : placer_results['nm'], "layer" : "diearea", "rect" : b.toList()})
+      if args.no_interface:
+        globalScale = transformation.Transformation( 0, 0, 1, 1)
+      else:        
+        globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
 
       leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
 
@@ -852,6 +1030,13 @@ def parse_args():
         nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
         terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
       
+    netl.write_input_file( netl.nm + "_xxx.txt")
+
+    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
+
+    if args.no_interface:
+      return
+
     leaf = {}
 
     design_name = netl.nm
@@ -914,7 +1099,7 @@ def parse_args():
 # Need to do this first since via enclosure don't necessary land on the stopping point grid
 #
     layout = []
-    for (_,wire) in netl.wires.items():
+    for (_,wire) in netl.wire_cache.items():
       if p.match(wire.netName): continue
       layout.append( {
         "net_name": wire.netName,
@@ -979,10 +1164,6 @@ def parse_args():
     leaf['terminals'] = removeDuplicates(leaf['terminals'])
     leaf['layout'] = layout
 
-    netl.write_input_file( netl.nm + "_xxx.txt")
-
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
-
     interface_fn = "INPUT/interface.json"
     if args.source != '':
       interface_fn = "INPUT/" + args.source + "_interface.json"
@@ -990,6 +1171,28 @@ def parse_args():
     with open( interface_fn, "wt") as fp:
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
+
+def parse_args():
+  parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
+
+  parser.add_argument( "-n", "--block_name", type=str, required=True)
+  parser.add_argument( "--route", action='store_true')
+  parser.add_argument( "--show_global_routes", action='store_true')
+  parser.add_argument( "--show_metal_templates", action='store_true')
+  parser.add_argument( "--consume_results", action='store_true')
+  parser.add_argument( "--no_interface", action='store_true')
+  parser.add_argument( "--placer_json", type=str, default='')
+  parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
+  parser.add_argument( "-s", "--source", type=str, default='')
+  parser.add_argument( "--small", action='store_true')
+
+  args = parser.parse_args()
+
+  with open( args.technology_file) as fp:
+    tech = techfile.TechFile( fp)
+
+  if args.consume_results:
+    consume_results(args,tech)
     exit()
 
   return args,tech
