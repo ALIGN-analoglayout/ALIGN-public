@@ -84,27 +84,28 @@ jobs:
     machine:
       image: ubuntu-1604:201903-01
       docker_layer_caching: true
-    working_directory: /tmp/workspace
+    working_directory: /work/workspace
+    
     steps:
-      - run: |
-          uname -a
-  
       - attach_workspace:
-          at: /tmp/workspace
+          at: /work/workspace
 
       - run: |
           sudo apt-get update
           sudo apt-get install python3 make bash
 
       - run: |
-          export ALIGN_HOME=/tmp/workspace/
+          export ALIGN_HOME=/work/workspace/
           mkdir tmp
-          export ALIGN_WORK_DIR=/tmp/workspace/tmp/
+          export ALIGN_WORK_DIR=/work/workspace/tmp/
           cd tmp
           pwd
           ls ..
           ln -s $ALIGN_HOME/compose/Makefile .
           make DESIGN=telescopic_ota
+	  
+      - store_artifacts:
+          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
   build-tally:
     executor: docker-executor
