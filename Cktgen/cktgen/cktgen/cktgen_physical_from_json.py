@@ -115,7 +115,7 @@ def hack_gr( results, bbox):
   vertical_layers = ["metal1","metal3"]
 
   binsize = 84*2*10
-  def bin(v):
+  def gbin(v):
     return v//binsize
 
   assert bbox[2] % 5 == 0
@@ -124,20 +124,20 @@ def hack_gr( results, bbox):
   bbox_urx = bbox[2]//5
   bbox_ury = bbox[3]//5
  
-  print("bin of bbox_urx", bin(bbox_urx))
-  print("bin of bbox_ury", bin(bbox_ury))
+  print("bin of bbox_urx", gbin(bbox_urx))
+  print("bin of bbox_ury", gbin(bbox_ury))
 
   def dnx(v):
-    return max(bin(bbox[0]),bin(v))
+    return max(gbin(bbox[0]),gbin(v))
 
   def dny(v):
-    return max(bin(bbox[1]),bin(v))
+    return max(gbin(bbox[1]),gbin(v))
 
   def upx(v):
-    return min(bin(bbox_urx)-1,bin(v))
+    return min(gbin(bbox_urx)-1,gbin(v))
 
   def upy(v):
-    return min(bin(bbox_ury)-1,bin(v))
+    return min(gbin(bbox_ury)-1,gbin(v))
 
   expand_null_routes = True
 
@@ -155,31 +155,31 @@ def hack_gr( results, bbox):
 
     ly = layer_map[wire['layer']]
 
-    nr = [ bin(r[0]), bin(r[1]), bin(r[2]), bin(r[3])]
+    nr = [ gbin(r[0]), gbin(r[1]), gbin(r[2]), gbin(r[3])]
 
     # Make sure everything is within bounds
 
     if ly in vertical_layers:
-      if nr[2] >= bin(bbox_urx)-1:
-        nr[0] = nr[2] = bin(bbox_urx)-1
-      assert 0 <= nr[0] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
-      assert 0 <= nr[2] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
+      if nr[2] >= gbin(bbox_urx)-1:
+        nr[0] = nr[2] = gbin(bbox_urx)-1
+      assert 0 <= nr[0] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
+      assert 0 <= nr[2] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
 
-      if nr[1] > bin(bbox_ury)-1:
-        nr[1] = bin(bbox_ury)-1
-      if nr[3] > bin(bbox_ury)-1:
-        nr[3] = bin(bbox_ury)-1
+      if nr[1] > gbin(bbox_ury)-1:
+        nr[1] = gbin(bbox_ury)-1
+      if nr[3] > gbin(bbox_ury)-1:
+        nr[3] = gbin(bbox_ury)-1
 
     elif ly in horizontal_layers:
-      if nr[3] >= bin(bbox_ury)-1:
-        nr[1] = nr[3] = bin(bbox_ury)-1
-      assert 0 <= nr[1] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
-      assert 0 <= nr[3] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+      if nr[3] >= gbin(bbox_ury)-1:
+        nr[1] = nr[3] = gbin(bbox_ury)-1
+      assert 0 <= nr[1] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
+      assert 0 <= nr[3] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
 
-      if nr[0] > bin(bbox_urx)-1:
-        nr[0] = bin(bbox_urx)-1
-      if nr[2] > bin(bbox_urx)-1:
-        nr[2] = bin(bbox_urx)-1
+      if nr[0] > gbin(bbox_urx)-1:
+        nr[0] = gbin(bbox_urx)-1
+      if nr[2] > gbin(bbox_urx)-1:
+        nr[2] = gbin(bbox_urx)-1
 
     else:
       assert False, ly
@@ -199,7 +199,7 @@ def hack_gr( results, bbox):
         if nr[1] == nr[3]:
           if nr[3] == 0:
             nr[3] += 1
-          if nr[1] == bin(bbox_ury)-1:
+          if nr[1] == gbin(bbox_ury)-1:
             nr[1] -= 1
 
         assert nr[1] != nr[3], (r,nr)
@@ -214,7 +214,7 @@ def hack_gr( results, bbox):
         if nr[0] == nr[2]:
           if nr[2] == 0:
             nr[2] += 1
-          if nr[0] == bin(bbox_urx)-1:
+          if nr[0] == gbin(bbox_urx)-1:
             nr[0] -= 1
 
         assert nr[0] != nr[2], (r,nr)
@@ -227,10 +227,10 @@ def hack_gr( results, bbox):
     # Not 2D
     assert nr[0] == nr[2] or nr[1] == nr[3], (r,nr)
     # in range
-    assert 0 <= nr[0] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
-    assert 0 <= nr[2] < bin(bbox_urx), (nr, ly, bin(bbox_urx))
-    assert 0 <= nr[1] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
-    assert 0 <= nr[3] < bin(bbox_ury), (nr, ly, bin(bbox_urx))
+    assert 0 <= nr[0] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
+    assert 0 <= nr[2] < gbin(bbox_urx), (nr, ly, gbin(bbox_urx))
+    assert 0 <= nr[1] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
+    assert 0 <= nr[3] < gbin(bbox_ury), (nr, ly, gbin(bbox_urx))
 
     new_wire = { 'layer': ly,
                  'net_name': wire['net_name'],

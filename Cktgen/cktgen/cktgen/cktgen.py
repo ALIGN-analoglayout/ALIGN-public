@@ -485,9 +485,9 @@ class Netlist:
             for w in lst:
               for q in range(q_nticks):
                 cand = dist( w, p/(p_nticks-1), q/(q_nticks-1))
+                #pylint: disable=used-before-assignment
                 if argmin is None or cand < best:
-                  argmin,arg_p,arg_q,arg_ceName,best = w,p,q,ceName,cand
-#                print( "Checking", gr.layer, gr.rect, gr_r, w, p, q, ceName, cand, best)
+                  argmin,best = w,cand
               
           if best < 840*10:
             print( "    " + json.dumps( {"layer": "M2", "rect": [v//5 for v in argmin.rect.toList()]}))
@@ -691,13 +691,11 @@ Option name=upper_layer                          value=metal4
               if pin_gr_pitches_long > 0.5 and gr.layer in ["metal2","metal4"]:
                 print( f"Long ({round(pin_gr_pitches_long,2)} pitches) horizonal pin found", cand, gr)
 
-                # can I make it smaller
-                
-                gr_len = gr.rect.urx - gr.rect.llx
                 min_x = None, None
                 for x_gr in range(gr.rect.llx,gr.rect.urx+1):
                   for x_pin in range(int(x0),int(x2)+1):
                     cand2 = abs(x_gr-x_pin)
+                    #pylint: disable=used-before-assignment
                     if min_x[0] is None or cand2 < best:
                       min_x = x_gr,x_pin
                       best = cand2
