@@ -87,8 +87,6 @@ jobs:
     steps:
       - run: |
           uname -a
-          which curl
-          apt-get curl
   
       - attach_workspace:
           at: /tmp/workspace
