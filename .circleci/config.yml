@@ -81,9 +81,13 @@ jobs:
 #          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
 
   build-make-compose:
-    executor: docker-executor
+    machine:
+      docker_layer_caching: true
+    working_directory: /work/workspace
     steps:
       - run: |
+          apk update
+          apk add curl
           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -`uname -m` > ~/docker-compose
           chmod +x ~/docker-compose
           sudo mv ~/docker-compose /usr/local/bin/docker-compose
