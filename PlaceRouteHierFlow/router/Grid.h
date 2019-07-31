@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <cmath>
 #include <climits>
@@ -19,8 +20,8 @@ class Grid {
   friend class GlobalGrid;
 
   private:
-    std::map<int, int> total2graph; // mapping from total to graph vertices
-    std::map<int, int> graph2total; // mapping from graph to total vertices
+    std::unordered_map<int, int> total2graph; // mapping from total to graph vertices
+    std::unordered_map<int, int> graph2total; // mapping from graph to total vertices
     std::vector<RouterDB::vertex> vertices_total; // vertex total list
     std::vector<RouterDB::vertex> vertices_graph; // vertex list for graph
     std::vector<int> Start_index_metal_vertices; // starting index in list for each metal layer

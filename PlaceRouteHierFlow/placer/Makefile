@@ -1,6 +1,6 @@
 BOOST_LP?=/usr/local
-CC=g++ -w -Wall -std=c++11 -g -pthread
-CC2=g++ -w -Wall -std=c++11 -g -pthread -I$(BOOST_LP)
+CC=g++ -w -Wall -std=c++11 -g -O3 -pthread
+CC2=$(CC) -I$(BOOST_LP)
 #CC=g++ -w -Wall -std=c++11 -g -DRFLAG
 SOURCE=./
 OBJECTS=main.o design.o Preadfile.o SeqPair.o ConstGraph.o Aplace.o
