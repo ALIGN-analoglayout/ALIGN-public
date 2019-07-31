@@ -83,10 +83,12 @@ jobs:
   build-make-compose:
     executor: docker-executor
     steps:
-      - run:
+      - run: |
           apk update
           apk add curl
           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -
+          chmod +x ~/docker-compose
+          sudo mv ~/docker-compose /usr/local/bin/docker-compose
 
       - setup_remote_docker
 
