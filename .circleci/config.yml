@@ -96,9 +96,9 @@ jobs:
 
       - run: |
           export ALIGN_HOME=/tmp/workspace/
-          mkdir tmp
-          export ALIGN_WORK_DIR=/tmp/workspace/tmp/
-          cd tmp
+          mkdir runs
+          export ALIGN_WORK_DIR=/tmp/workspace/runs/
+          cd $ALIGN_WORK_DIR
           pwd
           ls ..
           ln -s $ALIGN_HOME/compose/Makefile .
@@ -107,7 +107,7 @@ jobs:
       - store_artifacts:
           path: tmp/telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
-      - run:
+      - run: |
           echo $ALIGN_WORK_DIR
           echo $ALIGN_HOME
           pwd
@@ -117,7 +117,7 @@ jobs:
       - store_artifacts:
           path: tmp/switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
 
-      - run:
+      - run: |
           echo $ALIGN_WORK_DIR
           echo $ALIGN_HOME
           pwd
@@ -127,7 +127,7 @@ jobs:
       - store_artifacts:
           path: tmp/current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
 
-      - run:
+      - run: |
           echo $ALIGN_WORK_DIR
           echo $ALIGN_HOME
           pwd
