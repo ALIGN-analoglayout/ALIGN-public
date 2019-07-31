@@ -100,7 +100,7 @@ jobs:
           ls .
           echo "home:"
           ls /
-          ln -s /compose/Makefile .
+          ln -s ../compose/Makefile .
           make DESIGN=telescopic_ota
   
       - store_artifacts:
