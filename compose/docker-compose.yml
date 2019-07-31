@@ -25,7 +25,7 @@ x-service: &default-service
   command: /bin/bash -c "/usr/bin/tail -f /dev/null"
 #  user: "1000:1000"
   volumes:
-    - /tmp/work:/dataVolume
+    - ${ALIGN_WORK_DIR}:/dataVolume
     
 x-build:  &default-build
   dockerfile: Dockerfile

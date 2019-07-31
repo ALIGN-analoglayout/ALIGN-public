@@ -98,7 +98,7 @@ jobs:
 
       - run: |
           export ALIGN_HOME=/tmp/workspace/
-           mkdir tmp
+          mkdir tmp
           export ALIGN_WORK_DIR=/tmp/workspace/tmp/
           cd tmp
           pwd
