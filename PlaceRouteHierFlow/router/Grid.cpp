@@ -1167,6 +1167,16 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
 }
 
 void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
+
+  std::set<int> Source_set;
+  for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
+    Source_set.insert( *it);
+  }
+  std::set<int> Dest_set;
+  for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
+    Dest_set.insert( *it);
+  }
+
   vertices_graph.clear(); total2graph.clear(); graph2total.clear();
   SourceGraph.clear(); DestGraph.clear();
   RouterDB::point minP, maxP;
@@ -1187,12 +1197,27 @@ void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
           total2graph[i]=vertices_graph.size()-1;
           graph2total[vertices_graph.size()-1]=i;
         }
+	{
+	  auto fit = Source_set.find( i);
+	  if ( fit != Source_set.end()) {
+	    SourceGraph.push_back(vertices_graph.size()-1);
+	  }
+	}
+	{
+	  auto fit = Dest_set.find( i);
+	  if ( fit != Dest_set.end()) {
+	    DestGraph.push_back(vertices_graph.size()-1);
+	  }
+	}
+	    
+	/*
         for(std::vector<int>::iterator it=Source.begin(); it!=Source.end(); ++it) {
           if(*it==i) {SourceGraph.push_back(vertices_graph.size()-1); break;}
         }
         for(std::vector<int>::iterator it=Dest.begin(); it!=Dest.end(); ++it) {
           if(*it==i) {DestGraph.push_back(vertices_graph.size()-1); break;}
         }
+	*/
       }
     }
   }
@@ -1805,12 +1830,26 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
 
     if(drc_info.Metal_info[source.metalIdx].direct == 0){
 //v
-         map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx+1].grid_unit_y,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx+1].grid_unit_y,grid_scale,Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+      map_source = Map_from_seg2gridseg_pin_detail( source,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx+1].grid_unit_y,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx+1].grid_unit_y,
+						    grid_scale,
+						    Start_index_metal_vertices[source.metalIdx],
+						    End_index_metal_vertices[source.metalIdx]);
 
     }else{
-             // wbxu: incorrect index in the 5th parameters [fixed]
-             //h
-             map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx+1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,drc_info.Metal_info[source.metalIdx+1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,grid_scale,Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+      // wbxu: incorrect index in the 5th parameters [fixed]
+      //h
+      map_source = Map_from_seg2gridseg_pin_detail( source,
+						    drc_info.Metal_info[source.metalIdx+1].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						    drc_info.Metal_info[source.metalIdx+1].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						    grid_scale,
+						    Start_index_metal_vertices[source.metalIdx],
+						    End_index_metal_vertices[source.metalIdx]);
 
     }
 
@@ -1818,11 +1857,25 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
 
     if(drc_info.Metal_info[source.metalIdx].direct == 0){ 
      //v
-             map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx-1].grid_unit_y,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx-1].grid_unit_y,grid_scale, Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+      map_source = Map_from_seg2gridseg_pin_detail( source,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx-1].grid_unit_y,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx-1].grid_unit_y,
+						    grid_scale,
+						    Start_index_metal_vertices[source.metalIdx],
+						    End_index_metal_vertices[source.metalIdx]);
 
     }else{
 //h
-             map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx-1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,drc_info.Metal_info[source.metalIdx-1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,grid_scale,Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+      map_source = Map_from_seg2gridseg_pin_detail( source,
+						    drc_info.Metal_info[source.metalIdx-1].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						    drc_info.Metal_info[source.metalIdx-1].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						    grid_scale,
+						    Start_index_metal_vertices[source.metalIdx],
+						    End_index_metal_vertices[source.metalIdx]);
 
     }
               
@@ -1830,11 +1883,25 @@ std::vector<int> Grid::Mapping_function_pin_detail(RouterDB::SinkData& source)
 
     if(drc_info.Metal_info[source.metalIdx].direct == 0){
              //v
-       map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx-1].grid_unit_y,drc_info.Metal_info[source.metalIdx].grid_unit_x,drc_info.Metal_info[source.metalIdx+1].grid_unit_y,grid_scale,Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+       map_source = Map_from_seg2gridseg_pin_detail(source,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx-1].grid_unit_y,
+						    drc_info.Metal_info[source.metalIdx].grid_unit_x,
+						    drc_info.Metal_info[source.metalIdx+1].grid_unit_y,
+						    grid_scale,
+						    Start_index_metal_vertices[source.metalIdx],
+						    End_index_metal_vertices[source.metalIdx]);
 
     }else{
              //h
-             map_source=Map_from_seg2gridseg_pin_detail(source,drc_info.Metal_info[source.metalIdx-1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,drc_info.Metal_info[source.metalIdx+1].grid_unit_x,drc_info.Metal_info[source.metalIdx].grid_unit_y,grid_scale,Start_index_metal_vertices[source.metalIdx], End_index_metal_vertices[source.metalIdx]);
+      map_source = Map_from_seg2gridseg_pin_detail(source,
+						   drc_info.Metal_info[source.metalIdx-1].grid_unit_x,
+						   drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						   drc_info.Metal_info[source.metalIdx+1].grid_unit_x,
+						   drc_info.Metal_info[source.metalIdx].grid_unit_y,
+						   grid_scale,
+						   Start_index_metal_vertices[source.metalIdx],
+						   End_index_metal_vertices[source.metalIdx]);
 
     }  
 
@@ -1988,8 +2055,8 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
    Ly = sourcelist.coord[0].y;
    Ux = sourcelist.coord[1].x;
    Uy = sourcelist.coord[1].y;
-   std::vector<RouterDB::point> grid_node_coord;
-   std::vector<RouterDB::point> covered_node_coord;
+   std::set<RouterDB::point,RouterDB::pointXYComp> grid_node_coord;
+   std::set<RouterDB::point,RouterDB::pointXYComp> covered_node_coord;
    RouterDB::point grid_node;
    //SinkData sourceL;
    //find the grid point nearby and insert it to the grid_seg;
@@ -2023,53 +2090,37 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
        for(int j=0;j<=(grid_Uy-grid_Ly)/(grid_unit_y*grid_scale_func);j++){
            grid_node.x=grid_Lx+i*grid_unit_x*grid_scale_func;
            grid_node.y=grid_Ly+j*grid_unit_y*grid_scale_func;
-           grid_node_coord.push_back(grid_node);
+           grid_node_coord.insert(grid_node);
            }
        }
    // wbxu: the following codes can be optimized by using Set
-   std::vector<RouterDB::point> new_grid_node_coord;
+   std::set<RouterDB::point,RouterDB::pointXYComp> new_grid_node_coord;
    for(int i=0;i<=(grid_Ux1-grid_Lx1)/(grid_unit_x1*grid_scale_func);i++){
        for(int j=0;j<=(grid_Uy1-grid_Ly1)/(grid_unit_y1*grid_scale_func);j++){
            grid_node.x=grid_Lx1+i*grid_unit_x1*grid_scale_func;
            grid_node.y=grid_Ly1+j*grid_unit_y1*grid_scale_func;
-           int flag_found=0;
-           for(int k=0;k<grid_node_coord.size();k++){
-               if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
-                 flag_found = 1;
-                 break;
-               }
-           }
-           if(flag_found==0){
-           new_grid_node_coord.push_back(grid_node);
+	   if ( grid_node_coord.find( grid_node) == grid_node_coord.end()) {
+	     new_grid_node_coord.insert(grid_node);
            }
        }
     }
-    for(int i=0;i<new_grid_node_coord.size();i++){
-       grid_node_coord.push_back(new_grid_node_coord[i]);
-    }
-    for(int i=0;i<grid_node_coord.size();i++){
-       if(grid_node_coord[i].x>=Lx && grid_node_coord[i].x<=Ux && grid_node_coord[i].y>=Ly && grid_node_coord[i].y<=Uy){
-         covered_node_coord.push_back(grid_node_coord[i]);
-       }
-    }
-    if(covered_node_coord.size()>0){
-         grid_node_coord.clear();
-         grid_node_coord = covered_node_coord;    
-    }
-
-    //std::cout<<"Candidate point "<<grid_node_coord.size()<<std::endl;
-    //for(int i=0;i<grid_node_coord.size();i++){
-       //std::cout<<"( "<<grid_node_coord[i].x<<" "<<grid_node_coord[i].y<<") ";
-       //}
-    //std::cout<<std::endl;
+   for(auto p=new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
+     grid_node_coord.insert( *p);
+   }
+   for(auto p=grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
+     if(p->x>=Lx && p->x<=Ux && p->y>=Ly && p->y<=Uy){
+       covered_node_coord.insert( *p);
+     }
+   }
+   if(covered_node_coord.size()>0){
+     grid_node_coord.clear();
+     grid_node_coord = covered_node_coord;    
+   }
 
     std::vector<int> sourceL;
-    //sourceL.coord = grid_node_coord;
-    //sourceL.metalIdx = sourcelist.metalIdx;
-    //sourceL.ver_idx.resize( sourceL.coord.size() );
     //wbxu: incorrect startpoint and endpoint [fixed]
     
-    std::cout<<"Grid point"<<std::endl;
+    //    std::cout<<"Grid point"<<std::endl;
 
     int grid_region_llx=INT_MAX;
     int grid_region_lly=INT_MAX;
@@ -2079,22 +2130,21 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
 
     for(int i=index_end_M1_M2;i<=index_end_M3_M3;i++){
 
-        //std::cout<<"( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].active<<") ";
-        if(vertices_total[i].x>grid_region_urx){grid_region_urx=vertices_total[i].x;}        
-        if(vertices_total[i].x<grid_region_llx){grid_region_llx=vertices_total[i].x;}
-        if(vertices_total[i].y>grid_region_ury){grid_region_ury=vertices_total[i].y;}        
-        if(vertices_total[i].y<grid_region_lly){grid_region_lly=vertices_total[i].y;}
+      //std::cout<<"( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].active<<") ";
+      if(vertices_total[i].x>grid_region_urx){grid_region_urx=vertices_total[i].x;}        
+      if(vertices_total[i].x<grid_region_llx){grid_region_llx=vertices_total[i].x;}
+      if(vertices_total[i].y>grid_region_ury){grid_region_ury=vertices_total[i].y;}        
+      if(vertices_total[i].y<grid_region_lly){grid_region_lly=vertices_total[i].y;}
 
-        for(int j=0;j<grid_node_coord.size();j++){
-           if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)) {
-               sourceL.push_back(i); 
-               //std::cout<<vertices_total[i].x<<","<<vertices_total[i].y<<","<<vertices_total[i].index<<","<<j<<" vs ";
-               break;
-           }
-        }
+      RouterDB::point cand;
+      cand.x = vertices_total[i].x;
+      cand.y = vertices_total[i].y;
+ 
+      if ( grid_node_coord.find(cand) != grid_node_coord.end()) {
+	sourceL.push_back(i); 
+      }
     }
-
-    std::cout<<std::endl;
+    //std::cout<<std::endl;
 
     std::cout<<"Grid region ( "<<grid_region_llx<<" "<<grid_region_lly<<" ) ( "<<grid_region_urx<<" "<<grid_region_ury<<" ) "<<std::endl;
 
@@ -2102,7 +2152,14 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, 
 };
 
 
-std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourcelist, int grid_unit_x, int grid_unit_y, int grid_unit_x1, int grid_unit_y1, int grid_scale_func, int index_end_M1_M2, int index_end_M3_M3){
+std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourcelist,
+						       int grid_unit_x,
+						       int grid_unit_y,
+						       int grid_unit_x1,
+						       int grid_unit_y1,
+						       int grid_scale_func,
+						       int index_end_M1_M2,
+						       int index_end_M3_M3){
    
    int Lx, Ly, Ux, Uy;
    int Cx, Cy;
@@ -2111,8 +2168,8 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
    Ly = sourcelist.coord[0].y;
    Ux = sourcelist.coord[1].x;
    Uy = sourcelist.coord[1].y;
-   std::vector<RouterDB::point> grid_node_coord;
-   std::vector<RouterDB::point> covered_node_coord;
+   std::set<RouterDB::point, RouterDB::pointXYComp> grid_node_coord;
+   std::set<RouterDB::point, RouterDB::pointXYComp> covered_node_coord;
    RouterDB::point grid_node;
    //SinkData sourceL;
    //find the grid point nearby and insert it to the grid_seg;
@@ -2146,55 +2203,45 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
        for(int j=0;j<=(grid_Uy-grid_Ly)/(grid_unit_y*grid_scale_func);j++){
            grid_node.x=grid_Lx+i*grid_unit_x*grid_scale_func;
            grid_node.y=grid_Ly+j*grid_unit_y*grid_scale_func;
-           grid_node_coord.push_back(grid_node);
+	   grid_node_coord.insert(grid_node);
            }
        }
    // wbxu: the following codes can be optimized by using Set
-   std::vector<RouterDB::point> new_grid_node_coord;
+   std::set<RouterDB::point, RouterDB::pointXYComp> new_grid_node_coord;
    for(int i=0;i<=(grid_Ux1-grid_Lx1)/(grid_unit_x1*grid_scale_func);i++){
        for(int j=0;j<=(grid_Uy1-grid_Ly1)/(grid_unit_y1*grid_scale_func);j++){
            grid_node.x=grid_Lx1+i*grid_unit_x1*grid_scale_func;
            grid_node.y=grid_Ly1+j*grid_unit_y1*grid_scale_func;
-           int flag_found=0;
-           for(int k=0;k<grid_node_coord.size();k++){
-               if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
-                 flag_found = 1;
-                 break;
-               }
-           }
-           if(flag_found==0){
-           new_grid_node_coord.push_back(grid_node);
-           }
+	   if ( grid_node_coord.find( grid_node) == grid_node_coord.end()) {
+	     new_grid_node_coord.insert(grid_node);
+	   }
        }
-    }
-    for(int i=0;i<new_grid_node_coord.size();i++){
-       grid_node_coord.push_back(new_grid_node_coord[i]);
-    }
-    for(int i=0;i<grid_node_coord.size();i++){
-       if(grid_node_coord[i].x>=Lx && grid_node_coord[i].x<=Ux && grid_node_coord[i].y>=Ly && grid_node_coord[i].y<=Uy){
-         covered_node_coord.push_back(grid_node_coord[i]);
+   }
+   for(auto p = new_grid_node_coord.begin(); p != new_grid_node_coord.end(); ++p) {
+     grid_node_coord.insert( *p);
+   }
+   for(auto p = grid_node_coord.begin(); p != grid_node_coord.end(); ++p) {
+     if(p->x>=Lx && p->x<=Ux && p->y>=Ly && p->y<=Uy){
+       covered_node_coord.insert( *p);
+     }
+   }
+   if(covered_node_coord.size()>0){
+     grid_node_coord.clear();
+     grid_node_coord = covered_node_coord;    
+   }
+   std::vector<int> sourceL;
+   //wbxu: incorrect startpoint and endpoint [fixed]
+   for(int i=index_end_M1_M2;i<=index_end_M3_M3;i++){
+     if (vertices_total[i].active == 1) {
+       RouterDB::point cand;
+       cand.x = vertices_total[i].x;
+       cand.y = vertices_total[i].y;
+       if ( grid_node_coord.find( cand) != grid_node_coord.end()) {
+	 sourceL.push_back(i); 
        }
-    }
-    if(covered_node_coord.size()>0){
-         grid_node_coord.clear();
-         grid_node_coord = covered_node_coord;    
-    }
-    std::vector<int> sourceL;
-    //sourceL.coord = grid_node_coord;
-    //sourceL.metalIdx = sourcelist.metalIdx;
-    //sourceL.ver_idx.resize( sourceL.coord.size() );
-    //wbxu: incorrect startpoint and endpoint [fixed]
-    for(int i=index_end_M1_M2;i<=index_end_M3_M3;i++){
-        for(int j=0;j<grid_node_coord.size();j++){
-           if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y) and (vertices_total[i].active == 1)) {
-               sourceL.push_back(i); 
-               //std::cout<<vertices_total[i].x<<","<<vertices_total[i].y<<","<<vertices_total[i].index<<","<<j<<" vs ";
-               break;
-           }
-        }
-    }
-    //std::cout<<std::endl;
-    return sourceL;
+     }
+   }
+   return sourceL;
 };
 
 
@@ -2573,13 +2620,13 @@ void Grid::CheckVerticesGraph() {
 
 void Grid::CheckMaptotal2graph() {
   std::cout<<"===CheckMaptotal2graph===\n";
-  for(  std::map<int, int>::iterator it=this->total2graph.begin(); it!=this->total2graph.end(); ++it ) {
+  for(  auto it=this->total2graph.begin(); it!=this->total2graph.end(); ++it ) {
     if( this->vertices_total.at(it->first).x!=this->vertices_graph.at(it->second).x or this->vertices_total.at(it->first).y!=this->vertices_graph.at(it->second).y ) {
       std::cout<<"Mismatch total "<<it->first<<" vs graph "<<it->second<<std::endl;
     }
   }
   std::cout<<"===CheckMapgraph2total===\n";
-  for(  std::map<int, int>::iterator it=this->graph2total.begin(); it!=this->graph2total.end(); ++it ) {
+  for(  auto it=this->graph2total.begin(); it!=this->graph2total.end(); ++it ) {
     if( this->vertices_total.at(it->second).x!=this->vertices_graph.at(it->first).x or this->vertices_total.at(it->second).y!=this->vertices_graph.at(it->first).y ) {
       std::cout<<"Mismatch graph "<<it->first<<" vs total "<<it->second<<std::endl;
     }

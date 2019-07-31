@@ -5,7 +5,7 @@ LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 
-CC     = g++ -w -Wall -std=c++11 -g -O3 -lm -ldl -m64 -I$(SOURCE_LP)
+CC     = g++ -w -Wall -std=c++14 -g -O3 -lm -ldl -m64 -I$(SOURCE_LP)
 
 #GDSWriter
 ###SOURCE_GDSW = ./GDSWriter

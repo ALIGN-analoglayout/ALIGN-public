@@ -34,7 +34,7 @@ jobs:
           apk update
           apk add python3 make bash
 
-          (cd Build/ThirdParty/Klayout && docker build . -t layout_png -f Dockerfile.convert)
+          (cd Build/ThirdParty/Klayout && docker build . -t layout_convert -f Dockerfile.convert)
           make build_docker
 
           python3 -m venv general
@@ -46,15 +46,39 @@ jobs:
           (cd CellFabric && pip install .)
           (cd GDSConv && pip install .)
 
-      - run: |
-          make DESIGN_NAME=telescopic_ota ALIGN_docker
-          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker
+      - run:
+          make DESIGN_NAME=telescopic_ota ALIGN_docker generate_png
+
+      - store_artifacts:
+          path: testcase_latest/Results/telescopic_ota.png
+
+      - run:
+          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker generate_png
           
-# Currently failing
-#          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker
-#          make DESIGN_NAME=current_mirror_ota ALIGN_docker
-#          make DESIGN_NAME=five_transistor_ota ALIGN_docker
-#          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker
+      - store_artifacts:
+          path: testcase_latest/Results/switched_capacitor_filter.png
+
+      - run:
+          make DESIGN_NAME=current_mirror_ota ALIGN_docker generate_png
+
+      - store_artifacts:
+          path: testcase_latest/Results/current_mirror_ota.png
+
+      - run:
+          make DESIGN_NAME=five_transistor_ota ALIGN_docker generate_png
+
+      - store_artifacts:
+          path: testcase_latest/Results/five_transistor_ota.png
+
+# Fails intermitantly in Placer
+#      - run:
+#          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
+
+#      - store_artifacts:
+#          path: testcase_latest/Results/cascode_current_mirror_ota.png
+
+# Works but takes too long
+#          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
 
   build-tally:
     executor: docker-executor
