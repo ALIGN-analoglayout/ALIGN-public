@@ -94,11 +94,11 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install python3 make bash
-	  sudo apt-get install docker-compose
+          sudo apt-get install docker-compose
 
       - run: |
           export ALIGN_HOME=/tmp/workspace/
-          mkdir tmp
+           mkdir tmp
           export ALIGN_WORK_DIR=/tmp/workspace/tmp/
           cd tmp
           pwd
