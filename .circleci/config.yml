@@ -98,12 +98,13 @@ jobs:
           apk add python3 make bash
 
       - run: |
-          mkdir /tmp/work
-          cd /tmp/work
-          export ALIGN_HOME=/
-          ls /
-          ls .
-          ln -s /compose/Makefile .
+          export ALIGN_HOME=/work/workspace/
+          mkdir tmp
+          export ALIGN_WORK_DIR=/work/workspace/tmp/
+          cd tmp
+          pwd
+          ls ..
+          ln -s $ALIGN_HOME/compose/Makefile .
           make DESIGN=telescopic_ota
 
   build-tally:
