@@ -105,7 +105,7 @@ jobs:
           make DESIGN=telescopic_ota
   
       - store_artifacts:
-          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+          path: tmp/telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
   build-tally:
     executor: docker-executor
