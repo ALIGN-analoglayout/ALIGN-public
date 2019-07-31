@@ -93,16 +93,16 @@ jobs:
           sudo mv ~/docker-compose /usr/local/bin/docker-compose
 
       - attach_workspace:
-          at: /work/workspace
+          at: /tmp/workspace
 
       - run: |
           apk update
           apk add python3 make bash
 
       - run: |
-          export ALIGN_HOME=/work/workspace/
+          export ALIGN_HOME=/tmp/workspace/
           mkdir tmp
-          export ALIGN_WORK_DIR=/work/workspace/tmp/
+          export ALIGN_WORK_DIR=/tmp/workspace/tmp/
           cd tmp
           pwd
           ls ..
