@@ -109,17 +109,17 @@ jobs:
           make DESIGN=telescopic_ota
   
       - store_artifacts:
-          path: runs/telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
-      - run: |
-          echo $ALIGN_WORK_DIR
-          echo $ALIGN_HOME
-          pwd
-          ls -l
-          make DESIGN=switched_capacitor_filter
+      # - run: |
+      #     echo $ALIGN_WORK_DIR
+      #     echo $ALIGN_HOME
+      #     pwd
+      #     ls -l
+      #     make DESIGN=switched_capacitor_filter
           
-      - store_artifacts:
-          path: runs/switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+      # - store_artifacts:
+      #     path: switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
 
       - run: |
           echo $ALIGN_WORK_DIR
@@ -129,7 +129,7 @@ jobs:
           make DESIGN=current_mirror_ota
 
       - store_artifacts:
-          path: runs/current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+          path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
 
       - run: |
           echo $ALIGN_WORK_DIR
@@ -139,7 +139,7 @@ jobs:
           make DESIGN=five_transistor_ota
 
       - store_artifacts:
-          path: runs/five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
+          path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
   build-tally:
     executor: docker-executor
