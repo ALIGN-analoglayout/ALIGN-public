@@ -86,6 +86,8 @@ jobs:
     working_directory: /tmp/workspace
     steps:
       - run: |
+          uname -a
+      - run: |
           apk update
           apk add curl
           curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s` -`uname -m` > ~/docker-compose
