@@ -9,7 +9,14 @@
 #   Can also be in work area and run with a file flag for docker-compose:
 #
 # To rebuild incremental step engine:
-#   docker-compose up -d --build <step> 
+#   docker-compose up -d --build <step>
+#
+# WSL:
+#   Create a shared windows directory, export ALIGN_WORK_DIR=<windows dir>
+#   Bring up services first:  compose % docker-compose up -d 
+#   Use make-docker-service to map the shared windows directory to /dataVoume
+#   Inside make-docker-service, copy compose and then run make in /dataVolume/compose to bring up services
+
 version: '3.4'
 
 
@@ -46,6 +53,23 @@ services:
       <<: *default-build
       context: ${ALIGN_HOME}/sub_circuit_identification
     container_name: topology_cont
+
+  make-docker-service:
+    <<: *default-service
+    environment:
+      - http_proxy
+      - https_proxy
+      - ALIGN_HOME=/ALIGN-public
+      - ALIGN_WORK_DIR=/dataVolume
+    image: make_docker_image
+    build:
+      <<: *default-build
+      context: ${ALIGN_HOME}
+      dockerfile: compose/Dockerfile
+    container_name: make_docker_cont
+    volumes:
+      - ${ALIGN_WORK_DIR}:/dataVolume
+      - /var/run/:/var/run/
 
   cellfabric-service:
     <<: *default-service
