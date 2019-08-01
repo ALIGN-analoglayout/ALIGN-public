@@ -12,10 +12,11 @@
 #   docker-compose up -d --build <step>
 #
 # WSL:
-#   Create a shared windows directory, export ALIGN_WORK_DIR=<windows dir>
-#   Bring up services first:  compose % docker-compose up -d 
-#   Use make-docker-service to map the shared windows directory to /dataVoume
-#   Inside make-docker-service, copy compose and then run make in /dataVolume/compose to bring up services
+#   Create a shared windows directory
+#   Copy $ALIGN_HOME/compose to the shared directory and export ALIGN_WORK_DIR=<shared_dir>/compose
+#   Run make inside compose:  it shoud bring up containers and run make
+#   File system access is delayed, so let things settle before running again (otherwise make can't check dependencies)
+
 
 version: '3.4'
 
@@ -54,22 +55,23 @@ services:
       context: ${ALIGN_HOME}/sub_circuit_identification
     container_name: topology_cont
 
-  make-docker-service:
-    <<: *default-service
-    environment:
-      - http_proxy
-      - https_proxy
-      - ALIGN_HOME=/ALIGN-public
-      - ALIGN_WORK_DIR=/dataVolume
-    image: make_docker_image
-    build:
-      <<: *default-build
-      context: ${ALIGN_HOME}
-      dockerfile: compose/Dockerfile
-    container_name: make_docker_cont
-    volumes:
-      - ${ALIGN_WORK_DIR}:/dataVolume
-      - /var/run/:/var/run/
+  # This was experimental and not needed if you run in the Windows file system under compose/
+  # make-docker-service:
+  #   <<: *default-service
+  #   environment:
+  #     - http_proxy
+  #     - https_proxy
+  #     - ALIGN_HOME=/ALIGN-public
+  #     - ALIGN_WORK_DIR=/dataVolume
+  #   image: make_docker_image
+  #   build:
+  #     <<: *default-build
+  #     context: ${ALIGN_HOME}
+  #     dockerfile: compose/Dockerfile
+  #   container_name: make_docker_cont
+  #   volumes:
+  #     - ${ALIGN_WORK_DIR}:/dataVolume
+  #     - /var/run/:/var/run/
 
   cellfabric-service:
     <<: *default-service

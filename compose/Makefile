@@ -48,7 +48,13 @@ ${DESIGN}:
 
 
 clean:
+	rm -rf ${DESIGN}/*
+
+realclean:	clean
 	docker-compose down
 	rm docker-compose.yml
-	rm -rf ${DESIGN}/*
+
+superclean:	clean
+	docker-compose down --rmi all --remove-orphans
+	rm docker-compose.yml
 
