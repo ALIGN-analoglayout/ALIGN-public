@@ -3,7 +3,7 @@
 #library_graphs:	basic_library/
 #	python3 ./src/read_library.py --dir basic_library
 
-INPUT=/dataVolume/topology_input
+INPUT=/dataVolume/$(DESIGN)
 SRC=/DEMO/src
 
 Results/${DESIGN}_lef.sh:
@@ -18,10 +18,13 @@ Results/${DESIGN}.p:	circuit_graphs/${DESIGN}.yaml
 	python3 $(SRC)/match_graph.py
 
 Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p LEF
+	mkdir -p $(INPUT)/topology_output/input_circuit
+	cp -p /dataVolume/$(DESIGN)/*.const $(INPUT)/topology_output/input_circuit
 	python3 $(SRC)/write_verilog_lef.py -U_cap 12 -U_mos 12
 	python3 $(SRC)/check_const.py --name ${DESIGN}
 
 LEF:	/DEMO/LEF
+	ls -ltr $(INPUT)
 	cp -r /DEMO/LEF .
 
 clean:

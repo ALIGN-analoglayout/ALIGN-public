@@ -22,7 +22,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
 	docker-compose exec cellfabric-service /bin/bash -c "source general/bin/activate && cd /dataVolume/ && python3 /GDSConv/gdsconv/json2gds.py $< $@"
 
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}
-	docker-compose exec placeroute-service /bin/bash -c "cd /dataVolume && mkdir -p ${PNR_OUTPUT} && cd ${PNR_OUTPUT}/.. && make -f /PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} LAYINPUT=/dataVolume/${GEN_OUTPUT} NETINPUT=/dataVolume/${TPO_OUTPUT} PDKINPUT=/dataVolume/${DESIGN} |& tee Results/PnR.log"
+	docker-compose exec placeroute-service /bin/bash -c "cd /dataVolume && mkdir -p ${PNR_OUTPUT} && cd ${PNR_OUTPUT}/.. && make -f /PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} LAYINPUT=/dataVolume/${GEN_OUTPUT} NETINPUT=/dataVolume/${TPO_OUTPUT} PDKINPUT=/dataVolume/${DESIGN} CONSTRAINTINPUT=/dataVolume/${TPO_OUTPUT} |& tee Results/PnR.log"
 
 ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 	docker-compose exec cellfabric-service /bin/bash -c "source /general/bin/activate && cd /dataVolume/ && mkdir -p ${GEN_OUTPUT} && cd ${GEN_OUTPUT} && make -f /CellFabric/Makefile INPUT=/dataVolume/${TPO_OUTPUT} DESIGN=${DESIGN}"
@@ -35,10 +35,7 @@ docker-compose.yml:	${ALIGN_HOME}/compose/docker-compose.yml
 	docker-compose up -d
 
 ${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	cp ${EXAMPLES}/${DESIGN}/`basename $< .sp`.* ${DESIGN}/
-
-${DESIGN}/${DESIGN}.const:	${EXAMPLES}/${DESIGN}/${DESIGN}.const  ${DESIGN}
-	cp $< ${DESIGN}/
+	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
 
 ${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
 	cp $< ${DESIGN}/
