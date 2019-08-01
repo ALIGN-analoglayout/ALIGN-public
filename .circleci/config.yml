@@ -111,20 +111,20 @@ jobs:
       - store_artifacts:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
-      # - run: |
-      #     echo $ALIGN_WORK_DIR
-      #     echo $ALIGN_HOME
-      #     pwd
-      #     ls -l
-      #     make DESIGN=switched_capacitor_filter
+      - run: |
+          pwd
+          echo "ALIGN_WORK_DIR=$ALIGN_WORK_DIR"
+          echo "ALIGN_HOME=$ALIGN_HOME"
+          ls -l
+          make DESIGN=switched_capacitor_filter
           
-      # - store_artifacts:
-      #     path: switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+      - store_artifacts:
+          path: switch_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
 
       - run: |
-          echo $ALIGN_WORK_DIR
-          echo $ALIGN_HOME
           pwd
+          echo "ALIGN_WORK_DIR=$ALIGN_WORK_DIR"
+          echo "ALIGN_HOME=$ALIGN_HOME"
           ls -l
           make DESIGN=current_mirror_ota
 
@@ -132,9 +132,9 @@ jobs:
           path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
 
       - run: |
-          echo $ALIGN_WORK_DIR
-          echo $ALIGN_HOME
           pwd
+          echo "ALIGN_WORK_DIR=$ALIGN_WORK_DIR"
+          echo "ALIGN_HOME=$ALIGN_HOME"
           ls -l
           make DESIGN=five_transistor_ota
 
