@@ -11,7 +11,7 @@ ${DESIGN}.map:	${DESIGN}.lef
 
 ${DESIGN}.lef:	${INPUT}/${DESIGN}_lef.sh  ../PDK_Abstraction $(LOC_GENERATOR)
 	chmod u+x $<
-	(cd ${LOC_GENERATOR}; $< python3; cat *.lef > ${DESIGN}.lef)
+	(cd ${LOC_GENERATOR}; rm -f *.lef; $< python3; cat *.lef > ${DESIGN}.lef)
 	mv ${LOC_GENERATOR}/${DESIGN}.lef .
 	mv ${LOC_GENERATOR}/*gds.json .
 
