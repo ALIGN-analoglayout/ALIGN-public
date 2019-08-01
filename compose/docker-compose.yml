@@ -9,7 +9,15 @@
 #   Can also be in work area and run with a file flag for docker-compose:
 #
 # To rebuild incremental step engine:
-#   docker-compose up -d --build <step> 
+#   docker-compose up -d --build <step>
+#
+# WSL:
+#   Create a shared windows directory
+#   Copy $ALIGN_HOME/compose to the shared directory and export ALIGN_WORK_DIR=<shared_dir>/compose
+#   Run make inside compose:  it shoud bring up containers and run make
+#   File system access is delayed, so let things settle before running again (otherwise make can't check dependencies)
+
+
 version: '3.4'
 
 
@@ -46,6 +54,24 @@ services:
       <<: *default-build
       context: ${ALIGN_HOME}/sub_circuit_identification
     container_name: topology_cont
+
+  # This was experimental and not needed if you run in the Windows file system under compose/
+  # make-docker-service:
+  #   <<: *default-service
+  #   environment:
+  #     - http_proxy
+  #     - https_proxy
+  #     - ALIGN_HOME=/ALIGN-public
+  #     - ALIGN_WORK_DIR=/dataVolume
+  #   image: make_docker_image
+  #   build:
+  #     <<: *default-build
+  #     context: ${ALIGN_HOME}
+  #     dockerfile: compose/Dockerfile
+  #   container_name: make_docker_cont
+  #   volumes:
+  #     - ${ALIGN_WORK_DIR}:/dataVolume
+  #     - /var/run/:/var/run/
 
   cellfabric-service:
     <<: *default-service
