@@ -56,8 +56,8 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
       // If construct graphs sucessfully
       if( try_sol.FastInitialScan() ) { // If violation found
         if (extCount>=COUNT_LIMIT) { // If too many iteratons
-          cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible solution without violations..."<<endl;
-          cout<<"Placer-Warning: use one solution with violations instead!"<<endl;
+          //cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible solution without violations..."<<endl;
+          //cout<<"Placer-Warning: use one solution with violations instead!"<<endl;
           curr_sol=try_sol;
           return false;
         } else {
@@ -69,8 +69,8 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     } else {
       // If fail in construction
       if (extCount>=COUNT_LIMIT) { // If too many iteratons
-        cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible constraint graphs..."<<endl;
-        cout<<"Placer-Warning: use one solution with partial constraints instead!"<<endl;
+        //cout<<"Placer-Warning: try "<<COUNT_LIMIT <<" perturbtions, but fail in generating feasible constraint graphs..."<<endl;
+        //cout<<"Placer-Warning: use one solution with partial constraints instead!"<<endl;
         try_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
         curr_sol=try_sol;
         return false;
