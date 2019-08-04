@@ -2771,10 +2771,10 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
           //(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) : (LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
           LLy=(LLy_1<LLy_2)?LLy_1:LLy_2;
         }
-        for(int X=LLx; X<track_X; X+=curlayer_unit) {
+        for(int X=LLx; X<=rack_X; X+=curlayer_unit) {
           int nb_start=-1;
           //Power = !Power;
-          for(int Y=LLy; Y<track_Y; Y+=nexlayer_unit) {
+          for(int Y=LLy; Y<=track_Y; Y+=nexlayer_unit) {
             RouterDB::vertex tmpv;
             bool  pmark=false;
             if(i==0) {
@@ -2857,10 +2857,10 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
           //(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) : (LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
           LLx=(LLx_1<LLx_2)?LLx_1:LLx_2;
         }
-        for(int Y=LLy; Y<track_Y; Y+=curlayer_unit) {
+        for(int Y=LLy; Y<=track_Y; Y+=curlayer_unit) {
           int nb_start=-1;
           //Power=!Power;
-          for(int X=LLx; X<track_X; X+=nexlayer_unit) {
+          for(int X=LLx; X<=track_X; X+=nexlayer_unit) {
             RouterDB::vertex tmpv;
             bool  pmark=false;
             if(i==0) {
