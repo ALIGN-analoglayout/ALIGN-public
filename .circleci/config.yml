@@ -148,17 +148,20 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
+# from https://wiki.alpinelinux.org/wiki/Docker
       - run: |
           apk update
-          apk add curl
-          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-          chmod +x ~/docker-compose
-          mv ~/docker-compose /usr/local/bin/
+          apk add py-pip
+          apk add python-dev libffi-dev openssl-dev gcc libc-dev make
+#          apk add curl
+#          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+#          chmod +x ~/docker-compose
+#          mv ~/docker-compose /usr/local/bin/
+          pip install docker-compose
 
       - run: |
           echo 'export ALIGN_HOME=/tmp/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-          echo 'PATH=/usr/local/bin:$PATH' >> $BASH_ENV
           which docker-compose
           
       - setup_remote_docker
