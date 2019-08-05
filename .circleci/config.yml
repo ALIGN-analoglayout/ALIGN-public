@@ -162,7 +162,6 @@ jobs:
       - setup_remote_docker
       
       - run: |
-          ls -l /usr/local/bin/docker-compose
           which docker-compose
           /usr/local/bin/docker-compose up -d make-docker-service
           /usr/local/bin/docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
