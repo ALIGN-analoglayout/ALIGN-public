@@ -185,7 +185,7 @@ jobs:
           command: |
             cd compose/
             docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
-            docker cp make-docker-service:/dataVolume/telescopic_ota ..
+            docker cp make_docker_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
