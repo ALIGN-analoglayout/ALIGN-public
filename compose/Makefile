@@ -61,7 +61,7 @@ ${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp docker-compose.yml
 docker-compose.yml:	${ALIGN_HOME}/compose/docker-compose.yml
 	ln -s $< $@
 	docker-compose -p compose  up -d transfer-service
-	docker-compose -p compose  up -d protobuf--service
+	docker-compose -p compose  up -d protobuf-service
 	docker-compose -p compose  up -d cellfabric-service
 	docker-compose -p compose  up -d placeroute-service
 	docker-compose -p compose  up -d topology-service
