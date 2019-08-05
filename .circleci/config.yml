@@ -152,7 +152,7 @@ jobs:
           apk update
           apk add py-pip bash
 
-      - run: |
+      - run:
           shell: /bin/bash
           command: |
             echo "Running bash!"
