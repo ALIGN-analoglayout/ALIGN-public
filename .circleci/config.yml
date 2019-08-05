@@ -155,14 +155,14 @@ jobs:
           pip install docker-compose
 
       - run: |
-          echo 'export ALIGN_HOME=/tmp/workspace' >> $BASH_ENV
+          echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
           which docker-compose
           
       - setup_remote_docker
       
       - run: |
-          which docker-compose
+          pwd
           cd compose/
           docker-compose up -d make-docker-service
           docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
