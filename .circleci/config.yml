@@ -159,6 +159,8 @@ jobs:
       - run: |
           echo 'export ALIGN_HOME=/tmp/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+          echo 'PATH=/usr/local/bin:$PATH' >> $BASH_ENV
+          ls -l /usr/local/bin/docker-compose
           
       - run: |
           docker-compose up -d make-docker-service
