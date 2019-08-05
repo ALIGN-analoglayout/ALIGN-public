@@ -170,12 +170,25 @@ jobs:
       - run:
           shell: /bin/bash
           command: |
-            docker volume create --name=compose_dataVolume
             cd compose/
-            docker-compose up -d make-docker-service
+            docker volume create --name=compose_dataVolume
+            docker-compose up -d
+            
+      - run:
+          shell: /bin/bash
+          command: |
+            cd compose/
             docker-compose exec make-docker-service bash -c "ln -sf \$ALIGN_HOME/compose/Makefile ."
+            
+      - run:
+          shell: /bin/bash
+          command: |
+            cd compose/
             docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
-
+            docker cp make-docker-service:/dataVolume/telescopic_ota ..
+            
+      - store_artifacts:
+          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
 
   build-tally:
     executor: docker-executor
