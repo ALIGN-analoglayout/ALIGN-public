@@ -1,26 +1,11 @@
-# TODO
-# Each engine should mount .X11=
-# Can we afford an emacs session in each?
-# GIT works in the make engine: we could do check-in from each engine!
+# Makefile used to drive routing flow
+#   ALIGN_HOME: top of hierarchy
+#   ALIGN_WORK_DIR:  a working directory or a docker volume for running the flow
 
-# We need to stage the router better as well as the other engines
-# Make commands that can be executed without environment variables by staging
-
-# Should this makefile handle all the transfer dependencies?
-# topology-service has everything in ./input_circuit:  .sp, .const
-# cellfabric-service has just one input: the generator_output:
-#      design_lef.sh
-#      Whe have to fix running in LOC_GENERATOR by trying pip install
-#       pip install requires net access!
-# placeroute-service:
-#      pnr_output:
-#	    design.map design.lef design.v  pdk-file constraints
-#           stores in results
-# gds steps are run in same dir
-
-# Makefile which uses docker-compose
-
-#export ALIGN_HOME=~/src/ALIGN-public/
+# TO RUN: 
+#   ln -sf $ALIGN_HOME/compose/Makefile $ALIGN_WORK_DIR
+#   cd $ALIGN_WORK_DIR
+#   % make DESIGN=<design in $ALIGN_HOME/examples"
 
 EXAMPLES=${ALIGN_HOME}/examples
 
@@ -36,7 +21,7 @@ TPO_OUTPUT=${DESIGN}/topology_output/Results
 
 # Convert output to PNG
 ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
-	docker-compose -p compose  exec klayoutconvert-service /bin/bash -c "./gds2png.sh /dataVolume/$< /dataVolume/$@"
+	docker-compose -p compose exec klayoutconvert-service /bin/bash -c "./gds2png.sh /dataVolume/$< /dataVolume/$@"
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
