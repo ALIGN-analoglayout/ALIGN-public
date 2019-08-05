@@ -150,7 +150,7 @@ jobs:
 
       - run: |
           apk update
-          apk add py-pip
+          apk add py-pip bash
           apk add python-dev libffi-dev openssl-dev gcc libc-dev make
           pip install docker-compose
 
@@ -164,8 +164,8 @@ jobs:
       - run: |
           pwd
           cd compose/
-          docker-compose up -d make-docker-service
-          docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
+          bash -c "docker-compose up -d make-docker-service"
+          bash -c '"docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"'
 
 
   build-tally:
