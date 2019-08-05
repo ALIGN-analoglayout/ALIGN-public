@@ -163,6 +163,7 @@ jobs:
       
       - run: |
           which docker-compose
+          cd compose/
           docker-compose up -d make-docker-service
           docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
 
