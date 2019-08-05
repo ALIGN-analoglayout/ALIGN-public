@@ -149,13 +149,15 @@ jobs:
           at: /work/workspace
 
       - run: |
+          apk update
+          apk add py-pip bash
+
+      - run: |
           shell: /bin/bash
           command: |
             echo "Running bash!"
 
       - run: |
-          apk update
-          apk add py-pip bash
           apk add python-dev libffi-dev openssl-dev gcc libc-dev make
           pip install docker-compose
 
