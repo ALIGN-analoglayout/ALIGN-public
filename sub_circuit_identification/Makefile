@@ -4,6 +4,9 @@
 #	python3 ./src/read_library.py --dir basic_library
 
 INPUT=/dataVolume/$(DESIGN)
+# This should be the working dir
+#OUTPUT=/dataVolume/$(DESIGN)/topology_output
+
 SRC=/DEMO/src
 
 Results/${DESIGN}_lef.sh:
@@ -11,17 +14,20 @@ Results/${DESIGN}_lef.sh:
 library_graphs:	/DEMO/basic_library
 	python3 $(SRC)/read_library.py --dir /DEMO/basic_library
 
-circuit_graphs/${DESIGN}.yaml: ${INPUT}/${DESIGN}.sp library_graphs
-	python3 $(SRC)/read_netlist.py --dir ${INPUT} -f `basename $< .sp`.sp --subckt ${DESIGN} --flat 0
+circuit_graphs/${DESIGN}.yaml: input_circuit/${DESIGN}.sp library_graphs
+	python3 $(SRC)/read_netlist.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat 0
 
 Results/${DESIGN}.p:	circuit_graphs/${DESIGN}.yaml
 	python3 $(SRC)/match_graph.py
 
 Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p LEF
-	mkdir -p $(INPUT)/topology_output/input_circuit
-	cp -p /dataVolume/$(DESIGN)/*.const $(INPUT)/topology_output/input_circuit
 	python3 $(SRC)/write_verilog_lef.py -U_cap 12 -U_mos 12
 	python3 $(SRC)/check_const.py --name ${DESIGN}
+
+input_circuit/${DESIGN}.sp:	${INPUT}/${DESIGN}.sp
+	mkdir -p ./input_circuit
+	cp $< $@
+	cp -p ${INPUT}/*.const ./input_circuit/
 
 LEF:	/DEMO/LEF
 	ls -ltr $(INPUT)

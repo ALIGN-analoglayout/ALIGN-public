@@ -141,6 +141,19 @@ jobs:
       - store_artifacts:
           path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
+  build-make-compose2:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          apk update
+          apk add docker-compose
+
+
   build-tally:
     executor: docker-executor
     steps:
@@ -507,7 +520,7 @@ workflows:
       # - build-make:
       #     requires:
       #       - start 
-      - build-make-compose:
+      - build-make-compose2:
           requires:
             - start 
 

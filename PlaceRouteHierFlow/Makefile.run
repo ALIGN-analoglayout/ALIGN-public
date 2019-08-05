@@ -1,25 +1,9 @@
 #
 PDK_FILE=FinFET_Mock_PDK_Abstraction.json
 PDKINPUT=/dataVolume/${DESIGN}
-LAYINPUT=/dataVolume/${DESIGN}
-NETINPUT=/dataVolume/${DESIGN}
-CONSTRAINTINPUT=/dataVolume/${DESIGN}
-
-Results/${DESIGN}_0.lef:	${DESIGN}.lef ${DESIGN}.v ${DESIGN}.map ${PDK_FILE}
+LAYINPUT=/dataVolume/${DESIGN}/generator_output
+Results/${DESIGN}_0.lef:	inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE}
 	mkdir -p Results/
-	cp -p $(CONSTRAINTINPUT)/*.const .
-	/PlaceRouteHierFlow/pnr_compiler . ${DESIGN}.lef ${DESIGN}.v ${DESIGN}.map ${PDK_FILE} ${DESIGN} 1 0
-
-${PDK_FILE}:	${PDKINPUT}/${PDK_FILE}
-	echo "copy $< to $@"
-	cp $< .
-
-${DESIGN}.v:	${NETINPUT}/${DESIGN}.v
-	cp $< .
-
-${DESIGN}.lef:	${LAYINPUT}/${DESIGN}.lef
-	cp $< .
-
-${DESIGN}.map:	${LAYINPUT}/${DESIGN}.map
-	cp $< .
-	cp `dirname $<`/*.gds.json .
+	cp -p inputs/*.const .
+	cp -p inputs/*.gds.json .
+	/PlaceRouteHierFlow/pnr_compiler . inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE} ${DESIGN} 1 0
