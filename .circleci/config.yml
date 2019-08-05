@@ -148,15 +148,10 @@ jobs:
       - attach_workspace:
           at: /work/workspace
 
-# from https://wiki.alpinelinux.org/wiki/Docker
       - run: |
           apk update
           apk add py-pip
           apk add python-dev libffi-dev openssl-dev gcc libc-dev make
-#          apk add curl
-#          curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-#          chmod +x ~/docker-compose
-#          mv ~/docker-compose /usr/local/bin/
           pip install docker-compose
 
       - run: |
