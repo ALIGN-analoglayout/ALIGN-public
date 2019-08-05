@@ -157,6 +157,7 @@ jobs:
       - run: |
           echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+          docker volume create --name=compose_dataVolume
           which docker-compose
           
       - setup_remote_docker
