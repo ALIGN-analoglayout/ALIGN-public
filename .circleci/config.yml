@@ -156,6 +156,15 @@ jobs:
           chmod +x ~/docker-compose
           mv ~/docker-compose /usr/local/bin/
 
+      - run: |
+          echo 'export ALIGN_HOME=/tmp/workspace' >> $BASH_ENV
+          echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+          
+      - run: |
+          docker-compose up -d make-docker-service
+          docker-compose exec make-docker-service bash -c "make DESIGN=telescopic_ota"
+
+
   build-tally:
     executor: docker-executor
     steps:
