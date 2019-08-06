@@ -1,8 +1,10 @@
 #
 # Docker-compose file for running ALIGN Analog flow
 # Requires:
-#  ALIGN_HOME:  point to to the ALIGN source area
-#  WORKDIR:     point to the current work area for running flow (containers need this to mount area)
+#  ALIGN_HOME:      point to to the ALIGN source area
+#  ALIGN_WORK_DIR:  point to the current work area for running flow
+#        - a directory for use with a bind-mount (Not WSL)
+#        - a docker container (works with WSL and Linux)
 #
 # TO RUN:
 #   docker-compose up -d

@@ -27,6 +27,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
 	docker-compose -p compose  exec cellfabric-service /bin/bash -c "source general/bin/activate && cd /dataVolume/ && python3 /GDSConv/gdsconv/json2gds.py $< $@"
 
+# Transfer inputs and run placeroute
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}
 	docker-compose -p compose exec transfer-service bash -c "mkdir -p /dataVolume/${PNRDIR}/inputs && cd /dataVolume/${PNRDIR} && \
 	cp /dataVolume/$(DESIGN)/$(PDK_FILE) inputs && \
@@ -37,9 +38,11 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${
 	cp /dataVolume/$(TPO_OUTPUT)/*.const inputs"
 	docker-compose -p compose  exec placeroute-service /bin/bash -c "cd /dataVolume && mkdir -p ${PNR_OUTPUT} && cd ${PNRDIR} && make -f /PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log"
 
+# Run the cell generator
 ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 	docker-compose -p compose  exec cellfabric-service /bin/bash -c "source /general/bin/activate && cd /dataVolume/ && mkdir -p ${GEN_OUTPUT} && cd ${GEN_OUTPUT} && make -f /CellFabric/Makefile INPUT=/dataVolume/${TPO_OUTPUT} DESIGN=${DESIGN}"
 
+# Build the cell generator script
 ${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp docker-compose.yml
 	docker-compose -p compose  exec topology-service /bin/bash -c "source /sympy/bin/activate && cd /dataVolume/ && mkdir -p ${TPO_OUTPUT} && cd ${TPO_OUTPUT}/.. && make -f /DEMO/Makefile INPUT=/dataVolume/${DESIGN} DESIGN=${DESIGN}"
 
