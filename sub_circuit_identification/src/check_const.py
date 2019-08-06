@@ -34,15 +34,17 @@ def check_const(sub_block_const):
     
         const_fp.close()
         new_const_fp.close()
-    #os.rename(new_const_path,const_path)
+    else:
+        print("Couldn't find constraint file",const_path," (might be okay)")
+
     return(cc_pair)
 
 def fix_verilog(design_name):
-    print("SMB",design_name)
-
     """ Reads available lef in LEF dir
     Reads .lef files or param_lef files
     """
+    print("Running fix_verilog on",design_name)
+
     #for file in os.listdir(verilog_dir):
     #    if file.endswith(".verilog"):
     #        verilog_path = os.path.join(verilog_dir, file)

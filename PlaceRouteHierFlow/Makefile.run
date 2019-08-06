@@ -1,0 +1,9 @@
+#
+PDK_FILE=FinFET_Mock_PDK_Abstraction.json
+PDKINPUT=/dataVolume/${DESIGN}
+LAYINPUT=/dataVolume/${DESIGN}/generator_output
+Results/${DESIGN}_0.lef:	inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE}
+	mkdir -p Results/
+	cp -p inputs/*.const .
+	cp -p inputs/*.gds.json .
+	/PlaceRouteHierFlow/pnr_compiler . inputs/${DESIGN}.lef inputs/${DESIGN}.v inputs/${DESIGN}.map inputs/${PDK_FILE} ${DESIGN} 1 0
