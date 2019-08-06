@@ -16,10 +16,29 @@ M0 (DA DA S 0) NMOS_VTL w=w l=90n
 M1 (DB GB S 0) NMOS_VTL w=w l=90n
 .ends CMFB_NMOS
 
+.subckt CASCODED_CMC_PMOS DA GA DB S
+M0 DA GA SA vdd pmos_rvt w=27e-9 l=20e-9 nfin=120
+M1 DB GA SB vdd pmos_rvt w=27e-9 l=20e-9 nfin=60
+M2 SA DB S vdd pmos_rvt w=27e-9 l=20e-9 nfin=10
+M3 SB DB S vdd pmos_rvt w=27e-9 l=20e-9 nfin=5
+.ends CASCODED_CMC_PMOS
+
+.subckt CASCODED_CMC_NMOS DA S DB GA
+M0 DA GA SA vss nmos_rvt w=27e-9 l=20e-9 nfin=24
+M1 DB GA SB vss nmos_rvt w=27e-9 l=20e-9 nfin=24
+M2 SA DA S vss nmos_rvt w=27e-9 l=20e-9 nfin=30
+M3 SB DA S vss nmos_rvt w=27e-9 l=20e-9 nfin=30
+.ends CASCODED_CMC_NMOS
+
+.subckt CMC_NMOS_S  DA DB G S
+M0 (DA G S 0) NMOS_VTL w=w l=90n
+M1 (DB G S 0) NMOS_VTL w=w l=90n
+.ends CMC_NMOS_S
+
 .subckt CMC_PMOS_S  DA DB G S
-M0 (DA G S 0) PMOS_VTL w=w l=90n
-M1 (DB G S 0) PMOS_VTL w=w l=90n
-.ends CMC_PMOS
+M0 (DA G S vdd) PMOS_VTL w=w l=90n
+M1 (DB G S vdd) PMOS_VTL w=w l=90n
+.ends CMC_PMOS_S
 
 .subckt DP_NMOS  DA DB GA GB S
 M0 (DA GA S 0) NMOS_VTL w=w l=90n
