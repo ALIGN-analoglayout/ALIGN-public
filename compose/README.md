@@ -12,7 +12,6 @@ To invoke using a working directory:
 		% ln -sf $ALIGN_HOME/compose/Makefile .
 		% make DESIGN=<design>
 
-
 > This will bring up the set of docker services that can run the steps
 > in the flow, then invoke a series of commands in each container to
 > execute the flow.
@@ -38,10 +37,14 @@ match, then the services can only be found by using the -p <project>
 where project is the original directory name or project name used to
 bring up the services.
 
-- docker-compose up -d:  bring up all services (build images if needed)
-- docker-compose down:  shut down all services and remove containers
-   - --rmi:  remove images too
-- docker-compose up -d <service>:  bring up a specific service
-- docker-compose up -d --build <service>:  build and bring up a service
-- docker-compose exec <service> <command>:  execute a command on a running container
+  - docker-compose up -d:  bring up all services (build images if needed)
+  
+  - docker-compose down:  shut down all services and remove containers
+    - --rmi: remove images too
+	
+  - docker-compose up -d <service>:  bring up a specific service
+  
+  - docker-compose up -d --build <service>:  build and bring up a service
+  
+  - docker-compose exec <service> <command>:  execute a command on a running container
 
