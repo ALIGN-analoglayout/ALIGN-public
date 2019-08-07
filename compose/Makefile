@@ -29,7 +29,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
 
 # Transfer inputs and run placeroute
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}
-	docker-compose -p compose exec transfer-service bash -c "mkdir -p /dataVolume/${PNRDIR}/inputs && cd /dataVolume/${PNRDIR} && \
+	-docker-compose -p compose exec transfer-service bash -c "mkdir -p /dataVolume/${PNRDIR}/inputs && cd /dataVolume/${PNRDIR} && \
 	cp /dataVolume/$(DESIGN)/$(PDK_FILE) inputs && \
 	cp /dataVolume/$(GEN_OUTPUT)/$(DESIGN).lef inputs && \
 	cp /dataVolume/$(GEN_OUTPUT)/$(DESIGN).map inputs && \
