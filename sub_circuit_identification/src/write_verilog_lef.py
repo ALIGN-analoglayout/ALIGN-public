@@ -223,7 +223,7 @@ def generate_lef(fp, name, values, available_block_lef,
             if block_name in available_block_lef:
                 return block_name
             logging.info("Generating parametric lef of: %s", block_name)
-            fp.write("\n$PC fabric_" + name + ".py " +
+            fp.write("\n$PC Align_primitives.py -p " + name +
                      " -b " + block_name +
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +

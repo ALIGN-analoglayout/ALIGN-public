@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 as with_python
 
-RUN apt-get update && apt-get install -yq pkg-config python3 python3-pip python3-venv git build-essential graphviz libgraphviz-dev protobuf-compiler && apt-get clean
+RUN apt-get update && apt-get install -yq pkg-config python3 python3-pip python3-venv git vim build-essential graphviz libgraphviz-dev protobuf-compiler && apt-get clean
 
 RUN \
     python3 -m venv sympy && \

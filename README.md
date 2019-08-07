@@ -12,6 +12,14 @@
   - make compile : required once for setting up the tool
 ```
 
+## (Proposed) Push Button Docker Flow
+*  Works from a separate directory pointing to ALIGN_HOME, managing dependencies correctly, handles proxies, uses a single shared volume.
+   *  make DESIGN=<example>
+      1.  updates the docker images
+      -   brings up running containers, ready to execute commands
+      -   exec's commands in running containers 
+   *  clean : removes files, shuts down containers.
+
 # Design Flow 
 ## Continuous Integration
 ```bash
