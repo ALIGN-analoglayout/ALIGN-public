@@ -1,4 +1,4 @@
- >This directory contains a set of docker services that run the
+This directory contains a set of docker services that run the
 end-to-end ALIGN flow using a container-based flow, where individual
 engines have isolated software environments.
 
@@ -43,7 +43,7 @@ bring up the services.
   - docker-compose up -d:  bring up all services (build images if needed)
   
   - docker-compose down:  shut down all services and remove containers
-    - --rmi all: remove images too
+      - --rmi all: remove images too
 	
   - docker-compose up -d <service>:  bring up a specific service
   
