@@ -1,11 +1,5 @@
 #
-
-#library_graphs:	basic_library/
-#	python3 ./src/read_library.py --dir basic_library
-
 INPUT=/dataVolume/$(DESIGN)
-# This should be the working dir
-#OUTPUT=/dataVolume/$(DESIGN)/topology_output
 
 SRC=/DEMO/src
 
@@ -27,7 +21,7 @@ Results/${DESIGN}_lef.sh:	Results/${DESIGN}.p LEF
 input_circuit/${DESIGN}.sp:	${INPUT}/${DESIGN}.sp
 	mkdir -p ./input_circuit
 	cp $< $@
-	cp -p ${INPUT}/*.const ./input_circuit/
+	-cp -p ${INPUT}/*.const ./input_circuit/
 
 LEF:	/DEMO/LEF
 	ls -ltr $(INPUT)
