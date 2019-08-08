@@ -70,12 +70,11 @@ jobs:
       - store_artifacts:
           path: testcase_latest/Results/five_transistor_ota.png
 
-      # Intermittently breaks placer/router (removeing from CI again)
-#      - run:
-#          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
+      - run:
+          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
 
-#      - store_artifacts:
-#          path: testcase_latest/Results/cascode_current_mirror_ota.png
+      - store_artifacts:
+          path: testcase_latest/Results/cascode_current_mirror_ota.png
 
 # Works but takes too long
 #          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
@@ -144,6 +143,16 @@ jobs:
             
       - store_artifacts:
           path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+
+      - run:
+          shell: /bin/bash
+          command: |
+            cd compose/
+            docker-compose exec make-docker-service bash -c "make DESIGN=cascode_current_mirror_ota"
+            docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
+            
+      - store_artifacts:
+          path: cascode_current_mirror_ota/pnr_output/Results/cascode_current_mirror_ota_0.png
             
       - run:
           shell: /bin/bash
