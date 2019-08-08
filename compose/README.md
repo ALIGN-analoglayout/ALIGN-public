@@ -1,4 +1,4 @@
-This directory contains a set of docker services that run the
+ >This directory contains a set of docker services that run the
 end-to-end ALIGN flow using a container-based flow, where individual
 engines have isolated software environments.
 
@@ -55,4 +55,3 @@ Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
 modifying files in the relevant containers.  You can git push from
 those containers as well.
-
