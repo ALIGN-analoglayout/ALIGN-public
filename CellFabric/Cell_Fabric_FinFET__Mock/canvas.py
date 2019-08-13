@@ -5,9 +5,11 @@ from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 from pathlib import Path
 pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
 
-class FinFETCanvas(DefaultCanvas):
+class FinFET_Mock_PDK_Canvas(DefaultCanvas):
+
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
                   pdkfile=pdkfile):
+
         p = Pdk().load(pdkfile)
         super().__init__(p)
         assert   3*p['Fin']['Pitch'] < 2*p['M2']['Pitch']
@@ -73,9 +75,7 @@ class FinFETCanvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
-class AbstractMOS(FinFETCanvas):
-
-    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
         (SA, GA, DA, SB, GB, DB) = SDG
         (S, D, G) = (SA+SB, DA+DB, GA+GB)
@@ -116,24 +116,31 @@ class AbstractMOS(FinFETCanvas):
                 for i in contact:
                     self.addVia( self.v1, None, None, i, y*h+track) 
 
-class NMOS(AbstractMOS):
-
-    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
         
-        super().unit(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
 
         #####   Nselect Placement   #####
         if x == x_cells -1 and y == y_cells -1:
             self.addRegion( self.nselect, 'ns', None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
 
-class PMOS(AbstractMOS):
+    def genPMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
-    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
-
-        super().unit(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
 
         #####   Pselect and Nwell Placement   #####
         if x == x_cells -1 and y == y_cells -1:      
             self.addRegion( self.pselect, 'ps', None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
             self.addRegion( self.nwell, 'nw', None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)    
-                
+
+class NMOS(FinFET_Mock_PDK_Canvas):
+
+    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+        
+        super().genNMOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+
+class PMOS(FinFET_Mock_PDK_Canvas):
+
+    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+
+        super().genPMOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
