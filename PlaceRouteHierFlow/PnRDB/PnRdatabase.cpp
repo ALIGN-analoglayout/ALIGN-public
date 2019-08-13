@@ -3336,16 +3336,20 @@ catch(ifstream::failure e){
 }
 
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
-  bool ture = 0;
+  bool missing_lef_file = 0;
+
   std::cout<<"PnRdatabase-Info:: merge LEF/map data\n";
   for(int i=0;i<node.Blocks.size();i++){
     string master=node.Blocks[i].instance.back().master;
-    if(lefData.find(master)==lefData.end()){
-    if(master.find("Cap")!=std::string::npos or master.find("cap")!=std::string::npos) {continue;}
-    if(node.Blocks[i].instance.back().isLeaf) {
-      cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
-    }
-    continue;
+    if(lefData.find(master)==lefData.end()) {
+	// LEF is missing; Ok if a cap or if not a leaf
+	if(master.find("Cap")!=std::string::npos or
+	   master.find("cap")!=std::string::npos) continue;
+	if(node.Blocks[i].instance.back().isLeaf) {
+	    cerr<<"PnRDB-Error: the key does not exist in map:"<<" "<<master<<endl;
+	    missing_lef_file = 1;
+	}
+	continue;
     }
     
     //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
@@ -3393,8 +3397,10 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
 
   }
-  ture = 1;
-  return ture;
+
+  assert( !missing_lef_file);
+
+  return 1;
   
 }
 
