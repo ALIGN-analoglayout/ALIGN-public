@@ -2,7 +2,7 @@ import json
 import argparse
 import gen_gds_json
 import gen_lef
-import fabric_NMOS
+import primitive
 from datetime import datetime
                                                            
 if __name__ == "__main__":
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
     
-    uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
+    uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
    
     for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
         Routing = [('S', S, 1, CcM3), ('D0', DA+G if y%2==0 else DB+G, 2, CcM3-1), ('D1', DB if y%2==0 else DA, 3, CcM3+1), ('D2', DB if y%2==0 else DA, 4, CcM3+2), ('D3', DA if y%2==0 else DB, 5, CcM3+2), ('D4', DA if y%2==0 else DB, 6, CcM3+3)]

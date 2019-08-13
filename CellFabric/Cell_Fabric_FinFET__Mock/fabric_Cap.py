@@ -8,12 +8,14 @@ from cell_fabric import Canvas, Pdk, Wire, Region, Via
 from cell_fabric import EnclosureGrid
 from cell_fabric import ColoredCenterLineGrid
 
+from pathlib import Path
+pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
 
 class CanvasCap(Canvas):
 
     def __init__( self, x_length, y_length):
         super().__init__()
-        p = Pdk().load('./../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+        p = Pdk().load(pdkfile)
         
         self.x_number = int(2*round(((x_length+p['Cap']['m1Pitch']-p['Cap']['m1Width'])/(2.0*p['Cap']['m1Pitch']))))
         self.y_number = int(2 *round(((y_length+p['Cap']['m2Pitch']-p['Cap']['m2Width'])/(2.0*p['Cap']['m2Pitch']))))
