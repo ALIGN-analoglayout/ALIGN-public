@@ -87,9 +87,9 @@ def main( args):
                                      ('D', G+D, 2, CcM3+1)])
     
     elif args.primitive in ["SCM_NMOS", "SCM_PMOS"]:
-        gen( lambda x,y: [('S', S, 1, CcM3),
-                          ('DA', DA+G if y%2==0 else DB+G, 2, CcM3-1),
-                          ('DB', DB if y%2==0 else DA, 3, CcM3+1)])
+        cell_pin = gen( lambda x,y: [('S', S, 1, CcM3),
+                                     ('DA', DA+G if y%2==0 else DB+G, 2, CcM3-1),
+                                     ('DB', DB if y%2==0 else DA, 3, CcM3+1)])
 
     elif args.primitive in ["CMC_NMOS", "CMC_PMOS"]:
         cell_pin = gen( lambda x,y: [('SA', SA if y%2==0 else SB, 1, CcM3-1),
@@ -123,7 +123,7 @@ def main( args):
                                      ('GB', GB if y%2==0 else GA, 5, CcM3+2)])
 
     else:
-        pass
+        assert False
 
     uc.computeBbox()
     with open(args.block_name + '.json', "wt") as fp:
