@@ -302,7 +302,7 @@ jobs:
           cd CellFabric
           docker build -t cellfabric_image -f ./Dockerfile ..
 
-          docker run --name cellfabric_container cellfabric_image bash -c "source general/bin/activate && cd CellFabric && coverage run --source=cell_fabric,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cellfabric && cp /CellFabric/junit.xml /test-reports/cellfabric && mkdir -p /coverage-reports/cellfabric && cp -r /CellFabric/coverage.xml /CellFabric/htmlcov /coverage-reports/cellfabric"
+          docker run --name cellfabric_container cellfabric_image bash -c "source general/bin/activate && cd CellFabric && coverage run --source=cell_fabric,tests,Cell_Fabric_FinFET__Mock setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cellfabric && cp /CellFabric/junit.xml /test-reports/cellfabric && mkdir -p /coverage-reports/cellfabric && cp -r /CellFabric/coverage.xml /CellFabric/htmlcov /coverage-reports/cellfabric"
           cd -
 
           docker cp cellfabric_container:coverage-reports .

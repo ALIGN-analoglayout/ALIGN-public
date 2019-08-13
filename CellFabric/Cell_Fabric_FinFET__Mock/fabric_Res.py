@@ -7,12 +7,14 @@ from cell_fabric import Via, Region, Canvas, Wire, Pdk
 from cell_fabric import EnclosureGrid
 from cell_fabric import ColoredCenterLineGrid
 
+from pathlib import Path
+pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
 
 class CanvasCap(Canvas):
 
     def __init__( self, x_number, y_length):
         super().__init__()
-        p = Pdk().load('./../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+        p = Pdk().load(pdkfile)
         
         ga = 2 if x_number == 1 else 1 ## when number of wires is 2 then large spacing req. so contact can be placed without a DRC error 
         self.x_length = (x_number - 1) *ga*p['Cap']['m1Pitch']

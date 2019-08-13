@@ -1,11 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse
 from datetime import datetime
 from cell_fabric import gen_gds_json, pdk
 
+from pathlib import Path
+pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
+
 def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
   if p is None:
-    p = pdk.Pdk().load('../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = pdk.Pdk().load(pdkfile)
   gds_layer_map = p.get_gds_map()
 
   gds_layer_map.update( {

@@ -2,10 +2,12 @@ from cell_fabric import Via, Region, Wire, Pdk, DefaultCanvas
 from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
+from pathlib import Path
+pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
 
 class CanvasNMOS(DefaultCanvas):
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
-                  pdkfile='../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json'):
+                  pdkfile=pdkfile):
         p = Pdk().load(pdkfile)
         super().__init__(p)
         assert   3*p['Fin']['Pitch'] < 2*p['M2']['Pitch']
