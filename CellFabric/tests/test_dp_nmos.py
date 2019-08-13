@@ -25,7 +25,7 @@ def setup():
     S = SA+SB
     CcM3 = (min(S)+max(S))//2
 
-    uc = primitive.NMOS( fin_u, fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
 
     for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
         Routing = [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]

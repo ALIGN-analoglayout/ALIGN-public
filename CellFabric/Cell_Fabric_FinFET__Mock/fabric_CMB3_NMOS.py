@@ -45,7 +45,7 @@ if __name__ == "__main__":
     CcM3 = (min(S)+max(S))//2
     
 
-    uc = primitive.NMOS( fin_u, fin, finDummy, gate, gateDummy)
+    uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
    
     for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
         Routing = [('S', S, 1, CcM3), ('D0', DA+G if y%2==0 else DB+G, 2, CcM3-1), ('D1', DB if y%2==0 else DA, 3, CcM3+1), ('D2', DB if y%2==0 else DA, 4, CcM3+2)]

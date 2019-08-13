@@ -65,9 +65,9 @@ def main( args):
     CcM3 = (min(S)+max(S))//2
     
     if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
-        uc = primitive.NMOS( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
     else:
-        uc = primitive.PMOS( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.PMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
 
 
     def gen( f):
