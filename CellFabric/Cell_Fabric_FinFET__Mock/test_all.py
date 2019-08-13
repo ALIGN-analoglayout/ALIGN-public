@@ -8,25 +8,28 @@ def check_shorts( cmdlist):
     for op in uc.rd.opens:
         assert op[0] in ['g','v0','fin','active','RVT']
 
+def build_test( p, *, n, X, Y):
+    b = f"{p}_n{n}_X{X}_Y{Y}"
+    check_shorts( ['-p', p, '-b', b, '-n', f"{n}", '-X', f"{X}", '-Y', f"{Y}"])
 
 def test_a0():
-    check_shorts( ['-p', 'Switch_PMOS', '-b', 'Switch_PMOS_n12_X1_Y1', '-n', '12', '-X', '1', '-Y', '1'])
+    build_test( 'Switch_PMOS', n=12, X=1, Y=1)
 def test_a1():
-    check_shorts( ['-p', 'Switch_NMOS', '-b', 'Switch_NMOS_n12_X3_Y3', '-n', '12', '-X', '3', '-Y', '3'])
+    build_test( 'Switch_NMOS', n=12, X=3, Y=3)
 def test_a2():
-    check_shorts( ['-p', 'DCL_NMOS', '-b', 'DCL_NMOS_n12_X2_Y1', '-n', '12', '-X', '2', '-Y', '1'])
+    build_test( 'DCL_NMOS',    n=12, X=2, Y=1)
 def test_a3():
-    check_shorts( ['-p', 'Switch_NMOS', '-b', 'Switch_NMOS_n12_X3_Y1', '-n', '12', '-X', '3', '-Y', '1'])
+    build_test( 'Switch_NMOS', n=12, X=3, Y=1)
 def test_a4():
-    check_shorts( ['-p', 'Switch_PMOS', '-b', 'Switch_PMOS_n12_X2_Y1', '-n', '12', '-X', '2', '-Y', '1'])
+    build_test( 'Switch_PMOS', n=12, X=2, Y=1)
 def test_a5():
-    check_shorts( ['-p', 'CMC_PMOS_S', '-b', 'CMC_PMOS_S_n12_X1_Y1', '-n', '12', '-X', '1', '-Y', '1'])
+    build_test( 'CMC_PMOS_S',  n=12, X=1, Y=1)
 def test_a6():
-    check_shorts( ['-p', 'DP_NMOS', '-b', 'DP_NMOS_n12_X3_Y3', '-n', '12', '-X', '3', '-Y', '3'])
+    build_test( 'DP_NMOS',     n=12, X=3, Y=3)
 def test_a7():
-    check_shorts( ['-p', 'CMFB_NMOS', '-b', 'CMFB_NMOS_n12_X3_Y1', '-n', '12', '-X', '3', '-Y', '1'])
+    build_test( 'CMFB_NMOS',   n=12, X=3, Y=1)
 def test_a8():
-    check_shorts( ['-p', 'CMC_PMOS', '-b', 'CMC_PMOS_n12_X2_Y1', '-n', '12', '-X', '2', '-Y', '1'])
+    build_test( 'CMC_PMOS',    n=12, X=2, Y=1)
 def test_a9():
-    check_shorts( ['-p', 'CMC_NMOS', '-b', 'CMC_NMOS_n12_X3_Y1', '-n', '12', '-X', '3', '-Y', '1'])
+    build_test( 'CMC_NMOS',    n=12, X=3, Y=1)
 
