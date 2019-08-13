@@ -1,6 +1,6 @@
-from primitive import CanvasNMOS
+from primitive import FinFETCanvas
         
-class UnitCell(CanvasNMOS):
+class UnitCell(FinFETCanvas):
 
     def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
         (SA, GA, DA, SB, GB, DB) = SDG

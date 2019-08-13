@@ -5,7 +5,7 @@ from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 from pathlib import Path
 pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
 
-class CanvasNMOS(DefaultCanvas):
+class FinFETCanvas(DefaultCanvas):
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
                   pdkfile=pdkfile):
         p = Pdk().load(pdkfile)
