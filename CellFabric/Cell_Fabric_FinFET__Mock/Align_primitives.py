@@ -5,8 +5,7 @@ import sys
 sys.path.append('.')
 import gen_gds_json
 import gen_lef
-import fabric_NMOS
-import fabric_PMOS
+import primitive
 import pattern_generator
                                                            
 def main( args):
@@ -66,9 +65,9 @@ def main( args):
     CcM3 = (min(S)+max(S))//2
     
     if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
-        uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.NMOS( fin_u, fin, finDummy, gate, gateDummy)
     else:
-        uc = fabric_PMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.PMOS( fin_u, fin, finDummy, gate, gateDummy)
 
 
     def gen( f):
