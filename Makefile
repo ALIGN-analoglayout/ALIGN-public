@@ -169,7 +169,7 @@ PnR_docker: create_PnR_data
 	if [ "$$(docker ps -aq -f status=exited -f name=PnR)" ]; then docker rm PnR; fi
 	docker volume rm -f placerInputVol
 	(cd testcase_latest; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
-	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow && mkdir -p Results && ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0 |& tee Results/PnR.log"
+	docker run --name PnR --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow && mkdir -p Results && ./pnr_compiler ./INPUT $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0 > Results/PnR.log"
 	docker cp PnR:/PlaceRouteHierFlow/Results/ ./testcase_latest/
 	docker rm PnR
 	@echo "Creating gds"
@@ -181,7 +181,7 @@ PnR:
 	@echo check logs at PlaceRouteHierFlow/PnR.log
 	@cp -rp testcase_latest ./PlaceRouteHierFlow
 	export LD_LIBRARY_PATH=$(HOME)/lpsolve/lp_solve_5.5.2.5_dev_ux64 && \
-	cd PlaceRouteHierFlow/ && time ./pnr_compiler ./testcase_latest $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0|tee > PnR.log 
+	cd PlaceRouteHierFlow/ && time ./pnr_compiler ./testcase_latest $(DESIGN_NAME).lef $(DESIGN_NAME).v $(DESIGN_NAME).map $(PDK_FILE) $(DESIGN_NAME) 1 0 > PnR.log 
 	@if [ ! -d "./testcase_latest/Results" ]; then \
 		mkdir ./testcase_latest/Results; \
 	fi
