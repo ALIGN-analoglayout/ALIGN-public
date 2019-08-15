@@ -1,11 +1,8 @@
-# Need JSON, CXX and CXXFLAGS
-
-OBJECTS=main.o capplacer.o
+# Need CXX and CXXFLAGS
 
 all: capplacer.o 
 
-capplacer.o :	capplacer.cpp capplacer.h
-		$(CXX) $(CXXFLAGS) -c capplacer.cpp -I$(JSON)/include
+capplacer.o : capplacer.cpp capplacer.h
 
 clean:		
-		/bin/rm -f *.o 
+	/bin/rm -f *.o 

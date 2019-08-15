@@ -10,10 +10,11 @@ BOOST_LP?=/usr/include
 COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-w -Wall
+JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) $(COVERAGE)
+export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE)
 export CXX=g++
-export JSON?=/opt/json
+
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
 
 PnRDB_path=PnRDB
