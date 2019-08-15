@@ -15,9 +15,9 @@ ${DESIGN}.lef:	${INPUT}/${DESIGN}_lef.sh  ../PDK_Abstraction $(LOC_GENERATOR)
 	mv ${LOC_GENERATOR}/${DESIGN}.lef .
 	mv ${LOC_GENERATOR}/*gds.json .
 
-../PDK_Abstraction:	/PDK_Abstraction
+../PDK_Abstraction:	$(TOP)/PDK_Abstraction
 	ln -s $< $@
 
-$(LOC_GENERATOR):	$(CELL_GENERATOR)
+$(LOC_GENERATOR):	$(TOP)/$(CELL_GENERATOR)
 	cp -r $< .
 

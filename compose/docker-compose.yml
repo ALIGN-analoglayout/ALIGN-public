@@ -28,6 +28,7 @@ x-environment:
   - https_proxy
   - bhttp_proxy
   - bhttps_proxy
+  - TOP=/
   - ALIGN_HOME
   - ALIGN_WORK_DIR
 
@@ -36,6 +37,7 @@ x-service: &default-service
   network_mode: host
   command: /bin/bash -c "/usr/bin/tail -f /dev/null"
 #  user: "1000:1000"
+  working_dir: /dataVolume
   volumes:
     - ${ALIGN_WORK_DIR}:/dataVolume
     - /etc/apt/apt.conf:/etc/apt/apt.conf
@@ -49,7 +51,8 @@ x-build:  &default-build
 
 # Start of services
 services:
-  # This isexperimental for use with WSL.  It is not needed if you can bind mount a folder
+
+  # This is experimental for use with WSL.  It is not needed if you can bind mount a folder
   # in the Windows filesystem, but firewalls seem to block
   make-docker-service:
     <<: *default-service
@@ -58,6 +61,7 @@ services:
       - https_proxy
       - bhttp_proxy
       - bhttps_proxy
+      - HOME=/
       - ALIGN_HOME=/ALIGN-public
       - ALIGN_WORK_DIR
     image: make_docker_image
@@ -71,6 +75,26 @@ services:
       - /var/run/:/var/run/
       - /tmp/.X11-unix:/tmp/.X11-unix
 
+  fullbuild-service:
+    <<: *default-service
+    environment:
+      - http_proxy
+      - https_proxy
+      - bhttp_proxy
+      - bhttps_proxy
+      - ALIGN_HOME=/ALIGN-public
+      - ALIGN_WORK_DIR
+    image: fullbuild_image
+    build:
+      <<: *default-build
+      context: ${ALIGN_HOME}
+      dockerfile: compose/Dockerfile.native
+    container_name: fullbuild_cont
+    volumes:
+      - ${ALIGN_WORK_DIR}:/dataVolume
+      - /var/run/:/var/run/
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      
   transfer-service:
     <<: *default-service
     image: ubuntu

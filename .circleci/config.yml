@@ -227,7 +227,7 @@ jobs:
           cd sub_circuit_identification
           docker build -t topology .
 
-          docker run --name sci_container topology bash -c "source sympy/bin/activate && cd DEMO/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /DEMO/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /DEMO/src/coverage.xml /DEMO/src/htmlcov /coverage-reports/sci"
+          docker run --name sci_container topology bash -c "source sympy/bin/activate && cd sub_circuit_identification/src && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /sub_circuit_identification/src/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /sub_circuit_identification/src/coverage.xml /sub_circuit_identification/src/htmlcov /coverage-reports/sci"
           cd -
 
           docker cp sci_container:coverage-reports .
@@ -528,57 +528,57 @@ workflows:
   make:
     jobs:
       - start
-      - build-make:
-          requires:
-            - start 
+      # - build-make:
+      #     requires:
+      #       - start 
       - build-make-compose:
           requires:
             - start 
 
-  full:
-    jobs:
-      - start
-      - build-tally:
-          requires:
-            - start 
-      - build-sgi:
-          requires:
-            - start 
-      - build-PlacementEditor:
-          requires:
-            - start 
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start 
-      - build-GDSConv:
-          requires:
-            - start 
-      - build-sci:
-          requires:
-            - start 
-      - build-cktgen:
-          requires:
-            - start 
-      - build-cellfabric:
-          requires:
-            - start 
-      - build-satplacer:
-          requires:
-            - start 
-      - build-pdk:
-          requires:
-            - start 
-      - finish:
-          requires:
-            - build-tally 
-            - build-sgi 
-            - build-PlacementEditor 
-            - build-GDSConv 
-            - build-sci 
-            - build-cellfabric
-            - build-cktgen 
-            - build-pdk 
-            - build-satplacer
+  # full:
+  #   jobs:
+  #     - start
+  #     - build-tally:
+  #         requires:
+  #           - start 
+  #     - build-sgi:
+  #         requires:
+  #           - start 
+  #     - build-PlacementEditor:
+  #         requires:
+  #           - start 
+  #     - build-PlaceRouteHierFlow:
+  #         requires:
+  #           - start 
+  #     - build-GDSConv:
+  #         requires:
+  #           - start 
+  #     - build-sci:
+  #         requires:
+  #           - start 
+  #     - build-cktgen:
+  #         requires:
+  #           - start 
+  #     - build-cellfabric:
+  #         requires:
+  #           - start 
+  #     - build-satplacer:
+  #         requires:
+  #           - start 
+  #     - build-pdk:
+  #         requires:
+  #           - start 
+  #     - finish:
+  #         requires:
+  #           - build-tally 
+  #           - build-sgi 
+  #           - build-PlacementEditor 
+  #           - build-GDSConv 
+  #           - build-sci 
+  #           - build-cellfabric
+  #           - build-cktgen 
+  #           - build-pdk 
+  #           - build-satplacer
 
   # end_to_end:
   #   jobs:

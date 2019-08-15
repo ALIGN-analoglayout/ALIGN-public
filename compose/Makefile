@@ -19,41 +19,50 @@ PNR_OUTPUT=${DESIGN}/pnr_output/Results
 GEN_OUTPUT=${DESIGN}/generator_output
 TPO_OUTPUT=${DESIGN}/topology_output/Results
 
+ifeq ($(BUILD),docker)
+	execute = docker-compose -p compose exec $(1) $(2)
+	start = docker-compose -p compose up -d $(1)
+	TOP = /
+else
+	execute = $(2)
+	start =
+endif
+
 # Convert output to PNG
 ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
-	docker-compose -p compose exec klayoutconvert-service /bin/bash -c "./gds2png.sh /dataVolume/$< /dataVolume/$@"
+	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/Build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	docker-compose -p compose  exec cellfabric-service /bin/bash -c "source general/bin/activate && cd /dataVolume/ && python3 /GDSConv/gdsconv/json2gds.py $< $@"
+	$(call execute,cellfabric-service, /bin/bash -c "source /general/bin/activate && python3 $(TOP)/GDSConv/gdsconv/json2gds.py $< $@")
 
 # Transfer inputs and run placeroute
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}
-	-docker-compose -p compose exec transfer-service bash -c "mkdir -p /dataVolume/${PNRDIR}/inputs && cd /dataVolume/${PNRDIR} && \
-	cp /dataVolume/$(DESIGN)/$(PDK_FILE) inputs && \
-	cp /dataVolume/$(GEN_OUTPUT)/$(DESIGN).lef inputs && \
-	cp /dataVolume/$(GEN_OUTPUT)/$(DESIGN).map inputs && \
-	cp /dataVolume/$(GEN_OUTPUT)/*.gds.json inputs && \
-	cp /dataVolume/$(TPO_OUTPUT)/$(DESIGN).v inputs && \
-	cp /dataVolume/$(TPO_OUTPUT)/*.const inputs"
-	docker-compose -p compose  exec placeroute-service /bin/bash -c "cd /dataVolume && mkdir -p ${PNR_OUTPUT} && cd ${PNRDIR} && make -f /PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log"
+	-$(call execute, transfer-service, /bin/bash -c "mkdir -p ${PNRDIR}/inputs && \
+	cp $(DESIGN)/$(PDK_FILE) \$$_ && \
+	cp $(GEN_OUTPUT)/$(DESIGN).lef \$$_ && \
+	cp $(GEN_OUTPUT)/$(DESIGN).map \$$_ && \
+	cp $(GEN_OUTPUT)/*.gds.json \$$_ && \
+	cp $(TPO_OUTPUT)/$(DESIGN).v \$$_ && \
+	cp $(TPO_OUTPUT)/*.const \$$_")
+	$(call execute, placeroute-service, /bin/bash -c "mkdir -p ${PNR_OUTPUT} && cd \$$_/.. && make -f $(TOP)/PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log")
 
 # Run the cell generator
 ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
-	docker-compose -p compose  exec cellfabric-service /bin/bash -c "source /general/bin/activate && cd /dataVolume/ && mkdir -p ${GEN_OUTPUT} && cd ${GEN_OUTPUT} && make -f /CellFabric/Makefile INPUT=/dataVolume/${TPO_OUTPUT} DESIGN=${DESIGN}"
+	$(call execute,cellfabric-service, /bin/bash -c "source /general/bin/activate && mkdir -p ${GEN_OUTPUT} && cd \$$_ && make -f $(TOP)/CellFabric/Makefile INPUT=/`pwd`/${TPO_OUTPUT} DESIGN=${DESIGN}")
 
 # Build the cell generator script
 ${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp docker-compose.yml
-	docker-compose -p compose  exec topology-service /bin/bash -c "source /sympy/bin/activate && cd /dataVolume/ && mkdir -p ${TPO_OUTPUT} && cd ${TPO_OUTPUT}/.. && make -f /DEMO/Makefile INPUT=/dataVolume/${DESIGN} DESIGN=${DESIGN}"
+	$(call execute,topology-service,/bin/bash -c "source /general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN}")
 
 docker-compose.yml:	${ALIGN_HOME}/compose/docker-compose.yml
 	ln -s $< $@
-	docker-compose -p compose  up -d transfer-service
-	docker-compose -p compose  up -d protobuf-service
-	docker-compose -p compose  up -d cellfabric-service
-	docker-compose -p compose  up -d placeroute-service
-	docker-compose -p compose  up -d topology-service
-	docker-compose -p compose  up -d klayoutconvert-service
+	$(call start, transfer-service)
+	$(call start, protobuf-service)
+	$(call start, cellfabric-service)
+	$(call start, placeroute-service)
+	$(call start, topology-service)
+	$(call start, klayoutconvert-service)
 
 ${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
 	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
