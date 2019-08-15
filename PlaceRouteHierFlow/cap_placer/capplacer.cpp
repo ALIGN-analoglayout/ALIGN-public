@@ -172,13 +172,18 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       HV_via_metal = H_metal;
       HV_via_metal_index = H_metal_index;
     }
-
-   shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x;
-   shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y;
-   //cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
+   if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerIdx==drc_info.Metalmap[pin_metal]){
+      shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x;
+      shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y;
+      cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y<<endl;
+     }else if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperIdx==drc_info.Metalmap[pin_metal]){
+      shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].x;
+      shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].y;
+      cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].y<<endl;
+     }
+   cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
    //cout<<"pin_miny "<<pin_miny<<endl;
-   //cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y<<endl;
-   //cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
+   cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
    //cout<<"shifting_y "<<shifting_y<<endl;
 	  
   }
