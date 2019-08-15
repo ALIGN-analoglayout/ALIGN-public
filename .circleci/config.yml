@@ -164,7 +164,7 @@ jobs:
           path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
           
-  build-fullmake:
+  build-make-monolithic:
     executor: docker-executor
     steps:
 
@@ -615,7 +615,10 @@ workflows:
       # - build-make:
       #     requires:
       #       - start 
-      - build-make-compose:
+      # - build-make-compose:
+      #     requires:
+      #       - start 
+      - build-make-monolithic:
           requires:
             - start 
 
