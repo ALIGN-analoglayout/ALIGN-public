@@ -61,7 +61,6 @@ services:
       - https_proxy
       - bhttp_proxy
       - bhttps_proxy
-      - HOME=/
       - ALIGN_HOME=/ALIGN-public
       - ALIGN_WORK_DIR
     image: make_docker_image
@@ -82,6 +81,7 @@ services:
       - https_proxy
       - bhttp_proxy
       - bhttps_proxy
+      - TOP=/ALIGN-public
       - ALIGN_HOME=/ALIGN-public
       - ALIGN_WORK_DIR
     image: fullbuild_image
