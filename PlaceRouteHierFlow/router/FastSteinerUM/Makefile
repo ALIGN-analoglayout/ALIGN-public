@@ -1,7 +1,7 @@
 .SUFFIXES:      .o .cxx
 
 
-CPPFLAGS	?= -Wall $(DBG_FLAGS)
+CPPFLAGS	?= -Wall $(DBG_FLAGS) --coverage
 CC		= g++ $(CPPFLAGS)
 #CC	= g++ -pg
 #CC	= purify g++
