@@ -182,7 +182,6 @@ jobs:
       - run: |
           echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-          echo 'export TOP=/ALIGN-public' >> $BASH_ENV
           
       - setup_remote_docker
       
@@ -203,7 +202,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=telescopic_ota"
+            docker-compose exec fullbuild-service bash -c "TOP=/ALIGN-public make DESIGN=telescopic_ota"
             docker cp fullbuild_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
@@ -213,7 +212,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=switched_capacitor_filter"
+            docker-compose exec fullbuild-service bash -c "TOP=/ALIGN-public make DESIGN=switched_capacitor_filter"
             docker cp fullbuild_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
@@ -223,7 +222,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=current_mirror_ota"
+            docker-compose exec fullbuild-service bash -c "TOP=/ALIGN-public make DESIGN=current_mirror_ota"
             docker cp fullbuild_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
@@ -233,7 +232,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=cascode_current_mirror_ota"
+            docker-compose exec fullbuild-service bash -c "TOP=/ALIGN-public make DESIGN=cascode_current_mirror_ota"
             docker cp fullbuild_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
@@ -243,7 +242,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=five_transistor_ota"
+            docker-compose exec fullbuild-service bash -c "TOP=/ALIGN-public make DESIGN=five_transistor_ota"
             docker cp fullbuild_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
