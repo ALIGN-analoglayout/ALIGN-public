@@ -196,7 +196,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec fullbuild -c "ln -sf \$ALIGN_HOME/compose/Makefile ."
+             docker-compose exec fullbuild-service -c "ln -sf \$ALIGN_HOME/compose/Makefile ."
             
       - run:
           shell: /bin/bash
