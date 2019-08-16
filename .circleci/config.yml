@@ -182,6 +182,7 @@ jobs:
       - run: |
           echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+          echo 'export TOP=/ALIGN-public' >> $BASH_ENV
           
       - setup_remote_docker
       
