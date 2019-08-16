@@ -87,7 +87,7 @@ annotate_docker:
 	if [ ! "$$(docker ps -a -f name=topology_container)" ]; then docker stop topology_container; fi
 	if [ "$$(docker ps -aq -f status=exited -f name=topology_container)" ]; then docker rm topology_container; fi
 	docker volume rm -f inputVol
-	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO/ && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
+	docker run --name topology_container --mount source=inputVol,target=/INPUT topology bash -c "source /general/bin/activate && cd /sub_circuit_identification/ && ./runme.sh $(DESIGN_NAME) && cp -r ./Results /INPUT"
 	docker cp topology_container:/INPUT/Results ./sub_circuit_identification/
 	docker rm topology_container
 
@@ -202,7 +202,7 @@ endif
 generate_png:
 	docker run --name layout_container --mount source=layoutVol,target=/layout ubuntu
 	docker cp testcase_latest/Results/$(DESIGN_NAME).gds layout_container:/layout
-	docker run --rm --mount source=layoutVol,target=/layout -it layout_convert /bin/bash -c "/gds2png.sh /layout/$(DESIGN_NAME).gds /layout/$(DESIGN_NAME).png"
+	docker run --rm --mount source=layoutVol,target=/layout -it layout_convert /bin/bash -c "cd /Build/ThirdParty/Klayout && ./gds2png.sh /layout/$(DESIGN_NAME).gds /layout/$(DESIGN_NAME).png"
 	docker cp layout_container:/layout/$(DESIGN_NAME).png testcase_latest/Results
 	docker rm layout_container
 
