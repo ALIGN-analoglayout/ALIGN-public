@@ -612,15 +612,15 @@ workflows:
   make:
     jobs:
       - start
-      - build-make:
-          requires:
-            - start 
       - build-make-compose:
           requires:
             - start 
-      - build-make-monolithic:
-          requires:
-            - start 
+      # - build-make:
+      #     requires:
+      #       - start 
+      # - build-make-monolithic:
+      #     requires:
+      #       - start 
 
   full:
     jobs:
