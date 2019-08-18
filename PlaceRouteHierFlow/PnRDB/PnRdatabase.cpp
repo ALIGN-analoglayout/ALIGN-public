@@ -9,12 +9,6 @@
 #include <iomanip>
 #include <time.h>
 
-#include <gtest/gtest.h>
-TEST(PnRTest, True) {
-    EXPECT_TRUE( 1);
-};
-
-
 using namespace nlohmann;
 
 unsigned short

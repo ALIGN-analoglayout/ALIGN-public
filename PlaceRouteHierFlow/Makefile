@@ -33,7 +33,7 @@ router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o r
 all: subsystem pnr_compiler
 
 pnr_compiler: $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o
-	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS)
+	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o $(LDFLAGS)
 
 subsystem:
 	$(MAKE) -C $(PnRDB_path);
