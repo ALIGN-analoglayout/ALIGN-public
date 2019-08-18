@@ -10,3 +10,4 @@ router/FastSteinerUM/gen
 router/FastSteinerUM/steiner
 *.gcno
 *.gcda
+unit_tests
