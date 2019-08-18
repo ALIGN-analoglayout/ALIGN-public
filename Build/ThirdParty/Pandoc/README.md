@@ -9,9 +9,9 @@ You also get the latex distribution as well.
 # To generate the report in PDF format
 
 ```bash
-(cd ~/DARPA/ALIGN.wiki/2019-Q1-Quarterly-Report-from-Intel/; tar cvfh - .) | docker run --rm --mount source=wikiVol,target=/wiki -i ubuntu bash -c "cd /wiki && tar xvf -"
+(cd ~/DARPA/ALIGN.wiki/2019-Q3-Quarterly-Report-from-Intel/; tar cvfh - .) | docker run --rm --mount source=wikiVol,target=/wiki -i ubuntu bash -c "cd /wiki && tar xvf -"
 
-docker run --rm --mount source=wikiVol,target=/data pandoc/latex 2019-Q1-Quarterly-Report-from-Intel.md -f gfm -o x.pdf
+docker run --rm --mount source=wikiVol,target=/data pandoc/latex 2019-Q3-Quarterly-Report-----DARPA-IDEA-ALIGN.md -f gfm -o x.pdf
 
 docker run --rm --mount source=wikiVol,target=/wiki ubuntu bash -c "cd /wiki && tar cvf - x.pdf" | tar xvf - 
 ```
