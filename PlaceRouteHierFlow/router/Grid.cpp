@@ -235,7 +235,7 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
       int next_index = it->index+1;
       int history_index = it->index-1;
       if(drc_info.Metal_info[it->metal].direct==1){//h
-         int via_space = drc_info.Via_model[it->metal].LowerRect[0].x;
+         int via_space = -drc_info.Via_model[it->metal].LowerRect[0].x;
          if(next_index<vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].y == it->y and abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[next_index].active=false;
            }
@@ -243,7 +243,7 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
             vertices_total[history_index].active=false;
            }
         }else{//v
-         int via_space = drc_info.Via_model[it->metal].LowerRect[0].y;
+         int via_space = -drc_info.Via_model[it->metal].LowerRect[0].y;
          if(next_index<vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].x == it->x and abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
             vertices_total[next_index].active=false;
            }
