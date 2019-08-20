@@ -74,13 +74,14 @@ class Lexer {
 
     string line;
     int cursor;
-
+    int line_num;
 
 public:
     Token last_token;
     Token current_token;
     
     Lexer( istream& sin) : s(sin) {
+      line_num = 0;
       current_token.tt = TokenType::EndOfLine;
       get_token();
     }
@@ -89,19 +90,19 @@ public:
       last_token = current_token;
 
       if ( last_token.tt == TokenType::EndOfFile) {
-	current_token = last_token;
 	return;
       }
 
+      current_token.value = "";
       while ( last_token.tt == TokenType::EndOfLine) {
 	if ( s.peek() == EOF) {
 	  current_token.tt = TokenType::EndOfFile;
-	  current_token.value = "";
 	  return;
 	}
 
 	getline( s, line);
 	cursor = 0;
+	++line_num;
 
 	// Check for beginning of the line comment
 	if ( line.size() >= 2 && line[0] == '/' && line[1] == '/') {
@@ -117,11 +118,9 @@ public:
 
       if ( cursor >= line.size()) {
 	current_token.tt = TokenType::EndOfLine;
-	current_token.value = "";
 	return;
       }
 
-      current_token.value = "";
       if ( line[cursor] == '(') {
 	current_token.tt = TokenType::LPAREN;
 	current_token.value.push_back( line[cursor]);
@@ -170,7 +169,9 @@ public:
 
     void mustbe( TokenType tt) {
       if ( !have( tt)) {
-	cout << "Expected token type " << static_cast<int>(tt) << " got " << static_cast<int>(current_token.tt) << endl;
+	std::ostringstream os;
+	os << "Expected token type " << static_cast<int>(tt) << " got " << static_cast<int>(current_token.tt) << endl;
+	error( os.str());
       }
     }
 
@@ -186,8 +187,15 @@ public:
 
     void mustbe_keyword( const string& k) {
       if ( !have_keyword( k)) {
-	cout << "Expected keyword " << k << " got " << current_token << endl;
+	std::ostringstream os;
+	os << "Expected keyword " << k << " got " << current_token;
+	error( os.str());
       }
+    }
+
+    void error( const string& k) {
+      cout << "Syntax error at line " << line_num << " position " << cursor << ": " << k << endl;
+      assert( false);
     }
 
 };

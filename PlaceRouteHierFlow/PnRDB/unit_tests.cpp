@@ -156,11 +156,13 @@ endmodule
 )foo";
 
   std::istringstream is(str);
+  
 
   Lexer l(is);
 
   while ( l.current_token.tt != TokenType::EndOfFile) {
     cout << l.current_token << endl;
+    EXPECT_NE( l.current_token.tt, TokenType::Undefined);
     l.get_token();
   }
 
