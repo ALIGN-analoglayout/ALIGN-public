@@ -36,7 +36,7 @@ using std::max_element;
 
 class PnRdatabase;
 
-enum class TokenType { EndOfFile=0, EndOfLine=1, STRING=2, Undefined=3, COMMA=',', LPAREN='(', RPAREN=')',
+enum class TokenType { EndOfFile=0, EndOfLine=1, NAME=2, Undefined=3, COMMA=',', LPAREN='(', RPAREN=')',
     SEMICOLON=';', PERIOD='.'};
 
 /*
@@ -46,8 +46,8 @@ override ostream& operator<<( ostream& os, const TokenType& tt) {
       str = "EndOfFile";
     } else if ( tt == TokenType::EndOfLine) {
       str = "EndOfLine";
-    } else if ( tt == TokenType::STRING) {
-      str = "STRING";
+    } else if ( tt == TokenType::NAME) {
+      str = "NAME";
     } else {
       str = "' '";
       str[1] = static_cast<char>( tt);
@@ -76,7 +76,11 @@ class Lexer {
     int cursor;
     int line_num;
 
+
+
 public:
+    int failed = 0; /* running=0, failed=1 */ 
+
     Token last_token;
     Token current_token;
     
@@ -142,7 +146,7 @@ public:
 	current_token.value.push_back( line[cursor]);
 	++cursor;
       } else if ( isalpha( line[cursor]) || line[cursor] == '_') {
-	current_token.tt = TokenType::STRING;
+	current_token.tt = TokenType::NAME;
 	current_token.value.push_back( line[cursor]);
 	++cursor;
 	while ( cursor < line.size() &&
@@ -176,7 +180,7 @@ public:
     }
 
     bool have_keyword( const string& k) {
-      if ( current_token.tt == TokenType::STRING &&
+      if ( current_token.tt == TokenType::NAME &&
 	   current_token.value == k) {
 	get_token();
 	return 1;
@@ -195,7 +199,7 @@ public:
 
     void error( const string& k) {
       cout << "Syntax error at line " << line_num << " position " << cursor << ": " << k << endl;
-      assert( false);
+      failed = 1;
     }
 
 };
@@ -235,12 +239,14 @@ public:
 
     void operator()(istream& fin, const string& fpath, const string& topcell);
 
-    void per_line( const string& fpath);
+    void per_line();
 
     bool parse_io( const string& direction);
     bool parse_supply( const string& supply);
 
-    void finish( const string& topcell);
+    void parse( istream& fin);
+
+    void finish( const string& fpath, const string& topcell);
 };
 
 
