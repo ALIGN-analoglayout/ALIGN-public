@@ -156,9 +156,15 @@ endmodule
 )foo";
 
   std::istringstream is(str);
-  
 
   Lexer l(is);
+
+  l.mustbe_keyword( "module");
+  l.mustbe_keyword( "telescopic_ota");
+  l.mustbe( TokenType::LPAREN);
+  l.mustbe( TokenType::NAME);
+  l.mustbe( static_cast<TokenType>( ','));
+  
 
   while ( l.current_token.tt != TokenType::EndOfFile) {
     cout << l.current_token << endl;
