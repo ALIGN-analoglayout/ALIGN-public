@@ -55,7 +55,7 @@ TEST(PnRTest, ReadVerilog) {
   ReadVerilogHelper rvh(db);
   std::istringstream is(str);
 
-  rvh( is, ".", "telescopic_ota");
+  rvh.parse( is);
 
   EXPECT_EQ( db.hierTree.size(), 1);
 
@@ -70,7 +70,7 @@ TEST(PnRTest, ReadVerilog) {
   EXPECT_EQ( ht.Terminals.size(), 11);
 
   EXPECT_FALSE( ht.isCompleted);
-  EXPECT_TRUE( ht.isTop);
+  EXPECT_FALSE( ht.isTop);
 
   EXPECT_EQ( ht.width, 0);
   EXPECT_EQ( ht.height, 0);
@@ -107,10 +107,10 @@ CMC_NMOS_n12_X3_Y1 m9_m8 ( .DA(voutn), .G(vbiasn), .DB(voutp), .SA(net8), .SB(ne
 endmodule
 )foo";
 
- ReadVerilogHelper rvh(db);
+  ReadVerilogHelper rvh(db);
   std::istringstream is(str);
 
-  rvh( is, ".", "telescopic_ota");
+  rvh.parse( is);
 
   EXPECT_EQ( db.hierTree.size(), 1);
 
@@ -131,7 +131,7 @@ endmodule
   cout << endl;
 
   EXPECT_FALSE( ht.isCompleted);
-  EXPECT_TRUE( ht.isTop);
+  EXPECT_FALSE( ht.isTop);
 
   EXPECT_EQ( ht.width, 0);
   EXPECT_EQ( ht.height, 0);
@@ -158,18 +158,56 @@ endmodule
   std::istringstream is(str);
 
   Lexer l(is);
+  while ( l.have( TokenType::EndOfLine)) ;
 
   l.mustbe_keyword( "module");
-  l.mustbe_keyword( "telescopic_ota");
-  l.mustbe( TokenType::LPAREN);
   l.mustbe( TokenType::NAME);
-  l.mustbe( static_cast<TokenType>( ','));
-  
-
-  while ( l.current_token.tt != TokenType::EndOfFile) {
-    cout << l.current_token << endl;
-    EXPECT_NE( l.current_token.tt, TokenType::Undefined);
-    l.get_token();
+  l.mustbe( TokenType::LPAREN);
+  if ( !l.have( TokenType::RPAREN)) {
+    do {
+      l.mustbe( TokenType::NAME);
+    } while ( l.have( static_cast<TokenType>( ',')));
+    l.mustbe( TokenType::RPAREN);  
   }
+  l.mustbe( TokenType::SEMICOLON);  
+  l.mustbe( TokenType::EndOfLine);
+
+  while ( l.have( TokenType::EndOfLine)) ;
+
+  while ( l.have_keyword( "input") || l.have_keyword( "output")) {
+    if ( !l.have( TokenType::SEMICOLON)) {
+      do {
+	l.mustbe( TokenType::NAME);
+      } while ( l.have( static_cast<TokenType>( ',')));
+      l.mustbe( TokenType::SEMICOLON);  
+    }
+    l.mustbe( TokenType::EndOfLine);
+
+    while ( l.have( TokenType::EndOfLine)) ;
+  }
+
+  while ( !l.have_keyword( "endmodule")) {
+    l.mustbe( TokenType::NAME);
+    l.mustbe( TokenType::NAME);
+    l.mustbe( TokenType::LPAREN);
+    if ( !l.have( TokenType::RPAREN)) {    
+      do {
+	l.mustbe( TokenType::PERIOD);
+	l.mustbe( TokenType::NAME);      
+	l.mustbe( TokenType::LPAREN);
+	l.mustbe( TokenType::NAME);      
+	l.mustbe( TokenType::RPAREN);
+      } while ( l.have( TokenType::COMMA));
+      l.mustbe( TokenType::RPAREN);
+    }
+    l.mustbe( TokenType::SEMICOLON);
+    l.mustbe( TokenType::EndOfLine);
+
+    while ( l.have( TokenType::EndOfLine)) ;
+  }
+  l.mustbe( TokenType::EndOfLine);
+
+  while ( l.have( TokenType::EndOfLine)) ;
+  l.mustbe( TokenType::EndOfFile);
 
 }

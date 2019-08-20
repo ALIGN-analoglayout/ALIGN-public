@@ -2983,8 +2983,31 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 
 }
 
-void ReadVerilogHelper::finish( const string& topcell)
+void ReadVerilogHelper::finish( const string& fpath, const string& topcell)
 {
+
+    for(int i=0;i<db.hierTree.size();i++){
+
+	temp_node = db.hierTree[i];
+
+	{
+	    if(db.DRC_info.Metal_info.size() < 2) {std::cout<<"PnRDB-Error: too few metal layers\n";}
+	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
+		temp_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
+	    } else {
+		temp_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
+	    }
+	    if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
+		temp_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
+	    } else {
+		temp_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
+	    }
+	    //added one nodes to the class
+	    if(!db.ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
+	    else{std::cout<<"Finished reading contraint file"<<std::endl;}
+	}
+    }
+
 
     //update hiear tree here for the class Nodes.
     //inistial 
@@ -3152,7 +3175,7 @@ bool ReadVerilogHelper::parse_supply( const string& supply)
     return false;
 }
 
-void ReadVerilogHelper::per_line( const string& fpath)
+void ReadVerilogHelper::per_line()
 {
     // If strange modules, then lock reading
     if((found=verilog_string.find("`endcelldefine"))!=string::npos){
@@ -3202,21 +3225,7 @@ void ReadVerilogHelper::per_line( const string& fpath)
     if(lock ==0){
 	if((found=verilog_string.find("endmodule"))!=string::npos){
 	    in_module = 0;
-	    if(db.DRC_info.Metal_info.size() < 2) {std::cout<<"PnRDB-Error: too few metal layers\n";}
-	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
-		temp_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
-	    } else {
-		temp_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
-	    }
-	    if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
-		temp_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
-	    } else {
-		temp_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
-	    }
-	    //added one nodes to the class
-	    if(!db.ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
-	    else{std::cout<<"Finished reading contraint file"<<std::endl;}
-             
+	    /* moved processing to finish() */
 	    db.hierTree.push_back(temp_node);
 	    temp_node = clear_node;
 	    return;
@@ -3292,14 +3301,18 @@ void ReadVerilogHelper::per_line( const string& fpath)
 
 }
 
-
-void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
+void ReadVerilogHelper::parse( istream& fin)
 {
     while(fin.peek()!=EOF) {
         getline(fin, verilog_string);
-	per_line( fpath);
+	per_line();
     }
-    finish( topcell);
+}
+
+void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
+{
+    parse( fin);
+    finish( fpath, topcell);
     std::cout<<"End of reading verilog\n";
 }
 
@@ -3366,7 +3379,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
 
   }
 
-  //  assert( !missing_lef_file);
+  assert( !missing_lef_file);
 
   return 1;
   
