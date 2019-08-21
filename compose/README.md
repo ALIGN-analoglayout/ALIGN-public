@@ -32,7 +32,8 @@ To invoke using a Docker volume:
 > use the make-docker-service to also bring up the rest of the
 > services.  After that, the make will run the flow for the given design.
 
-Finally, the same Makefile can be used in a native Linux environment without using Docker at all:
+Finally, the same Makefile can be used in a native Linux environment without using Docker at all:		
+	
 		% export ALIGN_HOME=<top of ALIGN source area>
 		% ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
 		% make DESIGN=<design>
