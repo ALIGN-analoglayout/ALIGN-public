@@ -3457,7 +3457,8 @@ void ReadVerilogHelper::parse( istream& fin)
 
 void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
 {
-    parse( fin);
+    // Swap in the new parser
+    parse2( fin);
     finish( fpath, topcell);
     std::cout<<"End of reading verilog\n";
 }
