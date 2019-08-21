@@ -2988,22 +2988,22 @@ void ReadVerilogHelper::finish( const string& fpath, const string& topcell)
 
     for(int i=0;i<db.hierTree.size();i++){
 
-	temp_node = db.hierTree[i];
+	auto &curr_node = db.hierTree[i];
 
 	{
 	    if(db.DRC_info.Metal_info.size() < 2) {std::cout<<"PnRDB-Error: too few metal layers\n";}
 	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
-		temp_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
+		curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
 	    } else {
-		temp_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
+		curr_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
 	    }
 	    if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
-		temp_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
+		curr_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
 	    } else {
-		temp_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
+		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
 	    }
 	    //added one nodes to the class
-	    if(!db.ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
+	    if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
 	    else{std::cout<<"Finished reading contraint file"<<std::endl;}
 	}
     }
