@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <queue>
 #include <string>
@@ -22,6 +23,7 @@
 #include <nlohmann/json.hpp>
 
 using std::map;
+using std::unordered_map;
 using std::vector;
 using std::queue;
 using std::string;
@@ -36,8 +38,11 @@ using std::max_element;
 
 class PnRdatabase;
 
-enum class TokenType { EndOfFile=0, EndOfLine=1, NAME=2, Undefined=3, COMMA=',', LPAREN='(', RPAREN=')',
-    SEMICOLON=';', PERIOD='.'};
+enum class TokenType {
+           EndOfFile=0, EndOfLine=1, NAME=2, Undefined=3, NUMBER=4,
+	   COMMA=',', LPAREN='(', RPAREN=')', BACKQUOTE='`', 
+	   SEMICOLON=';', PERIOD='.'
+      };
 
 /*
 override ostream& operator<<( ostream& os, const TokenType& tt) {
@@ -145,12 +150,25 @@ public:
 	current_token.tt = TokenType::SEMICOLON;
 	current_token.value.push_back( line[cursor]);
 	++cursor;
+      }	else if ( line[cursor] == '`') {
+	current_token.tt = TokenType::BACKQUOTE;
+	current_token.value.push_back( line[cursor]);
+	++cursor;
+      } else if ( isdigit( line[cursor])) {
+	current_token.tt = TokenType::NUMBER;	
+	current_token.value.push_back( line[cursor]);
+	++cursor;
+	while ( cursor < line.size() &&
+		isdigit( line[cursor])) {
+	  current_token.value.push_back( line[cursor]);
+	  ++cursor;
+	}
       } else if ( isalpha( line[cursor]) || line[cursor] == '_') {
 	current_token.tt = TokenType::NAME;
 	current_token.value.push_back( line[cursor]);
 	++cursor;
 	while ( cursor < line.size() &&
-		(isalnum( line[cursor]) || line[cursor] == '_')) {
+		(isalnum( line[cursor]) || line[cursor] == '_') || line[cursor] == '|' || line[cursor] == '!') {
 	  current_token.value.push_back( line[cursor]);
 	  ++cursor;
 	}
@@ -200,6 +218,7 @@ public:
     void error( const string& k) {
       cout << "Syntax error at line " << line_num << " position " << cursor << ": " << k << endl;
       failed = 1;
+      assert( !failed);
     }
 
 };
@@ -212,11 +231,13 @@ public:
     vector<string> temp;
     PnRDB::blockComplex temp_blockComplex,clear_blockComplex;
     PnRDB::PowerNet temp_PowerNet, clear_PowerNet;
-    PnRDB::terminal temp_terminal,clear_terminal;
-    string temp_name;
-    PnRDB::pin temp_pin;
+
     PnRDB::hierNode temp_node,clear_node;
     PnRDB::hierNode Supply_node;
+
+    unordered_map<string,PnRDB::terminal*> terminal_map;
+
+    unordered_map<string,int> net_map; // to net_index
 
     PnRdatabase& db;
 
@@ -228,6 +249,8 @@ public:
     int specify;
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {
+      // Why do we add one to begin with?
+
 	temp_blockComplex.instance.resize(1);
 	clear_blockComplex.instance.resize(1);
 	p_temp=0;
@@ -244,8 +267,14 @@ public:
     bool parse_io( const string& direction);
     bool parse_supply( const string& supply);
 
-    void parse( istream& fin);
+    void parse_module( Lexer& l);
 
+    void parse( istream& fin);
+    void parse2( istream& fin);
+
+    void gen_terminal_map();
+
+    int process_connection( int iter, const string& net_name);
     void finish( const string& fpath, const string& topcell);
 };
 
