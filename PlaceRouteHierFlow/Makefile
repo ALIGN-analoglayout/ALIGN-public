@@ -18,7 +18,7 @@ export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOUR
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
-export GTEST_LIB_DIR = $(GTEST_DIR)/make
+export GTEST_LIB_DIR = $(GTEST_DIR)/mybuild/lib
 
 PnRDB_path=PnRDB
 Capplacer_path=cap_placer
