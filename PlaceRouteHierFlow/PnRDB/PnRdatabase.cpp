@@ -3146,7 +3146,7 @@ bool ReadVerilogHelper::parse_io( const string& direction)
 	for(int i=1;i<temp.size();i++){
 	    char c = (i<temp.size()-1)?',':';';
 	    vector<string> names = get_true_word(0,temp[i],0,c,p);
-	    temp_name = names[0];
+	    string temp_name = names[0];
 
 	    for(int j=0;j<temp_node.Terminals.size();j++){
 		if(temp_node.Terminals[j].name.compare(temp_name)==0){
@@ -3173,6 +3173,44 @@ bool ReadVerilogHelper::parse_supply( const string& supply)
     }
 
     return false;
+}
+
+void ReadVerilogHelper::gen_terminal_map()
+{
+    terminal_map.clear();
+    for(int j=0;j<temp_node.Terminals.size();j++){
+	terminal_map[temp_node.Terminals[j].name] = &temp_node.Terminals[j];
+    }
+}
+
+int ReadVerilogHelper::process_connection( int iter, const string& net_name)
+{
+    int net_index=0;
+
+    unordered_map<string,int>::iterator ptr = net_map.find( net_name);
+
+    if ( ptr != net_map.end()) {
+	net_index = ptr->second;
+    } else {
+	PnRDB::net temp_net;
+	temp_net.name = net_name;
+	temp_net.degree = 0;
+	net_index = temp_node.Nets.size();
+	temp_node.Nets.push_back(temp_net);
+	net_map[net_name] = net_index;
+    }
+
+    temp_node.Nets[net_index].degree++;
+
+    {
+	PnRDB::connectNode temp_connectNode;
+	temp_connectNode.type = PnRDB::Block;
+	temp_connectNode.iter = iter;
+	temp_connectNode.iter2 = temp_node.Blocks.size();
+	temp_node.Nets[net_index].connected.push_back(temp_connectNode);
+    }
+
+    return net_index;
 }
 
 void ReadVerilogHelper::per_line()
@@ -3228,6 +3266,7 @@ void ReadVerilogHelper::per_line()
 	    /* moved processing to finish() */
 	    db.hierTree.push_back(temp_node);
 	    temp_node = clear_node;
+	    net_map.clear();
 	    return;
 	}
 	if((found=verilog_string.find("module"))!=string::npos){
@@ -3238,10 +3277,10 @@ void ReadVerilogHelper::per_line()
 	    temp_node.isCompleted = 0;
 	    for(int i=3;i<temp.size()-1;i++){
 		vector<string> names = get_true_word(0,temp[i],0,',',p);
+		PnRDB::terminal temp_terminal;
 		temp_terminal.name =names[0];
 		temp_node.Terminals.push_back(temp_terminal);
 	    }
-	    temp_terminal = clear_terminal;
 	    return;
 	}
     }
@@ -3254,50 +3293,157 @@ void ReadVerilogHelper::per_line()
 
 	if ( parse_io("input")) return;
 	if ( parse_io("output")) return;
+	if ( parse_io("inout")) return;
 	if ( parse_supply("supply0")) return;
 	if ( parse_supply("supply1")) return;
+
+
+
 	{
+	    auto& current_instance = temp_blockComplex.instance.back();
 	    temp = split_by_spaces_yg(verilog_string);
-	    temp_blockComplex.instance.back().master=temp[0];
-	    temp_blockComplex.instance.back().name=temp[1];
+	    current_instance.master=temp[0];
+	    current_instance.name=temp[1];
 	    // read in pin for blockComplex.instance 
 	    for(int i=3;i<temp.size()-1;i++){
+		PnRDB::pin temp_pin;
 		temp_pin.name =  get_word(temp[i],'.','(');
 		string net_name = get_word(temp[i],'(',')');
-		int net_index=0;
-		//to add a connection for terminal, when the nets name = terminal names
 
-		int found_flag=0;
-		for(int k=0;k<temp_node.Nets.size();k++){
-		    if(temp_node.Nets[k].name.compare(net_name)==0){
-			temp_node.Nets[k].degree++;
-			found_flag=1;
-			net_index =k;
-		    }
-		}
-		      
-		if(found_flag==0){
-		    PnRDB::net temp_net;
-		    temp_net.name = net_name;
-		    temp_net.degree = 1;
-		    net_index = temp_node.Nets.size();
-		    temp_node.Nets.push_back(temp_net);
-		}
-		{
-		    PnRDB::connectNode temp_connectNode;
-		    temp_connectNode.type = PnRDB::Block;
-		    temp_connectNode.iter = i-3;
-		    temp_connectNode.iter2 = temp_node.Blocks.size();
-		    temp_node.Nets[net_index].connected.push_back(temp_connectNode);
-		}
-
-		temp_pin.netIter=net_index;
-		temp_blockComplex.instance.back().blockPins.push_back(temp_pin);
+		temp_pin.netIter = process_connection( i-3, net_name);
+		current_instance.blockPins.push_back(temp_pin);
 	    }
 	}
 	temp_node.Blocks.push_back(temp_blockComplex);
 	temp_blockComplex = clear_blockComplex;
     }
+
+}
+
+void ReadVerilogHelper::parse_module( Lexer &l)
+{
+  l.mustbe( TokenType::NAME);
+  temp_node.name = l.last_token.value;
+  temp_node.isCompleted = 0;
+  if ( l.have( TokenType::LPAREN)) {
+      if ( !l.have( TokenType::RPAREN)) {
+	  do {
+	      l.mustbe( TokenType::NAME);
+	      PnRDB::terminal temp_terminal;
+	      temp_terminal.name = l.last_token.value;
+	      temp_node.Terminals.push_back( temp_terminal);
+	  } while ( l.have( static_cast<TokenType>( ',')));
+	  l.mustbe( TokenType::RPAREN);  
+      }
+  }
+  l.mustbe( TokenType::SEMICOLON);  
+  l.mustbe( TokenType::EndOfLine);
+
+  while ( l.have( TokenType::EndOfLine)) ;
+
+  gen_terminal_map();
+
+  while ( l.have_keyword( "input") ||
+	  l.have_keyword( "output") ||
+	  l.have_keyword( "supply0") ||
+	  l.have_keyword( "supply1") ||
+	  l.have_keyword( "inout")) {
+    string direction_tag = l.last_token.value;
+    if ( !l.have( TokenType::SEMICOLON)) {
+      do {
+	  if ( l.have( TokenType::NUMBER)) {
+	  } else {
+	      l.mustbe( TokenType::NAME);
+	  }
+	  string temp_name = l.last_token.value;
+	  if ( direction_tag == "input" || direction_tag == "output" ||
+	       direction_tag == "inout") {
+
+	      auto ptr = terminal_map.find( temp_name);
+	      if (  ptr != terminal_map.end()) {
+		  ptr->second->type = direction_tag;
+	      }
+	  }
+      } while ( l.have( static_cast<TokenType>( ',')));
+      l.mustbe( TokenType::SEMICOLON);  
+    }
+    l.mustbe( TokenType::EndOfLine);
+
+    while ( l.have( TokenType::EndOfLine)) ;
+  }
+
+  
+  auto& current_instance = temp_blockComplex.instance.back();
+
+  while ( !l.have_keyword( "endmodule")) {
+
+    l.mustbe( TokenType::NAME);
+    current_instance.master = l.last_token.value;
+
+    l.mustbe( TokenType::NAME);
+    current_instance.name = l.last_token.value;
+
+    l.mustbe( TokenType::LPAREN);
+    if ( !l.have( TokenType::RPAREN)) {    
+      int i = 0;	
+      do {
+        PnRDB::pin temp_pin;
+	l.mustbe( TokenType::PERIOD);
+	l.mustbe( TokenType::NAME);      
+	temp_pin.name = l.last_token.value;
+	l.mustbe( TokenType::LPAREN);
+	l.mustbe( TokenType::NAME);      
+	string net_name = l.last_token.value;
+	l.mustbe( TokenType::RPAREN);
+
+	temp_pin.netIter = process_connection( i, net_name);
+	current_instance.blockPins.push_back(temp_pin);
+	
+	++i;
+      } while ( l.have( TokenType::COMMA));
+      l.mustbe( TokenType::RPAREN);
+    }
+    l.mustbe( TokenType::SEMICOLON);
+    l.mustbe( TokenType::EndOfLine);
+
+    temp_node.Blocks.push_back( temp_blockComplex);
+    temp_blockComplex = clear_blockComplex;
+
+    while ( l.have( TokenType::EndOfLine)) ;
+  }
+
+
+  l.mustbe( TokenType::EndOfLine);
+  db.hierTree.push_back(temp_node);
+  temp_node = clear_node;
+  net_map.clear(); // should move into temp_node
+
+  while ( l.have( TokenType::EndOfLine)) ;
+
+}
+
+void ReadVerilogHelper::parse2( istream& fin)
+{
+
+  Lexer l(fin);
+  while ( l.have( TokenType::EndOfLine)) ;
+
+  while( !l.have( TokenType::EndOfFile)) {
+      if ( l.have_keyword( "module")) {
+	  parse_module( l);
+      } else if ( l.have( TokenType::BACKQUOTE)) {
+	  l.mustbe_keyword( "celldefine");
+	  l.mustbe( TokenType::EndOfLine);
+	  l.mustbe_keyword( "module");
+	  parse_module( l);
+	  l.mustbe( TokenType::BACKQUOTE);
+	  l.mustbe_keyword( "endcelldefine");
+	  l.mustbe( TokenType::EndOfLine);
+      } else {
+	  l.mustbe_keyword( "module");
+      }
+      while ( l.have( TokenType::EndOfLine)) ;
+  }
 
 }
 
