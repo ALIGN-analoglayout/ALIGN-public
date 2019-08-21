@@ -46,7 +46,6 @@ We have a Dockerfile.native that should have the software depencies installed fo
 		> ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
 		> make DESIGN=<design>
 		
-
 # Useful docker-compose commands
 
 You must be in the directory where the service configuration file
