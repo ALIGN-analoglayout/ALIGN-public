@@ -45,6 +45,6 @@ main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_
 	$(CXX) $(CXXFLAGS) -c main.cpp -I$(JSON)/include
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_*
+	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
 	make -C $(router_path) clean
 	make -C $(Capplacer_path) clean
