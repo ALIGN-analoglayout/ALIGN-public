@@ -44,14 +44,17 @@ enum class TokenType {
 	   SEMICOLON=';', PERIOD='.'
       };
 
-/*
-override ostream& operator<<( ostream& os, const TokenType& tt) {
+inline ostream& operator<<( ostream& os, const TokenType& tt) {
     string str;
     if        ( tt == TokenType::EndOfFile) {
       str = "EndOfFile";
     } else if ( tt == TokenType::EndOfLine) {
       str = "EndOfLine";
     } else if ( tt == TokenType::NAME) {
+      str = "NAME";
+    } else if ( tt == TokenType::Undefined) {
+      str = "Undefined";
+    } else if ( tt == TokenType::NUMBER) {
       str = "NAME";
     } else {
       str = "' '";
@@ -61,16 +64,49 @@ override ostream& operator<<( ostream& os, const TokenType& tt) {
     os << str;
     return os;
 }
-*/
 
 class Token {
 public:
   TokenType tt;
   string value;
   friend ostream& operator<<( ostream& os, const Token& t) {
-    os << "(" << static_cast<int>(t.tt) << "," << t.value << ")";
+    os << "(" << t.tt << "," << t.value << ")";
     return os;
   }
+};
+
+class CharBitVector {
+  std::vector<char> bv;
+public:
+ CharBitVector() : bv(256,0) {}
+
+  void add_is_alpha() {
+    for (unsigned int i=0; i<256; ++i) {
+      if ( isalpha(i)) {
+	bv[i] = 1;
+      }
+    }
+  }
+
+  void add_is_digit() {
+    for (unsigned int i=0; i<256; ++i) {
+      if ( isdigit(i)) {
+	bv[i] = 1;
+      }
+    }
+  }
+
+  void add_extra( const char *p) {
+    while ( *p != '\0') {
+      bv[*p] = 1;
+      ++p;
+    }
+  }
+
+  bool operator()( char c) {
+    return 0 <= c && c < 256 && bv[c];
+  }
+
 };
 
 
@@ -81,7 +117,9 @@ class Lexer {
     int cursor;
     int line_num;
 
-
+    CharBitVector is_first_in_name;
+    CharBitVector is_not_first_in_name;
+    CharBitVector is_single_character_punct;
 
 public:
     int failed = 0; /* running=0, failed=1 */ 
@@ -90,6 +128,15 @@ public:
     Token current_token;
     
     Lexer( istream& sin) : s(sin) {
+      is_first_in_name.add_is_alpha();
+      is_first_in_name.add_extra( "_");
+
+      is_not_first_in_name.add_is_alpha();
+      is_not_first_in_name.add_is_digit();
+      is_not_first_in_name.add_extra( "_!|+");
+
+      is_single_character_punct.add_extra( ".,;()`");
+
       line_num = 0;
       current_token.tt = TokenType::EndOfLine;
       get_token();
@@ -130,28 +177,8 @@ public:
 	return;
       }
 
-      if ( line[cursor] == '(') {
-	current_token.tt = TokenType::LPAREN;
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-      }	else if ( line[cursor] == ')') {
-	current_token.tt = TokenType::RPAREN;
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-      }	else if ( line[cursor] == '.') {
-	current_token.tt = TokenType::PERIOD;
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-      }	else if ( line[cursor] == ',') {
-	current_token.tt = TokenType::COMMA;
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-      }	else if ( line[cursor] == ';') {
-	current_token.tt = TokenType::SEMICOLON;
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-      }	else if ( line[cursor] == '`') {
-	current_token.tt = TokenType::BACKQUOTE;
+      if ( is_single_character_punct( line[cursor])) {
+	current_token.tt = static_cast<TokenType>( line[cursor]);
 	current_token.value.push_back( line[cursor]);
 	++cursor;
       } else if ( isdigit( line[cursor])) {
@@ -163,12 +190,12 @@ public:
 	  current_token.value.push_back( line[cursor]);
 	  ++cursor;
 	}
-      } else if ( isalpha( line[cursor]) || line[cursor] == '_') {
+      } else if ( is_first_in_name(line[cursor])) {
 	current_token.tt = TokenType::NAME;
 	current_token.value.push_back( line[cursor]);
 	++cursor;
 	while ( cursor < line.size() &&
-		(isalnum( line[cursor]) || line[cursor] == '_') || line[cursor] == '|' || line[cursor] == '!') {
+		is_not_first_in_name( line[cursor])) {
 	  current_token.value.push_back( line[cursor]);
 	  ++cursor;
 	}
@@ -192,7 +219,7 @@ public:
     void mustbe( TokenType tt) {
       if ( !have( tt)) {
 	std::ostringstream os;
-	os << "Expected token type " << static_cast<int>(tt) << " got " << static_cast<int>(current_token.tt) << endl;
+	os << "Expected token type " << tt << " got " << current_token.tt << endl;
 	error( os.str());
       }
     }
