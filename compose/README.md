@@ -37,6 +37,15 @@ Finally, the same Makefile can be used in a native Linux environment without usi
 		% export ALIGN_HOME=<top of ALIGN source area>
 		% ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
 		% make DESIGN=<design>
+		
+We have a Dockerfile.native that should have the software depencies installed for the flow, used to test the Makefile.  It is hard to keep it centrally up to date, so as components add more dependencies, this file may be out of date.  But it serves as a starting point for the full environment.  You can run the commands above in the following container:
+	
+		% cd $ALIGN_HOME/compose
+		% docker-compose up -d fullmake-service
+		% docker-compose exec fullmake-service bash
+		> ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
+		> make DESIGN=<design>
+		
 
 # Useful docker-compose commands
 
