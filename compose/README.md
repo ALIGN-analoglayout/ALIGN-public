@@ -12,7 +12,7 @@ To invoke using a working directory:
 		% export ALIGN_WORKING_DIR=<directory path for output>
 		% cd $ALIGN_WORKING_DIR
 		% ln -sf $ALIGN_HOME/compose/Makefile .
-		% make DESIGN=<design>
+		% make BUILD=docker DESIGN=<design>
 
 > This will bring up the set of docker services that can run the steps
 > in the flow, then invoke a series of commands in each container to
@@ -25,12 +25,17 @@ To invoke using a Docker volume:
 		% export ALIGN_WORK_DIR=compose_dataVolume
 		% cd $ALIGN_HOME/compose
 		% docker-compose up -d make-docker-service
-		% docker-compose exec make-docker-service make -f $ALIGN_HOME/DESIGN=<design>
+		% docker-compose exec make-docker-service make  BUILD=docker -f $ALIGN_HOME/compose/Makefile DESIGN=<design>
 
 > This will first bring up a make-docker-service which contains the
 > main Makefile and docker-compose configuration.  The exec will then
 > use the make-docker-service to also bring up the rest of the
 > services.  After that, the make will run the flow for the given design.
+
+Finally, the same Makefile can be used in a native Linux environment without using Docker at all:
+		% export ALIGN_HOME=<top of ALIGN source area>
+		% ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
+		% make DESIGN=<design>
 
 # Useful docker-compose commands
 
