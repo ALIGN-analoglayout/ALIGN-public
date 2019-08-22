@@ -12,8 +12,8 @@ OPTS?=-g -O3
 WARNS?=-w -Wall
 JSON?=/opt/json
 
-#export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -DHFLAG
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE)
+export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -DHFLAG
+#export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE)
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
