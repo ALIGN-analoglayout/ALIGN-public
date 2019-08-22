@@ -49,8 +49,6 @@ class ReadVerilogHelper {
 
     unordered_map<string,int> terminal_map;
 
-    unordered_map<string,int> net_map; // to net_index
-
     PnRdatabase& db;
 
 public:
@@ -71,7 +69,8 @@ public:
 
     void gen_terminal_map();
 
-    int process_connection( int iter, const string& net_name);
+    int process_connection( int iter, const string& net_name,
+			    unordered_map<string,int>& net_map);
     void semantic( const string& fpath, const string& topcell);
 };
 

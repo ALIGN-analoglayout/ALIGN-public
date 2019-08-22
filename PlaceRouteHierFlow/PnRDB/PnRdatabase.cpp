@@ -3146,7 +3146,8 @@ void ReadVerilogHelper::gen_terminal_map()
     }
 }
 
-int ReadVerilogHelper::process_connection( int iter, const string& net_name)
+int ReadVerilogHelper::process_connection( int iter, const string& net_name,
+					   unordered_map<string,int>& net_map)
 {
     int net_index=0;
 
@@ -3179,6 +3180,8 @@ int ReadVerilogHelper::process_connection( int iter, const string& net_name)
 
 void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 {
+  unordered_map<string,int> net_map; // net_name to net_index
+
   l.mustbe( TokenType::NAME);
   if ( !celldefine_mode) {
       temp_node.name = l.last_token.value;
@@ -3258,7 +3261,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 	string net_name = l.last_token.value;
 	l.mustbe( TokenType::RPAREN);
 
-	temp_pin.netIter = process_connection( i, net_name);
+	temp_pin.netIter = process_connection( i, net_name, net_map);
 	current_instance.blockPins.push_back(temp_pin);
 	
 	++i;
@@ -3276,8 +3279,6 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
       db.hierTree.push_back(temp_node);
   }
   temp_node = clear_node;
-  net_map.clear(); // should move into temp_node
-
 
 }
 
