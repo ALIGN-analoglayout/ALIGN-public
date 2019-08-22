@@ -626,15 +626,15 @@ workflows:
   full:
     jobs:
       - start
-      - build-tally:
-          requires:
-            - start 
-      - build-sgi:
-          requires:
-            - start 
-      - build-PlacementEditor:
-          requires:
-            - start 
+#      - build-tally:
+#          requires:
+#            - start 
+#      - build-sgi:
+#          requires:
+#            - start 
+#      - build-PlacementEditor:
+#          requires:
+#            - start 
       - build-PlaceRouteHierFlow:
           requires:
             - start 
@@ -650,23 +650,23 @@ workflows:
       - build-cellfabric:
           requires:
             - start 
-      - build-satplacer:
-          requires:
-            - start 
+#      - build-satplacer:
+#          requires:
+#            - start 
       - build-pdk:
           requires:
             - start 
       - finish:
           requires:
-            - build-tally 
-            - build-sgi 
-            - build-PlacementEditor 
+#            - build-tally 
+#            - build-sgi 
+#            - build-PlacementEditor 
             - build-GDSConv 
             - build-sci 
             - build-cellfabric
             - build-cktgen 
             - build-pdk 
-            - build-satplacer
+#            - build-satplacer
 
   # end_to_end:
   #   jobs:
