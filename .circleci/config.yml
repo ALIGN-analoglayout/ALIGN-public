@@ -467,9 +467,8 @@ jobs:
           docker volume create placerOutputVol
 
       - run: |
-          cd PlaceRouteHierFlow
           apk add bash
-          ./run_small_in_docker.sh
+          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
           
