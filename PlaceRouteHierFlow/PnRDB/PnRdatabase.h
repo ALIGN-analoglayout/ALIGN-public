@@ -40,12 +40,9 @@ using std::max_element;
 class PnRdatabase;
 
 class ReadVerilogHelper {
-public:
-    string verilog_string;
-    size_t found;
-    vector<string> temp;
+
+
     PnRDB::blockComplex temp_blockComplex,clear_blockComplex;
-    PnRDB::PowerNet temp_PowerNet, clear_PowerNet;
 
     PnRDB::hierNode temp_node,clear_node;
     PnRDB::hierNode Supply_node;
@@ -56,41 +53,26 @@ public:
 
     PnRdatabase& db;
 
-    int p_temp;
-    int *p;
+public:
 
-    int in_module;
-    int lock;
-    int specify;
+    PnRdatabase& get_db();
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {
       // Why do we add one to begin with?
-
 	temp_blockComplex.instance.resize(1);
 	clear_blockComplex.instance.resize(1);
-	p_temp=0;
-	in_module = 0;
-	lock = 0;
-	specify = 0;
-	p=&p_temp;
     }
 
     void operator()(istream& fin, const string& fpath, const string& topcell);
 
-    void per_line();
-
-    bool parse_io( const string& direction);
-    bool parse_supply( const string& supply);
-
     void parse_module( Lexer& l, bool celldefine_mode=false);
 
-    void parse( istream& fin);
-    void parse2( istream& fin);
+    void parse_top( istream& fin);
 
     void gen_terminal_map();
 
     int process_connection( int iter, const string& net_name);
-    void finish( const string& fpath, const string& topcell);
+    void semantic( const string& fpath, const string& topcell);
 };
 
 
