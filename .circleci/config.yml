@@ -471,6 +471,7 @@ jobs:
           (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
+          ls -ltrR coverage-reports
           
       - persist_to_workspace:
           root: /work/workspace
