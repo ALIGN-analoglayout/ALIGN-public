@@ -218,8 +218,30 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   //min_dis = 2*metal_width[0]+metal_distance_ss[0];
 
+  int via_dis_x=0;
+  int via_dis_y=0;
+
+  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].x>via_dis_x){
+      via_dis_x = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].x;
+    }
+  
+  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].x>via_dis_x){
+      via_dis_x = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].x;
+    }
+
+  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].y>via_dis_y){
+      via_dis_y = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].y;
+    }
+  
+  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].y>via_dis_y){
+      via_dis_y = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].y;
+    }
+
+
   min_dis_x = drc_info.Metal_info[V_metal_index].width+drc_info.Metal_info[V_metal_index].dist_ss;
   min_dis_y = drc_info.Metal_info[H_metal_index].width+drc_info.Metal_info[H_metal_index].dist_ss;
+  min_dis_x = 2*min_dis_x;
+  min_dis_y = 2*min_dis_y;
 
   //need two min_dis?? min_dis_x, min_di
 
