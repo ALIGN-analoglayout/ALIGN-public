@@ -3138,7 +3138,7 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
   }
 }
 
-void ReadVerilogHelper::gen_terminal_map()
+void ReadVerilogHelper::gen_terminal_map( unordered_map<string,int>& terminal_map)
 {
     terminal_map.clear();
     for(int j=0;j<temp_node.Terminals.size();j++){
@@ -3180,6 +3180,7 @@ int ReadVerilogHelper::process_connection( int iter, const string& net_name,
 
 void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 {
+  unordered_map<string,int> terminal_map; // terminal_name to terminal_index
   unordered_map<string,int> net_map; // net_name to net_index
 
   l.mustbe( TokenType::NAME);
@@ -3204,7 +3205,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   }
   l.mustbe( TokenType::SEMICOLON);  
 
-  gen_terminal_map();
+  gen_terminal_map( terminal_map);
 
   while ( l.have_keyword( "input") ||
 	  l.have_keyword( "output") ||
@@ -3226,10 +3227,11 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 		  temp_node.Terminals[ptr->second].type = direction_tag;
 	      }
 	  } else { // supply0 supply1
+	      PnRDB::blockComplex temp_blockComplex;
+	      temp_blockComplex.instance.resize(1);
 	      temp_blockComplex.instance.back().master = direction_tag;
 	      temp_blockComplex.instance.back().name = temp_name;
 	      Supply_node.Blocks.push_back(temp_blockComplex);
-	      temp_blockComplex = clear_blockComplex;
 	  }
       } while ( l.have( static_cast<TokenType>( ',')));
       l.mustbe( TokenType::SEMICOLON);  
@@ -3238,9 +3240,14 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   }
 
   
-  auto& current_instance = temp_blockComplex.instance.back();
+
 
   while ( !l.have_keyword( "endmodule")) {
+
+    PnRDB::blockComplex temp_blockComplex;
+    temp_blockComplex.instance.resize(1);
+
+    auto& current_instance = temp_blockComplex.instance.back();
 
     l.mustbe( TokenType::NAME);
     current_instance.master = l.last_token.value;
@@ -3249,15 +3256,15 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
     current_instance.name = l.last_token.value;
 
     l.mustbe( TokenType::LPAREN);
-    if ( !l.have( TokenType::RPAREN)) {    
-      int i = 0;	
+    if ( !l.have( TokenType::RPAREN)) {
+      int i = 0;
       do {
         PnRDB::pin temp_pin;
 	l.mustbe( TokenType::PERIOD);
-	l.mustbe( TokenType::NAME);      
+	l.mustbe( TokenType::NAME);
 	temp_pin.name = l.last_token.value;
 	l.mustbe( TokenType::LPAREN);
-	l.mustbe( TokenType::NAME);      
+	l.mustbe( TokenType::NAME);
 	string net_name = l.last_token.value;
 	l.mustbe( TokenType::RPAREN);
 
@@ -3271,7 +3278,6 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
     l.mustbe( TokenType::SEMICOLON);
 
     temp_node.Blocks.push_back( temp_blockComplex);
-    temp_blockComplex = clear_blockComplex;
 
   }
 
