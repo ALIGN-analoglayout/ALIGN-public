@@ -47,18 +47,18 @@ class ReadVerilogHelper {
     PnRDB::hierNode temp_node,clear_node;
     PnRDB::hierNode Supply_node;
 
-    unordered_map<string,int> terminal_map;
-
     PnRdatabase& db;
 
 public:
 
-    PnRdatabase& get_db();
+    PnRdatabase& get_db() const {
+      return db;
+    }
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {
       // Why do we add one to begin with?
-	temp_blockComplex.instance.resize(1);
 	clear_blockComplex.instance.resize(1);
+	temp_blockComplex = clear_blockComplex;
     }
 
     void operator()(istream& fin, const string& fpath, const string& topcell);
@@ -67,7 +67,7 @@ public:
 
     void parse_top( istream& fin);
 
-    void gen_terminal_map();
+    void gen_terminal_map( unordered_map<string,int>& terminal_map);
 
     int process_connection( int iter, const string& net_name,
 			    unordered_map<string,int>& net_map);
