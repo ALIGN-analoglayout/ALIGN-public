@@ -471,7 +471,7 @@ jobs:
           apk add bash
           ./run_small_in_docker.sh
           mkdir -p coverage-reports
-          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouterHierFlow
+          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
           
       - persist_to_workspace:
           root: /work/workspace
