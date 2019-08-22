@@ -3179,7 +3179,7 @@ void ReadVerilogHelper::gen_terminal_map()
 {
     terminal_map.clear();
     for(int j=0;j<temp_node.Terminals.size();j++){
-	terminal_map[temp_node.Terminals[j].name] = &temp_node.Terminals[j];
+	terminal_map[temp_node.Terminals[j].name] = j;
     }
 }
 
@@ -3320,11 +3320,17 @@ void ReadVerilogHelper::per_line()
 
 }
 
-void ReadVerilogHelper::parse_module( Lexer &l)
+void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 {
   l.mustbe( TokenType::NAME);
-  temp_node.name = l.last_token.value;
-  temp_node.isCompleted = 0;
+  if ( !celldefine_mode) {
+      temp_node.name = l.last_token.value;
+      temp_node.isCompleted = 0;
+  } else {
+      Supply_node.name = l.last_token.value;
+      Supply_node.isCompleted = 0;
+  }
+
   if ( l.have( TokenType::LPAREN)) {
       if ( !l.have( TokenType::RPAREN)) {
 	  do {
@@ -3358,11 +3364,15 @@ void ReadVerilogHelper::parse_module( Lexer &l)
 	  string temp_name = l.last_token.value;
 	  if ( direction_tag == "input" || direction_tag == "output" ||
 	       direction_tag == "inout") {
-
 	      auto ptr = terminal_map.find( temp_name);
 	      if (  ptr != terminal_map.end()) {
-		  ptr->second->type = direction_tag;
+		  temp_node.Terminals[ptr->second].type = direction_tag;
 	      }
+	  } else { // supply0 supply1
+	      temp_blockComplex.instance.back().master = direction_tag;
+	      temp_blockComplex.instance.back().name = temp_name;
+	      Supply_node.Blocks.push_back(temp_blockComplex);
+	      temp_blockComplex = clear_blockComplex;
 	  }
       } while ( l.have( static_cast<TokenType>( ',')));
       l.mustbe( TokenType::SEMICOLON);  
@@ -3414,7 +3424,10 @@ void ReadVerilogHelper::parse_module( Lexer &l)
 
 
   l.mustbe( TokenType::EndOfLine);
-  db.hierTree.push_back(temp_node);
+
+  if ( !celldefine_mode) {
+      db.hierTree.push_back(temp_node);
+  }
   temp_node = clear_node;
   net_map.clear(); // should move into temp_node
 
@@ -3435,7 +3448,7 @@ void ReadVerilogHelper::parse2( istream& fin)
 	  l.mustbe_keyword( "celldefine");
 	  l.mustbe( TokenType::EndOfLine);
 	  l.mustbe_keyword( "module");
-	  parse_module( l);
+	  parse_module( l, true);
 	  l.mustbe( TokenType::BACKQUOTE);
 	  l.mustbe_keyword( "endcelldefine");
 	  l.mustbe( TokenType::EndOfLine);

@@ -262,7 +262,7 @@ public:
     PnRDB::hierNode temp_node,clear_node;
     PnRDB::hierNode Supply_node;
 
-    unordered_map<string,PnRDB::terminal*> terminal_map;
+    unordered_map<string,int> terminal_map;
 
     unordered_map<string,int> net_map; // to net_index
 
@@ -294,7 +294,7 @@ public:
     bool parse_io( const string& direction);
     bool parse_supply( const string& supply);
 
-    void parse_module( Lexer& l);
+    void parse_module( Lexer& l, bool celldefine_mode=false);
 
     void parse( istream& fin);
     void parse2( istream& fin);
