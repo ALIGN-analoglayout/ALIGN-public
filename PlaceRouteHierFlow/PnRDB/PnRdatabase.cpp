@@ -2983,7 +2983,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 
 }
 
-void ReadVerilogHelper::finish( const string& fpath, const string& topcell)
+void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 {
 
     for(int i=0;i<db.hierTree.size();i++){
@@ -3138,43 +3138,6 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
   }
 }
 
-bool ReadVerilogHelper::parse_io( const string& direction)
-{
-    if( verilog_string.find(direction) != string::npos){
-	temp = split_by_spaces_yg(verilog_string);
-	//name extraction
-	for(int i=1;i<temp.size();i++){
-	    char c = (i<temp.size()-1)?',':';';
-	    vector<string> names = get_true_word(0,temp[i],0,c,p);
-	    string temp_name = names[0];
-
-	    for(int j=0;j<temp_node.Terminals.size();j++){
-		if(temp_node.Terminals[j].name.compare(temp_name)==0){
-		    temp_node.Terminals[j].type = direction;
-		    break;
-		}
-	    }
-	}
-	return true;
-    }
-    return false;
-}
-
-bool ReadVerilogHelper::parse_supply( const string& supply)
-{
-    if( verilog_string.find(supply)!=string::npos){
-	temp = split_by_spaces_yg(verilog_string);
-	temp_blockComplex.instance.back().master=temp[0];
-	vector<string> names = get_true_word(0,temp[1],0,';',p);
-	temp_blockComplex.instance.back().name = names[0];
-	Supply_node.Blocks.push_back(temp_blockComplex);
-	temp_blockComplex = clear_blockComplex;
-	return true;
-    }
-
-    return false;
-}
-
 void ReadVerilogHelper::gen_terminal_map()
 {
     terminal_map.clear();
@@ -3213,112 +3176,6 @@ int ReadVerilogHelper::process_connection( int iter, const string& net_name)
     return net_index;
 }
 
-void ReadVerilogHelper::per_line()
-{
-    // If strange modules, then lock reading
-    if((found=verilog_string.find("`endcelldefine"))!=string::npos){
-	lock = 0;
-	return;
-    }
-    if((found=verilog_string.find("`celldefine"))!=string::npos){
-	lock = 1;
-	return;
-    }
-    if((found=verilog_string.find("//"))!=string::npos){
-	return;
-    }
-    if((found=verilog_string.find("endspecify"))!=string::npos){
-	specify = 0;
-	return;
-    }
-    if((found=verilog_string.find("specify"))!=string::npos){
-	specify = 1;
-	return;
-    }
-    if(verilog_string.compare("")==0){
-	return;
-    }
-
-
-    ///////////////////modefy this part
-    if(lock == 1){//find power key word
-	if((found=verilog_string.find("endmodule"))!=string::npos){
-	    in_module = 0;
-	    //added one nodes to the class
-	    return;
-	}
-	if((found=verilog_string.find("module"))!=string::npos){
-	    in_module = 1;
-	    //read node name, and terminal names
-	    temp = split_by_spaces_yg(verilog_string);
-	    vector<string> names = get_true_word(0,temp[1],0,';',p);
-	    Supply_node.name = names[0];
-	    Supply_node.isCompleted = 0;
-	    return;
-	}
-    }
-    ///////////////modify this part
-
-    // judge whether verilog_string is in a certain module node
-    if(lock ==0){
-	if((found=verilog_string.find("endmodule"))!=string::npos){
-	    in_module = 0;
-	    /* moved processing to finish() */
-	    db.hierTree.push_back(temp_node);
-	    temp_node = clear_node;
-	    net_map.clear();
-	    return;
-	}
-	if((found=verilog_string.find("module"))!=string::npos){
-	    in_module = 1;
-	    //read node name, and terminal names
-	    temp = split_by_spaces_yg(verilog_string);
-	    temp_node.name = temp[1];
-	    temp_node.isCompleted = 0;
-	    for(int i=3;i<temp.size()-1;i++){
-		vector<string> names = get_true_word(0,temp[i],0,',',p);
-		PnRDB::terminal temp_terminal;
-		temp_terminal.name =names[0];
-		temp_node.Terminals.push_back(temp_terminal);
-	    }
-	    return;
-	}
-    }
-
-		
-    //read in module information into block, net
-    //read in node information, blocks, net and terminal.
-    if(in_module==1&&specify==0){	
-	//type inputs or outputs for terminal
-
-	if ( parse_io("input")) return;
-	if ( parse_io("output")) return;
-	if ( parse_io("inout")) return;
-	if ( parse_supply("supply0")) return;
-	if ( parse_supply("supply1")) return;
-
-
-
-	{
-	    auto& current_instance = temp_blockComplex.instance.back();
-	    temp = split_by_spaces_yg(verilog_string);
-	    current_instance.master=temp[0];
-	    current_instance.name=temp[1];
-	    // read in pin for blockComplex.instance 
-	    for(int i=3;i<temp.size()-1;i++){
-		PnRDB::pin temp_pin;
-		temp_pin.name =  get_word(temp[i],'.','(');
-		string net_name = get_word(temp[i],'(',')');
-
-		temp_pin.netIter = process_connection( i-3, net_name);
-		current_instance.blockPins.push_back(temp_pin);
-	    }
-	}
-	temp_node.Blocks.push_back(temp_blockComplex);
-	temp_blockComplex = clear_blockComplex;
-    }
-
-}
 
 void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 {
@@ -3424,7 +3281,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 
 }
 
-void ReadVerilogHelper::parse2( istream& fin)
+void ReadVerilogHelper::parse_top( istream& fin)
 {
 
   Lexer l(fin,1);
@@ -3445,19 +3302,12 @@ void ReadVerilogHelper::parse2( istream& fin)
 
 }
 
-void ReadVerilogHelper::parse( istream& fin)
-{
-    while(fin.peek()!=EOF) {
-        getline(fin, verilog_string);
-	per_line();
-    }
-}
 
 void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
 {
     // Swap in the new parser
-    parse2( fin);
-    finish( fpath, topcell);
+    parse_top( fin);
+    semantic( fpath, topcell);
     std::cout<<"End of reading verilog\n";
 }
 
