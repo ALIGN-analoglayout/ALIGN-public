@@ -470,7 +470,7 @@ jobs:
           cd PlaceRouteHierFlow
           apk add bash
           ./run_small_in_docker.sh
-          mkdir -k coverage-reports
+          mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouterHierFlow
           
       - persist_to_workspace:
