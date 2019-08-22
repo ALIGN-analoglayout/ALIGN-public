@@ -462,15 +462,23 @@ jobs:
 
       - run: |
           cd PlaceRouteHierFlow
-          docker build -t placeroute_image .
+          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
           docker volume create placerOutputVol
-          
+
       - run: |
           cd PlaceRouteHierFlow
           apk add bash
           ./run_small_in_docker.sh
+          mkdir -k coverage-reports
+          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouterHierFlow
           
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - coverage-reports/PlaceRouteHierFlow
+
+
   build-GDSConv:
     executor: docker-executor
     steps:

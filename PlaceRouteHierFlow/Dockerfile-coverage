@@ -1,4 +1,4 @@
-FROM with_protobuf:latest as placeroute_image
+FROM with_protobuf:latest as placeroute_coverage_image
 
 RUN \
     git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  && \
@@ -14,4 +14,4 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
 WORKDIR /PlaceRouteHierFlow
 
 RUN \
-    make
+    make COVERAGE=--coverage
