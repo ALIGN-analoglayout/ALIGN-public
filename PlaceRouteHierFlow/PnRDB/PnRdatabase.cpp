@@ -3343,9 +3343,6 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
       }
   }
   l.mustbe( TokenType::SEMICOLON);  
-  l.mustbe( TokenType::EndOfLine);
-
-  while ( l.have( TokenType::EndOfLine)) ;
 
   gen_terminal_map();
 
@@ -3377,9 +3374,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
       } while ( l.have( static_cast<TokenType>( ',')));
       l.mustbe( TokenType::SEMICOLON);  
     }
-    l.mustbe( TokenType::EndOfLine);
 
-    while ( l.have( TokenType::EndOfLine)) ;
   }
 
   
@@ -3414,16 +3409,11 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
       l.mustbe( TokenType::RPAREN);
     }
     l.mustbe( TokenType::SEMICOLON);
-    l.mustbe( TokenType::EndOfLine);
 
     temp_node.Blocks.push_back( temp_blockComplex);
     temp_blockComplex = clear_blockComplex;
 
-    while ( l.have( TokenType::EndOfLine)) ;
   }
-
-
-  l.mustbe( TokenType::EndOfLine);
 
   if ( !celldefine_mode) {
       db.hierTree.push_back(temp_node);
@@ -3431,31 +3421,26 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
   temp_node = clear_node;
   net_map.clear(); // should move into temp_node
 
-  while ( l.have( TokenType::EndOfLine)) ;
 
 }
 
 void ReadVerilogHelper::parse2( istream& fin)
 {
 
-  Lexer l(fin);
-  while ( l.have( TokenType::EndOfLine)) ;
+  Lexer l(fin,1);
 
   while( !l.have( TokenType::EndOfFile)) {
       if ( l.have_keyword( "module")) {
 	  parse_module( l);
       } else if ( l.have( TokenType::BACKQUOTE)) {
 	  l.mustbe_keyword( "celldefine");
-	  l.mustbe( TokenType::EndOfLine);
 	  l.mustbe_keyword( "module");
 	  parse_module( l, true);
 	  l.mustbe( TokenType::BACKQUOTE);
 	  l.mustbe_keyword( "endcelldefine");
-	  l.mustbe( TokenType::EndOfLine);
       } else {
 	  l.mustbe_keyword( "module");
       }
-      while ( l.have( TokenType::EndOfLine)) ;
   }
 
 }
