@@ -1,0 +1,31 @@
+sudo apt install net-tools git wget emacs vim tree tcsh markdown elpa-markdown-mode yaml-mode
+cd src
+echo "Here is the buildup of the full environment"
+git clone https://github.com/ALIGN-analoglayout/ALIGN-public.git
+git checkout feature/make_easeofuse
+sudo apt-get install make git pkg-config python3 python3-pip python3-venv docker-compose graphviz libgraphviz-dev protobuf-compiler xvfb
+git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
+sudo cp -r lpsolve/ /usr/local/lib/
+sudo apt-get install libboost-all-dev curl
+export http_proxy=http://proxy-chain.intel.com:911
+export https_proxy=http://proxy-chain.intel.com:911
+sudo -E curl -o /klayout_0.25.4-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.25.4-1_amd64.deb
+sudo apt-get install /klayout_0.25.4-1_amd64.deb 
+git clone https://github.com/nlohmann/json.git
+sudo cp -r json/ /opt/
+python3 -m venv general
+source general/bin/activate
+pip install --upgrade pip
+pip install wheel pytest general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii
+cd ALIGN-public/GDSConv/
+pip install .
+cd ../CellFabric/
+pip install .
+cd ../PlaceRouteHierFlow/
+make
+export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
+export ALIGN_HOME=~/src/ALIGN-public
+cd work
+ln -s ~/src/ALIGN-public/compose/Makefile  .
+ln -s ~/src/general/ .
+make DESIGN=switched_capacitor_filter

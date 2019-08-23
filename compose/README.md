@@ -56,7 +56,7 @@ You can work inside the container to modify or debug its behavior:
 > it will bring up the rest of the services from within the
 > make-docker-service.  After that, make will run the flow for the
 > given design.
-
+>
 > If the services don't all come up, you can bring down the services
 > to retry:
 
@@ -99,7 +99,7 @@ bring up the services.
 - docker-compose down:  shut down all services and remove containers
      - --rmi all: remove images too
 	
-- docker-compose up -d <service>: bring up a specific service.  This
+- docker-compose up -d <service>:  bring up a specific service.  This
   will set any environment variables and bind volumes at the time of
   bring-up (even if already up).
   

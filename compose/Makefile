@@ -56,8 +56,23 @@ ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 ${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp services
 	$(call execute,topology-service,/bin/bash -c "source general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN}")
 
-# Whether we are using a volume or a directory changes the docker-compose file
+${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
 
+${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
+	cp $< ${DESIGN}/
+
+${DESIGN}:
+	mkdir ${DESIGN}
+
+clean:
+	rm -rf ${DESIGN}/*
+
+#
+# Docker-related targets
+#
+
+# Whether we are using a volume or a directory changes the docker-compose file
 ifeq (/, $(findstring /, $(ALIGN_WORK_DIR)))
 export VOL=dir-type
 dir-type:
@@ -78,20 +93,6 @@ docker-dir-type.yml:	${ALIGN_HOME}/compose/docker-dir-type.yml
 
 docker-core.yml:	${ALIGN_HOME}/compose/docker-core.yml
 	ln -s $< .
-
-${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
-
-${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
-	cp $< ${DESIGN}/
-
-${DESIGN}:
-	mkdir ${DESIGN}
-
-clean:
-	rm -rf ${DESIGN}/*
-
-# Docker-related targets
 
 docker:	make-docker-service
 	docker-compose exec make-docker-service bash -c "make DESIGN=${DESIGN}"
@@ -121,6 +122,10 @@ topology-service:	docker-compose.yml
 	touch $@
 
 klayoutconvert-service:	docker-compose.yml
+	$(call start, $@)
+	touch $@
+
+fullbuild-service:	docker-compose.yml
 	$(call start, $@)
 	touch $@
 
@@ -156,23 +161,22 @@ force-make-docker-service:
 	docker-compose up -d --build make-docker-service
 	touch make-docker-service
 
-docker-clean:
+docker-clean: docker-compose.yml
 	docker-compose  exec make-docker-service bash -c "rm -f docker-compose.yml"
 
-docker-buildclean:
+docker-buildclean: docker-compose.yml
 	docker-compose  exec make-docker-service bash -c "rm -rf $(DESIGN)"
 
 docker-filesdown:
 	rm -f *service volume vol-type dir-type
 
-docker-down: docker-filesdown
+docker-down: docker-filesdown docker-compose.yml
 	docker-compose down
 	docker volume rm -f compose_redirectVolume
 	rm -f docker-compose.yml
 
-docker-fulldown: docker-filesdown
+docker-fulldown: docker-filesdown docker-compose.yml
 	docker-compose -p compose down --rmi all --remove-orphans
 	docker volume rm -f compose_redirectVolume
 	rm -f docker-compose.yml
-
 
