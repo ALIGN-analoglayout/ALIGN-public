@@ -1103,7 +1103,6 @@ bool PnRdatabase::HardDesignRule() {
   this->DRC_info.MaskID_Via.push_back("75");
 }
 
-/*
 bool PnRdatabase::ReadDesignRule(string drfile) {
   cout << "PnRDB-Info: reading design rule file " << drfile <<endl;
 
@@ -2274,7 +2273,6 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
   DRC_info.MaskID_Via.push_back("75");
   
 }
-*/
 
 PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
   unitScale=2000;
