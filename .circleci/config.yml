@@ -107,7 +107,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make DESIGN=telescopic_ota && \
+            make docker DESIGN=telescopic_ota && \
             docker cp make_docker_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
@@ -117,7 +117,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make DESIGN=switched_capacitor_filter \
+            make docker DESIGN=switched_capacitor_filter \
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
@@ -127,7 +127,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make DESIGN=current_mirror_ota && \
+            make docker DESIGN=current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
@@ -137,7 +137,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make DESIGN=cascode_current_mirror_ota && \
+            make docker DESIGN=cascode_current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
@@ -147,7 +147,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make DESIGN=five_transistor_ota && \
+            make docker DESIGN=five_transistor_ota && \
             docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
