@@ -121,7 +121,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            make docker DESIGN=switched_capacitor_filter \
+            make docker DESIGN=switched_capacitor_filter && \
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
