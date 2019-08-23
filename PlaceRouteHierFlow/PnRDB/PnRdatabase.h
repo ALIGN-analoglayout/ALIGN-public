@@ -42,8 +42,6 @@ class PnRdatabase;
 class ReadVerilogHelper {
 
 
-    PnRDB::blockComplex temp_blockComplex,clear_blockComplex;
-
     PnRDB::hierNode temp_node,clear_node;
     PnRDB::hierNode Supply_node;
 
@@ -55,15 +53,11 @@ public:
       return db;
     }
 
-    ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {
-      // Why do we add one to begin with?
-	clear_blockComplex.instance.resize(1);
-	temp_blockComplex = clear_blockComplex;
-    }
+    ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
 
     void operator()(istream& fin, const string& fpath, const string& topcell);
 
-    void parse_module( Lexer& l, bool celldefine_mode=false);
+    void parse_module( Lexer& l, bool celldefine_mode=false, bool skip_mode=false);
 
     void parse_top( istream& fin);
 

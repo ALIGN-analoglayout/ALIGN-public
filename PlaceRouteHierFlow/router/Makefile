@@ -6,7 +6,7 @@ SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 
 SOURCE_CODE_PnRDB = ../PnRDB
 
-all: RawRouter.o Grid.o GlobalGrid.o Graph.o GlobalGraph.o GlobalRouter.o GcellGlobalRouter.o DetailRouter.o GcellDetailRouter.o PowerRouter.o Router.o
+all: RawRouter.o Grid.o GlobalGrid.o Graph.o GlobalGraph.o GlobalRouter.o GcellGlobalRouter.o DetailRouter.o GcellDetailRouter.o PowerRouter.o Router.o unit_tests
 	$(MAKE) -C FastSteinerUM
 
 RawRouter.o: RawRouter.cpp RawRouter.h $(SOURCE_CODE_PnRDB)/datatype.h Rdatatype.h 
@@ -31,10 +31,14 @@ PowerRouter.o: PowerRouter.cpp $(SOURCE_CODE_PnRDB)/datatype.h Rdatatype.h Grid.
 
 Router.o: Router.cpp $(SOURCE_CODE_PnRDB)/datatype.h Rdatatype.h GlobalRouter.h DetailRouter.h PowerRouter.h GcellGlobalRouter.h
 
+unit_tests.o: unit_tests.cpp
+
+unit_tests: unit_tests.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
 
 #########
 
 clean:
-	rm -f  *.o *_exe run.log ./Debug/*.txt output.txt vals ./GDS_To_ASCII/*.txt
+	rm -f  *.o *_exe run.log ./Debug/*.txt output.txt vals ./GDS_To_ASCII/*.txt unit_tests
 	make -C FastSteinerUM clean
 

@@ -3156,29 +3156,32 @@ int ReadVerilogHelper::process_connection( int iter, const string& net_name,
     if ( ptr != net_map.end()) {
 	net_index = ptr->second;
     } else {
-	PnRDB::net temp_net;
-	temp_net.name = net_name;
-	temp_net.degree = 0;
 	net_index = temp_node.Nets.size();
-	temp_node.Nets.push_back(temp_net);
+	temp_node.Nets.emplace_back();
+
+	PnRDB::net& b = temp_node.Nets.back();
+	b.name = net_name;
+	b.degree = 0;
+
 	net_map[net_name] = net_index;
     }
 
-    temp_node.Nets[net_index].degree++;
+    //    temp_node.Nets[net_index].degree++;
+    temp_node.Nets[net_index].connected.emplace_back();
 
-    {
-	PnRDB::connectNode temp_connectNode;
-	temp_connectNode.type = PnRDB::Block;
-	temp_connectNode.iter = iter;
-	temp_connectNode.iter2 = temp_node.Blocks.size();
-	temp_node.Nets[net_index].connected.push_back(temp_connectNode);
-    }
+    temp_node.Nets[net_index].degree =
+	temp_node.Nets[net_index].connected.size();
+
+    PnRDB::connectNode& b = temp_node.Nets[net_index].connected.back();
+    b.type = PnRDB::Block;
+    b.iter = iter;
+    b.iter2 = temp_node.Blocks.size();
 
     return net_index;
 }
 
 
-void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
+void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode, bool skip_mode)
 {
   unordered_map<string,int> terminal_map; // terminal_name to terminal_index
   unordered_map<string,int> net_map; // net_name to net_index
@@ -3209,9 +3212,23 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 
   while ( l.have_keyword( "input") ||
 	  l.have_keyword( "output") ||
-	  l.have_keyword( "supply0") ||
-	  l.have_keyword( "supply1") ||
 	  l.have_keyword( "inout")) {
+    string direction_tag = l.last_token.value;
+    if ( !l.have( TokenType::SEMICOLON)) {
+      do {
+	  l.mustbe( TokenType::NAME);
+	  string temp_name = l.last_token.value;
+	  auto ptr = terminal_map.find( temp_name);
+	  if (  ptr != terminal_map.end()) {
+	      temp_node.Terminals[ptr->second].type = direction_tag;
+	  }
+      } while ( l.have( static_cast<TokenType>( ',')));
+      l.mustbe( TokenType::SEMICOLON);  
+    }
+  }
+
+  while ( l.have_keyword( "supply0") ||
+	  l.have_keyword( "supply1")) {
     string direction_tag = l.last_token.value;
     if ( !l.have( TokenType::SEMICOLON)) {
       do {
@@ -3220,17 +3237,11 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 	      l.mustbe( TokenType::NAME);
 	  }
 	  string temp_name = l.last_token.value;
-	  if ( direction_tag == "input" || direction_tag == "output" ||
-	       direction_tag == "inout") {
-	      auto ptr = terminal_map.find( temp_name);
-	      if (  ptr != terminal_map.end()) {
-		  temp_node.Terminals[ptr->second].type = direction_tag;
-	      }
-	  } else { // supply0 supply1
-	      PnRDB::blockComplex temp_blockComplex;
-	      temp_blockComplex.instance.resize(1);
-	      temp_blockComplex.instance.back().master = direction_tag;
-	      temp_blockComplex.instance.back().name = temp_name;
+	  PnRDB::blockComplex temp_blockComplex;
+	  temp_blockComplex.instance.resize(1);
+	  temp_blockComplex.instance.back().master = direction_tag;
+	  temp_blockComplex.instance.back().name = temp_name;
+	  if ( !skip_mode) {
 	      Supply_node.Blocks.push_back(temp_blockComplex);
 	  }
       } while ( l.have( static_cast<TokenType>( ',')));
@@ -3239,13 +3250,10 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 
   }
 
-  
-
-
   while ( !l.have_keyword( "endmodule")) {
 
     PnRDB::blockComplex temp_blockComplex;
-    temp_blockComplex.instance.resize(1);
+    temp_blockComplex.instance.resize(1); // Need to add one instance; should be in the constructor of blockComplex
 
     auto& current_instance = temp_blockComplex.instance.back();
 
@@ -3281,7 +3289,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 
   }
 
-  if ( !celldefine_mode) {
+  if ( !celldefine_mode && !skip_mode) {
       db.hierTree.push_back(temp_node);
   }
   temp_node = clear_node;
@@ -3297,11 +3305,20 @@ void ReadVerilogHelper::parse_top( istream& fin)
       if ( l.have_keyword( "module")) {
 	  parse_module( l);
       } else if ( l.have( TokenType::BACKQUOTE)) {
-	  l.mustbe_keyword( "celldefine");
-	  l.mustbe_keyword( "module");
-	  parse_module( l, true);
-	  l.mustbe( TokenType::BACKQUOTE);
-	  l.mustbe_keyword( "endcelldefine");
+	  if ( l.have_keyword("celldefine")) {
+	      l.mustbe_keyword( "module");
+	      parse_module( l, true);
+	      l.mustbe( TokenType::BACKQUOTE);
+	      l.mustbe_keyword( "endcelldefine");
+	  } else if ( l.have_keyword("specify")) {
+	      while( !l.have( TokenType::BACKQUOTE)) {
+		  l.mustbe_keyword( "module");
+		  parse_module( l, false, true);
+	      }
+	      l.mustbe_keyword( "endspecify");
+	  } else {
+	      l.mustbe_keyword( "celldefine");
+	  }
       } else {
 	  l.mustbe_keyword( "module");
       }
