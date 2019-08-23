@@ -49,15 +49,19 @@ class ReadVerilogHelper {
 
 public:
 
-    PnRdatabase& get_db() const {
+    PnRdatabase& get_db() {
       return db;
+    }
+
+    PnRDB::hierNode& get_Supply_node() {
+      return Supply_node;
     }
 
     ReadVerilogHelper( PnRdatabase& db_in) : db(db_in) {}
 
     void operator()(istream& fin, const string& fpath, const string& topcell);
 
-    void parse_module( Lexer& l, bool celldefine_mode=false, bool skip_mode=false);
+    void parse_module( Lexer& l, bool celldefine_mode=false);
 
     void parse_top( istream& fin);
 

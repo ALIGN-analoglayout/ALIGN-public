@@ -3181,7 +3181,7 @@ int ReadVerilogHelper::process_connection( int iter, const string& net_name,
 }
 
 
-void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode, bool skip_mode)
+void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 {
   unordered_map<string,int> terminal_map; // terminal_name to terminal_index
   unordered_map<string,int> net_map; // net_name to net_index
@@ -3210,44 +3210,50 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode, bool skip_
 
   gen_terminal_map( terminal_map);
 
-  while ( l.have_keyword( "input") ||
-	  l.have_keyword( "output") ||
-	  l.have_keyword( "inout")) {
-    string direction_tag = l.last_token.value;
-    if ( !l.have( TokenType::SEMICOLON)) {
-      do {
-	  l.mustbe( TokenType::NAME);
-	  string temp_name = l.last_token.value;
-	  auto ptr = terminal_map.find( temp_name);
-	  if (  ptr != terminal_map.end()) {
-	      temp_node.Terminals[ptr->second].type = direction_tag;
-	  }
-      } while ( l.have( static_cast<TokenType>( ',')));
-      l.mustbe( TokenType::SEMICOLON);  
-    }
-  }
+  while (1) {
 
-  while ( l.have_keyword( "supply0") ||
-	  l.have_keyword( "supply1")) {
-    string direction_tag = l.last_token.value;
-    if ( !l.have( TokenType::SEMICOLON)) {
-      do {
-	  if ( l.have( TokenType::NUMBER)) {
-	  } else {
-	      l.mustbe( TokenType::NAME);
+      if ( l.have_keyword( "input") ||
+	   l.have_keyword( "output") ||
+	   l.have_keyword( "inout")) {
+	  string direction_tag = l.last_token.value;
+	  if ( !l.have( TokenType::SEMICOLON)) {
+	      do {
+		  l.mustbe( TokenType::NAME);
+		  string temp_name = l.last_token.value;
+		  auto ptr = terminal_map.find( temp_name);
+		  if (  ptr != terminal_map.end()) {
+		      temp_node.Terminals[ptr->second].type = direction_tag;
+		  }
+	      } while ( l.have( static_cast<TokenType>( ',')));
+	      l.mustbe( TokenType::SEMICOLON);  
 	  }
-	  string temp_name = l.last_token.value;
-	  PnRDB::blockComplex temp_blockComplex;
-	  temp_blockComplex.instance.resize(1);
-	  temp_blockComplex.instance.back().master = direction_tag;
-	  temp_blockComplex.instance.back().name = temp_name;
-	  if ( !skip_mode) {
-	      Supply_node.Blocks.push_back(temp_blockComplex);
-	  }
-      } while ( l.have( static_cast<TokenType>( ',')));
-      l.mustbe( TokenType::SEMICOLON);  
-    }
+      } else if ( l.have_keyword( "supply0") ||
+		  l.have_keyword( "supply1")) {
 
+	  string direction_tag = l.last_token.value;
+	  if ( !l.have( TokenType::SEMICOLON)) {
+	      do {
+		  if ( l.have( TokenType::NUMBER)) {
+		  } else {
+		      l.mustbe( TokenType::NAME);
+		  }
+		  string temp_name = l.last_token.value;
+		  PnRDB::blockComplex temp_blockComplex;
+		  temp_blockComplex.instance.resize(1);
+		  temp_blockComplex.instance.back().master = direction_tag;
+		  temp_blockComplex.instance.back().name = temp_name;
+		  Supply_node.Blocks.push_back(temp_blockComplex);
+	      } while ( l.have( static_cast<TokenType>( ',')));
+	      l.mustbe( TokenType::SEMICOLON);  
+	  }
+      } else if ( l.have_keyword( "specify")) {
+	  while ( !l.have( TokenType::EndOfFile) &&
+		  !l.have_keyword( "endspecify")) {
+	      l.get_token();
+	  }
+      } else {
+	  break;
+      }
   }
 
   while ( !l.have_keyword( "endmodule")) {
@@ -3289,7 +3295,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode, bool skip_
 
   }
 
-  if ( !celldefine_mode && !skip_mode) {
+  if ( !celldefine_mode) {
       db.hierTree.push_back(temp_node);
   }
   temp_node = clear_node;
@@ -3310,14 +3316,13 @@ void ReadVerilogHelper::parse_top( istream& fin)
 	      parse_module( l, true);
 	      l.mustbe( TokenType::BACKQUOTE);
 	      l.mustbe_keyword( "endcelldefine");
-	  } else if ( l.have_keyword("specify")) {
-	      while( !l.have( TokenType::BACKQUOTE)) {
-		  l.mustbe_keyword( "module");
-		  parse_module( l, false, true);
-	      }
-	      l.mustbe_keyword( "endspecify");
 	  } else {
 	      l.mustbe_keyword( "celldefine");
+	  }
+      } else if ( l.have_keyword( "specify")) {
+	  while ( !l.have( TokenType::EndOfFile) &&
+		  !l.have_keyword( "endspecify")) {
+	      l.get_token();
 	  }
       } else {
 	  l.mustbe_keyword( "module");
