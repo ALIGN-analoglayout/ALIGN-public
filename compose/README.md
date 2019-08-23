@@ -95,16 +95,17 @@ where project is the original directory name or project name used to
 bring up the services.
 
 - docker-compose up -d:  bring up all services (build images if needed)
-
+  
 - docker-compose down:  shut down all services and remove containers
   -  --rmi all: remove images too
+  
 - docker-compose up -d <service>:  bring up a specific service.  This will set any environment variables and bind volumes at the time of bring-up (even if already up).
+  
 - docker-compose up -d --build <service>:  build and bring up a service
+  
 - docker-compose exec <service> <command>:  execute a command on a running container
 
 Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
 modifying files in the relevant containers.  You can git push from
 those containers as well.
-
-
