@@ -35,11 +35,11 @@ x-environment:
 x-service: &default-service
   environment: *default-environment
   network_mode: host
-  command: /bin/bash -c "/usr/bin/tail -f /dev/null"
+  command: /bin/bash -c "ln -sf /general /dataVolume/ ; /usr/bin/tail -f /dev/null"
 #  user: "1000:1000"
   working_dir: /dataVolume
   volumes:
-    - ${ALIGN_WORK_DIR}:/dataVolume
+    - redirectVolume:/dataVolume
     - /etc/apt/apt.conf:/etc/apt/apt.conf
     
 x-build:  &default-build
@@ -61,6 +61,7 @@ services:
       - https_proxy
       - bhttp_proxy
       - bhttps_proxy
+      - BUILD=docker
       - ALIGN_HOME=/ALIGN-public
       - ALIGN_WORK_DIR
     image: make_docker_image
@@ -69,8 +70,9 @@ services:
       context: ${ALIGN_HOME}
       dockerfile: compose/Dockerfile
     container_name: make_docker_cont
+    command: /bin/bash -c "ln -sf /ALIGN-public/compose/Makefile /dataVolume; /usr/bin/tail -f /dev/null"
     volumes:
-      - ${ALIGN_WORK_DIR}:/dataVolume
+      - redirectVolume:/dataVolume
       - /var/run/:/var/run/
       - /tmp/.X11-unix:/tmp/.X11-unix
 
@@ -91,9 +93,10 @@ services:
       dockerfile: compose/Dockerfile.native
     container_name: fullbuild_cont
     volumes:
-      - ${ALIGN_WORK_DIR}:/dataVolume
+      - redirectVolume:/dataVolume
       - /var/run/:/var/run/
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /etc/apt/apt.conf:/etc/apt/apt.conf
       
   transfer-service:
     <<: *default-service
@@ -142,7 +145,8 @@ services:
       context: ${ALIGN_HOME}/Build/ThirdParty/Klayout
       dockerfile: Dockerfile.convert
     container_name: klayoutconvert_cont
-  
+
 volumes:
-  compose_dataVolume:
+  redirectVolume:
     external: true
+
