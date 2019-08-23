@@ -101,6 +101,10 @@ jobs:
           command: |
             echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
             echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+
+      - run:
+          shell: /bin/bash
+          command: |
             docker volume create --name=$ALIGN_WORK_DIR
             
       - run:
