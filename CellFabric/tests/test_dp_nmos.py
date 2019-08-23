@@ -66,3 +66,33 @@ def test_fabric_gds_json(setup):
         assert cand == gold
 
 
+def test_fabric_pex(setup):
+
+    c = setup
+
+    c.gen_data()
+
+    fn = 'tests/_dp_nmos.cir'
+
+    with open( fn + '_cand', "wt") as fp:
+
+        fp.write("* Extracted network below *\n")
+        c.pex.writePex(fp)
+
+        fp.write("\n* Grounding all V0 nodes *\n")
+        for i, sink in enumerate(sorted(\
+                {comp[1] for comp in c.pex.components if comp[1] != 0 and comp[1].startswith('v0_None')},\
+                key = lambda x: tuple([int(n) if n.isdigit() else n for n in x.split('_')]))):
+            fp.write(f"V{i} {sink} 0 0\n")
+
+        toprint = []
+        fp.write("\n* Adding current sources to all M2 nodes *\n")
+        for i, source in enumerate(sorted(\
+                {net for comp in c.pex.components for net in comp[1:2] if 'M2' in net},\
+                key = lambda x: tuple([int(n) if n.isdigit() else n for n in x.split('_')]))):
+            fp.write(f"I{i} {source} 0 1\n")
+            toprint.append(f"V({source})")
+
+        fp.write("\n.op")
+        fp.write("\n.print dc " + " ".join(toprint))
+        fp.write("\n.end")
