@@ -28,6 +28,8 @@ Outputs: all the results will be saved under 'Results' folder by default
 ``` Shell
 docker build -f Dockerfile.build -t with_protobuf .
 ```
+Googletest is now required to build this tool. (Build instruction are documents in `Dockerfile.build`.)
+
 2.  Build the image for place&route
 ``` Shell
 docker build -t placeroute_image .

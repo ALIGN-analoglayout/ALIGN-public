@@ -462,15 +462,27 @@ jobs:
 
       - run: |
           cd PlaceRouteHierFlow
-          docker build -t placeroute_image .
+          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
           docker volume create placerOutputVol
-          
+
       - run: |
-          cd PlaceRouteHierFlow
           apk add bash
-          ./run_small_in_docker.sh
+          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
+          mkdir -p coverage-reports
+          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
+          mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
+          docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
+          docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
+          docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
+          docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
           
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/PlaceRouteHierFlow
+            - coverage-reports/PlaceRouteHierFlow
+
   build-GDSConv:
     executor: docker-executor
     steps:
@@ -626,15 +638,15 @@ workflows:
   full:
     jobs:
       - start
-      - build-tally:
-          requires:
-            - start 
-      - build-sgi:
-          requires:
-            - start 
-      - build-PlacementEditor:
-          requires:
-            - start 
+#      - build-tally:
+#          requires:
+#            - start 
+#      - build-sgi:
+#          requires:
+#            - start 
+#      - build-PlacementEditor:
+#          requires:
+#            - start 
       - build-PlaceRouteHierFlow:
           requires:
             - start 
@@ -650,23 +662,24 @@ workflows:
       - build-cellfabric:
           requires:
             - start 
-      - build-satplacer:
-          requires:
-            - start 
+#      - build-satplacer:
+#          requires:
+#            - start 
       - build-pdk:
           requires:
             - start 
       - finish:
           requires:
-            - build-tally 
-            - build-sgi 
-            - build-PlacementEditor 
+#            - build-tally 
+#            - build-sgi 
+#            - build-PlacementEditor 
             - build-GDSConv 
             - build-sci 
             - build-cellfabric
             - build-cktgen 
             - build-pdk 
-            - build-satplacer
+            - build-PlaceRouteHierFlow
+#            - build-satplacer
 
   # end_to_end:
   #   jobs:

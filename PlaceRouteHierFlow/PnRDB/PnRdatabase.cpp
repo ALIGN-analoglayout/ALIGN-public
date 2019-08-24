@@ -41,7 +41,7 @@ json JSON_TimeTime () {
 
 long int PnRdatabase::get_number(string str) {
   long int val=0;
-  for (int number=0; number < str.length(); number++) {
+  for (unsigned int number=0; number < str.length(); number++) {
     if (isdigit (str[number]))
     val=(10*val)+(str[number]-48);
   }
@@ -2948,316 +2948,125 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
   return false;
 }
 
-
-// for Yauang's development
-bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
+bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const string& topcell) {
   string verilogfile=fpath+"/"+vname;
   cout<<"PnRDB-Info: reading Verilog file "<<verilogfile<<endl;
+
   ifstream fin;
-  string verilog_string;
-  size_t found;
-  vector<string> temp;
-  PnRDB::blockComplex temp_blockComplex,clear_blockComplex;
-  temp_blockComplex.instance.resize(1);
-  clear_blockComplex.instance.resize(1);
-  PnRDB::net temp_net,clear_net;
-  PnRDB::PowerNet temp_PowerNet, clear_PowerNet;
-  PnRDB::terminal temp_terminal,clear_terminal;
-  string temp_name;
-  PnRDB::pin temp_pin;
-  PnRDB::connectNode temp_connectNode;
-  PnRDB::hierNode temp_node,clear_node;
-  PnRDB::hierNode Supply_node;
-  int *p;
-  int p_temp=0;
-  p=&p_temp;
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
-    int in_module = 0;
-    int lock = 0;
-    int specify = 0;
     fin.open(verilogfile.c_str());
-    while(fin.peek()!=EOF) {
-        getline(fin, verilog_string);
-        // If strange modules, then lock reading
-        if((found=verilog_string.find("`endcelldefine"))!=string::npos){
-           lock = 0;
-           continue;
-           }
-           else{   
-               if((found=verilog_string.find("`celldefine"))!=string::npos){
-                  lock = 1;
-                  continue;
-                  }
-                  else{
-                       if((found=verilog_string.find("//"))!=string::npos){
-                           continue;
-                           }
-                            else{
-                                if((found=verilog_string.find("endspecify"))!=string::npos){
-                                   specify = 0;
-                                   continue;
-                                   }
-                                   else{
-                                       if((found=verilog_string.find("specify"))!=string::npos){
-                                           specify = 1;
-                                           continue;
-                                           }
-                                           else{
-                                               if(verilog_string.compare("")==0){
-                                                 continue;
-                                                 }
-                                               }
-                                       }	
-                               }
-                      }
-               }
+  } catch(ifstream::failure e) {
+      cerr<<"PnRDB-Error: failed to open Verilog file "<<verilogfile<<endl;
+      return false;
+  }
+
+  try {
+      ReadVerilogHelper rvh(*this);
+      rvh( fin, fpath, topcell);
+  } catch(ifstream::failure e) {
+      fin.close();
+      cerr<<"PnRDB-Error: fail to read Verilog file "<<endl;
+      return false;
+  }
+
+  try {
+      fin.close();
+  } catch(ifstream::failure e) {
+      cerr<<"PnRDB-Error: fail to close Verilog file "<<endl;
+      return false;
+  }
+
+  return true;
+
+}
+
+void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
+{
+
+    for(int i=0;i<db.hierTree.size();i++){
+
+	auto &curr_node = db.hierTree[i];
+
+	{
+	    if(db.DRC_info.Metal_info.size() < 2) {std::cout<<"PnRDB-Error: too few metal layers\n";}
+	    if(db.DRC_info.Metal_info[0].direct==1) { //horizontal
+		curr_node.bias_Vgraph=db.DRC_info.Metal_info[0].grid_unit_y;
+	    } else {
+		curr_node.bias_Hgraph=db.DRC_info.Metal_info[0].grid_unit_x;
+	    }
+	    if(db.DRC_info.Metal_info[1].direct==1) { //horizontal
+		curr_node.bias_Vgraph=db.DRC_info.Metal_info[1].grid_unit_y;
+	    } else {
+		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
+	    }
+	    //added one nodes to the class
+	    if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
+	    else{std::cout<<"Finished reading contraint file"<<std::endl;}
+	}
+    }
 
 
-///////////////////modefy this part
-	if(lock == 1){//find power key word
-          if((found=verilog_string.find("endmodule"))!=string::npos){
-             in_module = 0;
-             //added one nodes to the class
-             continue;
-             }
-             else{
-                 if((found=verilog_string.find("module"))!=string::npos){
-                    in_module = 1;
-                    //read node name, and terminal names
-                    temp = split_by_spaces_yg(verilog_string);
-                    vector<string> names = get_true_word(0,temp[1],0,';',p);
-                    Supply_node.name = names[0];
-                    Supply_node.isCompleted = 0;
-                    continue;
-                    }
-                 }
-          }
-///////////////modify this part
-
-        // judge whether verilog_string is in a certain module node
-        if(lock ==0){
-          if((found=verilog_string.find("endmodule"))!=string::npos){
-             in_module = 0;
-             if(DRC_info.Metal_info.size()<=1) {std::cout<<"PnRDB-Error: too less metal layers\n";}
-             if(DRC_info.Metal_info[0].direct==1) { //horizontal
-               temp_node.bias_Vgraph=DRC_info.Metal_info[0].grid_unit_y;
-             } else {
-               temp_node.bias_Hgraph=DRC_info.Metal_info[0].grid_unit_x;
-             }
-             if(DRC_info.Metal_info[1].direct==1) { //horizontal
-               temp_node.bias_Vgraph=DRC_info.Metal_info[1].grid_unit_y;
-             } else {
-               temp_node.bias_Hgraph=DRC_info.Metal_info[1].grid_unit_x;
-             }
-             //added one nodes to the class
-             if(!ReadConstraint(temp_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<temp_node.name<<endl;}
-             else{std::cout<<"Finished reading contraint file"<<std::endl;}
-             
-             hierTree.push_back(temp_node);
-             temp_node = clear_node;
-             continue;
-             }
-             else{
-                 if((found=verilog_string.find("module"))!=string::npos){
-                    in_module = 1;
-                    //read node name, and terminal names
-                    temp = split_by_spaces_yg(verilog_string);
-                    temp_node.name = temp[1];
-                    temp_node.isCompleted = 0;
-                    for(int i=3;i<temp.size()-1;i++){
-                        vector<string> names = get_true_word(0,temp[i],0,',',p);
-                        temp_terminal.name =names[0];
-                        temp_node.Terminals.push_back(temp_terminal);
-                        }
-                        temp_terminal = clear_terminal;
-                        continue;
-                    }
-                 }
-            }
-		
-        //read in module information into block, net
-        //read in node information, blocks, net and terminal.
-        if(in_module==1&&specify==0){	
-          //type inputs or outputs for terminal
-          if((found=verilog_string.find("input"))!=string::npos){
-             temp = split_by_spaces_yg(verilog_string);
-             //name extraction
-             for(int i=1;i<temp.size();i++){
-                if(i<temp.size()-1){
-                vector<string> names = get_true_word(0,temp[i],0,',',p);
-                temp_name = names[0];
-                }
-                else{
-                    vector<string> names = get_true_word(0,temp[i],0,';',p);
-                    temp_name = names[0];
-                    }
-
-             for(int j=0;j<temp_node.Terminals.size();j++){
-                if(temp_node.Terminals[j].name.compare(temp_name)==0){
-                   temp_node.Terminals[j].type = "input";
-                   break;
-                  }
-                }
-            }
-            continue;
-          }
-          else{
-              if((found=verilog_string.find("output"))!=string::npos){
-                 temp = split_by_spaces_yg(verilog_string);
-                 //name extraction
-                 for(int i=1;i<temp.size();i++){
-                    if(i<temp.size()-1){
-                       vector<string> names = get_true_word(0,temp[i],0,',',p);
-                       temp_name = names[0];
-                      }
-                      else{
-                          vector<string> names = get_true_word(0,temp[i],0,';',p);
-                          temp_name = names[0];
-                          }
-
-                 for(int j=0;j<temp_node.Terminals.size();j++){
-                    if(temp_node.Terminals[j].name.compare(temp_name)==0){
-                       temp_node.Terminals[j].type = "output";
-                       break;
-                      }
-                    }
-                   }
-                 continue;
-                }else{
-                   if((found=verilog_string.find("supply0"))!=string::npos){
-                      temp = split_by_spaces_yg(verilog_string);
-                      temp_blockComplex.instance.back().master=temp[0];
-                      vector<string> names = get_true_word(0,temp[1],0,';',p);
-                      temp_blockComplex.instance.back().name = names[0];
-                      Supply_node.Blocks.push_back(temp_blockComplex);
-                      temp_blockComplex = clear_blockComplex;
-                      continue;
-                    }else{
-                      if((found=verilog_string.find("supply1"))!=string::npos){
-                        temp = split_by_spaces_yg(verilog_string);
-                        temp_blockComplex.instance.back().master=temp[0];
-                        vector<string> names = get_true_word(0,temp[1],0,';',p);
-                        temp_blockComplex.instance.back().name = names[0];
-                        Supply_node.Blocks.push_back(temp_blockComplex);
-                        temp_blockComplex = clear_blockComplex;
-                        continue;
-                       }
-                        else{
-                        temp = split_by_spaces_yg(verilog_string);
-                        temp_blockComplex.instance.back().master=temp[0];
-                        temp_blockComplex.instance.back().name=temp[1];
-                        // read in pin for blockComplex.instance 
-                        for(int i=3;i<temp.size()-1;i++){
-                          temp_pin.name =  get_word(temp[i],'.','(');
-                          string net_name = get_word(temp[i],'(',')');
-                          int net_index=0;
-                          if(temp_node.Nets.size()==0){
-                            temp_net.name = net_name;
-                            temp_net.degree = 1;
-                            temp_connectNode.type = PnRDB::Block;
-                            temp_connectNode.iter = i-3;
-                            temp_connectNode.iter2 = temp_node.Blocks.size();
-                            temp_net.connected.push_back(temp_connectNode);
-                            temp_node.Nets.push_back(temp_net);
-                            temp_net=clear_net;
-                            net_index=0;
-                            }
-                          //to add a connection for terminal, when the nets name = terminal names
-                            else{
-                               int found_flag=0;
-                               for(int k=0;k<temp_node.Nets.size();k++){
-                                   if(temp_node.Nets[k].name.compare(net_name)==0){
-                                      temp_node.Nets[k].degree++;
-                                      temp_connectNode.type = PnRDB::Block;
-                                      temp_connectNode.iter = i-3;
-                                      temp_connectNode.iter2 = temp_node.Blocks.size();
-                                      temp_node.Nets[k].connected.push_back(temp_connectNode);
-                                      found_flag=1;
-                                      net_index =k;
-                                     }
-                                   }
-
-                                if(found_flag==0){
-                                   temp_net.name = net_name;
-                                   temp_net.degree = 1;
-                                   temp_connectNode.type = PnRDB::Block;
-                                   temp_connectNode.iter = i-3;
-                                   temp_connectNode.iter2 = temp_node.Blocks.size();
-                                   temp_net.connected.push_back(temp_connectNode);
-                                   net_index = temp_node.Nets.size();
-                                   temp_node.Nets.push_back(temp_net);
-                                   temp_net=clear_net;
-                                  }
-                              }
-                          temp_pin.netIter=net_index;
-                          temp_blockComplex.instance.back().blockPins.push_back(temp_pin);
-                         }
-                       }
-               temp_node.Blocks.push_back(temp_blockComplex);
-               temp_blockComplex = clear_blockComplex;
-              }
-           }	
-          }
-         }
-        }
     //update hiear tree here for the class Nodes.
     //inistial 
-    for(int i=0;i<hierTree.size();i++){
-        for(int j=0;j<hierTree[i].Blocks.size();j++){
-            hierTree[i].Blocks[j].child==-1;
+    for(int i=0;i<db.hierTree.size();i++){
+        for(int j=0;j<db.hierTree[i].Blocks.size();j++){
+            db.hierTree[i].Blocks[j].child==-1;
             }
         }
 		
     //update hiear tree here for the class Nodes.
-    for(int i=0;i<hierTree.size();i++){
-        for(int j=0;j<hierTree.size();j++){
-            for(int k=0;k<hierTree[j].Blocks.size();k++)
-                if(hierTree[j].Blocks[k].instance.back().master.compare(hierTree[i].name)==0){
-                   hierTree[j].Blocks[k].child = i;
+    for(int i=0;i<db.hierTree.size();i++){
+        for(int j=0;j<db.hierTree.size();j++){
+            for(int k=0;k<db.hierTree[j].Blocks.size();k++)
+                if(db.hierTree[j].Blocks[k].instance.back().master.compare(db.hierTree[i].name)==0){
+                   db.hierTree[j].Blocks[k].child = i;
                    int parent_found = 0;
-                   for(int p=0;p<hierTree[i].parent.size();p++){
-                       if(hierTree[i].parent[p] == j){parent_found=1;} 
+                   for(int p=0;p<db.hierTree[i].parent.size();p++){
+                       if(db.hierTree[i].parent[p] == j){parent_found=1;} 
                       }
-                   if(parent_found==0){hierTree[i].parent.push_back(j);}                   
+                   if(parent_found==0){db.hierTree[i].parent.push_back(j);}                   
                   }
             }
-        if(hierTree[i].name.compare(topcell)==0){
-           topidx =i;
-           hierTree[i].isTop = 1;
+        if(db.hierTree[i].name.compare(topcell)==0){
+           db.topidx =i;
+           db.hierTree[i].isTop = 1;
           }
                 //update terminal information
-        for(int l=0;l<hierTree[i].Nets.size();l++){
-            for(int m=0;m<hierTree[i].Terminals.size();m++){
-                if(hierTree[i].Nets[l].name.compare(hierTree[i].Terminals[m].name)==0){
-                   hierTree[i].Nets[l].degree++;
-                   temp_connectNode.type = PnRDB::Terminal;
-                   temp_connectNode.iter = m;
-                   temp_connectNode.iter2 = -1;
-                   hierTree[i].Nets[l].connected.push_back(temp_connectNode);
-                   hierTree[i].Nets[l].sink2Terminal = 1;
-                   hierTree[i].Terminals[m].netIter = l;
+        for(int l=0;l<db.hierTree[i].Nets.size();l++){
+            for(int m=0;m<db.hierTree[i].Terminals.size();m++){
+                if(db.hierTree[i].Nets[l].name.compare(db.hierTree[i].Terminals[m].name)==0){
+                   db.hierTree[i].Nets[l].degree++;
+		   {
+		       PnRDB::connectNode temp_connectNode;
+		       temp_connectNode.type = PnRDB::Terminal;
+		       temp_connectNode.iter = m;
+		       temp_connectNode.iter2 = -1;
+		       db.hierTree[i].Nets[l].connected.push_back(temp_connectNode);
+		   }
+                   db.hierTree[i].Nets[l].sink2Terminal = 1;
+                   db.hierTree[i].Terminals[m].netIter = l;
                    }
                 }
             }
       }
 		
-    for(int i=0;i<hierTree.size();i++){
-        for(int j=0;j<hierTree[i].Blocks.size();j++){
-            if(hierTree[i].Blocks[j].child==-1){
-               hierTree[i].Blocks[j].instance.back().isLeaf=1;
+    for(int i=0;i<db.hierTree.size();i++){
+        for(int j=0;j<db.hierTree[i].Blocks.size();j++){
+            if(db.hierTree[i].Blocks[j].child==-1){
+               db.hierTree[i].Blocks[j].instance.back().isLeaf=1;
                }
         else{
-             hierTree[i].Blocks[j].instance.back().isLeaf=0;
+             db.hierTree[i].Blocks[j].instance.back().isLeaf=0;
              }
            }
        }
 
   std::cout<<"Middle\n";
     //mergeLEFandGDS
-    for(int i=0;i<hierTree.size();i++){
-    //cout<<"hierTree node "<<i<<endl;
-    if(!MergeLEFMapData(hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<hierTree[i].name<<endl;
+    for(int i=0;i<db.hierTree.size();i++){
+    //cout<<"db.hierTree node "<<i<<endl;
+    if(!db.MergeLEFMapData(db.hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<db.hierTree[i].name<<endl;
       }else{
       std::cout<<"Finished merge lef data"<<std::endl;
       }
@@ -3274,65 +3083,259 @@ bool PnRdatabase::ReadVerilog(string fpath, string vname, string topcell) {
         }else{
          power =1;
         }
-      for(int j=0;j<hierTree.size();j++){
+      for(int j=0;j<db.hierTree.size();j++){
            std::vector<PnRDB::net> temp_net;
-           for(int k=0;k<hierTree[j].Nets.size();k++){
-               if(hierTree[j].Nets[k].name == supply_name_full or hierTree[j].Nets[k].name == supply_name){
+           for(int k=0;k<db.hierTree[j].Nets.size();k++){
+               if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
                    PnRDB::PowerNet temp_PowerNet;
-                   temp_PowerNet.name = hierTree[j].Nets[k].name;
+                   temp_PowerNet.name = db.hierTree[j].Nets[k].name;
                    temp_PowerNet.power = power;
-                   temp_PowerNet.connected = hierTree[j].Nets[k].connected;
-                   hierTree[j].PowerNets.push_back(temp_PowerNet);
+                   temp_PowerNet.connected = db.hierTree[j].Nets[k].connected;
+                   db.hierTree[j].PowerNets.push_back(temp_PowerNet);
                  }else{
-                   temp_net.push_back(hierTree[j].Nets[k]);
+                   temp_net.push_back(db.hierTree[j].Nets[k]);
                  }
               }
-            hierTree[j].Nets = temp_net;
+            db.hierTree[j].Nets = temp_net;
          }
      }
  
   //update pins & terminal connection iternet
-  for(int i=0;i<hierTree.size();i++){
-      for(int j=0;j<hierTree[i].Nets.size();j++){
-           for(int k=0;k<hierTree[i].Nets[j].connected.size();k++){
-                if(hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
-                        for(int m=0;m<(int)hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
-                            hierTree[i].Blocks[hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+  for(int i=0;i<db.hierTree.size();i++){
+      for(int j=0;j<db.hierTree[i].Nets.size();j++){
+           for(int k=0;k<db.hierTree[i].Nets[j].connected.size();k++){
+                if(db.hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
+                        for(int m=0;m<(int)db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
+                            db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
                         } // [RA] need confirmation -wbxu
                   }else{
-hierTree[i].Terminals[hierTree[i].Nets[j].connected[k].iter].netIter = j;
+db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
                   }
               }
          }
        
-      for(int j=0;j<hierTree[i].PowerNets.size();j++){
+      for(int j=0;j<db.hierTree[i].PowerNets.size();j++){
 
-           for(int k=0;k<hierTree[i].PowerNets[j].connected.size();k++){
-                if(hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
-                    for(int m=0;m<(int) hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
-                    hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
+           for(int k=0;k<db.hierTree[i].PowerNets[j].connected.size();k++){
+                if(db.hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
+                    for(int m=0;m<(int) db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
+                    db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
                     }  // [RA] need confirmation - wbxu
-                    hierTree[i].PowerNets[j].Pins.push_back(hierTree[i].Blocks[hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
+                    db.hierTree[i].PowerNets[j].Pins.push_back(db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[db.hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
                   }else{
-                    hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
+                    db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].netIter = -1;
                     PnRDB::pin temp_pin;
-                    temp_pin.name = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].name;
+                    temp_pin.name = db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].name;
                     temp_pin.netIter = -1;
-                    temp_pin.pinContacts = hierTree[i].Terminals[hierTree[i].PowerNets[j].connected[k].iter].termContacts;
-                    hierTree[i].PowerNets[j].Pins.push_back(temp_pin);
+                    temp_pin.pinContacts = db.hierTree[i].Terminals[db.hierTree[i].PowerNets[j].connected[k].iter].termContacts;
+                    db.hierTree[i].PowerNets[j].Pins.push_back(temp_pin);
                   }
               }
 
-         }
-     }
-   
-  std::cout<<"End of reading verilog\n";
-  return true;
+      }
   }
-catch(ifstream::failure e){
-  cerr<<"PnRDB-Error: fail to read Verilog file "<<endl;
-  return false;
+}
+
+void ReadVerilogHelper::gen_terminal_map( unordered_map<string,int>& terminal_map)
+{
+    terminal_map.clear();
+    for(int j=0;j<temp_node.Terminals.size();j++){
+	terminal_map[temp_node.Terminals[j].name] = j;
+    }
+}
+
+int ReadVerilogHelper::process_connection( int iter, const string& net_name,
+					   unordered_map<string,int>& net_map)
+{
+    int net_index=0;
+
+    unordered_map<string,int>::iterator ptr = net_map.find( net_name);
+
+    if ( ptr != net_map.end()) {
+	net_index = ptr->second;
+    } else {
+	net_index = temp_node.Nets.size();
+	temp_node.Nets.emplace_back();
+
+	PnRDB::net& b = temp_node.Nets.back();
+	b.name = net_name;
+	b.degree = 0;
+
+	net_map[net_name] = net_index;
+    }
+
+    //    temp_node.Nets[net_index].degree++;
+    temp_node.Nets[net_index].connected.emplace_back();
+
+    temp_node.Nets[net_index].degree =
+	temp_node.Nets[net_index].connected.size();
+
+    PnRDB::connectNode& b = temp_node.Nets[net_index].connected.back();
+    b.type = PnRDB::Block;
+    b.iter = iter;
+    b.iter2 = temp_node.Blocks.size();
+
+    return net_index;
+}
+
+
+void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
+{
+  unordered_map<string,int> terminal_map; // terminal_name to terminal_index
+  unordered_map<string,int> net_map; // net_name to net_index
+
+  l.mustbe( TokenType::NAME);
+  if ( !celldefine_mode) {
+      temp_node.name = l.last_token.value;
+      temp_node.isCompleted = 0;
+  } else {
+      Supply_node.name = l.last_token.value;
+      Supply_node.isCompleted = 0;
   }
+
+  if ( l.have( TokenType::LPAREN)) {
+      if ( !l.have( TokenType::RPAREN)) {
+	  do {
+	      l.mustbe( TokenType::NAME);
+	      PnRDB::terminal temp_terminal;
+	      temp_terminal.name = l.last_token.value;
+	      temp_node.Terminals.push_back( temp_terminal);
+	  } while ( l.have( static_cast<TokenType>( ',')));
+	  l.mustbe( TokenType::RPAREN);  
+      }
+  }
+  l.mustbe( TokenType::SEMICOLON);  
+
+  gen_terminal_map( terminal_map);
+
+  while (1) {
+
+      if ( l.have_keyword( "input") ||
+	   l.have_keyword( "output") ||
+	   l.have_keyword( "inout")) {
+	  string direction_tag = l.last_token.value;
+	  if ( !l.have( TokenType::SEMICOLON)) {
+	      do {
+		  l.mustbe( TokenType::NAME);
+		  string temp_name = l.last_token.value;
+		  auto ptr = terminal_map.find( temp_name);
+		  if (  ptr != terminal_map.end()) {
+		      temp_node.Terminals[ptr->second].type = direction_tag;
+		  }
+	      } while ( l.have( static_cast<TokenType>( ',')));
+	      l.mustbe( TokenType::SEMICOLON);  
+	  }
+      } else if ( l.have_keyword( "supply0") ||
+		  l.have_keyword( "supply1")) {
+
+	  string direction_tag = l.last_token.value;
+	  if ( !l.have( TokenType::SEMICOLON)) {
+	      do {
+		  if ( l.have( TokenType::NUMBER)) {
+		  } else {
+		      l.mustbe( TokenType::NAME);
+		  }
+		  string temp_name = l.last_token.value;
+		  PnRDB::blockComplex temp_blockComplex;
+		  temp_blockComplex.instance.resize(1);
+		  temp_blockComplex.instance.back().master = direction_tag;
+		  temp_blockComplex.instance.back().name = temp_name;
+		  Supply_node.Blocks.push_back(temp_blockComplex);
+	      } while ( l.have( static_cast<TokenType>( ',')));
+	      l.mustbe( TokenType::SEMICOLON);  
+	  }
+      } else if ( l.have_keyword( "specify")) {
+	  while ( !l.have( TokenType::EndOfFile) &&
+		  !l.have_keyword( "endspecify")) {
+	      l.get_token();
+	  }
+      } else {
+	  break;
+      }
+  }
+
+  while ( !l.have_keyword( "endmodule")) {
+
+    PnRDB::blockComplex temp_blockComplex;
+    temp_blockComplex.instance.resize(1); // Need to add one instance; should be in the constructor of blockComplex
+
+    auto& current_instance = temp_blockComplex.instance.back();
+
+    l.mustbe( TokenType::NAME);
+    current_instance.master = l.last_token.value;
+
+    l.mustbe( TokenType::NAME);
+    current_instance.name = l.last_token.value;
+
+    l.mustbe( TokenType::LPAREN);
+    if ( !l.have( TokenType::RPAREN)) {
+      int i = 0;
+      do {
+        PnRDB::pin temp_pin;
+	l.mustbe( TokenType::PERIOD);
+	l.mustbe( TokenType::NAME);
+	temp_pin.name = l.last_token.value;
+	l.mustbe( TokenType::LPAREN);
+	l.mustbe( TokenType::NAME);
+	string net_name = l.last_token.value;
+	l.mustbe( TokenType::RPAREN);
+
+	temp_pin.netIter = process_connection( i, net_name, net_map);
+	current_instance.blockPins.push_back(temp_pin);
+	
+	++i;
+      } while ( l.have( TokenType::COMMA));
+      l.mustbe( TokenType::RPAREN);
+    }
+    l.mustbe( TokenType::SEMICOLON);
+
+    temp_node.Blocks.push_back( temp_blockComplex);
+
+  }
+
+  if ( !celldefine_mode) {
+      db.hierTree.push_back(temp_node);
+  }
+  temp_node = clear_node;
+
+}
+
+void ReadVerilogHelper::parse_top( istream& fin)
+{
+
+  Lexer l(fin,1);
+
+  while( !l.have( TokenType::EndOfFile)) {
+      if ( l.have_keyword( "module")) {
+	  parse_module( l);
+      } else if ( l.have( TokenType::BACKQUOTE)) {
+	  if ( l.have_keyword("celldefine")) {
+	      l.mustbe_keyword( "module");
+	      parse_module( l, true);
+	      l.mustbe( TokenType::BACKQUOTE);
+	      l.mustbe_keyword( "endcelldefine");
+	  } else {
+	      l.mustbe_keyword( "celldefine");
+	  }
+      } else if ( l.have_keyword( "specify")) {
+	  while ( !l.have( TokenType::EndOfFile) &&
+		  !l.have_keyword( "endspecify")) {
+	      l.get_token();
+	  }
+      } else {
+	  l.mustbe_keyword( "module");
+      }
+  }
+
+}
+
+
+void ReadVerilogHelper::operator()(istream& fin, const string& fpath, const string& topcell)
+{
+    // Swap in the new parser
+    parse_top( fin);
+    semantic( fpath, topcell);
+    std::cout<<"End of reading verilog\n";
 }
 
 bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
@@ -3437,7 +3440,7 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 };
 
 // [RA] need further modification for hierarchical issue - wbxu
-void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
+void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.
   //update the original node
   std::cout<<"CheckinHierNode\n";
@@ -3701,79 +3704,6 @@ void PnRdatabase::CheckinHierNode(int nodeID, PnRDB::hierNode& updatedNode){
 
   std::cout<<"End update blocks in parent"<<std::endl;
   
-  /*
-  for(int i=0;i<hierTree[nodeID].parent.size();i++){
-     
-     //update father blocks information
-     for(int j=0;j<hierTree[hierTree[nodeID].parent[i]].Blocks.size();j++){
-        
-        if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.master.compare(updatedNode.name)==0){
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.gdsFile = updatedNode.gdsFile;
-          //update terminal to pin information
-          for(int k=0;k<hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins.size();k++){
-              hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.blockPins[k].pinContacts= updatedNode.Terminals[k].termContacts;
-             }
-		  //update child node net information to the block intermetels of father
-          for(int k=0;k<updatedNode.Nets.size();k++){
-			  for(int l=0;l<updatedNode.Nets[k].segments.size();l++){
-			      hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interMetals.push_back(updatedNode.Nets[k].segments[l]);
-			  }
-
-                  
-                  //to be done: update interVias of child node net information to the block interVias of father
-                          for(int l=0;l<updatedNode.Nets[k].interVias.size();l++){
-			      hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.interVias.push_back(updatedNode.Nets[k].interVias[l]);
-			  }
-                           
-			 }
-          //to be done: update interVias of child node net information to the block interVias of father
-          
-          //update block physical information to father.Blocks.instance
-	  int max_x,min_x,max_y,min_y;
-          max_x=updatedNode.Blocks[0].instance.placedBox.LL.x;
-          min_x=updatedNode.Blocks[0].instance.placedBox.LL.x;
-          max_y=updatedNode.Blocks[0].instance.placedBox.LL.y;
-          min_y=updatedNode.Blocks[0].instance.placedBox.LL.y;
-          for(int l=0;l<updatedNode.Blocks.size();l++){
-             if(updatedNode.Blocks[l].instance.placedBox.LL.x<min_x){
-                min_x = updatedNode.Blocks[l].instance.placedBox.LL.x;
-               }
-             if(updatedNode.Blocks[l].instance.placedBox.LR.x>max_x){
-                max_x = updatedNode.Blocks[l].instance.placedBox.LR.x;
-               }
-             if(updatedNode.Blocks[l].instance.placedBox.LL.y<min_y){
-                min_y = updatedNode.Blocks[l].instance.placedBox.LL.y;
-               }
-             if(updatedNode.Blocks[l].instance.placedBox.UL.y>max_y){
-                max_y = updatedNode.Blocks[l].instance.placedBox.UR.y;
-               }
-             }
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.width=max_x-min_x;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.height=max_y-min_y;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originCenter.x =  min_x+(max_x-min_x)/2;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originCenter.y =  min_y+(max_y-min_y)/2;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL.x = min_x;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL.y = min_y;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL.x = min_x;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL.y = max_y;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR.x = max_x;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR.y = max_y;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR.x = max_x;
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR.y = min_y;
-          if(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.size()>0){
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.pop_back();
-          }
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LL);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UL);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.UR);
-          hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.polygon.push_back(hierTree[hierTree[nodeID].parent[i]].Blocks[j].instance.originBox.LR);
-          }
-        }
-     }
-     */
 
 
 }
@@ -4050,810 +3980,6 @@ void PnRdatabase::PrintDesignRuleData() {
   }
 }
 
-// void PnRdatabase::GDSReaderWriterTxTFile_extension(string GDSData, GdsParser::GdsWriter& gw, long int& rndnum, vector<string>& strBlocks, vector<int>& llx, vector<int>& lly, vector<int>& urx, vector<int>& ury)
-// {
-
-// //{{{
-
-//   	//cout<<"Reading & Writing GDS & Gen. txt file for debugging"<<endl;
-//   	rndnum++;
-// 	string GDS_txt = "GDS_Building_Block_" + std::to_string(rndnum)+".txt";
-// 	//cout<<"GDS_txt: "<< GDS_txt<<endl;
-
-// 	string GDS_txt_location = "./router/GDS_To_ASCII/" + GDS_txt;
-
-// 	std::ofstream output_GDS_txt;
-// 	output_GDS_txt.open(GDS_txt_location);
-
-// 	//blockGDS_file_name.push_back(GDS_txt_location);
-
-// 	//cout <<"#BLOCKS: "<<rndnum<<endl;
-// 	EnumDataBase edb;
-// 	//cout << "TEST enum API"<<endl;
-// 	GdsParser::read(edb, GDSData);
-
-//         // + wbxu
-// 	//cout<<"wbxu testing"<<endl;
-//         for(int i=0;i<edb.record_list.size();i++) {
-//           //cout<<"Line# "<<i<<" "<<edb.record_list.at(i)<<" "<<edb.data_list.at(i)<<endl;
-//         }
-//         for(int i=0;i<edb.header_db_int2.size();i++) {
-// 	  //cout<<"edb.header_db_int2: "<<edb.header_db_int2[i]<<endl;
-//         }
-// 	//***** Print & Change to lower case GDS Data *****//
-// 	//cout <<"begin_end_cbk_vec.size() :"<< edb.begin_end_cbk_vec.size()<<endl;
-// 	for(int q=0;q<edb.begin_end_cbk_vec.size();q++){
-// 		//Upper case to Lower case	
-// 		std::transform(edb.begin_end_cbk_vec[q].begin(), edb.begin_end_cbk_vec[q].end(), edb.begin_end_cbk_vec[q].begin(),::tolower);
-// 		//cout<<"edb.begin_end_cbk_vec #"<< q<<" :"<<edb.begin_end_cbk_vec[q]<<endl;
-// 	}
-// 	//cout<<"after callback"<<endl;;
-// 	for(int q=0;q<edb.header_db_int4.size();q++)
-// 	{
-// 		//cout<<"edb.header_db_int4: "<<edb.header_db_int4[q]<<" edb.vInteger_vec_int4 -> ";
-// 		for(int qq=0;qq<edb.vInteger_vec_int4[q].size();qq++){
-// 			//cout<<edb.vInteger_vec_int4[q][qq]<<" ";
-// 		}
-//                 //cout<<endl;
-// 	}
-// 	//cout <<"header_db_int4.size() :"<< edb.header_db_int4.size()<<endl;
-// 	//cout <<"data_type_db_int4.size() :"<< edb.data_type_db_int4.size()<<endl;
-// 	//cout <<"vInteger_vec_int4.size() :"<< edb.vInteger_vec_int4.size()<<endl;
-// 	for(int q=0;q<edb.header_db_int4.size();q++)
-// 	{
-// 		//Upper case to Lower case	
-// 		std::transform(edb.header_db_int4[q].begin(), edb.header_db_int4[q].end(), edb.header_db_int4[q].begin(),::tolower);
-// 		std::transform(edb.data_type_db_int4[q].begin(), edb.data_type_db_int4[q].end(), edb.data_type_db_int4[q].begin(),::tolower);
-		
-// 		//cout<<"edb.header_db_int4: "<<edb.header_db_int4[q]<<" ";	 
-// 		//cout<<"edb.data_type_db_int4: "<< edb.data_type_db_int4[q]<<"edb.vInteger_vec_int4 ->  ";
-		
-// 		for(int qq=0;qq<edb.vInteger_vec_int4[q].size();qq++){
-// 			//cout<<edb.vInteger_vec_int4[q][qq]<<" ";
-// 		}
-// 		//cout<<endl;	
-// 	}	
-// 	for(int q=0;q<edb.data_type_db_int4.size();q++){
-// 		//cout<<"edb.data_type_db_int4: "<<edb.data_type_db_int4[q]<<endl;
-// 	}
-// 	for(int q=0;q<edb.vInteger_vec_int4.size();q++){
-// 		//cout<<"Data int4: ";
-// 		for(int qq=0;qq<edb.vInteger_vec_int4[q].size();qq++){
-// 			//cout<<"edb.vInteger_vec_int4: "<<edb.vInteger_vec_int4[q][qq]<<" ";
-// 		}
-// 		//cout<<endl;
-// 	}
-
-// 	for(int q=0;q<edb.header_db_string.size();q++)
-// 	{
-// 		//Upper case to Lower case	
-// 		std::transform(edb.header_db_string[q].begin(), edb.header_db_string[q].end(), edb.header_db_string[q].begin(),::tolower);
-// 		std::transform(edb.data_type_db_string[q].begin(), edb.data_type_db_string[q].end(), edb.data_type_db_string[q].begin(),::tolower);
-// 		//cout<<"edb.header_db_string: "<<edb.header_db_string[q]<<endl;
-// 	}
-// 	for(int q=0;q<edb.data_type_db_string.size();q++){
-// 		//cout<<"edb.data_type_db_string: "<<edb.data_type_db_string[q]<<endl;
-// 	}	
-// 	for(int q=0;q<edb.vInteger_vec_string.size();q++){
-// 		//cout<<"edb.vInteger_vec_string: "<<edb.vInteger_vec_string[q]<<endl;
-// 	}
-
-// 	//cout <<"header_db_Real8.size() :"<< edb.header_db_Real8.size()<<endl;
-// 	//cout <<"data_type_db_Real8.size() :"<< edb.data_type_db_Real8.size()<<endl;
-// 	//cout <<"vInteger_vec_Real8.size() :"<< edb.vInteger_vec_Real8.size()<<endl;
-// 	for(int q=0;q<edb.header_db_Real8.size();q++){
-// 		//Upper case to Lower case	
-// 		std::transform(edb.header_db_Real8[q].begin(), edb.header_db_Real8[q].end(), edb.header_db_Real8[q].begin(),::tolower);
-// 		std::transform(edb.data_type_db_Real8[q].begin(), edb.data_type_db_Real8[q].end(), edb.data_type_db_Real8[q].begin(),::tolower);
-// 		//cout<<"edb.header_db_Real8: "<<edb.header_db_Real8[q]<<endl;
-// 		//cout<<"edb.data_type_db_Real8: "<<edb.data_type_db_Real8[q]<<" ";
-// 		for(int qq=0;qq<edb.vInteger_vec_Real8[q].size();qq++){
-// 			//cout<<"edb.vInteger_vec_Real8: "<<edb.vInteger_vec_Real8[q][qq]<<" ";
-// 		}
-// 		//cout<<endl;
-// 	}
-
-// 	//cout<<"print bit array type"<<endl;
-// 	//cout<<"bit array header"<<endl;
-// 	for(int q=0;q<edb.header_db_bitarray.size();q++)
-// 	{
-// 		std::transform(edb.header_db_bitarray[q].begin(), edb.header_db_bitarray[q].end(), edb.header_db_bitarray[q].begin(),::tolower);
-// 		//cout<<"edb.header_db_bitarray: "<<edb.header_db_bitarray[q]<<endl;
-// 	}
-// 	//cout<<"bit array datatype"<<endl;
-// 	for(int q=0;q<edb.data_type_db_bitarray.size();q++)
-// 	{
-// 		std::transform(edb.data_type_db_bitarray[q].begin(), edb.data_type_db_bitarray[q].end(), edb.data_type_db_bitarray[q].begin(),::tolower);
-// 		//cout<<"edb.data_type_db_bitarray: "<<edb.data_type_db_bitarray[q]<<endl;
-// 	}
-// 	//cout<<"bit array integer"<<endl;
-// 	for(int q=0;q<edb.vInteger_vec_bitarray.size();q++)
-// 	{
-// 		//cout<<"size vInteger_vec_bitarray[q]: "<<edb.vInteger_vec_bitarray[q].size()<<endl;
-// 		for(int qq=0;qq<edb.vInteger_vec_bitarray[q].size();qq++)
-// 		{	
-// 			//cout<<"edb.vInteger_vec_bitarray: "<<edb.vInteger_vec_bitarray[q][qq]<<endl;
-// 		}
-// 	}
-// 	//Read & Write GDS and Gen. txt file here
-//   	double units; 
-//   	int layerNo;
-//   	double PathWidth; 
-//   	int    PathDataType;
-//   	int xy_Num;
-// 	int datatype;
-// 	int texttype;
-// 	int presentation;
-// 	bool strans;	
-// 	int x[5], y[5];
-// 	int T_llx=INT_MAX; int T_lly=INT_MAX; int T_urx=-1*INT_MAX; int T_ury=-1*INT_MAX;
-//   	string strname;
-//   	string sname;
-	
-// 	//Layer tempLayer;
-// 	//Pin tempPin;
-	
-// 	int be_cbk_cnt=0;	
-// 	int int4_cnt=0;	
-// 	string tmp_be_cbk_vec;
-	
-// 	int CntString=0;
-// 	int CntHeaderString=0;
-// 	int CntReal8=0;
-// 	int CntBitArray=0;
-// 	int CntBgnstr=0;
-
-// 	//cout <<"Size comparison"<<endl;
-// 	//cout <<"header_db_int2.size()    int2  :"<< edb.header_db_int2.size()<<endl;
-// 	//cout <<"begin_end_cbk_vec.size() be_cbk:"<< edb.begin_end_cbk_vec.size()<<endl;
-// 	//cout <<"header_db_int4.size() :"<< edb.header_db_int4.size()<<endl;
-// 	//cout<<"edb.header_db_int2.size(): "<<edb.header_db_int2.size()<<endl;
-// 	int int2_idx=0;
-//         int int4_idx=0;
-//         int real8_idx=0;
-//         int string_idx=0;
-//         int nodata_idx=0;
-//         int bit_idx=0;
-// 	for(int i=0;i<edb.record_list.size();i++) {
-//           if( edb.record_list[i].compare("HEADER")==0  ) {
-//               int2_idx++;
-//           } else if( edb.record_list[i].compare("BGNLIB")==0  ) {
-//               int2_idx++;
-//           } else if( edb.record_list[i].compare("ENDLIB")==0  ) {
-//               nodata_idx++;
-//           } else if( edb.record_list[i].compare("LIBNAME")==0  ) {
-//               string_idx++;
-//           } else if( edb.record_list[i].compare("UNITS")==0  ) {
-//               real8_idx++;
-//           } else if( edb.record_list[i].compare("BGNSTR")==0  ) {
-//               gw.gds_write_bgnstr(); 
-//               gw.gds_flush(); int2_idx++;
-//           } else if( edb.record_list[i].compare("STRNAME")==0  ) {
-//               strname=edb.vInteger_vec_string[string_idx]+"_"+std::to_string(rndnum);
-// 	      strBlocks.push_back(strname);
-//               gw.gds_write_strname( strname.c_str() ); 
-//               gw.gds_flush(); string_idx++;
-//           } else if( edb.record_list[i].compare("BOUNDARY")==0  ) {
-//               gw.gds_write_boundary(); 
-//               gw.gds_flush(); nodata_idx++; 
-//           } else if( edb.record_list[i].compare("LAYER")==0  ) {
-//               gw.gds_write_layer( edb.vInteger_vec_int2[int2_idx][0] ); 
-//               gw.gds_flush(); int2_idx++;
-//           } else if( edb.record_list[i].compare("DATATYPE")==0  ) {
-//               gw.gds_write_datatype(edb.vInteger_vec_int2[int2_idx][0] );
-//               gw.gds_flush(); int2_idx++;
-//           } else if( edb.record_list[i].compare("XY")==0  ) {
-//               int ss=0;
-//               for(int w=0;w<(int)edb.vInteger_vec_int4[int4_idx].size();w++) {
-// 	          if(w%2 == 0){
-// 	      	        x[(int)w/2]=edb.vInteger_vec_int4[int4_idx][w];
-// 	          }
-// 	          else if(w%2 == 1){
-// 	      	        y[(int)w/2]=edb.vInteger_vec_int4[int4_idx][w];
-//                         ss++;
-// 	          }
-//               }
-// 	      for(int jj=0;jj<ss;jj++) {
-//                   if(T_llx>x[jj]) {T_llx=x[jj];}
-//                   if(T_lly>y[jj]) {T_lly=y[jj];}
-// 	          if(T_urx<x[jj]) {T_urx=x[jj];} 	
-// 	          if(T_ury<y[jj]) {T_ury=y[jj];} 	
-// 	      }
-// 	      gw.gds_write_xy(  x, y, ss );
-//   	      gw.gds_flush(); int4_idx++;
-//           } else if( edb.record_list[i].compare("ENDEL")==0  ) {
-//               gw.gds_write_endel();
-//   	      gw.gds_flush(); nodata_idx++;
-//           } else if( edb.record_list[i].compare("ENDSTR")==0  ) {
-//               gw.gds_write_endstr(  );
-//   	      gw.gds_flush(); nodata_idx++;
-//           } else if( edb.record_list[i].compare("TEXT")==0  ) {
-//               gw.gds_write_text(  );
-//   	      gw.gds_flush(); nodata_idx++;
-//           } else if( edb.record_list[i].compare("TEXTTYPE")==0  ) {
-//       	      texttype=edb.vInteger_vec_int2[int2_idx][0];
-// 	      gw.gds_write_texttype( texttype  );
-//   	      gw.gds_flush(); int2_idx++;
-//           } else if( edb.record_list[i].compare("PRESENTATION")==0  ) {
-// 	      presentation =edb.vInteger_vec_bitarray[bit_idx][0];	
-// 	      gw.gds_write_presentation( presentation,1,1 );
-// 	      gw.gds_flush(); bit_idx++;
-//           } else if( edb.record_list[i].compare("STRANS")==0  ) {
-// 	      strans =(bool)edb.vInteger_vec_bitarray[bit_idx][0];	
-// 	      gw.gds_write_strans( strans,false,false  );
-// 	      gw.gds_flush(); bit_idx++;
-//           } else if( edb.record_list[i].compare("MAG")==0  ) {
-// 	      gw.gds_write_mag(edb.vInteger_vec_Real8[real8_idx][0]);
-// 	      gw.gds_flush(); real8_idx++;
-//           } else if( edb.record_list[i].compare("STRING")==0  ) {
-// 	      gw.gds_write_string(edb.vInteger_vec_string[string_idx].c_str());
-// 	      gw.gds_flush(); string_idx++;
-//           } else if( edb.record_list[i].compare("SREF")==0  ) {
-//      	      gw.gds_write_sref(  );
-//      	      gw.gds_flush(  ); nodata_idx++;
-//           } else if( edb.record_list[i].compare("SNAME")==0  ) {
-// 	      sname = edb.vInteger_vec_string[string_idx]+"_"+std::to_string(rndnum);	
-// 	      gw.gds_write_sname( sname.c_str());
-//   	      gw.gds_flush(); string_idx++;
-//           } else if( edb.record_list[i].compare("PROPATTR")==0  ) {
-//               gw.gds_write_propattr( edb.vInteger_vec_int2[int2_idx][0] );
-//               gw.gds_flush(); int2_idx++;   // imcomplete coding- wbxu
-//           } else if( edb.record_list[i].compare("PROPVALUE")==0  ) {
-//               gw.gds_write_propvalue( edb.vInteger_vec_string[string_idx].c_str() );
-//               string_idx++; // imcomplete coding -wbxu
-//           } else if( edb.record_list[i].compare("ANGLE")==0  ) {
-// 	      gw.gds_write_angle(edb.vInteger_vec_Real8[real8_idx][0]);//angle
-//   	      gw.gds_flush(); real8_idx++;
-//           } else {
-//               std::cerr<<"Error: incorrect record "<<edb.record_list[i]<<std::endl;
-//           }
-//         }
-
-// /*
-// 	for(int q=0;q<edb.header_db_int2.size();q++)
-// 	//for(int q=0;q<edb.begin_end_cbk_vec.size();q++)
-// 	{
-// 	//if(q<edb.header_db_int2.size())	
-// 		//Upper case to Lower case	
-// 		std::transform(edb.header_db_int2[q].begin(), edb.header_db_int2[q].end(), edb.header_db_int2[q].begin(),::tolower);
-// 		std::transform(edb.data_type_db_int2[q].begin(), edb.data_type_db_int2[q].end(), edb.data_type_db_int2[q].begin(),::tolower);
-// 		cout<<"Headers int2: "<< edb.header_db_int2[q]<<endl;
-	
-// 		//int2: header, bgnstr
-// 		if(edb.header_db_int2[q].compare("header")==0){
-// 			output_GDS_txt << edb.header_db_int2[q]<<" ";
-// 			cout<<"Headers int2 header: "<< edb.header_db_int2[q]<<endl;
-// 			//output_GDS_txt << edb.data_type_db_int2[q]<<" ";
-		
-// 			for(int qq=0;qq<edb.vInteger_vec_int2[q].size();qq++){	
-// 				output_GDS_txt << edb.vInteger_vec_int2[q][qq]<<" ";
-// 			}
-// 			output_GDS_txt<<endl;
-			
-// 		}
-// 		else if(edb.header_db_int2[q].compare("bgnlib")==0)
-// 		{
-// 			cout<<"Headers int2 bgnlib: "<< edb.header_db_int2[q]<<endl;
-// 			output_GDS_txt << edb.header_db_int2[q]<<" ";
-// 			//output_GDS_txt << edb.data_type_db_int2[q]<<" ";
-			
-// 			for(int qq=0;qq<edb.vInteger_vec_int2[q].size();qq++){	
-// 				output_GDS_txt << edb.vInteger_vec_int2[q][qq]<<" ";
-// 			}
-// 			output_GDS_txt<<endl;
-			
-// 			//libname "Research_Project"	
-// 			output_GDS_txt<<edb.header_db_string[CntHeaderString]<<" ";
-// 			CntHeaderString++;
-// 			//output_GDS_txt<<edb.vInteger_vec_string[0]<<endl;
-// 	  		cout<<"CntString bgnlib: "<<CntString<<endl;	
-// 			output_GDS_txt<<edb.vInteger_vec_string[CntString]<<endl;
-// 	  		cout<<"vInteger_vec_string[CntString]: "<<edb.vInteger_vec_string[CntString]<<endl;	
-// 			CntString++;
-			
-// 			//units 0.00025 2.5e-10
-// 			output_GDS_txt<<edb.header_db_Real8[CntReal8]<<" ";
-// 			for(int qq=0;qq<edb.vInteger_vec_Real8[CntReal8].size();qq++){
-// 				output_GDS_txt<<edb.vInteger_vec_Real8[CntReal8][qq]<<" ";
-	  			
-// 				units=edb.vInteger_vec_Real8[CntReal8][qq];
-// 			}
-// 			CntReal8++;
-// 			output_GDS_txt<<endl;
-
-// 		}
-// 		else if(edb.header_db_int2[q].compare("bgnstr")==0 && edb.header_db_string[CntHeaderString].compare("strname")==0)
-// 		{
-// 			cout<<"Headers int2 bgnstr: "<< edb.header_db_int2[q]<<endl;
-// 			output_GDS_txt << edb.header_db_int2[q]<<" ";
-// 			//output_GDS_txt << edb.data_type_db_int2[q]<<" ";
-			
-// 			for(int qq=0;qq<edb.vInteger_vec_int2[q].size();qq++){	
-// 				output_GDS_txt << edb.vInteger_vec_int2[q][qq]<<" ";
-// 			}
-// 			output_GDS_txt<<endl;
-// 			output_GDS_txt<<edb.header_db_string[CntHeaderString]<<" ";//strname
-// 			cout<<"header_db_string: "<<edb.header_db_string[CntHeaderString]<<endl;//strname
-// 			CntHeaderString++;
-			
-// 			//output_GDS_txt<<edb.vInteger_vec_string[1]<<endl;//GDS Name
-// 			output_GDS_txt<<edb.vInteger_vec_string[CntString]<<endl;//GDS Name
-
-// 	  		//strname=edb.vInteger_vec_string[1]+"_"+to_string(rndnum);
-// 	  		//strname=edb.vInteger_vec_string[CntString]+"_"+to_string(rndnum);
-// 	  		cout<<"CntString bgnstr: "<<CntString<<endl;
-// 			strname=edb.vInteger_vec_string[CntString]+"_"+to_string(rndnum);
-// 			strBlocks.push_back(strname);
-// 			for(int q=0;q<strBlocks.size();q++){
-// 				cout<<"strBlocks Name print: "<<strBlocks[q]<<endl;
-// 			}
-
-// 			CntString++;
-			
-// 			if(CntBgnstr!=0)
-// 			{
-//   				gw.gds_write_endstr(  );
-//   				gw.gds_flush(  );
-// 				output_GDS_txt<<"endstr"<<endl;
-// 			}
-//   			// write header and strname for structure
-//   			gw.gds_write_bgnstr(  );
-//   				gw.gds_flush(  );
-//   			CntBgnstr++;
-// 			gw.gds_write_strname( strname.c_str() );
-//   				gw.gds_flush(  );
-// 		}
-// 		else
-// 		{	
-//   	  	//{{{	
-// 			InternalPath tempInternalPath;
-			
-// 			//begin_end: boundary, path, sref	
-// 			if(be_cbk_cnt ==0){
-// 				//output_GDS_txt <<"q-3? "<<q-3<<endl;	
-// 				output_GDS_txt << edb.begin_end_cbk_vec[q-3]<<endl;//"boundary", "path", "text" string
-// 				tmp_be_cbk_vec = edb.begin_end_cbk_vec[q-3];	
-// 				be_cbk_cnt = 0;	
-			
-			
-// 				if(	tmp_be_cbk_vec.compare("boundary")==0)
-// 				{
-// 					gw.gds_write_boundary(  );//write "boundary"
-//   					gw.gds_flush(  );
-// 				}	
-// 				if(	tmp_be_cbk_vec.compare("path")==0)
-// 				{
-// 	  				gw.gds_write_path(  );
-//   					gw.gds_flush(  );
-// 				}
-// 				if(	tmp_be_cbk_vec.compare("text")==0)
-// 				{
-// 					gw.gds_write_text(  );//write "text"
-//   					gw.gds_flush(  );
-// 				}	
-// 				/////이거 왜 했더라
-// 				///////////if(	tmp_be_cbk_vec.compare("sref")==0)
-// 				///////////{
-//       			///////////	gw.gds_write_sref(  );
-// 				///////////}
-// 			}	
-			
-// 			//int2: layers(bn_cbk_cnt==1), datatype(bn_cbk_cnt==2)
-// 			output_GDS_txt << edb.header_db_int2[q]<<" ";
-// 			be_cbk_cnt++;	
-// 			//int2: layers number(bn_cbk_cnt==1), datatype number(bn_cbk_cnt==2)
-// 			for(int qq=0;qq<edb.vInteger_vec_int2[q].size();qq++)
-// 			{
-// 				output_GDS_txt << edb.vInteger_vec_int2[q][qq]<<" ";
-		
-// 				if(	tmp_be_cbk_vec.compare("boundary")==0)
-// 				{//{{{
-// 					//gw.gds_write_boundary(  );//write "boundary"
-
-// 					//int2: layers number(bn_cbk_cnt==1)
-//       				if(be_cbk_cnt==1){		
-// 						layerNo=edb.vInteger_vec_int2[q][qq];///layer 옆 숫자 STORED
-// 	  					//tempLayer.layerNum = layerNo;	  //No use 
-// 						gw.gds_write_layer( layerNo );
-//   						gw.gds_flush(  );
-// 					}
-// 					//int2: datatype number(bn_cbk_cnt==2)
-// 					if(be_cbk_cnt==2){
-// 	  					datatype=edb.vInteger_vec_int2[q][qq];///datatype 옆 숫자 STORED
-// 						gw.gds_write_datatype( datatype  );
-//   						gw.gds_flush(  );
-// 					}
-// 				}//}}}	
-// 				if(	tmp_be_cbk_vec.compare("path")==0)
-// 				{//{{{
-// 	  				//gw.gds_write_path(  );
-// 					//int2: layers number(bn_cbk_cnt==1)
-//       				if(be_cbk_cnt==1){		
-// 						layerNo=edb.vInteger_vec_int2[q][qq];  ///layer 옆 숫자 STORED
-// 	  					//tempLayer.layerNum = layerNo;	   //No use
-// 	  					gw.gds_write_layer(  layerNo );
-//   						gw.gds_flush(  );
-// 					}
-// 					//int2: datatype number(bn_cbk_cnt==2)
-// 					if(be_cbk_cnt==2){
-//       					PathDataType=edb.vInteger_vec_int2[q][qq];//datatype의 숫자
-// 	  					tempInternalPath.PathDataType = PathDataType;///datatype 옆 숫자 STORED
-// 	  					gw.gds_write_datatype(  PathDataType );
-//   						gw.gds_flush(  );
-// 					}
-// 				}//}}}
-// 				if(	tmp_be_cbk_vec.compare("text")==0)
-// 				{//{{{
-//       				if(be_cbk_cnt==1){		
-// 						layerNo=edb.vInteger_vec_int2[q][qq];  ///layer 옆 숫자 STORED
-// 	  					//tempLayer.layerNum = layerNo;	   //No use
-// 	  					gw.gds_write_layer(  layerNo );
-//   						gw.gds_flush(  );
-// 					}
-// 					//int2: datatype number(bn_cbk_cnt==2)
-// 					if(be_cbk_cnt==2){
-//       					texttype=edb.vInteger_vec_int2[q][qq];//texttype의 숫자
-// 						gw.gds_write_texttype( texttype  );
-//   						gw.gds_flush(  );
-					
-// 					//presentation
-// 						if(edb.header_db_bitarray[CntBitArray].compare("presentation")==0)
-// 						{
-// 							output_GDS_txt <<endl;
-// 							output_GDS_txt << edb.header_db_bitarray[CntBitArray]<<" ";
-// 							output_GDS_txt << edb.vInteger_vec_bitarray[CntBitArray][0]<<" ";
-// 							output_GDS_txt <<endl;
-// 							presentation =edb.vInteger_vec_bitarray[CntBitArray][0];	
-// 							gw.gds_write_presentation( presentation,1,1  );
-//   							gw.gds_flush(  );
-// 							CntBitArray++;
-// 						}
-// 						//strans
-// 						if(edb.header_db_bitarray[CntBitArray].compare("strans")==0)
-// 						{
-// 							output_GDS_txt << edb.header_db_bitarray[CntBitArray]<<" ";
-// 							output_GDS_txt << edb.vInteger_vec_bitarray[CntBitArray][0]<<" ";
-// 							strans =(bool)edb.vInteger_vec_bitarray[CntBitArray][0];	
-// 							gw.gds_write_strans( strans,false,false  );
-//   							gw.gds_flush(  );
-// 							CntBitArray++;
-// 							output_GDS_txt <<endl;
-// 						}
-// 						//mag
-// 						if(	edb.header_db_Real8[CntReal8].compare("mag")==0)
-// 						{
-// 							//cout<<edb.header_db_Real8[CntReal8]<<" ";
-// 							//cout<<edb.vInteger_vec_Real8[CntReal8][0]<<endl;
-// 							output_GDS_txt<<edb.header_db_Real8[CntReal8]<<" ";
-// 							output_GDS_txt<<edb.vInteger_vec_Real8[CntReal8][0]<<endl;
-// 							gw.gds_write_mag(edb.vInteger_vec_Real8[CntReal8][0]);//mag
-//   							gw.gds_flush(  );
-// 							CntReal8++;
-// 						}
-// 					}
-// 				}//}}}
-// 			}
-// 			output_GDS_txt<<endl;
-
-// 			//int 4: xy & xy-coordi.(when tmp_be_cbk_vec=="boundary") or  width(when tmp_be_cbk_vec=="path")
-// 			if(be_cbk_cnt ==2)
-// 			{
-// 				output_GDS_txt << edb.header_db_int4[int4_cnt]<<" ";//{{{ 
-
-// 				for(int qq=0;qq<edb.vInteger_vec_int4[int4_cnt].size();qq++)
-// 				{
-// 					output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt][qq]<<" ";
-// 					//cout <<"edb.vInteger_vec_int4[int4_cnt]["<<qq<<"]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 					//int 4: xy, xy-coordi.(when tmp_be_cbk_vec=="boundary")
-// 					if(	tmp_be_cbk_vec.compare("boundary")==0)
-// 					{//{{{
-// 						if(qq%2 == 0){
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							x[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//x[(int)qq/2]=(double)edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//cout<< "x[(int)qq/2]:"<<x[(int)qq/2]<<endl;	
-// 						}
-// 						else if(qq%2 == 1){	
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							y[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//y[(int)qq/2]=(double)edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//cout<< "y[(int)qq/2]:"<<y[(int)qq/2]<<endl;	
-// 						}
-// 						else{
-// 							//cout<< "x,y coordinates are issue"<<endl;
-// 						}
-// 					}//}}}
-// 					//int 4:width(when tmp_be_cbk_vec=="path")
-// 					if(	tmp_be_cbk_vec.compare("path")==0)
-// 					{//{{{
-//       					PathWidth=(double)(edb.vInteger_vec_int4[int4_cnt][qq]);//width line의 숫자
-// 	  					tempInternalPath.PathWidth = PathWidth*units/1000000;
-// 	  					gw.gds_write_width(  PathWidth );
-//   						gw.gds_flush(  );
-// 					}//}}}
-// 					//int 4: xy, xy-coordi.(when tmp_be_cbk_vec=="text")
-// 					if(	tmp_be_cbk_vec.compare("text")==0)
-// 					{//{{{
-// 						if(qq%2 == 0){
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							x[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//x[(int)qq/2]=(double)edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//cout<< "x[(int)qq/2]:"<<x[(int)qq/2]<<endl;	
-// 						}
-// 						else if(qq%2 == 1){	
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							y[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//y[(int)qq/2]=(double)edb.vInteger_vec_int4[int4_cnt][qq];
-// 							//cout<< "y[(int)qq/2]:"<<y[(int)qq/2]<<endl;	
-// 						}
-// 					xy_Num = edb.vInteger_vec_int4[int4_cnt].size()/2;
-				
-// 					}//}}}
-// 				}
-// 				output_GDS_txt<<endl;
-// 				int4_cnt++;
-// 				//int4: xy & xy-coordi, only when previous line is width(path)	
-// 				if(tmp_be_cbk_vec.compare("path")==0){
-//   	  				InternalPath tempInternalPath;//{{{
-// 					output_GDS_txt << edb.header_db_int4[int4_cnt]<<" ";	 
-					
-// 					for(int qq=0;qq<edb.vInteger_vec_int4[int4_cnt].size();qq++){
-// 						output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt][qq]<<" ";
-// 						if(qq%2 == 0){
-// 							//x[(int)qq/2]=(double)(edb.vInteger_vec_int4[int4_cnt][qq]);
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							x[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 						}	
-// 						else if(qq%2 == 1){	
-// 							//cout<<"vInteger_vec_int4[int4_cnt][qq]: "<<edb.vInteger_vec_int4[int4_cnt][qq]<<endl;
-// 							y[(int)qq/2]=edb.vInteger_vec_int4[int4_cnt][qq];
-// 						}	
-// 						else{	
-// 							//cout<< "x,y coordinates are issue"<<endl;
-// 						}	
-// 					}
-// 					xy_Num = edb.vInteger_vec_int4[int4_cnt].size()/2;
-// 					output_GDS_txt<<endl;
-// 					int4_cnt++;//}}}
-// 				}
-// 				//boundary write	
-// 				if(	tmp_be_cbk_vec.compare("boundary")==0){
-// 					for(int jj=0;jj<5;jj++) {//{{{
-//             		if(T_llx>x[jj]) {T_llx=x[jj];}
-//             		if(T_lly>y[jj]) {T_lly=y[jj];}
-// 					if(T_urx<x[jj]) {T_urx=x[jj];} 	
-// 					if(T_ury<y[jj]) {T_ury=y[jj];} 	
-// 	    			//cout<<"write boundary: "<<x[jj]<<" "<<y[jj]<<endl;	
-// 					}
-// 					//tempLayer.pins.push_back(tempPin);//No use
-// 					gw.gds_write_xy(  x, y, 5 );//}}}
-//   					gw.gds_flush(  );
-// 				}	
-// 				//path write	
-// 				if(	tmp_be_cbk_vec.compare("path")==0){
-// 					for(int jj=0;jj<xy_Num;jj++) {//{{{
-// 						if(T_llx>x[jj]) {T_llx=x[jj];}
-// 						if(T_lly>y[jj]) {T_lly=y[jj];}
-// 						if(T_urx<x[jj]) {T_urx=x[jj];}
-// 						if(T_ury<y[jj]) {T_ury=y[jj];}
-// 					}
-// 	  				gw.gds_write_xy(  x, y, xy_Num );
-//   					gw.gds_flush(  );
-// 					//}}}
-// 				}		
-// 				//text write	
-// 				if(	tmp_be_cbk_vec.compare("text")==0){
-// 					for(int jj=0;jj<xy_Num;jj++) {//{{{
-//             		if(T_llx>x[jj]) {T_llx=x[jj];}
-//             		if(T_lly>y[jj]) {T_lly=y[jj];}
-// 					if(T_urx<x[jj]) {T_urx=x[jj];} 	
-// 					if(T_ury<y[jj]) {T_ury=y[jj];} 	
-// 	    			}
-// 					gw.gds_write_xy(  x, y, xy_Num );//}}}
-//   					gw.gds_flush(  );
-				
-// 					//string
-// 					if(edb.header_db_string[CntHeaderString].compare("string")==0)
-// 					{
-// 						output_GDS_txt<<edb.header_db_string[CntHeaderString]<<" ";
-// 						CntHeaderString++;
-// 	  					cout<<"CntString text_string: "<<CntString<<endl;
-// 						//output_GDS_txt<<edb.vInteger_vec_string[0]<<endl;
-// 						output_GDS_txt<<edb.vInteger_vec_string[CntString]<<endl;
-// 						gw.gds_write_string(edb.vInteger_vec_string[CntString].c_str());
-//   						gw.gds_flush(  );
-// 						//CntString++;//**temporary comment-out
-// 					}	
-// 				}	
-				
-// 			//}}}			
-// 			}
-// 			//begin_end: endel, endstr, endlib	
-// 			if(be_cbk_cnt==2)
-// 			{
-// 			//{{{	
-// 				if(q < edb.header_db_int2.size()-2 &&  q < edb.begin_end_cbk_vec.size())
-// 				{
-// 				output_GDS_txt << edb.begin_end_cbk_vec[q-3]<<endl;//"endel" string
-// 				be_cbk_cnt = 0;
-// 				gw.gds_write_endel(  );
-//   				gw.gds_flush(  );
-// 				}	
-// 				//if(q == edb.header_db_int2.size()-1 &&  q < edb.begin_end_cbk_vec.size())
-// 				if(q == edb.header_db_int2.size()-2 &&  q < edb.begin_end_cbk_vec.size())
-// 				{
-// 					for(int qq=q-2; qq<edb.begin_end_cbk_vec.size()-2;qq=qq+2)
-// 					{
-// 						//output_GDS_txt << qq<<endl;	
-// 						output_GDS_txt<<edb.begin_end_cbk_vec[qq]<<endl;//"sref" string
-//       					gw.gds_write_sref(  );
-//   						gw.gds_flush(  );
-						
-// 						if(CntHeaderString<edb.header_db_string.size())
-// 						{
-// 							output_GDS_txt<<edb.header_db_string[CntHeaderString]<<" ";//sname
-// 							CntHeaderString++;
-// 						}	
-						
-// 						if(CntString<edb.vInteger_vec_string.size())
-// 						{
-// 							//cout <<"CntString: "<<CntString<<endl;
-// 							output_GDS_txt<<edb.vInteger_vec_string[CntString]<<endl;//"current_mirror"
-// 	  						sname = edb.vInteger_vec_string[CntString]+"_"+to_string(rndnum);	
-// 							gw.gds_write_sname( sname.c_str());
-//   							gw.gds_flush(  );
-// 							CntString++;
-// 						}
-
-// 						if(CntBitArray<edb.header_db_bitarray.size())
-// 						{
-// 							output_GDS_txt<<edb.header_db_bitarray[CntBitArray]<<" ";	
-// 							output_GDS_txt<<edb.vInteger_vec_bitarray[CntBitArray][0]<<endl;
-// 							if(edb.vInteger_vec_bitarray[CntBitArray][0]==32768)//32768=0x8000(hexa)
-// 							{
-// 								gw.gds_write_strans(true,false,false);	
-//   								gw.gds_flush(  );
-// 							}	
-// 							else if(edb.vInteger_vec_bitarray[CntBitArray][0]==0)
-// 							{
-// 								gw.gds_write_strans(false,false,false);
-//   								gw.gds_flush(  );
-// 							}
-// 							CntBitArray++;
-// 						}
-
-// 						if(CntReal8<edb.vInteger_vec_Real8.size())
-// 						{
-// 							output_GDS_txt<<edb.header_db_Real8[CntReal8]<<" ";
-// 							output_GDS_txt<<edb.vInteger_vec_Real8[CntReal8][0]<<endl;
-// 							gw.gds_write_angle(edb.vInteger_vec_Real8[CntReal8][0]);//angle
-//   							gw.gds_flush(  );
-// 							CntReal8++;
-// 						}
-						
-// 						//if(int4_cnt<edb.vInteger_vec_int4.size())
-// 						if(int4_cnt-1<edb.vInteger_vec_int4.size())
-// 						{
-// 						//cout<<int4_cnt<<endl;	
-// 						output_GDS_txt<<"xy 1 ";
-// 						//output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt][0]<<" ";
-// 						//output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt][1]<<endl;
-// 						//x[0] = edb.vInteger_vec_int4[int4_cnt][0];
-// 						//y[0] = edb.vInteger_vec_int4[int4_cnt][1];
-// 						output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt-1][0]<<" ";
-// 						output_GDS_txt<<edb.vInteger_vec_int4[int4_cnt-1][1]<<endl;
-// 						x[0] = edb.vInteger_vec_int4[int4_cnt-1][0];
-// 						y[0] = edb.vInteger_vec_int4[int4_cnt-1][1];
-// 						int4_cnt++;	
-// 	  					gw.gds_write_xy(  x, y, 1 );
-//   						gw.gds_flush(  );
-// 						}	
-// 						////sref write	
-// 						//if(	tmp_be_cbk_vec.compare("sref")==0){
-// 						//	for(int jj=0;jj<1;jj++) {//{{{
-// 						//		if(T_llx>x[jj]) {T_llx=x[jj];}
-// 						//		if(T_lly>y[jj]) {T_lly=y[jj];}
-// 						//		if(T_urx<x[jj]) {T_urx=x[jj];}
-// 						//		if(T_ury<y[jj]) {T_ury=y[jj];}
-// 						//	}
-// 	  					//	gw.gds_write_xy(  x, y, 1 );
-// 						//	//}}}
-// 						//}		
-						
-// 						output_GDS_txt<<edb.begin_end_cbk_vec[qq+1]<<endl;//"endel" string
-//       					gw.gds_write_endel(  );
-//   						gw.gds_flush(  );
-// 					}
-// 				}
-// 					///////////if(q == edb.header_db_int2.size() -1) //int2 ends
-// 					///////////{	
-// 					///////////	output_GDS_txt << edb.begin_end_cbk_vec[q-2]<<endl;//"endstr" string
-// 					///////////	output_GDS_txt << edb.begin_end_cbk_vec[q-1]<<endl;//"endlib" string
-// 					///////////}	
-// 			//}}}	
-// 			}
-// 		//}}}	
-// 		}//else ends
-	
-// 	}//for loop ends
-
-
-//   	gw.gds_write_endstr(  );
-//   	gw.gds_flush(  );
-//         */
-//   	llx.push_back(T_llx);
-//   	lly.push_back(T_lly);
-//   	urx.push_back(T_urx);
-//   	ury.push_back(T_ury);
-
-// 	for(int q=0;q<edb.data_type_db_int2.size();q++){
-// 		//cout<<"Data type int2: "<< edb.data_type_db_int2[q]<<endl;
-
-// 	}
-// 	for(int q=0;q<edb.vInteger_vec_int2.size();q++){
-// 		//cout<<"Data int2: ";
-// 		for(int qq=0;qq<edb.vInteger_vec_int2[q].size();qq++){	
-// 			//cout << edb.vInteger_vec_int2[q][qq]<<" ";
-// 		}
-// 		//cout<<endl;	
-// 	}
-	
-	
-// 	////cout <<"header_db_Real8.size() :"<< edb.header_db_Real8.size()<<endl;
-// 	////cout <<"data_type_db_Real8.size() :"<< edb.data_type_db_Real8.size()<<endl;
-// 	////cout <<"vInteger_vec_Real8.size() :"<< edb.vInteger_vec_Real8.size()<<endl;
-// 	//for(int q=0;q<edb.header_db_Real8.size();q++){
-// 	//	//Upper case to Lower case	
-// 	//	std::transform(edb.header_db_Real8[q].begin(), edb.header_db_Real8[q].end(), edb.header_db_Real8[q].begin(),::tolower);
-// 	//	std::transform(edb.data_type_db_Real8[q].begin(), edb.data_type_db_Real8[q].end(), edb.data_type_db_Real8[q].begin(),::tolower);
-// 	//	
-// 	//	//cout<<"Headers Real8: "<<edb.header_db_Real8[q]<<endl;
-// 	//	output_GDS_txt<<edb.header_db_Real8[q]<<" ";
-// 	//	//output_GDS_txt<<edb.data_type_db_Real8[q]<<" ";
-// 	//	for(int qq=0;qq<edb.vInteger_vec_Real8[q].size();qq++){
-// 	//		output_GDS_txt<<edb.vInteger_vec_Real8[q][qq]<<" ";
-// 	//	}
-// 	//	output_GDS_txt<<endl;
-
-// 	//}
-	
-// 	//for(int q=0;q<edb.data_type_db_Real8.size();q++)
-// 	//	//cout<<"Data type Real8: "<<edb.data_type_db_Real8[q]<<endl;
-// 	//for(int q=0;q<edb.vInteger_vec_Real8.size();q++){
-// 	//	//cout<<"Data Real8: ";
-// 	//	for(int qq=0;qq<edb.vInteger_vec_Real8[q].size();qq++){
-// 	//		//cout<<edb.vInteger_vec_Real8[q][qq]<<" ";
-// 	//	}
-// 	//	//cout<<endl;
-// 	//}
-// 	//cout <<"header_db_string.size() :"<< edb.header_db_string.size()<<endl;
-// 	//cout <<"data_type_db_string.size() :"<< edb.data_type_db_string.size()<<endl;
-// 	//cout <<"vInteger_vec_string.size() :"<< edb.vInteger_vec_string.size()<<endl;
-// 	//for(int q=0;q<edb.header_db_string.size();q++){
-// 	//	//Upper case to Lower case	
-// 	//	std::transform(edb.header_db_string[q].begin(), edb.header_db_string[q].end(), edb.header_db_string[q].begin(),::tolower);
-// 	//	std::transform(edb.data_type_db_string[q].begin(), edb.data_type_db_string[q].end(), edb.data_type_db_string[q].begin(),::tolower);
-// 	//	
-// 	//	//cout<<"Headers string: "<<edb.header_db_string[q]<<endl;
-// 	//	output_GDS_txt<<edb.header_db_string[q]<<" ";
-// 	//	//output_GDS_txt<<edb.data_type_db_string[q]<<" ";
-// 	//	output_GDS_txt<<edb.vInteger_vec_string[q]<<endl;
-// 	//}
-// 	//for(int q=0;q<edb.data_type_db_string.size();q++)
-// 	//	//cout<<"Data type string: "<<edb.data_type_db_string[q]<<endl;
-// 	//for(int q=0;q<edb.vInteger_vec_string.size();q++)
-// 	//	//cout<<"Data string: "<<edb.vInteger_vec_string[q]<<endl;
-
-// 	//cout <<"Size comparison"<<endl;
-// 	//cout <<"header_db_int2.size()    int2  :"<< edb.header_db_int2.size()<<endl;
-// 	//cout <<"begin_end_cbk_vec.size() be_cbk:"<< edb.begin_end_cbk_vec.size()<<endl;
-// 	//cout <<"header_db_int4.size() :"<< edb.header_db_int4.size()<<endl;
-
-
-// 	output_GDS_txt.close();	
-// //}}}
-
-// };
 
 // [RA] need confirmation -wbxu
 void PnRdatabase::AddingPowerPins(PnRDB::hierNode &node){
