@@ -10,3 +10,8 @@ router/FastSteinerUM/gen
 router/FastSteinerUM/steiner
 *.gcno
 *.gcda
+unit_tests
+coverage-reports/
+coverage.info
+coverage.out
+junit.xml

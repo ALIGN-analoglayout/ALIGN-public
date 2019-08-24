@@ -7,15 +7,18 @@ LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
 BOOST_LP?=/usr/include
 
+GTEST_DIR?=/opt/googletest/googletest
+
 COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-w -Wall
 JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE)
+export CXXFLAGS = $(OPTS) $(WARNS) -DHFLAG -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
+export GTEST_LIB_DIR = $(GTEST_DIR)/mybuild/lib
 
 PnRDB_path=PnRDB
 Capplacer_path=cap_placer
@@ -42,6 +45,6 @@ main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_
 	$(CXX) $(CXXFLAGS) -c main.cpp -I$(JSON)/include
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_*
+	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
 	make -C $(router_path) clean
 	make -C $(Capplacer_path) clean
