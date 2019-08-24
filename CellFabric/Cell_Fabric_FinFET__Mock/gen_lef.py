@@ -40,7 +40,7 @@ def json_lef(input_json,out_lef,cell_pin):
     fp.write( "  FOREIGN %s 0 0 ;\n" % out_lef)
 
     fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
-    exclude_layers ={"via0","via1","via2","poly","LISD","SDT","fin","polycon","GCUT","active","nselect","pselect","nwell"}
+    exclude_layers ={"V0","V1","V2","poly","LISD","SDT","fin","polycon","GCUT","active","nselect","pselect","nwell"}
     #for i in ["S","D","G"]:
     for i in cell_pin:
       fp.write( "  PIN %s\n" % i)
