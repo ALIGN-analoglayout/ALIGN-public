@@ -25,7 +25,7 @@ Capplacer_path=cap_placer
 placer_path=placer
 router_path=router
 
-PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/readfile.o
+PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/ReadDesignRule.o PnRDB/readfile.o
 Capplacer_objs=cap_placer/capplacer.o
 placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
 router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o router/GlobalGrid.o router/GlobalGraph.o router/GcellGlobalRouter.o router/GcellDetailRouter.o
