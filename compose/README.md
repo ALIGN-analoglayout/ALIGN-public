@@ -97,7 +97,7 @@ bring up the services.
 - docker-compose up -d:  bring up all services (build images if needed)
   
 - docker-compose down:  shut down all services and remove containers
-  -  --rmi all: remove images too
+  - --rmi all: remove images too
   
 - docker-compose up -d <service>:  bring up a specific service.  This will set any environment variables and bind volumes at the time of bring-up (even if already up).
   
