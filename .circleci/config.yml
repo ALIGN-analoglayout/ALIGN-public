@@ -627,7 +627,7 @@ workflows:
         branches:
           only: feature/native_make
 
-    jobs
+    jobs:
       - build-make-monolithic:
           requires:
             - start
