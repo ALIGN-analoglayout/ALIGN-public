@@ -17,3 +17,4 @@ coverage.out
 junit.xml
 *.a
 .depend
+Results/
