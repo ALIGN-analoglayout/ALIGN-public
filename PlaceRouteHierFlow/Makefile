@@ -25,15 +25,14 @@ Capplacer_path=cap_placer
 placer_path=placer
 router_path=router
 
-PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/ReadDesignRule.o PnRDB/ReadDesignRuleJson.o PnRDB/HardDesignRule.o PnRDB/WriteJSON.o PnRDB/ReadVerilog.o PnRDB/ReadConstraint.o PnRDB/Print.o PnRDB/ReadLEF.o PnRDB/readfile.o
 Capplacer_objs=cap_placer/capplacer.o
 placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
 router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o router/GlobalGrid.o router/GlobalGraph.o router/GcellGlobalRouter.o router/GcellDetailRouter.o
 
 all: subsystem pnr_compiler
 
-pnr_compiler: $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o
-	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
+pnr_compiler: main.o PnRDB/PnRDB.a $(placer_objs) $(router_objs) $(Capplacer_objs)
+	$(CXX) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
 
 subsystem:
 	$(MAKE) -C $(PnRDB_path);
@@ -41,10 +40,11 @@ subsystem:
 	$(MAKE) -C $(router_path);
 	$(MAKE) -C $(Capplacer_path);
 
-main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_path)/Placer.h $(router_path)/Router.h $(Capplacer_path)/capplacer.h
-	$(CXX) $(CXXFLAGS) -c main.cpp -I$(JSON)/include
+main.o:	main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_path)/Placer.h $(router_path)/Router.h $(Capplacer_path)/capplacer.h
+	$(CXX) $(CXXFLAGS) -c $< -I$(JSON)/include
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
+	rm -rf *.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
+	make -C $(PnRDB_path) clean
 	make -C $(router_path) clean
 	make -C $(Capplacer_path) clean

@@ -257,33 +257,35 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
      for(int j=0;j<parent_node.Blocks.size();j++){
 
 	 auto& lhs = parent_node.Blocks[j];
-	 auto& b = lhs.instance.back();
+	 auto& prelim_b = lhs.instance.back();
 
-
-        if(b.master.compare(updatedNode.name)==0){
+	 if( prelim_b.master == updatedNode.name) {
           if(lhs.instNum>0) {
-	      lhs.instance.push_back( b);
+	    lhs.instance.push_back( prelim_b);
           }
+
+	  auto& b = lhs.instance.back();
+
           lhs.instNum++;
           b.gdsFile = updatedNode.gdsFile;
           //update terminal to pin information
           
           for(int p=0;p<b.blockPins.size();p++){
               for(int q=0;q<updatedNode.blockPins.size();q++){
-                  if(b.blockPins[p].name.compare(updatedNode.blockPins[q].name)==0){                     
-		      b.blockPins[p].pinContacts.clear();
+                  if(b.blockPins[p].name == updatedNode.blockPins[q].name){                     
+		    //		      b.blockPins[p].pinContacts.clear();
 		      b.blockPins[p].pinContacts = updatedNode.blockPins[q].pinContacts;
-		      b.blockPins[p].pinVias.clear();
+		      //		      b.blockPins[p].pinVias.clear();
 		      b.blockPins[p].pinVias = updatedNode.blockPins[q].pinVias;
 		      break;     
 		  }
 	      }
           }
           
-          b.interMetals.clear();
+	  //          b.interMetals.clear();
           b.interMetals = updatedNode.interMetals;
           
-          b.interVias.clear();
+	  //          b.interVias.clear();
           b.interVias = updatedNode.interVias;
 
           b.width=updatedNode.width;
