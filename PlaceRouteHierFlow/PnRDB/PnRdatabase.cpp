@@ -368,7 +368,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
 }
 
-bool PnRdatabase::WriteLef(PnRDB::hierNode &node, string file, string opath){
+bool PnRdatabase::WriteLef(const PnRDB::hierNode &node, const string& file, const string& opath) const {
 
   std::ofstream leffile;
   string leffile_name = opath + file;
@@ -420,8 +420,7 @@ bool PnRdatabase::WriteLef(PnRDB::hierNode &node, string file, string opath){
   leffile.close();
 }
 
-static void WriteGlobalRoute2(const PnRdatabase& db, const PnRDB::hierNode& node, const string& rofile, const string& opath) {
-    const auto& DRC_info = db.DRC_info;
+void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
 
     json jsonWiresArray = json::array();
 
@@ -483,8 +482,8 @@ static void WriteGlobalRoute2(const PnRdatabase& db, const PnRDB::hierNode& node
 }
 
 
+/*
 void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath) {
-    WriteGlobalRoute2( *this, node, rofile + "_xxx", opath);
 
   std::ofstream OF2(opath+rofile);
   if(OF2.fail()) {
@@ -544,6 +543,7 @@ void PnRdatabase::WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string 
   OF2<<endl<<"}";
   OF2.close();
 }
+*/
 
 void PnRdatabase::WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile) {
   std::ofstream OF(pofile);
