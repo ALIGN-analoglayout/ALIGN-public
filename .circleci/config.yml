@@ -184,6 +184,7 @@ jobs:
           command: |
             cd compose/
             docker volume create --name=compose_dataVolume
+            make docker-compose.yml
             docker-compose up -d fullbuild-service
             
       - run:
