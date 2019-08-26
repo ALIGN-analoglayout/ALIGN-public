@@ -88,36 +88,30 @@ jobs:
 
       - run: |
           apk update
-          apk add py-pip bash
+          apk add py-pip bash make
 
       - run: |
           apk add python-dev libffi-dev openssl-dev gcc libc-dev make
           pip install docker-compose
 
-      - run: |
-          echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
-          echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-          
       - setup_remote_docker
       
       - run:
           shell: /bin/bash
           command: |
-            cd compose/
-            docker volume create --name=compose_dataVolume
-            docker-compose up -d make-docker-service
+            echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
+            echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+
+      - run:
+          shell: /bin/bash
+          command: |
+            docker volume create --name=$ALIGN_WORK_DIR
             
       - run:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "ln -sf \$ALIGN_HOME/compose/Makefile ."
-            
-      - run:
-          shell: /bin/bash
-          command: |
-            cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=telescopic_ota" && \
+            make docker DESIGN=telescopic_ota && \
             docker cp make_docker_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
@@ -127,7 +121,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=switched_capacitor_filter" && \
+            make docker DESIGN=switched_capacitor_filter && \
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
@@ -137,7 +131,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=current_mirror_ota" && \
+            make docker DESIGN=current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
@@ -147,7 +141,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=cascode_current_mirror_ota" && \
+            make docker DESIGN=cascode_current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
@@ -157,7 +151,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=five_transistor_ota" && \
+            make docker DESIGN=five_transistor_ota && \
             docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
