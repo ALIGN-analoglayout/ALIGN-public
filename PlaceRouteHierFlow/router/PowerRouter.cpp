@@ -83,13 +83,15 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
               
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
-            grid.InactivePointlist(pinplist);
+            std::cout<<"start inactive plist"<<std::endl;
+            grid.InactivePointlist_Power(pinplist);
+            std::cout<<"End inactive plist"<<std::endl;
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
             //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.ActivateSourceDest();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, LL, UR);
-            grid.InactivePointlist(netplist);
+            grid.InactivePointlist_Power(netplist);
             //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
             grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
             grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
