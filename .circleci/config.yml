@@ -611,28 +611,31 @@ jobs:
 workflows:
   version: 2.1
 
-  # make:
-  #   jobs:
-  #     - start
+  make:
+    jobs:
+      - start
       # - build-make-compose:
       #     requires:
       #       - start 
+      - build-make:
+          requires:
+            - start 
+  # scheduled:
+  #   triggers:
+  #     - schedule:
+  #         cron: "35 13 * * *"
+  #         filters:
+  #           branches:
+  #             only: feature/native_make
+
+    # jobs:
+    #   - start
+    #   - build-make-monolithic:
+    #       requires:
+    #         - start
       # - build-make:
       #     requires:
       #       - start 
-  scheduled:
-    triggers:
-      - schedule:
-          cron: "35 13 * * *"
-          filters:
-            branches:
-              only: feature/native_make
-
-    jobs:
-      - start
-      - build-make-monolithic:
-          requires:
-            - start
 
 #   full:
 #     jobs:
