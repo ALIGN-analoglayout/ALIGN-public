@@ -79,7 +79,7 @@ int main(int argc, char** argv ){
 
       Router curr_route;
 
-      bool NEW_GLOBAL_ROUTER = 1;
+      bool NEW_GLOBAL_ROUTER = 0; // Experiment
 
       if ( NEW_GLOBAL_ROUTER) {
 	// Gcell Global Routing

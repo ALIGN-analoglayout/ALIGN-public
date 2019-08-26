@@ -1,11 +1,13 @@
 #include "PnRdatabase.h"
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <time.h>
-
-using namespace nlohmann;
+long int PnRdatabase::get_number(string str) {
+  long int val=0;
+  for (unsigned int number=0; number < str.length(); number++) {
+    if (isdigit (str[number]))
+    val=(10*val)+(str[number]-48);
+  }
+  return val;
+}
 
 bool PnRdatabase::ReadDesignRule(string drfile) {
   cout << "PnRDB-Info: reading design rule file " << drfile <<endl;

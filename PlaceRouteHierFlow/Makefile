@@ -25,7 +25,7 @@ Capplacer_path=cap_placer
 placer_path=placer
 router_path=router
 
-PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/ReadDesignRule.o PnRDB/readfile.o
+PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/ReadDesignRule.o PnRDB/ReadDesignRuleJson.o PnRDB/HardDesignRule.o PnRDB/WriteJSON.o PnRDB/ReadVerilog.o PnRDB/ReadConstraint.o PnRDB/Print.o PnRDB/ReadLEF.o PnRDB/readfile.o
 Capplacer_objs=cap_placer/capplacer.o
 placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
 router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o router/GlobalGrid.o router/GlobalGraph.o router/GcellGlobalRouter.o router/GcellDetailRouter.o
@@ -33,7 +33,7 @@ router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o r
 all: subsystem pnr_compiler
 
 pnr_compiler: $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o
-	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o $(LDFLAGS)
+	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
 
 subsystem:
 	$(MAKE) -C $(PnRDB_path);
