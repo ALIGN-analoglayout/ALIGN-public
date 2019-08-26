@@ -629,6 +629,7 @@ workflows:
               only: feature/native_make
 
     jobs:
+      - start
       - build-make-monolithic:
           requires:
             - start
