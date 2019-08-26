@@ -620,6 +620,14 @@ workflows:
       # - build-make:
       #     requires:
       #       - start 
+  scheduled:
+    triggers:
+      cron: "55 12 * * *"
+      filters:
+        branches:
+          only: feature/native_make
+
+    jobs
       - build-make-monolithic:
           requires:
             - start

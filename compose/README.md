@@ -6,7 +6,7 @@ Software components that are in container images can be thought of as
 'installed' and we are using Make to run the flow through the
 components.
 
-# Container-based Flow
+## Container-based Flow
 
 Using the Makefile, you can invoke the container-based flow using
 either a Docker volume for data input/output, or using a directory
@@ -64,7 +64,7 @@ You can work inside the container to modify or debug its behavior:
 
 		% make docker-down
 		
-# Native Environment Flow
+## Native Environment Flow
 
 The second option is to invoke a native Linux environment flow without
 using containers, where the same Makefile can be used to issue native
@@ -79,7 +79,7 @@ testing can start:
 		% ln -s $ALIGN_HOME/compose/Makefile .
 		% make DESIGN=<design>
 		
-## A Monolithic Docker Container for the ALIGN flow
+### A Monolithic Docker Container for the ALIGN flow
 We have provided a Dockerfile in compose/Dockerfile.native that builds
 up a monolithic Linux environment to help test the functionality of
 operating in a native environment.It is hard to keep it centrally up
@@ -96,7 +96,7 @@ native environment as shown below:
 		 $ ln -s $ALIGN_HOME/compose/Makefile .
 		 $ make DESIGN=<design>
 		
-# Useful docker-compose commands
+## Useful docker-compose commands
 
 You must be in the directory where the service configuration file
 (usually docker-compose.yml) resides.  If the directory name does not
