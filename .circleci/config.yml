@@ -623,7 +623,7 @@ workflows:
   scheduled:
     triggers:
       - schedule:
-          cron: "55 12 * * *"
+          cron: "35 13 * * *"
           filters:
             branches:
               only: feature/native_make
