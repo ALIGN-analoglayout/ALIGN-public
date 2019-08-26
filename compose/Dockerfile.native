@@ -32,7 +32,7 @@ RUN \
     apt-get clean
 
 RUN \
-    cd /opt
+    cd /opt && \
     git clone https://github.com/google/googletest.git && \
     cd googletest && \
     git checkout c9ccac7cb7345901884aabf5d1a786cfa6e2f397 && \
