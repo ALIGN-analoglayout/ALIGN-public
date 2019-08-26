@@ -3,17 +3,25 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <algorithm>
 
 using namespace nlohmann;
 
 #include <gtest/gtest.h>
 
+/*
 static bool EndsWith( const string& str, const string& pat)
 {
     return str.size() >= pat.size() && str.substr( str.size() - pat.size(), pat.size()) == pat;
 }
+*/
+static bool EndsWith( const string& str, const string& pat)
+{
+  return std::mismatch( str.rbegin(), str.rend(), pat.rbegin(), pat.rend()).second == pat.rend();
+}
 
-TEST( EndsWith, Test1)
+
+TEST( EndsWithTest, Test1)
 {
     EXPECT_TRUE( EndsWith( "", ""));
     EXPECT_TRUE( EndsWith( "a", ""));
