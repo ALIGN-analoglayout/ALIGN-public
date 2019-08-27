@@ -10,7 +10,7 @@ depend:
 
 -include .depend
 
-unit_tests: unit_tests.o $(OBJS)
+unit_tests: unit_tests.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
 
 cap_placer.a: $(OBJS)
