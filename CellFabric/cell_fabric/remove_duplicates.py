@@ -216,14 +216,18 @@ class RemoveDuplicates():
         for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
+                    assert mv is not None, "PLEASE IMPLEMENT ME !"
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
                         metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
                         twice_center_y = via_rect.rect[1] + via_rect.rect[3]
-                        metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
-                        metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                        connections.append( (via_rect, metal_rect_v, metal_rect_h))
-                        
+                        if mh is not None:
+                            metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
+                            metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
+                            connections.append( (metal_rect_v, via_rect, metal_rect_h))
+                        else:
+                            connections.append( (metal_rect_v, via_rect))
+
         def connectPair( a, b):
             def aux( a, b):
                 if a.netName is None:
@@ -232,14 +236,16 @@ class RemoveDuplicates():
                     a.connect( b)
             aux( a.root(), b.root())
 
-        for triple  in connections:
-            connectPair( triple[1], triple[2])
-            connectPair( triple[0], triple[1])
+        for conn  in connections:
+            assert 2 <= len(conn) <= 3, "Vias must touch at least one metal layer & no more than 2 metal layers"
+            connectPair( conn[0], conn[1])
+            if len(conn) == 3:
+                connectPair( conn[1], conn[2])
 
-            nms = { root.netName for slr in list(triple) for root in [slr.root()] if root.netName is not None}
+            nms = { root.netName for slr in list(conn) for root in [slr.root()] if root.netName is not None}
 
             if len(nms) > 1:
-                self.shorts.append( triple)
+                self.shorts.append( conn)
 
     def generate_rectangles( self):
 

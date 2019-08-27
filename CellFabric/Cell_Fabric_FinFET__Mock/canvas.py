@@ -101,7 +101,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             for i in S+D:
                 self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1)) 
                 for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-                    self.addVia( self.v0, 'v0', None, i, (y, j))
+                    self.addVia( self.v0, None, None, i, (y, j))
 
             #pin = 'VDD' if y%2==0 else 'GND'    
             #self.addWire( self.m2, pin, pin, h*(y+1), (0, 1), (x_cells*gu, -1))
