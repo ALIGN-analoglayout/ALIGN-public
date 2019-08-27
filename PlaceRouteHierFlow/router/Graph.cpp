@@ -836,20 +836,21 @@ void Graph::UpdateEdgeWeight(std::vector<int>& path){
 
   //based on path update edgeweight in graph
   for(int i=0;i<path.size()-1;++i){
-      for(int j=0;j<graph[path[i]].list.size();++j){
-            if(graph[path[i]].list[j].dest == path[i+1]){
-               graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
-              }
-         } 
-     }
+    for(int j=0;j<graph[path[i]].list.size();++j){
+      if(graph[path[i]].list[j].dest == path.at(i+1)){
+	graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
+      }
+    } 
+  }
 
-  for(int i=path.size()-1;i>-1;i--){
-      for(int j=0;j<graph[path[i]].list.size();++j){
-            if(graph[path[i]].list[j].dest == path[i-1]){
-               graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
-              }
-         } 
-     }
+  //SMB fix out of range error
+  for(int i=path.size()-1;i>0;i--){
+    for(int j=0;j<graph[path[i]].list.size();++j){
+      if(graph[path[i]].list[j].dest == path.at(i-1)){
+	graph[path[i]].list[j].weight = alpha * graph[path[i]].list[j].weight;
+      }
+    } 
+  }
 
 };
 
