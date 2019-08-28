@@ -88,36 +88,30 @@ jobs:
 
       - run: |
           apk update
-          apk add py-pip bash
+          apk add py-pip bash make
 
       - run: |
           apk add python-dev libffi-dev openssl-dev gcc libc-dev make
           pip install docker-compose
 
-      - run: |
-          echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
-          echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-          
       - setup_remote_docker
       
       - run:
           shell: /bin/bash
           command: |
-            cd compose/
-            docker volume create --name=compose_dataVolume
-            docker-compose up -d make-docker-service
+            echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
+            echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
+
+      - run:
+          shell: /bin/bash
+          command: |
+            docker volume create --name=$ALIGN_WORK_DIR
             
       - run:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "ln -sf \$ALIGN_HOME/compose/Makefile ."
-            
-      - run:
-          shell: /bin/bash
-          command: |
-            cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=telescopic_ota" && \
+            make docker DESIGN=telescopic_ota && \
             docker cp make_docker_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
@@ -127,7 +121,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=switched_capacitor_filter" && \
+            make docker DESIGN=switched_capacitor_filter && \
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
@@ -137,7 +131,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=current_mirror_ota" && \
+            make docker DESIGN=current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
@@ -147,7 +141,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=cascode_current_mirror_ota" && \
+            make docker DESIGN=cascode_current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
@@ -157,7 +151,7 @@ jobs:
           shell: /bin/bash
           command: |
             cd compose/
-            docker-compose exec make-docker-service bash -c "make BUILD=docker DESIGN=five_transistor_ota" && \
+            make docker DESIGN=five_transistor_ota && \
             docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
@@ -462,15 +456,27 @@ jobs:
 
       - run: |
           cd PlaceRouteHierFlow
-          docker build -t placeroute_image .
+          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
           docker volume create placerOutputVol
-          
+
       - run: |
-          cd PlaceRouteHierFlow
           apk add bash
-          ./run_small_in_docker.sh
+          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
+          mkdir -p coverage-reports
+          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
+          mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
+          docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
+          docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
+          docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
+          docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
           
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/PlaceRouteHierFlow
+            - coverage-reports/PlaceRouteHierFlow
+
   build-GDSConv:
     executor: docker-executor
     steps:
@@ -666,6 +672,7 @@ workflows:
             - build-cellfabric
             - build-cktgen 
             - build-pdk 
+            - build-PlaceRouteHierFlow
 #            - build-satplacer
 
   # end_to_end:

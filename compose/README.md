@@ -1,50 +1,90 @@
-This directory contains a set of docker services that run the
+This directory contains a Docker Compose specification that runs the
 end-to-end ALIGN flow using a container-based flow, where individual
-engines have isolated software environments.
+engines have isolated software environments. 
 
-Either you can invoke the flow from the shell using a working
-directory, or you can use a make-docker-service to invoke the flow
-using a docker volume (the latter works in CircleCI and in WSL)>
+Software components that are in container images can be thought of as
+'installed' and we are using Make to run the flow through the
+components.
 
-To invoke using a working directory:
+Using the Makefile, you can invoke the container-based flow using
+either a Docker volume for data input/output, or using a directory
+(which Docker will mount in each container).  You can also use the
+Makefile to either run the ALIGN flow through a native Linux build of
+all the components in the current environment (assuming you have all
+software prerequisites installed).  
+
+You will need to set two environment variables to run the Makefile in
+any environment. First is the ALIGN\_HOME variable which should point
+the top directory of the ALIGN analog system.
 
 		% export ALIGN_HOME=<top of ALIGN source area>
-		% export ALIGN_WORKING_DIR=<directory path for output>
-		% cd $ALIGN_WORKING_DIR
-		% ln -sf $ALIGN_HOME/compose/Makefile .
-		% make BUILD=docker DESIGN=<design>
 
-> This will bring up the set of docker services that can run the steps
-> in the flow, then invoke a series of commands in each container to
-> execute the flow.
+Second is a working directory ALIGN\_WORK\_DIR, which can either be
+the full path to a working directory or a docker volume name.  
 
-To invoke using a Docker volume:
+To setup for using a Docker volume in a container-based flow:
 
-		% docker volume create compose_dataVolume
-		% export ALIGN_HOME=<top of ALIGN source area>
-		% export ALIGN_WORK_DIR=compose_dataVolume
+		% docker volume create <volumeName>
+		% export ALIGN_WORKING_DIR=<volumeName>
+
+To setup ofr using a working directory in a container-based flow using
+a working directory. (In WSL, this directory must be the full path to
+a Windows shared directory):
+
+		% export ALIGN_WORKING_DIR=<working directory path for output>
+
+Now to invoke the flow:
+
 		% cd $ALIGN_HOME/compose
-		% docker-compose up -d make-docker-service
-		% docker-compose exec make-docker-service make  BUILD=docker -f $ALIGN_HOME/compose/Makefile DESIGN=<design>
+		% make docker DESIGN=<design>
 
-> This will first bring up a make-docker-service which contains the
-> main Makefile and docker-compose configuration.  The exec will then
-> use the make-docker-service to also bring up the rest of the
-> services.  After that, the make will run the flow for the given design.
+To rebuild an image (analogous to reinstalling a component), you can
+use docker-compose to update the container:
 
-Finally, the same Makefile can be used in a native Linux environment without using Docker at all:		
+		% cd $ALIGN_HOME/compose
+		% docker-compose up -d --build <service-name>
+
+You can work inside the container to modify or debug its behavior:
+
+		% cd $ALIGN_HOME/compose
+		% docker-compose exec <service-name> bash
+		 $ <start your commands here>
+		 $
+		
+> Here, docker-compose will first bring up a make-docker-service which
+> contains the main Makefile and docker-compose configuration.  Then
+> it will bring up the rest of the services from within the
+> make-docker-service.  After that, make will run the flow for the
+> given design.
+>
+> If the services don't all come up, you can bring down the services
+> to retry:
+
+		% make docker-down
+		
+The second option is to invoke a native Linux environment flow without
+using containers, where the same Makefile can be used to issue native
+Linux build commands:
 	
-		% export ALIGN_HOME=<top of ALIGN source area>
-		% ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
+		% export ALIGN_WORK_DIR=<your Linux working area>
+		% cd $ALIGN_WORK_DIR
+		% ln -s $ALIGN_HOME/compose/Makefile .
 		% make DESIGN=<design>
 		
-We have a Dockerfile.native that should have the software depencies installed for the flow, used to test the Makefile.  It is hard to keep it centrally up to date, so as components add more dependencies, this file may be out of date.  But it serves as a starting point for the full environment.  You can run the commands above in the following container:
+We have provided a Dockerfile in compose/Dockerfile.native that builds
+up a monolithic Linux environment to help test the functionality of
+operating in a native environment.It is hard to keep it centrally up
+to date, so as components add more dependencies, this file may be out
+of date.  But it serves as a starting point for the full environment.
+The container can be built as a service called fullbuild-service.  You
+can then run the above commands in the container:
 	
 		% cd $ALIGN_HOME/compose
-		% docker-compose up -d fullmake-service
-		% docker-compose exec fullmake-service bash
-		> ln -s $ALIGN_HOME/compose/Makefile .   # CWD is the work area
-		> make DESIGN=<design>
+		% docker-compose up -d fullbuild-service
+		% docker-compose exec fullbuild-service bash
+		 $ cd <a_work_area_inside_container>
+		 $ ln -s $ALIGN_HOME/compose/Makefile .
+		 $ make DESIGN=<design>
 		
 # Useful docker-compose commands
 
@@ -57,13 +97,14 @@ bring up the services.
 - docker-compose up -d:  bring up all services (build images if needed)
   
 - docker-compose down:  shut down all services and remove containers
-     - --rmi all: remove images too
-	
-- docker-compose up -d <service>:  bring up a specific service
+  - --rmi all: remove images too
+  
+- docker-compose up -d <service>:  bring up a specific service.  This will set any environment variables and bind volumes at the time of bring-up (even if already up).
   
 - docker-compose up -d --build <service>:  build and bring up a service
   
 - docker-compose exec <service> <command>:  execute a command on a running container
+
 Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
 modifying files in the relevant containers.  You can git push from

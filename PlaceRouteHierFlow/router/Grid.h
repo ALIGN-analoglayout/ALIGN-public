@@ -97,6 +97,7 @@ class Grid {
     void InactivePlist(std::vector<std::vector<RouterDB::DetailPoint> > &plist);
     //void InactivePointlist(std::vector<std::vector<RouterDB::point> > &plist);
     void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
+    void InactivePointlist_Power(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     void ActivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     //void inactive_node_global();
     //void inacitve_node_detail();

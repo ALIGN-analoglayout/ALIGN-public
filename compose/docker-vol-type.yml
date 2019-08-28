@@ -1,0 +1,10 @@
+version: '3.4'
+
+# Redirects the redirectVolume to our named volume in ALIGN_WORK_DIR
+# compose_redirectVolume is not accessible -- it is replaced by the named volume
+
+volumes:
+  redirectVolume:
+    external:
+      name: ${ALIGN_WORK_DIR}
+      

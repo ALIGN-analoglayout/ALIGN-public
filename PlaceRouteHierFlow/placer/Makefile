@@ -1,19 +1,21 @@
 
 # Needs CXX and CXXFLAGS to be defined
 
-all: design.o SeqPair.o ConstGraph.o Aplace.o Placer.o
+OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o 
+SRCS=$(OBJS:.o=.cpp)
 
-Placer.o : Placer.cpp Placer.h
+all: depend unit_tests placer.a
 
-Preadfile.o : Preadfile.cpp
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
-design.o: design.cpp
+-include .depend
 
-SeqPair.o: SeqPair.cpp
+unit_tests: unit_tests.o 
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
 
-ConstGraph.o: ConstGraph.cpp
-
-Aplace.o: Aplace.cpp
+placer.a: $(OBJS)
+	ar -r -o $@ $^
 
 clean:		
-	/bin/rm -f *.o 
+	/bin/rm -f *.o *.a unit_tests .depend
