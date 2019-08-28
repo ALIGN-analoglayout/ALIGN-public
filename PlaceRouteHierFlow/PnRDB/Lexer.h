@@ -83,7 +83,7 @@ class Lexer {
     istream& s; 
 
     string line;
-    int cursor;
+    unsigned int cursor;
     int line_num;
 
     CharBitVector is_first_in_name;

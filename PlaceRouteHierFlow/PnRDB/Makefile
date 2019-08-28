@@ -1,6 +1,6 @@
 # Need CXX, and CXXFLAGS to be defined
 
-OBJS=readfile.o PnRdatabase.o ReadDesignRule.o ReadDesignRuleJson.o HardDesignRule.o WriteJSON.o ReadVerilog.o ReadConstraint.o Print.o ReadLEF.o
+OBJS=readfile.o PnRdatabase.o ReadDesignRule.o ReadDesignRuleJson.o HardDesignRule.o WriteJSON.o ReadVerilog.o ReadConstraint.o Print.o ReadLEF.o WriteDBJSON.o
 SRCS=$(OBJS:.o=.cpp)
 
 all: depend unit_tests PnRDB.a

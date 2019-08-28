@@ -1,6 +1,5 @@
 
 #include <gtest/gtest.h>
-#include "datatype.h"
 #include "PnRdatabase.h"
 
 #include <sstream>
@@ -447,75 +446,3 @@ endmodule
   EXPECT_EQ( rvh.get_Supply_node().Blocks.size(), 2);
 
 }
-
-using namespace nlohmann;
-
-namespace PnRDB {
-
-  inline void to_json(json& j, const net& n) {
-    j["name"] = n.name;
-  }
-
-  inline void to_json(json& j, const hierNode& hN) {
-    j["name"] = hN.name;
-    j["parent"] = json(hN.parent);
-    j["Nets"] = json(hN.Nets);
-  }
-
-};
-
-TEST( hierNodeTest, TestA)
-{
-  PnRDB::hierNode hN;
-  hN.name = "hierNodeName";
-
-  PnRDB::net n0;
-  n0.name = "n0";
-  PnRDB::net n1;
-  n1.name = "n1";
-
-  hN.Nets.push_back( n0);  
-  hN.Nets.push_back( n1);  
-
-  json json_hN(hN);
-
-  json jsonTop;
-  jsonTop["name"] = "hierNodeName";
-  jsonTop["parent"] = json::array();
-  jsonTop["Nets"] = json::array();
-
-  {
-    json jj;
-    jj["name"] = "n0";
-    jsonTop["Nets"].push_back( jj);
-  }
-
-  {
-    json jj;
-    jj["name"] = "n1";
-    jsonTop["Nets"].push_back( jj);
-  }
-
-  EXPECT_EQ( json_hN, jsonTop);
-
-  {
-    std::ofstream jsonStream( "__jsonA");
-    if(jsonStream.fail()) {
-      cout<< "Cannot open file "<< "__jsonA" <<" for writing"<<endl;
-      return;
-    }
-    jsonStream << std::setw(4) << jsonTop;
-    jsonStream.close();
-  }
-  {
-    std::ofstream jsonStream( "__jsonB");
-    if(jsonStream.fail()) {
-      cout<< "Cannot open file "<< "__jsonB" <<" for writing"<<endl;
-      return;
-    }
-    jsonStream << std::setw(4) << json_hN;
-    jsonStream.close();
-  }
-
-}
-

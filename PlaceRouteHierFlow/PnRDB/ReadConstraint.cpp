@@ -9,9 +9,6 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
   string def;
   vector<string> temp, tempsec;
   size_t found;
-  int *p;
-  int p_temp=0;
-  p=&p_temp;
   string cfile=fpath+"/"+node.name+"."+suffix;
   std::cout<<"start to read const file "<<cfile<<std::endl;
   // constraint format issues(comma): Alignment, Preplace, MatchBlock, Abutment
@@ -250,7 +247,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         PnRDB::SymmPairBlock temp_SymmPairBlock;
         pair<int,int> temp_pair;
         pair<int,PnRDB::Smark> temp_selfsym;
-        for(int i=2;i<temp.size();i=i+2){
+        for(unsigned int i=2;i<temp.size();i=i+2){
           string word=temp[i];
           word=word.substr(1);
           word=word.substr(0, word.length()-1);
@@ -296,7 +293,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(0, word.length()-1);
         //cout<<word<<endl;
         tempsec=StringSplitbyChar(word, ',');
-        for(int p=0;p<tempsec.size();p++){ 
+        for(unsigned int p=0;p<tempsec.size();p++){ 
             temp_cccap.size.push_back(atoi(tempsec[p].c_str()));
            }
         if(temp.size()>9){
@@ -328,7 +325,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           }
         }
         //std::cout<<"AlignBlock "<<alignment_unit.horizon<<" @ ";
-        for(int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
+        for(unsigned int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
         //std::cout<<std::endl;
         node.Align_blocks.push_back(alignment_unit);
       } else if (temp[0].compare("PortLocation")==0) {
@@ -384,7 +381,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             break;
           }
         }
-        std:cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
+        std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
       }
     }
