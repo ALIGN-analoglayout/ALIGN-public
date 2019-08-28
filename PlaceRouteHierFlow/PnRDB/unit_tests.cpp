@@ -1,6 +1,5 @@
 
 #include <gtest/gtest.h>
-#include "datatype.h"
 #include "PnRdatabase.h"
 
 #include <sstream>
@@ -447,4 +446,3 @@ endmodule
   EXPECT_EQ( rvh.get_Supply_node().Blocks.size(), 2);
 
 }
-

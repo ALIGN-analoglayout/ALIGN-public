@@ -9,9 +9,6 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
   string def;
   vector<string> temp, tempsec;
   size_t found;
-  int *p;
-  int p_temp=0;
-  p=&p_temp;
   string cfile=fpath+"/"+node.name+"."+suffix;
   std::cout<<"start to read const file "<<cfile<<std::endl;
   // constraint format issues(comma): Alignment, Preplace, MatchBlock, Abutment
@@ -133,6 +130,10 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         int distance= atoi(temp[4].c_str());
         int horizon = atoi(temp[5].c_str());
         PnRDB::Preplace preplace_const;
+	preplace_const.blockid1 = -1;
+	preplace_const.blockid2 = -1;
+
+
         for(int i=0;i<(int)node.Blocks.size();i++) {
           if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             preplace_const.blockid1 = i;
@@ -149,13 +150,31 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         preplace_const.distance = distance;
         preplace_const.horizon = horizon;
-        node.Preplace_blocks.push_back(preplace_const);
+
+
+	if ( preplace_const.blockid1 == -1) {
+	  cout << "-E- ReadConstraint: Preplace: couldn't find block1:" << block_first << endl;
+	}
+	if ( preplace_const.blockid2 == -1) {
+	  cout << "-E- ReadConstraint: Preplace: couldn't find block2:" << block_second << endl;
+	}
+
+	if ( preplace_const.blockid1 != -1 && preplace_const.blockid2!= -1) {
+	  node.Preplace_blocks.push_back(preplace_const);
+	}
+
+
+
       } else if(temp[0].compare("Alignment")==0){
         string block_first=temp[2];
         string block_second=temp[3];
         int distance= atoi(temp[4].c_str());
         int horizon = atoi(temp[5].c_str());
         PnRDB::Alignment alignment_const;
+	alignment_const.blockid1 = -1;
+	alignment_const.blockid2 = -1;
+
+
         for(int i=0;i<(int)node.Blocks.size();i++) {
           if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
             alignment_const.blockid1 = i;
@@ -170,7 +189,19 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         alignment_const.distance = distance;
         alignment_const.horizon = horizon;
-        node.Alignment_blocks.push_back(alignment_const);
+
+	if ( alignment_const.blockid1 == -1) {
+	  cout << "-E- ReadConstraint: Alignment: couldn't find block1:" << block_first << endl;
+	}
+	if ( alignment_const.blockid2 == -1) {
+	  cout << "-E- ReadConstraint: Alignment: couldn't find block2:" << block_second << endl;
+	}
+
+	if ( alignment_const.blockid1 != -1 && alignment_const.blockid2!= -1) {
+	  node.Alignment_blocks.push_back(alignment_const);
+	}
+
+
       } else if(temp[0].compare("Abument")==0){
         string block_first=temp[2];
         string block_second=temp[3];
@@ -178,6 +209,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         int horizon = atoi(temp[5].c_str());
       
         PnRDB::Abument abument_const;
+	abument_const.blockid1 = -1;
+	abument_const.blockid2 = -1;
       
         for(int i=0;i<(int)node.Blocks.size();i++) {
           if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
@@ -193,7 +226,17 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         abument_const.distance = distance;
         abument_const.horizon = horizon;
-        node.Abument_blocks.push_back(abument_const);
+
+	if ( abument_const.blockid1 == -1) {
+	  cout << "-E- ReadConstraint: Abument: couldn't find block1:" << block_first << endl;
+	}
+	if ( abument_const.blockid2 == -1) {
+	  cout << "-E- ReadConstraint: Abument: couldn't find block2:" << block_second << endl;
+	}
+
+	if ( abument_const.blockid1 != -1 && abument_const.blockid2!= -1) {
+	  node.Abument_blocks.push_back(abument_const);
+	}
       } else if(temp[0].compare("MatchBlock")==0){
         string block_first=temp[2];
         string block_second=temp[4];
@@ -250,7 +293,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         PnRDB::SymmPairBlock temp_SymmPairBlock;
         pair<int,int> temp_pair;
         pair<int,PnRDB::Smark> temp_selfsym;
-        for(int i=2;i<temp.size();i=i+2){
+        for(unsigned int i=2;i<temp.size();i=i+2){
           string word=temp[i];
           word=word.substr(1);
           word=word.substr(0, word.length()-1);
@@ -296,7 +339,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(0, word.length()-1);
         //cout<<word<<endl;
         tempsec=StringSplitbyChar(word, ',');
-        for(int p=0;p<tempsec.size();p++){ 
+        for(unsigned int p=0;p<tempsec.size();p++){ 
             temp_cccap.size.push_back(atoi(tempsec[p].c_str()));
            }
         if(temp.size()>9){
@@ -328,7 +371,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           }
         }
         //std::cout<<"AlignBlock "<<alignment_unit.horizon<<" @ ";
-        for(int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
+        for(unsigned int i=0;i<alignment_unit.blocks.size();i++) {std::cout<<alignment_unit.blocks[i]<<" ";}
         //std::cout<<std::endl;
         node.Align_blocks.push_back(alignment_unit);
       } else if (temp[0].compare("PortLocation")==0) {
@@ -384,7 +427,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             break;
           }
         }
-        std:cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
+        std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
       }
     }

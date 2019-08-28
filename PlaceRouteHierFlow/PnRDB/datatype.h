@@ -233,8 +233,8 @@ struct hierNode {
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
-}; // structure of vertex in heirarchical tree
 
+}; // structure of vertex in heirarchical tree
 
 
 /// Part 3: declaration of structures for constraint data
