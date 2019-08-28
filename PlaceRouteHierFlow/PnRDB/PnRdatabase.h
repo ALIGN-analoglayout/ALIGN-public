@@ -136,6 +136,7 @@ class PnRdatabase
     // Interface for detail router II - wbxu
     void WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile);
     void PrintDesignRuleData();
+    void ReadDBJSON( PnRDB::hierNode& node, const string& filename);
     void WriteDBJSON( const PnRDB::hierNode& node, const string& filename);
     std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info, string opath);
     void PrintHierNode(PnRDB::hierNode& node);

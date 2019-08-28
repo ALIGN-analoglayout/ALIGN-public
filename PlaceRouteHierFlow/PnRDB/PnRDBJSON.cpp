@@ -630,3 +630,13 @@ void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename
   }
   jsonStream << json(hN);
 }
+
+void PnRdatabase::ReadDBJSON( PnRDB::hierNode& hN, const string& filename)
+{
+  std::ifstream ifs( filename);
+  if(ifs.fail()) {
+    cout<< "Cannot open file " << filename << " for reading." << endl;
+    return;
+  }
+  json::parse(ifs).get_to( hN);
+}
