@@ -148,7 +148,7 @@ void PnRdatabase::PrintBlock(PnRDB::blockComplex& bc) {
   PnRDB::blockComplex *it=&bc;
   std::cout<<"@Block"<<std::endl;
     std::cout<<"Child: "<<it->child<<" ; instNum: "<<it->instNum<<" ; selectedInstance: "<<it->selectedInstance<<std::endl;
-    for(int w=0;w<bc.instance.size();++w) {
+    for(unsigned int w=0;w<bc.instance.size();++w) {
     std::cout<<"Choice "<<w<<" -> name: "<<it->instance.at(w).name<<" ; master: "<<it->instance.at(w).master<<" ; type: "<<it->instance.at(w).type<<" ; width: "<<it->instance.at(w).width<<" ; height: "<<it->instance.at(w).height<<" ; isLeaf: "<<it->instance.at(w).isLeaf<<" ; gds: "<<it->instance.at(w).gdsFile<<" ; orient: "<<it->instance.at(w).orient<<" ; originCenter: {"<<it->instance.at(w).originCenter.x<<","<<it->instance.at(w).originCenter.y<<"}; placedCenter: {"<<it->instance.at(w).placedCenter.x<<","<<it->instance.at(w).placedCenter.y<<"}"<<std::endl;
     std::cout<<"originBox: LL"<<it->instance.at(w).originBox.LL.x<<","<<it->instance.at(w).originBox.LL.y<<" LR"<<it->instance.at(w).originBox.LR.x<<","<<it->instance.at(w).originBox.LR.y<<" UR"<<it->instance.at(w).originBox.UR.x<<","<<it->instance.at(w).originBox.UR.y<<" UL"<<it->instance.at(w).originBox.UL.x<<","<<it->instance.at(w).originBox.UL.y<<" poly ";
     for(vector<PnRDB::point>::iterator it2=it->instance.at(w).originBox.polygon.begin(); it2!=it->instance.at(w).originBox.polygon.end(); ++it2) {

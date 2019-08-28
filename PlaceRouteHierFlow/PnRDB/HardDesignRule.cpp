@@ -1,6 +1,6 @@
 #include "PnRdatabase.h"
 
-bool PnRdatabase::HardDesignRule() {
+void PnRdatabase::HardDesignRule() {
   PnRDB::metal_info tmp_metal;
   tmp_metal.name="M1";
   tmp_metal.width=18;

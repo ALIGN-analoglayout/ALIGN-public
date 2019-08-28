@@ -106,7 +106,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   int V_metal_index=-1;
 
   string HV_via_metal;
-  int HV_via_metal_index;
+  int HV_via_metal_index=-1;
 
   vector<string> obs;
 
@@ -115,9 +115,9 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   }else{
 
   
-  for(int i=0;i<lefData[unit_capacitor].interMetals.size();i++){
+  for(unsigned int i=0;i<lefData[unit_capacitor].interMetals.size();i++){
        int found = 0;
-       for(int j=0;j<obs.size();j++){
+       for(unsigned int j=0;j<obs.size();j++){
           if(obs[j]==lefData[unit_capacitor].interMetals[i].metal){
              found = 1;
             }
@@ -130,8 +130,8 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   int pin_minx = INT_MAX;
   int pin_miny = INT_MAX;
   string pin_metal;
-  for(int i=0;i<lefData[unit_capacitor].macroPins.size();i++){
-       for(int j=0;j<lefData[unit_capacitor].macroPins[i].pinContacts.size();j++){
+  for(unsigned int i=0;i<lefData[unit_capacitor].macroPins.size();i++){
+       for(unsigned int j=0;j<lefData[unit_capacitor].macroPins[i].pinContacts.size();j++){
            if(lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.x<=pin_minx and lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.y<=pin_miny){
                pin_minx = lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.x;
                pin_miny = lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.y;
@@ -193,7 +193,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   offset_x = 0;
   offset_y = 0;
   
-  for(int i=0;i<drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       metal_width.push_back(drc_info.Metal_info[i].width); //change 
       metal_width[i] = metal_width[i] / 2;
       metal_distance_ss.push_back(drc_info.Metal_info[i].dist_ss); //change //72
@@ -309,16 +309,15 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   vector<double> dis;
   vector<int> index;
   double distance;
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
         distance = sqrt((Caps[i].index_x-Cx)*(Caps[i].index_x-Cx)+(Caps[i].index_y-Cy)*(Caps[i].index_y-Cy));
         dis.push_back(distance);
         index.push_back(i);
     }
   //sort the distance
   int temp_index;
-  double temp_dis;
-  for(int i=0;i<(int)dis.size();i++){
-     for(int j=i+1;j<(int) dis.size();j++){
+  for(unsigned int i=0;i<dis.size();i++){
+     for(unsigned int j=i+1;j<dis.size();j++){
         if(dis[index[i]]>dis[index[j]]){
            temp_index = index[i];
            index[i]=index[j];
@@ -342,8 +341,8 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       temp_pair.second = -1;
       cap_pair_sequence.push_back(temp_pair);
       //inital the rest pair sequence based on counterclockwise
-      for(int i=1;i<dis.size();i++){
-         for(int j=i+1;j<dis.size();j++){
+      for(unsigned int i=1;i<dis.size();i++){
+         for(unsigned int j=i+1;j<dis.size();j++){
             if(dis[index[i]]!=dis[index[j]]){
                    break;
               }
@@ -362,8 +361,8 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
          }
     }else{
     //initial the rest pair sequence based on counterclockwise
-      for(int i=0;i<dis.size();i++){
-         for(int j=i+1;j<dis.size();j++){
+      for(unsigned int i=0;i<dis.size();i++){
+         for(unsigned int j=i+1;j<dis.size();j++){
             if(dis[index[i]]!=dis[index[j]]){
                    break;
               }
@@ -390,7 +389,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   if(dummy_flag){
   vector<pair<int,int> > temp_cap_pair_sequence;
-  for(int i=0;i<cap_pair_sequence.size();i++){
+  for(unsigned int i=0;i<cap_pair_sequence.size();i++){
       if(cap_pair_sequence[i].second!=-1){
         if(Caps[cap_pair_sequence[i].first].index_x!=0 and Caps[cap_pair_sequence[i].first].index_x!=r-1 and Caps[cap_pair_sequence[i].first].index_y!=0 and Caps[cap_pair_sequence[i].first].index_y!=s-1 and Caps[cap_pair_sequence[i].second].index_x!=0 and Caps[cap_pair_sequence[i].second].index_x!=r-1 and Caps[cap_pair_sequence[i].second].index_y!=0 and Caps[cap_pair_sequence[i].second].index_y!=s-1){
          temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
@@ -482,9 +481,9 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     int Max_y = INT_MIN;
     //for positive nets
     cout<<"Extract Data Step 1"<<endl;
-    for (int i = 0; i < Nets_pos.size(); i++) {//for each net
+    for (unsigned int i = 0; i < Nets_pos.size(); i++) {//for each net
 	PnRDB::pin temp_Pins;
-	for (int j = 0; j < Nets_pos[i].start_conection_coord.size(); j++) { //for segment
+	for (unsigned int j = 0; j < Nets_pos[i].start_conection_coord.size(); j++) { //for segment
 
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
 
@@ -513,9 +512,9 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     }
     cout<<"Extract Data Step 2"<<endl;
     //for neg nets
-    for (int i = 0; i < Nets_neg.size(); i++) {//for each net
+    for (unsigned int i = 0; i < Nets_neg.size(); i++) {//for each net
 	PnRDB::pin temp_Pins_neg;
-	for (int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
+	for (unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
 
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
 
@@ -547,8 +546,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     //wirting vias
     //for positive net
     //width = via_width[0];
-    for (int i = 0; i < Nets_pos.size(); i++) {
-	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
+	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 3.1"<<endl;
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
 
@@ -646,8 +645,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     }
     cout<<"Extract Data Step 4"<<endl;
     //for negative net
-    for (int i = 0; i < Nets_neg.size(); i++) {
-	for (int j = 0; j <Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < Nets_neg.size(); i++) {
+	for (unsigned int j = 0; j <Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 4.1"<<endl;
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x;
 
@@ -746,7 +745,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     }
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
-    for (int i = 0; i < Caps.size(); i++) {
+    for (unsigned int i = 0; i < Caps.size(); i++) {
 	x[0]=Caps[i].x - unit_cap_demension.first/2+offset_x;
 	x[1]=Caps[i].x - unit_cap_demension.first/2+offset_x;
 	x[2]=Caps[i].x + unit_cap_demension.first/2+offset_x;
@@ -769,7 +768,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	PnRDB::contact temp_contact;
 	fillContact (temp_contact, x, y);
 
-        for(int i=0;i<obs.size();i++){
+        for(unsigned int i=0;i<obs.size();i++){
             temp_contact.metal = obs[i];
             CheckOutBlock.interMetals.push_back(temp_contact);
            }
@@ -825,7 +824,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 void
 Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index) {
     int x[5], y[5];
-    int sx[5], sy[5];
     //int width = metal_width[0];
     int Min_x = INT_MAX;
     int Min_y = INT_MAX;
@@ -834,8 +832,8 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     //for positive nets
     // vector<pair<double,double> f, s;  int width
   
-    for (int i = 0; i< Nets_pos.size(); i++) {//for each net
-	for (int j = 0; j< Nets_pos[i].start_conection_coord.size();j++) { //for segment
+    for (unsigned int i = 0; i< Nets_pos.size(); i++) {//for each net
+	for (unsigned int j = 0; j< Nets_pos[i].start_conection_coord.size();j++) { //for segment
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
@@ -848,8 +846,8 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     }
   
     //for neg nets
-    for (int i = 0; i <  Nets_neg.size(); i++) {//for each net
-	for (int j = 0; j <  Nets_neg[i].start_conection_coord.size();j++) { //for segment
+    for (unsigned int i = 0; i <  Nets_neg.size(); i++) {//for each net
+	for (unsigned int j = 0; j <  Nets_neg[i].start_conection_coord.size();j++) { //for segment
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
@@ -864,8 +862,8 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     //wirting vias
     //for positive net
     //width  =  via_width[0];
-    for (int i = 0; i < Nets_pos.size(); i++) {
-	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
+	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
 
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
 
@@ -890,8 +888,8 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     }
     
     //for negative net
-    for (int i = 0;i < Nets_neg.size(); i++) {
-	for (int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0;i < Nets_neg.size(); i++) {
+	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
  
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x;
 
@@ -916,7 +914,7 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
 	}
     }
   
-    for (int i = 0; i < Caps.size(); i++) {
+    for (unsigned int i = 0; i < Caps.size(); i++) {
 	x[0] = Caps[i].x - unit_cap_demension.first/2;
 	x[1] = Caps[i].x - unit_cap_demension.first/2;
 	x[2] = Caps[i].x + unit_cap_demension.first/2;
@@ -971,7 +969,7 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
   vector<int> C_unit;
   vector<int> C_odd;
   vector<int> C_even;
-  for(int i=0;i<ki.size();i++){
+  for(unsigned int i=0;i<ki.size();i++){
        if(ki[i]==1){
            C_unit.push_back(i);
          }else if(ki[i]%2==1){
@@ -983,7 +981,7 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
   //initial net pair sequence for pair
   cout<<"test case 2"<<endl;
   int size;
-  for(int i=0;i<C_even.size();i++){
+  for(unsigned int i=0;i<C_even.size();i++){
      size = ki[C_even[i]];
      while(size>1){
          temp_pair.first=C_even[i];
@@ -992,7 +990,7 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
          S.push_back(temp_pair);
         }
      }
-  for(int i=0;i<C_odd.size();i++){
+  for(unsigned int i=0;i<C_odd.size();i++){
      size = ki[C_odd[i]];
      while(size>1){
          temp_pair.first=C_odd[i];
@@ -1055,25 +1053,25 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
   if(S_unique.size()>1){
      std::cout<<"Error in S_unique"<<std::endl;
     }
-  for(int i=0;i<S_unique.size();i++){
+  for(unsigned int i=0;i<S_unique.size();i++){
       net_sequence.push_back(S_unique[i]);
     }
-  for(int i=0;i<S_unit_unit.size();i++){
+  for(unsigned int i=0;i<S_unit_unit.size();i++){
       net_sequence.push_back(S_unit_unit[i]);
     }
-  for(int i=0;i<S_unit_odd.size();i++){
+  for(unsigned int i=0;i<S_unit_odd.size();i++){
       net_sequence.push_back(S_unit_odd[i]);
     }
-  for(int i=0;i<S_odd_odd.size();i++){
+  for(unsigned int i=0;i<S_odd_odd.size();i++){
       net_sequence.push_back(S_odd_odd[i]);
     }
-  for(int i=0;i<S.size();i++){
+  for(unsigned int i=0;i<S.size();i++){
       net_sequence.push_back(S[i]);
     }
   cout<<"test case 4"<<endl;
   net temp_net;
 
-  for(int i=0;i<ki.size()+1;i++){
+  for(unsigned int i=0;i<ki.size()+1;i++){
      if(i<ki.size()){
        temp_net.name = cap_pin[i].second;
      }else{
@@ -1084,7 +1082,7 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
 
   cout<<"test case 4.5"<<endl;
   int start_index=0;
-  for(int i=0;i<net_sequence.size();i++){
+  for(unsigned int i=0;i<net_sequence.size();i++){
      if(net_sequence[i].second==-1){
         cout<<"test case 4.51"<<endl;
         cout<<net_sequence[i].first<<endl;
@@ -1144,7 +1142,7 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
 */
   //int addition_dummy = 0;
   int dummy_cap = Nets_pos.size();
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
       if(Caps[i].net_index==-1){
          Nets_pos[dummy_cap-1].cap_index.push_back(i);
         }
@@ -1167,14 +1165,14 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 1"<<endl;
 //route for cap
-  for(int i=0;i<Nets_pos.size();i++){ // for each net
-     for(int j=0;j<Nets_pos[i].cap_index.size();j++){ //for each unaccessed cap
+  for(unsigned int i=0;i<Nets_pos.size();i++){ // for each net
+     for(unsigned int j=0;j<Nets_pos[i].cap_index.size();j++){ //for each unaccessed cap
         if(Caps[Nets_pos[i].cap_index[j]].access==0){
            connection_set temp_set;
            temp_set.cap_index.push_back(Nets_pos[i].cap_index[j]); //new set & marked accessed
            Caps[Nets_pos[i].cap_index[j]].access = 1;
            //found its neighbor recursively
-           int found=found_neighbor(j,Nets_pos[i],temp_set);
+           found_neighbor(j,Nets_pos[i],temp_set);
            Nets_pos[i].Set.push_back(temp_set);
           }
         } 
@@ -1207,8 +1205,8 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 //create router line for each net (cap) vertical 
 
   cout<<"broken down 3.1"<<endl;
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].Set.size();j++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
          cout<<"broken down 3.11"<<endl;
          connection_set temp_router_line;
          //initial temp_router_line
@@ -1216,7 +1214,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
              temp_router_line.cap_index.push_back(0);
             }
          cout<<"broken down 3.2"<<endl;
-         for(int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
              cout<<"broken down 3.3"<<endl;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
@@ -1233,12 +1231,12 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 4"<<endl;
 //common overlap checking vertical
-  for(int i=0;i<Nets_pos.size();i++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
      for(int j=0;j<=r;j++){
           Nets_pos[i].routable_line_v.push_back(1);
         }
-     for(int k=0;k<Nets_pos[i].router_line_v.size();k++){
-          for(int l=0;l<Nets_pos[i].router_line_v[k].cap_index.size();l++){
+     for(unsigned int k=0;k<Nets_pos[i].router_line_v.size();k++){
+          for(unsigned int l=0;l<Nets_pos[i].router_line_v[k].cap_index.size();l++){
              Nets_pos[i].routable_line_v[l] =(int) Nets_pos[i].routable_line_v[l] and Nets_pos[i].router_line_v[k].cap_index[l];
              }
         }
@@ -1246,14 +1244,14 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 5"<<endl;
 //create router line for each net (cap) horizontal
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].Set.size();j++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
          connection_set temp_router_line;
          //initial temp_router_line
          for(int k=0;k<=s;k++){
              temp_router_line.cap_index.push_back(0);
             }
-         for(int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
              temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
@@ -1265,12 +1263,12 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 6"<<endl;
 //common overlap checking horizontal
-  for(int i=0;i<Nets_pos.size();i++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
      for(int j=0;j<=s;j++){
           Nets_pos[i].routable_line_h.push_back(1);
         }
-     for(int k=0;k<Nets_pos[i].router_line_h.size();k++){
-          for(int l=0;l<Nets_pos[i].router_line_h[k].cap_index.size();l++){
+     for(unsigned int k=0;k<Nets_pos[i].router_line_h.size();k++){
+          for(unsigned int l=0;l<Nets_pos[i].router_line_h[k].cap_index.size();l++){
              Nets_pos[i].routable_line_h[l] =(int) Nets_pos[i].routable_line_h[l] and Nets_pos[i].router_line_h[k].cap_index[l];
              }
         }
@@ -1279,14 +1277,14 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 7"<<endl;
 //create router line for each net (cap) half vertical 
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].Set.size();j++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
          connection_set temp_router_line;
          //initial temp_router_line
          for(int k=0;k<=r;k++){
              temp_router_line.cap_index.push_back(0);
             }
-         for(int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
              //temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
@@ -1298,14 +1296,14 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 8"<<endl;
 //create router line for each net (cap) half horizontal
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].Set.size();j++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
          connection_set temp_router_line;
          //initial temp_router_line
          for(int k=0;k<=s;k++){
              temp_router_line.cap_index.push_back(0);
             }
-         for(int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
              //temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
@@ -1325,7 +1323,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
   //Nets_neg = Nets_pos;
 
   Nets_neg = Nets_pos;
-  for(int i=0;i<Nets_pos.size();i++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
        if(i!=Nets_pos.size()-1){
            Nets_neg[i].name = cap_pin[i].first;
          }else{
@@ -1336,10 +1334,10 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
   cout<<"broken down 10"<<endl;
 //Next work for good router
 //sample route methodology just for v pos
-  for(int i=0;i<Nets_pos.size();i++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
       for(int k=0;k<=r;k++){Nets_pos[i].line_v.push_back(0);}
       int sum=0;
-      for(int k=0;k<Nets_pos[i].routable_line_v.size();k++){sum=sum+Nets_pos[i].routable_line_v[k];}
+      for(unsigned int k=0;k<Nets_pos[i].routable_line_v.size();k++){sum=sum+Nets_pos[i].routable_line_v[k];}
       if(sum>0){
          //use the information of routable_line_v
          int router_num=Nets_pos.size();
@@ -1364,9 +1362,9 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
              
        }else{
          //use the information of half_routable_line_v
-         for(int l=0;l<Nets_pos[i].half_router_line_v.size();l++){
+         for(unsigned int l=0;l<Nets_pos[i].half_router_line_v.size();l++){
              int found=0;
-             for(int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
+             for(unsigned int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
                  if(Nets_pos[i].half_router_line_v[l].cap_index[k]==1 and Nets_pos[i].line_v[k]==1){
                    found =1;
                    }
@@ -1374,7 +1372,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
              if(found ==0){
                 int router_num=Nets_pos.size();
                 int choosed_router=-1;
-                for(int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
+                for(unsigned int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
                     if(Nets_pos[i].half_router_line_v[l].cap_index[k]==1){
                        if(num_router_net_v[k]<=router_num){
                           choosed_router=k;
@@ -1393,10 +1391,10 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 11"<<endl;
 //sample route methodology just for v neg
-  for(int i=0;i<Nets_neg.size();i++){
+  for(unsigned int i=0;i<Nets_neg.size();i++){
       for(int k=0;k<=r;k++){Nets_neg[i].line_v.push_back(0);}
       int sum=0;
-      for(int k=0;k<Nets_neg[i].routable_line_v.size();k++){sum=sum+Nets_neg[i].routable_line_v[k];}
+      for(unsigned int k=0;k<Nets_neg[i].routable_line_v.size();k++){sum=sum+Nets_neg[i].routable_line_v[k];}
       if(sum>0){
          //use the information of routable_line_v
          int router_num=2*Nets_neg.size();
@@ -1421,9 +1419,9 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
              
        }else{
          //use the information of half_routable_line_v
-         for(int l=0;l<Nets_neg[i].half_router_line_v.size();l++){
+         for(unsigned int l=0;l<Nets_neg[i].half_router_line_v.size();l++){
              int found=0;
-             for(int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
+             for(unsigned int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
                  if(Nets_neg[i].half_router_line_v[l].cap_index[k]==1 and Nets_neg[i].line_v[k]==1){
                    found =1;
                    }
@@ -1431,7 +1429,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
              if(found ==0){
                 int router_num=Nets_neg.size();
                 int choosed_router=-1;
-                for(int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
+                for(unsigned int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
                     if(Nets_neg[i].half_router_line_v[l].cap_index[k]==1){
                        if(num_router_net_v[k]<=router_num){
                           choosed_router=k;
@@ -1450,15 +1448,15 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
   cout<<"broken down 12"<<endl;
    vector<int> num_line;
-   for(int i=0;i<Nets_pos[0].line_v.size();i++){num_line.push_back(0);}
-   for(int i=0;i<Nets_pos.size();i++){
-       for(int j=0;j<Nets_pos[i].line_v.size();j++){
+   for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){num_line.push_back(0);}
+   for(unsigned int i=0;i<Nets_pos.size();i++){
+       for(unsigned int j=0;j<Nets_pos[i].line_v.size();j++){
            num_line[j]=Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j]+num_line[j];
           }
       }
    //int min_dis = 500; //min distance between each metal more modification
    int max_num_ =0;
-   for(int i=0;i<Nets_pos[0].line_v.size();i++){
+   for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){
         if(num_line[i]>max_num_){
            max_num_ = num_line[i];
           }
@@ -1468,7 +1466,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
    span_distance.first = (max_num_+1)*min_dis_x;
   cout<<span_distance.first<<endl;
 
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
       Caps[i].x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
      }
 
@@ -1494,17 +1492,17 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
 int Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set){
   int found = -1;
-  for(int i=0;i<pos.cap_index.size();i++){
+  for(unsigned int i=0;i<pos.cap_index.size();i++){
       if(Caps[pos.cap_index[i]].access==0){
          if((Caps[pos.cap_index[i]].index_x == Caps[pos.cap_index[j]].index_x and abs(Caps[pos.cap_index[i]].index_y -Caps[pos.cap_index[j]].index_y)==1) or (Caps[pos.cap_index[i]].index_y == Caps[pos.cap_index[j]].index_y and abs(Caps[pos.cap_index[i]].index_x -Caps[pos.cap_index[j]].index_x)==1)){
              Caps[pos.cap_index[i]].access = 1;
              temp_set.cap_index.push_back(pos.cap_index[i]);
              found = i;
-             int num_found = found_neighbor(i, pos, temp_set);
+             found_neighbor(i, pos, temp_set);
            }
         }
      } 
-  if(found = -1){
+  if(found == -1){
          return -1;
        }else{
          return 1;
@@ -1594,7 +1592,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
   int grid_offset;
   int height_cap = INT_MIN;
 
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
       if(Caps[i].y+unit_cap_demension.second/2 > height_cap){
           height_cap = Caps[i].y + unit_cap_demension.second/2;
         }
@@ -1682,7 +1680,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
       HV_via_metal_index = H_metal_index;
     }
 
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
   }
 
@@ -1696,7 +1694,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
    int routed_trail=0;
    vector<int> trails;
    for(int i=0;i<num_trail;i++){trails.push_back(0);}
-   for(int i=0;i<Nets_pos.size();i++){
+   for(unsigned int i=0;i<Nets_pos.size();i++){
       if(Nets_pos[i].cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
       pair<double,double> first_coord;
@@ -1704,15 +1702,15 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
       int first_lock=0;
       int end_close=0;
       //Nets_pos[i].line_v_r=Nets_pos[i].line_v;
-      for(int l=0;l<Nets_pos[i].line_v.size();l++){
+      for(unsigned int l=0;l<Nets_pos[i].line_v.size();l++){
           if(Nets_pos[i].line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
               int max=-1;
-              int max_cap_index;
+              int max_cap_index=-1;
               int left_right = 0;
               int found = 0;
-              for(int k=0;k<Nets_pos[i].cap_index.size();k++){
+              for(unsigned int k=0;k<Nets_pos[i].cap_index.size();k++){
 
                   if(Caps[Nets_pos[i].cap_index[k]].index_x==l and Caps[Nets_pos[i].cap_index[k]].access==0){
                       found = 1;
@@ -1781,7 +1779,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                     }
                  }
                  if(found == 0){
-                 for(int k=0;k<Nets_pos[i].cap_index.size();k++){
+                 for(unsigned int k=0;k<Nets_pos[i].cap_index.size();k++){
                   if(0){
                      
                       coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2;
@@ -1977,15 +1975,15 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
          }
      }
 */
-    for(int i=0;i<Nets_pos.size();i++){
+    for(unsigned int i=0;i<Nets_pos.size();i++){
       //connection for each connection set
-      for(int j=0;j<Nets_pos[i].Set.size();j++){
-              int end_flag = Nets_pos[i].Set[j].cap_index.size();
-              int index = 0;
+      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+              unsigned int end_flag = Nets_pos[i].Set[j].cap_index.size();
+              unsigned int index = 0;
               while(index<end_flag){
                      if(Caps[Nets_pos[i].Set[j].cap_index[index]].access==1){
                         int found=0;
-                        for(int k=0;k<end_flag;k++){
+                        for(unsigned int k=0;k<end_flag;k++){
                             if((Caps[Nets_pos[i].Set[j].cap_index[k]].index_y==Caps[Nets_pos[i].Set[j].cap_index[index]].index_y and abs(Caps[Nets_pos[i].Set[j].cap_index[k]].index_x-Caps[Nets_pos[i].Set[j].cap_index[index]].index_x) ==1)and !(Caps[Nets_pos[i].Set[j].cap_index[k]].access)){
                               Caps[Nets_pos[i].Set[j].cap_index[k]].access=1;
                               coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
@@ -2078,7 +2076,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
      
 
 //for negative net
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
   }
    //connection for trails
@@ -2086,7 +2084,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
    routed_trail=0;
    //vector<int> trails;
    //for(int i=0;i<num_trail;i++){trails.push_back(0);}
-   for(int i=0;i<Nets_neg.size();i++){
+   for(unsigned int i=0;i<Nets_neg.size();i++){
       if(Nets_neg[i].cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
       pair<double,double> first_coord;
@@ -2094,15 +2092,15 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
       int first_lock=0;
       int end_close=0;
       //Nets_neg[i].line_v_r=Nets_pos[i].line_v;
-      for(int l=0;l<Nets_neg[i].line_v.size();l++){
+      for(unsigned int l=0;l<Nets_neg[i].line_v.size();l++){
           if(Nets_neg[i].line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
               int min=Caps.size();
-              int min_cap_index;
+              int min_cap_index=-1;
               int left_right = 0;
               int found = 0;
-              for(int k=0;k<Nets_neg[i].cap_index.size();k++){
+              for(unsigned int k=0;k<Nets_neg[i].cap_index.size();k++){
                   if(Caps[Nets_neg[i].cap_index[k]].index_x==l and Caps[Nets_neg[i].cap_index[k]].access==0){
                       found = 1;
                       coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
@@ -2176,7 +2174,7 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                     }
                  }
                  if(found == 0){
-                 for(int k=0;k<Nets_neg[i].cap_index.size();k++){
+                 for(unsigned int k=0;k<Nets_neg[i].cap_index.size();k++){
                   if(0){
                       
                       coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2;
@@ -2370,15 +2368,15 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
          }
      }
 */
-  for(int i=0;i<Nets_neg.size();i++){
+  for(unsigned int i=0;i<Nets_neg.size();i++){
       //connection for each connection set
-      for(int j=0;j<Nets_neg[i].Set.size();j++){
-              int end_flag = Nets_neg[i].Set[j].cap_index.size();
-              int index = 0;
+      for(unsigned int j=0;j<Nets_neg[i].Set.size();j++){
+              unsigned int end_flag = Nets_neg[i].Set[j].cap_index.size();
+              unsigned int index = 0;
               while(index<end_flag){
                      if(Caps[Nets_neg[i].Set[j].cap_index[index]].access==1){
                         int found=0;
-                        for(int k=0;k<end_flag;k++){
+                        for(unsigned int k=0;k<end_flag;k++){
                             if((Caps[Nets_neg[i].Set[j].cap_index[k]].index_y==Caps[Nets_neg[i].Set[j].cap_index[index]].index_y and abs(Caps[Nets_neg[i].Set[j].cap_index[k]].index_x-Caps[Nets_neg[i].Set[j].cap_index[index]].index_x) ==1 and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access))){
                               Caps[Nets_neg[i].Set[j].cap_index[k]].access=1;
                               coord.first = Caps[Nets_neg[i].Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
@@ -2576,10 +2574,9 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     jsonLib["units"] = {dbUnitUser, dbUnitMeter};
     jsonLib["libname"] = "test";
 
-    long int randnum = 111;
     //what is this
     vector<string> uniGDS;
-    for(int i=0;i<1;i++){
+    for(unsigned int i=0;i<1;i++){
 	uniGDS.push_back(gds_unit_capacitor);
     }
 
@@ -2594,7 +2591,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     //writing unit capacitors??? confirm with jinhyun
     std::cout << "GDS CAP SUBCELL read of " << gds_unit_capacitor << std::endl;
 
-    for(int i=0;i<uniGDS.size();i++) {
+    for(unsigned int i=0;i<uniGDS.size();i++) {
 	json js;
 	cout << "CAP GDS: Using JSON for subcells for now" << endl;
 	JSONReaderWrite_subcells (gds_unit_capacitor, rndnum, strBlocks, llx,lly,urx,ury, js);
@@ -2626,8 +2623,8 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     int Max_y = INT_MIN;
     //for positive nets
 
-    for(int i=0; i< Nets_pos.size(); i++){//for each net
-	for(int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
+    for(unsigned int i=0; i< Nets_pos.size(); i++){//for each net
+	for(unsigned int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
 
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
@@ -2658,8 +2655,8 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     }
   
     //for neg nets
-    for(int i =0; i < Nets_neg.size(); i++) {//for each net
-	for(int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
+    for(unsigned int i =0; i < Nets_neg.size(); i++) {//for each net
+	for(unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
             int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
@@ -2691,8 +2688,8 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     //wirting vias
     //for positive net
     //width = via_width[0];
-    for (int i = 0; i < Nets_pos.size(); i++) {
-	for (int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
+	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
  	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
@@ -2731,8 +2728,8 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     }
     
     //for negative net
-    for (int i = 0; i < Nets_neg.size(); i++) {
-	for (int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < Nets_neg.size(); i++) {
+	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x; 
 	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
 	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
@@ -2771,7 +2768,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     }
   
     //wirte orientation for each cap
-    for (int i = 0; i < Caps.size(); i++) {
+    for (unsigned int i = 0; i < Caps.size(); i++) {
 	json sref;
 	sref["type"] = "sref";
 	if (strBlocks_Top.size())
@@ -2805,7 +2802,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
 void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, string fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag, bool aspect_ratio, int num_aspect){ //if aspect_ratio 1, then do CC with different aspect_ratio; Else not.
 
 
-  for(int i = 0;i<current_node.Blocks.size();i++){
+  for(unsigned int i = 0;i<current_node.Blocks.size();i++){
        if(current_node.Blocks[i].instance.back().isLeaf == 1 and current_node.Blocks[i].instance.back().gdsFile ==""){
             //this block must be CC
             vector<int> ki;
@@ -2813,14 +2810,14 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
             string unit_capacitor;
             string final_gds;
             pair<string, string> pins;
-            for(int j=0;j<current_node.CC_Caps.size();j++){
+            for(unsigned int j=0;j<current_node.CC_Caps.size();j++){
 
                  std::cout<<"New CC 1 "<<j<<std::endl;
                  if(current_node.CC_Caps[j].CCCap_name == current_node.Blocks[i].instance.back().name){
                       ki = current_node.CC_Caps[j].size;
                       unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
                       final_gds = current_node.Blocks[i].instance.back().master;
-                      int pin_index = 0;
+                      unsigned int pin_index = 0;
                       while(pin_index <current_node.Blocks[i].instance.back().blockPins.size()){
                          pins.first = current_node.Blocks[i].instance.back().blockPins[pin_index].name;
                          pins.second = current_node.Blocks[i].instance.back().blockPins[pin_index+1].name;
@@ -2844,7 +2841,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                          int sum = 0;
                          double temp_r = 0;
                          //double temp_s = 0;
-                         for(int k=0;k<ki.size();k++){
+                         for(unsigned int k=0;k<ki.size();k++){
                                sum = sum+ ki[k];
                              }
                          temp_r = ceil(sqrt(sum));
@@ -2869,7 +2866,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                       std::cout<<"New CC 4 "<<j<<std::endl;
                       //std::vector<PnRDB::block> temp_Block;
                       std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
-                      for(int q=0;q<cap_r.size();q++){
+                      for(unsigned int q=0;q<cap_r.size();q++){
                         std::cout<<"New CC 5 "<<j<<std::endl;
                         //stringstream cr,cs;
                         //cr<<cap_r[q]; 
@@ -2906,10 +2903,10 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                             current_node.Blocks[i].instance[q].orient = temp_block.orient;
                             current_node.Blocks[i].instance[q].interMetals = temp_block.interMetals;
                             current_node.Blocks[i].instance[q].interVias = temp_block.interVias;
-                            for(int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
-                                  for(int l=0;l<temp_block.blockPins.size();l++){
+                            for(unsigned int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
+                                  for(unsigned int l=0;l<temp_block.blockPins.size();l++){
                                        if(current_node.Blocks[i].instance[q].blockPins[k].name == temp_block.blockPins[l].name){    
-                                            for(int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
+                                            for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
                                         current_node.Blocks[i].instance[q].blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
                                                 }
                                          }
@@ -2931,11 +2928,11 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(string opath, str
                             current_node.Blocks[i].instance[q].orient = temp_block.orient;
                             current_node.Blocks[i].instance[q].interMetals = temp_block.interMetals;
                             current_node.Blocks[i].instance[q].interVias = temp_block.interVias;
-                            for(int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
-                                 for(int l=0;l<temp_block.blockPins.size();l++){
+                            for(unsigned int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
+                                 for(unsigned int l=0;l<temp_block.blockPins.size();l++){
                                      if(current_node.Blocks[i].instance[q].blockPins[k].name == temp_block.blockPins[l].name){ 
                                           current_node.Blocks[i].instance[q].blockPins[k].pinContacts.clear();   
-                                          for(int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
+                                          for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
                                         current_node.Blocks[i].instance[q].blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
                                              }
                                         }
@@ -3028,7 +3025,6 @@ void Placer_Router_Cap::Common_centroid_capacitor(string fpath, PnRDB::hierNode&
 
 void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
   cout<<"Placer-Router-Cap-Info: create gnuplot file"<<endl;
-  int cap_num = Caps.size();
   ofstream fout;
   fout.open(outfile.c_str());
 
@@ -3051,7 +3047,7 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
   fout<<"\nset yrange ["<<CheckOutBlock.originBox.LL.y-500<<":"<<CheckOutBlock.originBox.UR.y+500<<"]"<<endl;
 
 //set label for capacitors
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
        if(Caps[i].net_index!=-1){
        stringstream ss;
        ss<<Caps[i].net_index;
@@ -3067,16 +3063,16 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 
 // plot capacitors
   fout<<"\nplot[:][:] \'-\' with lines linestyle 1,";
-  for(int i=0;i<Nets_pos.size();i++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
      fout<<" \'-\' with lines linestyle "<<i+2<<",";
   }
-  for(int i=0;i<Nets_neg.size();i++){
+  for(unsigned int i=0;i<Nets_neg.size();i++){
      fout<<" \'-\' with lines linestyle "<<i+2<<",";
   }
   fout<<endl<<endl;
   
   //fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;
-  for(int i=0;i<Caps.size();i++){
+  for(unsigned int i=0;i<Caps.size();i++){
       fout<<"\t"<<Caps[i].x-unit_cap_demension.first/2<<"\t"<<Caps[i].y-unit_cap_demension.second/2<<endl;
       fout<<"\t"<<Caps[i].x-unit_cap_demension.first/2<<"\t"<<Caps[i].y+unit_cap_demension.second/2<<endl;
       fout<<"\t"<<Caps[i].x+unit_cap_demension.first/2<<"\t"<<Caps[i].y+unit_cap_demension.second/2<<endl;
@@ -3090,8 +3086,8 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 
 // plot connection
 
-  for(int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<Nets_pos[i].start_conection_coord.size();j++){
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+     for(unsigned int j=0;j<Nets_pos[i].start_conection_coord.size();j++){
      fout<<"\t"<<Nets_pos[i].start_conection_coord[j].first<<"\t"<<Nets_pos[i].start_conection_coord[j].second<<endl;
 fout<<"\t"<<Nets_pos[i].end_conection_coord[j].first<<"\t"<<Nets_pos[i].end_conection_coord[j].second<<endl;
 fout<<"\t"<<Nets_pos[i].start_conection_coord[j].first<<"\t"<<Nets_pos[i].start_conection_coord[j].second<<endl;
@@ -3103,8 +3099,8 @@ fout<<endl;
      }
 
 
-  for(int i=0;i<Nets_neg.size();i++){
-     for(int j=0;j<Nets_neg[i].start_conection_coord.size();j++){
+  for(unsigned int i=0;i<Nets_neg.size();i++){
+     for(unsigned int j=0;j<Nets_neg[i].start_conection_coord.size();j++){
      fout<<"\t"<<Nets_neg[i].start_conection_coord[j].first<<"\t"<<Nets_neg[i].start_conection_coord[j].second<<endl;
 fout<<"\t"<<Nets_neg[i].end_conection_coord[j].first<<"\t"<<Nets_neg[i].end_conection_coord[j].second<<endl;
 fout<<"\t"<<Nets_neg[i].start_conection_coord[j].first<<"\t"<<Nets_neg[i].start_conection_coord[j].second<<endl;
@@ -3122,7 +3118,7 @@ fout<<endl;
 // c-basic-offset: 4
 // End:
 
-bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string opath){
+void Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string opath){
 
   std::ofstream leffile;
   string leffile_name = opath + file;
@@ -3137,7 +3133,7 @@ bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string o
   leffile<<"  SIZE "<< (double) temp_block.width/time<<" BY "<<(double) temp_block.height/time <<" ;"<<std::endl;
 
   //pins
-  for(int i=0;i<temp_block.blockPins.size();i++){
+  for(unsigned int i=0;i<temp_block.blockPins.size();i++){
 
       leffile<<"  PIN "<<temp_block.blockPins[i].name<<std::endl;
       leffile<<"    DIRECTION INOUT ;"<<std::endl;
@@ -3146,7 +3142,7 @@ bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string o
       //leffile<<"    USE "<<node.blockPins[i].use<<" 0 0 ;"<<std::endl;
       leffile<<"    PORT "<<std::endl;
 
-      for(int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+      for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
 
          leffile<<"      LAYER "<<temp_block.blockPins[i].pinContacts[j].metal<<" ;"<<std::endl;
          leffile<<"        RECT "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.y/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.y/time<<" ;"<<std::endl;
@@ -3160,7 +3156,7 @@ bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string o
      }
 
   leffile<<"  OBS "<<std::endl;
-  for(int i=0;i<temp_block.interMetals.size();i++){
+  for(unsigned int i=0;i<temp_block.interMetals.size();i++){
 
      
      leffile<<"  LAYER "<<temp_block.interMetals[i].metal<<" ;"<<std::endl;
@@ -3172,7 +3168,4 @@ bool Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string o
   leffile<<"END "<<temp_block.master<<std::endl;
   
   leffile.close();
-  
-
-
 }

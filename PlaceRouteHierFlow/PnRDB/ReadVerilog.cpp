@@ -41,7 +41,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
 void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 {
 
-    for(int i=0;i<db.hierTree.size();i++){
+    for(unsigned int i=0;i<db.hierTree.size();i++){
 
 	auto &curr_node = db.hierTree[i];
 
@@ -66,22 +66,22 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 
     //update hiear tree here for the class Nodes.
     //inistial 
-    for(int i=0;i<db.hierTree.size();i++){
-        for(int j=0;j<db.hierTree[i].Blocks.size();j++){
-            db.hierTree[i].Blocks[j].child==-1;
-            }
-        }
+    for(unsigned int i=0;i<db.hierTree.size();i++){
+        for(unsigned int j=0;j<db.hierTree[i].Blocks.size();j++){
+            db.hierTree[i].Blocks[j].child = -1;
+	}
+    }
 		
     //update hiear tree here for the class Nodes.
-    for(int i=0;i<db.hierTree.size();i++){
-        for(int j=0;j<db.hierTree.size();j++){
-            for(int k=0;k<db.hierTree[j].Blocks.size();k++)
+    for(unsigned int i=0;i<db.hierTree.size();i++){
+        for(unsigned int j=0;j<db.hierTree.size();j++){
+            for(unsigned int k=0;k<db.hierTree[j].Blocks.size();k++)
                 if(db.hierTree[j].Blocks[k].instance.back().master.compare(db.hierTree[i].name)==0){
                    db.hierTree[j].Blocks[k].child = i;
                    int parent_found = 0;
-                   for(int p=0;p<db.hierTree[i].parent.size();p++){
-                       if(db.hierTree[i].parent[p] == j){parent_found=1;} 
-                      }
+                   for(unsigned int p=0;p<db.hierTree[i].parent.size();p++){
+		     if(db.hierTree[i].parent[p] == (int)j){parent_found=1;} 
+		   }
                    if(parent_found==0){db.hierTree[i].parent.push_back(j);}                   
                   }
             }
@@ -90,8 +90,8 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
            db.hierTree[i].isTop = 1;
           }
                 //update terminal information
-        for(int l=0;l<db.hierTree[i].Nets.size();l++){
-            for(int m=0;m<db.hierTree[i].Terminals.size();m++){
+        for(unsigned int l=0;l<db.hierTree[i].Nets.size();l++){
+            for(unsigned int m=0;m<db.hierTree[i].Terminals.size();m++){
                 if(db.hierTree[i].Nets[l].name.compare(db.hierTree[i].Terminals[m].name)==0){
                    db.hierTree[i].Nets[l].degree++;
 		   {
@@ -108,8 +108,8 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
             }
       }
 		
-    for(int i=0;i<db.hierTree.size();i++){
-        for(int j=0;j<db.hierTree[i].Blocks.size();j++){
+    for(unsigned int i=0;i<db.hierTree.size();i++){
+        for(unsigned int j=0;j<db.hierTree[i].Blocks.size();j++){
             if(db.hierTree[i].Blocks[j].child==-1){
                db.hierTree[i].Blocks[j].instance.back().isLeaf=1;
                }
@@ -121,7 +121,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 
   std::cout<<"Middle\n";
     //mergeLEFandGDS
-    for(int i=0;i<db.hierTree.size();i++){
+    for(unsigned int i=0;i<db.hierTree.size();i++){
     //cout<<"db.hierTree node "<<i<<endl;
     if(!db.MergeLEFMapData(db.hierTree[i])){cerr<<"PnRDB-Error: fail to mergeLEFMapData of module "<<db.hierTree[i].name<<endl;
       }else{
@@ -131,7 +131,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
   // wbxu: following lines need modifications to reflect changes of block instance vector
   //update powernets information
   std::cout<<"Middle\n";
-  for(int i=0;i<Supply_node.Blocks.size();i++){
+  for(unsigned int i=0;i<Supply_node.Blocks.size();i++){
       std::string supply_name_full = Supply_node.name+"."+Supply_node.Blocks[i].instance.back().name;
       std::string supply_name = Supply_node.Blocks[i].instance.back().name;
       int power;
@@ -140,9 +140,9 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
         }else{
          power =1;
         }
-      for(int j=0;j<db.hierTree.size();j++){
+      for(unsigned int j=0;j<db.hierTree.size();j++){
            std::vector<PnRDB::net> temp_net;
-           for(int k=0;k<db.hierTree[j].Nets.size();k++){
+           for(unsigned int k=0;k<db.hierTree[j].Nets.size();k++){
                if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
                    PnRDB::PowerNet temp_PowerNet;
                    temp_PowerNet.name = db.hierTree[j].Nets[k].name;
@@ -158,11 +158,11 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
      }
  
   //update pins & terminal connection iternet
-  for(int i=0;i<db.hierTree.size();i++){
-      for(int j=0;j<db.hierTree[i].Nets.size();j++){
-           for(int k=0;k<db.hierTree[i].Nets[j].connected.size();k++){
+  for(unsigned int i=0;i<db.hierTree.size();i++){
+      for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
+           for(unsigned int k=0;k<db.hierTree[i].Nets[j].connected.size();k++){
                 if(db.hierTree[i].Nets[j].connected[k].type == PnRDB::Block){
-                        for(int m=0;m<(int)db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
+                        for(unsigned int m=0;m<db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.size();++m) {
                             db.hierTree[i].Blocks[db.hierTree[i].Nets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
                         } // [RA] need confirmation -wbxu
                   }else{
@@ -171,11 +171,11 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
               }
          }
        
-      for(int j=0;j<db.hierTree[i].PowerNets.size();j++){
+      for(unsigned int j=0;j<db.hierTree[i].PowerNets.size();j++){
 
-           for(int k=0;k<db.hierTree[i].PowerNets[j].connected.size();k++){
+           for(unsigned int k=0;k<db.hierTree[i].PowerNets[j].connected.size();k++){
                 if(db.hierTree[i].PowerNets[j].connected[k].type == PnRDB::Block){
-                    for(int m=0;m<(int) db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
+                    for(unsigned int m=0;m<db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.size();++m) {
                     db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.at(m).blockPins[db.hierTree[i].PowerNets[j].connected[k].iter].netIter = -1; 
                     }  // [RA] need confirmation - wbxu
                     db.hierTree[i].PowerNets[j].Pins.push_back(db.hierTree[i].Blocks[db.hierTree[i].PowerNets[j].connected[k].iter2].instance.back().blockPins[db.hierTree[i].PowerNets[j].connected[k].iter]); // [AR] need modification -wbxu
@@ -196,7 +196,7 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
 void ReadVerilogHelper::gen_terminal_map( unordered_map<string,int>& terminal_map)
 {
     terminal_map.clear();
-    for(int j=0;j<temp_node.Terminals.size();j++){
+    for(unsigned int j=0;j<temp_node.Terminals.size();j++){
 	terminal_map[temp_node.Terminals[j].name] = j;
     }
 }
@@ -399,7 +399,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   bool missing_lef_file = 0;
 
   std::cout<<"PnRdatabase-Info:: merge LEF/map data\n";
-  for(int i=0;i<node.Blocks.size();i++){
+  for(unsigned int i=0;i<node.Blocks.size();i++){
     string master=node.Blocks[i].instance.back().master;
     if(lefData.find(master)==lefData.end()) {
 	// LEF is missing; Ok if a cap or if not a leaf
@@ -413,7 +413,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
     }
     
     //cout<<node.Blocks[i].instance.back().name<<" "<<master<<endl;
-    for(int w=0;w<(int)lefData[master].size();++w) {
+    for(unsigned int w=0;w<lefData[master].size();++w) {
       if(node.Blocks[i].instNum>0) { node.Blocks[i].instance.push_back( node.Blocks[i].instance.back() ); }
       node.Blocks[i].instNum++;
       node.Blocks[i].instance.back().width=lefData[master].at(w).width;
@@ -435,9 +435,9 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
       node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
       node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
 
-      for(int j=0;j<lefData[master].at(w).macroPins.size();j++){
+      for(unsigned int j=0;j<lefData[master].at(w).macroPins.size();j++){
         bool found = 0;
-        for(int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
+        for(unsigned int k=0;k<node.Blocks[i].instance.back().blockPins.size();k++){
           if(lefData[master].at(w).macroPins[j].name.compare(node.Blocks[i].instance.back().blockPins[k].name)==0){
             node.Blocks[i].instance.back().blockPins[k].type = lefData[master].at(w).macroPins[j].type;
             node.Blocks[i].instance.back().blockPins[k].pinContacts = lefData[master].at(w).macroPins[j].pinContacts;
