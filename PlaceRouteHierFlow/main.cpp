@@ -60,7 +60,7 @@ int main(int argc, char** argv ){
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
 
     std::cout<<"Checkpoint : before place"<<std::endl;
-    DB.PrintHierNode(current_node);
+    //    DB.PrintHierNode(current_node);
     DB.WriteDBJSON(current_node,current_node.name+"-A.json");
     
     // Placement
@@ -74,7 +74,7 @@ int main(int argc, char** argv ){
       DB.Extract_RemovePowerPins(current_node);
 
       std::cout<<"Checkpoint : before route"<<std::endl;
-      DB.PrintHierNode(current_node);
+      //      DB.PrintHierNode(current_node);
 
       DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv ){
 
       DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Check point : before checkin\n";
-      DB.PrintHierNode(current_node);
+      //      DB.PrintHierNode(current_node);
       DB.WriteDBJSON(current_node,current_node.name + "-B.json");
 
       DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
