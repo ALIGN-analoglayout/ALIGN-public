@@ -62,7 +62,7 @@ void DetailRouter::create_detailrouter(){
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
   //end initial set
   //start detail router 
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
 
        //judge whether a net should be routed or not
        if(Nets[i].seg.size()==0){continue;}
@@ -91,12 +91,12 @@ void DetailRouter::create_detailrouter(){
        add_plist.resize(this->layerNo);
        //temp_source = temp_pins[0];
        
-       for(int j = 0;j<temp_pins[0].size();j++){
+       for(unsigned int j = 0;j<temp_pins[0].size();j++){
             temp_source.push_back(temp_pins[0][j]);
           }
 
        int source_lock = 0;
-       for(int j=1;j<temp_pins.size();j++){
+       for(unsigned int j=1;j<temp_pins.size();j++){
            //create dest
            std::cout<<"Working on dest "<<j<<std::endl;
            std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
@@ -153,7 +153,7 @@ void DetailRouter::create_detailrouter(){
 
            grid.InactivateSourceDest();
 
-           for(int p=0;p<temp_dest.size();p++){
+           for(unsigned int p=0;p<temp_dest.size();p++){
                  temp_source.push_back(temp_dest[p]);
               }
           }
@@ -185,27 +185,27 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
        
       }
 */   
-   for(int i=0;i<temp_net.seg.size();i++){
+   for(unsigned int i=0;i<temp_net.seg.size();i++){
 
        std::vector<RouterDB::SinkData> temp_pin_s;
-       for(int j=0;j<temp_net.seg[i].sourceList.size();j++){
+       for(unsigned int j=0;j<temp_net.seg[i].sourceList.size();j++){
             if(temp_net.seg[i].sourceList[j].metalIdx!=-1){
                 temp_pin_s.push_back(temp_net.seg[i].sourceList[j]);
               }
           }
 
        std::vector<RouterDB::SinkData> temp_pin_d;
-       for(int j =0;j<temp_net.seg[i].destList.size();j++){
+       for(unsigned int j =0;j<temp_net.seg[i].destList.size();j++){
             if(temp_net.seg[i].destList[j].metalIdx!=-1){
                 temp_pin_d.push_back(temp_net.seg[i].destList[j]);
               }            
           }
        
        std::vector<RouterDB::SinkData> temp_pin_ss;
-       for(int j=0;j<temp_pin_s.size();j++){
+       for(unsigned int j=0;j<temp_pin_s.size();j++){
             int found = 0;
-            for(int k=0;k<temp_Pin.size();k++){
-               for(int l=0;l<temp_Pin[k].size();l++){
+            for(unsigned int k=0;k<temp_Pin.size();k++){
+               for(unsigned int l=0;l<temp_Pin[k].size();l++){
                   if(temp_pin_s[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_s[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_s[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_s[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_s[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
                   }
                }
@@ -215,10 +215,10 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
        if(temp_pin_ss.size()>0){temp_Pin.push_back(temp_pin_ss);}
 
        std::vector<RouterDB::SinkData> temp_pin_dd;
-       for(int j=0;j<temp_pin_d.size();j++){
+       for(unsigned int j=0;j<temp_pin_d.size();j++){
             int found = 0;
-            for(int k=0;k<temp_Pin.size();k++){
-               for(int l=0;l<temp_Pin[k].size();l++){
+            for(unsigned int k=0;k<temp_Pin.size();k++){
+               for(unsigned int l=0;l<temp_Pin[k].size();l++){
                   if(temp_pin_d[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_d[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_d[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_d[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_d[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
                   }
                }
@@ -232,10 +232,10 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
   std::vector<RouterDB::SinkData> temp_label_point;
   std::vector<int> dis;
   temp_label_point = temp_Pin[0];
-  for(int i=0;i<temp_Pin.size();i++){
+  for(unsigned int i=0;i<temp_Pin.size();i++){
       int temp_dis=INT_MAX;
-       for(int j=0;j<temp_Pin[i].size();j++){
-            for(int k=0;k<temp_label_point.size();k++){
+       for(unsigned int j=0;j<temp_Pin[i].size();j++){
+            for(unsigned int k=0;k<temp_label_point.size();k++){
                if(abs(temp_Pin[i][j].coord[0].x-temp_label_point[k].coord[0].x)+abs(temp_Pin[i][j].coord[0].y-temp_label_point[k].coord[0].y)<temp_dis){
                    temp_dis = abs(temp_Pin[i][j].coord[0].x-temp_label_point[k].coord[0].x)+abs(temp_Pin[i][j].coord[0].y-temp_label_point[k].coord[0].y);
                  }
@@ -254,15 +254,15 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
      }
 
    vector<int> index;
-   for(int i=0;i<dis.size();i++){
+   for(unsigned int i=0;i<dis.size();i++){
        index.push_back(i);
       }
 
    int temp_dist;
    int temp_index;
 
-   for(int i=0;i<dis.size();i++){
-       for(int j=i+1;j<dis.size();j++){
+   for(unsigned int i=0;i<dis.size();i++){
+       for(unsigned int j=i+1;j<dis.size();j++){
             if(dis[i]>dis[j]){
                temp_dist=dis[i];
                dis[i] = dis[j];
@@ -276,7 +276,7 @@ std::vector<std::vector<RouterDB::SinkData> > DetailRouter::findPins(RouterDB::N
 
    
    std::vector<std::vector<RouterDB::SinkData> > Pin;
-   for(int i=0;i<dis.size();i++){
+   for(unsigned int i=0;i<dis.size();i++){
          Pin.push_back(temp_Pin[index[i]]);
       }
 /*
@@ -299,11 +299,11 @@ std::vector<RouterDB::Metal> DetailRouter::findGlobalPath(RouterDB::Net temp_net
 
   std::vector<RouterDB::Metal> temp_metal;
   
-  for(int i=0;i<temp_net.seg.size();i++){
+  for(unsigned int i=0;i<temp_net.seg.size();i++){
 
      int chosenCand = temp_net.seg[i].chosenCand;
      if(chosenCand==-1) {continue;}
-     for(int j=0;j<temp_net.seg[i].candis[chosenCand].metals.size();j++){
+     for(unsigned int j=0;j<temp_net.seg[i].candis[chosenCand].metals.size();j++){
 
           temp_metal.push_back(temp_net.seg[i].candis[chosenCand].metals[j]);
 
@@ -324,7 +324,7 @@ void DetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > temp_pat
   RouterDB::point Lpoint;
   RouterDB::point Upoint;
 
-  for(int i = 0;i<temp_net.path_metal.size();i++){
+  for(unsigned int i = 0;i<temp_net.path_metal.size();i++){
 
 
       if(temp_net.path_metal[i].LinePoint[0].x ==temp_net.path_metal[i].LinePoint[1].x){
@@ -385,10 +385,9 @@ void DetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> 
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
   //int temp_metal_metalidx = 5;
-  int point_flag; // 0 is ll, 1 is ur
+  int point_flag = 0; // 0 is ll, 1 is ur
 
   RouterDB::point source_point;
-  int source_metal;
 
   int dis = INT_MAX;
 
@@ -396,7 +395,7 @@ void DetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> 
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
      
      if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;} 
        
@@ -503,8 +502,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
   //int temp_metal_metalidx = 6;
 
   RouterDB::point source_point;
-  int source_metal;
-  int point_flag;
+  int point_flag = 0;
 
   int dis = INT_MAX;
 
@@ -512,7 +510,7 @@ void DetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > 
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
      
      if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;}  
        
@@ -627,10 +625,9 @@ void DetailRouter::lastmile_source(std::vector<std::vector<RouterDB::Metal> > &t
 
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
-  int point_flag; // 0 is ll, 1 is ur
+  int point_flag = 0; // 0 is ll, 1 is ur
 
   RouterDB::point source_point;
-  int source_metal;
 
   int dis = INT_MAX;
 
@@ -638,7 +635,7 @@ void DetailRouter::lastmile_source(std::vector<std::vector<RouterDB::Metal> > &t
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y){connected = 1;break;}
 
@@ -804,8 +801,7 @@ void DetailRouter::lastmile_dest(std::vector<std::vector<RouterDB::Metal> > &tem
   int temp_metal_metalidx = 6;
 
   RouterDB::point source_point;
-  int source_metal;
-  int point_flag;
+  int point_flag = 0;
 
   int dis = INT_MAX;
 
@@ -813,7 +809,7 @@ void DetailRouter::lastmile_dest(std::vector<std::vector<RouterDB::Metal> > &tem
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
        
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y){connected = 1;}
@@ -996,9 +992,9 @@ void DetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > temp_
   RouterDB::SinkData temp_sink;
   int width = 1;
 
-  for(int i=0;i<temp_path.size();i++){
+  for(unsigned int i=0;i<temp_path.size();i++){
 
-     for(int j=0;j<temp_path[i].size();j++){
+     for(unsigned int j=0;j<temp_path[i].size();j++){
            temp_sink.coord.clear();
            temp_sink.metalIdx = temp_path[i][j].MetalIdx;
            RouterDB::point Lpoint;
@@ -1051,9 +1047,9 @@ void DetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > temp_
 
 void DetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net){
 
-  for(int i=0;i<temp_path.size();i++){
+  for(unsigned int i=0;i<temp_path.size();i++){
        
-     for(int j=0;j<temp_path[i].size();j++){
+     for(unsigned int j=0;j<temp_path[i].size();j++){
 
          temp_net.path_metal.push_back(temp_path[i][j]);
      
@@ -1066,7 +1062,7 @@ void DetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_pa
 
 void DetailRouter::Physical_metal_via(){
   
-   for(int i=0;i<Nets.size();i++){
+   for(unsigned int i=0;i<Nets.size();i++){
              
            GetPhsical_Metal_Via(i);
      
@@ -1077,7 +1073,7 @@ void DetailRouter::Physical_metal_via(){
 
 void DetailRouter::GetPhsical_Metal_Via(int i){
   
-  for(int h=0;h<Nets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 
       Nets[i].path_metal[h].MetalRect.metal =  Nets[i].path_metal[h].MetalIdx;
       Nets[i].path_metal[h].MetalRect.placedCenter.x =( Nets[i].path_metal[h].LinePoint[0].x+Nets[i].path_metal[h].LinePoint[1].x)/2;
@@ -1126,9 +1122,9 @@ void DetailRouter::GetPhsical_Metal_Via(int i){
   RouterDB::Via temp_via;
   std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
 
-  for(int h=0;h<Nets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
        int temp_metal_index = Nets[i].path_metal[h].MetalIdx;
-       for(int l=0;l<Nets[i].path_metal.size();l++){
+       for(unsigned int l=0;l<Nets[i].path_metal.size();l++){
 
             int next_metal_index = Nets[i].path_metal[l].MetalIdx;
 
@@ -1344,8 +1340,8 @@ void DetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::point>
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
 
-  for(int i=0;i<Terminals.size();i++){
-      for(int j=0;j<Terminals[i].termContacts.size();j++){
+  for(unsigned int i=0;i<Terminals.size();i++){
+      for(unsigned int j=0;j<Terminals[i].termContacts.size();j++){
           mIdx = Terminals[i].termContacts[j].metal;
           LLx = Terminals[i].termContacts[j].placedLL.x;
           LLy = Terminals[i].termContacts[j].placedLL.y;
@@ -1367,8 +1363,8 @@ void DetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal> > &p
   GetPhsical_Metal(physical_path);
   
   //here intervia is not included
-  for(int i=0;i<physical_path.size();i++){
-      for(int j=0;j<physical_path[i].size();j++){
+  for(unsigned int i=0;i<physical_path.size();i++){
+      for(unsigned int j=0;j<physical_path[i].size();j++){
           mIdx = physical_path[i][j].MetalIdx;
           LLx = physical_path[i][j].MetalRect.placedLL.x;
           LLy = physical_path[i][j].MetalRect.placedLL.y;
@@ -1381,7 +1377,7 @@ void DetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal> > &p
   std::vector<RouterDB::contact> temp_via_contact;
   GetPhsical_Via_contacts(physical_path, temp_via_contact);
 
-  for(int i=0;i<temp_via_contact.size();i++){
+  for(unsigned int i=0;i<temp_via_contact.size();i++){
 
           mIdx = temp_via_contact[i].metal;
           LLx = temp_via_contact[i].placedLL.x;
@@ -1401,15 +1397,15 @@ void DetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Met
   RouterDB::Via temp_via;
   std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
 
-  for(int i=0;i<physical_path.size();i++){
+  for(unsigned int i=0;i<physical_path.size();i++){
        
       std::vector<RouterDB::Metal> temp_path = physical_path[i];
 
-      for(int j=0;j<temp_path.size();j++){
+      for(unsigned int j=0;j<temp_path.size();j++){
 
            int temp_metal_index = temp_path[j].MetalIdx;
            
-           for(int h=0;h<temp_path.size();h++){
+           for(unsigned int h=0;h<temp_path.size();h++){
 
                int next_metal_index = temp_path[h].MetalIdx;
 
@@ -1556,8 +1552,8 @@ void DetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Met
 void DetailRouter::GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal> > &physical_path){
 
   //via is not included here
-  for(int i=0;i<physical_path.size();i++){
-       for(int j=0;j<physical_path[i].size();j++){
+  for(unsigned int i=0;i<physical_path.size();i++){
+       for(unsigned int j=0;j<physical_path[i].size();j++){
             if(drc_info.Metal_info[physical_path[i][j].MetalIdx].direct == 1){
               if(physical_path[i][j].LinePoint[0].x<=physical_path[i][j].LinePoint[1].x){
                 physical_path[i][j].MetalRect.placedLL.x =  physical_path[i][j].LinePoint[0].x;
@@ -1777,7 +1773,7 @@ void DetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
   //including via
   //std::cout<<"Start NetToNodeNet"<<std::endl;
   
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
 
              PnRDB::Metal temp_metal;
              temp_metal.MetalIdx = net.path_metal[i].MetalIdx;
@@ -1806,7 +1802,7 @@ void DetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
 
      }
 
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
        PnRDB::Via temp_via;
        ConvertToViaPnRDB_Placed_Placed(temp_via,net.path_via[i]);
        HierNode.Nets[net_index].path_via.push_back(temp_via);
@@ -1819,17 +1815,17 @@ void DetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
 void DetailRouter::NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net){
   //std::cout<<"Start NetToNodeInterMetal"<<std::endl;
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              HierNode.interMetals.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -1840,13 +1836,13 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
 
   //std::cout<<"Via"<<std::endl;
   //including via
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
       //std::cout<<"seg "<<i<<std::endl;
         PnRDB::contact temp_contact;
         ConvertToContactPnRDB_Placed_Origin(temp_contact, net.path_metal[i].MetalRect);
         HierNode.interMetals.push_back(temp_contact);
       }
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
              //std::cout<<"vias "<<j<<std::endl;
 
        PnRDB::Via temp_via;
@@ -1882,17 +1878,17 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).
   
 
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              temp_pin.pinContacts.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -1901,14 +1897,14 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
         } 
      }
 
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
 
              // wbxu: placed field -> origin field [fixed]
       PnRDB::contact temp_contact;
       ConvertToContactPnRDB_Placed_Origin(temp_contact,net.path_metal[i].MetalRect);
       temp_pin.pinContacts.push_back(temp_contact);
      }
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
 
              // wbxu: placed field -> origin field [fixed]
       PnRDB::Via temp_via;
@@ -1928,18 +1924,18 @@ void DetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   HierNode.interMetals.clear();
   HierNode.interVias.clear();
 
-  for(int i=0;i<HierNode.Terminals.size();i++){
+  for(unsigned int i=0;i<HierNode.Terminals.size();i++){
       HierNode.Terminals[i].termContacts.clear();
      }
 
-  for(int i=0;i<HierNode.Nets.size();i++){
+  for(unsigned int i=0;i<HierNode.Nets.size();i++){
         HierNode.Nets[i].path_metal.clear();
         HierNode.Nets[i].path_via.clear();
      }
 
   //distinguish those two net
   //std::cout<<"Start ReturnHierNode"<<std::endl;
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
       std::cout<<i<<" ter? "<<Nets[i].isTerminal<<std::endl;
       if(Nets[i].isTerminal){
   // wbxu: not only nets should be put into NodeBlockPins, but also those pins connected to nets
@@ -1958,7 +1954,7 @@ void DetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
          std::cout<<"test net to InterMetal: end"<<std::endl;
         }
        
-       for(int j=0;j<HierNode.Nets.size();j++){
+       for(unsigned int j=0;j<HierNode.Nets.size();j++){
           if(HierNode.Nets[j].name == Nets[i].netName){
               HierNode.Nets.at(j).path_metal.clear();
               HierNode.Nets.at(j).path_via.clear();
