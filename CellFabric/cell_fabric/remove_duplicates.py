@@ -96,7 +96,6 @@ class RemoveDuplicates():
             print( "Equivalence classes:", i, s)
 
     def check_opens(self):
-        self.opens = []
 
         tbl = defaultdict(lambda: defaultdict(list))
 
@@ -128,9 +127,10 @@ class RemoveDuplicates():
         self.canvas = canvas
         self.store_scan_lines = None
         self.shorts = []
+        self.opens = []
+        self.subckts = []
 
         self.setup_layer_structures()
-
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
@@ -200,6 +200,8 @@ class RemoveDuplicates():
                             sl.currentIsPorted = isPorted
                         elif netName is not None and sl.currentNet != netName:
                             self.shorts.append( (layer, sl.currentNet, netName))
+                            sl.currentNet = netName
+                            sl.currentIsPorted = isPorted
                     else:  # gap
                         sl.emit()
                         sl.set_named_rect(rect, netName, isPorted=isPorted)
@@ -208,10 +210,7 @@ class RemoveDuplicates():
                     sl.emit()
                     sl.clear()
 
-
     def check_shorts_induced_by_vias( self):
-
-        connections = []
 
         for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
@@ -224,28 +223,18 @@ class RemoveDuplicates():
                         if mh is not None:
                             metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
                             metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                            connections.append( (metal_rect_v, via_rect, metal_rect_h))
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via_rect.root(), metal_rect_h.root())
                         else:
-                            connections.append( (metal_rect_v, via_rect))
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
 
-        def connectPair( a, b):
-            def aux( a, b):
-                if a.netName is None:
-                    b.connect( a)
-                elif b.netName is None or a.netName == b.netName:
-                    a.connect( b)
-            aux( a.root(), b.root())
-
-        for conn  in connections:
-            assert 2 <= len(conn) <= 3, "Vias must touch at least one metal layer & no more than 2 metal layers"
-            connectPair( conn[0], conn[1])
-            if len(conn) == 3:
-                connectPair( conn[1], conn[2])
-
-            nms = { root.netName for slr in list(conn) for root in [slr.root()] if root.netName is not None}
-
-            if len(nms) > 1:
-                self.shorts.append( conn)
+    def connectPair( self, a, b):
+        if a.netName is None:
+            b.connect( a)
+        elif b.netName is None or a.netName == b.netName:
+            a.connect( b)
+        else:
+            self.shorts.append( (a, b) )
 
     def generate_rectangles( self):
 
