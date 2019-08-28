@@ -606,6 +606,21 @@ TEST( hierNodeTest, TestA)
 
 }
 
+TEST( hierNodeTest, TestInOut)
+{
+  std::ifstream ifs( "telescopic_ota-freeze.json");
+  json j = json::parse( ifs);
+
+  PnRDB::hierNode hN;
+
+  j.get_to( hN);
+
+  json json_hN(hN);
+
+  EXPECT_EQ( j, json_hN);
+
+}
+
 void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename)
 {
   std::ofstream jsonStream( filename);
