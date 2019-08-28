@@ -100,9 +100,12 @@ class RemoveDuplicates():
                         tbl[nm][id(root)].append( (layer, slr.rect))
 
         for (nm,s) in tbl.items():
-            if len(s) > 1:
+            if ':' in nm:
+                instance, pin = nm.split(':')
+                self.subinsts[instance][pin].add( None)
                 self.opens.append( (nm,list(s.values())))
-
+            elif len(s) > 1:
+                self.opens.append( (nm,list(s.values())))
 
     @staticmethod
     def containedIn( rS, rB):
@@ -120,7 +123,7 @@ class RemoveDuplicates():
         self.store_scan_lines = None
         self.shorts = []
         self.opens = []
-        self.subckts = []
+        self.subinsts = defaultdict(lambda: defaultdict(set))
 
         self.setup_layer_structures()
 
@@ -187,8 +190,10 @@ class RemoveDuplicates():
                     if sl.isEmpty():
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
                     elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
-                        self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted))
-                        sl.merge_slr(current_slr, sl.rects.pop())
+                        if self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
+                            sl.merge_slr(current_slr, sl.rects.pop())
+                        else:
+                            current_slr = sl.rects[-1]
                     else:  # gap
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
 
@@ -211,12 +216,28 @@ class RemoveDuplicates():
                             self.connectPair( metal_rect_v.root(), via_rect.root())
 
     def connectPair( self, a, b):
+        numshorts = len(self.shorts)
         if a.netName is None:
             b.connect( a)
         elif b.netName is None or a.netName == b.netName:
             a.connect( b)
+        elif ':' in a.netName and ':' in b.netName:
+            return False
+        elif ':' in a.netName or ':' in b.netName:
+            if ':' in b.netName:
+                a, b = b, a
+            instance, pin = a.netName.split(':')
+            if len(self.subinsts[instance][pin]) == 0 \
+                    or next(iter(self.subinsts[instance][pin])).netName == b.netName:
+                a.netName = b.netName
+                self.subinsts[instance][pin].add( a)
+                b.connect( a)
+            else:
+                self.shorts.append( (b, self.subinsts[instance][pin], 'THROUGH', a) )
+                b.connect( a)
         else:
             self.shorts.append( (a, b) )
+        return numshorts == len(self.shorts)
 
     def generate_rectangles( self):
 
@@ -253,6 +274,8 @@ class RemoveDuplicates():
             print( "SHORT", *short)
         for opn in self.opens:
             print( "OPEN", *opn)
+        for subinst in self.subinsts:
+            print("SUBINST", *subinst)
 
         return self.generate_rectangles()
 
