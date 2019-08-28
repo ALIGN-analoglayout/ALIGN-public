@@ -38,33 +38,25 @@ class Scanline:
         self.indices = indices
         self.dIndex = dIndex
         self.rects = []
-        self.clear()
         self.dad = None
 
-    def clear(self):
-        self.start = None
-        self.end = None
-        self.currentNet = None
-        self.currentIsPorted = False
 
     def isEmpty(self):
-        return self.start is None
+        return len(self.rects) == 0
 
-    def emit(self):
-        r = self.proto[:]
-        r[self.dIndex] = self.start
-        r[self.dIndex+2] = self.end
+
+    def new_slr(self, rect, netName, *, isPorted=False):
         slr = ScanlineRect()
-        slr.rect = r
-        slr.netName = self.currentNet
-        slr.isPorted = self.isPorted
+        slr.rect = self.proto[:]
+        slr.rect[self.dIndex] = rect[self.dIndex]
+        slr.rect[self.dIndex+2] = rect[self.dIndex+2]
+        slr.netName = netName
+        slr.isPorted = isPorted
         self.rects.append(slr)
+        return slr
 
-    def set_named_rect(self, rect, netName, *, isPorted=False):
-        self.start = rect[self.dIndex]
-        self.end = rect[self.dIndex+2]
-        self.currentNet = netName
-        self.isPorted = isPorted
+    def merge_slr(self, base_slr, new_slr):
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -190,25 +182,15 @@ class RemoveDuplicates():
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
+                current_slr = None
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
                     if sl.isEmpty():
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= sl.end:  # continue
-                        sl.end = max(sl.end, rect[dIndex+2])
-                        if sl.currentNet is None:
-                            sl.currentNet = netName
-                            sl.currentIsPorted = isPorted
-                        elif netName is not None and sl.currentNet != netName:
-                            self.shorts.append( (layer, sl.currentNet, netName))
-                            sl.currentNet = netName
-                            sl.currentIsPorted = isPorted
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
+                    elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
+                        self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted))
+                        sl.merge_slr(current_slr, sl.rects.pop())
                     else:  # gap
-                        sl.emit()
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-
-                if not sl.isEmpty():
-                    sl.emit()
-                    sl.clear()
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
 
     def check_shorts_induced_by_vias( self):
 
