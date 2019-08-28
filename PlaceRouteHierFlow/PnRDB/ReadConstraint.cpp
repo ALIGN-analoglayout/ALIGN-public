@@ -201,6 +201,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         //int horizon = atoi(temp[5].c_str());
       
         PnRDB::MatchBlock match_const;
+	match_const.blockid1 = -1;
+	match_const.blockid2 = -1;
       
         for(int i=0;i<(int)node.Blocks.size();i++) {
           if(node.Blocks.at(i).instance.back().name.compare(block_first)==0) {
@@ -214,9 +216,19 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             break;
           }
         }
+
+	if ( match_const.blockid1 == -1) {
+	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block1:" << block_first << endl;
+	}
+	if ( match_const.blockid2 == -1) {
+	  cout << "-E- ReadConstraint: MatchBlock: couldn't find block2:" << block_second << endl;
+	}
+
         //match_const.distance = distance;
         //match_const.horizon = horizon;
-        node.Match_blocks.push_back(match_const);
+	if ( match_const.blockid1 != -1 && match_const.blockid2!= -1) {
+	  node.Match_blocks.push_back(match_const);
+	}
       } else if(temp[0].compare("bias_graph")==0){
         int distance= atoi(temp[2].c_str());
         node.bias_Hgraph = distance;
