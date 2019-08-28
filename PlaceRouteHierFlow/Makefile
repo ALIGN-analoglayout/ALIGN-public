@@ -14,37 +14,39 @@ OPTS?=-g -O3
 WARNS?=-w -Wall
 JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -DHFLAG -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
+export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
 export GTEST_LIB_DIR = $(GTEST_DIR)/mybuild/lib
 
 PnRDB_path=PnRDB
-Capplacer_path=cap_placer
+cap_placer_path=cap_placer
 placer_path=placer
 router_path=router
 
-PnRDB_objs=PnRDB/PnRdatabase.o PnRDB/readfile.o
-Capplacer_objs=cap_placer/capplacer.o
-placer_objs=placer/Placer.o placer/ConstGraph.o placer/design.o placer/SeqPair.o placer/Aplace.o
-router_objs=router/Router.o router/GlobalRouter.o router/Graph.o router/Grid.o router/RawRouter.o router/DetailRouter.o router/PowerRouter.o router/GlobalGrid.o router/GlobalGraph.o router/GcellGlobalRouter.o router/GcellDetailRouter.o
+OBJS=main.o
+SRCS=$(OBJS:.o=.cpp)
 
-all: subsystem pnr_compiler
+all: depend subsystem pnr_compiler
 
-pnr_compiler: $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o
-	$(CXX) -o pnr_compiler $(PnRDB_objs) $(placer_objs) $(router_objs) $(Capplacer_objs) main.o $(LDFLAGS)
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
+
+-include .depend
 
 subsystem:
-	$(MAKE) -C $(PnRDB_path);
-	$(MAKE) -C $(placer_path);
-	$(MAKE) -C $(router_path);
-	$(MAKE) -C $(Capplacer_path);
+	$(MAKE) -C $(PnRDB_path)
+	$(MAKE) -C $(placer_path)
+	$(MAKE) -C $(router_path)
+	$(MAKE) -C $(cap_placer_path)
 
-main.o:		main.cpp $(PnRDB_path)/datatype.h $(PnRDB_path)/PnRdatabase.h $(placer_path)/Placer.h $(router_path)/Router.h $(Capplacer_path)/capplacer.h
-	$(CXX) $(CXXFLAGS) -c main.cpp -I$(JSON)/include
+pnr_compiler: $(OBJS) $(PnRDB_path)/PnRDB.a $(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a
+	$(CXX) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
 
 clean:
-	rm -rf *.o $(PnRDB_path)/*.o $(placer_path)/*.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
+	rm -rf *.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
+	make -C $(PnRDB_path) clean
+	make -C $(placer_path) clean
 	make -C $(router_path) clean
-	make -C $(Capplacer_path) clean
+	make -C $(cap_placer_path) clean
