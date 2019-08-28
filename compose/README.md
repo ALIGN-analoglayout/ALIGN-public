@@ -72,7 +72,11 @@ Linux build commands.  The downside to a native environment is that
 all software requirements must be built into the native environment,
 including handling any version conflicts, and when a new component is
 needed, it and its environment need to be integrated before any
-testing can start:
+testing can start. The Makefile expects the Python general/
+environment to be in the working directory.
+
+Here are the sequence of commands needed to invoke make in a native
+environment.
 	
 		% export ALIGN_WORK_DIR=<your Linux working area>
 		% cd $ALIGN_WORK_DIR
