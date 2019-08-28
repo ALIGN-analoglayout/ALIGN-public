@@ -19,3 +19,5 @@ junit.xml
 .depend
 Results/
 __json
+*-A.json
+*-B.json

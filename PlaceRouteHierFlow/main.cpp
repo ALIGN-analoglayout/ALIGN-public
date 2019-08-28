@@ -61,6 +61,7 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
+    DB.WriteDBJSON(current_node,current_node.name+"-A.json");
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
@@ -126,6 +127,7 @@ int main(int argc, char** argv ){
       DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
+      DB.WriteDBJSON(current_node,current_node.name + "-B.json");
 
       DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
       DB.CheckinHierNode(idx, current_node);

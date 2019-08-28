@@ -317,3 +317,13 @@ TEST( hierNodeTest, TestA)
   }
 
 }
+
+void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename)
+{
+  std::ofstream jsonStream( filename);
+  if(jsonStream.fail()) {
+    cout<< "Cannot open file " << filename << " for writing" << endl;
+    return;
+  }
+  jsonStream << json(hN);
+}
