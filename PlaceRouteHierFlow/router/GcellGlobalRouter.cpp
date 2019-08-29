@@ -258,7 +258,7 @@ void GcellGlobalRouter::MirrorSymSTs(GlobalGrid &grid, std::set<RouterDB::tile, 
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-      if(this->Nets.at(i).global_sym != -1 and this->Nets.at(i).global_sym < this->Nets.size() -1 ){
+    if(this->Nets.at(i).global_sym != -1 and this->Nets.at(i).global_sym < (int)this->Nets.size() -1 ){
    
           int global_sym = this->Nets.at(i).global_sym;
           std::vector<int> temp_vector = GenerateSTsUniqueV(this->Nets.at(i)) ;
@@ -412,7 +412,7 @@ void GcellGlobalRouter::SymNet(GlobalGrid &grid, std::set<RouterDB::tile, Router
 
      for(unsigned int i=0;i<this->Nets.size();++i){
       
-        if(this->Nets.at(i).symCounterpart!=-1 and this->Nets.at(i).symCounterpart<this->Nets.size()-1){
+       if(this->Nets.at(i).symCounterpart!=-1 and this->Nets.at(i).symCounterpart<(int)this->Nets.size()-1){
 
             int symCounterpart = this->Nets.at(i).symCounterpart;
 
@@ -548,10 +548,10 @@ void GcellGlobalRouter::placeTerminals() {
   // Limitation: assume that only 1 terminal for each net
   //bool mark;
   int mj;
-  for(unsigned int i=0;i<(int)this->Nets.size();++i) {
+  for(unsigned int i=0;i<this->Nets.size();++i) {
     this->Nets.at(i).isTerminal=false;
     bool mark=false;
-    for(unsigned int j=0;j<(int)this->Nets.at(i).connected.size();++j) {
+    for(unsigned int j=0;j<this->Nets.at(i).connected.size();++j) {
       if(this->Nets.at(i).connected.at(j).type==RouterDB::TERMINAL) {
         mj=j; mark=true; break;
       }
@@ -569,7 +569,7 @@ void GcellGlobalRouter::placeTerminals() {
 long int GcellGlobalRouter::get_number(string str)
 {
     long int val=0;
-    for (int number=0; number < str.length(); ++number)
+    for (unsigned int number=0; number < str.length(); ++number)
                 {
                     if (isdigit (str[number]))
                     val=(10*val)+(str[number]-48);
@@ -1142,8 +1142,6 @@ int GcellGlobalRouter::CopyPath(std::vector<std::pair<int,int> > &path, std::map
 
 int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std::vector<std::pair<int,int> > &sy_path, std::map<int,int> &sy_map){
  
-  int sy = -1; //if sy 1, else 0;
-  
   //map the path
   std::vector<std::pair<int,int> > map_path;
   std::pair<int,int> temp_path;
@@ -1233,7 +1231,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   # else
   #   define lpsolvelib "liblpsolve55.so"
   # endif
-  lpsolve = open_lpsolve_lib(lpsolvelib);
+  lpsolve = open_lpsolve_lib(const_cast<char*>(lpsolvelib));
   if (lpsolve == NULL) {
     fprintf(stderr, "Unable to load lpsolve shared library (%s).\nIt is probably not in the correct path.\n", lpsolvelib);
     //ERROR();
@@ -1256,9 +1254,9 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   valInfo vi;
 
 
-  for(unsigned int h=0;h<(int)this->Nets.size();++h) { //  for each net
+  for(unsigned int h=0;h<this->Nets.size();++h) { //  for each net
     vi.netIter=h;
-    for(unsigned int i=0;i<(int)this->Nets[h].STs.size();++i) {// for each segment
+    for(unsigned int i=0;i<this->Nets[h].STs.size();++i) {// for each segment
       vi.STIter=i;
       vi.candIter=-1;
       vi.segIter=-1;
@@ -1277,7 +1275,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
   print_str(lp, buf);
   put_logfunc(lp, NULL, 0);
-  set_outputfile(lp, "./Debug/lp_solve_result.txt");
+  set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
 
   // 2. Initialize matrix without constraints  Q1? A 0 is inserted to the temp_row, so the valInfo maybe not correct
 
@@ -1295,7 +1293,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
           for(unsigned int k=0;k<this->Nets.at(j).STs.size();++k){
 
-             if(j==CurNet) {
+	    if((int)j==CurNet) {
                 temp_row.push_back(1);
                } else {
                 temp_row.push_back(0);
@@ -1313,7 +1311,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   for(unsigned int i=0;i<this->Nets.size();++i){
 
-      if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < this->Nets.size()-1){
+    if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
           std::cout<<"net index "<<i<<" global_sym "<< this->Nets.at(i).global_sym<<std::endl;
           int global_sym = this->Nets.at(i).global_sym;   
           for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
@@ -1566,14 +1564,14 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   NumberOfSTs = 0;
 
-  for(int i=0;i<this->Nets.size();++i){
-      for(int j=0;j<this->Nets.at(i).STs.size();++j){
+  for(unsigned int i=0;i<this->Nets.size();++i){
+      for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
           NumberOfSTs++;
-          for(int k=0;k<this->Nets.at(i).STs[j].path.size();++k){
+          for(unsigned int k=0;k<this->Nets.at(i).STs[j].path.size();++k){
                
                int found = 0;
                int index = -1;
-               for(int l=0;l<Edges.size();++l){
+               for(unsigned int l=0;l<Edges.size();++l){
                       
                     if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first and this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second and this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
                       found = 1;
@@ -1589,7 +1587,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
                     
                  }else{
 
-                  for(int p = 0;p<graph.graph[this->Nets.at(i).STs[j].path[k].first].list.size();++p){
+                  for(unsigned int p = 0;p<graph.graph[this->Nets.at(i).STs[j].path[k].first].list.size();++p){
                        if(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].dest == this->Nets.at(i).STs[j].path[k].second){
                            Capacities.push_back(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity);
                            std::cout<<"Edge capacity "<<graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity<<std::endl;
@@ -1629,14 +1627,14 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
      }
 */
 
-  for(int i=0;i<Edges_To_Var.size();++i){
+  for(unsigned int i=0;i<Edges_To_Var.size();++i){
 
       std::vector<double> temp_row;
       temp_row.push_back(0);//0th column "0" Q2?   
 
        for(int j=0;j<NumberOfSTs;++j){
             int found_flag = 0;
-            for(int k=0;k<Edges_To_Var[i].size();++k){
+            for(unsigned int k=0;k<Edges_To_Var[i].size();++k){
                 if(Edges_To_Var[i][k]==j){found_flag=1;}
                }
             if(found_flag==1){
