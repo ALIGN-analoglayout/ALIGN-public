@@ -18,7 +18,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
   string obsEnd="END";
   string pinEnd;
   string macroEnd;
-  int width, height;
+  int width=-1, height=-1;
   vector<PnRDB::pin> macroPins;
   vector<PnRDB::contact> interMetals;
   fin.exceptions(ifstream::failbit | ifstream::badbit);

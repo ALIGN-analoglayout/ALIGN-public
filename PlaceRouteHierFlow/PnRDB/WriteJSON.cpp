@@ -137,12 +137,12 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
     cout<<"Top: "<<node.isTop<<endl;
     cout<<"#terminals print"<<endl;
     cout<<"#size: "<<node.Terminals.size()<<endl;
-    for(int i=0;i<node.Terminals.size();i++){
+    for(unsigned int i=0;i<node.Terminals.size();i++){
 	cout<<"#name: "<<node.Terminals[i].name<<endl; 
 	cout<<"#type: "<<node.Terminals[i].type<<endl; 
 	cout<<"#netIter: "<<node.Terminals[i].netIter<<endl; 
 	cout<<"#termContact size: "<<node.Terminals[i].termContacts.size()<<endl;
-	for(int j=0;j<node.Terminals[i].termContacts.size();j++){
+	for(unsigned int j=0;j<node.Terminals[i].termContacts.size();j++){
 	    cout<<"#contact-metal: "<<node.Terminals[i].termContacts[j].metal<<endl;
 	    cout<<"#contact-placedCenter(x,y): "<<node.Terminals[i].termContacts[j].placedCenter.x<<" "
 		<<node.Terminals[i].termContacts[j].placedCenter.y<<endl;
@@ -156,9 +156,9 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
     string tmpstring;
     
     if (node.isTop == 1) {
-	for (int i = 0; i < node.Terminals.size(); i++) {
+	for (unsigned int i = 0; i < node.Terminals.size(); i++) {
 	    int write = 0;
-	    for (int j = 0; j < node.Terminals[i].termContacts.size(); j++) {
+	    for (unsigned int j = 0; j < node.Terminals[i].termContacts.size(); j++) {
 		PnRDB::contact con = node.Terminals[i].termContacts[j];
            
 		//if (con.metal.compare(NULL)==0){
@@ -251,7 +251,7 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, PnRDB::Drc_i
     return false;
 }
 
-bool
+void
 addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, PnRDB::Drc_info& drc_info, int unit) {
 
     int x[5], y[5];
@@ -267,8 +267,6 @@ addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, PnRDB:
        }
     bound0["xy"] = xy; 
     jsonElements.push_back (bound0);
-
-
 }
 
 
@@ -357,7 +355,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     string TopCellName = gdsName;
     std::set<string> uniGDSset;
     double unitScale=2;
-	for (int i = 0; i < node.Blocks.size(); i++) 
+	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at( node.Blocks[i].selectedInstance ).gdsFile);
 
 	for (std::set<string>::iterator it=uniGDSset.begin();it!=uniGDSset.end();++it) {
@@ -388,7 +386,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     int idx = 0;
     if (includeBlock) {
-	for (int i = 0; i < node.Blocks.size(); i++) 
+	for (unsigned int i = 0; i < node.Blocks.size(); i++) 
 	    uniGDSset.insert(node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile);
 
 	cout<<"start wrting sub-blocks"<<endl;
@@ -413,9 +411,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     int x[5], y[5];
     int write_blockPins_name = 0;
     if (write_blockPins_name){
-	for (int i = 0; i < node.blockPins.size(); i++) {
+	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
-	    for (int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
+	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
 		PnRDB::contact con = node.blockPins[i].pinContacts[j];
 		assignBoxPoints (x, y, con.placedBox, unitScale);
 		if (write == 0) {
@@ -430,10 +428,10 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     if (includeNet) {
 	//cout<<"start writing nets"<<endl;
-	for (int i = 0; i < node.Nets.size(); i++) {
+	for (unsigned int i = 0; i < node.Nets.size(); i++) {
 	    //path_metal
 	    int write = 1;
-	    for (int j = 0; j < node.Nets[i].path_metal.size(); j++) {
+	    for (unsigned int j = 0; j < node.Nets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.Nets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements, metal, drc_info, unitScale)) {
 		    if (write == 0) {
@@ -446,7 +444,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		}
 	    }
 	    //path_via
-	    for (int j = 0; j < node.Nets[i].path_via.size(); j++) 
+	    for (unsigned int j = 0; j < node.Nets[i].path_via.size(); j++) 
 		addViaBoundaries(jsonElements, node.Nets[i].path_via[j], drc_info, unitScale);
 	}
     }
@@ -455,10 +453,10 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     for (json::iterator elm = j.begin(); elm != j.end(); ++elm) jsonElements.push_back (*elm);
 
     if (includePowerNet) {
-	for (int i = 0; i < node.PowerNets.size(); i++) {
+	for (unsigned int i = 0; i < node.PowerNets.size(); i++) {
 	    //path_metal
 	    int write = 0;
-	    for (int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
+	    for (unsigned int j = 0; j < node.PowerNets[i].path_metal.size(); j++) {
 		PnRDB::Metal metal = node.PowerNets[i].path_metal[j];
 		if (addMetalBoundaries (jsonElements,  metal, drc_info, unitScale)) {
 		    if (write == 0) {
@@ -471,7 +469,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		}
 	    }
 	    //path_via
-	    for (int j = 0; j < node.PowerNets[i].path_via.size(); j++) 
+	    for (unsigned int j = 0; j < node.PowerNets[i].path_via.size(); j++) 
 		addViaBoundaries(jsonElements, node.PowerNets[i].path_via[j], drc_info, unitScale);
 	}
     }
@@ -479,17 +477,17 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     if (includePowerGrid) {
 	int vdd = 1; int gnd = 1;
 	if (vdd == 1) {
-	    for (int i = 0; i < node.Vdd.metals.size(); i++) 
+	    for (unsigned int i = 0; i < node.Vdd.metals.size(); i++) 
 		addMetalBoundaries (jsonElements, node.Vdd.metals[i], drc_info, unitScale);
 
-	    for (int i = 0; i < node.Vdd.vias.size(); i++) 
+	    for (unsigned int i = 0; i < node.Vdd.vias.size(); i++) 
 		addViaBoundaries(jsonElements, node.Vdd.vias[i], drc_info, unitScale);
 	}
 	if (gnd == 1) {
-	    for (int i = 0; i < node.Gnd.metals.size(); i++) 
+	    for (unsigned int i = 0; i < node.Gnd.metals.size(); i++) 
 		addMetalBoundaries (jsonElements, node.Gnd.metals[i], drc_info, unitScale);
 
-	    for (int i = 0; i < node.Gnd.vias.size(); i++) 
+	    for (unsigned int i = 0; i < node.Gnd.vias.size(); i++) 
 		addViaBoundaries(jsonElements, node.Gnd.vias[i], drc_info, unitScale);
 	}
     }
@@ -504,7 +502,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
         //       }
         //   }
 
-	for (int i = 0; i < node.Blocks.size(); i++) {
+	for (unsigned int i = 0; i < node.Blocks.size(); i++) {
 	    int index=gdsMap2strBlock[node.Blocks[i].instance.at(node.Blocks[i].selectedInstance).gdsFile];
 
 	    json sref;

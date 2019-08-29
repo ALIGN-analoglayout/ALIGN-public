@@ -287,7 +287,7 @@ class Placer_Router_Cap
     //void Common_centroid_capacitor(string fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag);
     void Common_centroid_capacitor_aspect_ratio(string opath, string fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, map<string, PnRDB::lefMacro> lefData, bool dummy_flag, bool aspect_ratio, int num_aspect);
     void addVia(net &temp_net, pair<double,double> &coord, PnRDB::Drc_info &drc_info, string HV_via_metal, int HV_via_metal_index, int isPin);
-    bool WriteLef(PnRDB::block &temp_block, string file, string opath);
+    void WriteLef(PnRDB::block &temp_block, string file, string opath);
 };
 
 #endif

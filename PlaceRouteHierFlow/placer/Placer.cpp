@@ -31,7 +31,7 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
     // 1. Check feasible sequence pair and perturbate seqeucen pair
     int intCount=0;
     bool spCheck;
-    while( spCheck=curr_sp.FastInitialScan(mydesign) and intCount<COUNT_LIMIT ) {
+    while( (spCheck=curr_sp.FastInitialScan(mydesign)) and intCount<COUNT_LIMIT ) {
       curr_sp.PerturbationNew(mydesign);
       //cout<<"intCount "<<intCount<<endl;
       intCount++;
@@ -523,7 +523,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
   std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize, effort);
   curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
-  if(spVec.size()<nodeSize) {
+  if((int)spVec.size()<nodeSize) {
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }
@@ -577,7 +577,7 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"_reduced.plt");
 
-  if(spVec.size()<nodeSize) {
+  if((int)spVec.size()<nodeSize) {
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }
@@ -633,7 +633,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
   ConstGraph curr_sol;
   std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, bias_mode, nodeSize, effort);
 
-  if(spVec.size()<nodeSize) {
+  if((int)spVec.size()<nodeSize) {
     nodeSize=spVec.size();
     nodeVec.resize(nodeSize);
   }

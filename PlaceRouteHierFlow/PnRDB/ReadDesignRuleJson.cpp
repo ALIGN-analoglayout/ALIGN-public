@@ -350,7 +350,7 @@ bool PnRdatabase::ReadDesignRule_via(string via_name, vector<string>& jason_file
 
 }
 
-bool PnRdatabase::ReadPDKJSON(std::string drfile) {
+void PnRdatabase::ReadPDKJSON(std::string drfile) {
     //std::cout<<"inside "<<drfile<<std::endl;
     //std::string jsonFileName = GDSData + ".json";
     int times=2;
@@ -392,7 +392,6 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
             int le2e=layer["EndToEnd"];
-            int loff=layer["Offset"];
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
@@ -438,7 +437,6 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lvencah= layer["VencA_H"];
             int lvencpl= layer["VencP_L"];
             int lvencph= layer["VencP_H"];
-            int lminno= layer["MinNo"];
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
@@ -455,7 +453,7 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
             std::set<int>::reverse_iterator rvit;
             for(json::iterator sit=stackAry.begin(); sit!=stackAry.end(); ++sit) {
               if(sit->is_string()) {
-                for(int k=0;k<(int)DRC_info.Metal_info.size();++k) {
+                for(unsigned int k=0;k<DRC_info.Metal_info.size();++k) {
                   if( DRC_info.Metal_info.at(k).name.compare(*sit)==0 ) {
                     viaMSet.insert(k);
                     break;
@@ -490,11 +488,11 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
 
         // 3. Add metal weight
         //add
-        for(int i=0;i<DRC_info.Metal_info.size();i++){
+        for(unsigned int i=0;i<DRC_info.Metal_info.size();i++){
              DRC_info.metal_weight.push_back(1);
         }
         // 4. Add Via model
-        for(int i=0;i<DRC_info.Via_info.size();i++){
+        for(unsigned int i=0;i<DRC_info.Via_info.size();i++){
              PnRDB::ViaModel temp_viamodel;
              temp_viamodel.name = DRC_info.Via_info[i].name;
              temp_viamodel.ViaIdx = i;
@@ -551,16 +549,16 @@ bool PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         // 6. Add mask ID
         //added by wbxu
-        for(int i=0;i<(int)DRC_info.Metal_info.size();++i) {
+        for(unsigned int i=0;i<DRC_info.Metal_info.size();++i) {
           DRC_info.MaskID_Metal.push_back(std::to_string( DRC_info.Metal_info.at(i).layerNo ));
         }
-        for(int i=0;i<(int)DRC_info.Via_info.size();++i) {
+        for(unsigned int i=0;i<DRC_info.Via_info.size();++i) {
           DRC_info.MaskID_Via.push_back(std::to_string( DRC_info.Via_info.at(i).layerNo ));
         }
     }
 }
 
-bool PnRdatabase::ReadDesignRule_jason(string drfile){
+void PnRdatabase::ReadDesignRule_jason(string drfile){
 
   cout<<"PnRDB-Info: reading design rule jason file "<<drfile<<endl;
 
@@ -707,11 +705,11 @@ bool PnRdatabase::ReadDesignRule_jason(string drfile){
   DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
   
   //add
-  for(int i=0;i<DRC_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<DRC_info.Metal_info.size();i++){
        DRC_info.metal_weight.push_back(1);
      }
   
-  for(int i=0;i<DRC_info.Via_info.size();i++){
+  for(unsigned int i=0;i<DRC_info.Via_info.size();i++){
        PnRDB::ViaModel temp_viamodel;
        temp_viamodel.name = DRC_info.Via_info[i].name;
        temp_viamodel.ViaIdx = i;

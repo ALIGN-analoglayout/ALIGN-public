@@ -20,9 +20,9 @@ RawRouter::RawRouter():topName("defaultDesign") {
 void RawRouter::InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, std::vector<std::vector<RouterDB::point> >& plist){
   
   RouterDB::SinkData temp_sink;
-  for(int i=0;i<plist.size();i++){
+  for(unsigned int i=0;i<plist.size();i++){
       temp_sink.metalIdx = i;
-      for(int j=0;j<plist[i].size();j++){
+      for(unsigned int j=0;j<plist[i].size();j++){
            RouterDB::point temp_point;
            temp_sink.coord.clear();
            temp_point.x = plist[i][j].x;

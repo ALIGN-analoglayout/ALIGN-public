@@ -17,8 +17,8 @@ enum Smark {H, V};
 enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 
 struct point {
-  int x;
-  int y;
+  int x=0;
+  int y=0;
 };
 
 struct Node {

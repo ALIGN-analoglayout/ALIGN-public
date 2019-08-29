@@ -67,7 +67,7 @@ int main(int argc, char** argv ){
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort); // do placement and update data in current node
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    for(int lidx=0; lidx<nodeVec.size(); ++lidx) {
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       // Route each placement
       current_node=nodeVec[lidx];
       std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;

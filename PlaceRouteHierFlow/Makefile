@@ -11,10 +11,10 @@ GTEST_DIR?=/opt/googletest/googletest
 
 COVERAGE?=
 OPTS?=-g -O3
-WARNS?=-w -Wall
+WARNS?=-Wall
 JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -I$(LIB_LP) -I$(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
+export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
