@@ -171,7 +171,7 @@ design::design(design& other, int mode) {
       placerDB::SymmBlock SB;
       // new symmetry pair
       for(std::vector< std::pair<int,int> >::iterator spit=sbit->sympair.begin(); spit!=sbit->sympair.end(); ++spit) {
-        if(spit->first>=other.Blocks.size() or spit->second>=other.Blocks.size()) {continue;}
+        if(spit->first>=(int)other.Blocks.size() or spit->second>=(int)other.Blocks.size()) {continue;}
         if(other.Blocks.at(spit->first).back().bigMacro and other.Blocks.at(spit->second).back().bigMacro) {
           int m1=other.Blocks.at(spit->first).back().mapIdx;
           int m2=other.Blocks.at(spit->second).back().mapIdx;
@@ -180,7 +180,7 @@ design::design(design& other, int mode) {
       }
       // new self-symmetry block
       for(vector< pair<int,placerDB::Smark> >::iterator sfit=sbit->selfsym.begin(); sfit!=sbit->selfsym.end(); ++sfit) {
-        if(sfit->first>=other.Blocks.size()) {continue;}
+        if(sfit->first>=(int)other.Blocks.size()) {continue;}
         if(other.Blocks.at(sfit->first).back().bigMacro) {
           SB.selfsym.push_back( make_pair( other.Blocks.at(sfit->first).back().mapIdx, sfit->second) );
         }
@@ -722,11 +722,9 @@ void design::Generate_random_const(string random_constrain_file) {
                          distance = 0;
 		}
 		if(Const_type_list[i]==3){
-	                 int h_abu = (rand()%2);
                          while(distance<100){
                         distance = (rand()%10)*50;
                         }
-			//fout<<"MatchBlock ("<<" "<<Blocks[const_pair_vector[i].first].name<<" "<<Blocks[const_pair_vector[i].second].name<<" "<<0<<" "<<h_abu<<" "<<")"<<endl;
 			fout<<"MatchBlock ("<<" "<<Blocks[const_pair_vector[i].first].back().name<<" "<<Blocks[const_pair_vector[i].second].back().name<<" "<<")"<<endl;
                          distance = 0;
 		}
@@ -752,11 +750,6 @@ void design::readRandConstFile(string random_constrain_file) {
 	fin.open(random_constrain_file.c_str());
 	
 	vector<string> temp, tempsec;
-	size_t found;
-	
-	int *p=0;
-	int p_temp=0;
-	p=&p_temp;
 	
 	while(!fin.eof()) {
 		getline(fin, def);
@@ -770,13 +763,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
                 
 			Preplace preplace_const;
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 			     if(Blocks.at(i).back().name.compare(block_first)==0) {
 					 preplace_const.blockid1 = i;
 					 break;
 				 }
 			}
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					preplace_const.blockid2 = i;
 					break;
@@ -797,13 +790,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
 
 			Alignment alignment_const;
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					alignment_const.blockid1 = i;
 					break;
 				}
 			}
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					alignment_const.blockid2 = i;
 					break;
@@ -822,13 +815,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			Abument abument_const;
 			
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					abument_const.blockid1 = i;
 					break;
 				}
 			}
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					abument_const.blockid2 = i;
 					break;
@@ -846,13 +839,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			MatchBlock match_const;
 			
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					match_const.blockid1 = i;
 					break;
 				}
 			}
-			for(unsigned int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					match_const.blockid2 = i;
 					break;
@@ -1245,10 +1238,10 @@ void design::PrintDesign() {
   PrintNets();
   PrintConstraints();
   PrintSymmGroup();
-  for(unsigned int i=0;i<(int)SNets.size();++i) {
+  for(unsigned int i=0;i<SNets.size();++i) {
     std::cout<<"Symmetry net "<<i<<" SBidx "<<SNets.at(i).SBidx<<std::endl;
   }
-  for(unsigned int i=0;i<(int)Port_Location.size();++i) {
+  for(unsigned int i=0;i<Port_Location.size();++i) {
     std::cout<<"Port location "<<Port_Location.at(i).tid<<" @ "<<Port_Location.at(i).pos<<std::endl; 
   }
 }
@@ -1551,10 +1544,10 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
   PnRDB::bbox placedBox;
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
-  for(unsigned int i=0;i<(int)originBox.polygon.size();++i) {
+  for(unsigned int i=0;i<originBox.polygon.size();++i) {
     placedBox.polygon.push_back( GetPlacedPnRPosition(originBox.polygon.at(i), Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
   }
-  for(unsigned int i=0;i<(int)placedBox.polygon.size();++i) {
+  for(unsigned int i=0;i<placedBox.polygon.size();++i) {
     if(x>placedBox.polygon.at(i).x) {x=placedBox.polygon.at(i).x;}
     if(X<placedBox.polygon.at(i).x) {X=placedBox.polygon.at(i).x;}
     if(y>placedBox.polygon.at(i).y) {y=placedBox.polygon.at(i).y;}
@@ -1569,7 +1562,7 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
 
 PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel) {
   PnRDB::bbox placedBox=GetPlacedBlockInterMetalRelBox(blockid, ort, originBox, sel);
-  for(unsigned int i=0;i<(int)placedBox.polygon.size();++i) {
+  for(unsigned int i=0;i<placedBox.polygon.size();++i) {
     placedBox.polygon.at(i).x+=LL.x;
     placedBox.polygon.at(i).y+=LL.y;
   }
@@ -1603,9 +1596,9 @@ string design::GetTerminalName(int termid) {
 vector<pair<int,int> > design::checkSympairInSymmBlock(vector<placerDB::SymmBlock>& SBs, vector< pair<int,int> >& Tsympair) {
   vector<pair<int,int> > pp;
   //vector<int> first; vector<int> second; bool mark=false;
-  for(unsigned int j=0; j<(int)SBs.size(); ++j ) {
+  for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,int> >::iterator pi=SBs.at(j).sympair.begin(); pi!=SBs.at(j).sympair.end(); ++pi) {
-      for( unsigned int i=0; i<(int)Tsympair.size(); ++i ) {
+      for( unsigned int i=0; i<Tsympair.size(); ++i ) {
         if( pi->first==Tsympair.at(i).first and pi->second==Tsympair.at(i).second ) {
           pp.push_back(make_pair(j,i));
         }
@@ -1619,9 +1612,9 @@ vector<pair<int,int> > design::checkSympairInSymmBlock(vector<placerDB::SymmBloc
 vector<pair<int,int> > design::checkSelfsymInSymmBlock(vector<placerDB::SymmBlock>& SBs, vector< pair<int,placerDB::Smark> >& Tselfsym) {
   vector<pair<int,int> > pp;
   //int first=-1; int second=-1; bool mark=false;
-  for(unsigned int j=0; j<(int)SBs.size(); ++j ) {
+  for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,placerDB::Smark> >::iterator pi=SBs.at(j).selfsym.begin(); pi!=SBs.at(j).selfsym.end(); ++pi) {
-      for( unsigned int i=0; i<(int)Tselfsym.size(); ++i ) {
+      for( unsigned int i=0; i<Tselfsym.size(); ++i ) {
         if( pi->first==Tselfsym.at(i).first and pi->second==Tselfsym.at(i).second ) { 
           pp.push_back(make_pair(j,i));
         }
@@ -1945,7 +1938,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
   return sbidx;
 }
 
-int design::GetBlockSymmGroup(int blockid) {
+int design::GetBlockSymmGroup(int blockid) const {
   return Blocks.at(blockid).back().SBidx;
 }
 

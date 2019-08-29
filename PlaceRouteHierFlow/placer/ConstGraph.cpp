@@ -63,13 +63,13 @@ void ConstGraph::ConstructGraphwithoutConstraint(design& caseNL, Aplace& caseAP,
   HGraph.resize(caseNL.GetSizeofBlocks());
   VGraph.resize(caseNL.GetSizeofBlocks());
   origNodeSize=(int)HGraph.size();
-  for(int i=0;i<(int)HGraph.size();i++) {
+  for(unsigned int i=0;i<HGraph.size();i++) {
     HGraph.at(i).weight=caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i));
     HGraph.at(i).isSource=false;
     HGraph.at(i).isSink=false;
     HGraph.at(i).isVirtual=false;
   } // Initialize real blocks in horizontal graph
-  for(int i=0;i<(int)VGraph.size();i++) {
+  for(unsigned int i=0;i<VGraph.size();i++) {
     VGraph.at(i).weight=caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i));
     VGraph.at(i).isSource=false;
     VGraph.at(i).isSink=false;
@@ -125,13 +125,13 @@ void ConstGraph::ConstructGraphwithConstraint(design& caseNL, Aplace& caseAP, in
   HGraph.resize(caseNL.GetSizeofBlocks());
   VGraph.resize(caseNL.GetSizeofBlocks());
   origNodeSize=(int)HGraph.size();
-  for(int i=0;i<(int)HGraph.size();i++) {
+  for(unsigned int i=0;i<HGraph.size();i++) {
     HGraph.at(i).weight=caseNL.GetBlockWidth(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i));
     HGraph.at(i).isSource=false;
     HGraph.at(i).isSink=false;
     HGraph.at(i).isVirtual=false;
   } // Initialize real blocks in horizontal graph
-  for(int i=0;i<(int)VGraph.size();i++) {
+  for(unsigned int i=0;i<VGraph.size();i++) {
     VGraph.at(i).weight=caseNL.GetBlockHeight(i, caseAP.GetBlockOrient(i), caseAP.GetSelectedInstance(i));
     VGraph.at(i).isSource=false;
     VGraph.at(i).isSink=false;
@@ -164,7 +164,7 @@ void ConstGraph::ConstructGraphwithConstraint(design& caseNL, Aplace& caseAP, in
   VGraph.back().isSink=true;
   VGraph.back().isVirtual=true;
   // Add dummy nodes for symmetry constraints
-  for(int i=0;i<(int)caseNL.GetSizeofSBlocks();i++) {
+  for(int i=0;i<caseNL.GetSizeofSBlocks();i++) {
     HGraph.resize(HGraph.size()+1);
     HGraph.back().weight=0;
     HGraph.back().isSource=false;
@@ -1058,7 +1058,7 @@ ConstGraph::ConstGraph(design& caseNL, SeqPair& caseSP, int mode) {
     VGraph.back().isVirtual=true;
   }
   // temporary variables
-  vector<int> candidate;  Edge tmpE;
+  vector<int> candidate;
 
 int bias_Vgraph = caseNL.bias_Vgraph;
 int bias_Hgraph = caseNL.bias_Hgraph;
@@ -1273,7 +1273,7 @@ ConstGraph::ConstGraph(design& caseNL, SeqPair& caseSP) {
     VGraph.back().isVirtual=true;
   }
   // temporary variables
-  vector<int> candidate;  Edge tmpE;
+  vector<int> candidate;
 
 int bias_Vgraph = caseNL.bias_Vgraph;
 int bias_Hgraph = caseNL.bias_Hgraph;
@@ -1484,8 +1484,8 @@ bool ConstGraph::CheckOppositeEdge(int current, int next, vector<Vertex> &graph)
 bool ConstGraph::CheckForwardPath(int current, int next, vector<Vertex>& graph) {
   // return true if there is a forward path from current to next node
   stack<int> Stack;
-  bool *visited =new bool[(int)graph.size()];
-  for(int i=0;i<(int)graph.size();++i) {visited[i]=false;}
+  bool *visited =new bool[graph.size()];
+  for(unsigned int i=0;i<graph.size();++i) {visited[i]=false;}
   topologicalSortUtil(current, visited, Stack, graph, false);
   bool mark;
   if(visited[next]) {mark=true;} else {mark=false;}
@@ -1510,23 +1510,23 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
   //int dist[(int)graph.size()];
   // Mark all vertices as not visited
   bool *visited =new bool[(int)graph.size()];
-  for(int i=0;i<(int)graph.size();++i)
+  for(unsigned int i=0;i<graph.size();++i)
     visited[i]=false;
   // Call the recursive helper function to store Topological
   // Sort starting from all vertices one by one
-  for(int i=0;i<(int)graph.size();++i) 
+  for(unsigned int i=0;i<graph.size();++i) 
     if(!visited[i]) 
       topologicalSortUtil(i, visited, Stack, graph, backward);
   // Initialize distances to all vertices as infinite and 
   // distance to source as 0
   if(!backward) {
-    for(int i=0;i<(int)graph.size();++i) {
+    for(unsigned int i=0;i<graph.size();++i) {
       graph.at(i).position=NINF;
       graph.at(i).precedent=-1;
     }
     graph.at(s).position=0;
   } else {
-    for(int i=0;i<(int)graph.size();++i) {
+    for(unsigned int i=0;i<graph.size();++i) {
       graph.at(i).backpost=NINF;
       graph.at(i).backprec=-1;
     }
@@ -1579,7 +1579,7 @@ bool ConstGraph::CheckPositiveCycle(vector<Vertex> &graph) {
   CalculateLongestPath(sourceNode, graph, false);
   bool mark=false;
   //int sum=0;
-  for(int i=0;i<(int)graph.size() and !mark ;++i) {
+  for(unsigned int i=0;i<graph.size() and !mark ;++i) {
     for(vector<Edge>::iterator ei=graph.at(i).Edges.begin(); ei!=graph.at(i).Edges.end() and !mark ; ++ei) {
       int dist=min(graph.at(ei->next).position-graph.at(i).position-ei->weight, 0);
       if(dist!=0) {mark=true;}
@@ -1592,7 +1592,7 @@ bool ConstGraph::CheckPositiveCycle(vector<Vertex> &graph) {
 double ConstGraph::CalculatePenalty(vector<Vertex> &graph) {
   //CalculateLongestPath(sourceNode, graph, false);
   double sum=0;
-  for(int i=0;i<(int)graph.size();++i) {
+  for(unsigned int i=0;i<graph.size();++i) {
     for(vector<Edge>::iterator ei=graph.at(i).Edges.begin(); ei!=graph.at(i).Edges.end(); ++ei) {
       int dist=min(graph.at(ei->next).position-graph.at(i).position-ei->weight, 0);
       sum+=dist*dist;
@@ -1641,7 +1641,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-        for(int i=0;i<pos_pin.size();i++){
+        for(unsigned int i=0;i<pos_pin.size();i++){
           p = pos_pin[i];
           pos.push_back(p);
 	}
@@ -1675,10 +1675,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
     } else { alpha=1; }
     alpha*=caseNL.Nets.at(netIdx).weight; // add weight to reflect the modification for bigMacros
     if(sbIdx!=-1) { // in symmetry group
-      int dnode=caseNL.GetBlockSymmGroupDnode(sbIdx);
       placerDB::Smark axis=caseAP.GetSBlockDir(sbIdx);
-      int axis_X=this->HGraph.at(dnode).position;
-      int axis_Y=this->VGraph.at(dnode).position;
       if(cp==i) { // self-symmetric
         if(axis==placerDB::V) {
           int distTerm=INT_MAX;
@@ -1687,7 +1684,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTerm) {distTerm=p.y;}
                 if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y;}
@@ -1702,7 +1699,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++) {
+              for(unsigned int k=0;k<pos_pin.size();k++) {
                 p = pos_pin[k];
                 if(p.x<distTerm) {distTerm=p.x;}
                 if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
@@ -1737,7 +1734,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL) {distTermL=p.x;}
                 if(Xmax-p.x<distTermR) {distTermR=Xmax-p.x;}
@@ -1750,7 +1747,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL2) {distTermL2=p.x;}
                 if(Xmax-p.x<distTermR2) {distTermR2=Xmax-p.x;}
@@ -1769,7 +1766,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL) {distTermL=p.y;}
                 if(Ymax-p.y<distTermU) {distTermU=Ymax-p.y;}
@@ -1782,7 +1779,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL2) {distTermL2=p.y;}
                 if(Ymax-p.y<distTermU2) {distTermU2=Ymax-p.y;}
@@ -1800,7 +1797,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
       }
     } else { // not in symmetry group
       int tar=-1;
-      for(int j=0;j<(int)caseNL.Port_Location.size();++j) {
+      for(unsigned int j=0;j<caseNL.Port_Location.size();++j) {
         if(caseNL.Port_Location.at(j).tid==i) {tar=j; break;}
       }
       if(tar!=-1) { // specifiy PortLocation constraint
@@ -1812,7 +1809,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               pos.push_back(p);
             }
@@ -1820,7 +1817,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
         }
         int shot=-1;
         int distTerm=INT_MAX;
-        for(int k=0;k<pos.size();++k) {
+        for(unsigned int k=0;k<pos.size();++k) {
           p=pos.at(k);
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
@@ -1932,7 +1929,7 @@ double ConstGraph::CalculateWireLengthAP(design& caseNL, Aplace& caseAP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               if(p.x<distTerm) {distTerm=p.x;}
               if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
@@ -1980,7 +1977,7 @@ double ConstGraph::CalculateWireLengthAPRetire(design& caseNL, Aplace& caseAP) {
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
 	//pos_pin_all.push_back(pos_pin);	
-          for(int i=0;i<pos_pin.size();i++){
+          for(unsigned int i=0;i<pos_pin.size();i++){
 			p = pos_pin[i];
             pos.push_back(p);
             if( caseNL.GetBlockSymmGroup(ci->iter2)==-1  ) { // not in any symmetry group
@@ -2050,7 +2047,7 @@ double ConstGraph::CalculateWireLengthRetire(design& caseNL, SeqPair& caseSP) {
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
 	//pos_pin_all.push_back(pos_pin);	
-          for(int i=0;i<pos_pin.size();i++){
+          for(unsigned int i=0;i<pos_pin.size();i++){
 			p = pos_pin[i];
             pos.push_back(p);
             if( caseNL.GetBlockSymmGroup(ci->iter2)==-1  ) { // not in any symmetry group
@@ -2110,7 +2107,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-        for(int i=0;i<pos_pin.size();i++){
+        for(unsigned int i=0;i<pos_pin.size();i++){
           p = pos_pin[i];
           pos.push_back(p);
 	}
@@ -2144,10 +2141,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
     } else { alpha=1; }
     alpha*=caseNL.Nets.at(netIdx).weight; // add weight to reflect the modification for bigMacros
     if(sbIdx!=-1) { // in symmetry group
-      int dnode=caseNL.GetBlockSymmGroupDnode(sbIdx);
       placerDB::Smark axis=caseSP.GetSymmBlockAxis(sbIdx);
-      int axis_X=this->HGraph.at(dnode).position;
-      int axis_Y=this->VGraph.at(dnode).position;
       if(cp==i) { // self-symmetric
         if(axis==placerDB::V) {
           int distTerm=INT_MAX;
@@ -2156,7 +2150,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTerm) {distTerm=p.y;}
                 if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y;}
@@ -2171,7 +2165,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++) {
+              for(unsigned int k=0;k<pos_pin.size();k++) {
                 p = pos_pin[k];
                 if(p.x<distTerm) {distTerm=p.x;}
                 if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
@@ -2204,7 +2198,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL) {distTermL=p.x;}
                 if(Xmax-p.x<distTermR) {distTermR=Xmax-p.x;}
@@ -2217,7 +2211,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL2) {distTermL2=p.x;}
                 if(Xmax-p.x<distTermR2) {distTermR2=Xmax-p.x;}
@@ -2236,7 +2230,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL) {distTermL=p.y;}
                 if(Ymax-p.y<distTermU) {distTermU=Ymax-p.y;}
@@ -2249,7 +2243,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL2) {distTermL2=p.y;}
                 if(Ymax-p.y<distTermU2) {distTermU2=Ymax-p.y;}
@@ -2267,7 +2261,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
       }
     } else { // not in symmetry group
       int tar=-1;
-      for(int j=0;j<(int)caseNL.Port_Location.size();++j) {
+      for(unsigned int j=0;j<caseNL.Port_Location.size();++j) {
         if(caseNL.Port_Location.at(j).tid==i) {tar=j; break;}
       }
       if(tar!=-1) { // specifiy PortLocation constraint
@@ -2279,7 +2273,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               pos.push_back(p);
             }
@@ -2287,7 +2281,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
         }
         int shot=-1;
         int distTerm=INT_MAX;
-        for(int k=0;k<pos.size();++k) {
+        for(unsigned int k=0;k<pos.size();++k) {
           p=pos.at(k);
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
@@ -2399,7 +2393,7 @@ double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               if(p.x<distTerm) {distTerm=p.x;}
               if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;}
@@ -2423,7 +2417,7 @@ double ConstGraph::CalculateMatchCost(design& caseNL, SeqPair& caseSP) {
   //CalculateLongestPath(sourceNode, this->HGraph, false);
   //CalculateLongestPath(sourceNode, this->VGraph, false);
   // for each net
-  for(int i=0;i<caseNL.Match_blocks.size();i++) {
+  for(unsigned int i=0;i<caseNL.Match_blocks.size();i++) {
   int x1,y1,x2,y2;
         x1=this->HGraph.at(caseNL.Match_blocks[i].blockid1).position;
         y1=this->VGraph.at(caseNL.Match_blocks[i].blockid1).position;
@@ -2437,7 +2431,7 @@ double ConstGraph::CalculateMatchCost(design& caseNL, SeqPair& caseSP) {
 
 double ConstGraph::CalculateDeadArea(design& caseNL, SeqPair& caseSP) {
   double cellArea=0;
-  for(int i=0;i<caseNL.Blocks.size();++i) {
+  for(unsigned int i=0;i<caseNL.Blocks.size();++i) {
     int sel=caseSP.GetBlockSelected(i);
     int w=caseNL.GetBlockWidth(i, caseSP.GetBlockOrient(i), sel); // Get width of block when it's placed
     int h=caseNL.GetBlockHeight(i, caseSP.GetBlockOrient(i), sel); // Get height of block when it's placed
@@ -3031,7 +3025,7 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
       }
     }
     // 7. Add edges for symmetry pairs
-    for(int j=0;j<(int)sympair.size();j++) {
+    for(unsigned int j=0;j<sympair.size();j++) {
       if(sympair.at(j).first<(int)caseNL.GetSizeofBlocks() and sympair.at(j).second<(int)caseNL.GetSizeofBlocks()) {
          if(axis==placerDB::V) {
            AddEdgeforVertex(sympair.at(j).first, dnode, xL.at(j), HGraph);
@@ -3100,17 +3094,17 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
 
 void ConstGraph::OtherGeometricConstraintCore(design& caseNL) {
   if(!caseNL.Align_blocks.empty()) {
-    for(int i=0;i<caseNL.Align_blocks.size();i++) {
+    for(unsigned int i=0;i<caseNL.Align_blocks.size();i++) {
       if(caseNL.Align_blocks.at(i).horizon==1) { // horizontal
         CalculateLongestPath(sourceNode, this->VGraph, false);
         int LL=INT_MIN, MM=-1;
-        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+        for(unsigned int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
           if(VGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position>LL) {
             MM=caseNL.Align_blocks.at(i).blocks.at(j);
             LL=VGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position;
           }
         }
-        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+        for(unsigned int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
           if(caseNL.Align_blocks.at(i).blocks.at(j)!=MM) {
             AddEdgeforVertex(MM, caseNL.Align_blocks.at(i).blocks.at(j), 0, VGraph);
             AddEdgeforVertex(caseNL.Align_blocks.at(i).blocks.at(j), MM, 0, VGraph);
@@ -3119,13 +3113,13 @@ void ConstGraph::OtherGeometricConstraintCore(design& caseNL) {
       } else if(caseNL.Align_blocks.at(i).horizon==0)  { // veritcal
         CalculateLongestPath(sourceNode, this->HGraph, false);
         int LL=INT_MIN, MM=-1;
-        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+        for(unsigned int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
           if(HGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position>LL) {
             MM=caseNL.Align_blocks.at(i).blocks.at(j);
             LL=HGraph.at(caseNL.Align_blocks.at(i).blocks.at(j)).position;
           }
         }
-        for(int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
+        for(unsigned int j=0;j<caseNL.Align_blocks.at(i).blocks.size();j++) {
           if(caseNL.Align_blocks.at(i).blocks.at(j)!=MM) {
             AddEdgeforVertex(MM, caseNL.Align_blocks.at(i).blocks.at(j), 0, HGraph);
             AddEdgeforVertex(caseNL.Align_blocks.at(i).blocks.at(j), MM, 0, HGraph);
@@ -3137,7 +3131,7 @@ void ConstGraph::OtherGeometricConstraintCore(design& caseNL) {
   //added by yg
   //adding edges for preplace, abument, and alignment
   if(!caseNL.Preplace_blocks.empty()){
-      for(int i=0;i<caseNL.Preplace_blocks.size();i++){
+      for(unsigned int i=0;i<caseNL.Preplace_blocks.size();i++){
 	  //AddEdgeforVertex(sourceNode, caseNL.Preplace_blocks[i].blockid1, caseNL.Preplace_blocks[i].distance, VGraph);  
           //cout<<"adds a preblaced blocks"<<endl;
           if(caseNL.Preplace_blocks[i].horizon==0)
@@ -3147,7 +3141,7 @@ void ConstGraph::OtherGeometricConstraintCore(design& caseNL) {
 	  }
   }
   if(!caseNL.Alignment_blocks.empty()){
-	  for(int i=0;i<caseNL.Alignment_blocks.size();i++){
+	  for(unsigned int i=0;i<caseNL.Alignment_blocks.size();i++){
 //cout<<"adds a alignment blocks"<<endl;
                   if(caseNL.Alignment_blocks[i].horizon==0)
 		  AddEdgeforVertex(caseNL.Alignment_blocks[i].blockid1, caseNL.Alignment_blocks[i].blockid2, caseNL.Alignment_blocks[i].distance, VGraph);
@@ -3533,7 +3527,7 @@ void ConstGraph::UpdatexLwithL3(design& caseNL, vector< pair<int,int> >& sympair
 }
 
 int ConstGraph::CalculateBminusXminusY(design& caseNL, vector< pair<int,int> >& sympair, vector<int>& xL, int j, int k, placerDB::Smark axis) {
-  int M;
+  int M=-1;
   if(axis==placerDB::V) { // vertical symmetry
     // L2: Xj(j.first) -> Yk(k.second) -> di(axis) -> Xj(j.first)
     // x_ij + x_ik >= w(Yk) + dist(Xj,Yk)  
@@ -3937,7 +3931,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
   node.height=VGraph.at(sinkNode).position;
   //cout<<"W: "<<node.width<<" H: "<<node.height<<endl;
   // 1. update all blocks according to results of reduced design
-  for(int j=0;j<(int)caseNL.GetSizeofBlocks();++j) {
+  for(int j=0;j<caseNL.GetSizeofBlocks();++j) {
     //cout<<"Blocks "<<j<<endl;
     int i=caseNL.GetMappedBlockIdx(j); // index in reduced design
     if(i!=-1) {
@@ -3969,7 +3963,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
     }
   }
   // 2. update blocks in symmetry groups
-  for(int j=0;j<(int)caseNL.GetSizeofSBlocks();j++) {
+  for(int j=0;j<caseNL.GetSizeofSBlocks();j++) {
     int i=caseNL.GetMappedSymmBlockIdx(j);
     if(i==-1) { // no corresponding symmgroup in reduced design
       // Choose the vertical symmetry axis in the middile of the die
@@ -4178,13 +4172,13 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
       center=caseNL.GetPlacedBlockPinAbsPosition(i, j, ort, LL, sel);
       // [wbxu] Following two lines have be updated for multiple contacts
       // update pin contacts
-      for(int k=0;k<(int)node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.size();k++) {
+      for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.size();k++) {
         //cout<<"    Pin contact "<<k<<endl;
         node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.at(k).placedBox=ConvertBoundaryData(boundary.at(k));
         node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.at(k).placedCenter=ConvertPointData(center.at(k));
       }
       // update pin vias
-      for(int k=0;k<(int)node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size();k++) {
+      for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size();k++) {
         //cout<<"    Pin via "<<k<<endl;
         node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).placedpos=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).originpos, LL, sel);
         node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.originBox, LL, sel);
@@ -4197,13 +4191,13 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
     }
   // [wbxu] Complete programing: to update internal metals
     // update internal metals
-    for(int j=0;j<(int)node.Blocks.at(i).instance.at(sel).interMetals.size();j++) {
+    for(unsigned int j=0;j<node.Blocks.at(i).instance.at(sel).interMetals.size();j++) {
       //cout<<"  IM "<<j<<endl;
       node.Blocks.at(i).instance.at(sel).interMetals.at(j).placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interMetals.at(j).originBox, LL, sel);
       node.Blocks.at(i).instance.at(sel).interMetals.at(j).placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interMetals.at(j).originCenter, LL, sel);
     }
     // update internal vias
-    for(int j=0;j<(int)node.Blocks.at(i).instance.at(sel).interVias.size();j++) {
+    for(unsigned int j=0;j<node.Blocks.at(i).instance.at(sel).interVias.size();j++) {
       //cout<<"  Internal via "<<j<<endl;
       node.Blocks.at(i).instance.at(sel).interVias.at(j).placedpos                  =caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).originpos,LL,sel);
       node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.placedBox   =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.originBox,LL,sel);
@@ -4281,7 +4275,7 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
-  for(int i=0;i<(int)caseNL.SNets.size(); ++i) {
+  for(unsigned int i=0;i<caseNL.SNets.size(); ++i) {
     int SBidx=caseNL.SNets.at(i).SBidx;
     placerDB::Smark axis_dir=caseAP.GetSBlockDir(SBidx);
     UpdateSymmetryNetInfo(caseNL, node, i, SBidx, axis_dir);
@@ -4325,7 +4319,7 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
-  for(int i=0;i<(int)caseNL.SNets.size(); ++i) {
+  for(unsigned int i=0;i<caseNL.SNets.size(); ++i) {
     int SBidx=caseNL.SNets.at(i).SBidx;
     placerDB::Smark axis_dir=caseSP.GetSymmBlockAxis(SBidx);
     UpdateSymmetryNetInfo(caseNL, node, i, SBidx, axis_dir);
@@ -4370,7 +4364,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTerm) {distTerm=p.y; tp.y=0;}
                 if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; tp.y=Ymax; }
@@ -4387,7 +4381,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++) {
+              for(unsigned int k=0;k<pos_pin.size();k++) {
                 p = pos_pin[k];
                 if(p.x<distTerm) {distTerm=p.x; tp.x=0; }
                 if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; tp.x=Xmax; }
@@ -4424,7 +4418,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL) {distTermL=p.x; tpL1.x=0; tpL1.y=p.y;}
                 if(Xmax-p.x<distTermR) {distTermR=Xmax-p.x; tpR1.x=Xmax; tpR1.y=p.y;}
@@ -4438,7 +4432,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL2) {distTermL2=p.x; tpL2.x=0; tpL2.y=p.y;}
                 if(Xmax-p.x<distTermR2) {distTermR2=Xmax-p.x; tpR2.x=Xmax; tpR2.y=p.y;}
@@ -4464,7 +4458,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL) {distTermL=p.y; tpL1.x=p.x; tpL1.y=0;}
                 if(Ymax-p.y<distTermU) {distTermU=Ymax-p.y; tpU1.x=p.x; tpU1.y=Ymax;}
@@ -4478,7 +4472,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL2) {distTermL2=p.y; tpL2.x=p.x; tpL2.y=0;}
                 if(Ymax-p.y<distTermU2) {distTermU2=Ymax-p.y; tpU2.x=p.x; tpU2.y=Ymax;}
@@ -4502,7 +4496,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
       }
     } else { // not in symmetry group
       int tar=-1;
-      for(int j=0;j<(int)caseNL.Port_Location.size();++j) {
+      for(unsigned int j=0;j<caseNL.Port_Location.size();++j) {
         if(caseNL.Port_Location.at(j).tid==i) {tar=j; break;}
       }
       if(tar!=-1) { // specifiy PortLocation constraint
@@ -4515,7 +4509,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               pos.push_back(p);
             }
@@ -4523,7 +4517,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
         }
         int shot=-1;
         int distTerm=INT_MAX;
-        for(int k=0;k<pos.size();++k) {
+        for(unsigned int k=0;k<pos.size();++k) {
           p=pos.at(k);
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
@@ -4639,7 +4633,7 @@ void ConstGraph::updateTerminalCenterAP(design& caseNL,  Aplace& caseAP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               if(p.x<distTerm) {distTerm=p.x;tp.x=0;tp.y=p.y;}
               if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;tp.x=Xmax;tp.y=p.y;}
@@ -4671,7 +4665,7 @@ void ConstGraph::updateTerminalCenterAPRetire(design& caseNL, Aplace& caseAP) {
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseAP.GetBlockOrient(ci->iter2), bp, caseAP.GetSelectedInstance(ci->iter2));
-		for(int i=0;i<p_pin.size();i++){
+		for(unsigned int i=0;i<p_pin.size();i++){
 			p=p_pin[i];
         //placerDB::Omark ort=caseAP.GetBlockOrient(ci->iter2);
         //p=caseNL.GetBlockCenter(ci->iter2, ort);
@@ -4816,7 +4810,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
   vector<placerDB::point> pos_pin;
   std::set<int> solved_terminals;
   // for each terminal
-  for(int i=0;i<(int)caseNL.GetSizeofTerminals();++i) {
+  for(int i=0;i<caseNL.GetSizeofTerminals();++i) {
     if(solved_terminals.find(i)!=solved_terminals.end()) {continue;}
     solved_terminals.insert(i);
     int netIdx=caseNL.Terminals.at(i).netIter;
@@ -4838,7 +4832,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
       placerDB::Smark axis=caseSP.GetSymmBlockAxis(sbIdx);
       int axis_X=this->HGraph.at(dnode).position;
       int axis_Y=this->VGraph.at(dnode).position;
-      if(cp==i) { // self-symmetric
+      if(cp==(int)i) { // self-symmetric
         if(axis==placerDB::V) {
           int distTerm=INT_MAX;
           placerDB::point tp; tp.x=axis_X;
@@ -4847,7 +4841,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTerm) {distTerm=p.y; tp.y=0;}
                 if(Ymax-p.y<distTerm) {distTerm=Ymax-p.y; tp.y=Ymax; }
@@ -4864,7 +4858,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++) {
+              for(unsigned int k=0;k<pos_pin.size();k++) {
                 p = pos_pin[k];
                 if(p.x<distTerm) {distTerm=p.x; tp.x=0; }
                 if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x; tp.x=Xmax; }
@@ -4901,7 +4895,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL) {distTermL=p.x; tpL1.x=0; tpL1.y=p.y;}
                 if(Xmax-p.x<distTermR) {distTermR=Xmax-p.x; tpR1.x=Xmax; tpR1.y=p.y;}
@@ -4915,7 +4909,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.x<distTermL2) {distTermL2=p.x; tpL2.x=0; tpL2.y=p.y;}
                 if(Xmax-p.x<distTermR2) {distTermR2=Xmax-p.x; tpR2.x=Xmax; tpR2.y=p.y;}
@@ -4941,7 +4935,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL) {distTermL=p.y; tpL1.x=p.x; tpL1.y=0;}
                 if(Ymax-p.y<distTermU) {distTermU=Ymax-p.y; tpU1.x=p.x; tpU1.y=Ymax;}
@@ -4955,7 +4949,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
               bp.x=this->HGraph.at(ci->iter2).position;
               bp.y=this->VGraph.at(ci->iter2).position;
               pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-              for(int k=0;k<pos_pin.size();k++){
+              for(unsigned int k=0;k<pos_pin.size();k++){
                 p = pos_pin[k];
                 if(p.y<distTermL2) {distTermL2=p.y; tpL2.x=p.x; tpL2.y=0;}
                 if(Ymax-p.y<distTermU2) {distTermU2=Ymax-p.y; tpU2.x=p.x; tpU2.y=Ymax;}
@@ -4979,8 +4973,8 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
       }
     } else { // not in symmetry group
       int tar=-1;
-      for(int j=0;j<(int)caseNL.Port_Location.size();++j) {
-        if(caseNL.Port_Location.at(j).tid==i) {tar=j; break;}
+      for(unsigned int j=0;j<caseNL.Port_Location.size();++j) {
+        if(caseNL.Port_Location.at(j).tid==(int)i) {tar=j; break;}
       }
       if(tar!=-1) { // specifiy PortLocation constraint
         int x1=Xmax/3, x2=Xmax*2/3, x3=Xmax;
@@ -4992,7 +4986,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               pos.push_back(p);
             }
@@ -5000,7 +4994,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
         }
         int shot=-1;
         int distTerm=INT_MAX;
-        for(int k=0;k<pos.size();++k) {
+        for(unsigned int k=0;k<pos.size();++k) {
           p=pos.at(k);
           // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
           switch(caseNL.Port_Location.at(tar).pos) {
@@ -5116,7 +5110,7 @@ void ConstGraph::updateTerminalCenter(design& caseNL, SeqPair& caseSP) {
             bp.x=this->HGraph.at(ci->iter2).position;
             bp.y=this->VGraph.at(ci->iter2).position;
             pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-            for(int k=0;k<pos_pin.size();k++) {
+            for(unsigned int k=0;k<pos_pin.size();k++) {
               p = pos_pin[k];
               if(p.x<distTerm) {distTerm=p.x;tp.x=0;tp.y=p.y;}
               if(Xmax-p.x<distTerm) {distTerm=Xmax-p.x;tp.x=Xmax;tp.y=p.y;}
@@ -5148,7 +5142,7 @@ void ConstGraph::updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP) {
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-		for(int i=0;i<p_pin.size();i++){
+		for(unsigned int i=0;i<p_pin.size();i++){
 			p=p_pin[i];
         //placerDB::Omark ort=caseSP.GetBlockOrient(ci->iter2);
         //p=caseNL.GetBlockCenter(ci->iter2, ort);
@@ -5232,13 +5226,10 @@ void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile
     fout<<caseNL.Blocks.at(i).back().name<<"\t"<<x<<"\t"<<y<<"\t"<<ort<<endl;
   }
   fout<<endl;
-  int Xmax=HGraph.at(sinkNode).position;
-  int Ymax=VGraph.at(sinkNode).position;
   placerDB::point p, bp;
   //cout<<"writeplacement3"<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
     int tno; placerDB::point tp;
 	vector<placerDB::point> p_pin;
     // for each pin
@@ -5306,13 +5297,10 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
     fout<<caseNL.Blocks.at(i).back().name<<"\t"<<x<<"\t"<<y<<"\t"<<ort<<endl;
   }
   fout<<endl;
-  int Xmax=HGraph.at(sinkNode).position;
-  int Ymax=VGraph.at(sinkNode).position;
   placerDB::point p, bp;
   //cout<<"writeplacement3"<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
 	vector<placerDB::point> p_pin;
     // for each pin
@@ -5333,8 +5321,6 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 
 void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) {
   cout<<"Placer-Info: create gnuplot file"<<endl;
-  //int Xmax=HGraph.at(sinkNode).position;
-  //int Ymax=VGraph.at(sinkNode).position;
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -5365,7 +5351,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i) );
-	  for(int k = 0; k<p_pin.size();k++){
+	  for(unsigned int k = 0; k<p_pin.size();k++){
       placerDB::point newp = p_pin[k];
       fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
@@ -5376,7 +5362,6 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"set labels for terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     p_pin.clear();
     // for each pin
@@ -5394,7 +5379,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"plot blocks..."<<endl;
   fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+    string ort;
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
@@ -5415,16 +5400,16 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   vector<vector<placerDB::point> > newp_pin;
   // plot block pins
   //cout<<"plot block pins..."<<endl;
-  for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+  for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
+    string ort;
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
-      for(int k=0;k<newp_pin.size();k++){
+      for(unsigned int k=0;k<newp_pin.size();k++){
 	  vector<placerDB::point> newp_p = newp_pin[k];
-      for(int it=0; it<(int)newp_p.size(); it++ ) {
+      for(unsigned int it=0; it<newp_p.size(); it++ ) {
         fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
       }
       fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
@@ -5438,8 +5423,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"plot terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    //int distTerm=-1*NINF;
-    int tno; placerDB::point tp;
+    int tno=-1;
     // for each pin
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       if (ci->type==placerDB::Terminal) {
@@ -5463,7 +5447,6 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //cout<<"plot nets..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    //int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     vector<placerDB::point> pins;
     pins.clear();
@@ -5502,8 +5485,6 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
 
 void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile) {
   cout<<"Placer-Info: create gnuplot file"<<endl;
-  int Xmax=HGraph.at(sinkNode).position;
-  int Ymax=VGraph.at(sinkNode).position;
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -5534,7 +5515,7 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseAP.GetBlockOrient(i), tp, caseAP.GetSelectedInstance(i));
-	  for(int k = 0; k<p_pin.size();k++){
+	  for(unsigned int k = 0; k<p_pin.size();k++){
       placerDB::point newp = p_pin[k];
       fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
@@ -5545,7 +5526,6 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
   //cout<<"set labels for terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     p_pin.clear();
     // for each pin
@@ -5563,7 +5543,7 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
   //cout<<"plot blocks..."<<endl;
   fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+    string ort;
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
@@ -5581,15 +5561,15 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
   // plot block pins
   //cout<<"plot block pins..."<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+    string ort;
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseAP.GetBlockOrient(i), tp, caseAP.GetSelectedInstance(i));
-      for(int k=0;k<newp_pin.size();k++){
+      for(unsigned int k=0;k<newp_pin.size();k++){
 	  vector<placerDB::point> newp_p = newp_pin[k];
-      for(int it=0; it<(int)newp_p.size(); it++ ) {
+      for(unsigned int it=0; it<newp_p.size(); it++ ) {
         fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
       }
       fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
@@ -5603,8 +5583,7 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
   //cout<<"plot terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
-    int tno; placerDB::point tp;
+    int tno=-1; placerDB::point tp;
     // for each pin
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       if (ci->type==placerDB::Terminal) {
@@ -5628,7 +5607,6 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
   //cout<<"plot nets..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
-    int distTerm=-1*NINF;
     int tno; placerDB::point tp;
     vector<placerDB::point> pins;
     pins.clear();

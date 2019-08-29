@@ -526,7 +526,7 @@ void SeqPair::PrintSeqPair() {
 }
 
 int SeqPair::GetBlockSelected(int blockNo) {
-  if(blockNo>=0 and blockNo<selected.size()) {
+  if(blockNo>=0 and blockNo<(int)selected.size()) {
     return(selected.at(blockNo));
   }
   return -1;

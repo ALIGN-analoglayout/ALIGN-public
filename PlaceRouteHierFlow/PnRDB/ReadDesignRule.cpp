@@ -9,7 +9,7 @@ long int PnRdatabase::get_number(string str) {
   return val;
 }
 
-bool PnRdatabase::ReadDesignRule(string drfile) {
+void PnRdatabase::ReadDesignRule(string drfile) {
   cout << "PnRDB-Info: reading design rule file " << drfile <<endl;
 
   ifstream fin;
@@ -100,7 +100,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           //cout<<temp[q]<<endl;
           Entmp["V1M1"].push_back(stod(temp[q])*1000);
           //V1M1Entmp.push_back(stod(temp[q])*1000);
@@ -117,7 +117,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V1M2"].push_back(stod(temp[q])*1000);
           //V1M2Entmp.push_back(stod(temp[q])*1000);
         }
@@ -159,7 +159,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V2M2"].push_back(stod(temp[q])*1000);
           //V2M2Entmp.push_back(stod(temp[q])*1000);
         }
@@ -174,7 +174,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V2M3"].push_back(stod(temp[q])*1000);
           //V2M3Entmp.push_back(stod(temp[q])*1000);
         }
@@ -216,7 +216,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V3M3"].push_back(stod(temp[q])*1000);
           //V3M3Entmp.push_back(stod(temp[q])*1000);
         }
@@ -231,7 +231,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V3M4"].push_back(stod(temp[q])*1000);
           //V3M4Entmp.push_back(stod(temp[q])*1000);
         }
@@ -275,7 +275,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V4M4"].push_back(stod(temp[q])*1000);
           //V4M4Entmp.push_back(stod(temp[q])*1000);
         }
@@ -290,7 +290,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V4M5"].push_back(stod(temp[q])*1000);
           //V4M5Entmp.push_back(stod(temp[q])*1000);
         }
@@ -334,7 +334,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V5M5"].push_back(stod(temp[q])*1000);
           //V5M5Entmp.push_back(stod(temp[q])*1000);
         }
@@ -349,7 +349,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V5M6"].push_back(stod(temp[q])*1000);
           //V5M6Entmp.push_back(stod(temp[q])*1000);
         }
@@ -392,7 +392,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V6M6"].push_back(stod(temp[q])*1000);
           //V6M6Entmp.push_back(stod(temp[q])*1000);
         }
@@ -407,7 +407,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V6M7"].push_back(stod(temp[q])*1000);
           //V6M7Entmp.push_back(stod(temp[q])*1000);
         }
@@ -450,7 +450,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V7M7"].push_back(stod(temp[q])*1000);
           //V7M7Entmp.push_back(stod(temp[q])*1000);
         }
@@ -465,7 +465,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
           getline(fin, def);
           temp=split_by_spaces(def);
         }
-        for(int q=1;q<temp.size();q++){
+        for(unsigned int q=1;q<temp.size();q++){
           Entmp["V7M8"].push_back(stod(temp[q])*1000);
           //V7M8Entmp.push_back(stod(temp[q])*1000);
         }
@@ -496,7 +496,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
         }
         if((found=def.find("EXTERNAL"))!=string::npos) {
           temp=split_by_spaces(def);
-          for(int q=0;q<temp.size();q++){
+          for(unsigned int q=0;q<temp.size();q++){
             //cout<<"temp[q]: "<<temp[q]<<endl;
             if(temp[q].compare("<")==0){
               //cout<<"Rule Num in Micron: "<< temp[q+1]<<endl;
@@ -533,7 +533,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
         }
         if((found=def.find("EXTERNAL"))!=string::npos) {
           temp=split_by_spaces(def);
-          for(int q=0;q<temp.size();q++){
+          for(unsigned int q=0;q<temp.size();q++){
             //cout<<"temp[q]: "<<temp[q]<<endl;
             if(temp[q].compare("<")==0){
               //cout<<"Rule Num in Micron: "<< temp[q+1]<<endl;
@@ -570,7 +570,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
         }
         if((found=def.find("EXTERNAL"))!=string::npos) {
           temp=split_by_spaces(def);
-          for(int q=0;q<temp.size();q++){
+          for(unsigned int q=0;q<temp.size();q++){
             //cout<<"temp[q]: "<<temp[q]<<endl;
             if(temp[q].compare("<")==0){
               //cout<<"Rule Num in Micron: "<< temp[q+1]<<endl;
@@ -909,7 +909,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M1"];
       dis = SpaceNumTmp["M1"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -926,7 +926,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M2"];
       dis = SpaceNumTmp["M2"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -943,7 +943,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M3"];
       dis = SpaceNumTmp["M3"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -960,7 +960,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M4"];
       dis = SpaceNumTmp["M4"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -977,7 +977,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M5"];
       dis = SpaceNumTmp["M5"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -994,7 +994,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M6"];
       dis = SpaceNumTmp["M6"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -1011,7 +1011,7 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
       temp_metal_info.grid_unit_y = drData.grid_unit_y["M7"];
       dis = SpaceNumTmp["M7"];
       minimum = dis[0];
-      for(int i = 0;i<dis.size();i++){
+      for(unsigned int i = 0;i<dis.size();i++){
            if(dis[i]<minimum){
                minimum = dis[i];
              }
@@ -1101,11 +1101,11 @@ bool PnRdatabase::ReadDesignRule(string drfile) {
   //DRC_info.Viamap["V7"] = 6;
   
   //add
-  for(int i=0;i<DRC_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<DRC_info.Metal_info.size();i++){
        DRC_info.metal_weight.push_back(1);
      }
   
-  for(int i=0;i<DRC_info.Via_info.size();i++){
+  for(unsigned int i=0;i<DRC_info.Via_info.size();i++){
        PnRDB::ViaModel temp_viamodel;
        temp_viamodel.name = DRC_info.Via_info[i].name;
        temp_viamodel.ViaIdx = i;

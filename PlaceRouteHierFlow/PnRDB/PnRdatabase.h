@@ -123,7 +123,7 @@ class PnRdatabase
     bool MergeLEFMapData(PnRDB::hierNode& node);
     void PrintHierTree();
     bool ReadMap(string fpath, string mapname); // read gds data from map file
-    bool ReadDesignRule(string drfile); //  read design rule data from design rule file
+    void ReadDesignRule(string drfile); //  read design rule data from design rule file
     void HardDesignRule(); // hard-code design rules
 
     PnRDB::designRule getDesignRule() const { return drData;}
