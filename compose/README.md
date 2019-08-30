@@ -6,6 +6,8 @@ Software components that are in container images can be thought of as
 'installed' and we are using Make to run the flow through the
 components.
 
+## Container-based Flow
+
 Using the Makefile, you can invoke the container-based flow using
 either a Docker volume for data input/output, or using a directory
 (which Docker will mount in each container).  You can also use the
@@ -62,22 +64,34 @@ You can work inside the container to modify or debug its behavior:
 
 		% make docker-down
 		
+## Native Environment Flow
+
 The second option is to invoke a native Linux environment flow without
 using containers, where the same Makefile can be used to issue native
-Linux build commands:
+Linux build commands.  The downside to a native environment is that
+all software requirements must be built into the native environment,
+including handling any version conflicts, and when a new component is
+needed, it and its environment need to be integrated before any
+testing can start. The Makefile expects the Python general/
+environment to be in the working directory.
+
+Here are the sequence of commands needed to invoke make in a native
+environment.
 	
 		% export ALIGN_WORK_DIR=<your Linux working area>
 		% cd $ALIGN_WORK_DIR
 		% ln -s $ALIGN_HOME/compose/Makefile .
 		% make DESIGN=<design>
 		
+### A Monolithic Docker Container for the ALIGN flow
 We have provided a Dockerfile in compose/Dockerfile.native that builds
 up a monolithic Linux environment to help test the functionality of
 operating in a native environment.It is hard to keep it centrally up
 to date, so as components add more dependencies, this file may be out
 of date.  But it serves as a starting point for the full environment.
 The container can be built as a service called fullbuild-service.  You
-can then run the above commands in the container:
+can then run the above commands in the container as if it were your
+native environment as shown below:
 	
 		% cd $ALIGN_HOME/compose
 		% docker-compose up -d fullbuild-service
@@ -86,7 +100,7 @@ can then run the above commands in the container:
 		 $ ln -s $ALIGN_HOME/compose/Makefile .
 		 $ make DESIGN=<design>
 		
-# Useful docker-compose commands
+## Useful docker-compose commands
 
 You must be in the directory where the service configuration file
 (usually docker-compose.yml) resides.  If the directory name does not

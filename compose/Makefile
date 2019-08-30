@@ -134,12 +134,14 @@ docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml volume
 
 # If volume name changes, bring down the containers and remove the redirect vol
 volume::
+ifeq ($(BUILD),docker)
 ifneq ($(shell cat volume),$(ALIGN_WORK_DIR))
 ifneq (, $(wildcard ./docker-compose.yml))
 		docker-compose down
 endif
 	docker volume rm -f compose_redirectVolume
 	echo $(ALIGN_WORK_DIR) > volume
+endif
 endif
 
 make-docker-service::	docker-compose.yml

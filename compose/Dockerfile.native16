@@ -1,13 +1,21 @@
-FROM ubuntu:18.04
+FROM ubuntu:16.04
+
+RUN \
+     apt-get update && \
+     apt-get install -yq software-properties-common && \
+     add-apt-repository -y ppa:jonathonf/python-3.6
 
 RUN \
     apt-get update && \
     apt-get install -yq \
     	    vim make cmake git \
-	    pkg-config python3 python3-pip python3-venv \
-	    docker-compose emacs sudo \
+	    pkg-config python3.6-dev python3-pip python3.6-venv \
+	    sudo \
 	    graphviz libgraphviz-dev protobuf-compiler && \
     apt-get clean
+
+RUN \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
 
 RUN \
     python3 -m venv general && \
@@ -39,7 +47,7 @@ RUN \
     cd googletest && \
     mkdir mybuild && \
     cd mybuild && \
-    cmake .. && \
+    cmake -DCMAKE_CXX_FLAGS=-std=c++11 .. && \
     make
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
@@ -56,9 +64,9 @@ RUN \
     apt-get install -yq curl
 
 RUN \
-    bash -c "curl -o /klayout_0.25.4-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.25.4-1_amd64.deb"
+    bash -c "curl -o /klayout_0.25.9-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-16/klayout_0.25.9-1_amd64.deb"
 
 RUN \
-    apt-get install -yq /klayout_0.25.4-1_amd64.deb xvfb
+    apt-get install -yq /klayout_0.25.9-1_amd64.deb xvfb
     
 WORKDIR /dataVolume
