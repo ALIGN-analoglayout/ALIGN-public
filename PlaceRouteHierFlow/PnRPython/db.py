@@ -424,21 +424,13 @@ structs = [(hierNode,[("isCompleted",None),
 class PnRDBEncoder(json.JSONEncoder):
     def default(self, obj):
         def f(x,v):
-            if v is None:
-                return x
-            else:
-                assert isinstance( x, v)
-                return self.default(x)
+            assert v is None or isinstance( x, v)
+            return x if v is None else self.default(x)
 
         for (klass,fields) in structs:
             if isinstance(obj, klass):
-                result = {}
-                for (k,v) in fields:
-                    if isinstance( v, tuple) and v[0] is list:
-                        result[k] = [f(x,v[1]) for x in getattr(obj,k)]
-                    else:
-                        result[k] = f(getattr(obj,k),v)
-                return result
+                return {k : ( [f(x,v[1]) for x in a] if isinstance( v, tuple) and v[0] is list else f(a,v)) for (k,v) in fields for a in (getattr(obj,k),)}
+
         return json.JSONEncoder.default(self, obj)
 
 def test_A():
