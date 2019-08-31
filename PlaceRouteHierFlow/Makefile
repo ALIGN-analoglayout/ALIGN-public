@@ -27,6 +27,7 @@ router_path=router
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
+LIBS=$(PnRDB_path)/PnRDB.a $(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a
 
 all: depend subsystem pnr_compiler
 
@@ -41,8 +42,8 @@ subsystem:
 	$(MAKE) -C $(router_path)
 	$(MAKE) -C $(cap_placer_path)
 
-pnr_compiler: $(OBJS) $(PnRDB_path)/PnRDB.a $(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a
-	$(CXX) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
+pnr_compiler: subsystem $(OBJS) 
+	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
 
 clean:
 	rm -rf *.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}

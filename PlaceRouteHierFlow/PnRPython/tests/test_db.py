@@ -2,7 +2,7 @@ import json
 from pnrdb import hierNode, PnRDBEncoder
 
 def test_A():
-    with open("../telescopic_ota-freeze.json","rt") as fp:
+    with open("tests/telescopic_ota-freeze.json","rt") as fp:
         j = json.load(fp)
         hN = hierNode(j)
 
@@ -13,6 +13,19 @@ def test_A():
         json.dump( j, fp=fp, indent=2)
 
     with open("__json","rt") as fp:
+        jj = json.load(fp)
+
+    assert j == jj
+
+def test_B():
+    with open("tests/switched_capacitor_filter-freeze.json","rt") as fp:
+        j = json.load(fp)
+        hN = hierNode(j)
+
+    with open("__json_B","wt") as fp:
+        json.dump( hN, fp=fp, cls=PnRDBEncoder, indent=2)
+
+    with open("__json_B","rt") as fp:
         jj = json.load(fp)
 
     assert j == jj
