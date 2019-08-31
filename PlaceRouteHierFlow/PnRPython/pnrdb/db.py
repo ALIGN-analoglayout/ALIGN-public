@@ -432,20 +432,3 @@ class PnRDBEncoder(json.JSONEncoder):
                 return {k : ( [f(x,v[1]) for x in a] if isinstance( v, tuple) and v[0] is list else f(a,v)) for (k,v) in fields for a in (getattr(obj,k),)}
 
         return json.JSONEncoder.default(self, obj)
-
-def test_A():
-    with open("../telescopic_ota-freeze.json","rt") as fp:
-        j = json.load(fp)
-        hN = hierNode(j)
-
-    with open("__json","wt") as fp:
-        json.dump( hN, fp=fp, cls=PnRDBEncoder, indent=2)
-
-    with open("__json2","wt") as fp:
-        json.dump( j, fp=fp, indent=2)
-
-    with open("__json","rt") as fp:
-        jj = json.load(fp)
-
-    assert j == jj
-
