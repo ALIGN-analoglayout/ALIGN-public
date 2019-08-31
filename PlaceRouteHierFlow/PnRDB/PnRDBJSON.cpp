@@ -236,7 +236,7 @@ namespace PnRDB {
     j["degree"] = v.degree;
     j["symCounterpart"] = v.symCounterpart;
     j["iter2SNetLsit"] = v.iter2SNetLsit;
-    j["connectNode>"] = json(v.connected);
+    j["connected"] = json(v.connected);
     j["priority"] = v.priority;
     j["segments"] = json(v.segments);
     j["interVias"] = json(v.interVias);
@@ -254,7 +254,7 @@ namespace PnRDB {
     j["degree"].get_to( v.degree);
     j["symCounterpart"].get_to( v.symCounterpart);
     j["iter2SNetLsit"].get_to( v.iter2SNetLsit);
-    j["connectNode>"].get_to( v.connected);
+    j["connected"].get_to( v.connected);
     j["priority"].get_to( v.priority);
     j["segments"].get_to( v.segments);
     j["interVias"].get_to( v.interVias);

@@ -235,6 +235,7 @@ class hierNode:
         self.SNets = [ SymmNet(x) for x in d["SNets"]]
         self.SPBlocks = [ SymmPairBlock(x) for x in d["SPBlocks"]]
         self.Preplace_blocks = [ Preplace(x) for x in d["Preplace_blocks"]]
+        self.Alignment_blocks = [ Alignment(x) for x in d["Alignment_blocks"]]
         self.Align_blocks = [ AlignBlock(x) for x in d["Align_blocks"]]
         self.Abument_blocks = [ Abument(x) for x in d["Abument_blocks"]]
         self.Match_blocks = [ MatchBlock(x) for x in d["Match_blocks"]]
@@ -251,7 +252,7 @@ structs = [(hierNode,[("isCompleted",None),
                       ("name",None),
                       ("gdsFile",None),
                       ("parent",(list,None)),
-                      ("Blocks", (list, block)),
+                      ("Blocks", (list, blockComplex)),
                       ("Nets", (list, net)),
                       ("Terminals", (list, terminal)),
                       ("Vdd", PowerGrid),
@@ -265,6 +266,7 @@ structs = [(hierNode,[("isCompleted",None),
                       ("SPBlocks", (list,SymmPairBlock)),
                       ("Preplace_blocks", (list,Preplace)),
                       ("Alignment_blocks", (list,Alignment)),
+                      ("Align_blocks", (list,AlignBlock)),
                       ("Abument_blocks", (list,Abument)),
                       ("Match_blocks", (list,MatchBlock)),
                       ("CC_Caps", (list,CCCap)),
@@ -432,10 +434,13 @@ class PnRDBEncoder(json.JSONEncoder):
                         print("leaf", k)
                         result[k] = getattr(obj,k)
                     elif isinstance( v, tuple) and v[0] is list:
-                        if v[1] is None:
-                            result[k] = [ x for x in getattr(obj,k)]
-                        else:
-                            result[k] = [ self.default(x) for x in getattr(obj,k)]
+                        result[k] = []
+                        for x in getattr(obj,k):
+                            if v[1] is None:
+                                result[k].append( x)
+                            else:
+                                assert isinstance( x, v[1])
+                                result[k].append( self.default(x))
                     else:
                         sub_obj = getattr(obj,k)
                         print(sub_obj)
@@ -457,12 +462,6 @@ def test_A():
 
     with open("__json","rt") as fp:
         jj = json.load(fp)
-
-    for k in range(5):
-        ia = j["Blocks"][k]["instance"][0]
-        ib = jj["Blocks"][k]["instance"][0]
-        assert ia["name"] == ib["name"]
-        assert ia == ib
 
     assert j == jj
 
