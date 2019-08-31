@@ -15,3 +15,5 @@ lcov -z ; \
 ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 2 0 > PnR.log && \
 lcov --capture --directory . --output-file coverage.info ; \
 genhtml coverage.info --output-directory coverage.out"
+
+#docker cp PnR:/PlaceRouteHierFlow
