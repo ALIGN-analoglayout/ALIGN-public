@@ -17,7 +17,7 @@ def test_A():
 
     assert j == jj
 
-def test_B():
+def skip_test_B():
     with open("tests/switched_capacitor_filter-freeze.json","rt") as fp:
         j = json.load(fp)
         hN = hierNode(j)
