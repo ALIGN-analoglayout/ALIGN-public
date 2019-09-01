@@ -2,8 +2,8 @@ import json
 
 from pnrdb import *
 
-def get_hN():
-    with open("tests/telescopic_ota-freeze.json","rt") as fp:
+def get_hN(fn="tests/telescopic_ota-freeze.json"):
+    with open(fn,"rt") as fp:
         hN = hierNode(json.load(fp))
         return hN
 
@@ -111,12 +111,12 @@ def gen_viewer_json( hN):
                 for con in pin.pinContacts:
                     add_terminal( n.name, con.metal, con.placedBox)
 
-                for con in blk.interMetals:
-                    add_terminal( n.name, con.metal, con.placedBox)
+#                for con in blk.interMetals:
+#                    add_terminal( n.name, con.metal, con.placedBox)
 
-                for via in blk.interVias:
-                    for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                        add_terminal( n.name, con.metal, con.placedBox)
+#                for via in blk.interVias:
+#                    for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
+#                        add_terminal( n.name, con.metal, con.placedBox)
 
             else:
                 term = hN.Terminals[c.iter]
@@ -147,4 +147,11 @@ def test_gen_viewer_json():
     d = gen_viewer_json( hN)
 
     with open("__viewer_json","wt") as fp:
+        json.dump( d, fp=fp, indent=2)
+
+def test_gen_viewer_json2():
+    hN = get_hN("tests/switched_capacitor_filter-freeze.json")
+    d = gen_viewer_json( hN)
+
+    with open("__viewer_json2","wt") as fp:
         json.dump( d, fp=fp, indent=2)
