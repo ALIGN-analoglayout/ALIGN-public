@@ -107,13 +107,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	      for (unsigned int i=0; i<2; ++i) {
 		auto& s = stackAry[i];
 		if(s.is_string()) {
-		  for(unsigned int k=0;k<DRC_info.Metal_info.size();++k) {
-		    if( DRC_info.Metal_info.at(k).name == s) {
-		      metal_stack_indices[i] = k;
-		      assert( metal_stack_indices[i] == DRC_info.Metalmap[s]);
-		      break;
-		    } 
-		  }
+		  metal_stack_indices[i] = DRC_info.Metalmap[s];
 		} else {
 		  cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
 		}
