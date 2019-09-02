@@ -417,6 +417,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
           DRC_info.Metal_info.push_back(it->second);
+	  cout << "Assign the metalmap[" << it->second.name << "] = " << DRC_info.Metal_info.size()-1 << endl;
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
@@ -448,24 +449,25 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_via.cover_u_P=times*lvencph;
             tmp_via.dist_ss=times*lspacex;
             tmp_via.dist_ss_y=times*lspacey;
-            std::set<int> viaMSet; 
-            std::set<int>::iterator vit;
-            std::set<int>::reverse_iterator rvit;
-            for(json::iterator sit=stackAry.begin(); sit!=stackAry.end(); ++sit) {
-              if(sit->is_string()) {
-                for(unsigned int k=0;k<DRC_info.Metal_info.size();++k) {
-                  if( DRC_info.Metal_info.at(k).name.compare(*sit)==0 ) {
-                    viaMSet.insert(k);
-                    break;
-                  } 
-                }
-              }
-            }
-            vit=viaMSet.begin();
-            tmp_via.lower_metal_index=(*vit);
-            rvit=viaMSet.rbegin();
-            tmp_via.upper_metal_index=(*rvit);
-            viaSet.insert( std::pair<int, PnRDB::via_info>(lnum, tmp_via) );
+
+	    {
+	      std::set<int> viaMSet; 
+
+	      for(json::iterator sit=stackAry.begin(); sit!=stackAry.end(); ++sit) {
+		if(sit->is_string()) {
+		  for(unsigned int k=0;k<DRC_info.Metal_info.size();++k) {
+		    if( DRC_info.Metal_info.at(k).name.compare(*sit)==0 ) {
+		      viaMSet.insert(k);
+		      break;
+		    } 
+		  }
+		}
+	      }
+	      tmp_via.lower_metal_index = *viaMSet.begin();
+	      tmp_via.upper_metal_index = *viaMSet.rbegin();
+	      
+	      viaSet.insert( std::pair<int, PnRDB::via_info>(lnum, tmp_via) );
+	    }
             //std::cout<<tmp_via.name<<std::endl;
             //std::cout<<tmp_via.layerNo<<std::endl;
             //std::cout<<tmp_via.width<<std::endl;
@@ -498,6 +500,11 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_viamodel.ViaIdx = i;
              temp_viamodel.LowerIdx = i;
              temp_viamodel.UpperIdx = i+1;
+
+	     const string& lm_name = DRC_info.Metal_info.at(temp_viamodel.LowerIdx).name;
+	     const string& um_name = DRC_info.Metal_info.at(temp_viamodel.UpperIdx).name;
+
+	     cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
              PnRDB::point temp_point;
              //LL
              temp_point.x = 0-DRC_info.Via_info[i].width/2;
