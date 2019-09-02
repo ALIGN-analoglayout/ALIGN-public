@@ -44,7 +44,6 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
       std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
   } else if( EndsWith( drname, ".json")) {
       this->ReadPDKJSON(path+"/"+drname);
-      //this->ReadDesignRule_jason(path+"/"+drname);
       std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
   } else {
       std::cout<<"PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): "<<drname<<std::endl;

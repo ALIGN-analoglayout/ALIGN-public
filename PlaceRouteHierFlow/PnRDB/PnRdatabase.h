@@ -129,10 +129,6 @@ class PnRdatabase
     PnRDB::designRule getDesignRule() const { return drData;}
     PnRDB::Drc_info getDrc_info() const {return DRC_info;}
 
-    bool ReadDesignRule_metal(string metal_name, vector<string>& jason_file, int& index, string &def, PnRDB::metal_info& temp_metal_info);
-    bool ReadDesignRule_via(string via_name, vector<string>& jason_file, int& index, string &def, PnRDB::via_info& temp_via_info);
-    void ReadDesignRule_jason(string drfile);
-
     // Interface for detail router II - wbxu
     void WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile);
     void PrintDesignRuleData();
