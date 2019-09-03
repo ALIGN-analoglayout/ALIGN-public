@@ -481,7 +481,7 @@ void GcellDetailRouter::create_detailrouter(){
 ///////// A_star
           A_star a_star(grid);
           std::cout<<"Detail Router check point 4"<<std::endl;
-          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, 2, 3);
 ///////// A_star
 
            std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
