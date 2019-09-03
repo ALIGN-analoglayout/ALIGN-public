@@ -172,4 +172,4 @@ def remove_duplicates( hN):
 
 def test_remove_duplicates():
     hN = get_hN()
-    cnv = remove_duplicates( hN)
+    remove_duplicates( hN)
