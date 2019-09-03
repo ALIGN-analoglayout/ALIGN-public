@@ -54,15 +54,15 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
 
 void GcellDetailRouter::printNetsInfo(){
 
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
 
       std::cout<<"Net name "<<Nets[i].netName<<std::endl;
           
       std::cout<<"Net pins"<<std::endl;
 
-      for(int j=0;j<Nets[i].connectedTile.size();j++){
+      for(unsigned int j=0;j<Nets[i].connectedTile.size();j++){
 
-            for(int k=0;k<Nets[i].connectedTile[j].size();k++){
+            for(unsigned int k=0;k<Nets[i].connectedTile[j].size();k++){
 
                 std::cout<<Nets[i].connectedTile[j][k]<<" ";
 
@@ -75,7 +75,7 @@ void GcellDetailRouter::printNetsInfo(){
      
       int ST_index = Nets[i].STindex;
 
-      for(int j=0;j<Nets[i].STs[ST_index].path.size();j++){
+      for(unsigned int j=0;j<Nets[i].STs[ST_index].path.size();j++){
 
            std::cout<<" ( "<<Nets[i].STs[ST_index].path[j].first<<" "<<Nets[i].STs[ST_index].path[j].second<<" ) ";
 
@@ -213,7 +213,7 @@ std::vector<RouterDB::Metal> GcellDetailRouter::CpSymPath(std::vector<RouterDB::
   std::vector<RouterDB::Metal> sym_path;
 
       
-     for(int j=0;j<temp_path.size();j++){
+     for(unsigned int j=0;j<temp_path.size();j++){
 
            RouterDB::Metal temp_metal = temp_path[j];
 
@@ -259,7 +259,7 @@ void GcellDetailRouter::create_detailrouter(){
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
   //end initial set
   //start detail router 
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
 
        //added for terminals
        CreatePlistTerminals(plist, this->Terminals);
@@ -294,14 +294,14 @@ void GcellDetailRouter::create_detailrouter(){
        std::cout<<"STs size "<<Nets[i].STs.size()<<std::endl;
       
        
-       for(int q=0;q<Nets[i].STs.size();q++){
+       for(unsigned int q=0;q<Nets[i].STs.size();q++){
            std::cout<<"STs path size "<<Nets[i].STs[q].path.size()<<std::endl;
           }
 
        std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
        std::pair<int,int> temp_global_path;
 
-       for(int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
+       for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
 
             temp_global_path.first = Nets[i].terminals[terminal_size];
             temp_global_path.second = Nets[i].terminals[terminal_size];
@@ -310,14 +310,14 @@ void GcellDetailRouter::create_detailrouter(){
           }
 
 
-       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < Nets.size()-1){
+       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
 
             int sym_ST_index = Nets[Nets[i].symCounterpart].STindex;
-            for(int j=0;j<Nets[Nets[i].symCounterpart].STs[sym_ST_index].path.size();j++){
+            for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].STs[sym_ST_index].path.size();j++){
                   global_path.push_back(Nets[Nets[i].symCounterpart].STs[sym_ST_index].path[j]);
                 }
              
-            for(int j=0;j<Nets[Nets[i].symCounterpart].terminals.size();j++){
+            for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].terminals.size();j++){
                   temp_global_path.first = Nets[Nets[i].symCounterpart].terminals[j];
                   temp_global_path.second = Nets[Nets[i].symCounterpart].terminals[j];
                   global_path.push_back(temp_global_path);
@@ -328,6 +328,8 @@ void GcellDetailRouter::create_detailrouter(){
 
        std::cout<<"Gcell Detail Router Check point 6"<<std::endl;
        Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
+       grid.Full_Connected_Vertex();
+       //grid.Check_Full_Connection_Grid();
 //////QQQ1 end of grid creation
        //grid.CheckVerticesTotal();
        //grid.CreateGridData();
@@ -355,7 +357,7 @@ void GcellDetailRouter::create_detailrouter(){
        std::cout<<"Gcell Detail Router Check point 7"<<std::endl;
        //CheckTile(Nets[i], Gcell);
 
-       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < Nets.size()-1){       
+       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
            sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
            if(sym_flag == 1){
 
@@ -380,7 +382,7 @@ void GcellDetailRouter::create_detailrouter(){
        std::cout<<"end check find pin"<<std::endl;
 
 //QQQQ
-       if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <Nets.size()-1){
+       if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
            
             RouterDB::point global_sym_gridll;
             RouterDB::point global_sym_gridur;
@@ -417,12 +419,12 @@ void GcellDetailRouter::create_detailrouter(){
        add_plist.resize(this->layerNo);
        //temp_source = temp_pins[0];
        
-       for(int j = 0;j<temp_pins[0].size();j++){
+       for(unsigned int j = 0;j<temp_pins[0].size();j++){
             temp_source.push_back(temp_pins[0][j]);
           }
 
        int source_lock = 0;
-       for(int j=1;j<temp_pins.size();j++){
+       for(unsigned int j=1;j<temp_pins.size();j++){
            //create dest
            std::cout<<"Working on dest "<<j<<std::endl;
            std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
@@ -450,13 +452,13 @@ void GcellDetailRouter::create_detailrouter(){
            //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
            grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
 
-           for(int pin_size = 0; pin_size<temp_source.size(); pin_size++){
+           for(unsigned int pin_size = 0; pin_size<temp_source.size(); pin_size++){
 
                std::cout<<"source rec ( "<<temp_source[pin_size].coord[0].x<<" "<<temp_source[pin_size].coord[0].y<<" ) ( "<<temp_source[pin_size].coord[1].x<<" "<<temp_source[pin_size].coord[1].y<<" ) "<<"metal index "<<temp_source[pin_size].metalIdx<<std::endl; 
 
               }
 
-           for(int pin_size = 0; pin_size<temp_dest.size(); pin_size++){
+           for(unsigned int pin_size = 0; pin_size<temp_dest.size(); pin_size++){
 
                std::cout<<"dest rec ( "<<temp_dest[pin_size].coord[0].x<<" "<<temp_dest[pin_size].coord[0].y<<" ) ( "<<temp_dest[pin_size].coord[1].x<<" "<<temp_dest[pin_size].coord[1].y<<" ) "<<"metal index "<<temp_dest[pin_size].metalIdx<<std::endl; 
 
@@ -467,15 +469,33 @@ void GcellDetailRouter::create_detailrouter(){
            grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y); //QQQQQto be fixed
 //what about this problem?????
            //Graph graph(grid, this->path_number);
+
+/*
+//////////dijstra
            Graph graph(grid);
            std::cout<<"Detail Router check point 4"<<std::endl;
            bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
+//////////dijstra
+*/
+
+///////// A_star
+          A_star a_star(grid);
+          std::cout<<"Detail Router check point 4"<<std::endl;
+          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+///////// A_star
+
            std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
-           int stop_flag = 0;
            std::cout<<"Detail Router check point 5"<<std::endl;
            std::vector<std::vector<RouterDB::Metal> > physical_path;
            if(pathMark) {
-           physical_path=graph.ConvertPathintoPhysical(grid);
+///////////dijstra
+          //physical_path=graph.ConvertPathintoPhysical(grid);
+///////////dijstra
+
+///////// A_star
+          physical_path=a_star.ConvertPathintoPhysical(grid);
+///////// A_star
+
            std::cout<<"Detail Router check point 6"<<std::endl;
            //lastmile connection source
            //check first point of physical path
@@ -513,7 +533,7 @@ void GcellDetailRouter::create_detailrouter(){
            //grid.ActivePointlist(sym_net_plist);
            std::cout<<"Detail Router check point 9.2"<<std::endl;
 
-           for(int p=0;p<temp_dest.size();p++){
+           for(unsigned int p=0;p<temp_dest.size();p++){
                  temp_source.push_back(temp_dest[p]);
               }
           }
@@ -783,7 +803,7 @@ void GcellDetailRouter::CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell){
 
   std::cout<<"Tile info"<<std::endl;
 
-  for(int i=0;i<tile_index.size();i++){
+  for(unsigned int i=0;i<tile_index.size();i++){
 
       std::cout<<"Path ( "<<Gcell.tiles_total[tile_index[i].first].x<<" "<<Gcell.tiles_total[tile_index[i].first].y<<" ) ( "<<Gcell.tiles_total[tile_index[i].second].x<<" "<<Gcell.tiles_total[tile_index[i].second].y<<" ) "<<std::endl;
       std::cout<<"Region ( "<<Gcell.tiles_total[tile_index[i].first].x - Gcell.tiles_total[tile_index[i].first].width/2<<" "<<Gcell.tiles_total[tile_index[i].first].y - Gcell.tiles_total[tile_index[i].first].height/2<<" ) ( "<<Gcell.tiles_total[tile_index[i].first].x + Gcell.tiles_total[tile_index[i].first].width/2<<" "<<Gcell.tiles_total[tile_index[i].first].y + Gcell.tiles_total[tile_index[i].first].height/2<<" ) "<<std::endl;
@@ -793,7 +813,7 @@ void GcellDetailRouter::CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell){
 
   std::cout<<"Terminal info"<<std::endl;
 
-  for(int i=0;i<temp_net.connected.size();i++){
+  for(unsigned int i=0;i<temp_net.connected.size();i++){
 
       if(temp_net.connected[i].type == RouterDB::TERMINAL and this->isTop){
 
@@ -821,7 +841,7 @@ void GcellDetailRouter::JudgeTileCoverage(std::vector<std::pair<int,int> > &tile
   //RouterDB::SinkData temp_sink;
   std::cout<<"Print Gcell Global Path"<<std::endl;
 
-  for(int i=0;i<tile_index.size();i++){
+  for(unsigned int i=0;i<tile_index.size();i++){
 
       unique_set.insert(tile_index[i].first);
       unique_set.insert(tile_index[i].second);
@@ -842,7 +862,7 @@ void GcellDetailRouter::JudgeTileCoverage(std::vector<std::pair<int,int> > &tile
    
      }
 
-  for(int i=0;i<tiles.size();i++){
+  for(unsigned int i=0;i<tiles.size();i++){
 
       RouterDB::point temp_point;
       RouterDB::SinkData temp_sink;
@@ -856,10 +876,10 @@ void GcellDetailRouter::JudgeTileCoverage(std::vector<std::pair<int,int> > &tile
       
      }
 
-   for(int i=0;i<temp_pins.size();i++){
+   for(unsigned int i=0;i<temp_pins.size();i++){
        int found_flag = 0;
-       for(int j=0;j<temp_pins[i].size();j++){
-           for(int k=0;k<tile_range.size();k++){
+       for(unsigned int j=0;j<temp_pins[i].size();j++){
+           for(unsigned int k=0;k<tile_range.size();k++){
 
                 int tile_found_flag=Tile_Cover_Contact(temp_pins[i][j], tile_range[k]);
                 if(tile_found_flag==1){found_flag=1;}
@@ -999,9 +1019,9 @@ std::vector<RouterDB::SinkData> GcellDetailRouter::FindCommon_Contact(std::vecto
 
   std::vector<RouterDB::SinkData> common_contact;
 
-  for(int i=0;i<temp_contact.size();i++){
+  for(unsigned int i=0;i<temp_contact.size();i++){
 
-       for(int j=0;j<sym_temp_contact.size();j++){
+       for(unsigned int j=0;j<sym_temp_contact.size();j++){
 
               RouterDB::SinkData dummy_contact = Sym_contact(sym_temp_contact[j], H, center);
 
@@ -1040,7 +1060,7 @@ int GcellDetailRouter::findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterD
 
   if(temp_pins.size()==sym_temp_pins.size()){  
 
-    for(int i=0;i<temp_pins.size();i++){
+    for(unsigned int i=0;i<temp_pins.size();i++){
 
         std::cout<<"check point 4"<<std::endl;
 
@@ -1085,15 +1105,15 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
 
    int sum = 0;
 
-   for(int i=0;i<temp_net.connected.size();i++){
+   for(unsigned int i=0;i<temp_net.connected.size();i++){
 
       std::vector<RouterDB::SinkData> temp_contacts;
 
       if(temp_net.connected[i].type == RouterDB::BLOCK){
          
-         int contact_number = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts.size();
+         unsigned int contact_number = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts.size();
 
-         for(int j=0;j<contact_number;j++){
+         for(unsigned int j=0;j<contact_number;j++){
             RouterDB::SinkData temp_contact;
             RouterDB::point temp_point;
             temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].placedLL.x;
@@ -1133,7 +1153,7 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
 
             if(Terminal_contact.size()>0){
                 Terminals[temp_net.connected[i].iter].termContacts.clear();
-                for(int k=0;k<Terminal_contact.size();k++){
+                for(unsigned int k=0;k<Terminal_contact.size();k++){
                     Terminals[temp_net.connected[i].iter].termContacts.push_back(Terminal_contact[k]);
                    }
                 std::cout<<"Success in terminals map"<<std::endl;
@@ -1277,11 +1297,11 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
 
   std::cout<<"start sort pins 1.2"<<std::endl;
 
-  for(int i=0;i<temp_Pin.size();i++){
+  for(unsigned int i=0;i<temp_Pin.size();i++){
       int temp_dis=INT_MAX;
-       for(int j=0;j<temp_Pin[i].size();j++){
+       for(unsigned int j=0;j<temp_Pin[i].size();j++){
             std::cout<<"temp_Pin coord size "<<temp_Pin[i][j].coord.size()<<std::endl;
-            for(int k=0;k<temp_label_point.size();k++){
+            for(unsigned int k=0;k<temp_label_point.size();k++){
                if(abs(temp_Pin[i][j].coord[0].x-temp_label_point[k].coord[0].x)+abs(temp_Pin[i][j].coord[0].y-temp_label_point[k].coord[0].y)<temp_dis){
                    temp_dis = abs(temp_Pin[i][j].coord[0].x-temp_label_point[k].coord[0].x)+abs(temp_Pin[i][j].coord[0].y-temp_label_point[k].coord[0].y);
                  }
@@ -1302,7 +1322,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
    std::cout<<"start sort pins 2"<<std::endl;
 
    vector<int> index;
-   for(int i=0;i<dis.size();i++){
+   for(unsigned int i=0;i<dis.size();i++){
        index.push_back(i);
       }
 
@@ -1311,8 +1331,8 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
 
    std::cout<<"start sort pins 3"<<std::endl;
 
-   for(int i=0;i<dis.size();i++){
-       for(int j=i+1;j<dis.size();j++){
+   for(unsigned int i=0;i<dis.size();i++){
+       for(unsigned int j=i+1;j<dis.size();j++){
             if(dis[i]>dis[j]){
                temp_dist=dis[i];
                dis[i] = dis[j];
@@ -1327,7 +1347,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
    std::cout<<"start sort pins 4"<<std::endl;
 
    std::vector<std::vector<RouterDB::SinkData> > Pin;
-   for(int i=0;i<dis.size();i++){
+   for(unsigned int i=0;i<dis.size();i++){
          Pin.push_back(temp_Pin[index[i]]);
       }
 /*
@@ -1354,11 +1374,11 @@ std::vector<RouterDB::Metal> GcellDetailRouter::findGlobalPath(RouterDB::Net tem
 
   std::vector<RouterDB::Metal> temp_metal;
   
-  for(int i=0;i<temp_net.seg.size();i++){
+  for(unsigned int i=0;i<temp_net.seg.size();i++){
 
      int chosenCand = temp_net.seg[i].chosenCand;
      if(chosenCand==-1) {continue;}
-     for(int j=0;j<temp_net.seg[i].candis[chosenCand].metals.size();j++){
+     for(unsigned int j=0;j<temp_net.seg[i].candis[chosenCand].metals.size();j++){
 
           temp_metal.push_back(temp_net.seg[i].candis[chosenCand].metals[j]);
 
@@ -1379,7 +1399,7 @@ void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > tem
   RouterDB::point Lpoint;
   RouterDB::point Upoint;
 
-  for(int i = 0;i<temp_net.path_metal.size();i++){
+  for(unsigned int i = 0;i<temp_net.path_metal.size();i++){
 
 
       if(temp_net.path_metal[i].LinePoint[0].x ==temp_net.path_metal[i].LinePoint[1].x){
@@ -1440,10 +1460,9 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
   //int temp_metal_metalidx = 5;
-  int point_flag; // 0 is ll, 1 is ur
+  int point_flag = 0; // 0 is ll, 1 is ur
 
   RouterDB::point source_point;
-  int source_metal;
 
   int dis = INT_MAX;
 
@@ -1451,7 +1470,7 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
      
      if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;} 
        
@@ -1558,8 +1577,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
   //int temp_metal_metalidx = 6;
 
   RouterDB::point source_point;
-  int source_metal;
-  int point_flag;
+  int point_flag = 0;
 
   int dis = INT_MAX;
 
@@ -1567,7 +1585,7 @@ void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Meta
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
      
      if(temp_source[i].coord[0].x<=temp_source[i].coord[1].x and temp_source[i].coord[0].y<=temp_source[i].coord[1].y){}else{std::cout<<"EEroor"<<std::endl;}  
        
@@ -1682,10 +1700,9 @@ void GcellDetailRouter::lastmile_source(std::vector<std::vector<RouterDB::Metal>
 
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
-  int point_flag; // 0 is ll, 1 is ur
+  int point_flag = 0; // 0 is ll, 1 is ur
 
   RouterDB::point source_point;
-  int source_metal;
 
   int dis = INT_MAX;
 
@@ -1693,7 +1710,7 @@ void GcellDetailRouter::lastmile_source(std::vector<std::vector<RouterDB::Metal>
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y){connected = 1;break;}
 
@@ -1859,8 +1876,7 @@ void GcellDetailRouter::lastmile_dest(std::vector<std::vector<RouterDB::Metal> >
   int temp_metal_metalidx = 6;
 
   RouterDB::point source_point;
-  int source_metal;
-  int point_flag;
+  int point_flag=0;
 
   int dis = INT_MAX;
 
@@ -1868,7 +1884,7 @@ void GcellDetailRouter::lastmile_dest(std::vector<std::vector<RouterDB::Metal> >
 
   int connected = 0;
 
-  for(int i =0;i<temp_source.size();i++){
+  for(unsigned int i =0;i<temp_source.size();i++){
        
        
      if(temp_point.x>=temp_source[i].coord[0].x and temp_point.y>=temp_source[i].coord[0].y and temp_point.x<=temp_source[i].coord[1].x and temp_point.y<=temp_source[i].coord[1].y){connected = 1;}
@@ -2051,9 +2067,16 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
   RouterDB::SinkData temp_sink;
   int width = 1;
 
-  for(int i=0;i<temp_path.size();i++){
+  unsigned int prime_path;
+  if((int)temp_path.size()>0){
+      prime_path = 1;
+     }else{
+      prime_path = 0;
+     }
 
-     for(int j=0;j<temp_path[i].size();j++){
+  for(unsigned int i=0;i<prime_path;i++){
+
+     for(unsigned int j=0;j<temp_path[i].size();j++){
            temp_sink.coord.clear();
            temp_sink.metalIdx = temp_path[i][j].MetalIdx;
            RouterDB::point Lpoint;
@@ -2106,9 +2129,9 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
 
 void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net){
 
-  for(int i=0;i<temp_path.size();i++){
+  for(unsigned int i=0;i<temp_path.size();i++){
        
-     for(int j=0;j<temp_path[i].size();j++){
+     for(unsigned int j=0;j<temp_path[i].size();j++){
 
          temp_net.path_metal.push_back(temp_path[i][j]);
      
@@ -2121,7 +2144,7 @@ void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > te
 
 void GcellDetailRouter::Physical_metal_via(){
   
-   for(int i=0;i<Nets.size();i++){
+   for(unsigned int i=0;i<Nets.size();i++){
              
            GetPhsical_Metal_Via(i);
      
@@ -2132,7 +2155,7 @@ void GcellDetailRouter::Physical_metal_via(){
 
 void GcellDetailRouter::GetPhsical_Metal_Via(int i){
   
-  for(int h=0;h<Nets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 
       Nets[i].path_metal[h].MetalRect.metal =  Nets[i].path_metal[h].MetalIdx;
       Nets[i].path_metal[h].MetalRect.placedCenter.x =( Nets[i].path_metal[h].LinePoint[0].x+Nets[i].path_metal[h].LinePoint[1].x)/2;
@@ -2181,9 +2204,9 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
   RouterDB::Via temp_via;
   std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
 
-  for(int h=0;h<Nets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
        int temp_metal_index = Nets[i].path_metal[h].MetalIdx;
-       for(int l=0;l<Nets[i].path_metal.size();l++){
+       for(unsigned int l=0;l<Nets[i].path_metal.size();l++){
 
             int next_metal_index = Nets[i].path_metal[l].MetalIdx;
 
@@ -2333,12 +2356,11 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
   std::vector<std::vector<RouterDB::point> > plist;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   //std::vector<RouterDB::point>
-  int mIdx, LLx, LLy, URx, URy;
+  int LLx, LLy, URx, URy;
   for(std::vector<RouterDB::Block>::iterator bit=Blocks.begin(); bit!=Blocks.end(); ++bit) {
     // 1. collect pin contacts on grids
     for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
       for(std::vector<RouterDB::contact>::iterator cit=pit->pinContacts.begin(); cit!=pit->pinContacts.end(); ++cit) {
-        mIdx=cit->metal;
         LLx=cit->placedLL.x;
         LLy=cit->placedLL.y;
         URx=cit->placedUR.x;
@@ -2351,24 +2373,20 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
           }
       }
       for(std::vector<RouterDB::Via>::iterator cit=pit->pinVias.begin(); cit!=pit->pinVias.end(); ++cit) {
-        mIdx=cit->UpperMetalRect.metal;
         LLx=cit->UpperMetalRect.placedLL.x;
         LLy=cit->UpperMetalRect.placedLL.y;
         URx=cit->UpperMetalRect.placedUR.x;
         URy=cit->UpperMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 2 "<<mIdx<<std::endl;
 
         if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
            
             Contacts.push_back(cit->UpperMetalRect);
           }
 
-        mIdx=cit->LowerMetalRect.metal;
         LLx=cit->LowerMetalRect.placedLL.x;
         LLy=cit->LowerMetalRect.placedLL.y;
         URx=cit->LowerMetalRect.placedUR.x;
         URy=cit->LowerMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 3 "<<mIdx<<std::endl;
 
         if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
             continue;
@@ -2381,12 +2399,10 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
-        mIdx=pit->metal;
         LLx=pit->placedLL.x;
         LLy=pit->placedLL.y;
         URx=pit->placedUR.x;
         URy=pit->placedUR.y;
-        //std::cout<<"check point createplistBlocks 4 "<<mIdx<<std::endl;
         //std::cout<<"LL ("<<LLx<<","<<LLy<<") UR ("<<URx<<","<<URy<<")"<<std::endl;
         
         if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
@@ -2398,24 +2414,20 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
         //std::cout<<"check point createplistBlocks 4.5 "<<std::endl;
     }
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        mIdx=pit->UpperMetalRect.metal;
         LLx=pit->UpperMetalRect.placedLL.x;
         LLy=pit->UpperMetalRect.placedLL.y;
         URx=pit->UpperMetalRect.placedUR.x;
         URy=pit->UpperMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 5 "<<mIdx<<std::endl;
         
         if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
            
             Contacts.push_back(pit->UpperMetalRect);
           }
 
-        mIdx=pit->LowerMetalRect.metal;
         LLx=pit->LowerMetalRect.placedLL.x;
         LLy=pit->LowerMetalRect.placedLL.y;
         URx=pit->LowerMetalRect.placedUR.x;
         URy=pit->LowerMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 6 "<<mIdx<<std::endl;
         
         if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
             continue;
@@ -2427,7 +2439,7 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
 
   }
 
-  for(int i=0;i<Contacts.size();i++){
+  for(unsigned int i=0;i<Contacts.size();i++){
 
         RouterDB::contact temp_sym_contact = SymContact(Contacts[i], H, center);
 
@@ -2436,7 +2448,6 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
      }    
 
    CreatePlistContact(plist, Sym_Contacts);
-   //InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, std::vector<std::vector<RouterDB::point> >& plist){
    InsertPlistToSet_x(Set_x, plist);
    set_plist = FindsetPlist(Set_x, symgridll, symgridur);
 
@@ -2455,7 +2466,6 @@ void GcellDetailRouter::CreatePlistContact(std::vector<std::vector<RouterDB::poi
         LLy=cit->placedLL.y;
         URx=cit->placedUR.x;
         URy=cit->placedUR.y;
-        //std::cout<<"check point createplistBlocks 1 "<<mIdx<<std::endl;
         ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
 
      }
@@ -2535,8 +2545,8 @@ void GcellDetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::p
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
 
-  for(int i=0;i<Terminals.size();i++){
-      for(int j=0;j<Terminals[i].termContacts.size();j++){
+  for(unsigned int i=0;i<Terminals.size();i++){
+      for(unsigned int j=0;j<Terminals[i].termContacts.size();j++){
           mIdx = Terminals[i].termContacts[j].metal;
           if(mIdx>=0){
              LLx = Terminals[i].termContacts[j].placedLL.x;
@@ -2560,8 +2570,8 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
   GetPhsical_Metal(physical_path);
   
   //here intervia is not included
-  for(int i=0;i<physical_path.size();i++){
-      for(int j=0;j<physical_path[i].size();j++){
+  for(unsigned int i=0;i<physical_path.size();i++){
+      for(unsigned int j=0;j<physical_path[i].size();j++){
           mIdx = physical_path[i][j].MetalIdx;
           LLx = physical_path[i][j].MetalRect.placedLL.x;
           LLy = physical_path[i][j].MetalRect.placedLL.y;
@@ -2574,7 +2584,7 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
   std::vector<RouterDB::contact> temp_via_contact;
   GetPhsical_Via_contacts(physical_path, temp_via_contact);
 
-  for(int i=0;i<temp_via_contact.size();i++){
+  for(unsigned int i=0;i<temp_via_contact.size();i++){
 
           mIdx = temp_via_contact[i].metal;
           LLx = temp_via_contact[i].placedLL.x;
@@ -2596,15 +2606,15 @@ void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB
   RouterDB::Via temp_via;
   std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
 
-  for(int i=0;i<physical_path.size();i++){
+  for(unsigned int i=0;i<physical_path.size();i++){
        
       std::vector<RouterDB::Metal> temp_path = physical_path[i];
 
-      for(int j=0;j<temp_path.size();j++){
+      for(unsigned int j=0;j<temp_path.size();j++){
 
            int temp_metal_index = temp_path[j].MetalIdx;
            
-           for(int h=0;h<temp_path.size();h++){
+           for(unsigned int h=0;h<temp_path.size();h++){
 
                int next_metal_index = temp_path[h].MetalIdx;
 
@@ -2752,7 +2762,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
 
 
   //RouterDB::point tmpP;
-  int mIdx, LLx, LLy, URx, URy;
+  int LLx, LLy, URx, URy;
 
   std::vector<RouterDB::contact> Contacts;
   std::vector<RouterDB::contact> Sym_Contacts; 
@@ -2760,15 +2770,14 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
   std::vector<std::vector<RouterDB::point> > plist;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; 
 
-  for(int k=0;k<Nets.size();k++){  
+  for(unsigned int k=0;k<Nets.size();k++){  
     
       std::vector<std::vector<RouterDB::Metal> > physical_path;
       physical_path.push_back(Nets[k].path_metal); 
       GetPhsical_Metal(physical_path);
       
-      for(int i=0;i<physical_path.size();i++){
-         for(int j=0;j<physical_path[i].size();j++){
-             mIdx = physical_path[i][j].MetalIdx;
+      for(unsigned int i=0;i<physical_path.size();i++){
+         for(unsigned int j=0;j<physical_path[i].size();j++){
              LLx = physical_path[i][j].MetalRect.placedLL.x;
              LLy = physical_path[i][j].MetalRect.placedLL.y;
              URx = physical_path[i][j].MetalRect.placedUR.x;
@@ -2786,9 +2795,8 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
       std::vector<RouterDB::contact> temp_via_contact;
       GetPhsical_Via_contacts(physical_path, temp_via_contact);
       
-      for(int i=0;i<temp_via_contact.size();i++){
+      for(unsigned int i=0;i<temp_via_contact.size();i++){
 
-           mIdx = temp_via_contact[i].metal;
            LLx = temp_via_contact[i].placedLL.x;
            LLy = temp_via_contact[i].placedLL.y;
            URx = temp_via_contact[i].placedUR.x;
@@ -2803,7 +2811,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
 
      }
     
-  for(int i=0;i<Contacts.size();i++){
+  for(unsigned int i=0;i<Contacts.size();i++){
 
         RouterDB::contact temp_sym_contact = SymContact(Contacts[i], H, center);
 
@@ -2824,8 +2832,8 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
 void GcellDetailRouter::GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal> > &physical_path){
 
   //via is not included here
-  for(int i=0;i<physical_path.size();i++){
-       for(int j=0;j<physical_path[i].size();j++){
+  for(unsigned int i=0;i<physical_path.size();i++){
+       for(unsigned int j=0;j<physical_path[i].size();j++){
             if(drc_info.Metal_info[physical_path[i][j].MetalIdx].direct == 1){
               if(physical_path[i][j].LinePoint[0].x<=physical_path[i][j].LinePoint[1].x){
                 physical_path[i][j].MetalRect.placedLL.x =  physical_path[i][j].LinePoint[0].x;
@@ -3045,7 +3053,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
   //including via
   //std::cout<<"Start NetToNodeNet"<<std::endl;
   
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
 
              PnRDB::Metal temp_metal;
              temp_metal.MetalIdx = net.path_metal[i].MetalIdx;
@@ -3074,7 +3082,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
 
      }
 
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
        PnRDB::Via temp_via;
        ConvertToViaPnRDB_Placed_Placed(temp_via,net.path_via[i]);
        HierNode.Nets[net_index].path_via.push_back(temp_via);
@@ -3087,17 +3095,17 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
 void GcellDetailRouter::NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net){
   //std::cout<<"Start NetToNodeInterMetal"<<std::endl;
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              HierNode.interMetals.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -3108,13 +3116,13 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
 
   //std::cout<<"Via"<<std::endl;
   //including via
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
       //std::cout<<"seg "<<i<<std::endl;
         PnRDB::contact temp_contact;
         ConvertToContactPnRDB_Placed_Origin(temp_contact, net.path_metal[i].MetalRect);
         HierNode.interMetals.push_back(temp_contact);
       }
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
              //std::cout<<"vias "<<j<<std::endl;
 
        PnRDB::Via temp_via;
@@ -3149,17 +3157,17 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).
     }
 
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              temp_pin.pinContacts.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -3168,14 +3176,14 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
         } 
      }
 
-  for(int i=0;i<net.path_metal.size();i++){
+  for(unsigned int i=0;i<net.path_metal.size();i++){
 
              // wbxu: placed field -> origin field [fixed]
       PnRDB::contact temp_contact;
       ConvertToContactPnRDB_Placed_Origin(temp_contact,net.path_metal[i].MetalRect);
       temp_pin.pinContacts.push_back(temp_contact);
      }
-  for(int i=0;i<net.path_via.size();i++){
+  for(unsigned int i=0;i<net.path_via.size();i++){
 
              // wbxu: placed field -> origin field [fixed]
       PnRDB::Via temp_via;
@@ -3195,18 +3203,18 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   HierNode.interMetals.clear();
   HierNode.interVias.clear();
 
-  for(int i=0;i<HierNode.Terminals.size();i++){
+  for(unsigned int i=0;i<HierNode.Terminals.size();i++){
       HierNode.Terminals[i].termContacts.clear();
      }
 
-  for(int i=0;i<HierNode.Nets.size();i++){
+  for(unsigned int i=0;i<HierNode.Nets.size();i++){
         HierNode.Nets[i].path_metal.clear();
         HierNode.Nets[i].path_via.clear();
      }
 
   //distinguish those two net
   //std::cout<<"Start ReturnHierNode"<<std::endl;
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
       std::cout<<i<<" ter? "<<Nets[i].isTerminal<<std::endl;
       if(Nets[i].isTerminal){
   // wbxu: not only nets should be put into NodeBlockPins, but also those pins connected to nets
@@ -3225,7 +3233,7 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
          std::cout<<"test net to InterMetal: end"<<std::endl;
         }
        
-       for(int j=0;j<HierNode.Nets.size();j++){
+       for(unsigned int j=0;j<HierNode.Nets.size();j++){
           if(HierNode.Nets[j].name == Nets[i].netName){
               HierNode.Nets.at(j).path_metal.clear();
               HierNode.Nets.at(j).path_via.clear();
@@ -3456,9 +3464,9 @@ void GcellDetailRouter::TerminalToNodeTerminal(PnRDB::hierNode& HierNode){
    //including via
    //includeing blockpin also
 
-  for(int i=0;i<this->Terminals.size();i++){
+  for(unsigned int i=0;i<this->Terminals.size();i++){
        //pins
-       for(int j=0;j<this->Terminals[i].termContacts.size();j++){
+       for(unsigned int j=0;j<this->Terminals[i].termContacts.size();j++){
              
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Placed(temp_contact,this->Terminals[i].termContacts[j]);
@@ -3477,7 +3485,7 @@ void GcellDetailRouter::BlockInterMetalToNodeInterMetal(PnRDB::hierNode& HierNod
    //including via
    //includeing blockpin also
 
-  for(int i=0;i<Blocks.size();i++){
+  for(unsigned int i=0;i<Blocks.size();i++){
 /*
        //pins
        for(int j=0;j<Blocks[i].pins.size();j++){
@@ -3500,14 +3508,14 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].pins[j].pinContacts[k
           }
 */
        //InternalMetal
-       for(int j=0;j<Blocks[i].InternalMetal.size();j++){
+       for(unsigned int j=0;j<Blocks[i].InternalMetal.size();j++){
             //to internal metal
              PnRDB::contact temp_contact;
              ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].InternalMetal[j]);
              HierNode.interMetals.push_back(temp_contact);
           }
        //via
-       for(int j=0;j<Blocks[i].InternalVia.size();j++){
+       for(unsigned int j=0;j<Blocks[i].InternalVia.size();j++){
             //to interal via
              PnRDB::Via temp_via;
              ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[i].InternalVia[j]);   

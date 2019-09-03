@@ -61,12 +61,13 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
+    DB.WriteDBJSON(current_node,opath+current_node.name+ ".db.json");
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort); // do placement and update data in current node
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    for(int lidx=0; lidx<nodeVec.size(); ++lidx) {
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       // Route each placement
       current_node=nodeVec[lidx];
       std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
@@ -126,6 +127,7 @@ int main(int argc, char** argv ){
       DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
+      DB.WriteDBJSON(current_node,opath+current_node.name+"_"+std::to_string(lidx) + ".db.json");
 
       DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
       DB.CheckinHierNode(idx, current_node);

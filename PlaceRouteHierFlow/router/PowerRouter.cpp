@@ -65,9 +65,9 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
   InsertPlistToSet_x(Set_net, netplist);
 
-  for(int i=0;i<PowerNets.size();i++){
+  for(unsigned int i=0;i<PowerNets.size();i++){
 
-       for(int j=0;j<PowerNets[i].pins.size();j++){
+       for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
            std::vector<std::vector<RouterDB::point> > add_plist;
            add_plist.resize(this->layerNo);
 
@@ -83,13 +83,15 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
               
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
-            grid.InactivePointlist(pinplist);
+            std::cout<<"start inactive plist"<<std::endl;
+            grid.InactivePointlist_Power(pinplist);
+            std::cout<<"End inactive plist"<<std::endl;
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
             //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.ActivateSourceDest();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, LL, UR);
-            grid.InactivePointlist(netplist);
+            grid.InactivePointlist_Power(netplist);
             //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
             grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
             grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
@@ -164,9 +166,9 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
 
 void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net){
 
-  for(int i=0;i<temp_path.size();i++){
+  for(unsigned int i=0;i<temp_path.size();i++){
        
-     for(int j=0;j<temp_path[i].size();j++){
+     for(unsigned int j=0;j<temp_path[i].size();j++){
 
          temp_net.path_metal.push_back(temp_path[i][j]);
      
@@ -181,7 +183,7 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
   RouterDB::SinkData temp_sink;
   RouterDB::point temp_point;
 
-  for(int i=0;i<temp_pin.pinContacts.size();i++){
+  for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
 
       temp_sink.coord.clear();
       temp_sink.metalIdx = temp_pin.pinContacts[i].metal;
@@ -197,14 +199,14 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
      }
 
   int dis = INT_MAX;
-  int index;
+  int index = -1;
   RouterDB::point source_point;
   RouterDB::point dest_point;
   //here we can use a set to find all the vdd in some region
-  for(int i=0;i<temp_source.size();i++){
+  for(unsigned int i=0;i<temp_source.size();i++){
       source_point.x = (temp_source[i].coord[0].x + temp_source[i].coord[1].x)/2;
       source_point.y = (temp_source[i].coord[0].y + temp_source[i].coord[1].y)/2;
-      for(int j=0;j<Vdd_grid.metals.size();j++){
+      for(unsigned int j=0;j<Vdd_grid.metals.size();j++){
           dest_point.x = (Vdd_grid.metals[j].LinePoint[0].x + Vdd_grid.metals[j].LinePoint[1].x)/2;
           dest_point.y = (Vdd_grid.metals[j].LinePoint[0].y + Vdd_grid.metals[j].LinePoint[1].y)/2;
           if(abs(source_point.x-dest_point.x)+abs(source_point.y-dest_point.y)<dis){
@@ -216,12 +218,12 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
      }
   
   temp_sink.coord.clear();
-  temp_sink.metalIdx = Vdd_grid.metals[index].MetalIdx;
-  temp_point.x = Vdd_grid.metals[index].MetalRect.placedLL.x;
-  temp_point.y = Vdd_grid.metals[index].MetalRect.placedLL.y;
+  temp_sink.metalIdx = Vdd_grid.metals.at(index).MetalIdx;
+  temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedLL.x;
+  temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedLL.y;
   temp_sink.coord.push_back(temp_point);
-  temp_point.x = Vdd_grid.metals[index].MetalRect.placedUR.x;
-  temp_point.y = Vdd_grid.metals[index].MetalRect.placedUR.y;
+  temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedUR.x;
+  temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedUR.y;
   temp_sink.coord.push_back(temp_point);
   temp_dest.push_back(temp_sink);
 
@@ -231,8 +233,8 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
   temp_ur.x = INT_MIN;
   temp_ur.y = INT_MIN;
 
-  for(int i=0;i<temp_dest.size();i++){
-     for(int j=0;j<temp_dest[i].coord.size();j++){
+  for(unsigned int i=0;i<temp_dest.size();i++){
+     for(unsigned int j=0;j<temp_dest[i].coord.size();j++){
          if(temp_dest[i].coord[j].x<temp_ll.x){temp_ll.x = temp_dest[i].coord[j].x;}
          if(temp_dest[i].coord[j].y<temp_ll.y){temp_ll.y = temp_dest[i].coord[j].y;}
          if(temp_dest[i].coord[j].x>temp_ur.x){temp_ur.x = temp_dest[i].coord[j].x;}
@@ -240,8 +242,8 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
         }
      }
 
-  for(int i=0;i<temp_source.size();i++){
-     for(int j=0;j<temp_source[i].coord.size();j++){
+  for(unsigned int i=0;i<temp_source.size();i++){
+     for(unsigned int j=0;j<temp_source[i].coord.size();j++){
          if(temp_source[i].coord[j].x<temp_ll.x){temp_ll.x = temp_source[i].coord[j].x;}
          if(temp_source[i].coord[j].y<temp_ll.y){temp_ll.y = temp_source[i].coord[j].y;}
          if(temp_source[i].coord[j].x>temp_ur.x){temp_ur.x = temp_source[i].coord[j].x;}
@@ -269,7 +271,7 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
 
 void PowerRouter::Physical_metal_via(){
   
-   for(int i=0;i<PowerNets.size();i++){
+   for(unsigned int i=0;i<PowerNets.size();i++){
              
            GetPhsical_Metal_Via(i);
      
@@ -280,7 +282,7 @@ void PowerRouter::Physical_metal_via(){
 void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
   
   //metals
-  for(int i=0;i<temp_grid.metals.size();i++){
+  for(unsigned int i=0;i<temp_grid.metals.size();i++){
 
       temp_grid.metals[i].MetalRect.metal =  temp_grid.metals[i].MetalIdx;
       temp_grid.metals[i].MetalRect.placedCenter.x =( temp_grid.metals[i].LinePoint[0].x+temp_grid.metals[i].LinePoint[1].x)/2;
@@ -326,7 +328,7 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
      }
 
   //vias
-  for(int i=0;i<temp_grid.vias.size();i++){
+  for(unsigned int i=0;i<temp_grid.vias.size();i++){
 
        //temp_via.position = PowerNets[i].path_metal[h].LinePoint[1];
        //temp_via.model_index = temp_metal_index;
@@ -361,7 +363,7 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
 
 void PowerRouter::GetPhsical_Metal_Via(int i){
   
-  for(int h=0;h<PowerNets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<PowerNets[i].path_metal.size();h++){
 
       PowerNets[i].path_metal[h].MetalRect.metal =  PowerNets[i].path_metal[h].MetalIdx;
       PowerNets[i].path_metal[h].MetalRect.placedCenter.x =( PowerNets[i].path_metal[h].LinePoint[0].x+PowerNets[i].path_metal[h].LinePoint[1].x)/2;
@@ -410,9 +412,9 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
   RouterDB::Via temp_via;
   std::set<RouterDB::Via, RouterDB::ViaComp> set_via;
 
-  for(int h=0;h<PowerNets[i].path_metal.size();h++){
+  for(unsigned int h=0;h<PowerNets[i].path_metal.size();h++){
        int temp_metal_index = PowerNets[i].path_metal[h].MetalIdx;
-       for(int l=0;l<PowerNets[i].path_metal.size();l++){
+       for(unsigned int l=0;l<PowerNets[i].path_metal.size();l++){
 
             int next_metal_index = PowerNets[i].path_metal[l].MetalIdx;
 
@@ -560,7 +562,7 @@ void PowerRouter::CreatePowerGridDrc_info(){
   int Power_width = 1; 
   PowerGrid_Drc_info = drc_info;
   
-  for(int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
        PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
@@ -585,7 +587,7 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   getPowerNetData(node);//Power net 
   std::cout<<"Checkpoint get Data 7"<<std::endl;
 
-  for(int i=0;i<drc_info.Metal_info.size();i++){
+  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       utilization.push_back(0.1); 
      }
   std::cout<<"Checkpoint get Data 8"<<std::endl;
@@ -613,7 +615,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   grid_scale = 1;
 	
   //For blocks	
-  for(int i=0;i<node.Blocks.size();i++){
+  for(unsigned int i=0;i<node.Blocks.size();i++){
       RouterDB::Block temp_block;
       int slcNumber = node.Blocks[i].selectedInstance;
       temp_block.blockName=node.Blocks[i].instance[slcNumber].name;
@@ -634,19 +636,19 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       //temp_block.originUR.x=node.Blocks[i].instance.originBox.UR.x;
       //temp_block.originUR.y=node.Blocks[i].instance.originBox.UR.y;
 
-      for(int j=0;j<node.Blocks[i].instance[slcNumber].blockPins.size();j++){
+      for(unsigned int j=0;j<node.Blocks[i].instance[slcNumber].blockPins.size();j++){
           RouterDB::Pin temp_pin;
           ConvertPin(temp_pin,node.Blocks[i].instance[slcNumber].blockPins[j]);
           temp_block.pins.push_back(temp_pin);
       }
 
-   for(int j=0;j<node.Blocks[i].instance[slcNumber].interMetals.size();j++){
+   for(unsigned int j=0;j<node.Blocks[i].instance[slcNumber].interMetals.size();j++){
        RouterDB::contact temp_metal;
        ConvertContact(temp_metal,node.Blocks[i].instance[slcNumber].interMetals[j]);
        temp_block.InternalMetal.push_back(temp_metal);
       }
 	
-   for(int j=0;j<node.Blocks[i].instance[slcNumber].interVias.size();j++){
+   for(unsigned int j=0;j<node.Blocks[i].instance[slcNumber].interVias.size();j++){
        RouterDB::Via temp_via;
        ConvertVia(temp_via,node.Blocks[i].instance[slcNumber].interVias[j]);
        temp_block.InternalVia.push_back(temp_via);
@@ -660,12 +662,12 @@ void PowerRouter::getNetData(PnRDB::hierNode& node){
 	
   //For net
 
-  for(int i=0;i<node.Nets.size();i++){
+  for(unsigned int i=0;i<node.Nets.size();i++){
       RouterDB::Net temp_net;
       temp_net.netName = node.Nets[i].name;
       //temp_net.shielding = node.Nets[i].
       //path_metal
-      for(int j=0;j<node.Nets[i].path_metal.size();j++){
+      for(unsigned int j=0;j<node.Nets[i].path_metal.size();j++){
           RouterDB::Metal temp_metal;
           std::cout<<"getNetData check point 1"<<std::endl;
           ConvertMetal(temp_metal,node.Nets[i].path_metal[j]);
@@ -674,7 +676,7 @@ void PowerRouter::getNetData(PnRDB::hierNode& node){
          }
       
       //path via
-      for(int j=0;j<node.Nets[i].path_via.size();j++){
+      for(unsigned int j=0;j<node.Nets[i].path_via.size();j++){
           RouterDB::Via temp_via;
           std::cout<<"getNetData check point 3"<<std::endl;
           ConvertVia(temp_via,node.Nets[i].path_via[j]); 
@@ -696,13 +698,13 @@ void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
   //Vdd_grid
   Vdd_grid.power = node.Vdd.power;
 
-  for(int i =0;i<node.Vdd.metals.size();i++){
+  for(unsigned int i =0;i<node.Vdd.metals.size();i++){
        RouterDB::Metal temp_metal;
        ConvertMetal(temp_metal, node.Vdd.metals[i]);
        Vdd_grid.metals.push_back(temp_metal);
      }
 
-  for(int i =0;i<node.Vdd.vias.size();i++){
+  for(unsigned int i =0;i<node.Vdd.vias.size();i++){
        RouterDB::Via temp_via;
        ConvertVia(temp_via, node.Vdd.vias[i]);
        Vdd_grid.vias.push_back(temp_via);
@@ -711,13 +713,13 @@ void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
   //Gnd_grid
   Gnd_grid.power = node.Gnd.power;
 
-  for(int i =0;i<node.Gnd.metals.size();i++){
+  for(unsigned int i =0;i<node.Gnd.metals.size();i++){
        RouterDB::Metal temp_metal;
        ConvertMetal(temp_metal, node.Gnd.metals[i]);
        Gnd_grid.metals.push_back(temp_metal);
      }
 
-  for(int i =0;i<node.Gnd.vias.size();i++){
+  for(unsigned int i =0;i<node.Gnd.vias.size();i++){
        RouterDB::Via temp_via;
        ConvertVia(temp_via, node.Gnd.vias[i]);
        Gnd_grid.vias.push_back(temp_via);
@@ -727,7 +729,7 @@ void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
 
 void PowerRouter::getTerminalData(PnRDB::hierNode& node){
 
-  for(int i=0;i<node.Terminals.size();i++){
+  for(unsigned int i=0;i<node.Terminals.size();i++){
       RouterDB::terminal temp_terminal;
       ConvertTerminal(temp_terminal, node.Terminals[i]);
       Terminals.push_back(temp_terminal);
@@ -739,20 +741,20 @@ void PowerRouter::getPowerNetData(PnRDB::hierNode& node){
 	
   //For power net
 
-  for(int i=0;i<node.PowerNets.size();i++){
+  for(unsigned int i=0;i<node.PowerNets.size();i++){
       RouterDB::PowerNet temp_net;
       temp_net.netName = node.PowerNets[i].name;
       //temp_net.shielding = node.Nets[i].shielding;
       temp_net.power = node.PowerNets[i].power;
       //path_metal
-      for(int j=0;j<node.PowerNets[i].path_metal.size();j++){
+      for(unsigned int j=0;j<node.PowerNets[i].path_metal.size();j++){
           RouterDB::Metal temp_metal;
           ConvertMetal(temp_metal, node.PowerNets[i].path_metal[j]);
           temp_net.path_metal.push_back(temp_metal);          
          }
       
       //path via
-      for(int j=0;j<node.PowerNets[i].path_via.size();j++){
+      for(unsigned int j=0;j<node.PowerNets[i].path_via.size();j++){
           RouterDB::Via temp_via;
           ConvertVia(temp_via,node.PowerNets[i].path_via[j]);
           temp_net.path_via.push_back(temp_via);          
@@ -761,7 +763,7 @@ void PowerRouter::getPowerNetData(PnRDB::hierNode& node){
 
       //pins
 
-      for(int j=0;j<node.PowerNets[i].Pins.size();j++){
+      for(unsigned int j=0;j<node.PowerNets[i].Pins.size();j++){
           RouterDB::Pin temp_pin;
           ConvertPin(temp_pin, node.PowerNets[i].Pins[j]);
           temp_net.pins.push_back(temp_pin);
@@ -778,7 +780,7 @@ void PowerRouter::ConvertTerminal(RouterDB::terminal& temp_terminal, PnRDB::term
   temp_terminal.name = pnr_terminal.name;
   temp_terminal.type = pnr_terminal.type;
   temp_terminal.netIter = pnr_terminal.netIter;
-  for(int i=0; i<pnr_terminal.termContacts.size();i++){
+  for(unsigned int i=0; i<pnr_terminal.termContacts.size();i++){
        RouterDB::contact temp_contact;
        ConvertContact(temp_contact, pnr_terminal.termContacts[i]);
        temp_terminal.termContacts.push_back(temp_contact);
@@ -900,7 +902,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
   //RouterDB::Pin temp_pin;
   temp_pin.pinName=pnr_pin.name;
   temp_pin.netIter=pnr_pin.netIter;
-  for(int k=0;k<pnr_pin.pinContacts.size();k++){
+  for(unsigned int k=0;k<pnr_pin.pinContacts.size();k++){
        RouterDB::contact temp_contact;
        if(drc_info.Metalmap.find(pnr_pin.pinContacts[k].metal)!=drc_info.Metalmap.end()){
            temp_contact.metal=drc_info.Metalmap[pnr_pin.pinContacts[k].metal];
@@ -917,7 +919,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
       }
           
 
-  for(int k=0;k<pnr_pin.pinVias.size();k++){
+  for(unsigned int k=0;k<pnr_pin.pinVias.size();k++){
         RouterDB::Via temp_via;
         temp_via.model_index = pnr_pin.pinVias[k].model_index;
         temp_via.position.x = pnr_pin.pinVias[k].placedpos.x;
@@ -971,8 +973,8 @@ void PowerRouter::CreatePlistNets(std::vector<std::vector<RouterDB::point> >& pl
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
   //here via is not included
-  for(int i=0;i<Nets.size();i++){
-      for(int j=0;j<Nets[i].path_metal.size();j++){
+  for(unsigned int i=0;i<Nets.size();i++){
+      for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
 
            mIdx = Nets[i].path_metal[j].MetalIdx;
            LLx = Nets[i].path_metal[j].MetalRect.placedLL.x;
@@ -991,8 +993,8 @@ void PowerRouter::CreatePlistPowerNets(std::vector<std::vector<RouterDB::point> 
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
   //here via is not included
-  for(int i=0;i<Nets.size();i++){
-      for(int j=0;j<Nets[i].path_metal.size();j++){
+  for(unsigned int i=0;i<Nets.size();i++){
+      for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
 
            mIdx = Nets[i].path_metal[j].MetalIdx;
            LLx = Nets[i].path_metal[j].MetalRect.placedLL.x;
@@ -1011,8 +1013,8 @@ void PowerRouter::CreatePlistPowerGrid(std::vector<std::vector<RouterDB::point> 
   //RouterDB::point tmpP;
   //int mIdx, LLx, LLy, URx, URy;
   //here via is not included
-  //for(int i=0;i<Nets.size();i++){
-      for(int j=0;j<Nets.metals.size();j++){
+  //for(unsigned int i=0;i<Nets.size();i++){
+      for(unsigned int j=0;j<Nets.metals.size();j++){
 
            int mIdx = Nets.metals[j].MetalIdx;
            int LLx = Nets.metals[j].MetalRect.placedLL.x;
@@ -1032,7 +1034,7 @@ void PowerRouter::ConvertToMetalPnRDB_Placed_Placed(PnRDB::Metal &temp_metal,Rou
   //to placed or origin, it's problem QQQQ
   temp_metal.MetalIdx = router_metal.MetalIdx;
   temp_metal.width = router_metal.width;
-  for(int i=0;i<router_metal.LinePoint.size();i++){
+  for(unsigned int i=0;i<router_metal.LinePoint.size();i++){
       PnRDB::point temp_point;
       temp_point.x = router_metal.LinePoint[i].x;
       temp_point.y = router_metal.LinePoint[i].y;
@@ -1047,25 +1049,25 @@ void PowerRouter::ConvertToMetalPnRDB_Placed_Placed(PnRDB::Metal &temp_metal,Rou
 void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
 
 //vdd
-  for(int i=0;i<Vdd_grid.metals.size();i++){
+  for(unsigned int i=0;i<Vdd_grid.metals.size();i++){
       PnRDB::Metal temp_metal;
       ConvertToMetalPnRDB_Placed_Placed(temp_metal,Vdd_grid.metals[i]);
       node.Vdd.metals.push_back(temp_metal);
      }
 
-  for(int i=0;i<Vdd_grid.vias.size();i++){
+  for(unsigned int i=0;i<Vdd_grid.vias.size();i++){
       PnRDB::Via temp_via;
       ConvertToViaPnRDB_Placed_Placed(temp_via,Vdd_grid.vias[i]);
       node.Vdd.vias.push_back(temp_via);
      }
 //Gnd
-  for(int i=0;i<Gnd_grid.metals.size();i++){
+  for(unsigned int i=0;i<Gnd_grid.metals.size();i++){
       PnRDB::Metal temp_metal;
       ConvertToMetalPnRDB_Placed_Placed(temp_metal,Gnd_grid.metals[i]);
       node.Gnd.metals.push_back(temp_metal);
      }
 
-  for(int i=0;i<Gnd_grid.vias.size();i++){
+  for(unsigned int i=0;i<Gnd_grid.vias.size();i++){
       PnRDB::Via temp_via;
       ConvertToViaPnRDB_Placed_Placed(temp_via,Gnd_grid.vias[i]);
       node.Gnd.vias.push_back(temp_via);
@@ -1076,20 +1078,20 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
 
 void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
 
-  for(int i=0;i<PowerNets.size();i++){
+  for(unsigned int i=0;i<PowerNets.size();i++){
       
       int index=-1;
-      for(int j=0;j<node.PowerNets.size();j++){
+      for(unsigned int j=0;j<node.PowerNets.size();j++){
            if(PowerNets[i].netName == node.PowerNets[j].name){index = j; break;}
          }
       if (index!=-1) {
-      for(int j=0;j<PowerNets[i].path_metal.size();j++){
+      for(unsigned int j=0;j<PowerNets[i].path_metal.size();j++){
           PnRDB::Metal temp_metal;
           ConvertToMetalPnRDB_Placed_Placed(temp_metal,PowerNets[i].path_metal[j]);
           node.PowerNets[index].path_metal.push_back(temp_metal);
          }
 
-      for(int j=0;j<PowerNets[i].path_via.size();j++){
+      for(unsigned int j=0;j<PowerNets[i].path_via.size();j++){
            PnRDB::Via temp_via;
            ConvertToViaPnRDB_Placed_Placed(temp_via,PowerNets[i].path_via[j]);
            node.PowerNets[index].path_via.push_back(temp_via);

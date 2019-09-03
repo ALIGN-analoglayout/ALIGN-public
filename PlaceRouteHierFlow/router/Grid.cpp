@@ -1,6 +1,7 @@
 #include "Grid.h"
+#include <cassert>
 
-    Grid::Grid(const Grid& other):total2graph(other.total2graph), graph2total(other.graph2total), vertices_total(other.vertices_total), vertices_graph(other.vertices_graph), Start_index_metal_vertices(other.Start_index_metal_vertices), End_index_metal_vertices(other.End_index_metal_vertices), Source(other.Source), Dest(other.Dest), SourceGraph(other.SourceGraph), DestGraph(other.DestGraph), x_unit(other.x_unit), y_unit(other.y_unit), x_min(other.x_min), y_min(other.y_min), routeDirect(other.routeDirect), LL(other.LL), UR(other.UR), GridLL(other.GridLL), GridUR(other.GridUR), drc_info(other.drc_info), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), grid_scale(other.grid_scale), layerNo(other.layerNo), vertices_total_map(other.vertices_total_map) { };
+    Grid::Grid(const Grid& other):total2graph(other.total2graph), graph2total(other.graph2total), vertices_total(other.vertices_total), vertices_graph(other.vertices_graph), Start_index_metal_vertices(other.Start_index_metal_vertices), End_index_metal_vertices(other.End_index_metal_vertices), Source(other.Source), Dest(other.Dest), SourceGraph(other.SourceGraph), DestGraph(other.DestGraph), x_unit(other.x_unit), y_unit(other.y_unit), x_min(other.x_min), y_min(other.y_min), routeDirect(other.routeDirect), LL(other.LL), UR(other.UR), GridLL(other.GridLL), GridUR(other.GridUR), vertices_total_map(other.vertices_total_map), drc_info(other.drc_info), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), grid_scale(other.grid_scale), layerNo(other.layerNo) { };
 //Grid::Grid(const Grid& other) {
 //  this->total2graph=other.total2graph;
 //  this->graph2total=other.graph2total;
@@ -59,15 +60,106 @@ Grid& Grid::operator= (const Grid& other) {
   return *this;
 }
 
+void Grid::Check_Full_Connection_Grid(){
+
+  for(int i=0;i<(int) vertices_total_full_connected.size();i++){
+
+        int east_error = 0;
+        int west_error = 0;
+        int south_error = 0;
+        int north_error = 0;
+
+        int east_empty = 0;
+        int west_empty = 0;
+        int south_empty = 0;
+        int north_empty = 0;
+
+        if(drc_info.Metal_info[vertices_total_full_connected[i].metal].direct==0){
+
+             if( (int) vertices_total_full_connected[i].east.size()>0){
+                 if((int) vertices_total_full_connected[i].east.size()>1){
+                      east_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].east[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
+                      east_error = 1;
+                    }
+               }else{
+                      east_empty = 1;
+               }
+
+             if((int) vertices_total_full_connected[i].west.size()>0){
+
+                 if( (int) vertices_total_full_connected[i].west.size()>1){
+                      west_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].west[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
+                      west_error = 1;
+                    }
+ 
+               }else{
+                      west_empty = 1;
+               }
+
+          }else{
+
+             if((int) vertices_total_full_connected[i].south.size()>0){
+                 if( (int) vertices_total_full_connected[i].south.size()>1){
+                      south_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].south[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
+                      south_error = 1;
+                    }
+               }else{
+                      south_empty = 1;
+               }
+
+             if((int) vertices_total_full_connected[i].north.size()>0){
+
+                 if( (int) vertices_total_full_connected[i].north.size()>1){
+                      north_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].north[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
+                      north_error = 1;
+                    }
+ 
+               }else{
+                      south_empty = 1;
+               }
+
+
+          }
+
+          if( east_error == 0 and west_error==0 and south_error ==0 and north_error ==0 and east_empty ==0 and west_empty ==0 and south_empty ==0 and north_empty ==0 ){
+
+            }else{
+
+               std::cout<<"vertices full information, index "<<i;   
+               if(east_error==1){std::cout<<" east_error ";}  
+               if(west_error==1){std::cout<<" west_error ";} 
+               if(south_error==1){std::cout<<" south_error ";} 
+               if(north_error==1){std::cout<<" north_error ";} 
+               if(east_empty==1){std::cout<<" east_empty ";} 
+               if(west_empty==1){std::cout<<" west_empty ";} 
+               if(south_empty==1){std::cout<<" south_empty ";} 
+               if(north_empty==1){std::cout<<" north_empty ";}
+               std::cout<<std::endl; 
+               
+            }
+           
+           
+         
+      }
+}
+
 
 void Grid::CreateGridData(){
 
   std::ofstream matlabfile;
   matlabfile.open("Grid.txt");
 
-  for(int i=0;i<vertices_total.size();i++){
+  for(unsigned int i=0;i<vertices_total.size();i++){
 
-      for(int j=0;j<vertices_total[i].north.size();j++){
+      for(unsigned int j=0;j<vertices_total[i].north.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].north[j]].active){
 
@@ -90,7 +182,7 @@ void Grid::CreateGridData(){
              }
           }
 
-      for(int j=0;j<vertices_total[i].south.size();j++){
+      for(unsigned int j=0;j<vertices_total[i].south.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].south[j]].active){
 
@@ -114,7 +206,7 @@ void Grid::CreateGridData(){
          
           }
 
-      for(int j=0;j<vertices_total[i].west.size();j++){
+      for(unsigned int j=0;j<vertices_total[i].west.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].west[j]].active){
 
@@ -138,7 +230,7 @@ void Grid::CreateGridData(){
          
           }
 
-      for(int j=0;j<vertices_total[i].east.size();j++){
+      for(unsigned int j=0;j<vertices_total[i].east.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].east[j]].active){
 
@@ -229,7 +321,40 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
   for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
     int mm=it->metal;
     RouterDB::point p; p.x=it->x; p.y=it->y;
-    if(plist.at(mm).find(p)!=plist.at(mm).end()) {it->active=false;}
+    if(plist.at(mm).find(p)!=plist.at(mm).end()) {
+       it->active=false;
+      int via_integ = 2;
+      int next_index = it->index+1;
+      int history_index = it->index-1;
+      if(drc_info.Metal_info[it->metal].direct==1){//h
+         int via_space = -drc_info.Via_model[it->metal].LowerRect[0].x;
+         if(next_index >= 0 and next_index<(int)vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].y == it->y and abs(vertices_total[next_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+            vertices_total[next_index].active=false;
+           }
+         if(history_index >= 0 and history_index<(int)vertices_total.size() and vertices_total[history_index].metal == it->metal and vertices_total[history_index].y == it->y and abs(vertices_total[history_index].x-it->x)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+            vertices_total[history_index].active=false;
+           }
+        }else{//v
+         int via_space = -drc_info.Via_model[it->metal].LowerRect[0].y;
+         if(next_index >=0 and next_index<(int)vertices_total.size() and vertices_total[next_index].metal == it->metal and vertices_total[next_index].x == it->x and abs(vertices_total[next_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+            vertices_total[next_index].active=false;
+           }
+         if(history_index >=0 and history_index<(int)vertices_total.size() and vertices_total[history_index].metal == it->metal and vertices_total[history_index].x == it->x and abs(vertices_total[history_index].y-it->y)<= drc_info.Metal_info[it->metal].dist_ee + via_integ*via_space){
+            vertices_total[history_index].active=false;
+           }
+        }
+
+      }
+  }
+}
+
+void Grid::InactivePointlist_Power(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist) {
+  for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
+    int mm=it->metal;
+    RouterDB::point p; p.x=it->x; p.y=it->y;
+    if(plist.at(mm).find(p)!=plist.at(mm).end()) {
+       it->active=false;
+      }
   }
 }
 
@@ -343,7 +468,7 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
   new_start.clear(); new_start.resize(this->layerNo, 0);
   new_end.clear(); new_end.resize(this->layerNo, -1);
   // a. copy vertices from old list to new one, build mapping
-  for(int i=0; i<(int)old_vertices.size(); i++) {
+  for(unsigned int i=0; i<old_vertices.size(); i++) {
     if(old_vertices.at(i).active) {
       if(old_vertices.at(i).x>=LLx and old_vertices.at(i).x<=URx and old_vertices.at(i).y>=LLy and old_vertices.at(i).y<=URy) {
         new_vertices.push_back(old_vertices.at(i));
@@ -356,7 +481,7 @@ void Grid::ReduceGrid(std::vector<RouterDB::vertex>& old_vertices, std::vector<R
   std::vector<int> tmpv; 
   RouterDB::point tmpp;
   int preMetal=-2;
-  for(int i=0;i<(int)new_vertices.size();i++) {
+  for(unsigned int i=0;i<new_vertices.size();i++) {
     tmpp.x=new_vertices.at(i).x; tmpp.y=new_vertices.at(i).y;
     if(new_vertices.at(i).metal>=0) {
     new_vertices_map.at(new_vertices.at(i).metal).insert( std::pair<RouterDB::point, int>(tmpp, i) ); // improve runtime of up/down edges - [wbxu: 20190505]
@@ -674,7 +799,7 @@ void Grid::GetGlobalRouteRange(int mdx, int pLLx, int pLLy, int pURx, int pURy, 
 void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> >& Vset, std::vector< std::set<RouterDB::point, RouterDB::pointYXComp> >& Hset, int mdx, int pLLx, int pLLy, int pURx, int pURy, int Lmetal, int Hmetal) {
   if(this->drc_info.Metal_info.at(mdx).direct==0) { // if vertical layer
     int curlayer_unit=this->x_unit.at(mdx); // current layer direction: vertical
-    int nexlayer_unit; // neighboring layer direction: horizontal
+    int nexlayer_unit=1; // neighboring layer direction: horizontal
     int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLx= curlayer_unit * (int)ceil(double(pLLx)/curlayer_unit);  // X lower boudary
     gURx= curlayer_unit * (int)floor(double(pURx)/curlayer_unit); // X upper boudary
@@ -697,6 +822,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       gURy=(LLy_1>LLy_2)?LLy_1:LLy_2;
     } else {
       std::cout<<"Router-Error: metal index "<<mdx<<" cannot be found"<<std::endl;
+      assert(0);
     }
     for(int X=gLLx; X<=gURx; X+=curlayer_unit) {
       for(int Y=gLLy; Y<=gURy; Y+=nexlayer_unit) {
@@ -716,7 +842,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
     }
   } else if (this->drc_info.Metal_info.at(mdx).direct==1) { // if horizontal layer
     int curlayer_unit=this->y_unit.at(mdx); // current layer direction: horizontal
-    int nexlayer_unit; // neighboring layer direction: vertical
+    int nexlayer_unit=1; // neighboring layer direction: vertical
     int gLLx=0, gLLy=0, gURx=0, gURy=0;
     gLLy= curlayer_unit * (int)ceil(double(pLLy)/curlayer_unit);  // Y lower boudary
     gURy= curlayer_unit * (int)floor(double(pURy)/curlayer_unit);  // Y upper boudary
@@ -739,6 +865,7 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
       gURx=(LL_1>LL_2)?LL_1:LL_2;
     } else {
       std::cout<<"Router-Error: metal index "<<mdx<<" cannot be found"<<std::endl;
+      assert(0);
     }
     for(int Y=gLLy; Y<=gURy; Y+=curlayer_unit) {
       for(int X=gLLx; X<=gURx; X+=nexlayer_unit) {
@@ -1035,7 +1162,7 @@ void Grid::InactiveGlobalInternalMetal(std::vector<RouterDB::Block>& Blocks) {
   std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=this->lowest_metal; k<=this->highest_metal; k++) {
     // improve runtime of up/down edges - [wbxu: 20190505]
-    for(int j=0;j<plist.at(k).size();j++) {
+    for(unsigned int j=0;j<plist.at(k).size();j++) {
       tmpp.x=plist.at(k).at(j).x;
       tmpp.y=plist.at(k).at(j).y;
       mit=this->vertices_total_map.at(k).find(tmpp);
@@ -1058,7 +1185,7 @@ void Grid::InactivePlist(std::vector<std::vector<RouterDB::DetailPoint> > &plist
 
   for(int k=this->lowest_metal; k<=this->highest_metal; k++) {
     for(int i=this->Start_index_metal_vertices.at(k);i<=this->End_index_metal_vertices.at(k);i++) {
-      for(int j=0;j<plist.at(k).size();j++) {
+      for(unsigned int j=0;j<plist.at(k).size();j++) {
         if(plist.at(k).at(j).x==this->vertices_total[i].x and plist.at(k).at(j).y==this->vertices_total[i].y ) {
           this->vertices_total[i].active=false;
           break;
@@ -1368,23 +1495,22 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   RouterDB::contact terminal_contact;
   RouterDB::SinkData source, dest;
 //for source
-  for(int i= 0;i<Vsource.size();i++){
+  for(unsigned int i= 0;i<Vsource.size();i++){
       std::cout<<"Router-Info: detecting source - "<<i<<std::endl;
       source = Vsource[i];
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
          //for pin
          temp_Source = Mapping_function_pin(source);
-         for(int j=0;j<temp_Source.size();j++){
+         for(unsigned int j=0;j<temp_Source.size();j++){
             //std::cout<<"Source "<<temp_Source.size()<<std::endl;
             Source.push_back(temp_Source[j]);
            }
       }else if(source.metalIdx!=-1) {
          //for terminal
-         int temp_metalIdx = source.metalIdx;
          int min_dis = INT_MAX;
          // wbxu: another logic problem in the following [fixed]
-         int direction;
+         int direction = 0;
          if(abs(source.coord[0].x-0)<min_dis){
             direction = 0;
             min_dis = abs(source.coord[0].x-0);
@@ -1405,7 +1531,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
          for(int temp_MetalIdx = lowest_metal;temp_MetalIdx<=highest_metal;temp_MetalIdx++){
              temp_Source = Mapping_function_terminal(source, temp_MetalIdx, direction);
              if(temp_Source.size()>0){
-                for(int j=0;j<temp_Source.size();j++){
+                for(unsigned int j=0;j<temp_Source.size();j++){
                       int myext=this->drc_info.Metal_info.at(vertices_total[temp_Source[j]].metal).width/2;
                       Source.push_back(temp_Source[j]);
                       terminal_contact.metal = vertices_total[temp_Source[j]].metal;
@@ -1440,7 +1566,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
              for(int temp_metalIdx = lowest_metal;temp_metalIdx<=highest_metal;temp_metalIdx++){
                    temp_Source = Mapping_function_stiner(source, temp_metalIdx);
                      if(temp_Source.size()>0){
-                         for(int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);}
+                         for(unsigned int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);}
                          /* 
                          Vsource[i].coord.clear();
                          RouterDB::point t_point;
@@ -1465,7 +1591,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
              Vsource[i].coord.push_back(t_point);
              Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
              */
-             for(int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);
+             for(unsigned int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);
             }        
         }
       }
@@ -1473,7 +1599,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
   if(Vsource.size()>0 and Source.empty()) {std::cout<<"Router-Error: fail to find source vertices on grids"<<std::endl; return Terminal_contact;}
 //for dest
 
-  for(int i=0;i<Vdest.size();i++){
+  for(unsigned int i=0;i<Vdest.size();i++){
        dest = Vdest[i];
        std::cout<<"Router-Info: detecting dest "<<i<<std::endl;
        std::vector<int> temp_Dest; 
@@ -1487,7 +1613,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
           std::cout<<"dest metal "<<dest.metalIdx<<std::endl;
           temp_Dest = Mapping_function_pin(dest);
           std::cout<<"set dest check point 1.1"<<std::endl;
-          for(int j=0;j<temp_Dest.size();j++){
+          for(unsigned int j=0;j<temp_Dest.size();j++){
               //std::cout<<"Dest "<<temp_Dest.size(); 
               Dest.push_back(temp_Dest[j]);
              }
@@ -1495,9 +1621,8 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
        }else if(dest.metalIdx!=-1){
         std::cout<<"set dest check point 3"<<std::endl;
         // for terminal
-        int temp_metalIdx = dest.metalIdx;
         int min_dis=INT_MAX;
-        int direction;
+        int direction = 0;
         // wbxu: similar issue to source part [fixed]
         if(abs(dest.coord[0].x-0)<min_dis){
             direction = 0; // 0 is v
@@ -1519,7 +1644,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
          for(int temp_MetalIdx = lowest_metal;temp_MetalIdx<=highest_metal;temp_MetalIdx++){
              temp_Dest = Mapping_function_terminal(dest, temp_MetalIdx, direction);
              if(temp_Dest.size()>0){
-                for(int j=0;j<temp_Dest.size();j++){
+                for(unsigned int j=0;j<temp_Dest.size();j++){
                       int myext=this->drc_info.Metal_info.at(vertices_total[temp_Dest[j]].metal).width/2;
                       Dest.push_back(temp_Dest[j]);
                       terminal_contact.metal = vertices_total[temp_Dest[j]].metal;
@@ -1558,7 +1683,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
 
                   temp_Dest = Mapping_function_stiner(dest, temp_metalIdx);
                   if(temp_Dest.size()>0){
-                      for(int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);}
+                      for(unsigned int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);}
                       /*
                       Vdest[i].coord.clear();
                       RouterDB::point t_point;
@@ -1585,7 +1710,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> 
               Vdest[i].coord.push_back(t_point);
               Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
               */
-              for(int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);
+              for(unsigned int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);
               std::cout<<"set dest check point 8"<<std::endl;
            }
        }
@@ -1606,23 +1731,22 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
   RouterDB::contact terminal_contact;
   RouterDB::SinkData source, dest;
 //for source
-  for(int i= 0;i<Vsource.size();i++){
+  for(unsigned int i= 0;i<Vsource.size();i++){
       std::cout<<"Router-Info: detecting source - "<<i<<std::endl;
       source = Vsource[i];
       std::vector<int> temp_Source; 
       if(source.coord.size()>1){
          //for pin
          temp_Source = Mapping_function_pin_detail(source);
-         for(int j=0;j<temp_Source.size();j++){
+         for(unsigned int j=0;j<temp_Source.size();j++){
            //std::cout<<"Source "<<temp_Source.size()<<std::endl;
            Source.push_back(temp_Source[j]);
          }
       }else if(source.metalIdx!=-1) {
          //for terminal
-         int temp_metalIdx = source.metalIdx;
          int min_dis = INT_MAX;
          // wbxu: another logic problem in the following [fixed]
-         int direction;
+         int direction = 0;
          if(abs(source.coord[0].x-0)<min_dis){
             direction = 0;
             min_dis = abs(source.coord[0].x-0);
@@ -1643,7 +1767,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
          for(int temp_MetalIdx = lowest_metal;temp_MetalIdx<=highest_metal;temp_MetalIdx++){
              temp_Source = Mapping_function_terminal(source, temp_MetalIdx, direction);
              if(temp_Source.size()>0){
-                for(int j=0;j<temp_Source.size();j++){
+                for(unsigned int j=0;j<temp_Source.size();j++){
                       int myext=this->drc_info.Metal_info.at(vertices_total[temp_Source[j]].metal).width/2;
                       Source.push_back(temp_Source[j]);
                       terminal_contact.metal = vertices_total[temp_Source[j]].metal;
@@ -1677,7 +1801,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
              for(int temp_metalIdx = lowest_metal;temp_metalIdx<=highest_metal;temp_metalIdx++){
                    temp_Source = Mapping_function_stiner(source, temp_metalIdx);
                      if(temp_Source.size()>0){
-                         for(int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);}
+                         for(unsigned int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);}
                          /* 
                          Vsource[i].coord.clear();
                          RouterDB::point t_point;
@@ -1702,7 +1826,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
              Vsource[i].coord.push_back(t_point);
              Vsource[i].metalIdx = vertices_total[temp_Source[0]].metal;
              */
-             for(int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);
+             for(unsigned int j=0;j<temp_Source.size();j++){Source.push_back(temp_Source[j]);
             }        
         }
       }
@@ -1710,22 +1834,21 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
   if(Vsource.size()>0 and Source.empty()) {std::cout<<"Router-Error: fail to find source vertices on grids"<<std::endl; return Terminal_contact;}
 //for dest
 
-  for(int i=0;i<Vdest.size();i++){
+  for(unsigned int i=0;i<Vdest.size();i++){
        dest = Vdest[i];
        std::cout<<"Router-Info: detecting dest "<<i<<std::endl;
        std::vector<int> temp_Dest; 
        if(dest.coord.size()>1){
           //for pin
           temp_Dest = Mapping_function_pin_detail(dest);
-          for(int j=0;j<temp_Dest.size();j++){
+          for(unsigned int j=0;j<temp_Dest.size();j++){
               //std::cout<<"Dest "<<temp_Dest.size(); 
               Dest.push_back(temp_Dest[j]);
              }
        }else if(dest.metalIdx!=-1){
         // for terminal
-        int temp_metalIdx = dest.metalIdx;
         int min_dis=INT_MAX;
-        int direction;
+        int direction = 0;
         // wbxu: similar issue to source part [fixed]
         if(abs(dest.coord[0].x-0)<min_dis){
             direction = 0; // 0 is v
@@ -1747,7 +1870,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
          for(int temp_MetalIdx = lowest_metal;temp_MetalIdx<=highest_metal;temp_MetalIdx++){
              temp_Dest = Mapping_function_terminal(dest, temp_MetalIdx, direction);
              if(temp_Dest.size()>0){
-                for(int j=0;j<temp_Dest.size();j++){
+                for(unsigned int j=0;j<temp_Dest.size();j++){
                       int myext=this->drc_info.Metal_info.at(vertices_total[temp_Dest[j]].metal).width/2;
                       Dest.push_back(temp_Dest[j]);
                       terminal_contact.metal = vertices_total[temp_Dest[j]].metal;
@@ -1783,7 +1906,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
 
                   temp_Dest = Mapping_function_stiner(dest, temp_metalIdx);
                   if(temp_Dest.size()>0){
-                      for(int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);}
+                      for(unsigned int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);}
                       /*
                       Vdest[i].coord.clear();
                       RouterDB::point t_point;
@@ -1808,7 +1931,7 @@ std::vector<RouterDB::contact> Grid::setSrcDest_detail(std::vector<RouterDB::Sin
               Vdest[i].coord.push_back(t_point);
               Vdest[i].metalIdx = vertices_total[temp_Dest[0]].metal;
               */
-              for(int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);
+              for(unsigned int j=0;j<temp_Dest.size();j++){Dest.push_back(temp_Dest[j]);
            }
        }
      }
@@ -2049,7 +2172,6 @@ std::vector<int> Grid::Mapping_function_stiner(RouterDB::SinkData& source, int t
 std::vector<int> Grid::Map_from_seg2gridseg_pin(RouterDB::SinkData& sourcelist, int grid_unit_x, int grid_unit_y, int grid_unit_x1, int grid_unit_y1, int grid_scale_func, int index_end_M1_M2, int index_end_M3_M3){
    
    int Lx, Ly, Ux, Uy;
-   int Cx, Cy;
    int grid_Lx, grid_Ly, grid_Ux, grid_Uy, grid_Lx1, grid_Ly1, grid_Ux1, grid_Uy1;
    Lx = sourcelist.coord[0].x;
    Ly = sourcelist.coord[0].y;
@@ -2162,7 +2284,6 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
 						       int index_end_M3_M3){
    
    int Lx, Ly, Ux, Uy;
-   int Cx, Cy;
    int grid_Lx, grid_Ly, grid_Ux, grid_Uy, grid_Lx1, grid_Ly1, grid_Ux1, grid_Uy1;
    Lx = sourcelist.coord[0].x;
    Ly = sourcelist.coord[0].y;
@@ -2284,7 +2405,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_terminal(RouterDB::SinkData& sourcel
            grid_node.x=grid_x1+i*grid_unit_x1*grid_scale_func;
            grid_node.y=grid_y1+j*grid_unit_y1*grid_scale_func;
            int flag_found = 0;
-           for(int k=0;k<grid_node_coord.size();k++){
+           for(unsigned int k=0;k<grid_node_coord.size();k++){
                if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
                  flag_found =1;
                  }
@@ -2294,7 +2415,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_terminal(RouterDB::SinkData& sourcel
              }
            }
        }
-   for(int i=0;i<new_grid_node_coord.size();i++){
+   for(unsigned int i=0;i<new_grid_node_coord.size();i++){
       grid_node_coord.push_back(new_grid_node_coord[i]);
       }
    
@@ -2350,7 +2471,7 @@ if(sourceL.coord.size()<25){
         if(vertices_total[i].y>grid_region_ury){grid_region_ury=vertices_total[i].y;}        
         if(vertices_total[i].y<grid_region_lly){grid_region_lly=vertices_total[i].y;}
 
-        for(int j=0;j<grid_node_coord.size();j++){
+        for(unsigned int j=0;j<grid_node_coord.size();j++){
            if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)) {
 		int dist=abs(grid_node_coord[j].x-Cx)+abs(grid_node_coord[j].y-Cy);
                 //std::cout<<"dist "<<dist<<std::endl;
@@ -2439,7 +2560,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_stiner(RouterDB::SinkData& sourcelis
            grid_node.x=grid_x1+i*grid_unit_x1*grid_scale_func;
            grid_node.y=grid_y1+j*grid_unit_y1*grid_scale_func;
            int flag_found = 0;
-           for(int k=0;k<grid_node_coord.size();k++){
+           for(unsigned int k=0;k<grid_node_coord.size();k++){
                if(grid_node_coord[k].x==grid_node.x and grid_node_coord[k].y==grid_node.y){
                  flag_found =1;
                  }
@@ -2449,7 +2570,7 @@ std::vector<int> Grid::Map_from_seg2gridseg_stiner(RouterDB::SinkData& sourcelis
              }
            }
        }
-   for(int i=0;i<new_grid_node_coord.size();i++){
+   for(unsigned int i=0;i<new_grid_node_coord.size();i++){
       grid_node_coord.push_back(new_grid_node_coord[i]);
       }
    
@@ -2481,7 +2602,7 @@ if(sourceL.coord.size()<25){
     //int grid_idx;
     //std::cout<<"grid_node_coord.size(): "<<grid_node_coord.size()<<std::endl;
     for(int i=index_end_M1_M2;i<=index_end_M3_M3;i++){
-        for(int j=0;j<grid_node_coord.size();j++){
+        for(unsigned int j=0;j<grid_node_coord.size();j++){
            if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)) {
 		int dist=abs(grid_node_coord[j].x-Cx)+abs(grid_node_coord[j].y-Cy);
                 //std::cout<<"dist "<<dist<<std::endl;
@@ -2697,9 +2818,9 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
     std::set<int> midx=GG.GetMappedMetalIndex(i);
     for(std::set<int>::iterator it=midx.begin(); it!=midx.end(); ++it) {
       if(drc_info.Metal_info.at(*it).direct==0) { //vertical
-        for(int x=0; x<Vgrid.at(i).size(); ++x) {
+        for(unsigned int x=0; x<Vgrid.at(i).size(); ++x) {
           int start=-1;
-          for(int y=0; y<Vgrid.at(i).at(x).size(); ++y) {
+          for(unsigned int y=0; y<Vgrid.at(i).at(x).size(); ++y) {
               if(start==-1) {
                 if(Vgrid.at(i).at(x).at(y)!=-1) {start=Vgrid.at(i).at(x).at(y);}
               } else {
@@ -2714,9 +2835,9 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
           }
         }
       } else { //horizontal
-        for(int y=0; y<Hgrid.at(i).size(); ++y) {
+        for(unsigned int y=0; y<Hgrid.at(i).size(); ++y) {
           int start=-1;
-          for(int x=0; x<Hgrid.at(i).at(y).size(); ++x) {
+          for(unsigned int x=0; x<Hgrid.at(i).at(y).size(); ++x) {
               if(start==-1) {
                 if(Hgrid.at(i).at(y).at(x)!=-1) {start=Hgrid.at(i).at(y).at(x);}
               } else {
@@ -2939,4 +3060,252 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
       }
     }
   }
+}
+
+int Grid::Find_EndIndex(int start_index, int direction){
+
+   int end_index=-1;
+
+   for(int i=start_index;i< (int) vertices_total.size();i++){
+
+       if(direction==0){//vertical
+         
+          if(vertices_total[i].x==vertices_total[start_index].x and vertices_total[i].metal == vertices_total[start_index].metal){
+
+              end_index=i;
+
+            }else{
+
+              break;
+                 
+            }
+
+         }else{
+
+          if(vertices_total[i].y==vertices_total[start_index].y and vertices_total[i].metal == vertices_total[start_index].metal){
+
+              end_index =i;
+           
+            }else{
+
+              break;
+
+            }
+
+         }
+
+      }
+
+  return end_index;
+
+}
+
+bool Grid::Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis){
+
+  //same layer?
+/*
+  std::cout<<"direction "<<direction<<" pitches"<<pitches_dis<<std::endl;
+  std::cout<<"metal info "<<vertices_total[start_index1].metal<<" "<<vertices_total[start_index2].metal<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[start_index1].x<<" "<<vertices_total[start_index1].y<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[start_index2].x<<" "<<vertices_total[start_index2].y<<std::endl;
+
+  std::cout<<"metal info "<<vertices_total[end_index1].metal<<" "<<vertices_total[end_index2].metal<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[end_index1].x<<" "<<vertices_total[end_index1].y<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[end_index2].x<<" "<<vertices_total[end_index2].y<<std::endl;
+*/
+
+  if(vertices_total[start_index1].metal!=vertices_total[start_index2].metal){
+     //std::cout<<"return point 1"<<std::endl;
+     return 0;
+     }
+
+  //nearby?
+  if(direction==0){//vertical
+     if(abs(vertices_total[start_index2].x-vertices_total[start_index1].x)!=pitches_dis){
+        //std::cout<<"return point 2"<<std::endl;
+        return 0;
+       }
+    }else{
+     if(abs(vertices_total[start_index2].y-vertices_total[start_index1].y)!=pitches_dis){
+        //std::cout<<"return point 3"<<std::endl;
+        return 0;
+       }
+    }
+
+  //find the common part
+  int min_number = -1;
+  int max_number = -1;
+  
+  if(direction==0){//verical
+    
+     if(vertices_total[start_index1].y>=vertices_total[start_index2].y){
+        min_number = vertices_total[start_index1].y;
+       }else{
+        min_number = vertices_total[start_index2].y;
+       }
+
+     if(vertices_total[end_index1].y<=vertices_total[end_index2].y){
+        max_number = vertices_total[end_index1].y;
+       }else{
+        max_number = vertices_total[end_index2].y;
+       }
+
+    }else{
+     
+     if(vertices_total[start_index1].x>=vertices_total[start_index2].x){
+        min_number = vertices_total[start_index1].x;
+       }else{
+        min_number = vertices_total[start_index2].x;
+       }
+
+     if(vertices_total[end_index1].x<=vertices_total[end_index2].x){
+        max_number = vertices_total[end_index1].x;
+       }else{
+        max_number = vertices_total[end_index2].x;
+       }
+
+    }
+
+  if(min_number>max_number){
+     //std::cout<<"return point 4"<<std::endl;
+     return 0;
+     }
+
+  int new_start_index1=-1;
+  int new_end_index1=-1;
+  int new_start_index2=-1;
+  int  new_end_index2=-1;
+
+  if(direction==0){//vertical
+
+     for(int i=start_index1;i<=end_index1;i++){
+          if(vertices_total[i].y==min_number){
+             new_start_index1= i;
+            }
+          if(vertices_total[i].y==max_number){
+             new_end_index1= i;
+            }
+        }
+
+     for(int i=start_index2;i<=end_index2;i++){
+         if(vertices_total[i].y==min_number){
+            new_start_index2=i;
+           }
+         if(vertices_total[i].y==max_number){
+            new_end_index2=i;
+           }
+        }
+    
+    }else{//heriontal
+
+     for(int i=start_index1;i<=end_index1;i++){
+          if(vertices_total[i].x==min_number){
+             new_start_index1= i;
+            }
+          if(vertices_total[i].x==max_number){
+             new_end_index1= i;
+            }
+        }
+
+     for(int i=start_index2;i<=end_index2;i++){
+         if(vertices_total[i].x==min_number){
+            new_start_index2=i;
+           }
+         if(vertices_total[i].x==max_number){
+            new_end_index2=i;
+           }
+        }
+
+    }
+
+  if(new_start_index1==-1 or new_end_index1==-1 or new_start_index2==-1 or new_end_index2==-1){
+     //std::cout<<"return point 5"<<std::endl;
+     return 0;
+    
+    }else{
+
+     start_index1= new_start_index1;
+     end_index1= new_end_index1;
+     start_index2= new_start_index2;
+     end_index2 = new_end_index2;
+     //std::cout<<"return point 6"<<std::endl;
+     return 1;
+   
+    }
+  
+
+}
+
+void Grid::Full_Connected_Vertex(){
+
+  vertices_total_full_connected = vertices_total;
+  int start_index=0;
+  //int end_index=0;
+   
+  std::cout<<"Full connection: vertices_total size "<<vertices_total.size()<<std::endl;
+  while(start_index< (int) vertices_total.size()){
+       //std::cout<<"Full connection vertex check point 1"<<std::endl;
+       int end_index = Find_EndIndex(start_index, drc_info.Metal_info[vertices_total[start_index].metal].direct);
+       int next_start_index = end_index + 1;
+       int current_start_index = next_start_index;
+       //std::cout<<"Full connection vertex check point 2"<<std::endl;
+       if(next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
+       int next_end_index = Find_EndIndex( next_start_index, drc_info.Metal_info[vertices_total[next_start_index].metal].direct);
+       int current_end_index = next_end_index;
+       //std::cout<<"Full connection vertex check point 2.5"<<std::endl;
+       if(next_end_index==-1 or next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<std::endl;
+
+       bool common_part_exist;
+       if(drc_info.Metal_info[vertices_total[start_index].metal].direct==0){//vertical
+       //std::cout<<"Full connection vertex check point 3"<<std::endl;
+       common_part_exist = Check_Common_Part(start_index, end_index, current_start_index, current_end_index, drc_info.Metal_info[vertices_total[start_index].metal].direct, drc_info.Metal_info[vertices_total[start_index].metal].grid_unit_x);
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<" "<<common_part_exist<<std::endl;
+       //std::cout<<"Full connection vertex check point 4"<<std::endl;
+          }else{
+       //std::cout<<"Full connection vertex check point 5"<<std::endl;
+       common_part_exist = Check_Common_Part(start_index, end_index, current_start_index, current_end_index, drc_info.Metal_info[vertices_total[start_index].metal].direct, drc_info.Metal_info[vertices_total[start_index].metal].grid_unit_y);
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<" "<<common_part_exist<<std::endl;
+       //std::cout<<"Full connection vertex check point 6"<<std::endl;
+        }
+       
+       if(common_part_exist){
+
+          if(drc_info.Metal_info[vertices_total[start_index].metal].direct==0){//vertical
+
+              int east_index = current_start_index;
+
+              for(int i=start_index;i<=end_index;i++){
+                   //std::cout<<"Full connection vertex check point 7"<<std::endl;
+                   vertices_total_full_connected[i].east.push_back(east_index);
+                   vertices_total_full_connected[east_index].west.push_back(i);
+                   //std::cout<<"Full connection vertex check point 8"<<std::endl;
+                   //std::cout<<"Full connection East/West Node is add"<<std::endl;
+                   //std::cout<<"Node corrodinate and metal ( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" ) ("<<vertices_total[east_index].x<<" "<<vertices_total[east_index].y<<" "<<vertices_total[east_index].metal<<" ) "<<std::endl;
+                   east_index++;                                     
+
+                 }
+
+            }else{//horitcal
+
+              int north_index = current_start_index;
+
+              for(int i=start_index;i<=end_index;i++){
+                   //std::cout<<"Full connection vertex check point 9"<<std::endl;
+                   vertices_total_full_connected[i].north.push_back(north_index);
+                   vertices_total_full_connected[north_index].south.push_back(i);
+                   //std::cout<<"Full connection vertex check point 10"<<std::endl;
+                   //std::cout<<"Full connection North/South Node is add"<<std::endl;
+                   //std::cout<<"Node corrodinate and metal ( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" ) ("<<vertices_total[north_index].x<<" "<<vertices_total[north_index].y<<" "<<vertices_total[north_index].metal<<" ) "<<std::endl;
+                   north_index++;                                     
+
+                 }
+
+            }
+
+
+         }
+       start_index = next_start_index;
+       
+      }
 }

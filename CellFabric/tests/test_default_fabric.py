@@ -13,6 +13,22 @@ def setup():
         c.addWire( c.m1, nm, None, i, (0,-1), (3,-1)) 
     return c
 
+def test_v3(setup):
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    c = DefaultCanvas(p)
+
+    c.addWire( c.m3, "a", None, 1, (-2,1), (4,-1))
+    c.addWire( c.m4, "a", None, 1, (-2,1), (4,-1))
+    c.addVia( c.v3, None, None, 1, 1)
+    data = c.gen_data()
+
+    fn = "tests/__json_v3"
+
+    with open( fn + "_cand", "wt") as fp:
+        fp.write( json.dumps( data, indent=2) + '\n')
+
+
+
 def test_beol_stack(setup):
     c = setup
     c.asciiStickDiagram( c.v1, c.m2, c.v2, c.m3, """

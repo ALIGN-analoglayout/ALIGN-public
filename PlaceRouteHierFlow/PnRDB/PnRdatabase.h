@@ -85,7 +85,7 @@ class PnRdatabase
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
     void TraverseDFS(queue<int>& Q, vector<string>& color, int idx); // DFS subfunc to traverse hierarchical tree 
 
-    bool ReadPDKJSON(std::string drfile);
+    void ReadPDKJSON(std::string drfile);
 
     // Not implemented
     PnRdatabase(const PnRdatabase& other); // copy constructor
@@ -123,19 +123,17 @@ class PnRdatabase
     bool MergeLEFMapData(PnRDB::hierNode& node);
     void PrintHierTree();
     bool ReadMap(string fpath, string mapname); // read gds data from map file
-    bool ReadDesignRule(string drfile); //  read design rule data from design rule file
-    bool HardDesignRule(); // hard-code design rules
+    void ReadDesignRule(string drfile); //  read design rule data from design rule file
+    void HardDesignRule(); // hard-code design rules
 
     PnRDB::designRule getDesignRule() const { return drData;}
     PnRDB::Drc_info getDrc_info() const {return DRC_info;}
 
-    bool ReadDesignRule_metal(string metal_name, vector<string>& jason_file, int& index, string &def, PnRDB::metal_info& temp_metal_info);
-    bool ReadDesignRule_via(string via_name, vector<string>& jason_file, int& index, string &def, PnRDB::via_info& temp_via_info);
-    bool ReadDesignRule_jason(string drfile);
-
     // Interface for detail router II - wbxu
     void WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile);
     void PrintDesignRuleData();
+    void ReadDBJSON( PnRDB::hierNode& node, const string& filename);
+    void WriteDBJSON( const PnRDB::hierNode& node, const string& filename);
     std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info, string opath);
     void PrintHierNode(PnRDB::hierNode& node);
     void PrintContact(PnRDB::contact& cont);
@@ -149,8 +147,8 @@ class PnRdatabase
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
     std::map<string, PnRDB::lefMacro> checkoutSingleLEF();
-    void WriteGlobalRoute(PnRDB::hierNode& node, string rofile, string opath);
-    bool WriteLef(PnRDB::hierNode &node, string file, string opath);
+    void WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
+    void WriteLef(const PnRDB::hierNode& node, const string& file, const string& opath) const;
     
 };
 

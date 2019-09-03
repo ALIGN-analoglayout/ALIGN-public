@@ -138,7 +138,7 @@ class Pdk(object):
     def get_via_stack(self):
         layer_stack = []
         for l, info in self.pdk.items():
-            if l.startswith('V') and not any(x is None for x in info['Stack']):
+            if l.startswith('V'):
                 layer_stack.append( (l, tuple(info['Stack'])) )
         return layer_stack
 

@@ -16,7 +16,11 @@
 #include "../PnRDB/readfile.h"
 #include "../PnRDB/datatype.h"
 #include "design.h"
-#include <boost/serialization/array_wrapper.hpp>
+#if BOOST_VERSION >= 106300  // or 64, need to check
+#  include <bboost/serialization/array_wrapper.hpp>
+#else
+#include <boost/serialization/array.hpp>
+#endif
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
 //using std::vector;

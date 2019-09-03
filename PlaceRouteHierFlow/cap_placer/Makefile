@@ -1,13 +1,20 @@
 # Need CXX and CXXFLAGS
 
-all: capplacer.o unit_tests
+OBJS=capplacer.o
+SRCS=$(OBJS:.o=.cpp)
 
-capplacer.o : capplacer.cpp capplacer.h
+all: depend unit_tests cap_placer.a
 
-unit_tests.o: unit_tests.cpp
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
+
+-include .depend
 
 unit_tests: unit_tests.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
+
+cap_placer.a: $(OBJS)
+	ar -r -o $@ $^
 
 clean:		
 	/bin/rm -f *.o unit_tests

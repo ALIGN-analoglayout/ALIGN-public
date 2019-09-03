@@ -1,6 +1,5 @@
 
 #include <gtest/gtest.h>
-#include "datatype.h"
 #include "PnRdatabase.h"
 
 #include <sstream>
@@ -44,7 +43,7 @@ TEST(PnRDBTest, Lexer) {
   Lexer l(is);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    std::cout << "(" << l.current_token.tt << ",\"" << l.current_token.value << "\")" << std::endl;
+    std::cout << l.current_token << std::endl;
     l.get_token();
   }
 }
@@ -70,7 +69,7 @@ TEST(PnRDBTest, Lexer2) {
   Lexer l(is,1);
 
   while ( !l.have( TokenType::EndOfFile)) {
-    std::cout << "(" << l.current_token.tt << ",\"" << l.current_token.value << "\")" << std::endl;
+    std::cout << l.current_token << std::endl;
     EXPECT_NE( l.current_token.tt, TokenType::EndOfLine);
     l.get_token();
   }
@@ -447,4 +446,3 @@ endmodule
   EXPECT_EQ( rvh.get_Supply_node().Blocks.size(), 2);
 
 }
-

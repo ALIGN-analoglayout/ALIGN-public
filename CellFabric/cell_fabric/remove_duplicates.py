@@ -38,33 +38,25 @@ class Scanline:
         self.indices = indices
         self.dIndex = dIndex
         self.rects = []
-        self.clear()
         self.dad = None
 
-    def clear(self):
-        self.start = None
-        self.end = None
-        self.currentNet = None
-        self.currentIsPorted = False
 
     def isEmpty(self):
-        return self.start is None
+        return len(self.rects) == 0
 
-    def emit(self):
-        r = self.proto[:]
-        r[self.dIndex] = self.start
-        r[self.dIndex+2] = self.end
+
+    def new_slr(self, rect, netName, *, isPorted=False):
         slr = ScanlineRect()
-        slr.rect = r
-        slr.netName = self.currentNet
-        slr.isPorted = self.isPorted
+        slr.rect = self.proto[:]
+        slr.rect[self.dIndex] = rect[self.dIndex]
+        slr.rect[self.dIndex+2] = rect[self.dIndex+2]
+        slr.netName = netName
+        slr.isPorted = isPorted
         self.rects.append(slr)
+        return slr
 
-    def set_named_rect(self, rect, netName, *, isPorted=False):
-        self.start = rect[self.dIndex]
-        self.end = rect[self.dIndex+2]
-        self.currentNet = netName
-        self.isPorted = isPorted
+    def merge_slr(self, base_slr, new_slr):
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -96,7 +88,6 @@ class RemoveDuplicates():
             print( "Equivalence classes:", i, s)
 
     def check_opens(self):
-        self.opens = []
 
         tbl = defaultdict(lambda: defaultdict(list))
 
@@ -109,9 +100,12 @@ class RemoveDuplicates():
                         tbl[nm][id(root)].append( (layer, slr.rect))
 
         for (nm,s) in tbl.items():
-            if len(s) > 1:
+            if ':' in nm:
+                instance, pin = nm.split(':')
+                self.subinsts[instance][pin].add( None)
                 self.opens.append( (nm,list(s.values())))
-
+            elif len(s) > 1:
+                self.opens.append( (nm,list(s.values())))
 
     @staticmethod
     def containedIn( rS, rB):
@@ -128,9 +122,10 @@ class RemoveDuplicates():
         self.canvas = canvas
         self.store_scan_lines = None
         self.shorts = []
+        self.opens = []
+        self.subinsts = defaultdict(lambda: defaultdict(set))
 
         self.setup_layer_structures()
-
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
@@ -186,60 +181,70 @@ class RemoveDuplicates():
 
                 (rect0, _, _) = v[0]
                 for (rect, _, _) in v[1:]:
-                    assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
+                    if not all(rect[i] == rect0[i] for i in indices):
+                        widths = set()
+                        for (r, _, _) in v:
+                            widths.add( r[indices[1]]-r[indices[0]])
+                        print( f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
+                current_slr = None
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
                     if sl.isEmpty():
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= sl.end:  # continue
-                        sl.end = max(sl.end, rect[dIndex+2])
-                        if sl.currentNet is None:
-                            sl.currentNet = netName
-                            sl.currentIsPorted = isPorted
-                        elif netName is not None and sl.currentNet != netName:
-                            self.shorts.append( (layer, sl.currentNet, netName))
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
+                    elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
+                        if self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
+                            sl.merge_slr(current_slr, sl.rects.pop())
+                        else:
+                            current_slr = sl.rects[-1]
                     else:  # gap
-                        sl.emit()
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-
-                if not sl.isEmpty():
-                    sl.emit()
-                    sl.clear()
-
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
 
     def check_shorts_induced_by_vias( self):
-
-        connections = []
 
         for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
+                    assert mv is not None, "PLEASE IMPLEMENT ME !"
+                    if twice_center not in self.store_scan_lines[mv]:
+                        print( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
+                        continue
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
                         metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
                         twice_center_y = via_rect.rect[1] + via_rect.rect[3]
-                        metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
-                        metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                        connections.append( (via_rect, metal_rect_v, metal_rect_h))
-                        
-        def connectPair( a, b):
-            def aux( a, b):
-                if a.netName is None:
-                    b.connect( a)
-                elif b.netName is None or a.netName == b.netName:
-                    a.connect( b)
-            aux( a.root(), b.root())
+                        if mh is not None:
+                            metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
+                            metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via_rect.root(), metal_rect_h.root())
+                        else:
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
 
-        for triple  in connections:
-            connectPair( triple[1], triple[2])
-            connectPair( triple[0], triple[1])
-
-            nms = { root.netName for slr in list(triple) for root in [slr.root()] if root.netName is not None}
-
-            if len(nms) > 1:
-                self.shorts.append( triple)
+    def connectPair( self, a, b):
+        numshorts = len(self.shorts)
+        if a.netName is None:
+            b.connect( a)
+        elif b.netName is None or a.netName == b.netName:
+            a.connect( b)
+        elif ':' in a.netName and ':' in b.netName:
+            return False
+        elif ':' in a.netName or ':' in b.netName:
+            if ':' in b.netName:
+                a, b = b, a
+            instance, pin = a.netName.split(':')
+            if len(self.subinsts[instance][pin]) == 0 \
+                    or next(iter(self.subinsts[instance][pin])).netName == b.netName:
+                a.netName = b.netName
+                self.subinsts[instance][pin].add( a)
+                b.connect( a)
+            else:
+                self.shorts.append( (b, self.subinsts[instance][pin], 'THROUGH', a) )
+                b.connect( a)
+        else:
+            self.shorts.append( (a, b) )
+        return numshorts == len(self.shorts)
 
     def generate_rectangles( self):
 
@@ -276,6 +281,8 @@ class RemoveDuplicates():
             print( "SHORT", *short)
         for opn in self.opens:
             print( "OPEN", *opn)
+        for subinst in self.subinsts:
+            print("SUBINST", *subinst)
 
         return self.generate_rectangles()
 
