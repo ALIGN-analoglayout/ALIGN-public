@@ -5,10 +5,6 @@ import datetime
 
 def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
 
-  def rect_to_boundary( r):
-    ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
-    return [ (r[p[0]],r[p[1]]) for p in ordering]
-
   def flat_rect_to_boundary( r):
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
     return [ r[p[i]] for p in ordering for i in range(0,2)]
@@ -52,9 +48,9 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
     result = x*4
     if type(result) == float:
-      print("-W- gen_gds_json:translate_data: Coord %s (%s) not integral" % (str(x),str(result)))
-      intresult = int(result)
-      assert abs(intresult-result) < 0.00001
+      print(f"-W- gen_gds_json:translate_data:scale: Coord {x} ({result}) not integral")
+      intresult = int(round(result,0))
+      assert abs(intresult-result) < 0.001
       return intresult
     else:
       return result

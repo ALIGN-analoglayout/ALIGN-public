@@ -110,7 +110,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		   metal_stack_indices[1] != -1) {
 		tmp_via.lower_metal_index = metal_stack_indices[0];
 		tmp_via.upper_metal_index = metal_stack_indices[1];
+		assert( viaSet.find( lnum) == viaSet.end());
 		viaSet.insert( std::pair<int, PnRDB::via_info>(lnum, tmp_via) );
+		assert( name2ViaLayerMap.find( tmp_via.name) == name2ViaLayerMap.end());
 		name2ViaLayerMap[tmp_via.name] = lnum;
 	      }
 	    }
