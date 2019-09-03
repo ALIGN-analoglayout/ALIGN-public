@@ -9,25 +9,19 @@ using namespace nlohmann;
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
-    //std::cout<<"inside "<<drfile<<std::endl;
-    //std::string jsonFileName = GDSData + ".json";
     int times=2;
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
-        //std::cout<<"before parse\n";
 	json jedb = json::parse (jsonFile);
-        //std::cout<<"Parse\n";
         json layerAry = jedb["Abstraction"];
         std::map<int, PnRDB::metal_info> metalSet;
         std::map<int, PnRDB::via_info> viaSet;
         std::unordered_map<string, int> name2ViaLayerMap;
         // 1. Extract metal info
-        //std::cout<<"shot\n";
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
           std::string lname=layer["Layer"];
-          //std::cout<<"Now at "<<lname<<std::endl<<std::endl;
           if(lname.front()=='M') {
             // metal layer
             int lnum=layer["LayerNo"];
@@ -70,7 +64,6 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
-        //std::cout<<"Parse via\n";
         // 2. Extract via info
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
@@ -150,54 +143,62 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	     cout << "Via " << temp_viamodel.name << " ViaIndex " << temp_viamodel.ViaIdx << " LowerIdx " << temp_viamodel.LowerIdx << " (" << lm_name << ") UpperIdx " << temp_viamodel.UpperIdx << " (" << um_name << ")" << endl;
 
              PnRDB::point temp_point;
+	     auto& vi = DRC_info.Via_info[temp_viamodel.ViaIdx];
              //LL
-             temp_point.x = 0-DRC_info.Via_info[i].width/2;
-             temp_point.y = 0-DRC_info.Via_info[i].width_y/2;
+             temp_point.x = 0-vi.width/2;
+             temp_point.y = 0-vi.width_y/2;
              temp_viamodel.ViaRect.push_back(temp_point);
              //UR
-             temp_point.x = 0+DRC_info.Via_info[i].width/2;
-             temp_point.y = 0+DRC_info.Via_info[i].width_y/2;
+             temp_point.x = 0+vi.width/2;
+             temp_point.y = 0+vi.width_y/2;
              temp_viamodel.ViaRect.push_back(temp_point);
              
-             //LL LowerRect
-             if(DRC_info.Metal_info[i].direct==0){
-             temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
-             temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
-             temp_viamodel.LowerRect.push_back(temp_point);
-             //UR
-             temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
-             temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
-             temp_viamodel.LowerRect.push_back(temp_point);
-             }else{
-             temp_point.y = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l_P;
-             temp_point.x = 0-DRC_info.Metal_info[i].width/2-DRC_info.Via_info[i].cover_l;
-             temp_viamodel.LowerRect.push_back(temp_point);
-             //UR
-             temp_point.y = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l_P;
-             temp_point.x = 0+DRC_info.Metal_info[i].width/2+DRC_info.Via_info[i].cover_l;
-             temp_viamodel.LowerRect.push_back(temp_point);
-             } 
+	     {
+	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
+	       //LL LowerRect
+	       if(mi.direct==0){
+		 temp_point.x = 0-mi.width/2-vi.cover_l_P;
+		 temp_point.y = 0-mi.width/2-vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+		 //UR
+		 temp_point.x = 0+mi.width/2+vi.cover_l_P;
+		 temp_point.y = 0+mi.width/2+vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+	       }else{
+		 temp_point.y = 0-mi.width/2-vi.cover_l_P;
+		 temp_point.x = 0-mi.width/2-vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+		 //UR
+		 temp_point.y = 0+mi.width/2+vi.cover_l_P;
+		 temp_point.x = 0+mi.width/2+vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+	       } 
+	     }
              
-             //LL UpperRect
-             if(DRC_info.Metal_info[i+1].direct==0){
-             temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
-             temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
-             temp_viamodel.UpperRect.push_back(temp_point);
-             //UR
-             temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
-             temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
-             temp_viamodel.UpperRect.push_back(temp_point);
-             }else{
-             temp_point.y = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u_P;
-             temp_point.x = 0-DRC_info.Metal_info[i+1].width/2-DRC_info.Via_info[i].cover_u;
-             temp_viamodel.UpperRect.push_back(temp_point);
-             //UR
-             temp_point.y = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u_P;
-             temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
-             temp_viamodel.UpperRect.push_back(temp_point);
-             } 
-            DRC_info.Via_model.push_back(temp_viamodel);
-        }
+	     {
+	       auto& mi = DRC_info.Metal_info[temp_viamodel.UpperIdx];
+
+	       //LL UpperRect
+	       if(mi.direct==0){
+		 temp_point.x = 0-mi.width/2-vi.cover_u_P;
+		 temp_point.y = 0-mi.width/2-vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+		 //UR
+		 temp_point.x = 0+mi.width/2+vi.cover_u_P;
+		 temp_point.y = 0+mi.width/2+vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+	       }else{
+		 temp_point.y = 0-mi.width/2-vi.cover_u_P;
+		 temp_point.x = 0-mi.width/2-vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+		 //UR
+		 temp_point.y = 0+mi.width/2+vi.cover_u_P;
+		 temp_point.x = 0+mi.width/2+vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+	       } 
+	       DRC_info.Via_model.push_back(temp_viamodel);
+	     }
+	}
         // 6. Add mask ID
         //added by wbxu
         for(unsigned int i=0;i<DRC_info.Metal_info.size();++i) {
