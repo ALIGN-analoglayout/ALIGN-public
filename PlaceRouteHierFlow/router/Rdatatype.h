@@ -82,9 +82,12 @@ struct vertex{
   int x=-1;
   int y=-1;
   int metal=-1;
-  bool active=false;	
+  int Cost = -1;
+  bool active=false;
+  int parent = -1; // -1 mean source	
   int index=-1;
   std::vector<int> gridmetal;
+  bool expand=0; // expand to right (east) for vertical node? expand to up (north) for heriental node?
   //bool offgrid;
   std::vector<int> north;
   std::vector<int> south;

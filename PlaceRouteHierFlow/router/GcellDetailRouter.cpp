@@ -328,6 +328,8 @@ void GcellDetailRouter::create_detailrouter(){
 
        std::cout<<"Gcell Detail Router Check point 6"<<std::endl;
        Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
+       grid.Full_Connected_Vertex();
+       //grid.Check_Full_Connection_Grid();
 //////QQQ1 end of grid creation
        //grid.CheckVerticesTotal();
        //grid.CreateGridData();
@@ -467,14 +469,33 @@ void GcellDetailRouter::create_detailrouter(){
            grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y); //QQQQQto be fixed
 //what about this problem?????
            //Graph graph(grid, this->path_number);
+
+/*
+//////////dijstra
            Graph graph(grid);
            std::cout<<"Detail Router check point 4"<<std::endl;
            bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
+//////////dijstra
+*/
+
+///////// A_star
+          A_star a_star(grid);
+          std::cout<<"Detail Router check point 4"<<std::endl;
+          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+///////// A_star
+
            std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
            std::cout<<"Detail Router check point 5"<<std::endl;
            std::vector<std::vector<RouterDB::Metal> > physical_path;
            if(pathMark) {
-           physical_path=graph.ConvertPathintoPhysical(grid);
+///////////dijstra
+          //physical_path=graph.ConvertPathintoPhysical(grid);
+///////////dijstra
+
+///////// A_star
+          physical_path=a_star.ConvertPathintoPhysical(grid);
+///////// A_star
+
            std::cout<<"Detail Router check point 6"<<std::endl;
            //lastmile connection source
            //check first point of physical path
@@ -2046,7 +2067,14 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
   RouterDB::SinkData temp_sink;
   int width = 1;
 
-  for(unsigned int i=0;i<temp_path.size();i++){
+  int prime_path;
+  if(temp_path.size()>0){
+      prime_path = 1;
+     }else{
+      prime_path = 0;
+     }
+
+  for(unsigned int i=0;i<prime_path;i++){
 
      for(unsigned int j=0;j<temp_path[i].size();j++){
            temp_sink.coord.clear();

@@ -60,6 +60,97 @@ Grid& Grid::operator= (const Grid& other) {
   return *this;
 }
 
+void Grid::Check_Full_Connection_Grid(){
+
+  for(int i=0;i<vertices_total_full_connected.size();i++){
+
+        int east_error = 0;
+        int west_error = 0;
+        int south_error = 0;
+        int north_error = 0;
+
+        int east_empty = 0;
+        int west_empty = 0;
+        int south_empty = 0;
+        int north_empty = 0;
+
+        if(drc_info.Metal_info[vertices_total_full_connected[i].metal].direct==0){
+
+             if(vertices_total_full_connected[i].east.size()>0){
+                 if(vertices_total_full_connected[i].east.size()>1){
+                      east_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].east[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
+                      east_error = 1;
+                    }
+               }else{
+                      east_empty = 1;
+               }
+
+             if(vertices_total_full_connected[i].west.size()>0){
+
+                 if(vertices_total_full_connected[i].west.size()>1){
+                      west_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].west[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
+                      west_error = 1;
+                    }
+ 
+               }else{
+                      west_empty = 1;
+               }
+
+          }else{
+
+             if(vertices_total_full_connected[i].south.size()>0){
+                 if(vertices_total_full_connected[i].south.size()>1){
+                      south_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].south[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
+                      south_error = 1;
+                    }
+               }else{
+                      south_empty = 1;
+               }
+
+             if(vertices_total_full_connected[i].north.size()>0){
+
+                 if(vertices_total_full_connected[i].north.size()>1){
+                      north_error = 1;
+                    }
+                 if(abs(vertices_total_full_connected[vertices_total_full_connected[i].north[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
+                      north_error = 1;
+                    }
+ 
+               }else{
+                      south_empty = 1;
+               }
+
+
+          }
+
+          if( east_error == 0 and west_error==0 and south_error ==0 and north_error ==0 and east_empty ==0 and west_empty ==0 and south_empty ==0 and north_empty ==0 ){
+
+            }else{
+
+               std::cout<<"vertices full information, index "<<i;   
+               if(east_error==1){std::cout<<" east_error ";}  
+               if(west_error==1){std::cout<<" west_error ";} 
+               if(south_error==1){std::cout<<" south_error ";} 
+               if(north_error==1){std::cout<<" north_error ";} 
+               if(east_empty==1){std::cout<<" east_empty ";} 
+               if(west_empty==1){std::cout<<" west_empty ";} 
+               if(south_empty==1){std::cout<<" south_empty ";} 
+               if(north_empty==1){std::cout<<" north_empty ";}
+               std::cout<<std::endl; 
+               
+            }
+           
+           
+         
+      }
+}
+
 
 void Grid::CreateGridData(){
 
@@ -2969,4 +3060,252 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
       }
     }
   }
+}
+
+int Grid::Find_EndIndex(int start_index, int direction){
+
+   int end_index=-1;
+
+   for(int i=start_index;i<vertices_total.size();i++){
+
+       if(direction==0){//vertical
+         
+          if(vertices_total[i].x==vertices_total[start_index].x and vertices_total[i].metal == vertices_total[start_index].metal){
+
+              end_index=i;
+
+            }else{
+
+              break;
+                 
+            }
+
+         }else{
+
+          if(vertices_total[i].y==vertices_total[start_index].y and vertices_total[i].metal == vertices_total[start_index].metal){
+
+              end_index =i;
+           
+            }else{
+
+              break;
+
+            }
+
+         }
+
+      }
+
+  return end_index;
+
+}
+
+bool Grid::Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis){
+
+  //same layer?
+/*
+  std::cout<<"direction "<<direction<<" pitches"<<pitches_dis<<std::endl;
+  std::cout<<"metal info "<<vertices_total[start_index1].metal<<" "<<vertices_total[start_index2].metal<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[start_index1].x<<" "<<vertices_total[start_index1].y<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[start_index2].x<<" "<<vertices_total[start_index2].y<<std::endl;
+
+  std::cout<<"metal info "<<vertices_total[end_index1].metal<<" "<<vertices_total[end_index2].metal<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[end_index1].x<<" "<<vertices_total[end_index1].y<<std::endl;
+  std::cout<<"coordinate "<<vertices_total[end_index2].x<<" "<<vertices_total[end_index2].y<<std::endl;
+*/
+
+  if(vertices_total[start_index1].metal!=vertices_total[start_index2].metal){
+     //std::cout<<"return point 1"<<std::endl;
+     return 0;
+     }
+
+  //nearby?
+  if(direction==0){//vertical
+     if(abs(vertices_total[start_index2].x-vertices_total[start_index1].x)!=pitches_dis){
+        //std::cout<<"return point 2"<<std::endl;
+        return 0;
+       }
+    }else{
+     if(abs(vertices_total[start_index2].y-vertices_total[start_index1].y)!=pitches_dis){
+        //std::cout<<"return point 3"<<std::endl;
+        return 0;
+       }
+    }
+
+  //find the common part
+  int min_number = -1;
+  int max_number = -1;
+  
+  if(direction==0){//verical
+    
+     if(vertices_total[start_index1].y>=vertices_total[start_index2].y){
+        min_number = vertices_total[start_index1].y;
+       }else{
+        min_number = vertices_total[start_index2].y;
+       }
+
+     if(vertices_total[end_index1].y<=vertices_total[end_index2].y){
+        max_number = vertices_total[end_index1].y;
+       }else{
+        max_number = vertices_total[end_index2].y;
+       }
+
+    }else{
+     
+     if(vertices_total[start_index1].x>=vertices_total[start_index2].x){
+        min_number = vertices_total[start_index1].x;
+       }else{
+        min_number = vertices_total[start_index2].x;
+       }
+
+     if(vertices_total[end_index1].x<=vertices_total[end_index2].x){
+        max_number = vertices_total[end_index1].x;
+       }else{
+        max_number = vertices_total[end_index2].x;
+       }
+
+    }
+
+  if(min_number>max_number){
+     //std::cout<<"return point 4"<<std::endl;
+     return 0;
+     }
+
+  int new_start_index1=-1;
+  int new_end_index1=-1;
+  int new_start_index2=-1;
+  int  new_end_index2=-1;
+
+  if(direction==0){//vertical
+
+     for(int i=start_index1;i<=end_index1;i++){
+          if(vertices_total[i].y==min_number){
+             new_start_index1= i;
+            }
+          if(vertices_total[i].y==max_number){
+             new_end_index1= i;
+            }
+        }
+
+     for(int i=start_index2;i<=end_index2;i++){
+         if(vertices_total[i].y==min_number){
+            new_start_index2=i;
+           }
+         if(vertices_total[i].y==max_number){
+            new_end_index2=i;
+           }
+        }
+    
+    }else{//heriontal
+
+     for(int i=start_index1;i<=end_index1;i++){
+          if(vertices_total[i].x==min_number){
+             new_start_index1= i;
+            }
+          if(vertices_total[i].x==max_number){
+             new_end_index1= i;
+            }
+        }
+
+     for(int i=start_index2;i<=end_index2;i++){
+         if(vertices_total[i].x==min_number){
+            new_start_index2=i;
+           }
+         if(vertices_total[i].x==max_number){
+            new_end_index2=i;
+           }
+        }
+
+    }
+
+  if(new_start_index1==-1 or new_end_index1==-1 or new_start_index2==-1 or new_end_index2==-1){
+     //std::cout<<"return point 5"<<std::endl;
+     return 0;
+    
+    }else{
+
+     start_index1= new_start_index1;
+     end_index1= new_end_index1;
+     start_index2= new_start_index2;
+     end_index2 = new_end_index2;
+     //std::cout<<"return point 6"<<std::endl;
+     return 1;
+   
+    }
+  
+
+}
+
+void Grid::Full_Connected_Vertex(){
+
+  vertices_total_full_connected = vertices_total;
+  int start_index=0;
+  int end_index=0;
+   
+  std::cout<<"Full connection: vertices_total size "<<vertices_total.size()<<std::endl;
+  while(start_index<vertices_total.size()){
+       //std::cout<<"Full connection vertex check point 1"<<std::endl;
+       end_index = Find_EndIndex(start_index, drc_info.Metal_info[vertices_total[start_index].metal].direct);
+       int next_start_index = end_index + 1;
+       int current_start_index = next_start_index;
+       //std::cout<<"Full connection vertex check point 2"<<std::endl;
+       if(next_start_index>=vertices_total.size()){start_index=next_start_index;continue;}
+       int next_end_index = Find_EndIndex( next_start_index, drc_info.Metal_info[vertices_total[next_start_index].metal].direct);
+       int current_end_index = next_end_index;
+       //std::cout<<"Full connection vertex check point 2.5"<<std::endl;
+       if(next_end_index==-1 or next_start_index>=vertices_total.size()){start_index=next_start_index;continue;}
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<std::endl;
+
+       bool common_part_exist;
+       if(drc_info.Metal_info[vertices_total[start_index].metal].direct==0){//vertical
+       //std::cout<<"Full connection vertex check point 3"<<std::endl;
+       common_part_exist = Check_Common_Part(start_index, end_index, current_start_index, current_end_index, drc_info.Metal_info[vertices_total[start_index].metal].direct, drc_info.Metal_info[vertices_total[start_index].metal].grid_unit_x);
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<" "<<common_part_exist<<std::endl;
+       //std::cout<<"Full connection vertex check point 4"<<std::endl;
+          }else{
+       //std::cout<<"Full connection vertex check point 5"<<std::endl;
+       common_part_exist = Check_Common_Part(start_index, end_index, current_start_index, current_end_index, drc_info.Metal_info[vertices_total[start_index].metal].direct, drc_info.Metal_info[vertices_total[start_index].metal].grid_unit_y);
+       //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<" "<<common_part_exist<<std::endl;
+       //std::cout<<"Full connection vertex check point 6"<<std::endl;
+        }
+       
+       if(common_part_exist){
+
+          if(drc_info.Metal_info[vertices_total[start_index].metal].direct==0){//vertical
+
+              int east_index = current_start_index;
+
+              for(int i=start_index;i<=end_index;i++){
+                   //std::cout<<"Full connection vertex check point 7"<<std::endl;
+                   vertices_total_full_connected[i].east.push_back(east_index);
+                   vertices_total_full_connected[east_index].west.push_back(i);
+                   //std::cout<<"Full connection vertex check point 8"<<std::endl;
+                   //std::cout<<"Full connection East/West Node is add"<<std::endl;
+                   //std::cout<<"Node corrodinate and metal ( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" ) ("<<vertices_total[east_index].x<<" "<<vertices_total[east_index].y<<" "<<vertices_total[east_index].metal<<" ) "<<std::endl;
+                   east_index++;                                     
+
+                 }
+
+            }else{//horitcal
+
+              int north_index = current_start_index;
+
+              for(int i=start_index;i<=end_index;i++){
+                   //std::cout<<"Full connection vertex check point 9"<<std::endl;
+                   vertices_total_full_connected[i].north.push_back(north_index);
+                   vertices_total_full_connected[north_index].south.push_back(i);
+                   //std::cout<<"Full connection vertex check point 10"<<std::endl;
+                   //std::cout<<"Full connection North/South Node is add"<<std::endl;
+                   //std::cout<<"Node corrodinate and metal ( "<<vertices_total[i].x<<" "<<vertices_total[i].y<<" "<<vertices_total[i].metal<<" ) ("<<vertices_total[north_index].x<<" "<<vertices_total[north_index].y<<" "<<vertices_total[north_index].metal<<" ) "<<std::endl;
+                   north_index++;                                     
+
+                 }
+
+            }
+
+
+         }
+       start_index = next_start_index;
+       
+      }
 }
