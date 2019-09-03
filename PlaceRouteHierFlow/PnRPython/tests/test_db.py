@@ -16,17 +16,3 @@ def test_A():
         jj = json.load(fp)
 
     assert j == jj
-
-def test_B():
-    with open("tests/switched_capacitor_filter-freeze.json","rt") as fp:
-        j = json.load(fp)
-        hN = hierNode(j)
-
-    with open("__json_B","wt") as fp:
-        json.dump( hN, fp=fp, cls=PnRDBEncoder, indent=2)
-
-    with open("__json_B","rt") as fp:
-        jj = json.load(fp)
-
-    assert j == jj
-

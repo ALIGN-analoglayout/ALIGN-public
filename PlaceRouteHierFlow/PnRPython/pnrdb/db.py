@@ -19,7 +19,6 @@ class bbox:
     def __getattr__(self, nm):
         return self._d[nm]
 
-
 class block:
     def __init__(self, d):    
         self._d = d
@@ -348,7 +347,6 @@ structs = [(hierNode,[("isCompleted",None),
            (Via,[("model_index",None),
                  ("originpos",point),
                  ("placedpos",point),
-                 ("UpperMetalRect",contact),
                  ("UpperMetalRect",contact),
                  ("LowerMetalRect",contact),
                  ("ViaRect",contact)

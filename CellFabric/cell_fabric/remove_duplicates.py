@@ -181,7 +181,11 @@ class RemoveDuplicates():
 
                 (rect0, _, _) = v[0]
                 for (rect, _, _) in v[1:]:
-                    assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
+                    if not all(rect[i] == rect0[i] for i in indices):
+                        widths = set()
+                        for (r, _, _) in v:
+                            widths.add( r[indices[1]]-r[indices[0]])
+                        print( f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
@@ -203,6 +207,9 @@ class RemoveDuplicates():
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
                     assert mv is not None, "PLEASE IMPLEMENT ME !"
+                    if twice_center not in self.store_scan_lines[mv]:
+                        print( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
+                        continue
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
                         metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
