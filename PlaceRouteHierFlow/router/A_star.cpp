@@ -49,7 +49,7 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
   std::vector<std::vector<RouterDB::Metal> > Phsical_Path;
   for(int i= 0; i<Path.size();++i){
       std::vector<RouterDB::Metal> temp_physical_path;
-      //int start_index = 0;
+      int start_index = 0;
       //int end_index = 0;
       int flag_start_write = 1;
       //int flag_end_write = 0;
@@ -92,10 +92,10 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
 int A_star::Manhattan_distan(int sindex, Grid& grid){
 
   std::set<int> Mdis;
-  int temp_dis=0;
+
   for(int i=0;i<dest.size();i++){
 
-      temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x)+abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
+      int temp_dis = abs(grid.vertices_total[sindex].x - grid.vertices_total[dest[i]].x)+abs(grid.vertices_total[sindex].y - grid.vertices_total[dest[i]].y);
       Mdis.insert(temp_dis);
 
      }
@@ -110,7 +110,7 @@ int A_star::Manhattan_distan(int sindex, Grid& grid){
   
 };
 
-void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, std::set<int> S_or_D, int left_up, int right_down){
+void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, const std::set<int> &S_or_D, int left_up, int right_down){
   
   std::vector<int> left_up_node, right_down_node;
   for(int i=0;i<source.size();i++){
@@ -1405,13 +1405,13 @@ void A_star::left_path_SD(int end_index, int number, Grid& grid, std::vector<int
         }else{
           up_path.push_back(future_int);
           int index = number;
-          int break_flag = 0;
+          //int break_flag = 0;
           while(index>0){
              future_int = future_int + 1;
              if(grid.vertices_total[future_int].active==0){
                 index=0;
                 up=0;
-                break_flag = 1;
+                //break_flag = 1;
                 continue;
                }else{
                 up_path.push_back(future_int);
@@ -1493,13 +1493,13 @@ void A_star::left_path_SD(int end_index, int number, Grid& grid, std::vector<int
         }else{
           up_path.push_back(future_int);
           int index = number;
-          int break_flag = 0;
+          //int break_flag = 0;
           while(index>0){
              future_int = future_int - 1;
              if(grid.vertices_total[future_int].active==0){
                 index=0;
                 up=0;
-                break_flag = 1;
+                //break_flag = 1;
                 continue;
                }else{
                 up_path.push_back(future_int);
@@ -1587,13 +1587,13 @@ void A_star::right_path_SD(int end_index, int number, Grid& grid, std::vector<in
         }else{
           up_path.push_back(future_int);
           int index = number;
-          int break_flag = 0;
+          //int break_flag = 0;
           while(index>0){
              future_int = future_int - 1;
              if(grid.vertices_total[future_int].active==0){
                 index=0;
                 up=0;
-                break_flag = 1;
+                //break_flag = 1;
                 continue;
                }else{
                 up_path.push_back(future_int);
@@ -1675,13 +1675,13 @@ void A_star::right_path_SD(int end_index, int number, Grid& grid, std::vector<in
         }else{
           up_path.push_back(future_int);
           int index = number;
-          int break_flag = 0;
+          //int break_flag = 0;
           while(index>0){
              future_int = future_int + 1;
              if(grid.vertices_total[future_int].active==0){
                 index=0;
                 up=0;
-                break_flag = 1;
+                //break_flag = 1;
                 continue;
                }else{
                 up_path.push_back(future_int);

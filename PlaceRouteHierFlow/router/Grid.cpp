@@ -3240,12 +3240,12 @@ void Grid::Full_Connected_Vertex(){
 
   vertices_total_full_connected = vertices_total;
   int start_index=0;
-  int end_index=0;
+  //int end_index=0;
    
   std::cout<<"Full connection: vertices_total size "<<vertices_total.size()<<std::endl;
   while(start_index<vertices_total.size()){
        //std::cout<<"Full connection vertex check point 1"<<std::endl;
-       end_index = Find_EndIndex(start_index, drc_info.Metal_info[vertices_total[start_index].metal].direct);
+       int end_index = Find_EndIndex(start_index, drc_info.Metal_info[vertices_total[start_index].metal].direct);
        int next_start_index = end_index + 1;
        int current_start_index = next_start_index;
        //std::cout<<"Full connection vertex check point 2"<<std::endl;
