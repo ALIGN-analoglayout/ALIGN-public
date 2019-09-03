@@ -2067,8 +2067,8 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
   RouterDB::SinkData temp_sink;
   int width = 1;
 
-  int prime_path;
-  if(temp_path.size()>0){
+  unsigned int prime_path;
+  if((int)temp_path.size()>0){
       prime_path = 1;
      }else{
       prime_path = 0;

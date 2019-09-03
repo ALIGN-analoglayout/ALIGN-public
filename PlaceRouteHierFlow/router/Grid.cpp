@@ -62,7 +62,7 @@ Grid& Grid::operator= (const Grid& other) {
 
 void Grid::Check_Full_Connection_Grid(){
 
-  for(int i=0;i<vertices_total_full_connected.size();i++){
+  for(int i=0;i<(int) vertices_total_full_connected.size();i++){
 
         int east_error = 0;
         int west_error = 0;
@@ -76,8 +76,8 @@ void Grid::Check_Full_Connection_Grid(){
 
         if(drc_info.Metal_info[vertices_total_full_connected[i].metal].direct==0){
 
-             if(vertices_total_full_connected[i].east.size()>0){
-                 if(vertices_total_full_connected[i].east.size()>1){
+             if( (int) vertices_total_full_connected[i].east.size()>0){
+                 if((int) vertices_total_full_connected[i].east.size()>1){
                       east_error = 1;
                     }
                  if(abs(vertices_total_full_connected[vertices_total_full_connected[i].east[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
@@ -87,9 +87,9 @@ void Grid::Check_Full_Connection_Grid(){
                       east_empty = 1;
                }
 
-             if(vertices_total_full_connected[i].west.size()>0){
+             if((int) vertices_total_full_connected[i].west.size()>0){
 
-                 if(vertices_total_full_connected[i].west.size()>1){
+                 if( (int) vertices_total_full_connected[i].west.size()>1){
                       west_error = 1;
                     }
                  if(abs(vertices_total_full_connected[vertices_total_full_connected[i].west[0]].x - vertices_total_full_connected[i].x)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_x){
@@ -102,8 +102,8 @@ void Grid::Check_Full_Connection_Grid(){
 
           }else{
 
-             if(vertices_total_full_connected[i].south.size()>0){
-                 if(vertices_total_full_connected[i].south.size()>1){
+             if((int) vertices_total_full_connected[i].south.size()>0){
+                 if( (int) vertices_total_full_connected[i].south.size()>1){
                       south_error = 1;
                     }
                  if(abs(vertices_total_full_connected[vertices_total_full_connected[i].south[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
@@ -113,9 +113,9 @@ void Grid::Check_Full_Connection_Grid(){
                       south_empty = 1;
                }
 
-             if(vertices_total_full_connected[i].north.size()>0){
+             if((int) vertices_total_full_connected[i].north.size()>0){
 
-                 if(vertices_total_full_connected[i].north.size()>1){
+                 if( (int) vertices_total_full_connected[i].north.size()>1){
                       north_error = 1;
                     }
                  if(abs(vertices_total_full_connected[vertices_total_full_connected[i].north[0]].y - vertices_total_full_connected[i].y)!=drc_info.Metal_info[vertices_total_full_connected[i].metal].grid_unit_y){
@@ -3066,7 +3066,7 @@ int Grid::Find_EndIndex(int start_index, int direction){
 
    int end_index=-1;
 
-   for(int i=start_index;i<vertices_total.size();i++){
+   for(int i=start_index;i< (int) vertices_total.size();i++){
 
        if(direction==0){//vertical
          
@@ -3243,17 +3243,17 @@ void Grid::Full_Connected_Vertex(){
   //int end_index=0;
    
   std::cout<<"Full connection: vertices_total size "<<vertices_total.size()<<std::endl;
-  while(start_index<vertices_total.size()){
+  while(start_index< (int) vertices_total.size()){
        //std::cout<<"Full connection vertex check point 1"<<std::endl;
        int end_index = Find_EndIndex(start_index, drc_info.Metal_info[vertices_total[start_index].metal].direct);
        int next_start_index = end_index + 1;
        int current_start_index = next_start_index;
        //std::cout<<"Full connection vertex check point 2"<<std::endl;
-       if(next_start_index>=vertices_total.size()){start_index=next_start_index;continue;}
+       if(next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
        int next_end_index = Find_EndIndex( next_start_index, drc_info.Metal_info[vertices_total[next_start_index].metal].direct);
        int current_end_index = next_end_index;
        //std::cout<<"Full connection vertex check point 2.5"<<std::endl;
-       if(next_end_index==-1 or next_start_index>=vertices_total.size()){start_index=next_start_index;continue;}
+       if(next_end_index==-1 or next_start_index>= (int) vertices_total.size()){start_index=next_start_index;continue;}
        //std::cout<<"start and end index"<<start_index<<" "<<end_index<<" next start and end index "<<next_start_index<<" "<<next_end_index<<std::endl;
 
        bool common_part_exist;
