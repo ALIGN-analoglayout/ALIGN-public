@@ -9,6 +9,7 @@ A_star::A_star(Grid& grid){
   source = grid.Source;
   dest = grid.Dest;
   shielding = 1;
+  this->drc_info = grid.drc_info;
   //FindFeasiblePath(grid, path_number);
   //std::cout<<"~~~~~After list \n";
   //this->grid.CheckVerticesTotal();
@@ -17,7 +18,7 @@ A_star::A_star(Grid& grid){
 
 bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down) {
 
-  drc_info = grid.drc_info;
+  
   bool mark=false;
   for(int i =0;i<pathNo;++i){
     
