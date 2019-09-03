@@ -17,12 +17,14 @@
 class Grid {
   
   friend class Graph;
+  friend class A_star;
   friend class GlobalGrid;
 
   private:
     std::unordered_map<int, int> total2graph; // mapping from total to graph vertices
     std::unordered_map<int, int> graph2total; // mapping from graph to total vertices
     std::vector<RouterDB::vertex> vertices_total; // vertex total list
+    std::vector<RouterDB::vertex> vertices_total_full_connected;
     std::vector<RouterDB::vertex> vertices_graph; // vertex list for graph
     std::vector<int> Start_index_metal_vertices; // starting index in list for each metal layer
     std::vector<int> End_index_metal_vertices; // ending index in list for each metal layer, if end<start, there is no list for the metal layer
@@ -99,6 +101,10 @@ class Grid {
     void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     void InactivePointlist_Power(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     void ActivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
+    int Find_EndIndex(int start_index, int direction);
+    bool Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis);
+    void Full_Connected_Vertex();
+    void Check_Full_Connection_Grid();
     //void inactive_node_global();
     //void inacitve_node_detail();
     //active or inactive node?
