@@ -9,7 +9,6 @@ A_star::A_star(Grid& grid){
   source = grid.Source;
   dest = grid.Dest;
   shielding = 1;
-  drc_info = grid.drc_info;
   //FindFeasiblePath(grid, path_number);
   //std::cout<<"~~~~~After list \n";
   //this->grid.CheckVerticesTotal();
@@ -17,6 +16,8 @@ A_star::A_star(Grid& grid){
 
 
 bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down) {
+
+  drc_info = grid.drc_info;
   bool mark=false;
   for(int i =0;i<pathNo;++i){
     
@@ -49,7 +50,7 @@ std::vector<std::vector<RouterDB::Metal> > A_star::ConvertPathintoPhysical(Grid&
   std::vector<std::vector<RouterDB::Metal> > Phsical_Path;
   for(int i= 0; i<Path.size();++i){
       std::vector<RouterDB::Metal> temp_physical_path;
-      int start_index = 0;
+      //int start_index = 0;
       //int end_index = 0;
       int flag_start_write = 1;
       //int flag_end_write = 0;
