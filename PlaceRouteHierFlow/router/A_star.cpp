@@ -1145,9 +1145,9 @@ std::vector<int> A_star::A_star_algorithm(Grid& grid, int left_up, int right_dow
     //std::cout<<"L_list size"<<L_list.size()<<std::endl;
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
-    L_list.erase(it);
     current_node = it->second;
-
+    L_list.erase(it);
+    
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
        found=1;
