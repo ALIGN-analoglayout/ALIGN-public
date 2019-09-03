@@ -1,6 +1,6 @@
 #include "A_star.h"
 
-A_star::A_star(Grid& grid){
+A_star::A_star(Grid& grid):drc_info(grid.drc_info){
   //this->grid=grid; 
   //std::cout<<"~~~~~Before list \n";
   //this->grid.CheckVerticesTotal();
@@ -9,7 +9,7 @@ A_star::A_star(Grid& grid){
   source = grid.Source;
   dest = grid.Dest;
   shielding = 1;
-  this->drc_info = grid.drc_info;
+  //this->drc_info = grid.drc_info;
   //FindFeasiblePath(grid, path_number);
   //std::cout<<"~~~~~After list \n";
   //this->grid.CheckVerticesTotal();
