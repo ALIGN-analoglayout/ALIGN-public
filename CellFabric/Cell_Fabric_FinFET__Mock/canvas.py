@@ -31,7 +31,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         activeOffset = activeWidth//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth1 + 2*p['Feol']['active_enclosure']
-        PcLength = (gate-1)*p['Poly']['Pitch']+p['Poly']['Width']+2*p['Feol']['PcExt']
+        ##PcLength = (gate-1)*p['Poly']['Pitch']+p['Poly']['Width']+2*p['Feol']['PcExt']
   
         self.m0 = self.addGen( Wire( 'm0', 'M0', 'v',
                                      clg=UncoloredCenterLineGrid( pitch=   p['Feol']['m0Pitch'], width= p['Feol']['m0Width'], offset= p['Feol']['m0Pitch']//2),
