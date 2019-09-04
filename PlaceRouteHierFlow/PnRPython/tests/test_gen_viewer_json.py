@@ -1,6 +1,7 @@
 import json
 
 from pnrdb import *
+from cell_fabric import DefaultCanvas, Pdk, transformation
 
 def get_hN(fn="tests/telescopic_ota-freeze.json"):
     with open(fn,"rt") as fp:
@@ -95,8 +96,6 @@ def gen_viewer_json( hN):
     return d
 
 
-from cell_fabric import DefaultCanvas, Pdk, transformation
-
 def test_gen_viewer_json():
     hN = get_hN()
     d = gen_viewer_json( hN)
@@ -115,9 +114,21 @@ def remove_duplicates( hN):
 
     def add_terminal( netName, layer, b):
         check_bbox( b)
-        cnv.terminals.append( { "netName": netName,
-                                "layer": layer,
-                                "rect": [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]})
+
+        r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
+        if layer == "M1":
+            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        if layer == "M2":
+            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        if layer == "M3":
+            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        cnv.terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
     for n in hN.Nets:
         print( n.name)
@@ -172,4 +183,15 @@ def remove_duplicates( hN):
 
 def test_remove_duplicates():
     hN = get_hN()
+    remove_duplicates( hN)
+
+def test_gen_viewer_json2():
+    hN = get_hN("tests/switched_capacitor_filter-freeze.json")
+    d = gen_viewer_json( hN)
+
+    with open("__viewer_json2","wt") as fp:
+        json.dump( d, fp=fp, indent=2)
+
+def test_remove_duplicates2():
+    hN = get_hN("tests/switched_capacitor_filter-freeze.json")
     remove_duplicates( hN)

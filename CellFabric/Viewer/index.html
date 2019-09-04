@@ -10,9 +10,25 @@
 <body></body>
 
 <script>
+  // check if there is a parameter (use that for the file name)
+
+  var params = new URLSearchParams(location.search);
+  var design = "mydesign";
+  if (params.has("design")) {
+    design = params.get("design");
+  }
+  var filename = "INPUT/" + design + "_dr_globalrouting.json";
+
+  console.log(design);
+  console.log(filename);
+
   // Hack to keep the json file from being cached
   var timestamp = Date.now();
-  d3.json("INPUT/mydesign_dr_globalrouting.json" + "?_=" + timestamp, onJson);
+  filename = filename + "?_=" + timestamp;
+
+  console.log(filename);
+
+  d3.json(filename, onJson);
 
   function onJson(error, data) {
     var [_, _, gr_width, gr_height] = data["bbox"];
@@ -60,7 +76,15 @@
       { layer: "via1", master: "V1" },
       { layer: "via2", master: "V2" },
       { layer: "via3", master: "V3" },
-      { layer: "via4", master: "V4" }
+      { layer: "via4", master: "V4" },
+      { layer: "via5", master: "V5" },
+      { layer: "metal0", master: "M0" },
+      { layer: "metal1", master: "M1" },
+      { layer: "metal2", master: "M2" },
+      { layer: "metal3", master: "M3" },
+      { layer: "metal4", master: "M4" },
+      { layer: "metal5", master: "M5" },
+      { layer: "metal6", master: "M6" }
     ];
 
     var metalStack = [
@@ -86,6 +110,8 @@
       { layer: "M4", tag: "4", color: "green" },
       { layer: "V4", tag: "v4", color: "black" },
       { layer: "M5", tag: "5", color: "orange" },
+      { layer: "V5", tag: "v5", color: "black" },
+      { layer: "M6", tag: "6", color: "magenta" },
       { layer: "LISD", tag: "LSD", color: "orange" },
       { layer: "SDT", tag: "SDT", color: "orange" },
       { layer: "GCUT", tag: "CUT", color: "purple" },
@@ -137,6 +163,13 @@
 
     var visibleLayers = {};
 
+    function updateVisibleLayersUsingSynonyms() {
+      for (i = 0; i < layer_synonyms.length; ++i) {
+        visibleLayers[layer_synonyms[i].layer] =
+          visibleLayers[layer_synonyms[i].master];
+      }
+    }
+
     function buttonClickLayersAll() {
       for (i = 0; i < metalStack.length; ++i) {
         d = metalStack[i];
@@ -144,9 +177,7 @@
         var button = d3.select("#buttonIdLayer" + i);
         button.style("opacity", 1.0);
       }
-      for (i = 0; i < layer_synonyms.length; ++i) {
-        visibleLayers[layer_synonyms[i].layer] = true;
-      }
+      updateVisibleLayersUsingSynonyms();
       redraw();
     }
 
@@ -157,9 +188,7 @@
         var button = d3.select("#buttonIdLayer" + i);
         button.style("opacity", 0.5);
       }
-      for (i = 0; i < layer_synonyms.length; ++i) {
-        visibleLayers[layer_synonyms[i].layer] = false;
-      }
+      updateVisibleLayersUsingSynonyms();
       redraw();
     }
 
@@ -175,10 +204,7 @@
         visibleLayers[d.layer] = true;
         button.style("opacity", 1.0);
       }
-      for (i = 0; i < layer_synonyms.length; ++i) {
-        visibleLayers[layer_synonyms[i].layer] =
-          visibleLayers[layer_synonyms[i].master];
-      }
+      updateVisibleLayersUsingSynonyms();
       redraw();
     }
 
