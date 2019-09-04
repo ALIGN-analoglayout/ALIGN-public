@@ -29,7 +29,7 @@ To setup for using a Docker volume in a container-based flow:
 		% docker volume create <volumeName>
 		% export ALIGN_WORKING_DIR=<volumeName>
 
-To setup ofr using a working directory in a container-based flow using
+To setup for using a working directory in a container-based flow using
 a working directory. (In WSL, this directory must be the full path to
 a Windows shared directory):
 
