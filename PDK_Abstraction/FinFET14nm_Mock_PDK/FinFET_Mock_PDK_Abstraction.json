@@ -29,20 +29,6 @@
 },
 
 {
-"Layer": "LISD",
-"LayerNo": 4,
-"Direction": "V",
-"Pitch": 80,
-"Width": 40,
-"MinL": 180,
-"MaxL": null,
-"EndToEnd": 48,
-"Offset": 0,
-"UnitC": 0.2,
-"UnitR": 100
-},
-
-{
 "Layer": "M1",
 "LayerNo": 13,
 "Direction": "V",
@@ -512,9 +498,9 @@
 "Layer": "Feol",
 "m0Pitch": 80,
 "m0Width": 34,
-"LIGWidth": 32,
-"LIGExt": 2,
-"pcWidth": 200,
+"PcWidth": 32,
+"PcExt": 2,
+"LISDWidth": 40,
 "dcWidth": 200,
 "v_enclosure": 20,
 "active_enclosure": 42,
