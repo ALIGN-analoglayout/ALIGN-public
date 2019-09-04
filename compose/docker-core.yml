@@ -70,7 +70,6 @@ services:
       context: ${ALIGN_HOME}
       dockerfile: compose/Dockerfile
     container_name: make_docker_cont
-    command: /bin/bash -c "ln -sf /ALIGN-public/compose/Makefile /dataVolume; /usr/bin/tail -f /dev/null"
     volumes:
       - redirectVolume:/dataVolume
       - /var/run/:/var/run/
