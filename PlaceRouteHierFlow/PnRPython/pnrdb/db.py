@@ -1,248 +1,181 @@
 import json
 
-class point:
+class FallbackJSON:
     def __init__(self, d):    
-        self._d = d
+        self.__dict__['_d'] = d
 
     def __getattr__(self, nm):
         return self._d[nm]
 
-class bbox:
+    def __setattr__(self, nm, v):
+        self._d[nm] = v
+
+class point(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.polygon = [ point(x) for x in d["polygon"]]
-        self.LL = point(d["LL"])
-        self.LR = point(d["LR"])
-        self.UL = point(d["UL"])
-        self.UR = point(d["UR"])
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class block:
+class bbox(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.originBox = bbox(d["originBox"])
-        self.originCenter = point(d["originCenter"])
-        self.placedBox = bbox(d["placedBox"])
-        self.placedCenter = point(d["placedCenter"])
-        self.blockPins = [ pin(x) for x in d["blockPins"]]
-        self.interMetals = [ contact(x) for x in d["interMetals"]]
-        self.interVias = [ Via(x) for x in d["interVias"]]
-        self.dummy_power_pin = [ pin(x) for x in d["dummy_power_pin"]]
+        super().__init__(d)
+        self.__dict__['polygon'] = [ point(x) for x in d["polygon"]]
+        self.__dict__['LL'] = point(d["LL"])
+        self.__dict__['LR'] = point(d["LR"])
+        self.__dict__['UL'] = point(d["UL"])
+        self.__dict__['UR'] = point(d["UR"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class blockComplex:
+class block(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.instance = [ block(x) for x in d["instance"]]
+        super().__init__(d)
+        self.__dict__['originBox'] = bbox(d["originBox"])
+        self.__dict__['originCenter'] = point(d["originCenter"])
+        self.__dict__['placedBox'] = bbox(d["placedBox"])
+        self.__dict__['placedCenter'] = point(d["placedCenter"])
+        self.__dict__['blockPins'] = [ pin(x) for x in d["blockPins"]]
+        self.__dict__['interMetals'] = [ contact(x) for x in d["interMetals"]]
+        self.__dict__['interVias'] = [ Via(x) for x in d["interVias"]]
+        self.__dict__['dummy_power_pin'] = [ pin(x) for x in d["dummy_power_pin"]]
 
-    def __getattr__(self, nm):
-        return self._d[nm]
+class blockComplex(FallbackJSON):
+    def __init__(self, d):    
+        super().__init__(d)
+        self.__dict__['instance'] = [ block(x) for x in d["instance"]]
 
-class Metal:
+class Metal(FallbackJSON):
     def __init__(self, d):
-        self._d = d
-        self.LinePoint = [ point(x) for x in d["LinePoint"]]
-        self.MetalRect = contact(d["MetalRect"])
+        super().__init__(d)
+        self.__dict__['LinePoint'] = [ point(x) for x in d["LinePoint"]]
+        self.__dict__['MetalRect'] = contact(d["MetalRect"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class Via:
+class Via(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.originpos = point(d["originpos"])
-        self.placedpos = point(d["placedpos"])
-        self.UpperMetalRect = contact(d["UpperMetalRect"])
-        self.LowerMetalRect = contact(d["LowerMetalRect"])
-        self.ViaRect = contact(d["ViaRect"])
+        super().__init__(d)
+        self.__dict__['originpos'] = point(d["originpos"])
+        self.__dict__['placedpos'] = point(d["placedpos"])
+        self.__dict__['UpperMetalRect'] = contact(d["UpperMetalRect"])
+        self.__dict__['LowerMetalRect'] = contact(d["LowerMetalRect"])
+        self.__dict__['ViaRect'] = contact(d["ViaRect"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-
-class net:
+class net(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.connected = [ connectNode(x) for x in d["connected"]]
-        self.segments = [ contact(x) for x in d["segments"]]
-        self.interVias = [ contact(x) for x in d["interVias"]]
-        self.path_metal = [ Metal(x) for x in d["path_metal"]]
-        self.path_via = [ Via(x) for x in d["path_via"]]
-        self.connectedContact = [ globalContact(x) for x in d["connectedContact"]]
+        super().__init__(d)
+        self.__dict__['connected'] = [ connectNode(x) for x in d["connected"]]
+        self.__dict__['segments'] = [ contact(x) for x in d["segments"]]
+        self.__dict__['interVias'] = [ contact(x) for x in d["interVias"]]
+        self.__dict__['path_metal'] = [ Metal(x) for x in d["path_metal"]]
+        self.__dict__['path_via'] = [ Via(x) for x in d["path_via"]]
+        self.__dict__['connectedContact'] = [ globalContact(x) for x in d["connectedContact"]]
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class terminal:
+class terminal(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.termContacts = [ contact(x) for x in d["termContacts"]]
+        super().__init__(d)
+        self.__dict__['termContacts'] = [ contact(x) for x in d["termContacts"]]
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class PowerGrid:
+class PowerGrid(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.metals = [ Metal(x) for x in d["metals"]]
-        self.vias = [ Via(x) for x in d["vias"]]
+        super().__init__(d)
+        self.__dict__['metals'] = [ Metal(x) for x in d["metals"]]
+        self.__dict__['vias'] = [ Via(x) for x in d["vias"]]
 
-
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class PowerNet:
+class PowerNet(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.Pins = [ pin(x) for x in d["Pins"]]
-        self.connected = [ connectNode(x) for x in d["Pins"]]
-        self.dummy_connected = [ connectNode(x) for x in d["Pins"]]
-        self.path_metal = [ Metal(x) for x in d["path_metal"]]
-        self.path_via = [ Via(x) for x in d["path_via"]]
+        super().__init__(d)
+        self.__dict__['Pins'] = [ pin(x) for x in d["Pins"]]
+        self.__dict__['connected'] = [ connectNode(x) for x in d["Pins"]]
+        self.__dict__['dummy_connected'] = [ connectNode(x) for x in d["Pins"]]
+        self.__dict__['path_metal'] = [ Metal(x) for x in d["path_metal"]]
+        self.__dict__['path_via'] = [ Via(x) for x in d["path_via"]]
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class pin:
+class pin(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.pinContacts = [ contact(x) for x in d["pinContacts"]]
-        self.pinVias = [ Via(x) for x in d["pinVias"]]
+        super().__init__(d)
+        self.__dict__['pinContacts'] = [ contact(x) for x in d["pinContacts"]]
+        self.__dict__['pinVias'] = [ Via(x) for x in d["pinVias"]]
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class contact:
+class contact(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.originBox = bbox(d["originBox"])
-        self.placedBox = bbox(d["placedBox"])
-        self.originCenter = point(d["originCenter"])
-        self.placedCenter = point(d["placedCenter"])
+        super().__init__(d)
+        self.__dict__['originBox'] = bbox(d["originBox"])
+        self.__dict__['placedBox'] = bbox(d["placedBox"])
+        self.__dict__['originCenter'] = point(d["originCenter"])
+        self.__dict__['placedCenter'] = point(d["placedCenter"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class globalContact:
+class globalContact(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.conTact = contact(d["conTact"])
+        super().__init__(d)
+        self.__dict__['conTact'] = contact(d["conTact"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class connectNode:
+class connectNode(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class layoutAS:
+class layoutAS(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.Blocks = [ blockComplex(x) for x in d["Blocks"]]
-        self.Nets = [ net(x) for x in d["Nets"]]
-        self.Terminals = [ terminal(x) for x in d["Terminals"]]        
+        super().__init__(d)
+        self.__dict__['Blocks'] = [ blockComplex(x) for x in d["Blocks"]]
+        self.__dict__['Nets'] = [ net(x) for x in d["Nets"]]
+        self.__dict__['Terminals'] = [ terminal(x) for x in d["Terminals"]]        
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class SymmNet:
+class SymmNet(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
-        self.net1 = net(d["net1"])
-        self.net2 = net(d["net2"])
+        super().__init__(d)
+        self.__dict__['net1'] = net(d["net1"])
+        self.__dict__['net2'] = net(d["net2"])
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class SymmPairBlock:
+class SymmPairBlock(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class Preplace:
+class Preplace(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class Alignment:
+class Alignment(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class Abument:
+class Abument(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class MatchBlock:
+class MatchBlock(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class PortPos:
+class PortPos(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class AlignBlock:
+class AlignBlock(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class CCCap:
+class CCCap(FallbackJSON):
     def __init__(self, d):    
-        self._d = d
+        super().__init__(d)
 
-    def __getattr__(self, nm):
-        return self._d[nm]
-
-class hierNode:
+class hierNode(FallbackJSON):
     def __init__(self, d):
-        self._d = d
-        self.Blocks = [ blockComplex(x) for x in d["Blocks"]]
-        self.Nets = [ net(x) for x in d["Nets"]]
-        self.Terminals = [ terminal(x) for x in d["Terminals"]]
-        self.Vdd = PowerGrid(d["Vdd"])
-        self.Gnd = PowerGrid(d["Gnd"])
-        self.PowerNets = [ PowerNet(x) for x in d["PowerNets"]]
-        self.blockPins = [ pin(x) for x in d["blockPins"]]
-        self.interMetals = [ contact(x) for x in d["interMetals"]]
-        self.interVias = [ Via(x) for x in d["interVias"]]
-        self.PnRAS = [ layoutAS(x) for x in d["PnRAS"]]
+        super().__init__(d)
+        self.__dict__['Blocks'] = [ blockComplex(x) for x in d["Blocks"]]
+        self.__dict__['Nets'] = [ net(x) for x in d["Nets"]]
+        self.__dict__['Terminals'] = [ terminal(x) for x in d["Terminals"]]
+        self.__dict__['Vdd'] = PowerGrid(d["Vdd"])
+        self.__dict__['Gnd'] = PowerGrid(d["Gnd"])
+        self.__dict__['PowerNets'] = [ PowerNet(x) for x in d["PowerNets"]]
+        self.__dict__['blockPins'] = [ pin(x) for x in d["blockPins"]]
+        self.__dict__['interMetals'] = [ contact(x) for x in d["interMetals"]]
+        self.__dict__['interVias'] = [ Via(x) for x in d["interVias"]]
+        self.__dict__['PnRAS'] = [ layoutAS(x) for x in d["PnRAS"]]
 
-        self.SNets = [ SymmNet(x) for x in d["SNets"]]
-        self.SPBlocks = [ SymmPairBlock(x) for x in d["SPBlocks"]]
-        self.Preplace_blocks = [ Preplace(x) for x in d["Preplace_blocks"]]
-        self.Alignment_blocks = [ Alignment(x) for x in d["Alignment_blocks"]]
-        self.Align_blocks = [ AlignBlock(x) for x in d["Align_blocks"]]
-        self.Abument_blocks = [ Abument(x) for x in d["Abument_blocks"]]
-        self.Match_blocks = [ MatchBlock(x) for x in d["Match_blocks"]]
-        self.CC_Caps = [ CCCap(x) for x in d["CC_Caps"]]
-        self.Port_Location = [ PortPos(x) for x in d["Port_Location"]]
-
-    def __getattr__(self, nm):
-        return self._d[nm]
+        self.__dict__['SNets'] = [ SymmNet(x) for x in d["SNets"]]
+        self.__dict__['SPBlocks'] = [ SymmPairBlock(x) for x in d["SPBlocks"]]
+        self.__dict__['Preplace_blocks'] = [ Preplace(x) for x in d["Preplace_blocks"]]
+        self.__dict__['Alignment_blocks'] = [ Alignment(x) for x in d["Alignment_blocks"]]
+        self.__dict__['Align_blocks'] = [ AlignBlock(x) for x in d["Align_blocks"]]
+        self.__dict__['Abument_blocks'] = [ Abument(x) for x in d["Abument_blocks"]]
+        self.__dict__['Match_blocks'] = [ MatchBlock(x) for x in d["Match_blocks"]]
+        self.__dict__['CC_Caps'] = [ CCCap(x) for x in d["CC_Caps"]]
+        self.__dict__['Port_Location'] = [ PortPos(x) for x in d["Port_Location"]]
 
 structs = [(hierNode,[("isCompleted",None),
                       ("isTop",None),
