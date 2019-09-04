@@ -27,13 +27,13 @@ the full path to a working directory or a docker volume name.
 To setup for using a Docker volume in a container-based flow:
 
 		% docker volume create <volumeName>
-		% export ALIGN_WORKING_DIR=<volumeName>
+		% export ALIGN_WORK_DIR=<volumeName>
 
 To setup for using a working directory in a container-based flow using
 a working directory. (In WSL, this directory must be the full path to
 a Windows shared directory):
 
-		% export ALIGN_WORKING_DIR=<working directory path for output>
+		% export ALIGN_WORK_DIR=<working directory path for output>
 
 Now to invoke the flow:
 

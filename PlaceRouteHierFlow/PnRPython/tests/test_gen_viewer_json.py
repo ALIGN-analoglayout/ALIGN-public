@@ -90,6 +90,7 @@ def gen_viewer_json( hN):
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 add_terminal( '!interVias', con.metal, con.placedBox)
 
+        add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     d["terminals"] = terminals
 
@@ -169,13 +170,14 @@ def remove_duplicates( hN):
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
         for con in blk.interMetals:
-#            add_terminal( '!interMetals', con.metal, con.placedBox)
             pass
+#            add_terminal( '!interMetals', con.metal, con.placedBox)
+
 
         for via in blk.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-#                add_terminal( '!interVias', con.metal, con.placedBox)
                 pass                
+#                add_terminal( '!interVias', con.metal, con.placedBox)
 
     cnv.removeDuplicates()
 
@@ -189,9 +191,21 @@ def test_gen_viewer_json2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
     d = gen_viewer_json( hN)
 
-    with open("__viewer_json2","wt") as fp:
+    with open("switched_capacitor_filter_dr_globalrouting.json","wt") as fp:
+        json.dump( d, fp=fp, indent=2)
+
+def test_gen_viewer_json3():
+    hN = get_hN("tests/switched_capacitor_combination-freeze.json")
+
+    d = gen_viewer_json( hN)
+
+    with open("switched_capacitor_combination_dr_globalrouting.json","wt") as fp:
         json.dump( d, fp=fp, indent=2)
 
 def test_remove_duplicates2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
+    remove_duplicates( hN)
+
+def test_remove_duplicates3():
+    hN = get_hN("tests/switched_capacitor_combination-freeze.json")
     remove_duplicates( hN)
