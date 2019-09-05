@@ -136,19 +136,26 @@ docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml
 	cat docker-core.yml docker-$(VOL).yml > $@
 
 #Only respin the container
-make-docker-service::	docker-compose.yml volume
+make-docker-service:	docker-compose.yml volume
 	docker-compose -p compose up -d $@
 	docker cp $< make_docker_cont:/dataVolume/
 	docker cp volume make_docker_cont:/dataVolume/
 	touch $@
 
+.PHONY: check_volume
+volume:	check_volume
+
 # If volume name changes, bring down the containers and remove the redirect vol
-volume:	
+# FAILURE mode: services are marked as up in volume, but are not up.
+check_volume:
 ifneq ($(shell cat volume),$(ALIGN_WORK_DIR))
 ifneq (, $(wildcard ./docker-compose.yml))
+		echo "Recreating containers with volume change to $(ALIGN_WORK_DIR)"
+		rm -f make-docker-service
 		docker-compose down
 endif
 	docker volume rm -f compose_redirectVolume
+	rm -f make-docker-service
 	echo $(ALIGN_WORK_DIR) > volume
 endif
 

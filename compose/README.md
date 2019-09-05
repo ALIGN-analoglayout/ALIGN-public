@@ -57,11 +57,18 @@ You can work inside the container to modify or debug its behavior:
 > it will bring up the rest of the services from within the
 > make-docker-service.  After that, make will run the flow for the
 > given design.
->
-> If the services don't all come up, you can bring down the services
-> to retry:
+
+If the services don't all come up, you can bring down the services (removing the containers)
+to retry:
 
 		% make docker-down
+
+If you change source and start with a fresh set of images from which
+containers are built, you can either bring them down then up
+individually using the docker-compose commands (see end of this page)
+or flush all images and restart:
+
+		% make docker-fulldown
 		
 ## Native Environment Flow
 
@@ -120,5 +127,5 @@ bring up the services.
 
 Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
-modifying files in the relevant containers.  You can git push from
+modifying files inside the relevant containers.  You can git push from
 those containers as well.
