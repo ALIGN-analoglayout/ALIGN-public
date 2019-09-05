@@ -154,7 +154,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_point.x = 0+vi.width/2;
              temp_point.y = 0+vi.width_y/2;
              temp_viamodel.ViaRect.push_back(temp_point);
-             
+/*             
 	     {
 	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
 	       //LL LowerRect
@@ -196,6 +196,52 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		 //UR
 		 temp_point.y = 0+mi.width/2+vi.cover_u_P;
 		 temp_point.x = 0+mi.width/2+vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+	       } 
+	       DRC_info.Via_model.push_back(temp_viamodel);
+	     }
+*/
+	     {
+	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
+	       //LL LowerRect
+	       if(mi.direct==0){
+		 temp_point.x = 0-vi.width/2-vi.cover_l_P;
+		 temp_point.y = 0-vi.width_y/2-vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+		 //UR
+		 temp_point.x = 0+vi.width/2+vi.cover_l_P;
+		 temp_point.y = 0+vi.width_y/2+vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+	       }else{
+		 temp_point.y = 0-vi.width_y/2-vi.cover_l_P;
+		 temp_point.x = 0-vi.width/2-vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+		 //UR
+		 temp_point.y = 0+vi.width_y/2+vi.cover_l_P;
+		 temp_point.x = 0+vi.width/2+vi.cover_l;
+		 temp_viamodel.LowerRect.push_back(temp_point);
+	       } 
+	     }
+             
+	     {
+	       auto& mi = DRC_info.Metal_info[temp_viamodel.UpperIdx];
+
+	       //LL UpperRect
+	       if(mi.direct==0){
+		 temp_point.x = 0-vi.width/2-vi.cover_u_P;
+		 temp_point.y = 0-vi.width_y/2-vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+		 //UR
+		 temp_point.x = 0+vi.width/2+vi.cover_u_P;
+		 temp_point.y = 0+vi.width_y/2+vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+	       }else{
+		 temp_point.y = 0-vi.width_y/2-vi.cover_u_P;
+		 temp_point.x = 0-vi.width/2-vi.cover_u;
+		 temp_viamodel.UpperRect.push_back(temp_point);
+		 //UR
+		 temp_point.y = 0+vi.width_y/2+vi.cover_u_P;
+		 temp_point.x = 0+vi.width/2+vi.cover_u;
 		 temp_viamodel.UpperRect.push_back(temp_point);
 	       } 
 	       DRC_info.Via_model.push_back(temp_viamodel);

@@ -1120,7 +1120,7 @@ void PnRdatabase::ReadDesignRule(string drfile) {
        temp_point.x = 0+DRC_info.Via_info[i].width/2;
        temp_point.y = 0+DRC_info.Via_info[i].width/2;
        temp_viamodel.ViaRect.push_back(temp_point);
-       
+/*       
        //LL LowerRect
        if(DRC_info.Metal_info[i].direct==0){
        temp_point.x = 0-DRC_info.Metal_info[i].width/2;
@@ -1156,6 +1156,44 @@ void PnRdatabase::ReadDesignRule(string drfile) {
        //UR
        temp_point.y = 0+DRC_info.Metal_info[i+1].width/2;
        temp_point.x = 0+DRC_info.Metal_info[i+1].width/2+DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       } 
+*/
+       //LL LowerRect
+       if(DRC_info.Metal_info[i].direct==0){
+       temp_point.x = 0-DRC_info.Via_info[i].width/2;
+       temp_point.y = 0-DRC_info.Via_info[i].width/2-DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       //UR
+       temp_point.x = 0+DRC_info.Via_info[i].width/2;
+       temp_point.y = 0+DRC_info.Via_info[i].width/2+DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       }else{
+       temp_point.y = 0-DRC_info.Via_info[i].width/2;
+       temp_point.x = 0-DRC_info.Via_info[i].width/2-DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       //UR
+       temp_point.y = 0+DRC_info.Via_info[i].width/2;
+       temp_point.x = 0+DRC_info.Via_info[i].width/2+DRC_info.Via_info[i].cover_l;
+       temp_viamodel.LowerRect.push_back(temp_point);
+       } 
+       
+       //LL UpperRect
+       if(DRC_info.Metal_info[i+1].direct==0){
+       temp_point.x = 0-DRC_info.Via_info[i].width/2;
+       temp_point.y = 0-DRC_info.Via_info[i].width/2-DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       //UR
+       temp_point.x = 0+DRC_info.Via_info[i].width/2;
+       temp_point.y = 0+DRC_info.Via_info[i].width/2+DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       }else{
+       temp_point.y = 0-DRC_info.Via_info[i].width/2;
+       temp_point.x = 0-DRC_info.Via_info[i].width/2-DRC_info.Via_info[i].cover_u;
+       temp_viamodel.UpperRect.push_back(temp_point);
+       //UR
+       temp_point.y = 0+DRC_info.Via_info[i].width/2;
+       temp_point.x = 0+DRC_info.Via_info[i].width/2+DRC_info.Via_info[i].cover_u;
        temp_viamodel.UpperRect.push_back(temp_point);
        } 
       DRC_info.Via_model.push_back(temp_viamodel);
