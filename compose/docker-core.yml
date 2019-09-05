@@ -99,7 +99,7 @@ services:
       
   transfer-service:
     <<: *default-service
-    image: ubuntu
+    image: ubuntu:18.04
     container_name: transfer_cont
 
   topology-service:

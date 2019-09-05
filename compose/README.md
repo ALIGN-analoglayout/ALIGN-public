@@ -1,6 +1,7 @@
 This directory contains a Docker Compose specification that runs the
 end-to-end ALIGN flow using a container-based flow, where individual
-engines have isolated software environments. 
+engines have isolated software environments. In addition to Docker,
+you will need to install docker-compose.
 
 Software components that are in container images can be thought of as
 'installed' and we are using Make to run the flow through the
