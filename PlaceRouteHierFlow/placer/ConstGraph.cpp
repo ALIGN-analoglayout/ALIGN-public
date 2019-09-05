@@ -3900,7 +3900,6 @@ PnRDB::bbox ConstGraph::ConvertBoundaryData(vector<placerDB::point> Bdata) {
   int x=Bdata.at(0).x, X=Bdata.at(0).x, y=Bdata.at(0).y, Y=Bdata.at(0).y;
   for(vector<placerDB::point>::iterator it=Bdata.begin();it!=Bdata.end();++it) {
     tmpp.x=it->x; tmpp.y=it->y;
-    newBdata.polygon.push_back(tmpp);
     if((it->x)<x) {x=it->x;}
     if((it->x)>X) {X=it->x;}
     if((it->y)<y) {y=it->y;}

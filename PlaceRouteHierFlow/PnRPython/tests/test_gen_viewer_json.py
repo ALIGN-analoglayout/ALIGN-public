@@ -17,15 +17,6 @@ def check_bbox( b):
     assert b.LL.x < b.UR.x
     assert b.LL.y < b.UR.y
 
-    lst = [(b.LL,"LL"),(b.LR,"LR"),(b.UR,"UR"),(b.UL,"UL")]
-    sequence = []
-    for p in b.polygon:
-        sequence.append( [ tag for (pp,tag) in lst if p.x == pp.x and p.y == pp.y])
-    assert all( sequence)
-    assert all( len(x) == 1 for x in sequence)
-    assert len(b.polygon) == 0 or len( set( [x[0] for x in sequence])) == 4, sequence
-
-
 def gen_viewer_json( hN):
 
     d = {}
