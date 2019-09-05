@@ -194,7 +194,7 @@ for (k,v) in abstract_structs:
     attrs_dict = {}
     for (nm,vv) in v:
         def init_fn(self, d):
-            super().__init__(d)
+            FallbackJSON.__init__(self, d)
             if isinstance( vv, tuple):
                 assert vv[0] is list
                 if vv[1] is None:
@@ -204,17 +204,20 @@ for (k,v) in abstract_structs:
                     self__dict__[nm] = [ klass(x) for x in d[nm]]
             else:
                 if vv is None:
-                    self.__dict__[nm] = d[nm]
+                    if nm in d:
+#
+# Runs 5x slower if you include this
+# Not doing it means you need to keep the JSON shadow around
+#                        self.__dict__[nm] = d[nm]
+                        pass
+                    else:
+                        print("Missing field for", nm, k, "in JSON")
                 else:
                     klass = globals()[vv]
                     self__dict__[nm] = klass(x)
         attrs_dict["__init__"] = init_fn
-    type( k, (FallbackJSON,), attrs_dict)
-
-
-class point(FallbackJSON):
-    def __init__(self, d):    
-        super().__init__(d)
+    print( k,v, attrs_dict)
+    globals()[k] = type( k, (FallbackJSON,), attrs_dict)
 
 class bbox(FallbackJSON):
     def __init__(self, d):    
