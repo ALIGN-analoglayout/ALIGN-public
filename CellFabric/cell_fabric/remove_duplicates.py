@@ -186,7 +186,7 @@ class RemoveDuplicates():
                         widths = set()
                         for (r, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
-                        self.different_widths.append( f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
+                        self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
@@ -282,8 +282,8 @@ class RemoveDuplicates():
             print( "SHORT", *short)
         for opn in self.opens:
             print( "OPEN", *opn)
-        for diff in self.different_widths:
-            print( "DIFFERENT WIDTH", diff)
+        for dif in self.different_widths:
+            print( "DIFFERENT WIDTH", *dif)
         for subinst in self.subinsts:
             print("SUBINST", *subinst)
 
