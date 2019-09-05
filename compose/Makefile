@@ -97,7 +97,7 @@ docker-dir-type.yml:	${ALIGN_HOME}/compose/docker-dir-type.yml
 docker-core.yml:	${ALIGN_HOME}/compose/docker-core.yml
 	cp $< .
 
-docker:	make-docker-service
+docker:	volume make-docker-service
 	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/compose/Makefile DESIGN=${DESIGN}"
 
 services:	transfer-service protobuf-service \
@@ -132,11 +132,11 @@ fullbuild-service:	docker-compose.yml
 	$(call start, $@)
 	touch $@
 
-docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml
+docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml volume
 	cat docker-core.yml docker-$(VOL).yml > $@
 
 #Only respin the container
-make-docker-service:	docker-compose.yml volume
+make-docker-service:	docker-compose.yml
 	docker-compose -p compose up -d $@
 	docker cp $< make_docker_cont:/dataVolume/
 	docker cp volume make_docker_cont:/dataVolume/
@@ -146,7 +146,7 @@ make-docker-service:	docker-compose.yml volume
 volume:	check_volume
 
 # If volume name changes, bring down the containers and remove the redirect vol
-# FAILURE mode: services are marked as up in volume, but are not up.
+# FAILURE mode: services are marked as up in volume, but are not up -- fix is volume entries above
 check_volume:
 ifneq ($(shell cat volume),$(ALIGN_WORK_DIR))
 ifneq (, $(wildcard ./docker-compose.yml))
