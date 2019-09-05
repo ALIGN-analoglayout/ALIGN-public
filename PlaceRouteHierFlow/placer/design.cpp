@@ -337,10 +337,18 @@ design::design(PnRDB::hierNode& node) {
       block tmpblock;
       tmpblock.name=(it->instance).at(bb).name;
       //cout<<tmpblock.name<<endl;
+      /*
       for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {
         placerDB::point tmppoint={pit->x, pit->y};
         tmpblock.boundary.polygon.push_back(tmppoint);
       }
+      */
+      const auto& pit = (it->instance).at(bb).originBox;
+      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
+      tmpblock.boundary.polygon.push_back( {pit.UL.x,pit.UL.y});
+      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
+      tmpblock.boundary.polygon.push_back( {pit.LR.x,pit.LR.y});
+
       tmpblock.type=(it->instance).at(bb).type;
       tmpblock.width=(it->instance).at(bb).width;
       tmpblock.height=(it->instance).at(bb).height;
@@ -357,10 +365,17 @@ design::design(PnRDB::hierNode& node) {
           tpoint={ cit->originCenter.x, cit->originCenter.y };
           tmppin.center.push_back(tpoint);
           tmppin.boundary.resize(tmppin.boundary.size()+1);
+	  /*
           for(vector<PnRDB::point>::iterator qit=cit->originBox.polygon.begin(); qit!=cit->originBox.polygon.end(); ++qit) {
             tpoint={qit->x, qit->y};
             tmppin.boundary.back().polygon.push_back(tpoint);
           }
+	  */
+	  const auto& qit=cit->originBox;
+	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.LL.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.UL.x,qit.UL.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.UR.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.LR.x,qit.LR.y});
         }
         tmpblock.blockPins.push_back(tmppin);
       }
@@ -1544,15 +1559,6 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
   PnRDB::bbox placedBox;
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
-  for(unsigned int i=0;i<originBox.polygon.size();++i) {
-    placedBox.polygon.push_back( GetPlacedPnRPosition(originBox.polygon.at(i), Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
-  }
-  for(unsigned int i=0;i<placedBox.polygon.size();++i) {
-    if(x>placedBox.polygon.at(i).x) {x=placedBox.polygon.at(i).x;}
-    if(X<placedBox.polygon.at(i).x) {X=placedBox.polygon.at(i).x;}
-    if(y>placedBox.polygon.at(i).y) {y=placedBox.polygon.at(i).y;}
-    if(Y<placedBox.polygon.at(i).y) {Y=placedBox.polygon.at(i).y;}
-  }
   placedBox.LL.x=x; placedBox.LL.y=y;
   placedBox.LR.x=X; placedBox.LR.y=y;
   placedBox.UR.x=X; placedBox.UR.y=Y;
@@ -1562,10 +1568,6 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
 
 PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel) {
   PnRDB::bbox placedBox=GetPlacedBlockInterMetalRelBox(blockid, ort, originBox, sel);
-  for(unsigned int i=0;i<placedBox.polygon.size();++i) {
-    placedBox.polygon.at(i).x+=LL.x;
-    placedBox.polygon.at(i).y+=LL.y;
-  }
   placedBox.LL.x+=LL.x;
   placedBox.LL.y+=LL.y;
   placedBox.UL.x+=LL.x;

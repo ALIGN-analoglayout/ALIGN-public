@@ -3247,19 +3247,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.ViaRect.placedBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.placedCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.placedCenter.y = router_via.ViaRect.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.ViaRect.placedBox.LL.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.LL.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.UL.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.UL.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.UR.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.UR.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.LR.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.LR.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
 
   //LowerMetalRect
   temp_via.LowerMetalRect.metal = drc_info.Metal_info[router_via.LowerMetalRect.metal].name;
@@ -3273,19 +3260,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.LowerMetalRect.placedBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.placedCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.placedCenter.y = router_via.LowerMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.LowerMetalRect.placedBox.LL.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.LL.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.UL.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.UL.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.UR.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.UR.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.LR.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.LR.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
 
   //UpperMetalRect
   temp_via.UpperMetalRect.metal = drc_info.Metal_info[router_via.UpperMetalRect.metal].name;
@@ -3299,19 +3273,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.UpperMetalRect.placedBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.placedCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.placedCenter.y = router_via.UpperMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.UpperMetalRect.placedBox.LL.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.LL.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.UL.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.UL.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.UR.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.UR.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.LR.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.LR.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
 
 };
 
@@ -3329,19 +3290,6 @@ void GcellDetailRouter::ConvertToContactPnRDB_Placed_Origin(PnRDB::contact& pnr_
   pnr_contact.originBox.LR.y = router_contact.placedLL.y;
   pnr_contact.originCenter.x = router_contact.placedCenter.x;
   pnr_contact.originCenter.y = router_contact.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=pnr_contact.originBox.LL.x; 
-  temp_point.y=pnr_contact.originBox.LL.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.UL.x; 
-  temp_point.y=pnr_contact.originBox.UL.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.UR.x; 
-  temp_point.y=pnr_contact.originBox.UR.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.LR.x; 
-  temp_point.y=pnr_contact.originBox.LR.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
 
 };
 
@@ -3363,19 +3311,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.ViaRect.originBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.originCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.originCenter.y = router_via.ViaRect.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.ViaRect.originBox.LL.x; 
-  temp_point.y=temp_via.ViaRect.originBox.LL.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.UL.x; 
-  temp_point.y=temp_via.ViaRect.originBox.UL.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.UR.x; 
-  temp_point.y=temp_via.ViaRect.originBox.UR.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.LR.x; 
-  temp_point.y=temp_via.ViaRect.originBox.LR.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
 
   //LowerMetalRect
   temp_via.LowerMetalRect.metal = drc_info.Metal_info[router_via.LowerMetalRect.metal].name;
@@ -3389,19 +3324,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.LowerMetalRect.originBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.originCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.originCenter.y = router_via.LowerMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.LowerMetalRect.originBox.LL.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.LL.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.UL.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.UL.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.UR.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.UR.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.LR.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.LR.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
 
   //UpperMetalRect
   temp_via.UpperMetalRect.metal = drc_info.Metal_info[router_via.UpperMetalRect.metal].name;
@@ -3415,19 +3337,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.UpperMetalRect.originBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.originCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.originCenter.y = router_via.UpperMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.UpperMetalRect.originBox.LL.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.LL.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.UL.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.UL.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.UR.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.UR.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.LR.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.LR.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
 
 };
 
@@ -3518,18 +3427,5 @@ void GcellDetailRouter::ConvertToContactPnRDB_Placed_Placed(PnRDB::contact& pnr_
   pnr_contact.placedBox.LR.y = router_contact.placedLL.y;
   pnr_contact.placedCenter.x = router_contact.placedCenter.x;
   pnr_contact.placedCenter.y = router_contact.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=pnr_contact.placedBox.LL.x; 
-  temp_point.y=pnr_contact.placedBox.LL.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.UL.x; 
-  temp_point.y=pnr_contact.placedBox.UL.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.UR.x; 
-  temp_point.y=pnr_contact.placedBox.UR.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.LR.x; 
-  temp_point.y=pnr_contact.placedBox.LR.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
 
 };
