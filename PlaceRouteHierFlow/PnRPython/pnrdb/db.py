@@ -180,23 +180,11 @@ abstract_structs = [
 ]
 
 
-class FallbackJSON:
-    def __init__(self, d):    
-        pass
-#        self.__dict__['_d'] = d
-
-#    def __getattr__(self, nm):
-#        return self._d[nm]
-
-#    def __setattr__(self, nm, v):
-#        self._d[nm] = v
-
 for (k,v) in abstract_structs:
 
     def capture_closure( k, v):
         def init_fn(self, d):
             for (nm,vv) in v:
-                FallbackJSON.__init__(self, d)
                 if isinstance( vv, tuple):
                     assert vv[0] is list
                     if vv[1] is None:
@@ -219,7 +207,7 @@ for (k,v) in abstract_structs:
                         self.__dict__[nm] = klass(d[nm])
         return init_fn
 
-    globals()[k] = type( k, (FallbackJSON,), { "__init__" : capture_closure( k, v)})
+    globals()[k] = type( k, (), { "__init__" : capture_closure( k, v)})
 
 def ff( x):
     def f(x):
