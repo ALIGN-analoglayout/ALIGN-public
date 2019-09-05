@@ -28,6 +28,9 @@ def check_bbox( b):
 
 
 def gen_viewer_json( hN):
+    p = Pdk().load( "../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
+
+    cnv = DefaultCanvas( p)
 
     d = {}
 
@@ -41,9 +44,38 @@ def gen_viewer_json( hN):
 
     def add_terminal( netName, layer, b):
         check_bbox( b)
-        terminals.append( { "netName": netName,
-                            "layer": layer,
-                            "rect": [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]})
+
+        r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
+        terminals.append( { "netName": netName, "layer": layer, "rect": r})
+
+        if netName == "!interMetals": return
+        if netName == "!interVias": return
+
+        if layer == "M1":
+            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        if layer == "M2":
+            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        if layer == "M3":
+            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
+            if p[0] != p[1]:
+                print( "Off grid", layer, netName, p, r)
+        if layer == "cellarea":
+            p = cnv.m1.clg.inverseBounds( b.LL.x)
+            if p[0] != p[1]:
+                print( "Off grid LL.x", layer, netName, p, r)
+            p = cnv.m1.clg.inverseBounds( b.UR.x)
+            if p[0] != p[1]:
+                print( "Off grid UR.x", layer, netName, p, r)
+            p = cnv.m2.clg.inverseBounds( b.LL.y)
+            if p[0] != p[1]:
+                print( "Off grid LL.y", layer, netName, p, r)
+            p = cnv.m2.clg.inverseBounds( b.UR.y)
+            if p[0] != p[1]:
+                print( "Off grid UR.y", layer, netName, p, r)
 
     for n in hN.Nets:
         print( n.name)
