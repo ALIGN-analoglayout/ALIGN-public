@@ -191,46 +191,60 @@ class FallbackJSON:
         self._d[nm] = v
 
 for (k,v) in abstract_structs:
-    attrs_dict = {}
-    for (nm,vv) in v:
-        def init_fn(self, d):
-            FallbackJSON.__init__(self, d)
-            if isinstance( vv, tuple):
-                assert vv[0] is list
-                if vv[1] is None:
-                    self.__dict__[nm] = [ x for x in d[nm]]
-                else:
-                    klass = globals()[vv[1]]
-                    self__dict__[nm] = [ klass(x) for x in d[nm]]
-            else:
-                if vv is None:
-                    if nm in d:
-#
-# Runs 5x slower if you include this
-# Not doing it means you need to keep the JSON shadow around
-#                        self.__dict__[nm] = d[nm]
-                        pass
-                    else:
-#                        print("Missing field for", nm, k, "in JSON")
-                        pass
-                else:
-                    klass = globals()[vv]
-                    self__dict__[nm] = klass(x)
-        attrs_dict["__init__"] = init_fn
-    print( k,v, attrs_dict)
-    globals()[k] = type( k, (FallbackJSON,), attrs_dict)
 
-class block(FallbackJSON):
+    def capture_closure( k, v):
+        def init_fn(self, d):
+            for (nm,vv) in v:
+                FallbackJSON.__init__(self, d)
+                if isinstance( vv, tuple):
+                    assert vv[0] is list
+                    if vv[1] is None:
+                        self.__dict__[nm] = [ x for x in d[nm]]
+                    else:
+                        klass = globals()[vv[1]]
+                        self.__dict__[nm] = [ klass(x) for x in d[nm]]
+                else:
+                    if vv is None:
+                        if nm in d:
+    #
+    # Runs 5x slower if you include this
+    # Not doing it means you need to keep the JSON shadow around
+    #                        self.__dict__[nm] = d[nm]
+                            pass
+                        else:
+                            print("Missing field for", nm, k, "in JSON")
+                    else:
+                        klass = globals()[vv]
+                        print( "else else", nm, k)
+                        self.__dict__[nm] = klass(d[nm])
+        return init_fn
+
+    globals()[k] = type( k, (FallbackJSON,), { "__init__" : capture_closure( k, v)})
+
+class bbox(FallbackJSON):
     def __init__(self, d):    
         super().__init__(d)
-        self.__dict__['originBox'] = bbox(d["originBox"])
-        self.__dict__['originCenter'] = point(d["originCenter"])
-        self.__dict__['placedBox'] = bbox(d["placedBox"])
-        self.__dict__['placedCenter'] = point(d["placedCenter"])
-        self.__dict__['blockPins'] = [ pin(x) for x in d["blockPins"]]
-        self.__dict__['interMetals'] = [ contact(x) for x in d["interMetals"]]
-        self.__dict__['interVias'] = [ Via(x) for x in d["interVias"]]
-        self.__dict__['dummy_power_pin'] = [ pin(x) for x in d["dummy_power_pin"]]
+        self.__dict__['polygon'] = [ point(x) for x in d["polygon"]]
+        self.__dict__['LL'] = point(d["LL"])
+        self.__dict__['LR'] = point(d["LR"])
+        self.__dict__['UL'] = point(d["UL"])
+        self.__dict__['UR'] = point(d["UR"])
+
+# class point(FallbackJSON):
+#    def __init__(self, d):    
+#        super().__init__(d)
+
+# class block(FallbackJSON):
+#     def __init__(self, d):    
+#         super().__init__(d)
+#         self.__dict__['originBox'] = bbox(d["originBox"])
+#         self.__dict__['originCenter'] = point(d["originCenter"])
+#         self.__dict__['placedBox'] = bbox(d["placedBox"])
+#         self.__dict__['placedCenter'] = point(d["placedCenter"])
+#         self.__dict__['blockPins'] = [ pin(x) for x in d["blockPins"]]
+#         self.__dict__['interMetals'] = [ contact(x) for x in d["interMetals"]]
+#         self.__dict__['interVias'] = [ Via(x) for x in d["interVias"]]
+#         self.__dict__['dummy_power_pin'] = [ pin(x) for x in d["dummy_power_pin"]]
 
 class blockComplex(FallbackJSON):
     def __init__(self, d):    
