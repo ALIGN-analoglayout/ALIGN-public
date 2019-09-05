@@ -34,12 +34,18 @@ def test_gen_viewer_json3():
 
 def test_remove_duplicates():
     hN = get_hN()
-    remove_duplicates( hN)
+    cnv = remove_duplicates( hN)
+    assert len(cnv.rd.different_widths) == 0
+    assert len(cnv.rd.shorts) == 0
 
 def test_remove_duplicates2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
-    remove_duplicates( hN)
+    cnv = remove_duplicates( hN)
+    assert len(cnv.rd.different_widths) == 0
+    assert len(cnv.rd.shorts) == 0
 
 def test_remove_duplicates3():
     hN = get_hN("tests/switched_capacitor_combination-freeze.json")
-    remove_duplicates( hN)
+    cnv = remove_duplicates( hN)
+    assert len(cnv.rd.different_widths) == 0
+    assert len(cnv.rd.shorts) == 0
