@@ -189,6 +189,7 @@ for (k,v) in abstract_structs:
             for (nm,vv) in v:
                 def f( x, vv):
                     if vv is None:
+# might be faster if we don't do the copy
                         return copy.deepcopy( x)
                     else:
                         klass = globals()[vv]
@@ -196,9 +197,9 @@ for (k,v) in abstract_structs:
 
                 if isinstance( vv, tuple):
                     assert vv[0] is list
-                    self.__dict__[nm] = [ f(x,vv[1]) for x in d[nm]]
+                    setattr( self, nm, [ f(x,vv[1]) for x in d[nm]])
                 else:
-                    self.__dict__[nm] = f(d[nm],vv)
+                    setattr( self, nm, f(d[nm],vv))
         return init_fn
 
     globals()[k] = type( k, (), { "__init__" : capture_closure( k, v)})
