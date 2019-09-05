@@ -211,7 +211,8 @@ for (k,v) in abstract_structs:
 #                        self.__dict__[nm] = d[nm]
                         pass
                     else:
-                        print("Missing field for", nm, k, "in JSON")
+#                        print("Missing field for", nm, k, "in JSON")
+                        pass
                 else:
                     klass = globals()[vv]
                     self__dict__[nm] = klass(x)
