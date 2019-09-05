@@ -20,8 +20,6 @@ void PnRdatabase::PrintLEFData() {
       for(vector<PnRDB::contact>::iterator it4=it2->pinContacts.begin(); it4!= it2->pinContacts.end();it4++) {
         cout<<"\n\tmetal: "<<it4->metal<<"; orginBox: ";
         cout<<" LL-{"<<it4->originBox.LL.x<<","<<it4->originBox.LL.y<<"}";
-        cout<<" LR-{"<<it4->originBox.LR.x<<","<<it4->originBox.LR.y<<"}";
-        cout<<" UL-{"<<it4->originBox.UL.x<<","<<it4->originBox.UL.y<<"}";
         cout<<" UR-{"<<it4->originBox.UR.x<<","<<it4->originBox.UR.y<<"}";
         cout<<" center-{"<<it4->originCenter.x<<","<<it4->originCenter.y<<"}";
       }
@@ -31,8 +29,6 @@ void PnRdatabase::PrintLEFData() {
     for(vector<PnRDB::contact>::iterator it4=it->second.at(w).interMetals.begin(); it4!= it->second.at(w).interMetals.end();it4++) {
       cout<<"\tmetal: "<<it4->metal<<"; orginBox: ";
       cout<<" LL-{"<<it4->originBox.LL.x<<","<<it4->originBox.LL.y<<"}";
-      cout<<" LR-{"<<it4->originBox.LR.x<<","<<it4->originBox.LR.y<<"}";
-      cout<<" UL-{"<<it4->originBox.UL.x<<","<<it4->originBox.UL.y<<"}";
       cout<<" UR-{"<<it4->originBox.UR.x<<","<<it4->originBox.UR.y<<"}";
       cout<<" center-{"<<it4->originCenter.x<<","<<it4->originCenter.y<<"}";
       cout<<endl;
@@ -144,8 +140,8 @@ void PnRdatabase::PrintBlock(PnRDB::blockComplex& bc) {
     std::cout<<"Child: "<<it->child<<" ; instNum: "<<it->instNum<<" ; selectedInstance: "<<it->selectedInstance<<std::endl;
     for(unsigned int w=0;w<bc.instance.size();++w) {
     std::cout<<"Choice "<<w<<" -> name: "<<it->instance.at(w).name<<" ; master: "<<it->instance.at(w).master<<" ; type: "<<it->instance.at(w).type<<" ; width: "<<it->instance.at(w).width<<" ; height: "<<it->instance.at(w).height<<" ; isLeaf: "<<it->instance.at(w).isLeaf<<" ; gds: "<<it->instance.at(w).gdsFile<<" ; orient: "<<it->instance.at(w).orient<<" ; originCenter: {"<<it->instance.at(w).originCenter.x<<","<<it->instance.at(w).originCenter.y<<"}; placedCenter: {"<<it->instance.at(w).placedCenter.x<<","<<it->instance.at(w).placedCenter.y<<"}"<<std::endl;
-    std::cout<<"originBox: LL"<<it->instance.at(w).originBox.LL.x<<","<<it->instance.at(w).originBox.LL.y<<" LR"<<it->instance.at(w).originBox.LR.x<<","<<it->instance.at(w).originBox.LR.y<<" UR"<<it->instance.at(w).originBox.UR.x<<","<<it->instance.at(w).originBox.UR.y<<" UL"<<it->instance.at(w).originBox.UL.x<<","<<it->instance.at(w).originBox.UL.y<<std::endl;
-    std::cout<<"placedBox: LL"<<it->instance.at(w).placedBox.LL.x<<","<<it->instance.at(w).placedBox.LL.y<<" LR"<<it->instance.at(w).placedBox.LR.x<<","<<it->instance.at(w).placedBox.LR.y<<" UR"<<it->instance.at(w).placedBox.UR.x<<","<<it->instance.at(w).placedBox.UR.y<<" UL"<<it->instance.at(w).placedBox.UL.x<<","<<it->instance.at(w).placedBox.UL.y<<std::endl;
+    std::cout<<"originBox: LL"<<it->instance.at(w).originBox.LL.x<<","<<it->instance.at(w).originBox.LL.y<<" UR"<<it->instance.at(w).originBox.UR.x<<","<<it->instance.at(w).originBox.UR.y<<std::endl;
+    std::cout<<"placedBox: LL"<<it->instance.at(w).placedBox.LL.x<<","<<it->instance.at(w).placedBox.LL.y<<" UR"<<it->instance.at(w).placedBox.UR.x<<","<<it->instance.at(w).placedBox.UR.y<<std::endl;
     std::cout<<"Blockpins"<<std::endl;
     for(vector<PnRDB::pin>::iterator it2=it->instance.at(w).blockPins.begin(); it2!=it->instance.at(w).blockPins.end(); it2++) {
       std::cout<<"name: "<<it2->name<<" ; type: "<<it2->type<<" ; use: "<<it2->use<<" ; netIter: "<<it2->netIter<<std::endl;
@@ -202,8 +198,8 @@ void PnRdatabase::PrintContact(PnRDB::contact& cont) {
         std::cout<<"@Contact ";
         PnRDB::contact *it3=&cont;
         std::cout<<" metal: "<<it3->metal<<" ; originCenter: {"<<it3->originCenter.x<<","<<it3->originCenter.y<<"} ; placedCenter: {"<<it3->placedCenter.x<<","<<it3->placedCenter.y<<"}"<<std::endl;
-        std::cout<<"originBox: LL"<<it3->originBox.LL.x<<","<<it3->originBox.LL.y<<" LR"<<it3->originBox.LR.x<<","<<it3->originBox.LR.y<<" UR"<<it3->originBox.UR.x<<","<<it3->originBox.UR.y<<" UL"<<it3->originBox.UL.x<<","<<it3->originBox.UL.y<<std::endl;
-        std::cout<<"placedBox: LL"<<it3->placedBox.LL.x<<","<<it3->placedBox.LL.y<<" LR"<<it3->placedBox.LR.x<<","<<it3->placedBox.LR.y<<" UR"<<it3->placedBox.UR.x<<","<<it3->placedBox.UR.y<<" UL"<<it3->placedBox.UL.x<<","<<it3->placedBox.UL.y<<std::endl;
+        std::cout<<"originBox: LL"<<it3->originBox.LL.x<<","<<it3->originBox.LL.y<<" UR"<<it3->originBox.UR.x<<","<<it3->originBox.UR.y<<std::endl;
+        std::cout<<"placedBox: LL"<<it3->placedBox.LL.x<<","<<it3->placedBox.LL.y<<" UR"<<it3->placedBox.UR.x<<","<<it3->placedBox.UR.y<<std::endl;
 }
 // Local Variables:
 // c-basic-offset: 4

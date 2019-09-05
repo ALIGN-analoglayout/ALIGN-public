@@ -8,12 +8,6 @@ def get_hN(fn="tests/telescopic_ota-freeze.json"):
         return hN
 
 def check_bbox( b):
-    assert b.LL.x == b.UL.x
-    assert b.LR.x == b.UR.x
-
-    assert b.LL.y == b.LR.y
-    assert b.UL.y == b.UR.y
-
     assert b.LL.x < b.UR.x
     assert b.LL.y < b.UR.y
 

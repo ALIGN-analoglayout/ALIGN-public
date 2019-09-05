@@ -52,7 +52,7 @@ struct point {
 }; // structure of integer coordinate
 
 struct bbox {
-  point LL,LR,UL,UR;
+  point LL,UR;
 }; // structure of boundary box, assum rectangle
 
 struct contact {

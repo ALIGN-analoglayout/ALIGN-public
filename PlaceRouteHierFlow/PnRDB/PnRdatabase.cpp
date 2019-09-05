@@ -299,12 +299,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
           b.originCenter.y = updatedNode.height/2;
           b.originBox.LL.x = 0;
           b.originBox.LL.y = 0;
-          b.originBox.UL.x = 0;
-          b.originBox.UL.y = updatedNode.height;
           b.originBox.UR.x = updatedNode.width;
           b.originBox.UR.y = updatedNode.height;
-          b.originBox.LR.x = updatedNode.width;
-          b.originBox.LR.y = 0;
           }
         }
 

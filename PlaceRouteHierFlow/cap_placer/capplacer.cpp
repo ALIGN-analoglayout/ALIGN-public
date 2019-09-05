@@ -457,9 +457,9 @@ fillContact (PnRDB::contact& con, int* x, int*y) {
 	temp_point.y = y[i];
 	switch (i) {
 	case 0: con.originBox.LL = temp_point; break;
-	case 1: con.originBox.UL = temp_point; break;
+	case 1: break;
 	case 2: con.originBox.UR = temp_point; break;
-	case 3: con.originBox.LR = temp_point; break;
+	case 3: break;
 	}
     }
     con.originCenter.x = (x[0]+x[2])/2;
@@ -596,12 +596,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
             h_contact.originBox.UR.x = h_contact.originBox.UR.x + temp_contact.placedCenter.x;
             h_contact.originBox.UR.y = h_contact.originBox.UR.y + temp_contact.placedCenter.y;
-            //cout<<"Extract Data Step 3.32"<<endl;
-	    h_contact.originBox.UL.x = h_contact.originBox.LL.x;
-            h_contact.originBox.UL.y = h_contact.originBox.UR.y;
-
-	    h_contact.originBox.LR.x = h_contact.originBox.UR.x;
-            h_contact.originBox.LR.y = h_contact.originBox.LL.y;
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
             v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
@@ -612,12 +606,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
             v_contact.originBox.UR.x = v_contact.originBox.UR.x + temp_contact.placedCenter.x;
             v_contact.originBox.UR.y = v_contact.originBox.UR.y + temp_contact.placedCenter.y;
-
-	    v_contact.originBox.UL.x = v_contact.originBox.LL.x;
-            v_contact.originBox.UL.y = v_contact.originBox.UR.y;
-
-	    v_contact.originBox.LR.x = v_contact.originBox.UR.x;
-            v_contact.originBox.LR.y = v_contact.originBox.LL.y;
 
             cout<<"Extract Data Step 3.5"<<endl;
             lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
@@ -688,12 +676,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             h_contact.originBox.UR.x = h_contact.originBox.UR.x + temp_contact.placedCenter.x;
             h_contact.originBox.UR.y = h_contact.originBox.UR.y + temp_contact.placedCenter.y;
 
-	    h_contact.originBox.UL.x = h_contact.originBox.LL.x;
-            h_contact.originBox.UL.y = h_contact.originBox.UR.y;
-
-	    h_contact.originBox.LR.x = h_contact.originBox.UR.x;
-            h_contact.originBox.LR.y = h_contact.originBox.LL.y;
-
             cout<<"Extract Data Step 4.25"<<endl;
 	    PnRDB::contact v_contact;
             v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
@@ -704,12 +686,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
             v_contact.originBox.UR.x = v_contact.originBox.UR.x + temp_contact.placedCenter.x;
             v_contact.originBox.UR.y = v_contact.originBox.UR.y + temp_contact.placedCenter.y;
-
-	    v_contact.originBox.UL.x = v_contact.originBox.LL.x;
-            v_contact.originBox.UL.y = v_contact.originBox.UR.y;
-
-	    v_contact.originBox.LR.x = v_contact.originBox.UR.x;
-            v_contact.originBox.LR.y = v_contact.originBox.LL.y;
 
             cout<<"Extract Data Step 4.3"<<endl;
             lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
@@ -784,15 +760,9 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     temp_point.x = Min_x;
     temp_point.y = Min_y;
     CheckOutBlock.originBox.LL = temp_point;
-    temp_point.x = Min_x;
-    temp_point.y = Max_y;
-    CheckOutBlock.originBox.UL = temp_point;
     temp_point.x = Max_x;
     temp_point.y = Max_y;
     CheckOutBlock.originBox.UR = temp_point;
-    temp_point.x = Max_x;
-    temp_point.y = Min_y;
-    CheckOutBlock.originBox.LR = temp_point;
     CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
     CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
     CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
