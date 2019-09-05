@@ -180,31 +180,25 @@ abstract_structs = [
 ]
 
 
+import copy
+
 for (k,v) in abstract_structs:
 
     def capture_closure( k, v):
         def init_fn(self, d):
             for (nm,vv) in v:
-                if isinstance( vv, tuple):
-                    assert vv[0] is list
-                    if vv[1] is None:
-                        self.__dict__[nm] = [ x for x in d[nm]]
-                    else:
-                        klass = globals()[vv[1]]
-                        self.__dict__[nm] = [ klass(x) for x in d[nm]]
-                else:
+                def f( x, vv):
                     if vv is None:
-                        if nm in d:
-    #
-    # Runs 5x slower if you include this
-    # Not doing it means you need to keep the JSON shadow around
-                            self.__dict__[nm] = d[nm]
-                            pass
-                        else:
-                            print("Missing field for", nm, k, "in JSON")
+                        return copy.deepcopy( x)
                     else:
                         klass = globals()[vv]
-                        self.__dict__[nm] = klass(d[nm])
+                        return klass(x)
+
+                if isinstance( vv, tuple):
+                    assert vv[0] is list
+                    self.__dict__[nm] = [ f(x,vv[1]) for x in d[nm]]
+                else:
+                    self.__dict__[nm] = f(d[nm],vv)
         return init_fn
 
     globals()[k] = type( k, (), { "__init__" : capture_closure( k, v)})
