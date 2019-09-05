@@ -3071,10 +3071,6 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
              temp_metal.MetalRect.placedBox.LL.y = net.path_metal[i].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedBox.UR.x = net.path_metal[i].MetalRect.placedUR.x;
              temp_metal.MetalRect.placedBox.UR.y = net.path_metal[i].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.UL.x = net.path_metal[i].MetalRect.placedLL.x;
-             temp_metal.MetalRect.placedBox.UL.y = net.path_metal[i].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.LR.x = net.path_metal[i].MetalRect.placedUR.x;
-             temp_metal.MetalRect.placedBox.LR.y = net.path_metal[i].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedCenter.x = net.path_metal[i].MetalRect.placedCenter.x;
              temp_metal.MetalRect.placedCenter.y = net.path_metal[i].MetalRect.placedCenter.y;
              //std::cout<<"checkpoint 3"<<std::endl;
@@ -3269,10 +3265,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.ViaRect.placedBox.LL.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.placedBox.UR.x = router_via.ViaRect.placedUR.x;
   temp_via.ViaRect.placedBox.UR.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.placedBox.UL.x = router_via.ViaRect.placedLL.x;
-  temp_via.ViaRect.placedBox.UL.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.placedBox.LR.x = router_via.ViaRect.placedUR.x;
-  temp_via.ViaRect.placedBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.placedCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.placedCenter.y = router_via.ViaRect.placedCenter.y; 
 
@@ -3282,10 +3274,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.LowerMetalRect.placedBox.LL.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.placedBox.UR.x = router_via.LowerMetalRect.placedUR.x;
   temp_via.LowerMetalRect.placedBox.UR.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.placedBox.UL.x = router_via.LowerMetalRect.placedLL.x;
-  temp_via.LowerMetalRect.placedBox.UL.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.placedBox.LR.x = router_via.LowerMetalRect.placedUR.x;
-  temp_via.LowerMetalRect.placedBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.placedCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.placedCenter.y = router_via.LowerMetalRect.placedCenter.y;
 
@@ -3295,10 +3283,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, Ro
   temp_via.UpperMetalRect.placedBox.LL.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.placedBox.UR.x = router_via.UpperMetalRect.placedUR.x;
   temp_via.UpperMetalRect.placedBox.UR.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.placedBox.UL.x = router_via.UpperMetalRect.placedLL.x;
-  temp_via.UpperMetalRect.placedBox.UL.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.placedBox.LR.x = router_via.UpperMetalRect.placedUR.x;
-  temp_via.UpperMetalRect.placedBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.placedCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.placedCenter.y = router_via.UpperMetalRect.placedCenter.y;
 
@@ -3312,10 +3296,6 @@ void GcellDetailRouter::ConvertToContactPnRDB_Placed_Origin(PnRDB::contact& pnr_
   pnr_contact.originBox.LL.y = router_contact.placedLL.y;
   pnr_contact.originBox.UR.x = router_contact.placedUR.x;
   pnr_contact.originBox.UR.y = router_contact.placedUR.y;
-  pnr_contact.originBox.UL.x = router_contact.placedLL.x;
-  pnr_contact.originBox.UL.y = router_contact.placedUR.y;
-  pnr_contact.originBox.LR.x = router_contact.placedUR.x;
-  pnr_contact.originBox.LR.y = router_contact.placedLL.y;
   pnr_contact.originCenter.x = router_contact.placedCenter.x;
   pnr_contact.originCenter.y = router_contact.placedCenter.y; 
 
@@ -3333,10 +3313,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.ViaRect.originBox.LL.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.originBox.UR.x = router_via.ViaRect.placedUR.x;
   temp_via.ViaRect.originBox.UR.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.originBox.UL.x = router_via.ViaRect.placedLL.x;
-  temp_via.ViaRect.originBox.UL.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.originBox.LR.x = router_via.ViaRect.placedUR.x;
-  temp_via.ViaRect.originBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.originCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.originCenter.y = router_via.ViaRect.placedCenter.y; 
 
@@ -3346,10 +3322,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.LowerMetalRect.originBox.LL.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.originBox.UR.x = router_via.LowerMetalRect.placedUR.x;
   temp_via.LowerMetalRect.originBox.UR.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.originBox.UL.x = router_via.LowerMetalRect.placedLL.x;
-  temp_via.LowerMetalRect.originBox.UL.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.originBox.LR.x = router_via.LowerMetalRect.placedUR.x;
-  temp_via.LowerMetalRect.originBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.originCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.originCenter.y = router_via.LowerMetalRect.placedCenter.y;
 
@@ -3359,10 +3331,6 @@ void GcellDetailRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, Ro
   temp_via.UpperMetalRect.originBox.LL.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.originBox.UR.x = router_via.UpperMetalRect.placedUR.x;
   temp_via.UpperMetalRect.originBox.UR.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.originBox.UL.x = router_via.UpperMetalRect.placedLL.x;
-  temp_via.UpperMetalRect.originBox.UL.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.originBox.LR.x = router_via.UpperMetalRect.placedUR.x;
-  temp_via.UpperMetalRect.originBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.originCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.originCenter.y = router_via.UpperMetalRect.placedCenter.y;
 
@@ -3449,10 +3417,6 @@ void GcellDetailRouter::ConvertToContactPnRDB_Placed_Placed(PnRDB::contact& pnr_
   pnr_contact.placedBox.LL.y = router_contact.placedLL.y;
   pnr_contact.placedBox.UR.x = router_contact.placedUR.x;
   pnr_contact.placedBox.UR.y = router_contact.placedUR.y;
-  pnr_contact.placedBox.UL.x = router_contact.placedLL.x;
-  pnr_contact.placedBox.UL.y = router_contact.placedUR.y;
-  pnr_contact.placedBox.LR.x = router_contact.placedUR.x;
-  pnr_contact.placedBox.LR.y = router_contact.placedLL.y;
   pnr_contact.placedCenter.x = router_contact.placedCenter.x;
   pnr_contact.placedCenter.y = router_contact.placedCenter.y; 
 

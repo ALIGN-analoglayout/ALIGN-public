@@ -95,12 +95,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           PnRDB::bbox oBox; PnRDB::point tp;
           tp.x=LLx; tp.y=LLy;
           oBox.LL=tp;
-          tp.x=LLx; tp.y=URy;
-          oBox.UL=tp;
           tp.x=URx; tp.y=URy;
           oBox.UR=tp;
-          tp.x=URx; tp.y=LLy;
-          oBox.LR=tp;
           interMetals.back().originBox=oBox;
           interMetals.back().originCenter.x=(LLx+URx)/2;
           interMetals.back().originCenter.y=(LLy+URy)/2;
@@ -140,12 +136,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
           PnRDB::bbox oBox; PnRDB::point tp;
           tp.x=LLx; tp.y=LLy;
           oBox.LL=tp;
-          tp.x=LLx; tp.y=URy;
-          oBox.UL=tp;
           tp.x=URx; tp.y=URy;
           oBox.UR=tp;
-          tp.x=URx; tp.y=LLy;
-          oBox.LR=tp;
           macroPins.back().pinContacts.back().originBox=oBox;
           macroPins.back().pinContacts.back().originCenter.x=(LLx+URx)/2;
           macroPins.back().pinContacts.back().originCenter.y=(LLy+URy)/2;

@@ -11,8 +11,6 @@ class bbox:
     def __init__(self, d):    
         self._d = d
         self.LL = point(d["LL"])
-        self.LR = point(d["LR"])
-        self.UL = point(d["UL"])
         self.UR = point(d["UR"])
 
     def __getattr__(self, nm):
@@ -301,8 +299,6 @@ structs = [(hierNode,[("isCompleted",None),
                       ("termContacts",(list,contact))
            ]),
            (bbox,[("LL",point),
-                  ("LR",point),
-                  ("UL",point),
                   ("UR",point)
            ]),
            (point,[("x",None),

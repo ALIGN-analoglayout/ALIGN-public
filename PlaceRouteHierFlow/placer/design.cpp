@@ -345,9 +345,9 @@ design::design(PnRDB::hierNode& node) {
       */
       const auto& pit = (it->instance).at(bb).originBox;
       tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
-      tmpblock.boundary.polygon.push_back( {pit.UL.x,pit.UL.y});
+      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.UR.y});
       tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
-      tmpblock.boundary.polygon.push_back( {pit.LR.x,pit.LR.y});
+      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.LL.y});
 
       tmpblock.type=(it->instance).at(bb).type;
       tmpblock.width=(it->instance).at(bb).width;
@@ -373,9 +373,9 @@ design::design(PnRDB::hierNode& node) {
 	  */
 	  const auto& qit=cit->originBox;
 	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.LL.y});
-	  tmppin.boundary.back().polygon.push_back( {qit.UL.x,qit.UL.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.UR.y});
 	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.UR.y});
-	  tmppin.boundary.back().polygon.push_back( {qit.LR.x,qit.LR.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.LL.y});
         }
         tmpblock.blockPins.push_back(tmppin);
       }
@@ -1560,9 +1560,7 @@ PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark 
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
   placedBox.LL.x=x; placedBox.LL.y=y;
-  placedBox.LR.x=X; placedBox.LR.y=y;
   placedBox.UR.x=X; placedBox.UR.y=Y;
-  placedBox.UL.x=x; placedBox.UL.y=Y;
   return placedBox;
 }
 
@@ -1570,10 +1568,6 @@ PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark 
   PnRDB::bbox placedBox=GetPlacedBlockInterMetalRelBox(blockid, ort, originBox, sel);
   placedBox.LL.x+=LL.x;
   placedBox.LL.y+=LL.y;
-  placedBox.UL.x+=LL.x;
-  placedBox.UL.y+=LL.y;
-  placedBox.LR.x+=LL.x;
-  placedBox.LR.y+=LL.y;
   placedBox.UR.x+=LL.x;
   placedBox.UR.y+=LL.y;
   return placedBox;
