@@ -9,6 +9,29 @@ TEST(PnRDBTest, True) {
     EXPECT_TRUE( 1);
 };
 
+// These three all take about the same abount of time
+TEST(PnRDBTest, Pushback) {
+  vector<int> a;
+  for (unsigned int i=0; i<1000000; ++i) {
+    a.push_back( 0);
+  }
+}
+
+TEST(PnRDBTest, Resize) {
+  vector<int> a;
+  for (unsigned int i=0; i<1000000; ++i) {
+    a.resize(a.size()+1);
+    a.back() = 0;
+  }
+}
+
+TEST(PnRDBTest, Emplace) {
+  vector<int> a;
+  for (unsigned int i=0; i<1000000; ++i) {
+    a.emplace_back( 0);
+  }
+}
+
 TEST(PnRDBTest, PnRdatabase_Constructor) {
   PnRdatabase foo;
   EXPECT_EQ( foo.get_unitScale(), 2000);

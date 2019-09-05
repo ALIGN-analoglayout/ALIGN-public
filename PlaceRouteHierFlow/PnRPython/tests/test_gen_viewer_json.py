@@ -8,216 +8,13 @@ def get_hN(fn="tests/telescopic_ota-freeze.json"):
         hN = hierNode(json.load(fp))
         return hN
 
-def check_bbox( b):
-    assert b.LL.x == b.UL.x
-    assert b.LR.x == b.UR.x
-
-    assert b.LL.y == b.LR.y
-    assert b.UL.y == b.UR.y
-
-    assert b.LL.x < b.UR.x
-    assert b.LL.y < b.UR.y
-
-    lst = [(b.LL,"LL"),(b.LR,"LR"),(b.UR,"UR"),(b.UL,"UL")]
-    sequence = []
-    for p in b.polygon:
-        sequence.append( [ tag for (pp,tag) in lst if p.x == pp.x and p.y == pp.y])
-    assert all( sequence)
-    assert all( len(x) == 1 for x in sequence)
-    assert len(b.polygon) == 0 or len( set( [x[0] for x in sequence])) == 4, sequence
-
-
-def gen_viewer_json( hN):
-    p = Pdk().load( "../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
-
-    cnv = DefaultCanvas( p)
-
-    d = {}
-
-    d["bbox"] = [0,0,hN.width,hN.height]
-
-    d["globalRoutes"] = []
-
-    d["globalRouteGrid"] = []
-
-    terminals = []
-
-    def add_terminal( netName, layer, b):
-        check_bbox( b)
-
-        r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
-        terminals.append( { "netName": netName, "layer": layer, "rect": r})
-
-        if netName == "!interMetals": return
-        if netName == "!interVias": return
-
-        if layer == "M1":
-            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M2":
-            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M3":
-            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "cellarea":
-            p = cnv.m1.clg.inverseBounds( b.LL.x)
-            if p[0] != p[1]:
-                print( "Off grid LL.x", layer, netName, p, r)
-            p = cnv.m1.clg.inverseBounds( b.UR.x)
-            if p[0] != p[1]:
-                print( "Off grid UR.x", layer, netName, p, r)
-            p = cnv.m2.clg.inverseBounds( b.LL.y)
-            if p[0] != p[1]:
-                print( "Off grid LL.y", layer, netName, p, r)
-            p = cnv.m2.clg.inverseBounds( b.UR.y)
-            if p[0] != p[1]:
-                print( "Off grid UR.y", layer, netName, p, r)
-
-    for n in hN.Nets:
-        print( n.name)
-        for c in n.connected:
-            if c.type == 'Block':
-                cblk = hN.Blocks[c.iter2]
-                blk = cblk.instance[cblk.selectedInstance]
-                block_name = blk.name
-                master_name = blk.master
-                pin = blk.blockPins[c.iter]
-                formal_name = pin.name
-
-                print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
-                for con in pin.pinContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
-
-            else:
-                term = hN.Terminals[c.iter]
-                terminal_name = term.name
-                assert terminal_name == n.name
-                print( f'\tTerminal formal_index: {c.iter},{terminal_name}')
-                for con in term.termContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
-        for metal in n.path_metal:
-            con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
-
-        for via in n.path_via:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
-
-        for via in n.interVias:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
-
-    for cblk in hN.Blocks:
-        blk = cblk.instance[cblk.selectedInstance]
-        for con in blk.interMetals:
-            add_terminal( '!interMetals', con.metal, con.placedBox)
-
-        for via in blk.interVias:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( '!interVias', con.metal, con.placedBox)
-
-        add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
-
-    d["terminals"] = terminals
-
-    return d
-
-
 def test_gen_viewer_json():
     hN = get_hN()
     d = gen_viewer_json( hN)
 
-    with open("__viewer_json","wt") as fp:
+    with open("telescopic_ota_dr_globalrouting.json","wt") as fp:
         json.dump( d, fp=fp, indent=2)
 
-def remove_duplicates( hN):
-    p = Pdk().load( "../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
-
-    cnv = DefaultCanvas( p)
-
-    cnv.bbox = transformation.Rect(0,0,hN.width,hN.height)
-
-    cnv.terminals = []
-
-    def add_terminal( netName, layer, b):
-        check_bbox( b)
-
-        r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
-        if layer == "M1":
-            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M2":
-            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M3":
-            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        cnv.terminals.append( { "netName": netName, "layer": layer, "rect": r})
-
-    for n in hN.Nets:
-        print( n.name)
-        for c in n.connected:
-            if c.type == 'Block':
-                cblk = hN.Blocks[c.iter2]
-                blk = cblk.instance[cblk.selectedInstance]
-                block_name = blk.name
-                master_name = blk.master
-                pin = blk.blockPins[c.iter]
-                formal_name = pin.name
-
-                print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
-                for con in pin.pinContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
-
-            else:
-                term = hN.Terminals[c.iter]
-                terminal_name = term.name
-                assert terminal_name == n.name
-                print( f'\tTerminal formal_index: {c.iter},{terminal_name}')
-                for con in term.termContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
-        for metal in n.path_metal:
-            con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
-
-        for via in n.path_via:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
-
-        for via in n.interVias:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
-
-    for cblk in hN.Blocks:
-        blk = cblk.instance[cblk.selectedInstance]
-        for con in blk.interMetals:
-            pass
-#            add_terminal( '!interMetals', con.metal, con.placedBox)
-
-
-        for via in blk.interVias:
-            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                pass                
-#                add_terminal( '!interVias', con.metal, con.placedBox)
-
-    cnv.removeDuplicates()
-
-    return cnv
-
-def test_remove_duplicates():
-    hN = get_hN()
-    remove_duplicates( hN)
 
 def test_gen_viewer_json2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
@@ -233,6 +30,11 @@ def test_gen_viewer_json3():
 
     with open("switched_capacitor_combination_dr_globalrouting.json","wt") as fp:
         json.dump( d, fp=fp, indent=2)
+
+
+def test_remove_duplicates():
+    hN = get_hN()
+    remove_duplicates( hN)
 
 def test_remove_duplicates2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
