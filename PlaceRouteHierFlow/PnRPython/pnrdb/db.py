@@ -4,10 +4,7 @@ abstract_structs = [
            ("point",[("x",None),
                    ("y",None)
            ]),
-           ("bbox",[("polygon",(list, "point")),
-                  ("LL","point"),
-                  ("LR","point"),
-                  ("UL","point"),
+           ("bbox",[("LL","point"),
                   ("UR","point")
            ]),
            ("contact",[("metal",None),
