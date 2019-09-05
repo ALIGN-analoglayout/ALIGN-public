@@ -1556,9 +1556,24 @@ PnRDB::point design::GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Oma
 }
 
 PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, int sel) {
-  PnRDB::bbox placedBox;
+
+  const auto& blk = Blocks.at(blockid).at(sel);
+
+  vector<PnRDB::point> points;
+  points.push_back( GetPlacedPnRPosition( originBox.LL, blk.width, blk.height, ort));
+  points.push_back( GetPlacedPnRPosition( originBox.UR, blk.width, blk.height, ort));
+  
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
+
+  for(unsigned int i=0;i<points.size();++i) {
+    if(x>points[i].x) {x=points[i].x;}
+    if(X<points[i].x) {X=points[i].x;}
+    if(y>points[i].y) {y=points[i].y;}
+    if(Y<points[i].y) {Y=points[i].y;}
+  }
+
+  PnRDB::bbox placedBox;
   placedBox.LL.x=x; placedBox.LL.y=y;
   placedBox.UR.x=X; placedBox.UR.y=Y;
   return placedBox;
