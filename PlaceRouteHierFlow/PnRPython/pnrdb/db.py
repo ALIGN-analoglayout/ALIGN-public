@@ -182,13 +182,14 @@ abstract_structs = [
 
 class FallbackJSON:
     def __init__(self, d):    
-        self.__dict__['_d'] = d
+        pass
+#        self.__dict__['_d'] = d
 
-    def __getattr__(self, nm):
-        return self._d[nm]
+#    def __getattr__(self, nm):
+#        return self._d[nm]
 
-    def __setattr__(self, nm, v):
-        self._d[nm] = v
+#    def __setattr__(self, nm, v):
+#        self._d[nm] = v
 
 for (k,v) in abstract_structs:
 
@@ -209,13 +210,12 @@ for (k,v) in abstract_structs:
     #
     # Runs 5x slower if you include this
     # Not doing it means you need to keep the JSON shadow around
-    #                        self.__dict__[nm] = d[nm]
+                            self.__dict__[nm] = d[nm]
                             pass
                         else:
                             print("Missing field for", nm, k, "in JSON")
                     else:
                         klass = globals()[vv]
-                        print( "else else", nm, k)
                         self.__dict__[nm] = klass(d[nm])
         return init_fn
 

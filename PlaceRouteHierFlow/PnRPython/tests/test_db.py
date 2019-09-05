@@ -28,7 +28,6 @@ def test_write():
 
     hN.name = "treefrog"
 
-    assert j['name'] == "treefrog"
     assert hN.name == "treefrog"
 
     with io.StringIO() as fp:
@@ -40,15 +39,7 @@ def test_write():
 
     assert jj['name'] == "treefrog"
 
-    assert j == jj
-
     #
-    # Some of the JSON changes (the leaves)
+    # j not changed
     #
-    assert j_copy != j
-
-    #
-    # This is how it changed
-    #
-    j_copy['name'] = "treefrog"
     assert j_copy == j
