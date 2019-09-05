@@ -219,15 +219,6 @@ for (k,v) in abstract_structs:
     print( k,v, attrs_dict)
     globals()[k] = type( k, (FallbackJSON,), attrs_dict)
 
-class bbox(FallbackJSON):
-    def __init__(self, d):    
-        super().__init__(d)
-        self.__dict__['polygon'] = [ point(x) for x in d["polygon"]]
-        self.__dict__['LL'] = point(d["LL"])
-        self.__dict__['LR'] = point(d["LR"])
-        self.__dict__['UL'] = point(d["UL"])
-        self.__dict__['UR'] = point(d["UR"])
-
 class block(FallbackJSON):
     def __init__(self, d):    
         super().__init__(d)
