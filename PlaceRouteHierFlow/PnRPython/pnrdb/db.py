@@ -10,7 +10,6 @@ class point:
 class bbox:
     def __init__(self, d):    
         self._d = d
-        self.polygon = [ point(x) for x in d["polygon"]]
         self.LL = point(d["LL"])
         self.LR = point(d["LR"])
         self.UL = point(d["UL"])
@@ -301,8 +300,7 @@ structs = [(hierNode,[("isCompleted",None),
                       ("netIter",None),
                       ("termContacts",(list,contact))
            ]),
-           (bbox,[("polygon",(list, point)),
-                  ("LL",point),
+           (bbox,[("LL",point),
                   ("LR",point),
                   ("UL",point),
                   ("UR",point)

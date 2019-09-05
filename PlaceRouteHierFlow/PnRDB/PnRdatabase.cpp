@@ -107,9 +107,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
 static void updateContact( PnRDB::contact& c)
 {
     c.originBox = c.placedBox;
-    c.placedBox.polygon.clear();
     c.originCenter =  c.placedCenter;           
-
 }
 
 // [RA] need confirmation - wbxu
@@ -307,11 +305,6 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
           b.originBox.UR.y = updatedNode.height;
           b.originBox.LR.x = updatedNode.width;
           b.originBox.LR.y = 0;
-          b.originBox.polygon.clear();
-          b.originBox.polygon.push_back(b.originBox.LL);
-          b.originBox.polygon.push_back(b.originBox.UL);
-          b.originBox.polygon.push_back(b.originBox.UR);
-          b.originBox.polygon.push_back(b.originBox.LR);
           }
         }
 
