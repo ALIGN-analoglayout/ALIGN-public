@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iomanip>
 #include <time.h>
+#include <cassert>
 
 using namespace nlohmann;
 
@@ -196,14 +197,14 @@ JSONLabelTerminals(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, json& elmAr
 void
 assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
     x[0] = unit * b.LL.x;
-    x[1] = unit * b.UL.x;
+    x[1] = unit * b.LL.x;
     x[2] = unit * b.UR.x;
-    x[3] = unit * b.LR.x;
+    x[3] = unit * b.UR.x;
     x[4] = x[0];
     y[0] = unit * b.LL.y;
-    y[1] = unit * b.UL.y;
+    y[1] = unit * b.UR.y;
     y[2] = unit * b.UR.y;
-    y[3] = unit * b.LR.y;
+    y[3] = unit * b.LL.y;
     y[4] = y[0];
 }
 
@@ -536,40 +537,28 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		y[0] = unitScale * box.UR.y+lly[index];
 		break;
 	    case 2:
-		sref["strans"] = 0;
-		sref["angle"] = 90.0;
-		x[0] = unitScale * box.UL.x-lly[index];
-		y[0] = unitScale * box.UL.y+llx[index];
+	      assert(0);
 		break;
 	    case 3:
-		sref["strans"] = 0;
-		sref["angle"] = 270.0;
-		x[0] = unitScale * box.LR.x-lly[index];
-		y[0] = unitScale * box.LR.y-llx[index];
+	      assert(0);
 		break;
 	    case 4:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 180.0;
-		x[0] = unitScale * box.LR.x+llx[index];
-		y[0] = unitScale * box.LR.y-lly[index];
+		x[0] = unitScale * box.UR.x+llx[index];
+		y[0] = unitScale * box.LL.y-lly[index];
 		break;
 	    case 5:
 		sref["strans"] = 32768; // DAK: HACK
 		sref["angle"] = 0.0;
-		x[0] = unitScale * box.UL.x-llx[index];
-		y[0] = unitScale * box.UL.y+lly[index];
+		x[0] = unitScale * box.LL.x-llx[index];
+		y[0] = unitScale * box.UR.y+lly[index];
 		break;
 	    case 6:
-		sref["strans"] = 32768; // DAK: HACK
-		sref["angle"] = 270.0;
-		x[0] = unitScale * box.UR.x+lly[index];
-		y[0] = unitScale * box.UR.x+llx[index]; 
+	      assert(0);
 		break;
 	    case 7:
-		sref["strans"] = 32768; // DAK: HACK
-		sref["angle"] = 180.0;
-		x[0] = unitScale * box.LL.x+lly[index];
-		y[0] = unitScale * box.UL.y+llx[index]; 
+	      assert(0);
 		break;
 	    default:
 		sref["strans"] = 0; // DAK: HACK

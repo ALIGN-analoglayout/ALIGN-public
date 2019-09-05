@@ -3906,9 +3906,7 @@ PnRDB::bbox ConstGraph::ConvertBoundaryData(vector<placerDB::point> Bdata) {
     if((it->y)>Y) {Y=it->y;}
   }
   newBdata.LL.x=x; newBdata.LL.y=y;
-  newBdata.UL.x=x; newBdata.UL.y=Y;
   newBdata.UR.x=X; newBdata.UR.y=Y;
-  newBdata.LR.x=X; newBdata.LR.y=y;
   return newBdata;
 }
 

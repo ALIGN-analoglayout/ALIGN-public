@@ -421,12 +421,8 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
       node.Blocks[i].instance.back().lefmaster=lefData[master].at(w).name;
       node.Blocks[i].instance.back().originBox.LL.x=0;
       node.Blocks[i].instance.back().originBox.LL.y=0;
-      node.Blocks[i].instance.back().originBox.UL.x=0;
-      node.Blocks[i].instance.back().originBox.UL.y=lefData[master].at(w).height;
       node.Blocks[i].instance.back().originBox.UR.x=lefData[master].at(w).width;
       node.Blocks[i].instance.back().originBox.UR.y=lefData[master].at(w).height;
-      node.Blocks[i].instance.back().originBox.LR.x=lefData[master].at(w).width;
-      node.Blocks[i].instance.back().originBox.LR.y=0;
       node.Blocks[i].instance.back().originCenter.x=lefData[master].at(w).width/2;
       node.Blocks[i].instance.back().originCenter.y=lefData[master].at(w).height/2;
 
