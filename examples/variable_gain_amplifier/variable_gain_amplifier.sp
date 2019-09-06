@@ -5,7 +5,7 @@
     MN1 n1 g s b    nfet l=0.014u nfin=p1
 .ends nfet2x
 
-.subckt variable_gain_amplifier vmirror_vga s0 s1 s2 vin1 vin2 vout_vga1 vout_vga2 vps vgnd
+.subckt variable_gain_amplifier vmirror_vga s0 s1 s2 vin1 vin2 vout_vga1 vout_vga2 vps vgnd 
 .param nfpf_sw=72 nfpf_sw_2=144 nfpf_sw_4=288 cload=12f nfpf_cm=72 nfpf_cm_2=144 nfpf_cm_4=288 nfpf_dp=48 nfpf_dp_2=96 nfpf_dp_4=192 rl=400
 
         xI03 vmirror_vga vmirror_vga vgnd vgnd nfet2x p1=nfpf_cm
