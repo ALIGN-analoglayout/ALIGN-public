@@ -2,9 +2,12 @@
 #   ALIGN_HOME: top of hierarchy
 #   ALIGN_WORK_DIR:  a working directory or a docker volume for running the flow
 
-# TO RUN: 
-#   ln -sf $ALIGN_HOME/compose/Makefile $ALIGN_WORK_DIR
-#   cd $ALIGN_WORK_DIR
+# To run in Docker: 
+#   % make docker DESIGN=<design in $ALIGN_HOME/examples"
+
+# To run natively:
+#   % cd $ALIGN_WORK_DIR
+#   % ln -sf $ALIGN_HOME/compose/Makefile $ALIGN_WORK_DIR
 #   % make DESIGN=<design in $ALIGN_HOME/examples"
 
 EXAMPLES=${ALIGN_HOME}/examples
@@ -53,7 +56,7 @@ ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 	$(call execute,cellfabric-service, /bin/bash -c "source general/bin/activate && mkdir -p ${GEN_OUTPUT} && cd \$$_ && make -f $(TOP)/CellFabric/Makefile INPUT=/`pwd`/${TPO_OUTPUT} DESIGN=${DESIGN}")
 
 # Build the cell generator script
-${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp services
+${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp
 	$(call execute,topology-service,/bin/bash -c "source general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN}")
 
 ${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
@@ -86,75 +89,76 @@ vol-type:
 endif
 
 docker-vol-type.yml:	${ALIGN_HOME}/compose/docker-vol-type.yml
-	ln -s $< .
+	cp $< .
 
 docker-dir-type.yml:	${ALIGN_HOME}/compose/docker-dir-type.yml
-	ln -s $< .
+	cp $< .
 
 docker-core.yml:	${ALIGN_HOME}/compose/docker-core.yml
-	ln -s $< .
+	cp $< .
 
-docker:	make-docker-service
-	docker-compose exec make-docker-service bash -c "make DESIGN=${DESIGN}"
+docker:	volume services make-docker-service
+	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/compose/Makefile DESIGN=${DESIGN}"
 
 services:	transfer-service protobuf-service \
 		protobuf-service cellfabric-service placeroute-service \
 		topology-service klayoutconvert-service
 
 transfer-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 protobuf-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 cellfabric-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 placeroute-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 topology-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 klayoutconvert-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 fullbuild-service:	docker-compose.yml
-	$(call start, $@)
+	docker-compose -p compose up -d $@
 	touch $@
 
 docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml volume
 	cat docker-core.yml docker-$(VOL).yml > $@
 
+# Only respin the container
+make-docker-service:	docker-compose.yml 
+	echo "Here newer $?"
+	docker-compose -p compose up -d $@
+	docker cp volume make_docker_cont:/dataVolume/
+	docker cp docker-compose.yml make_docker_cont:/dataVolume/
+	touch $@
+
+.PHONY: check_volume
+volume:	check_volume
+
 # If volume name changes, bring down the containers and remove the redirect vol
-volume::
-ifeq ($(BUILD),docker)
+# FAILURE mode: services are marked as up in volume, but are not up -- fix is volume entries above
+check_volume:
 ifneq ($(shell cat volume),$(ALIGN_WORK_DIR))
 ifneq (, $(wildcard ./docker-compose.yml))
+		-echo "Recreating containers with volume change to $(ALIGN_WORK_DIR)"
+		rm -f *-service
 		docker-compose down
 endif
 	docker volume rm -f compose_redirectVolume
+	rm -f make-docker-service
 	echo $(ALIGN_WORK_DIR) > volume
 endif
-endif
-
-make-docker-service::	docker-compose.yml
-	docker-compose up -d $@
-	docker cp $< make_docker_cont:/dataVolume/
-	docker cp volume make_docker_cont:/dataVolume/
-	touch $@
-
-make-docker-service::	Dockerfile
-	docker-compose up -d --build $@
-	docker cp $< make_docker_cont:/dataVolume/
-	docker cp volume make_docker_cont:/dataVolume/
-	touch $@
 
 # Use this if compose/ area changes
 force-make-docker-service:
