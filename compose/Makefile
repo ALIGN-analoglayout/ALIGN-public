@@ -35,7 +35,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,cellfabric-service, /bin/bash -c "source general/bin/activate && python3 $(TOP)/GDSConv/gdsconv/json2gds.py $< $@")
+	$(call execute,cellfabric-service, /bin/bash -c "source general/bin/activate && python $(TOP)/GDSConv/gdsconv/json2gds.py $< $@")
 
 # Transfer inputs and run placeroute
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}

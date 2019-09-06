@@ -14,8 +14,8 @@ DP_NMOS_n12_X1_Y1 m0_m3 ( .DA(Voutn), .GA(phi1), .S(net67), .DB(agnd), .GB(phi2)
 Cap_30fF_Cap_60fF c1_c3 ( .MINUS1(net67), .PLUS1(net63), .MINUS2(Voutn), .PLUS2(Vin_ota) );
 endmodule
 
-module switched_capacitor_filter ( agnd, voutp, voutn, vinp, id, vinn, vss ); 
-input agnd, voutp, voutn, vinp, id, vinn, vss;
+module switched_capacitor_filter ( voutp, vinp, agnd, voutn, vss, id, vinn ); 
+input voutp, vinp, agnd, voutn, vss, id, vinn;
 
 telescopic_ota xi0 ( .d1(id), .vbiasn(vbiasn), .vbiasnd(vbiasnd), .vbiasp1(vbiasp1), .vbiasp2(vbiasp2), .vdd(vdd), .vinn(net64), .vinp(net66), .voutn(voutn), .voutp(voutp), .vss(vss) ); 
 switched_capacitor_combination m6_c0_m4_m3_m5_c1_m7_c3_m0 ( .Vin(vinn), .agnd(agnd), .Vin_ota(net66), .Voutn(voutn), .phi1(phi1), .phi2(phi2) ); 

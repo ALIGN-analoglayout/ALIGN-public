@@ -16,18 +16,12 @@ namespace PnRDB {
   }
 
   void to_json(json& j, const bbox& v) {
-    j["polygon"] = json(v.polygon);
     j["LL"] = json(v.LL);
-    j["LR"] = json(v.LR);
-    j["UL"] = json(v.UL);
     j["UR"] = json(v.UR);
   }
 
   void from_json(const json& j, bbox& v) {
-    j["polygon"].get_to( v.polygon);
     j["LL"].get_to( v.LL);
-    j["LR"].get_to( v.LR);
-    j["UL"].get_to( v.UL);
     j["UR"].get_to( v.UR);
   }
 
