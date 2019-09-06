@@ -627,59 +627,59 @@ workflows:
   #         cron: "35 13 * * *"
   #         filters:
   #           branches:
-  #             only: feature/native_make
-
+  #             only: master
+  #
     # jobs:
     #   - start
     #   - build-make-monolithic
     #       requires:
     #         - start
 
-#   full:
-#     jobs:
-#       - start
-# #      - build-tally:
-# #          requires:
-# #            - start 
-# #      - build-sgi:
-# #          requires:
-# #            - start 
-# #      - build-PlacementEditor:
-# #          requires:
-# #            - start 
-#       - build-PlaceRouteHierFlow:
-#           requires:
-#             - start 
-#       - build-GDSConv:
-#           requires:
-#             - start 
-#       - build-sci:
-#           requires:
-#             - start 
-#       - build-cktgen:
-#           requires:
-#             - start 
-#       - build-cellfabric:
-#           requires:
-#             - start 
-# #      - build-satplacer:
-# #          requires:
-# #            - start 
-#       - build-pdk:
-#           requires:
-#             - start 
-#       - finish:
-#           requires:
-# #            - build-tally 
-# #            - build-sgi 
-# #            - build-PlacementEditor 
-#             - build-GDSConv 
-#             - build-sci 
-#             - build-cellfabric
-#             - build-cktgen 
-#             - build-pdk 
-#             - build-PlaceRouteHierFlow
-# #            - build-satplacer
+  full:
+    jobs:
+      - start
+#      - build-tally:
+#          requires:
+#            - start 
+#      - build-sgi:
+#          requires:
+#            - start 
+#      - build-PlacementEditor:
+#          requires:
+#            - start 
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start 
+      - build-GDSConv:
+          requires:
+            - start 
+      - build-sci:
+          requires:
+            - start 
+      - build-cktgen:
+          requires:
+            - start 
+      - build-cellfabric:
+          requires:
+            - start 
+#      - build-satplacer:
+#          requires:
+#            - start 
+      - build-pdk:
+          requires:
+            - start 
+      - finish:
+          requires:
+#            - build-tally 
+#            - build-sgi 
+#            - build-PlacementEditor 
+            - build-GDSConv 
+            - build-sci 
+            - build-cellfabric
+            - build-cktgen 
+            - build-pdk 
+            - build-PlaceRouteHierFlow
+#            - build-satplacer
 
   # end_to_end:
   #   jobs:
