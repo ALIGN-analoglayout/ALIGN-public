@@ -108,5 +108,4 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-input_circuit/
 Results/

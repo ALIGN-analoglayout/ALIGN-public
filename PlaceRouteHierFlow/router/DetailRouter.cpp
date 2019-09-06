@@ -1791,10 +1791,6 @@ void DetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
              temp_metal.MetalRect.placedBox.LL.y = net.path_metal[i].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedBox.UR.x = net.path_metal[i].MetalRect.placedUR.x;
              temp_metal.MetalRect.placedBox.UR.y = net.path_metal[i].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.UL.x = net.path_metal[i].MetalRect.placedLL.x;
-             temp_metal.MetalRect.placedBox.UL.y = net.path_metal[i].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.LR.x = net.path_metal[i].MetalRect.placedUR.x;
-             temp_metal.MetalRect.placedBox.LR.y = net.path_metal[i].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedCenter.x = net.path_metal[i].MetalRect.placedCenter.x;
              temp_metal.MetalRect.placedCenter.y = net.path_metal[i].MetalRect.placedCenter.y;
              //std::cout<<"checkpoint 3"<<std::endl;

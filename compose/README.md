@@ -30,8 +30,9 @@ To setup for using a Docker volume in a container-based flow:
 		% docker volume create <volumeName>
 		% export ALIGN_WORK_DIR=<volumeName>
 
-To setup for using a working directory in a container-based (In WSL,
+To setup for using a working directory in a container-based flow (In WSL,
 this directory must be the full path to a Windows shared directory):
+
 
 		% export ALIGN_WORK_DIR=<working directory path for output>
 

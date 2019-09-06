@@ -107,11 +107,13 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             #self.addWire( self.m2, pin, pin, h*(y+1), (0, 1), (x_cells*gu, -1))
             #self.addWire( self.m2, 'GND', 'GND', 0, (0, 1), (x_cells*gu, -1))                   
             for (pin, contact, track, m3route) in Routing:
-                self.addWire( self.m2, pin, pin, y*h+track, (min(contact), -1), (max(contact), 1))
                 if y_cells > 1:
-                   self.addWire( self.m3, None, None, m3route, (track, -1), (y*h+track, 1))
-                   self.addVia( self.v2, None, None, m3route, track)
-                   self.addVia( self.v2, None, None, m3route, y*h+track)
+                    self.addWire( self.m2, pin, None, y*h+track, (min(contact), -1), (max(contact), 1))
+                    self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*h+track, 1))
+                    self.addVia( self.v2, None, None, m3route, track)
+                    self.addVia( self.v2, None, None, m3route, y*h+track)
+                else:
+                    self.addWire( self.m2, pin, pin, y*h+track, (min(contact), -1), (max(contact), 1))
 
                 for i in contact:
                     self.addVia( self.v1, None, None, i, y*h+track) 

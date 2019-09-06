@@ -52,8 +52,7 @@ struct point {
 }; // structure of integer coordinate
 
 struct bbox {
-  vector<point> polygon; // list of coordinates of polygon
-  point LL,LR,UL,UR;
+  point LL,UR;
 }; // structure of boundary box, assum rectangle
 
 struct contact {
