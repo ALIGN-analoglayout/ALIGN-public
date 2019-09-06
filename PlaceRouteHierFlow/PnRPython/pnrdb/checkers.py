@@ -4,8 +4,8 @@ def check_bbox( b):
     assert b.LL.x < b.UR.x
     assert b.LL.y < b.UR.y
 
-def gen_viewer_json( hN):
-    p = Pdk().load( "../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
+def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json"):
+    p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
 
@@ -105,8 +105,8 @@ def gen_viewer_json( hN):
 
     return d
 
-def remove_duplicates( hN):
-    p = Pdk().load( "../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
+def remove_duplicates( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json"):
+    p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
 
