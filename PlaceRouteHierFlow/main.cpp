@@ -7,6 +7,8 @@
 #include "./cap_placer/capplacer.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <cstdlib>
+#include <sstream>
 
 using std::string;
 using std::cout;
@@ -68,6 +70,7 @@ int main(int argc, char** argv ){
     Placer curr_plc(nodeVec, opath, effort); // do placement and update data in current node
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+
       // Route each placement
       current_node=nodeVec[lidx];
       std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
@@ -127,7 +130,26 @@ int main(int argc, char** argv ){
       DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
       std::cout<<"Check point : before checkin\n";
       DB.PrintHierNode(current_node);
-      DB.WriteDBJSON(current_node,opath+current_node.name+"_"+std::to_string(lidx) + ".db.json");
+      
+      const string ofn = opath+current_node.name+"_"+std::to_string(lidx) + ".db.json";
+
+      DB.WriteDBJSON(current_node,ofn);
+
+      std::ostringstream oss;
+      oss << "gen_viewer_json.py"
+	  << " -b " << current_node.name
+	  << " -v " << lidx
+	  << " -d " << opath
+	  << " -o " << opath;
+      string cmd(oss.str());
+
+      int rc = system( cmd.c_str());
+      std::cout << cmd << " returned " << rc << std::endl;
+
+      PnRDB::hierNode current_node2;
+
+      DB.ReadDBJSON( current_node2,ofn);
+      DB.WriteDBJSON( current_node2,ofn+"2");
 
       DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
       DB.CheckinHierNode(idx, current_node);
