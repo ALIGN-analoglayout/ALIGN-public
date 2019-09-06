@@ -10,4 +10,5 @@ setup(name='pnrdb',
       packages=find_packages(),
       setup_requires=["pytest-runner"],
       tests_require=["pytest"],
+      scripts=['gen_viewer_json.py'],
       zip_safe=False)
