@@ -355,7 +355,7 @@ static void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, const 
 
 std::string
 PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet,
-			bool includePowerGrid, std::string gdsName, const PnRDB::Drc_info& drc_info, string opath) {
+			bool includePowerGrid, const std::string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath) {
     std::cout << "JSON WRITE CELL " << gdsName << std::endl;
     node.gdsFile = opath+gdsName+".gds";
     string TopCellName = gdsName;

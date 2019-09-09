@@ -67,8 +67,6 @@ static void generic_placer_test( const string& topcell)
 
   PnRdatabase DB("gold", topcell, "", "", "", dfile);
 
-  PnRDB::Drc_info drc_info=DB.getDrc_info();
-
   PnRDB::hierNode current_node;
   DB.ReadDBJSON( current_node, "gold/" + topcell + ".db.json");
 
