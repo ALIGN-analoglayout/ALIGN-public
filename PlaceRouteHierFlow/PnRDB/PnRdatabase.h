@@ -134,7 +134,7 @@ class PnRdatabase
     void PrintDesignRuleData();
     void ReadDBJSON( PnRDB::hierNode& node, const string& filename);
     void WriteDBJSON( const PnRDB::hierNode& node, const string& filename);
-    std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, PnRDB::Drc_info& drc_info, string opath);
+    std::string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, std::string gdsName, const PnRDB::Drc_info& drc_info, string opath);
     void PrintHierNode(PnRDB::hierNode& node);
     void PrintContact(PnRDB::contact& cont);
     void PrintVia(PnRDB::Via& v);

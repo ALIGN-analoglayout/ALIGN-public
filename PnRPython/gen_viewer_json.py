@@ -25,6 +25,6 @@ if __name__ == "__main__":
         cnv = remove_duplicates( hN, pdk_fn=args.pdk_fn)
     else:
         d = gen_viewer_json( hN, pdk_fn=args.pdk_fn)
-        with open( args.output_dir + "/" + args.block + "_dr_globalrouting.json", "wt") as fp:
+        with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
             json.dump( d, fp=fp, indent=2)
 

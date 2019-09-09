@@ -19,40 +19,39 @@ def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
     terminals = []
 
+    t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
+              "M4": "m4", "M5": "m5", "M6": "m6"}
+
     def add_terminal( netName, layer, b):
         check_bbox( b)
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
-        if netName == "!interMetals": return
-        if netName == "!interVias": return
+#        if netName == "!interMetals": return
+#        if netName == "!interVias": return
 
-        if layer == "M1":
-            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M2":
-            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M3":
-            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
         if layer == "cellarea":
-            p = cnv.m1.clg.inverseBounds( b.LL.x)
-            if p[0] != p[1]:
-                print( "Off grid LL.x", layer, netName, p, r)
-            p = cnv.m1.clg.inverseBounds( b.UR.x)
-            if p[0] != p[1]:
-                print( "Off grid UR.x", layer, netName, p, r)
-            p = cnv.m2.clg.inverseBounds( b.LL.y)
-            if p[0] != p[1]:
-                print( "Off grid LL.y", layer, netName, p, r)
-            p = cnv.m2.clg.inverseBounds( b.UR.y)
-            if p[0] != p[1]:
-                print( "Off grid UR.y", layer, netName, p, r)
+            def f( gen, value, tag):
+                p = gen.clg.inverseBounds( value)
+                if p[0] != p[1]:
+                    print( f"Off grid {tag}", layer, netName, p, r)
+            f( cnv.m1, b.LL.x, "LL.x")
+            f( cnv.m1, b.UR.x, "UR.x")
+            f( cnv.m2, b.LL.y, "LL.y")
+            f( cnv.m2, b.UR.y, "UR.y")
+        else:
+            if   layer in ["M1", "M3", "M5"]:
+                center = (b.LL.x + b.UR.x)//2
+            elif layer in ["M2", "M4", "M6"]:
+                center = (b.LL.y + b.UR.y)//2
+            else:
+                center = None
+            if center is not None:
+                gen = cnv.generators[t_tbl[layer]]
+                p = gen.clg.inverseBounds(center)
+                if p[0] != p[1]:
+                    print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1])
 
     for n in hN.Nets:
         print( n.name)

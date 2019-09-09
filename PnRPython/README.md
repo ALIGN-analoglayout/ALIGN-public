@@ -1,8 +1,12 @@
 ### Python-based Processing of the PnRdatabase
 
-To install (not needed if you just want to run the tests):
+To install:
 ```bash
 pip install -e .
+```
+To convert to a viewer file:
+```bash
+gen_viewer_json.py -b telescopic_ota -d ../Bugs/Results	
 ```
 
 To run the tests:
