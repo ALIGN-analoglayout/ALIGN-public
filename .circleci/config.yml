@@ -462,6 +462,7 @@ jobs:
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
           mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
+          docker cp PnR:/PlaceRouteHierFlow/junit.xml test-reports/PlaceRouteHierFlow
           docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
           docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
@@ -611,15 +612,15 @@ jobs:
 workflows:
   version: 2.1
 
-  make:
-    jobs:
-      - start
+##  make:
+##    jobs:
+##      - start
       # - build-make-compose:
       #     requires:
       #       - start 
-      - build-make:
-          requires:
-            - start 
+##      - build-make:
+##          requires:
+##            - start 
   # scheduled:
   #   triggers:
   #     - schedule:
@@ -652,34 +653,34 @@ workflows:
       - build-PlaceRouteHierFlow:
           requires:
             - start 
-      - build-GDSConv:
-          requires:
-            - start 
-      - build-sci:
-          requires:
-            - start 
-      - build-cktgen:
-          requires:
-            - start 
-      - build-cellfabric:
-          requires:
-            - start 
+##      - build-GDSConv:
+##          requires:
+##            - start 
+##      - build-sci:
+##          requires:
+##            - start 
+##      - build-cktgen:
+##          requires:
+##            - start 
+##      - build-cellfabric:
+##          requires:
+##            - start 
 #      - build-satplacer:
 #          requires:
 #            - start 
-      - build-pdk:
-          requires:
-            - start 
+##      - build-pdk:
+##          requires:
+##            - start 
       - finish:
           requires:
 #            - build-tally 
 #            - build-sgi 
 #            - build-PlacementEditor 
-            - build-GDSConv 
-            - build-sci 
-            - build-cellfabric
-            - build-cktgen 
-            - build-pdk 
+##            - build-GDSConv 
+##            - build-sci 
+##            - build-cellfabric
+##            - build-cktgen 
+##            - build-pdk 
             - build-PlaceRouteHierFlow
 #            - build-satplacer
 
