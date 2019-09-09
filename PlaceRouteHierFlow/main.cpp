@@ -91,7 +91,9 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
       
   const string ofn = opath+current_node.name+"_"+std::to_string(lidx) + ".db.json";
   DB.WriteDBJSON(current_node,ofn);
+  DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
 
+  /*
   std::ostringstream oss;
   oss << "gen_viewer_json.py"
       << " -b " << current_node.name
@@ -107,8 +109,8 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
   DB.ReadDBJSON( current_node2,ofn);
   DB.WriteDBJSON( current_node2,ofn+"2");
+  */
 
-  DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
 }
 
 
