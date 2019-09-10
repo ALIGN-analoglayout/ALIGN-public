@@ -217,22 +217,19 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   cout<<"step2.1"<<endl;
 
-  int via_dis_x = max( mvm.LowerRect[1].x, mvm.UpperRect[1].x);
-  int via_dis_y = max( mvm.LowerRect[1].y, mvm.UpperRect[1].y);
-
   min_dis_x = drc_info.Metal_info[V_metal_index].width
             + drc_info.Metal_info[V_metal_index].dist_ss;
 
   min_dis_y = drc_info.Metal_info[H_metal_index].width
             + drc_info.Metal_info[H_metal_index].dist_ss;
 
-  min_dis_x = 2*min_dis_x;
-  min_dis_y = 2*min_dis_y;
+  min_dis_x *= 2;
+  min_dis_y *= 2;
 
   cout<<"step2.2"<<endl;
   span_distance.first = min_dis_x;
   span_distance.second = 3*min_dis_y; //m1 distance
-  cout<<span_distance.first<<endl;
+  cout<<"span_distance:" << span_distance.first << "," << span_distance.second << endl;
 
 //initial cap information
   int net_size = ki.size();
@@ -240,21 +237,21 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   double r;
   double s;
   for(int i=0;i<net_size;i++){
-     sum = sum + ki[i];
-    }
-   r = ceil(sqrt(sum));
-   s = ceil(sum/r);
+      sum = sum + ki[i];
+  }
+  r = ceil(sqrt(sum));
+  s = ceil(sum/r);
 
   if(cap_ratio==1){ //cap_ratio = 1, pass the ratio by user otherwise calculate it by the code
-    r = cap_r;
-    s = cap_s;
-    }    
+      r = cap_r;
+      s = cap_s;
+  }    
 
 //for dummy caps
-   if(dummy_flag){
-   r= r+2;
-   s= s+2;
-   }
+  if(dummy_flag){
+      r += 2;
+      s += 2;
+  }
 
   cout<<"step2.3"<<endl;
   for(int i=0;i<(int) r;i++){
@@ -296,84 +293,72 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
      }
   cout<<"step2.5"<<endl;
   //generate the cap pair sequence
-  pair<int,int> temp_pair;
 
-  if(index.size()==1){
+  if (index.size()==1) {
+      pair<int,int> temp_pair;
       temp_pair.first = index[0];
       temp_pair.second = -1;
       cap_pair_sequence.push_back(temp_pair);
-    }else{
+  } else {
     
+      int start_index=0;
+      if(dis[index[0]]<dis[index[1]]){
+	  pair<int,int> temp_pair;
+	  temp_pair.first = index[0];
+	  temp_pair.second = -1;
+	  cap_pair_sequence.push_back(temp_pair);
+	  start_index = 1;
+      }
 
-  if(dis[index[0]]<dis[index[1]]){
-      temp_pair.first = index[0];
-      temp_pair.second = -1;
-      cap_pair_sequence.push_back(temp_pair);
       //inital the rest pair sequence based on counterclockwise
-      for(unsigned int i=1;i<dis.size();i++){
-         for(unsigned int j=i+1;j<dis.size();j++){
-            if(dis[index[i]]!=dis[index[j]]){
-                   break;
+      for(unsigned int i=start_index;i<dis.size();i++){
+	  for(unsigned int j=i+1;j<dis.size();j++){
+	      if(dis[index[i]]!=dis[index[j]]){
+		  break;
               }
-            if(Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy){
-                if(index[i]<index[j]){
-                  temp_pair.first = index[i];
-                  temp_pair.second = index[j];
-                  }else{
-                  temp_pair.first = index[j];
-                  temp_pair.second = index[i];
-                  }
-                 cap_pair_sequence.push_back(temp_pair);
-                 break;
-               }
-            }
-         }
-    }else{
-    //initial the rest pair sequence based on counterclockwise
-      for(unsigned int i=0;i<dis.size();i++){
-         for(unsigned int j=i+1;j<dis.size();j++){
-            if(dis[index[i]]!=dis[index[j]]){
-                   break;
-              }
-            if(Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy){
-                if(index[i]<index[j]){
-                  temp_pair.first = index[i];
-                  temp_pair.second = index[j];
-                  }else{
-                  temp_pair.first = index[j];
-                  temp_pair.second = index[i];
-                  }
-                 cap_pair_sequence.push_back(temp_pair);
-                 break;
-               }
-            }
-         }
-    }
-
-    
-    }
+	      if(Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy){
+		  pair<int,int> temp_pair;
+		  temp_pair.first  = min( index[i], index[j]);
+		  temp_pair.second = max( index[i], index[j]);
+		  cap_pair_sequence.push_back(temp_pair);
+		  break;
+	      }
+	  }
+      }
+  }
 
 
   cout<<"step2.6"<<endl;  
 
   if(dummy_flag){
-  vector<pair<int,int> > temp_cap_pair_sequence;
-  for(unsigned int i=0;i<cap_pair_sequence.size();i++){
-      if(cap_pair_sequence[i].second!=-1){
-        if(Caps[cap_pair_sequence[i].first].index_x!=0 and Caps[cap_pair_sequence[i].first].index_x!=r-1 and Caps[cap_pair_sequence[i].first].index_y!=0 and Caps[cap_pair_sequence[i].first].index_y!=s-1 and Caps[cap_pair_sequence[i].second].index_x!=0 and Caps[cap_pair_sequence[i].second].index_x!=r-1 and Caps[cap_pair_sequence[i].second].index_y!=0 and Caps[cap_pair_sequence[i].second].index_y!=s-1){
-         temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
-         }
-       }else{
-        if(Caps[cap_pair_sequence[i].first].index_x!=0 and Caps[cap_pair_sequence[i].first].index_x!=r-1 and Caps[cap_pair_sequence[i].first].index_y!=0 and Caps[cap_pair_sequence[i].first].index_y!=s-1){
-         temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
-         }
-       }
-     }
-  int num_pair= cap_pair_sequence.size();
-  for(int i=0;i<num_pair;i++){
-     cap_pair_sequence.pop_back();
-    }
-  cap_pair_sequence= temp_cap_pair_sequence; //remove dummy capacitors
+      vector<pair<int,int> > temp_cap_pair_sequence;
+      for(unsigned int i=0;i<cap_pair_sequence.size();i++){
+	  if(cap_pair_sequence[i].second!=-1){
+	      if(Caps[cap_pair_sequence[i].first].index_x!=0   and
+		 Caps[cap_pair_sequence[i].first].index_x!=r-1 and
+		 Caps[cap_pair_sequence[i].first].index_y!=0   and
+		 Caps[cap_pair_sequence[i].first].index_y!=s-1 and
+		 Caps[cap_pair_sequence[i].second].index_x!=0  and
+		 Caps[cap_pair_sequence[i].second].index_x!=r-1 and
+		 Caps[cap_pair_sequence[i].second].index_y!=0 and
+		 Caps[cap_pair_sequence[i].second].index_y!=s-1){
+		  temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
+	      }
+	  }else{
+	      if(Caps[cap_pair_sequence[i].first].index_x!=0 and
+		 Caps[cap_pair_sequence[i].first].index_x!=r-1 and
+		 Caps[cap_pair_sequence[i].first].index_y!=0 and
+		 Caps[cap_pair_sequence[i].first].index_y!=s-1){
+		  temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
+	      }
+	  }
+      }
+
+      int num_pair= cap_pair_sequence.size();
+      for(int i=0;i<num_pair;i++){
+	  cap_pair_sequence.pop_back();
+      }
+      cap_pair_sequence= temp_cap_pair_sequence; //remove dummy capacitors
   }
 
 // to be continued here.
@@ -401,19 +386,19 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
 // DAK: General methods needed for layer mapping:  we should be using
 // stoi(PnRDatabase::DRC_info.MaskID_Metal[layer])
-int
-getLayerMask (const std::string & layer, PnRDB::Drc_info & drc_info) {
+static int
+getLayerMask (const std::string & layer, const PnRDB::Drc_info & drc_info) {
     // DAK: These should be defined in a method that can load this map from a file / PDK
-    int index = drc_info.Metalmap[layer];
-    int mask = stoi(drc_info.MaskID_Metal[index]);
+    int index = drc_info.Metalmap.at(layer);
+    int mask = stoi(drc_info.MaskID_Metal.at(index));
     return mask;
 }
-int
-getLayerViaMask (const std::string & layer, PnRDB::Drc_info & drc_info) {
+
+static int
+getLayerViaMask (const std::string & layer, const PnRDB::Drc_info & drc_info) {
     // DAK: These should be defined in a method that can load this map from a file / PDK
-    int index = drc_info.Metalmap[layer];
-    //string via_name = drc_info.ViaModel[index].name;
-    int mask = stoi(drc_info.MaskID_Via[index]);
+    int index = drc_info.Metalmap.at(layer);
+    int mask = stoi(drc_info.MaskID_Via.at(index));
     return mask;
 }
 
@@ -457,10 +442,10 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
-	    if (x[0]<Min_x) Min_x = x[0];
-	    if (x[2]>Max_x) Max_x = x[2];
-	    if (y[0]<Min_y) Min_y = y[0];
-	    if (y[2]>Max_y) Max_y = y[2];
+	    Min_x = min( x[0], Min_x);
+	    Max_x = max( x[2], Max_x);
+	    Min_y = min( y[0], Min_y);
+	    Max_y = max( y[2], Max_y);
 
 	    PnRDB::contact temp_contact;
             fillContact (temp_contact, x, y);
@@ -560,21 +545,21 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             h_contact.originBox.LL = drc_info.Via_model[via_model_index].UpperRect[0];
             h_contact.originBox.UR = drc_info.Via_model[via_model_index].UpperRect[1];
             //cout<<"Extract Data Step 3.31"<<endl;
-            h_contact.originBox.LL.x = h_contact.originBox.LL.x + temp_contact.placedCenter.x;
-            h_contact.originBox.LL.y = h_contact.originBox.LL.y + temp_contact.placedCenter.y;
+            h_contact.originBox.LL.x += temp_contact.placedCenter.x;
+            h_contact.originBox.LL.y += temp_contact.placedCenter.y;
 
-            h_contact.originBox.UR.x = h_contact.originBox.UR.x + temp_contact.placedCenter.x;
-            h_contact.originBox.UR.y = h_contact.originBox.UR.y + temp_contact.placedCenter.y;
+            h_contact.originBox.UR.x += temp_contact.placedCenter.x;
+            h_contact.originBox.UR.y += temp_contact.placedCenter.y;
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
             v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
             v_contact.originBox.UR = drc_info.Via_model[via_model_index].LowerRect[1];
 
-            v_contact.originBox.LL.x = v_contact.originBox.LL.x + temp_contact.placedCenter.x;
-            v_contact.originBox.LL.y = v_contact.originBox.LL.y + temp_contact.placedCenter.y;
+            v_contact.originBox.LL.x += temp_contact.placedCenter.x;
+            v_contact.originBox.LL.y += temp_contact.placedCenter.y;
 
-            v_contact.originBox.UR.x = v_contact.originBox.UR.x + temp_contact.placedCenter.x;
-            v_contact.originBox.UR.y = v_contact.originBox.UR.y + temp_contact.placedCenter.y;
+            v_contact.originBox.UR.x += temp_contact.placedCenter.x;
+            v_contact.originBox.UR.y += temp_contact.placedCenter.y;
 
             cout<<"Extract Data Step 3.5"<<endl;
             lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
