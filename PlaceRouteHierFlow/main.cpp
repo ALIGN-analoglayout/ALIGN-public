@@ -23,7 +23,12 @@ double ConstGraph::PHI=1500;
 static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag)
 {
-  const string ofn = opath+current_node.name+"_"+std::to_string(lidx) + tag + ".db.json";
+  string ofn;
+  if ( lidx >= 0) {
+    ofn = opath+current_node.name + "_" + std::to_string(lidx) + tag + ".db.json";
+  } else {
+    ofn = opath+current_node.name + tag + ".db.json";
+  }
   DB.WriteDBJSON(current_node,ofn);
   std::cout << ltag << std::endl;
 }
@@ -150,9 +155,11 @@ int main(int argc, char** argv ){
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
+    
+    save_state( DB, current_node, -1, opath, ".pre_prc", "Placer_Router_Cap");
     DB.AddingPowerPins(current_node);
-
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
+    save_state( DB, current_node, -1, opath, ".post_prc", "Placer_Router_Cap");
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);

@@ -110,83 +110,97 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   vector<string> obs;
 
-  if(lefData.find(unit_capacitor)==lefData.end()){
-  cerr<<"CCCap-Error: unit capacitor not exist in map:"<<" "<<unit_capacitor<<endl;
-  }else{
+  const auto &uc = lefData.at(unit_capacitor);
 
-  
-  for(unsigned int i=0;i<lefData[unit_capacitor].interMetals.size();i++){
+  for(unsigned int i=0;i<uc.interMetals.size();i++){
        int found = 0;
        for(unsigned int j=0;j<obs.size();j++){
-          if(obs[j]==lefData[unit_capacitor].interMetals[i].metal){
+          if(obs[j]==uc.interMetals[i].metal){
              found = 1;
             }
          }
-       if(found == 0){obs.push_back(lefData[unit_capacitor].interMetals[i].metal);}
+       if(found == 0){obs.push_back(uc.interMetals[i].metal);}
       }
 
-  unit_cap_demension.first = lefData[unit_capacitor].width;
-  unit_cap_demension.second= lefData[unit_capacitor].height;
+  unit_cap_demension.first = uc.width;
+  unit_cap_demension.second= uc.height;
   int pin_minx = INT_MAX;
   int pin_miny = INT_MAX;
   string pin_metal;
-  for(unsigned int i=0;i<lefData[unit_capacitor].macroPins.size();i++){
-       for(unsigned int j=0;j<lefData[unit_capacitor].macroPins[i].pinContacts.size();j++){
-           if(lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.x<=pin_minx and lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.y<=pin_miny){
-               pin_minx = lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.x;
-               pin_miny = lefData[unit_capacitor].macroPins[i].pinContacts[j].originBox.LL.y;
-               pin_metal = lefData[unit_capacitor].macroPins[i].pinContacts[j].metal;
-              }
-          }
-     }
+
+  /*
+   * SMB: This does something weird
+   * it updates the LL if both the x and y coords are less than the previous best
+   * So not necessarily the smallest x or the smalles t y
+   */
+  cout << "Find pin_minx, pin_miny" << endl;
+  for(unsigned int i=0;i<uc.macroPins.size();i++){
+      for(unsigned int j=0;j<uc.macroPins[i].pinContacts.size();j++){
+	  const auto& pc = uc.macroPins[i].pinContacts[j];
+	  const auto& r = pc.originBox.LL;
+	  cout << "Cand " << r.x << " " << r.y;
+	  if(r.x<=pin_minx and r.y<=pin_miny){
+	      cout << " (Update)";
+	      pin_minx = r.x;
+	      pin_miny = r.y;
+	      pin_metal = pc.metal;
+	  }
+	  cout << endl;
+      }
+  }
+  cout << "Found pin_minx " << pin_minx << " pin_miny " << pin_miny << endl;
 	  
    //determine which three layer are used for routing metal
 	  
-   if(drc_info.Metal_info[drc_info.Metalmap[pin_metal]].direct == 1){ // metal pin is H
-         H_metal = pin_metal;
-         H_metal_index = drc_info.Metalmap[pin_metal];
-       if(drc_info.Metalmap[pin_metal]>0){ // metal pin has metal - 1 and
-           V_metal = drc_info.Metal_info[drc_info.Metalmap[pin_metal]-1].name;
-           V_metal_index = drc_info.Metalmap[pin_metal]-1;
-         }else{
-           V_metal = drc_info.Metal_info[drc_info.Metalmap[pin_metal]+1].name;
-           V_metal_index = drc_info.Metalmap[pin_metal]-1;
-         }
-       
-     }else{
-         V_metal = pin_metal;
-         V_metal_index = drc_info.Metalmap[pin_metal];
-       if(drc_info.Metalmap[pin_metal]>0){ // metal pin has metal - 1 and
-           H_metal = drc_info.Metal_info[drc_info.Metalmap[pin_metal]-1].name;
-           H_metal_index = drc_info.Metalmap[pin_metal]-1;
-         }else{
-           H_metal = drc_info.Metal_info[drc_info.Metalmap[pin_metal]+1].name;
-           H_metal_index = drc_info.Metalmap[pin_metal]+1;
-         }
-     }
+  const auto& mm = drc_info.Metalmap.at(pin_metal);
+
+  if(drc_info.Metal_info[mm].direct == 1){ // metal pin is H
+      H_metal = pin_metal;
+      H_metal_index = mm;
+      if(mm>0){ // metal pin has metal - 1 and
+	  V_metal = drc_info.Metal_info[mm-1].name;
+	  V_metal_index = mm-1;
+      }else{
+	  V_metal = drc_info.Metal_info[mm+1].name;
+	  V_metal_index = mm+1;
+      }
+  }else{
+      V_metal = pin_metal;
+      V_metal_index = mm;
+      if(mm>0){ // metal pin has metal - 1 and
+	  H_metal = drc_info.Metal_info[mm-1].name;
+	  H_metal_index = mm-1;
+      }else{
+	  H_metal = drc_info.Metal_info[mm+1].name;
+	  H_metal_index = mm+1;
+      }
+  }
 	  
   if(H_metal_index>V_metal_index){
       HV_via_metal = V_metal;
       HV_via_metal_index = V_metal_index;
-    }else{
+  }else{
       HV_via_metal = H_metal;
       HV_via_metal_index = H_metal_index;
-    }
-   if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerIdx==drc_info.Metalmap[pin_metal]){
-      shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x;
-      shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y;
-      cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[0].y<<endl;
-     }else if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperIdx==drc_info.Metalmap[pin_metal]){
-      shifting_x = pin_minx-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].x;
-      shifting_y = pin_miny-drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].y;
-      cout<<"rec x "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].x<<" rec y "<<drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[0].y<<endl;
-     }
-   cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
-   //cout<<"pin_miny "<<pin_miny<<endl;
-   cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
-   //cout<<"shifting_y "<<shifting_y<<endl;
-	  
   }
+
+  const auto& mv = drc_info.Metalmap.at(HV_via_metal);
+  const auto& mvm = drc_info.Via_model.at(mv);
+  if(mvm.LowerIdx==mm){
+      auto& r = mvm.LowerRect[0];
+      cout<<"rec x "<<r.x<<" rec y "<<r.y<<endl;
+      shifting_x = pin_minx-r.x;
+      shifting_y = pin_miny-r.y;
+  }else if(mvm.UpperIdx==mm){
+      auto& r = mvm.UpperRect[0];
+      cout<<"rec x "<<r.x<<" rec y "<<r.y<<endl;
+      shifting_x = pin_minx-r.x;
+      shifting_y = pin_miny-r.y;
+  }
+
+  cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
+  cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
+	  
 
   cout<<"step2"<<endl;
 
@@ -202,63 +216,18 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   }
 
   cout<<"step2.1"<<endl;
-/*
-  for(int i=0;i<drc_info.Via_info.size();i++){
-      via_width_x.push_back(drc_info.Via_info[i].width);
-      via_width_x[i]=via_width_x[i]/2;
-      via_width_y.push_back(drc_info.Via_info[i].width_y);
-      via_width_y[i]=via_width_y[i]/2;
-      via_cover_l.push_back(drc_info.Via_info[i].cover_l); //change
-      via_cover_l[i]=via_cover_l[i]/2;
-      via_cover_u.push_back(drc_info.Via_info[i].cover_u); //change
-      via_cover_u[i]=via_cover_u[i]/2;
-  }
-*/
-//initial demension
 
-  //min_dis = 2*metal_width[0]+metal_distance_ss[0];
+  int via_dis_x = max( mvm.LowerRect[1].x, mvm.UpperRect[1].x);
+  int via_dis_y = max( mvm.LowerRect[1].y, mvm.UpperRect[1].y);
 
-  int via_dis_x=0;
-  int via_dis_y=0;
+  min_dis_x = drc_info.Metal_info[V_metal_index].width
+            + drc_info.Metal_info[V_metal_index].dist_ss;
 
-  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].x>via_dis_x){
-      via_dis_x = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].x;
-    }
-  
-  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].x>via_dis_x){
-      via_dis_x = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].x;
-    }
+  min_dis_y = drc_info.Metal_info[H_metal_index].width
+            + drc_info.Metal_info[H_metal_index].dist_ss;
 
-  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].y>via_dis_y){
-      via_dis_y = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].LowerRect[1].y;
-    }
-  
-  if(drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].y>via_dis_y){
-      via_dis_y = drc_info.Via_model[drc_info.Metalmap[HV_via_metal]].UpperRect[1].y;
-    }
-
-
-  min_dis_x = drc_info.Metal_info[V_metal_index].width+drc_info.Metal_info[V_metal_index].dist_ss;
-  min_dis_y = drc_info.Metal_info[H_metal_index].width+drc_info.Metal_info[H_metal_index].dist_ss;
   min_dis_x = 2*min_dis_x;
   min_dis_y = 2*min_dis_y;
-
-  //need two min_dis?? min_dis_x, min_di
-
-//readin cap scale from lef file
-
-  //this is from gds
-/*
-  string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
-  vector<string> strBlocks;
-  vector<int> llx, lly, urx, ury;
-  long int rndnum=111;
-  json js;
-  JSONReaderWrite_subcells (gds_unit_capacitor, rndnum, strBlocks, llx,lly,urx,ury, js);
-  unit_cap_demension.first = llx[0];
-  unit_cap_demension.second = lly[0];
-*/
-  
 
   cout<<"step2.2"<<endl;
   span_distance.first = min_dis_x;
@@ -1550,72 +1519,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
 
   grid_offset = (near_grid - height_cap)/2;
 
-//via by via model
-
-  //for each net
-    //for each connection set
-    // determine the pentential longest part
-    // connect the rest
-    // also focus on overlap issue
-
-/*
-  Nets_neg = Nets_pos;
-//update span demension
-   int num_in_eachtrail = Nets_pos[0].line_v.size();
-   vector<int> routed_trails;
-   for(int i=0;i<num_in_eachtrail;i++){routed_trails.push_back(0);}
-   for(int i=0;i<Nets_pos.size();i++){
-      //Nets_pos[i].line_v_r=Nets_pos[i].line_v;
-      for(int l=0;l<Nets_pos[i].line_v.size();l++){
-          if(Nets_pos[i].line_v[l]==1){
-              int lock_update_left = 0;
-              int lock_update_right = 0;
-              routed_trails[l]=routed_trails[l]+1;
-              for(int k=0;k<Nets_pos[i].cap_index.size();k++){
-                  if(Caps[Nets_pos[i].cap_index[k]].index_x==l){
-                      
-                      if(lock_update_left == 0){
-                          lock_update_left = 1;
-                         }
-                      
-                    }else if(l-Caps[Nets_pos[i].cap_index[k]].index_x==1){
-                      
-                      if(lock_update_right == 0){
-                          lock_update_right = 1;
-                         }
-                    }
-                 }
-                if(lock_update_right==1 and lock_update_left==1){
-                   Nets_neg[i].line_v[l]=1;
-                   routed_trails[l]=routed_trails[l]+1;
-                   }else if(lock_update_left==1){
-                      Nets_neg[i].line_v[l]=0;
-                      Nets_neg[i].line_v[l+1]=1;
-                      routed_trails[l+1]=routed_trails[l+1]+1;
-                   }else if(lock_update_right==1){
-                      Nets_neg[i].line_v[l]=0;
-                      Nets_neg[i].line_v[l-1]=1;
-                      routed_trails[l-1]=routed_trails[l-1]+1;
-                   }
-                       
-            }
-         }
-   }
-  
-  int max_num = 0;
-  for(int i=0;i<num_in_eachtrail;i++){
-      if(routed_trails[i]>max_num){
-        max_num = routed_trails[i];
-       }
-     }
-  int min_dis = 5;
-  span_distance.first = (max_num+1)*min_dis;
-  cout<<span_distance.first<<endl;
-
-  for(int i=0;i<Caps.size();i++){
-      Caps[i].x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
-     }
-*/  
 
   string HV_via_metal;
   int HV_via_metal_index;
@@ -1799,36 +1702,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                  coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
                  addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
                  
-/*
-                 Nets_pos[i].via.push_back(coord);
-                 Nets_pos[i].via_metal.push_back("M1");
-                 Nets_pos[i].via.push_back(coord);
-                 Nets_pos[i].via_metal.push_back("M2");
-
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second - via_cover[0];
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[0];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back("M1");
-                      
-                 via_coord.first = coord.first- via_cover[1];
-                 via_coord.second = coord.second;
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.first = coord.first + via_cover[1];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(1);
-                 Nets_pos[i].metal.push_back("M2");
-                      
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second- via_cover[2];
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[2];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back("M3");
-*/                 
                  Nets_pos[i].start_conection_coord.push_back(coord);
                  //
                  coord.second = -2*min_dis_y+shifting_y;
@@ -1838,36 +1711,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                  //
 
                  //addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
-/*
-                 Nets_pos[i].via.push_back(coord);
-                 Nets_pos[i].via_metal.push_back("M1");
-                 Nets_pos[i].via.push_back(coord);
-                 Nets_pos[i].via_metal.push_back("M2");
-
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second - via_cover[0];
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[0];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back("M1");
-                      
-                 via_coord.first = coord.first- via_cover[1];
-                 via_coord.second = coord.second;
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.first = coord.first + via_cover[1];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back("M2");
-                      
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second- via_cover[2];
-                 Nets_pos[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[2];
-                 Nets_pos[i].end_conection_coord.push_back(via_coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back("M3");
-*/                
                  //
                  Nets_pos[i].start_conection_coord.push_back(coord);
                  coord.second = Caps[max_cap_index].y- unit_cap_demension.second/2-left_right*min_dis_y+shifting_y;
@@ -1899,30 +1742,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
        //
        }    
    }
-/*
-  for(int i=0;i<Nets_pos.size();i++){
-      //connection for each connection set
-      for(int j=0;j<Nets_pos[i].Set.size();j++){
-                 //cout<<i<<" "<<j<<" "<<Nets_pos[i].Set.size()<<endl;
-          for(int k=0;k<Nets_pos[i].Set[j].cap_index.size();k++){
-               for(int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
-                 //cout<<Nets_pos[i].Set[j].cap_index[k]<< " "<<Nets_pos[i].Set[j].cap_index[l]<<endl;
-   if((Caps[Nets_pos[i].Set[j].cap_index[k]].index_x==Caps[Nets_pos[i].Set[j].cap_index[l]].index_x and Caps[Nets_pos[i].Set[j].cap_index[k]].index_y-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y ==1 and !(Caps[Nets_pos[i].Set[j].cap_index[k]].access and Caps[Nets_pos[i].Set[j].cap_index[l]].access)) or (Caps[Nets_pos[i].Set[j].cap_index[k]].index_y==Caps[Nets_pos[i].Set[j].cap_index[l]].index_y and Caps[Nets_pos[i].Set[j].cap_index[k]].index_x-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x ==1) and !(Caps[Nets_pos[i].Set[j].cap_index[k]].access and Caps[Nets_pos[i].Set[j].cap_index[l]].access)){
-                       //cout<<"found"<<endl;
-                       coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2;
-                       coord.second = Caps[Nets_pos[i].Set[j].cap_index[k]].y - unit_cap_demension.second/2;
-                       Nets_pos[i].start_conection_coord.push_back(coord);
-                       //Caps[Nets_pos[i].Set[j].cap_index[k]].access = 1;
-                       coord.first = Caps[Nets_pos[i].Set[j].cap_index[l]].x + unit_cap_demension.first/2;
-                       coord.second = Caps[Nets_pos[i].Set[j].cap_index[l]].y - unit_cap_demension.second/2;
-                       Nets_pos[i].end_conection_coord.push_back(coord);
-                       //Caps[Nets_pos[i].Set[j].cap_index[l]].access = 1;
-                     }
-                  }
-             }
-         }
-     }
-*/
     for(unsigned int i=0;i<Nets_pos.size();i++){
       //connection for each connection set
       for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
@@ -1937,14 +1756,10 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                               coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
                               coord.second = Caps[Nets_pos[i].Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
                               
-                              //
-                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                              
 
-                              //
+                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+
                               Nets_pos[i].start_conection_coord.push_back(coord);
-                              //Caps[Nets_pos[i].Set[j].cap_index[k]].access = 1;
                               coord.first = Caps[Nets_pos[i].Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
                               coord.second = Caps[Nets_pos[i].Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
                               Nets_pos[i].end_conection_coord.push_back(coord);
@@ -1962,52 +1777,16 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                               coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
                               coord.second = Caps[Nets_pos[i].Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
                               addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                              //
-/*
-                              Nets_pos[i].via.push_back(coord);
-                              Nets_pos[i].via_metal.push_back("M1");
-                              Nets_pos[i].via.push_back(coord);
-                              Nets_pos[i].via_metal.push_back("M2");
 
-                              via_coord.first = coord.first;
-                              via_coord.second = coord.second - via_cover[0];
-                              Nets_pos[i].start_conection_coord.push_back(via_coord);
-                              via_coord.second = coord.second + via_cover[0];
-                              Nets_pos[i].end_conection_coord.push_back(via_coord);
-                              Nets_pos[i].Is_pin.push_back(0);
-                              Nets_pos[i].metal.push_back("M1");
-                      
-                              via_coord.first = coord.first- via_cover[1];
-                              via_coord.second = coord.second;
-                              Nets_pos[i].start_conection_coord.push_back(via_coord);
-                              via_coord.first = coord.first + via_cover[1];
-                              Nets_pos[i].end_conection_coord.push_back(via_coord);
-                              Nets_pos[i].Is_pin.push_back(0);
-                              Nets_pos[i].metal.push_back("M2");
-                              
-                              via_coord.first = coord.first;
-                              via_coord.second = coord.second - via_cover[2];
-                              Nets_pos[i].start_conection_coord.push_back(via_coord);
-                              via_coord.second = coord.second + via_cover[2];
-                              Nets_pos[i].end_conection_coord.push_back(via_coord);
-                              Nets_pos[i].Is_pin.push_back(0);
-                              Nets_pos[i].metal.push_back("M3");
-*/                              
-                              //
                               Nets_pos[i].start_conection_coord.push_back(coord);
-                              //Caps[Nets_pos[i].Set[j].cap_index[k]].access = 1;
                               coord.first = Caps[Nets_pos[i].Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
                               coord.second = Caps[Nets_pos[i].Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
                               Nets_pos[i].end_conection_coord.push_back(coord);
                               Nets_pos[i].Is_pin.push_back(0);
                               Nets_pos[i].metal.push_back(V_metal);
-                              //
+
                               addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                              
-                    
-                              
-                              
-                              //
+
                               index = 0;
                               found = 1;
                              }
@@ -2138,8 +1917,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                       Nets_neg[i].via.push_back(coord);
                       Nets_neg[i].via_metal.push_back("M1");
                       //
-                      //Nets_neg[i].line_v_r[k]=0;
-                      //Nets_neg[i].line_v_r[k+1]=1;
                       Nets_neg[i].end_conection_coord.push_back(coord);
                       Nets_neg[i].Is_pin.push_back(0);
                       //
@@ -2178,8 +1955,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                       
                       //
                       Caps[Nets_neg[i].cap_index[k]].access = 1;
-                      //Nets_neg[i].line_v_r[k]=0;
-                      //Nets_neg[i].line_v_r[k-1]=1;
                       if(Caps[Nets_neg[i].cap_index[k]].index_y<min){
                          min=Caps[Nets_neg[i].cap_index[k]].index_y;
                          min_cap_index = Nets_neg[i].cap_index[k];
@@ -2190,79 +1965,14 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                  }
                  //connect from start to end for each trail 
                  int num_cap = Caps.size();
-                 //coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y-shifting_y;//modify 2, 2019/6/24
                  coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y + grid_offset;
                  addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
-                 //
-/*
-                 Nets_neg[i].via.push_back(coord);
-                 Nets_neg[i].via_metal.push_back("M1");
-                 Nets_neg[i].via.push_back(coord);
-                 Nets_neg[i].via_metal.push_back("M2");
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second - via_cover[0];
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[0];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back("M1");
-                      
-                 via_coord.first = coord.first- via_cover[1];
-                 via_coord.second = coord.second;
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.first = coord.first + via_cover[1];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(1);
-                 Nets_neg[i].metal.push_back("M2");
-                      
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second- via_cover[2];
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[2];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back("M3");
-                 //
-*/
+
                  Nets_neg[i].start_conection_coord.push_back(coord);
                  coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2+2*min_dis_y-shifting_y;
                  Nets_neg[i].end_conection_coord.push_back(coord);
                  Nets_neg[i].Is_pin.push_back(0);
                  Nets_neg[i].metal.push_back(V_metal);
-                 //addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                 //
-/*
-                 Nets_neg[i].via.push_back(coord);
-                 Nets_neg[i].via_metal.push_back("M1");
-                 Nets_neg[i].via.push_back(coord);
-                 Nets_neg[i].via_metal.push_back("M2");
-                 
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second - via_cover[0];
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[0];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back("M1");
-                      
-                 via_coord.first = coord.first- via_cover[1];
-                 via_coord.second = coord.second;
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.first = coord.first + via_cover[1];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back("M2");
-                      
-                 via_coord.first = coord.first;
-                 via_coord.second = coord.second- via_cover[2];
-                 Nets_neg[i].start_conection_coord.push_back(via_coord);
-                 via_coord.second = coord.second + via_cover[2];
-                 Nets_neg[i].end_conection_coord.push_back(via_coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back("M3");
-                 
-                 //
-*/
                  Nets_neg[i].start_conection_coord.push_back(coord);
                  coord.second = Caps[min_cap_index].y+ unit_cap_demension.second/2+left_right*min_dis_y-shifting_y;
                  Nets_neg[i].end_conection_coord.push_back(coord);
@@ -2270,13 +1980,11 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                  Nets_neg[i].metal.push_back(V_metal);
                  if(first_lock==0){
                     first_coord.first = coord.first;
-                    //first_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y-shifting_y;
                     first_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
                     first_lock=1;
                  }else{
                     end_close=1;
                     end_coord.first = coord.first;
-                    //end_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y-shifting_y;
                     end_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
                  }
             }
@@ -2292,30 +2000,6 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
        
        }    
    }
-/*
-  for(int i=0;i<Nets_neg.size();i++){
-      //connection for each connection set
-      for(int j=0;j<Nets_neg[i].Set.size();j++){
-                 //cout<<i<<" "<<j<<" "<<Nets_pos[i].Set.size()<<endl;
-          for(int k=0;k<Nets_neg[i].Set[j].cap_index.size();k++){
-               for(int l=0;l<Nets_neg[i].Set[j].cap_index.size();l++){
-                 //cout<<Nets_pos[i].Set[j].cap_index[k]<< " "<<Nets_pos[i].Set[j].cap_index[l]<<endl;
-   if((Caps[Nets_neg[i].Set[j].cap_index[k]].index_x==Caps[Nets_neg[i].Set[j].cap_index[l]].index_x and Caps[Nets_neg[i].Set[j].cap_index[k]].index_y-Caps[Nets_neg[i].Set[j].cap_index[l]].index_y ==1 and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access and Caps[Nets_neg[i].Set[j].cap_index[l]].access)) or (Caps[Nets_neg[i].Set[j].cap_index[k]].index_y==Caps[Nets_neg[i].Set[j].cap_index[l]].index_y and Caps[Nets_neg[i].Set[j].cap_index[k]].index_x-Caps[Nets_neg[i].Set[j].cap_index[l]].index_x ==1) and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access and Caps[Nets_neg[i].Set[j].cap_index[l]].access)){
-                       //cout<<"found"<<endl;
-                       coord.first = Caps[Nets_neg[i].Set[j].cap_index[k]].x - unit_cap_demension.first/2;
-                       coord.second = Caps[Nets_neg[i].Set[j].cap_index[k]].y + unit_cap_demension.second/2;
-                       Nets_neg[i].start_conection_coord.push_back(coord);
-                       //Caps[Nets_neg[i].Set[j].cap_index[k]].access = 1;
-                       coord.first = Caps[Nets_neg[i].Set[j].cap_index[l]].x - unit_cap_demension.first/2;
-                       coord.second = Caps[Nets_neg[i].Set[j].cap_index[l]].y + unit_cap_demension.second/2;
-                       Nets_neg[i].end_conection_coord.push_back(coord);
-                       //Caps[Nets_neg[i].Set[j].cap_index[l]].access = 1;
-                     }
-                  }
-             }
-         }
-     }
-*/
   for(unsigned int i=0;i<Nets_neg.size();i++){
       //connection for each connection set
       for(unsigned int j=0;j<Nets_neg[i].Set.size();j++){
@@ -2346,14 +2030,10 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                               Nets_neg[i].end_conection_coord.push_back(coord);
                               Nets_neg[i].Is_pin.push_back(0);
                               Nets_neg[i].metal.push_back(H_metal);
-                              //
+
                               addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       
-                              //Nets_neg[i].via.push_back(coord);
-                              //Nets_neg[i].via_metal.push_back("M2");
-                              
-                              //
                               index = 0;
                               found = 1;
                              }else if((Caps[Nets_neg[i].Set[j].cap_index[k]].index_x==Caps[Nets_neg[i].Set[j].cap_index[index]].index_x and abs(Caps[Nets_neg[i].Set[j].cap_index[k]].index_y-Caps[Nets_neg[i].Set[j].cap_index[index]].index_y) ==1 and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access))){
@@ -2361,53 +2041,16 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                               coord.first = Caps[Nets_neg[i].Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
                               coord.second = Caps[Nets_neg[i].Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
                               addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                              //
-/*
-                              Nets_neg[i].via.push_back(coord);
-                              Nets_neg[i].via_metal.push_back("M1");
-                              Nets_neg[i].via.push_back(coord);
-                              Nets_neg[i].via_metal.push_back("M2");
-                              via_coord.first = coord.first;
-                              via_coord.second = coord.second - via_cover[0];
-                              Nets_neg[i].start_conection_coord.push_back(via_coord);
-                              via_coord.second = coord.second + via_cover[0];
-                              Nets_neg[i].end_conection_coord.push_back(via_coord);
-                              Nets_neg[i].Is_pin.push_back(0);
-                              Nets_neg[i].metal.push_back("M1");
-                      
-                              via_coord.first = coord.first- via_cover[1];
-                              via_coord.second = coord.second;
-                              Nets_neg[i].start_conection_coord.push_back(via_coord);
-                              via_coord.first = coord.first + via_cover[1];
-                              Nets_neg[i].end_conection_coord.push_back(via_coord);
-                              Nets_neg[i].Is_pin.push_back(0);
-                              Nets_neg[i].metal.push_back("M2");
-                              
-                              via_coord.first = coord.first;
-                              via_coord.second = coord.second - via_cover[2];
-                              Nets_neg[i].start_conection_coord.push_back(via_coord);
-                              via_coord.second = coord.second + via_cover[2];
-                              Nets_neg[i].end_conection_coord.push_back(via_coord);
-                              Nets_neg[i].Is_pin.push_back(0);
-                              Nets_neg[i].metal.push_back("M3");
-*/                              
-                              //Nets_neg[i].via.push_back(coord);
-                              //Nets_neg[i].via_metal.push_back("M2");
-                              //
-                              //Caps[Nets_pos[i].Set[j].cap_index[k]].access = 1;
+
                               Nets_neg[i].start_conection_coord.push_back(coord);
                               coord.first = Caps[Nets_neg[i].Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
                               coord.second = Caps[Nets_neg[i].Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
                               Nets_neg[i].end_conection_coord.push_back(coord);
                               Nets_neg[i].Is_pin.push_back(0);
                               Nets_neg[i].metal.push_back(V_metal);
-                              //
+
                               addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                    
-                              //Nets_neg[i].via.push_back(coord);
-                              //Nets_neg[i].via_metal.push_back("M2");
-                              
-                              //
                               index = 0;
                               found = 1;
                              }

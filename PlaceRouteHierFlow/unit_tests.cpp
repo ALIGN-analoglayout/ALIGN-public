@@ -81,8 +81,55 @@ static void generic_placer_test( const string& topcell)
   EXPECT_EQ( json( nodeVec[0]), json(post_current_node));
 }
 
+
+static void generic_placer_router_cap_test( const string& topcell) 
+{
+  string fpath = "gold";
+
+  string dfile="FinFET_Mock_PDK_Abstraction.json";
+  string binary_directory = "./";
+  string opath = "./Results/";
+
+  PnRdatabase DB("gold", topcell, "", "all.lef", "", dfile);
+
+  PnRDB::Drc_info drcInfo=DB.getDrc_info();
+  map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
+
+  PnRDB::hierNode current_node;
+  DB.ReadDBJSON( current_node, "gold/" + topcell + ".pre_prc" + ".db.json");
+
+  EXPECT_EQ( current_node.name, topcell);
+
+  DB.AddingPowerPins(current_node);
+  Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
+
+  DB.WriteDBJSON( current_node, "cand/" + topcell + ".post_prc" + ".db.json");
+
+  PnRDB::hierNode post_current_node;
+  DB.ReadDBJSON( post_current_node, "gold/" + topcell + ".post_prc" + ".db.json");
+
+  EXPECT_EQ( json( current_node), json(post_current_node));
+};
+
+TEST(PnRTest, Placer_Router_Cap_telescopic_ota) {
+  generic_placer_router_cap_test( "telescopic_ota");
+}
+TEST(PnRTest, Placer_Router_Cap_switched_capacitor_combination) {
+  generic_placer_router_cap_test( "switched_capacitor_combination");
+}
+TEST(PnRTest, Placer_Router_Cap_switched_capacitor_filter) {
+  generic_placer_router_cap_test( "switched_capacitor_filter");
+}
+
+
 TEST(PnRTest, Placer_telescopic_ota) {
   generic_placer_test( "telescopic_ota");
+};
+TEST(PnRTest, Placer_switched_capacitor_combination) {
+  generic_placer_test( "switched_capacitor_combination");
+};
+TEST(PnRTest, Placer_switched_capacitor_filter) {
+  generic_placer_test( "switched_capacitor_filter");
 };
 
 TEST(PnRTest, GlobalRouter_telescopic_ota) {

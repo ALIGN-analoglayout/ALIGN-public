@@ -27,7 +27,7 @@ router_path=router
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(PnRDB_path)/PnRDB.a $(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a 
 
 all: depend subsystem pnr_compiler unit_tests
 

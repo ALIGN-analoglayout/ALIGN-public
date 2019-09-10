@@ -1,10 +1,11 @@
 from cell_fabric import DefaultCanvas, Pdk, transformation
 
 def check_bbox( b):
-    assert b.LL.x < b.UR.x
-    assert b.LL.y < b.UR.y
+    pass
+#    assert b.LL.x < b.UR.x, (b.LL.x,b.UR.x)
+#    assert b.LL.y < b.UR.y, (b.LL.y,b.UR.y)
 
-def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json"):
+def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -55,6 +56,14 @@ def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
     for n in hN.Nets:
         print( n.name)
+
+        def addt( obj, con):
+            b = con.originBox if use_orig else con.placedBox
+            if obj == n:
+                add_terminal( obj.name, con.metal, b)
+            else:
+                add_terminal( obj, con.metal, b)
+
         for c in n.connected:
             if c.type == 'Block':
                 cblk = hN.Blocks[c.iter2]
@@ -66,16 +75,14 @@ def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
                 print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
                 for con in pin.pinContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
-
+                    addt( n, con)
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
                 print( f'\tTerminal formal_index: {c.iter},{terminal_name}')
                 for con in term.termContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
+                    addt( n, con)
 
         for metal in n.path_metal:
             con = metal.MetalRect
@@ -83,22 +90,22 @@ def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
+                addt( n, con)
 
         for via in n.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
+                addt( n, con)
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
         for con in blk.interMetals:
-            add_terminal( '!interMetals', con.metal, con.placedBox)
+            addt( '!interMetals', con)
 
         for via in blk.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( '!interVias', con.metal, con.placedBox)
+                addt( '!interVias', con)
 
-        add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
+        add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.originBox if use_orig else blk.placedBox)
 
     d["terminals"] = terminals
 
