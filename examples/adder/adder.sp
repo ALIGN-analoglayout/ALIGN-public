@@ -1,8 +1,4 @@
 
-.param cload_adder=10f vps=0.85 ccoup_adder=50f nfpf_adder=50 \
-    ngf_adder=1 rbias_adder=20K rload_adder=500 vbias_nfet_adder=600m \
-    vbias_pfet_adder=450m
-
 .subckt nfet2x d g s b 
 .param p1=2
     MN0 d g n1 b    nfet l=0.014u nfin=p1
