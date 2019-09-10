@@ -17,7 +17,6 @@ coverage.out
 junit.xml
 *.a
 .depend
-Results/
 __json
 *-A.json
 *-B.json
