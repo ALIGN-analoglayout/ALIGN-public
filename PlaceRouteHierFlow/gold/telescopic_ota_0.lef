@@ -1,0 +1,379 @@
+MACRO telescopic_ota
+  ORIGIN 0 0 ;
+  FOREIGN telescopic_ota 0 0 ;
+  SIZE 5.28 BY 5.46 ;
+  PIN vbiasp1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 2.284 4.94 2.996 4.972 ;
+    END
+  END vbiasp1
+  PIN vdd
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 2.364 4.688 3.076 4.72 ;
+    END
+  END vdd
+  PIN vinn
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M3 ;
+        RECT 2.38 1.476 2.42 2.388 ;
+    END
+  END vinn
+  PIN vinp
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M3 ;
+        RECT 2.7 1.392 2.74 2.304 ;
+    END
+  END vinp
+  PIN d1
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 2.204 0.236 2.996 0.268 ;
+    END
+  END d1
+  PIN vss
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 0.444 0.152 4.996 0.184 ;
+    END
+  END vss
+  PIN vbiasnd
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 0.364 0.404 4.916 0.436 ;
+    END
+  END vbiasnd
+  PIN voutn
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 1.724 4.352 3.556 4.384 ;
+      LAYER M2 ;
+        RECT 1.564 2.924 4.196 2.956 ;
+      LAYER M2 ;
+        RECT 1.744 4.352 1.776 4.384 ;
+      LAYER M3 ;
+        RECT 1.74 2.94 1.78 4.368 ;
+      LAYER M2 ;
+        RECT 1.744 2.924 1.776 2.956 ;
+    END
+  END voutn
+  PIN vbiasp2
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 1.644 4.1 3.636 4.132 ;
+    END
+  END vbiasp2
+  PIN voutp
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 2.364 4.184 2.916 4.216 ;
+      LAYER M2 ;
+        RECT 0.924 3.092 3.556 3.124 ;
+      LAYER M2 ;
+        RECT 2.464 4.184 2.496 4.216 ;
+      LAYER M3 ;
+        RECT 2.46 3.108 2.5 4.2 ;
+      LAYER M2 ;
+        RECT 2.464 3.092 2.496 3.124 ;
+    END
+  END voutp
+  PIN vbiasn
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT 
+      LAYER M2 ;
+        RECT 1.004 3.176 4.276 3.208 ;
+    END
+  END vbiasn
+  OBS 
+  LAYER M2 ;
+        RECT 2.844 4.772 2.916 4.804 ;
+  LAYER M2 ;
+        RECT 2.204 4.268 3.076 4.3 ;
+  LAYER M2 ;
+        RECT 2.864 4.772 2.896 4.804 ;
+  LAYER M3 ;
+        RECT 2.86 4.284 2.9 4.788 ;
+  LAYER M2 ;
+        RECT 2.864 4.268 2.896 4.3 ;
+  LAYER M2 ;
+        RECT 2.204 4.856 2.276 4.888 ;
+  LAYER M2 ;
+        RECT 1.564 4.436 3.716 4.468 ;
+  LAYER M2 ;
+        RECT 2.224 4.856 2.256 4.888 ;
+  LAYER M3 ;
+        RECT 2.22 4.452 2.26 4.872 ;
+  LAYER M2 ;
+        RECT 2.224 4.436 2.256 4.468 ;
+  LAYER M3 ;
+        RECT 2.46 1.644 2.5 2.556 ;
+  LAYER M2 ;
+        RECT 1.084 3.008 3.716 3.04 ;
+  LAYER M3 ;
+        RECT 2.46 2.5 2.5 2.54 ;
+  LAYER M4 ;
+        RECT 2.4 2.5 2.48 2.54 ;
+  LAYER M3 ;
+        RECT 2.38 2.52 2.42 3.024 ;
+  LAYER M2 ;
+        RECT 2.384 3.008 2.416 3.04 ;
+  LAYER M3 ;
+        RECT 2.54 1.728 2.58 2.64 ;
+  LAYER M2 ;
+        RECT 0.284 0.32 4.836 0.352 ;
+  LAYER M3 ;
+        RECT 2.54 1.744 2.58 1.784 ;
+  LAYER M4 ;
+        RECT 2.32 1.744 2.56 1.784 ;
+  LAYER M3 ;
+        RECT 2.3 0.336 2.34 1.764 ;
+  LAYER M2 ;
+        RECT 2.304 0.32 2.336 0.352 ;
+  LAYER M3 ;
+        RECT 2.62 1.56 2.66 2.472 ;
+  LAYER M2 ;
+        RECT 1.724 2.84 4.356 2.872 ;
+  LAYER M3 ;
+        RECT 2.62 2.416 2.66 2.456 ;
+  LAYER M4 ;
+        RECT 2.64 2.416 2.72 2.456 ;
+  LAYER M3 ;
+        RECT 2.7 2.436 2.74 2.856 ;
+  LAYER M2 ;
+        RECT 2.704 2.84 2.736 2.872 ;
+  LAYER M1 ;
+        RECT 2.944 4.668 2.976 5.328 ;
+  LAYER M1 ;
+        RECT 2.304 4.668 2.336 5.328 ;
+  LAYER M1 ;
+        RECT 3.024 4.668 3.056 5.328 ;
+  LAYER M1 ;
+        RECT 2.384 4.668 2.416 5.328 ;
+  LAYER M1 ;
+        RECT 2.864 4.668 2.896 5.328 ;
+  LAYER M1 ;
+        RECT 2.224 5.108 2.256 5.14 ;
+  LAYER M1 ;
+        RECT 1.024 1.98 1.056 2.64 ;
+  LAYER M1 ;
+        RECT 1.024 1.14 1.056 1.8 ;
+  LAYER M1 ;
+        RECT 2.304 1.98 2.336 2.64 ;
+  LAYER M1 ;
+        RECT 2.304 1.14 2.336 1.8 ;
+  LAYER M1 ;
+        RECT 3.584 1.98 3.616 2.64 ;
+  LAYER M1 ;
+        RECT 3.584 1.14 3.616 1.8 ;
+  LAYER M1 ;
+        RECT 1.664 1.98 1.696 2.64 ;
+  LAYER M1 ;
+        RECT 1.664 1.14 1.696 1.8 ;
+  LAYER M1 ;
+        RECT 2.944 1.98 2.976 2.64 ;
+  LAYER M1 ;
+        RECT 2.944 1.14 2.976 1.8 ;
+  LAYER M1 ;
+        RECT 4.224 1.98 4.256 2.64 ;
+  LAYER M1 ;
+        RECT 4.224 1.14 4.256 1.8 ;
+  LAYER M1 ;
+        RECT 0.944 1.98 0.976 2.64 ;
+  LAYER M1 ;
+        RECT 0.944 1.14 0.976 1.8 ;
+  LAYER M1 ;
+        RECT 2.224 1.98 2.256 2.64 ;
+  LAYER M1 ;
+        RECT 2.224 1.14 2.256 1.8 ;
+  LAYER M1 ;
+        RECT 3.504 1.98 3.536 2.64 ;
+  LAYER M1 ;
+        RECT 3.504 1.14 3.536 1.8 ;
+  LAYER M1 ;
+        RECT 1.584 1.98 1.616 2.64 ;
+  LAYER M1 ;
+        RECT 1.584 1.14 1.616 1.8 ;
+  LAYER M1 ;
+        RECT 2.864 1.98 2.896 2.64 ;
+  LAYER M1 ;
+        RECT 2.864 1.14 2.896 1.8 ;
+  LAYER M1 ;
+        RECT 4.144 1.98 4.176 2.64 ;
+  LAYER M1 ;
+        RECT 4.144 1.14 4.176 1.8 ;
+  LAYER M1 ;
+        RECT 1.104 1.98 1.136 2.64 ;
+  LAYER M1 ;
+        RECT 1.104 1.14 1.136 1.8 ;
+  LAYER M1 ;
+        RECT 2.384 1.98 2.416 2.64 ;
+  LAYER M1 ;
+        RECT 2.384 1.14 2.416 1.8 ;
+  LAYER M1 ;
+        RECT 3.664 1.98 3.696 2.64 ;
+  LAYER M1 ;
+        RECT 3.664 1.14 3.696 1.8 ;
+  LAYER M1 ;
+        RECT 1.744 1.98 1.776 2.64 ;
+  LAYER M1 ;
+        RECT 1.744 1.14 1.776 1.8 ;
+  LAYER M1 ;
+        RECT 3.024 1.98 3.056 2.64 ;
+  LAYER M1 ;
+        RECT 3.024 1.14 3.056 1.8 ;
+  LAYER M1 ;
+        RECT 4.304 1.98 4.336 2.64 ;
+  LAYER M1 ;
+        RECT 4.304 1.14 4.336 1.8 ;
+  LAYER M2 ;
+        RECT 0.924 2.588 4.196 2.62 ;
+  LAYER M2 ;
+        RECT 1.084 2.504 3.716 2.536 ;
+  LAYER M2 ;
+        RECT 1.724 2.42 4.356 2.452 ;
+  LAYER M2 ;
+        RECT 1.004 2.336 3.636 2.368 ;
+  LAYER M2 ;
+        RECT 1.644 2.252 4.276 2.284 ;
+  LAYER M2 ;
+        RECT 0.924 1.748 4.196 1.78 ;
+  LAYER M2 ;
+        RECT 1.724 1.664 4.356 1.696 ;
+  LAYER M2 ;
+        RECT 1.084 1.58 3.716 1.612 ;
+  LAYER M2 ;
+        RECT 1.644 1.496 4.276 1.528 ;
+  LAYER M2 ;
+        RECT 4.304 1.328 4.336 1.36 ;
+  LAYER M1 ;
+        RECT 2.944 0.132 2.976 0.792 ;
+  LAYER M1 ;
+        RECT 2.304 0.132 2.336 0.792 ;
+  LAYER M1 ;
+        RECT 4.864 0.132 4.896 0.792 ;
+  LAYER M1 ;
+        RECT 4.224 0.132 4.256 0.792 ;
+  LAYER M1 ;
+        RECT 3.584 0.132 3.616 0.792 ;
+  LAYER M1 ;
+        RECT 1.664 0.132 1.696 0.792 ;
+  LAYER M1 ;
+        RECT 1.024 0.132 1.056 0.792 ;
+  LAYER M1 ;
+        RECT 0.384 0.132 0.416 0.792 ;
+  LAYER M1 ;
+        RECT 3.024 0.132 3.056 0.792 ;
+  LAYER M1 ;
+        RECT 2.384 0.132 2.416 0.792 ;
+  LAYER M1 ;
+        RECT 4.944 0.132 4.976 0.792 ;
+  LAYER M1 ;
+        RECT 4.304 0.132 4.336 0.792 ;
+  LAYER M1 ;
+        RECT 3.664 0.132 3.696 0.792 ;
+  LAYER M1 ;
+        RECT 1.744 0.132 1.776 0.792 ;
+  LAYER M1 ;
+        RECT 1.104 0.132 1.136 0.792 ;
+  LAYER M1 ;
+        RECT 0.464 0.132 0.496 0.792 ;
+  LAYER M1 ;
+        RECT 2.864 0.132 2.896 0.792 ;
+  LAYER M1 ;
+        RECT 2.224 0.132 2.256 0.792 ;
+  LAYER M1 ;
+        RECT 4.784 0.132 4.816 0.792 ;
+  LAYER M1 ;
+        RECT 4.144 0.132 4.176 0.792 ;
+  LAYER M1 ;
+        RECT 3.504 0.132 3.536 0.792 ;
+  LAYER M1 ;
+        RECT 1.584 0.132 1.616 0.792 ;
+  LAYER M1 ;
+        RECT 0.944 0.132 0.976 0.792 ;
+  LAYER M1 ;
+        RECT 0.304 0.572 0.336 0.604 ;
+  LAYER M1 ;
+        RECT 1.664 3.828 1.696 4.488 ;
+  LAYER M1 ;
+        RECT 3.584 3.828 3.616 4.488 ;
+  LAYER M1 ;
+        RECT 2.304 3.828 2.336 4.488 ;
+  LAYER M1 ;
+        RECT 2.944 3.828 2.976 4.488 ;
+  LAYER M1 ;
+        RECT 1.584 3.828 1.616 4.488 ;
+  LAYER M1 ;
+        RECT 3.664 3.828 3.696 4.488 ;
+  LAYER M1 ;
+        RECT 2.224 3.828 2.256 4.488 ;
+  LAYER M1 ;
+        RECT 3.024 3.828 3.056 4.488 ;
+  LAYER M1 ;
+        RECT 1.744 3.828 1.776 4.488 ;
+  LAYER M1 ;
+        RECT 3.504 3.828 3.536 4.488 ;
+  LAYER M1 ;
+        RECT 2.384 3.828 2.416 4.488 ;
+  LAYER M1 ;
+        RECT 2.864 4.016 2.896 4.048 ;
+  LAYER M1 ;
+        RECT 4.224 2.82 4.256 3.48 ;
+  LAYER M1 ;
+        RECT 2.944 2.82 2.976 3.48 ;
+  LAYER M1 ;
+        RECT 1.664 2.82 1.696 3.48 ;
+  LAYER M1 ;
+        RECT 3.584 2.82 3.616 3.48 ;
+  LAYER M1 ;
+        RECT 2.304 2.82 2.336 3.48 ;
+  LAYER M1 ;
+        RECT 1.024 2.82 1.056 3.48 ;
+  LAYER M1 ;
+        RECT 4.304 2.82 4.336 3.48 ;
+  LAYER M1 ;
+        RECT 3.024 2.82 3.056 3.48 ;
+  LAYER M1 ;
+        RECT 1.744 2.82 1.776 3.48 ;
+  LAYER M1 ;
+        RECT 3.664 2.82 3.696 3.48 ;
+  LAYER M1 ;
+        RECT 2.384 2.82 2.416 3.48 ;
+  LAYER M1 ;
+        RECT 1.104 2.82 1.136 3.48 ;
+  LAYER M1 ;
+        RECT 4.144 2.82 4.176 3.48 ;
+  LAYER M1 ;
+        RECT 2.864 2.82 2.896 3.48 ;
+  LAYER M1 ;
+        RECT 1.584 2.82 1.616 3.48 ;
+  LAYER M1 ;
+        RECT 3.504 2.82 3.536 3.48 ;
+  LAYER M1 ;
+        RECT 2.224 2.82 2.256 3.48 ;
+  LAYER M1 ;
+        RECT 0.944 3.26 0.976 3.292 ;
+  END 
+END telescopic_ota
