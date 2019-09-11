@@ -1790,7 +1790,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
-                      n.metal.push_back(H_metal);
+                      n.metal.push_back(V_metal);
 
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
