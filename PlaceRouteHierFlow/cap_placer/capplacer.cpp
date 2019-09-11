@@ -182,9 +182,13 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       shifting_y = pin_miny-r.y;
   }
 
-  cout<<"pin_minx "<<pin_minx<<" pin_miny "<<pin_miny<<endl;
-  cout<<"shifting_x "<<shifting_x<<" shifting_y "<<shifting_y<<endl;
-	  
+  cout << "pin_minx " <<pin_minx << " "
+       << "pin_miny " <<pin_miny << " "
+       << "shifting_x "<<shifting_x<<" "
+       << "shifting_y "<<shifting_y<<" "
+       << "H_metal: " << H_metal << " "
+       << "V_metal: " << V_metal << " "
+       << "HV_via_metal: " << HV_via_metal << endl;
 
   cout<<"step2"<<endl;
 
@@ -353,13 +357,13 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step2.9"<<endl;
   Router_Cap(ki,cap_pin, dummy_flag, cap_ratio, cap_r, cap_s);
   cout<<"step3"<<endl;
-  GetPhysicalInfo_router( H_metal, H_metal_index, V_metal, V_metal_index, const_cast<PnRDB::Drc_info&>(drc_info));
+  GetPhysicalInfo_router( H_metal, H_metal_index, V_metal, V_metal_index, drc_info);
   cout<<"step4"<<endl;
-  cal_offset(const_cast<PnRDB::Drc_info&>(drc_info), H_metal_index, V_metal_index, HV_via_metal_index);
+  cal_offset(drc_info, H_metal_index, V_metal_index, HV_via_metal_index);
   cout<<"step5"<<endl;
-  ExtractData(fpath ,unit_capacitor, final_gds, obs, const_cast<PnRDB::Drc_info&>(drc_info), H_metal_index, V_metal_index, HV_via_metal_index, opath);
+  ExtractData(fpath ,unit_capacitor, final_gds, obs, drc_info, H_metal_index, V_metal_index, HV_via_metal_index, opath);
   cout<<"step6"<<endl;
-  WriteJSON (fpath ,unit_capacitor, final_gds, const_cast<PnRDB::Drc_info&>(drc_info), opath);
+  WriteJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
   cout<<"step7"<<endl;
   //PrintPlacer_Router_Cap(outfile);
   cout<<"step8"<<endl;
@@ -404,32 +408,43 @@ fillContact (PnRDB::contact& con, int* x, int*y) {
     con.originCenter.y = (y[0]+y[2])/2;
 }
 
+class MinMax {
+    int Min_x, Min_y, Max_x, Max_y;
+public:
+    MinMax() : Min_x(INT_MAX), Min_y(INT_MAX), Max_x(INT_MIN), Max_y(INT_MIN) {}
+    void update( int x[], int y[]) {
+	Min_x = min( x[0], Min_x);
+	Max_x = max( x[2], Max_x);
+	Min_y = min( y[0], Min_y);
+	Max_y = max( y[2], Max_y);
+    }
+    int get_Min_x() const { return Min_x; }
+    int get_Min_y() const { return Min_y; }
+    int get_Max_x() const { return Max_x; }
+    int get_Max_y() const { return Max_y; }
+};
+
 void
-Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, string opath) {
+Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, vector<string> & obs, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, const string& opath) {
     string topGDS_loc = opath+final_gds+".gds";
     int gds_unit = 20;
     //writing metals
     int x[5], y[5];
   
 //    int width = metal_width[0];
-    int Min_x = INT_MAX;
-    int Min_y = INT_MAX;
-    int Max_x = INT_MIN;
-    int Max_y = INT_MIN;
+    MinMax minmax;
     //for positive nets
     cout<<"Extract Data Step 1"<<endl;
     for (unsigned int i = 0; i < Nets_pos.size(); i++) {//for each net
 	PnRDB::pin temp_Pins;
 	for (unsigned int j = 0; j < Nets_pos[i].start_conection_coord.size(); j++) { //for segment
 
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
+            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j])).width/2;
 
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
-	    Min_x = min( x[0], Min_x);
-	    Max_x = max( x[2], Max_x);
-	    Min_y = min( y[0], Min_y);
-	    Max_y = max( y[2], Max_y);
+
+	    minmax.update( x, y);
 
 	    PnRDB::contact temp_contact;
             fillContact (temp_contact, x, y);
@@ -453,15 +468,12 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	PnRDB::pin temp_Pins_neg;
 	for (unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
 
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
+            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j])).width/2;
 
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
             
-            if (x[0]<Min_x) Min_x = x[0];
-            if (x[2]>Max_x) Max_x = x[2];
-            if (y[0]<Min_y) Min_y = y[0];
-            if (y[2]>Max_y) Max_y = y[2];
+	    minmax.update( x, y);
 
             PnRDB::contact temp_contact;
 	    fillContact (temp_contact, x, y);
@@ -486,7 +498,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     for (unsigned int i = 0; i < Nets_pos.size(); i++) {
 	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 3.1"<<endl;
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
+            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1].x;
 
  	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
@@ -494,7 +506,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
 
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].y;
+            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1].y;
         
 	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
@@ -502,10 +514,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-	    if (x[0]<Min_x) Min_x = x[0];
-	    if (x[2]>Max_x) Max_x = x[2];
-	    if (y[0]<Min_y) Min_y = y[0];
-	    if (y[2]>Max_y) Max_y = y[2];
+	    minmax.update( x, y);
 
 	    PnRDB::contact temp_contact;
 	    fillContact (temp_contact, x, y);
@@ -524,10 +533,10 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             cout<<"Extract Data Step 3.3"<<endl;
 	    PnRDB::contact h_contact;
             int via_model_index;
-            via_model_index = drc_info.Metalmap[Nets_pos[i].via_metal[j]];
-            temp_contact.metal = drc_info.Via_model[via_model_index].name;
-            h_contact.originBox.LL = drc_info.Via_model[via_model_index].UpperRect[0];
-            h_contact.originBox.UR = drc_info.Via_model[via_model_index].UpperRect[1];
+            via_model_index = drc_info.Metalmap.at(Nets_pos[i].via_metal[j]);
+            temp_contact.metal = drc_info.Via_model.at(via_model_index).name;
+            h_contact.originBox.LL = drc_info.Via_model.at(via_model_index).UpperRect[0];
+            h_contact.originBox.UR = drc_info.Via_model.at(via_model_index).UpperRect[1];
             //cout<<"Extract Data Step 3.31"<<endl;
             h_contact.originBox.LL.x += temp_contact.placedCenter.x;
             h_contact.originBox.LL.y += temp_contact.placedCenter.y;
@@ -536,8 +545,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             h_contact.originBox.UR.y += temp_contact.placedCenter.y;
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
-            v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
-            v_contact.originBox.UR = drc_info.Via_model[via_model_index].LowerRect[1];
+            v_contact.originBox.LL = drc_info.Via_model.at(via_model_index).LowerRect[0];
+            v_contact.originBox.UR = drc_info.Via_model.at(via_model_index).LowerRect[1];
 
             v_contact.originBox.LL.x += temp_contact.placedCenter.x;
             v_contact.originBox.LL.y += temp_contact.placedCenter.y;
@@ -546,8 +555,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             v_contact.originBox.UR.y += temp_contact.placedCenter.y;
 
             cout<<"Extract Data Step 3.5"<<endl;
-            lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
-            upper_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].UpperIdx].name;
+            lower_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).LowerIdx).name;
+            upper_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).UpperIdx).name;
             lower_contact.originBox = v_contact.originBox;
             upper_contact.originBox = h_contact.originBox;
             temp_via.model_index = via_model_index;
@@ -564,7 +573,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     for (unsigned int i = 0; i < Nets_neg.size(); i++) {
 	for (unsigned int j = 0; j <Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 4.1"<<endl;
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x;
+            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].x;
 
 	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
 	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
@@ -572,17 +581,14 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
 
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].y;        
+            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].y;        
 	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
 	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
 	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
 	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-	    if (x[0]<Min_x) Min_x = x[0];
-	    if (x[2]>Max_x) Max_x = x[2];
-	    if (y[0]<Min_y) Min_y = y[0];
-	    if (y[2]>Max_y) Max_y = y[2];
+	    minmax.update( x, y);
 
 	    PnRDB::contact temp_contact;
 	    fillContact (temp_contact, x, y);
@@ -603,10 +609,10 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
 	    PnRDB::contact h_contact;
             int via_model_index;
-            via_model_index = drc_info.Metalmap[Nets_neg[i].via_metal[j]];
-            temp_contact.metal = drc_info.Via_model[via_model_index].name;
-            h_contact.originBox.LL = drc_info.Via_model[via_model_index].UpperRect[0];
-            h_contact.originBox.UR = drc_info.Via_model[via_model_index].UpperRect[1];
+            via_model_index = drc_info.Metalmap.at(Nets_neg[i].via_metal[j]);
+            temp_contact.metal = drc_info.Via_model.at(via_model_index).name;
+            h_contact.originBox.LL = drc_info.Via_model.at(via_model_index).UpperRect[0];
+            h_contact.originBox.UR = drc_info.Via_model.at(via_model_index).UpperRect[1];
 
             h_contact.originBox.LL.x += temp_contact.placedCenter.x;
             h_contact.originBox.LL.y += temp_contact.placedCenter.y;
@@ -616,8 +622,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
             cout<<"Extract Data Step 4.25"<<endl;
 	    PnRDB::contact v_contact;
-            v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
-            v_contact.originBox.UR = drc_info.Via_model[via_model_index].LowerRect[1];
+            v_contact.originBox.LL = drc_info.Via_model.at(via_model_index).LowerRect[0];
+            v_contact.originBox.UR = drc_info.Via_model.at(via_model_index).LowerRect[1];
 
             v_contact.originBox.LL.x += temp_contact.placedCenter.x;
             v_contact.originBox.LL.y += temp_contact.placedCenter.y;
@@ -626,8 +632,8 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             v_contact.originBox.UR.y += temp_contact.placedCenter.y;
 
             cout<<"Extract Data Step 4.3"<<endl;
-            lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
-            upper_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].UpperIdx].name;
+            lower_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).LowerIdx).name;
+            upper_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).UpperIdx).name;
             lower_contact.originBox = v_contact.originBox;
             upper_contact.originBox = h_contact.originBox;
             temp_via.model_index = via_model_index;
@@ -654,10 +660,7 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 	y[3]=Caps[i].y - unit_cap_demension.second/2+offset_y;
 	y[4]=y[0];
      
-	if (x[0]<Min_x) Min_x = x[0];
-	if (x[2]>Max_x) Max_x = x[2];
-	if (y[0]<Min_y) Min_y = y[0];
-	if (y[2]>Max_y) Max_y = y[2];
+	minmax.update( x, y);
 
 //this part need modify, here the 
 	PnRDB::contact temp_contact;
@@ -674,21 +677,28 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     int coverage_x;
     int coverage_y;
   
+    const auto& vm = drc_info.Via_model.at(HV_via_index);
+
     if(drc_info.Via_model[HV_via_index].LowerIdx == V_metal){
-       coverage_y = drc_info.Via_model[HV_via_index].ViaRect[0].y - drc_info.Via_model[HV_via_index].LowerRect[0].y;
-       coverage_x = drc_info.Via_model[HV_via_index].ViaRect[0].x - drc_info.Via_model[HV_via_index].UpperRect[0].x;
+	coverage_y = vm.ViaRect[0].y - vm.LowerRect[0].y;
+	coverage_x = vm.ViaRect[0].x - vm.UpperRect[0].x;
     }else{
-       coverage_y = drc_info.Via_model[HV_via_index].ViaRect[0].y - drc_info.Via_model[HV_via_index].UpperRect[0].y;
-       coverage_x = drc_info.Via_model[HV_via_index].ViaRect[0].x - drc_info.Via_model[HV_via_index].LowerRect[0].x;
+       coverage_y = vm.ViaRect[0].y - vm.UpperRect[0].y;
+       coverage_x = vm.ViaRect[0].x - vm.LowerRect[0].x;
     }
 
-    int deltax = drc_info.Metal_info[V_metal].grid_unit_x
-	       - drc_info.Metal_info[V_metal].width/2-coverage_x;
+    int Min_x = minmax.get_Min_x();
+    int Min_y = minmax.get_Min_y();
+    int Max_x = minmax.get_Max_x();
+    int Max_y = minmax.get_Max_y();
+
+    int deltax = drc_info.Metal_info.at(V_metal).grid_unit_x
+               - drc_info.Metal_info.at(V_metal).width/2-coverage_x;
     Min_x -= deltax;
     Max_x += deltax;
 	
-    int deltay = drc_info.Metal_info[H_metal].grid_unit_y
-	       - drc_info.Metal_info[H_metal].width/2-coverage_y;
+    int deltay = drc_info.Metal_info.at(H_metal).grid_unit_y
+	       - drc_info.Metal_info.at(H_metal).width/2-coverage_y;
     Min_y -= deltay;
     Max_y += deltay;
 
@@ -710,40 +720,33 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 }
 
 void
-Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index) {
+Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index) {
     int x[5], y[5];
     //int width = metal_width[0];
-    int Min_x = INT_MAX;
-    int Min_y = INT_MAX;
-    int Max_x = INT_MIN;
-    int Max_y = INT_MIN;
+
+    MinMax minmax;
+
     //for positive nets
     // vector<pair<double,double> f, s;  int width
   
     for (unsigned int i = 0; i< Nets_pos.size(); i++) {//for each net
 	for (unsigned int j = 0; j< Nets_pos[i].start_conection_coord.size();j++) { //for segment
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
+            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j])).width/2;
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
 
-            if (x[0] < Min_x) Min_x = x[0];
-            if (x[2] > Max_x) Max_x = x[2];
-            if (y[0] < Min_y) Min_y = y[0];
-            if (y[2] > Max_y) Max_y = y[2];
+	    minmax.update( x, y);
         }
     }
   
     //for neg nets
     for (unsigned int i = 0; i <  Nets_neg.size(); i++) {//for each net
 	for (unsigned int j = 0; j <  Nets_neg[i].start_conection_coord.size();j++) { //for segment
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
+            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j])).width/2;
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
 
-            if (x[0] < Min_x) Min_x = x[0];
-            if (x[2] > Max_x) Max_x = x[2];
-            if (y[0] < Min_y) Min_y = y[0];
-            if (y[2] > Max_y) Max_y = y[2];
+	    minmax.update( x, y);
         }
     }
   
@@ -753,25 +756,23 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     for (unsigned int i = 0; i < Nets_pos.size(); i++) {
 	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
 
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
+	    const auto& vm = Nets_pos[i].via_metal[j];
+	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect[1];
+	    const auto& n = Nets_pos[i].via[j];
 
-	    x[0] = Nets_pos[i].via[j].first - width;
-	    x[1] = Nets_pos[i].via[j].first - width;
-	    x[2] = Nets_pos[i].via[j].first + width;
-	    x[3] = Nets_pos[i].via[j].first + width;
+	    x[0] = n.first - r.x;
+	    x[1] = n.first - r.x;
+	    x[2] = n.first + r.x;
+	    x[3] = n.first + r.x;
 	    x[4] = x[0];
 
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].y;        
-	    y[0] = Nets_pos[i].via[j].second - width;
-	    y[1] = Nets_pos[i].via[j].second + width;
-	    y[2] = Nets_pos[i].via[j].second + width;
-	    y[3] = Nets_pos[i].via[j].second - width;
+	    y[0] = n.second - r.y;
+	    y[1] = n.second + r.y;
+	    y[2] = n.second + r.y;
+	    y[3] = n.second - r.y;
 	    y[4] = y[0];
 
-	    if (x[0] < Min_x) Min_x = x[0];
-	    if (x[2] > Max_x) Max_x = x[2];
-	    if (y[0] < Min_y) Min_y = y[0];
-	    if (y[2] > Max_y) Max_y = y[2];
+	    minmax.update( x, y);
 	}
     }
     
@@ -779,7 +780,7 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
     for (unsigned int i = 0;i < Nets_neg.size(); i++) {
 	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
  
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x;
+            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].x;
 
 	    x[0] = Nets_neg[i].via[j].first - width;
 	    x[1] = Nets_neg[i].via[j].first - width;
@@ -787,7 +788,7 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
 	    x[3] = Nets_neg[i].via[j].first + width;
 	    x[4] = x[0];
 
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].y;
+            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].y;
         
 	    y[0] = Nets_neg[i].via[j].second - width;
 	    y[1] = Nets_neg[i].via[j].second + width;
@@ -795,10 +796,7 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
 	    y[3] = Nets_neg[i].via[j].second - width;
 	    y[4] = y[0];
         
-	    if (x[0] < Min_x) Min_x = x[0];
-	    if (x[2] > Max_x) Max_x = x[2];
-	    if (y[0] < Min_y) Min_y = y[0];
-	    if (y[2] > Max_y) Max_y = y[2];
+	    minmax.update( x, y);
 	}
     }
   
@@ -815,28 +813,28 @@ Placer_Router_Cap::cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_meta
 	y[3] = Caps[i].y - unit_cap_demension.second/2;
 	y[4] = y[0];
 
-	if (x[0] < Min_x) Min_x = x[0];
-	if (x[2] > Max_x) Max_x = x[2];
-	if (y[0] < Min_y) Min_y = y[0];
-	if (y[2] > Max_y) Max_y = y[2];
+	minmax.update( x, y);
     }
 
     int coverage_x;
     int coverage_y;
   
-    if(drc_info.Via_model[HV_via_index].LowerIdx == V_metal){
-       coverage_y = drc_info.Via_model[HV_via_index].ViaRect[0].y - drc_info.Via_model[HV_via_index].LowerRect[0].y;
-       coverage_x = drc_info.Via_model[HV_via_index].ViaRect[0].x - drc_info.Via_model[HV_via_index].UpperRect[0].x;
+    const auto& vm = drc_info.Via_model[HV_via_index]; 
+    if(vm.LowerIdx == V_metal){
+       coverage_y = vm.ViaRect[0].y - vm.LowerRect[0].y;
+       coverage_x = vm.ViaRect[0].x - vm.UpperRect[0].x;
     }else{
-       coverage_y = drc_info.Via_model[HV_via_index].ViaRect[0].y - drc_info.Via_model[HV_via_index].UpperRect[0].y;
-       coverage_x = drc_info.Via_model[HV_via_index].ViaRect[0].x - drc_info.Via_model[HV_via_index].LowerRect[0].x;
+       coverage_y = vm.ViaRect[0].y - vm.UpperRect[0].y;
+       coverage_x = vm.ViaRect[0].x - vm.LowerRect[0].x;
     }
 
-    offset_x = 0-Min_x;
-    offset_x = offset_x + drc_info.Metal_info[V_metal].grid_unit_x - drc_info.Metal_info[V_metal].width/2 - coverage_x;
+    const auto& vmv = drc_info.Metal_info[V_metal];
+    offset_x = 0-minmax.get_Min_x();
+    offset_x = offset_x + vmv.grid_unit_x - vmv.width/2 - coverage_x;
 
-    offset_y = 0-Min_y;
-    offset_y = offset_y + drc_info.Metal_info[H_metal].grid_unit_y - drc_info.Metal_info[H_metal].width/2 - coverage_y;
+    const auto& vmh = drc_info.Metal_info[H_metal];
+    offset_y = 0-minmax.get_Min_y();
+    offset_y = offset_y + vmh.grid_unit_y - vmh.width/2 - coverage_y;
     
 }
 
@@ -1141,8 +1139,6 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
          for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
-             //temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
-             //temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x-1]=1;
             }
          Nets_pos[i].half_router_line_v.push_back(temp_router_line);
         }
@@ -1160,8 +1156,6 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
          for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
              temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
-             //temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
-             //temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y-1]=1;
             }
          Nets_pos[i].half_router_line_h.push_back(temp_router_line);
         }
@@ -1169,13 +1163,10 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
   
 
   cout<<"broken down 9"<<endl;
-  //initial num_router_net_v
+  //initialize num_router_net_v and num_router_net_h
   for(int i=0;i<=r;i++){num_router_net_v.push_back(0);}
-  //initial num_router_net_h
   for(int i=0;i<=s;i++){num_router_net_h.push_back(0);}
   
-  //Nets_neg = Nets_pos;
-
   Nets_neg = Nets_pos;
   for(unsigned int i=0;i<Nets_pos.size();i++){
        if(i!=Nets_pos.size()-1){
@@ -1292,9 +1283,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
                       }
                    }
                 Nets_neg[i].line_v[choosed_router]=1;
-               // Nets_pos[i].line_v[2*Cx-choosed_router]=1;
                 num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-               // num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
                }
             }
        }
@@ -1308,7 +1297,6 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
            num_line[j]=Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j]+num_line[j];
           }
       }
-   //int min_dis = 500; //min distance between each metal more modification
    int max_num_ =0;
    for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){
         if(num_line[i]>max_num_){
@@ -1346,21 +1334,25 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
 int Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set){
   int found = -1;
+  const auto& pcj = Caps[pos.cap_index[j]];
   for(unsigned int i=0;i<pos.cap_index.size();i++){
-      if(Caps[pos.cap_index[i]].access==0){
-         if((Caps[pos.cap_index[i]].index_x == Caps[pos.cap_index[j]].index_x and abs(Caps[pos.cap_index[i]].index_y -Caps[pos.cap_index[j]].index_y)==1) or (Caps[pos.cap_index[i]].index_y == Caps[pos.cap_index[j]].index_y and abs(Caps[pos.cap_index[i]].index_x -Caps[pos.cap_index[j]].index_x)==1)){
-             Caps[pos.cap_index[i]].access = 1;
-             temp_set.cap_index.push_back(pos.cap_index[i]);
-             found = i;
-             found_neighbor(i, pos, temp_set);
-           }
-        }
-     } 
+      auto& pci = Caps[pos.cap_index[i]];
+      if(pci.access==0){
+	  int adiffx = abs(pci.index_x -pcj.index_x);
+	  int adiffy = abs(pci.index_y -pcj.index_y);
+	  if((adiffx == 0 and adiffy==1) or (adiffy == 0 and adiffx==1)) {
+	      pci.access = 1;
+	      temp_set.cap_index.push_back(pos.cap_index[i]);
+	      found = i;
+	      found_neighbor(i, pos, temp_set);
+	  }
+      }
+  } 
   if(found == -1){
-         return -1;
-       }else{
-         return 1;
-       }
+      return -1;
+  }else{
+      return 1;
+  }
 }
 
 void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin){
@@ -1472,230 +1464,221 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
       HV_via_metal_index = H_metal_index;
     }
 
-  for(unsigned int i=0;i<Caps.size();i++){
-     Caps[i].access = 0;
-  }
 
-  //int min_dis = 500;
   pair<double,double> coord;
   pair<double,double> via_coord;
-//for positive net
+
    //connection for trails
-   //int min_dis =5;
    int num_trail = Nets_pos[0].line_v.size();
    int routed_trail=0;
    vector<int> trails;
+
+
    for(int i=0;i<num_trail;i++){trails.push_back(0);}
+
+   
+   std::vector<
+
+
+  for(unsigned int i=0;i<Caps.size();i++){
+     Caps[i].access = 0;
+  }
+  routed_trail=0;
+//for positive net
    for(unsigned int i=0;i<Nets_pos.size();i++){
-      if(Nets_pos[i].cap_index.size()==0){continue;}
+       auto& n = Nets_pos[i];
+
+      if(n.cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
       pair<double,double> first_coord;
       pair<double,double> end_coord;
       int first_lock=0;
       int end_close=0;
-      //Nets_pos[i].line_v_r=Nets_pos[i].line_v;
-      for(unsigned int l=0;l<Nets_pos[i].line_v.size();l++){
-          if(Nets_pos[i].line_v[l]==1){
+      for(unsigned int l=0;l<n.line_v.size();l++){
+          if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
               int max=-1;
               int max_cap_index=-1;
               int left_right = 0;
               int found = 0;
-              for(unsigned int k=0;k<Nets_pos[i].cap_index.size();k++){
+              for(unsigned int k=0;k<n.cap_index.size();k++){
 
-                  if(Caps[Nets_pos[i].cap_index[k]].index_x==l and Caps[Nets_pos[i].cap_index[k]].access==0){
+                  if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[Nets_pos[i].cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
                       // via coverage???
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                     
                       //
-                      Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x- unit_cap_demension.first/2-shifting_x-(span_distance.first-min_dis_x*trails[l]);
-                      Caps[Nets_pos[i].cap_index[k]].access = 1;
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      Caps[n.cap_index[k]].access = 1;
             
-                      Nets_pos[i].end_conection_coord.push_back(coord);
-                      Nets_pos[i].Is_pin.push_back(0);
-                      Nets_pos[i].metal.push_back(H_metal);
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(H_metal);
 
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);                     
-                      //
-                      //Nets_neg[i].line_v[l]=0;
-                      //Nets_neg[i].line_v[l+1]=1;
-                      
-                      //
-                      
-                      //
-                      if(Caps[Nets_pos[i].cap_index[k]].index_y>=max){
-                         max=Caps[Nets_pos[i].cap_index[k]].index_y;
-                         max_cap_index = Nets_pos[i].cap_index[k];
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);                     
+                      if(Caps[n.cap_index[k]].index_y>=max){
+                         max=Caps[n.cap_index[k]].index_y;
+                         max_cap_index = n.cap_index[k];
                          left_right = 0;
                         }
-                    }else if(l-Caps[Nets_pos[i].cap_index[k]].index_x==1 and Caps[Nets_pos[i].cap_index[k]].access==0){
+                    }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[Nets_pos[i].cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
                       
                       //
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                     
-                      Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.second = Caps[Nets_pos[i].cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
-                      Nets_pos[i].end_conection_coord.push_back(coord);
-                      Nets_pos[i].Is_pin.push_back(0);
-                      Nets_pos[i].metal.push_back(V_metal);
+                      n.start_conection_coord.push_back(coord);
+                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(V_metal);
 
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
-                      Nets_pos[i].end_conection_coord.push_back(coord);
-                      Nets_pos[i].Is_pin.push_back(0);
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
 
-                      Nets_pos[i].metal.push_back(H_metal);
+                      n.metal.push_back(H_metal);
 
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      Caps[Nets_pos[i].cap_index[k]].access = 1;
-                      if(Caps[Nets_pos[i].cap_index[k]].index_y>max){
-                         max=Caps[Nets_pos[i].cap_index[k]].index_y;
-                         max_cap_index = Nets_pos[i].cap_index[k];
+                      Caps[n.cap_index[k]].access = 1;
+                      if(Caps[n.cap_index[k]].index_y>max){
+                         max=Caps[n.cap_index[k]].index_y;
+                         max_cap_index = n.cap_index[k];
                          left_right = 1;
                         }
                     }
                  }
                  if(found == 0){
-                 for(unsigned int k=0;k<Nets_pos[i].cap_index.size();k++){
-                    if(l-Caps[Nets_pos[i].cap_index[k]].index_x==1){
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[Nets_pos[i].cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+                 for(unsigned int k=0;k<n.cap_index.size();k++){
+                    if(l-Caps[n.cap_index[k]].index_x==1){
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
                       
-                      //
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                      Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.second = Caps[Nets_pos[i].cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
-                      Nets_pos[i].end_conection_coord.push_back(coord);
-                      Nets_pos[i].Is_pin.push_back(0);
-                      Nets_pos[i].metal.push_back(V_metal);
+                      n.start_conection_coord.push_back(coord);
+                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(V_metal);
                       
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                      //
-                      Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
-                      Nets_pos[i].end_conection_coord.push_back(coord);
-                      Nets_pos[i].Is_pin.push_back(0);
-                      //
-                      Nets_pos[i].metal.push_back(H_metal);
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
 
-                      addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      n.metal.push_back(H_metal);
+
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      //
-                      Caps[Nets_pos[i].cap_index[k]].access = 1;
-                      //Nets_neg[i].line_v[l]=0;
-                      //Nets_neg[i].line_v[l-1]=1;
-                      if(Caps[Nets_pos[i].cap_index[k]].index_y>max){
-                         max=Caps[Nets_pos[i].cap_index[k]].index_y;
-                         max_cap_index = Nets_pos[i].cap_index[k];
+                      Caps[n.cap_index[k]].access = 1;
+
+                      if(Caps[n.cap_index[k]].index_y>max){
+                         max=Caps[n.cap_index[k]].index_y;
+                         max_cap_index = n.cap_index[k];
                          left_right = 1;
                         }
                     }
                  }
                  }
 
-////////////////////////////////////////////// start point 2019/6/1
-                 //connect from start to end for each trail 
-                 //coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y+shifting_y; modify 1 yaguang 2019/6/24
                  coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-                 addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
+                 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
                  
-                 Nets_pos[i].start_conection_coord.push_back(coord);
-                 //
-                 coord.second = -2*min_dis_y+shifting_y;
-                 Nets_pos[i].end_conection_coord.push_back(coord);
-                 Nets_pos[i].Is_pin.push_back(0);
-                 Nets_pos[i].metal.push_back(V_metal);
-                 //
+                 n.start_conection_coord.push_back(coord);
 
-                 //addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
-                 //
-                 Nets_pos[i].start_conection_coord.push_back(coord);
+                 coord.second = -2*min_dis_y+shifting_y;
+                 n.end_conection_coord.push_back(coord);
+                 n.Is_pin.push_back(0);
+                 n.metal.push_back(V_metal);
+
+                 n.start_conection_coord.push_back(coord);
                  coord.second = Caps[max_cap_index].y- unit_cap_demension.second/2-left_right*min_dis_y+shifting_y;
-                 Nets_pos[i].end_conection_coord.push_back(coord);
-                 Nets_pos[i].Is_pin.push_back(0);
+                 n.end_conection_coord.push_back(coord);
+                 n.Is_pin.push_back(0);
                  //
-                 Nets_pos[i].metal.push_back(V_metal);
+                 n.metal.push_back(V_metal);
                  //
                  if(first_lock==0){
                     first_coord.first = coord.first;
-                    //first_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y+shifting_y;
                     first_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
                     first_lock=1;
                  }else{
                     end_close=1;
                     end_coord.first = coord.first;;
-                    //end_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y+shifting_y;
                     end_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
                  }
             }
          }
        //connect to each trail
        if(first_lock==1 and end_close==1){
-       Nets_pos[i].start_conection_coord.push_back(first_coord);
-       Nets_pos[i].end_conection_coord.push_back(end_coord);
-       Nets_pos[i].Is_pin.push_back(1);
-       //
-       Nets_pos[i].metal.push_back(H_metal);
-       //
+       n.start_conection_coord.push_back(first_coord);
+       n.end_conection_coord.push_back(end_coord);
+       n.Is_pin.push_back(1);
+
+       n.metal.push_back(H_metal);
        }    
    }
     for(unsigned int i=0;i<Nets_pos.size();i++){
+	auto& n = Nets_pos[i];
+
       //connection for each connection set
-      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
-              unsigned int end_flag = Nets_pos[i].Set[j].cap_index.size();
+      for(unsigned int j=0;j<n.Set.size();j++){
+
+              unsigned int end_flag = n.Set[j].cap_index.size();
               unsigned int index = 0;
               while(index<end_flag){
-                     if(Caps[Nets_pos[i].Set[j].cap_index[index]].access==1){
+                     if(Caps[n.Set[j].cap_index[index]].access==1){
                         int found=0;
                         for(unsigned int k=0;k<end_flag;k++){
-                            if((Caps[Nets_pos[i].Set[j].cap_index[k]].index_y==Caps[Nets_pos[i].Set[j].cap_index[index]].index_y and abs(Caps[Nets_pos[i].Set[j].cap_index[k]].index_x-Caps[Nets_pos[i].Set[j].cap_index[index]].index_x) ==1)and !(Caps[Nets_pos[i].Set[j].cap_index[k]].access)){
-                              Caps[Nets_pos[i].Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[Nets_pos[i].Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
+                            if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1)and !(Caps[n.Set[j].cap_index[k]].access)){
+                              Caps[n.Set[j].cap_index[k]].access=1;
+                              coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
                               
 
-                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              Nets_pos[i].start_conection_coord.push_back(coord);
-                              coord.first = Caps[Nets_pos[i].Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[Nets_pos[i].Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-                              Nets_pos[i].end_conection_coord.push_back(coord);
-                              Nets_pos[i].Is_pin.push_back(0);
-                              Nets_pos[i].metal.push_back(H_metal);
+                              n.start_conection_coord.push_back(coord);
+                              coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
+                              n.end_conection_coord.push_back(coord);
+                              n.Is_pin.push_back(0);
+                              n.metal.push_back(H_metal);
                               //
 
-                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                               
                               //
                               index = 0;
                               found = 1;
-                             }else if((Caps[Nets_pos[i].Set[j].cap_index[k]].index_x==Caps[Nets_pos[i].Set[j].cap_index[index]].index_x and abs(Caps[Nets_pos[i].Set[j].cap_index[k]].index_y-Caps[Nets_pos[i].Set[j].cap_index[index]].index_y) ==1) and !(Caps[Nets_pos[i].Set[j].cap_index[k]].access)){
-                              Caps[Nets_pos[i].Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[Nets_pos[i].Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[Nets_pos[i].Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
-                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                             }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1) and !(Caps[n.Set[j].cap_index[k]].access)){
+                              Caps[n.Set[j].cap_index[k]].access=1;
+                              coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              Nets_pos[i].start_conection_coord.push_back(coord);
-                              coord.first = Caps[Nets_pos[i].Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[Nets_pos[i].Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-                              Nets_pos[i].end_conection_coord.push_back(coord);
-                              Nets_pos[i].Is_pin.push_back(0);
-                              Nets_pos[i].metal.push_back(V_metal);
+                              n.start_conection_coord.push_back(coord);
+                              coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
+                              n.end_conection_coord.push_back(coord);
+                              n.Is_pin.push_back(0);
+                              n.metal.push_back(V_metal);
 
-                              addVia(Nets_pos[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
                               index = 0;
                               found = 1;
@@ -1717,132 +1700,113 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
      Caps[i].access = 0;
   }
    //connection for trails
-   //int num_trail = Nets_pos[0].line_v.size();
    routed_trail=0;
-   //vector<int> trails;
-   //for(int i=0;i<num_trail;i++){trails.push_back(0);}
    for(unsigned int i=0;i<Nets_neg.size();i++){
-      if(Nets_neg[i].cap_index.size()==0){continue;}
+       auto& n = Nets_neg[i];
+
+      if(n.cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
       pair<double,double> first_coord;
       pair<double,double> end_coord;
       int first_lock=0;
       int end_close=0;
-      //Nets_neg[i].line_v_r=Nets_pos[i].line_v;
-      for(unsigned int l=0;l<Nets_neg[i].line_v.size();l++){
-          if(Nets_neg[i].line_v[l]==1){
+      for(unsigned int l=0;l<n.line_v.size();l++){
+          if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
               int min=Caps.size();
               int min_cap_index=-1;
               int left_right = 0;
               int found = 0;
-              for(unsigned int k=0;k<Nets_neg[i].cap_index.size();k++){
-                  if(Caps[Nets_neg[i].cap_index[k]].index_x==l and Caps[Nets_neg[i].cap_index[k]].access==0){
+              for(unsigned int k=0;k<n.cap_index.size();k++){
+                  if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
-                      coord.second = Caps[Nets_neg[i].cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
                       
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2 + shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      Caps[n.cap_index[k]].access = 1;
 
-                      //
-                      Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2 + shifting_x-(span_distance.first-min_dis_x*trails[l]);
-                      Caps[Nets_neg[i].cap_index[k]].access = 1;
-                      //
-                      Nets_neg[i].end_conection_coord.push_back(coord);
-                      Nets_neg[i].Is_pin.push_back(0);
-                      //
-                      Nets_neg[i].metal.push_back(H_metal);
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
 
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      n.metal.push_back(H_metal);
+
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      //
-                      //Nets_neg[i].line_v_r[k]=0;
-                      //Nets_neg[i].line_v_r[k+1]=1;
-                      
-                      //
-                      if(Caps[Nets_neg[i].cap_index[k]].index_y<=min){
-                         min=Caps[Nets_neg[i].cap_index[k]].index_y;
-                         min_cap_index = Nets_neg[i].cap_index[k];
+                      if(Caps[n.cap_index[k]].index_y<=min){
+                         min=Caps[n.cap_index[k]].index_y;
+                         min_cap_index = n.cap_index[k];
                          left_right = 0;
                         }
-                    }else if(l-Caps[Nets_neg[i].cap_index[k]].index_x==1 and Caps[Nets_neg[i].cap_index[k]].access==0){
+                    }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
-                      coord.second = Caps[Nets_neg[i].cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
                       
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      //
-                      Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.second = Caps[Nets_neg[i].cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
-                      Nets_neg[i].end_conection_coord.push_back(coord);
-                      Nets_neg[i].Is_pin.push_back(0);
-                      Nets_neg[i].metal.push_back(V_metal);
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      
-                      //
-                      Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
-                      Nets_neg[i].end_conection_coord.push_back(coord);
-                      Nets_neg[i].Is_pin.push_back(0);
-                      Nets_neg[i].metal.push_back(H_metal);
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      n.start_conection_coord.push_back(coord);
+                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(V_metal);
 
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(H_metal);
+
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      
-                      //
-                      Caps[Nets_neg[i].cap_index[k]].access = 1;
-                      //Nets_neg[i].line_v_r[k]=0;
-                      //Nets_neg[i].line_v_r[k-1]=1;
-                      if(Caps[Nets_neg[i].cap_index[k]].index_y<min){
-                         min=Caps[Nets_neg[i].cap_index[k]].index_y;
-                         min_cap_index = Nets_neg[i].cap_index[k];
+                      Caps[n.cap_index[k]].access = 1;
+
+                      if(Caps[n.cap_index[k]].index_y<min){
+                         min=Caps[n.cap_index[k]].index_y;
+                         min_cap_index = n.cap_index[k];
                          left_right = 1;
                         }
                     }
                  }
                  if(found == 0){
-                 for(unsigned int k=0;k<Nets_neg[i].cap_index.size();k++){
-		     if(l-Caps[Nets_neg[i].cap_index[k]].index_x==1){
+                 for(unsigned int k=0;k<n.cap_index.size();k++){
+		     if(l-Caps[n.cap_index[k]].index_x==1){
                       
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
-                      coord.second = Caps[Nets_neg[i].cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
-                      
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
+                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
                       
                       //
-                      Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.second = Caps[Nets_neg[i].cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
-                      Nets_neg[i].end_conection_coord.push_back(coord);
-                      Nets_neg[i].Is_pin.push_back(0);
-                      Nets_neg[i].metal.push_back(V_metal);
-                      //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       //
-                      Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
-                      Nets_neg[i].end_conection_coord.push_back(coord);
-                      Nets_neg[i].Is_pin.push_back(0);
-                      Nets_neg[i].metal.push_back(H_metal);
+                      n.start_conection_coord.push_back(coord);
+                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(V_metal);
                       //
-                      addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       //
-                      Caps[Nets_neg[i].cap_index[k]].access = 1;
-                      if(Caps[Nets_neg[i].cap_index[k]].index_y<min){
-                         min=Caps[Nets_neg[i].cap_index[k]].index_y;
-                         min_cap_index = Nets_neg[i].cap_index[k];
+                      n.start_conection_coord.push_back(coord);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      n.end_conection_coord.push_back(coord);
+                      n.Is_pin.push_back(0);
+                      n.metal.push_back(H_metal);
+                      //
+                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      
+                      //
+                      Caps[n.cap_index[k]].access = 1;
+                      if(Caps[n.cap_index[k]].index_y<min){
+                         min=Caps[n.cap_index[k]].index_y;
+                         min_cap_index = n.cap_index[k];
                          left_right = 1;
                         }
                     }
@@ -1851,18 +1815,18 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                  //connect from start to end for each trail 
                  int num_cap = Caps.size();
                  coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y + grid_offset;
-                 addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,1);
+                 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
 
-                 Nets_neg[i].start_conection_coord.push_back(coord);
+                 n.start_conection_coord.push_back(coord);
                  coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2+2*min_dis_y-shifting_y;
-                 Nets_neg[i].end_conection_coord.push_back(coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back(V_metal);
-                 Nets_neg[i].start_conection_coord.push_back(coord);
+                 n.end_conection_coord.push_back(coord);
+                 n.Is_pin.push_back(0);
+                 n.metal.push_back(V_metal);
+                 n.start_conection_coord.push_back(coord);
                  coord.second = Caps[min_cap_index].y+ unit_cap_demension.second/2+left_right*min_dis_y-shifting_y;
-                 Nets_neg[i].end_conection_coord.push_back(coord);
-                 Nets_neg[i].Is_pin.push_back(0);
-                 Nets_neg[i].metal.push_back(V_metal);
+                 n.end_conection_coord.push_back(coord);
+                 n.Is_pin.push_back(0);
+                 n.metal.push_back(V_metal);
                  if(first_lock==0){
                     first_coord.first = coord.first;
                     first_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
@@ -1876,65 +1840,59 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
          }
        //connect to each trail
        if(first_lock==1 and end_close==1){
-       Nets_neg[i].start_conection_coord.push_back(first_coord);
-       Nets_neg[i].end_conection_coord.push_back(end_coord);
-       Nets_neg[i].Is_pin.push_back(1);
+       n.start_conection_coord.push_back(first_coord);
+       n.end_conection_coord.push_back(end_coord);
+       n.Is_pin.push_back(1);
        //
-       Nets_neg[i].metal.push_back(H_metal);
+       n.metal.push_back(H_metal);
        //
        
        }    
    }
   for(unsigned int i=0;i<Nets_neg.size();i++){
+      auto& n = Nets_neg[i];
       //connection for each connection set
-      for(unsigned int j=0;j<Nets_neg[i].Set.size();j++){
-              unsigned int end_flag = Nets_neg[i].Set[j].cap_index.size();
+      for(unsigned int j=0;j<n.Set.size();j++){
+              unsigned int end_flag = n.Set[j].cap_index.size();
               unsigned int index = 0;
               while(index<end_flag){
-                     if(Caps[Nets_neg[i].Set[j].cap_index[index]].access==1){
+                     if(Caps[n.Set[j].cap_index[index]].access==1){
                         int found=0;
                         for(unsigned int k=0;k<end_flag;k++){
-                            if((Caps[Nets_neg[i].Set[j].cap_index[k]].index_y==Caps[Nets_neg[i].Set[j].cap_index[index]].index_y and abs(Caps[Nets_neg[i].Set[j].cap_index[k]].index_x-Caps[Nets_neg[i].Set[j].cap_index[index]].index_x) ==1 and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access))){
-                              Caps[Nets_neg[i].Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[Nets_neg[i].Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[Nets_neg[i].Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
+                            if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1 and !(Caps[n.Set[j].cap_index[k]].access))){
+                              Caps[n.Set[j].cap_index[k]].access=1;
+                              coord.first = Caps[n.Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
                              
                               //
-                              addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                      
-                              
-                              //Nets_neg[i].via.push_back(coord);
-                              //Nets_neg[i].via_metal.push_back("M2");
-                              //
-                              //Caps[Nets_pos[i].Set[j].cap_index[k]].access = 1;
+                              n.start_conection_coord.push_back(coord);
+                              coord.first = Caps[n.Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
+                              n.end_conection_coord.push_back(coord);
+                              n.Is_pin.push_back(0);
+                              n.metal.push_back(H_metal);
 
-                              Nets_neg[i].start_conection_coord.push_back(coord);
-                              coord.first = Caps[Nets_neg[i].Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[Nets_neg[i].Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
-                              Nets_neg[i].end_conection_coord.push_back(coord);
-                              Nets_neg[i].Is_pin.push_back(0);
-                              Nets_neg[i].metal.push_back(H_metal);
-
-                              addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       
                               index = 0;
                               found = 1;
-                             }else if((Caps[Nets_neg[i].Set[j].cap_index[k]].index_x==Caps[Nets_neg[i].Set[j].cap_index[index]].index_x and abs(Caps[Nets_neg[i].Set[j].cap_index[k]].index_y-Caps[Nets_neg[i].Set[j].cap_index[index]].index_y) ==1 and !(Caps[Nets_neg[i].Set[j].cap_index[k]].access))){
-                              Caps[Nets_neg[i].Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[Nets_neg[i].Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[Nets_neg[i].Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
-                              addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                             }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1 and !(Caps[n.Set[j].cap_index[k]].access))){
+                              Caps[n.Set[j].cap_index[k]].access=1;
+                              coord.first = Caps[n.Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              Nets_neg[i].start_conection_coord.push_back(coord);
-                              coord.first = Caps[Nets_neg[i].Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[Nets_neg[i].Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
-                              Nets_neg[i].end_conection_coord.push_back(coord);
-                              Nets_neg[i].Is_pin.push_back(0);
-                              Nets_neg[i].metal.push_back(V_metal);
+                              n.start_conection_coord.push_back(coord);
+                              coord.first = Caps[n.Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
+                              coord.second = Caps[n.Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
+                              n.end_conection_coord.push_back(coord);
+                              n.Is_pin.push_back(0);
+                              n.metal.push_back(V_metal);
 
-                              addVia(Nets_neg[i],coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                    
                               index = 0;
                               found = 1;
@@ -2044,7 +2002,7 @@ Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
 }
 
 void
-Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info, string opath) {
+Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::Drc_info & drc_info, const string& opath) {
     //begin to write JSON file from unit capacitor to final capacitor file
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = opath+final_gds+".gds";
@@ -2110,24 +2068,15 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     jsonStr["strname"] = TopCellName.c_str();
     json jsonElements = json::array();
 
-    //int width = metal_width[0];
-    int Min_x = INT_MAX;
-    int Min_y = INT_MAX;
-    int Max_x = INT_MIN;
-    int Max_y = INT_MIN;
     //for positive nets
 
     for(unsigned int i=0; i< Nets_pos.size(); i++){//for each net
 	for(unsigned int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
 
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_pos[i].metal[j]]].width/2;
+	    const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j]));
+            int width = mi.width/2;
 	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
 				 Nets_pos[i].end_conection_coord[j], width);
-            
-	    if(x[0]<Min_x) {Min_x = x[0];}
-	    if(x[2]>Max_x) {Max_x = x[2];}
-	    if(y[0]<Min_y) {Min_y = y[0];}
-	    if(y[2]>Max_y) {Max_y = y[2];}
 
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= unitScale;
@@ -2151,14 +2100,10 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     //for neg nets
     for(unsigned int i =0; i < Nets_neg.size(); i++) {//for each net
 	for(unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
-            int width = drc_info.Metal_info[drc_info.Metalmap[Nets_neg[i].metal[j]]].width/2;
+	    const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j]));
+            int width = mi.width/2;
 	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
 				 Nets_neg[i].end_conection_coord[j], width);
-
-	    if(x[0]<Min_x) Min_x = x[0];
-	    if(x[2]>Max_x) Max_x = x[2];
-	    if(y[0]<Min_y) Min_y = y[0];
-	    if(y[2]>Max_y) Max_y = y[2];
 
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= unitScale;
@@ -2184,24 +2129,20 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     //width = via_width[0];
     for (unsigned int i = 0; i < Nets_pos.size(); i++) {
 	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].x;
+	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1];
+            int width = r.x;
  	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
 	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_pos[i].via_metal[j]]].ViaRect[1].y;        
+            width = r.y;
 	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
 	    y[2]=Nets_pos[i].via[j].second + width+offset_y;
 	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-	    if (x[0]<Min_x) {Min_x = x[0];}
-	    if (x[2]>Max_x) {Max_x = x[2];}
-	    if (y[0]<Min_y) {Min_y = y[0];}
-	    if (y[2]>Max_y) {Max_y = y[2];}
-
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= unitScale;
 		y[i] *= unitScale;
@@ -2224,24 +2165,20 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
     //for negative net
     for (unsigned int i = 0; i < Nets_neg.size(); i++) {
 	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
-            int width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].x; 
+	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1];
+            int width = r.x;
 	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
 	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
 	    x[2]=Nets_neg[i].via[j].first + width+offset_x;
 	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
-            width = drc_info.Via_model[drc_info.Metalmap[Nets_neg[i].via_metal[j]]].ViaRect[1].y;        
+            width = r.y;
 	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
 	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
 	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
 	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
-	    if (x[0]<Min_x) Min_x = x[0];
-	    if (x[2]>Max_x) Max_x = x[2];
-	    if (y[0]<Min_y) Min_y = y[0];
-	    if (y[2]>Max_y) Max_y = y[2];
-
 	    for (int i = 0; i < 5; i++) {
 		x[i] *= unitScale;
 		y[i] *= unitScale;
@@ -2261,7 +2198,7 @@ Placer_Router_Cap::WriteJSON (string fpath, string unit_capacitor, string final_
 	}
     }
   
-    //wirte orientation for each cap
+    //write orientation for each cap
     for (unsigned int i = 0; i < Caps.size(); i++) {
 	json sref;
 	sref["type"] = "sref";
@@ -2297,78 +2234,65 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
 
   for(unsigned int i = 0;i<current_node.Blocks.size();i++){
-       if(current_node.Blocks[i].instance.back().isLeaf == 1 and
-	  current_node.Blocks[i].instance.back().gdsFile ==""){
-            //this block must be CC
-            vector<int> ki;
-            vector<pair<string, string> > pin_names;
-            string unit_capacitor;
+      auto& b = current_node.Blocks[i].instance.back();
+
+      if(b.isLeaf == 1 and b.gdsFile ==""){
+	   //this block must be CC
+	   vector<int> ki;
+	   vector<pair<string, string> > pin_names;
+	   string unit_capacitor;
             string final_gds;
             pair<string, string> pins;
             for(unsigned int j=0;j<current_node.CC_Caps.size();j++){
 
                  std::cout<<"New CC 1 "<<j<<std::endl;
-                 if(current_node.CC_Caps[j].CCCap_name == current_node.Blocks[i].instance.back().name){
+                 if(current_node.CC_Caps[j].CCCap_name == b.name){
                       ki = current_node.CC_Caps[j].size;
                       unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
-                      final_gds = current_node.Blocks[i].instance.back().master;
-                      unsigned int pin_index = 0;
-                      while(pin_index <current_node.Blocks[i].instance.back().blockPins.size()){
-                         pins.first = current_node.Blocks[i].instance.back().blockPins[pin_index].name;
-                         pins.second = current_node.Blocks[i].instance.back().blockPins[pin_index+1].name;
+                      final_gds = b.master;
+                      for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index+=2){
+                         pins.first = b.blockPins[pin_index].name;
+                         pins.second = b.blockPins[pin_index+1].name;
                          pin_names.push_back(pins);
-                         pin_index = pin_index + 2;
                       }
                       bool cap_ratio = current_node.CC_Caps[j].cap_ratio;
                       std::cout<<"New CC 2 "<<j<<std::endl;
                       vector<int> cap_r;
                       vector<int> cap_s;
                       if(cap_ratio){                        
-                      cap_r.push_back(current_node.CC_Caps[j].cap_r);
-                      cap_s.push_back(current_node.CC_Caps[j].cap_s);
-                      }else{
-                      //cap_r.push_back(0);
-                      //cap_s.push_back(0);                      
+			  cap_r.push_back(current_node.CC_Caps[j].cap_r);
+			  cap_s.push_back(current_node.CC_Caps[j].cap_s);
                       }
 
                       std::cout<<"New CC 3 "<<j<<std::endl;
                       if(aspect_ratio){
                          int sum = 0;
-                         double temp_r = 0;
-                         //double temp_s = 0;
                          for(unsigned int k=0;k<ki.size();k++){
-                               sum = sum+ ki[k];
-                             }
-                         temp_r = ceil(sqrt(sum));
+			     sum = sum+ ki[k];
+			 }
+                         double temp_r = ceil(sqrt(sum));
                          double temp_s = ceil(sum/temp_r);
-                         //temp_s = ceil(sum/temp_r); 
                          int aspect_num = num_aspect;
                          while(aspect_num > 0 and temp_r > 0){
                                
-                                cap_r.push_back(temp_r);
-                                cap_s.push_back(ceil(sum/temp_r));
-                                cap_r.push_back(ceil(sum/temp_s));
-                                cap_s.push_back(temp_s);
+			     cap_r.push_back(temp_r);
+			     cap_s.push_back(ceil(sum/temp_r));
+			     cap_r.push_back(ceil(sum/temp_s));
+			     cap_s.push_back(temp_s);
 
-                                aspect_num = aspect_num - 2;
-                                temp_r = temp_r - 1;
-                                temp_s = temp_s + 1;
+			     aspect_num = aspect_num - 2;
+			     temp_r = temp_r - 1;
+			     temp_s = temp_s + 1;
 
-                               }
+			 }
                                                   
-                         }
+		      }
                       //increase other aspect ratio
                       std::cout<<"New CC 4 "<<j<<std::endl;
-                      //std::vector<PnRDB::block> temp_Block;
                       std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
                       for(unsigned int q=0;q<cap_r.size();q++){
                         std::cout<<"New CC 5 "<<j<<std::endl;
-                        //stringstream cr,cs;
-                        //cr<<cap_r[q]; 
-                        //cs<<cap_s[q];
                         std::cout<<"New CC 6 "<<j<<std::endl;
-                        //string cr_string = cr.str();
-                        //string cs_string = cs.str();
                         std::cout<<"New CC 7 "<<j<<std::endl;
                         std::string cc_gds_file = final_gds+"_AspectRatio_"+to_string(cap_r[q])+"x"+to_string(cap_s[q]);
    
@@ -2384,61 +2308,39 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                         PnRDB::block temp_block=CheckoutData();
                         //delete PRC;
                         
-
-                        
                         //std::cout<<"Start feed blocks"<<std::endl;
-                        if(q==0){
-                        //feedback data
-                            std::cout<<"Start feed blocks"<<std::endl;
-                            current_node.Blocks[i].instance[q].width = temp_block.width;
-                            current_node.Blocks[i].instance[q].height = temp_block.height;
-                            current_node.Blocks[i].instance[q].originBox = temp_block.originBox;
-                            current_node.Blocks[i].instance[q].originCenter = temp_block.originCenter;
-                            current_node.Blocks[i].instance[q].gdsFile = temp_block.gdsFile;
-                            current_node.Blocks[i].instance[q].orient = temp_block.orient;
-                            current_node.Blocks[i].instance[q].interMetals = temp_block.interMetals;
-                            current_node.Blocks[i].instance[q].interVias = temp_block.interVias;
-                            for(unsigned int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
-                                  for(unsigned int l=0;l<temp_block.blockPins.size();l++){
-                                       if(current_node.Blocks[i].instance[q].blockPins[k].name == temp_block.blockPins[l].name){    
-                                            for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
-                                        current_node.Blocks[i].instance[q].blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
-                                                }
-                                         }
-                                     }
-                               }
-                            current_node.Blocks[i].instNum++;
-                            WriteLef(current_node.Blocks[i].instance[q], cc_gds_file+".lef", opath);
-                            std::cout<<"End feed blocks"<<std::endl;
-                            continue;
-                          }else{
-                            std::cout<<"Start feed blocks"<<std::endl;
+
+                        if(q!=0){
                             current_node.Blocks[i].instance.push_back(current_node.Blocks[i].instance[0]);
-                            current_node.Blocks[i].instNum++;
-                            current_node.Blocks[i].instance[q].width = temp_block.width;
-                            current_node.Blocks[i].instance[q].height = temp_block.height;
-                            current_node.Blocks[i].instance[q].originBox = temp_block.originBox;
-                            current_node.Blocks[i].instance[q].originCenter = temp_block.originCenter;
-                            current_node.Blocks[i].instance[q].gdsFile = temp_block.gdsFile;
-                            current_node.Blocks[i].instance[q].orient = temp_block.orient;
-                            current_node.Blocks[i].instance[q].interMetals = temp_block.interMetals;
-                            current_node.Blocks[i].instance[q].interVias = temp_block.interVias;
-                            for(unsigned int k=0;k<current_node.Blocks[i].instance[q].blockPins.size();k++){
-                                 for(unsigned int l=0;l<temp_block.blockPins.size();l++){
-                                     if(current_node.Blocks[i].instance[q].blockPins[k].name == temp_block.blockPins[l].name){ 
-                                          current_node.Blocks[i].instance[q].blockPins[k].pinContacts.clear();   
-                                          for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
-                                        current_node.Blocks[i].instance[q].blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
-                                             }
-                                        }
-                                    }
-                                }
-                       
-                             WriteLef(current_node.Blocks[i].instance[q], cc_gds_file+".lef", opath);                        
-                             std::cout<<"End feed blocks"<<std::endl;
-                             continue;
-                          }
-                       } 
+			}
+			assert( (int)q == current_node.Blocks[i].instNum);
+			current_node.Blocks[i].instNum++;
+                        //feedback data
+			auto& va = current_node.Blocks[i].instance.at(q);
+
+			std::cout<<"Start feed blocks"<<std::endl;
+			va.width = temp_block.width;
+			va.height = temp_block.height;
+			va.originBox = temp_block.originBox;
+			va.originCenter = temp_block.originCenter;
+			va.gdsFile = temp_block.gdsFile;
+			va.orient = temp_block.orient;
+			va.interMetals = temp_block.interMetals;
+			va.interVias = temp_block.interVias;
+			for(unsigned int k=0;k<va.blockPins.size();k++){
+			    for(unsigned int l=0;l<temp_block.blockPins.size();l++){
+				if(va.blockPins[k].name == temp_block.blockPins[l].name){    
+				    va.blockPins[k].pinContacts.clear();   
+				    for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
+					va.blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
+				    }
+				}
+			    }
+			}
+			WriteLef(va, cc_gds_file+".lef", opath);
+			std::cout<<"End feed blocks"<<std::endl;
+			continue;
+		      } 
                    }
                }
          }
@@ -2539,7 +2441,7 @@ fout<<endl;
 // c-basic-offset: 4
 // End:
 
-void Placer_Router_Cap::WriteLef(PnRDB::block &temp_block, string file, string opath){
+void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& file, const string& opath){
 
   std::ofstream leffile;
   string leffile_name = opath + file;

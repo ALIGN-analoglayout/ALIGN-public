@@ -274,18 +274,18 @@ class Placer_Router_Cap
     void Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, bool dummy_flag, bool cap_ratio, int cap_r, int cap_s);
     void PrintPlacer_Router_Cap(string outfile);
     void GetPhysicalInfo_router(const string& H_metal, int H_metal_index, const string& V_metal, int V_metal_index, const PnRDB::Drc_info &drc_info);
-    void cal_offset(PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index);
+    void cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index);
     void fillPathBoundingBox (int *x, int* y,
 			      const pair<double,double> &start,
 			      const pair<double,double> &end,
 			      double width);
-    void ExtractData (string fpath, string unit_capacitor, string final_gds, vector<string> & obs, PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_metal_index, string opath);
-    void WriteJSON (string fpath, string unit_capacitor, string final_gds, PnRDB::Drc_info & drc_info, string opath);
+    void ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, vector<string> & obs, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_metal_index, const string& opath);
+    void WriteJSON (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::Drc_info & drc_info, const string& opath);
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
     int found_neighbor(int j, net& pos, connection_set& temp_set);
     void Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, bool aspect_ratio, int num_aspect);
     void addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
-    void WriteLef(PnRDB::block &temp_block, string file, string opath);
+    void WriteLef(const PnRDB::block &temp_block, const string& file, const string& opath);
 };
 
 #endif
