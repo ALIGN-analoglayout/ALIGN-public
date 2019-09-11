@@ -2,6 +2,7 @@ import json
 
 from pnrdb import *
 from cell_fabric import DefaultCanvas, Pdk, transformation
+from pprint import pformat
 
 def get_hN(fn="tests/telescopic_ota-freeze.json"):
     with open(fn,"rt") as fp:
@@ -35,17 +36,20 @@ def test_gen_viewer_json3():
 def test_remove_duplicates():
     hN = get_hN()
     cnv = remove_duplicates( hN)
-    assert len(cnv.rd.different_widths) == 0
-    assert len(cnv.rd.shorts) == 0
+    assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
+    assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
+    assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
 
 def test_remove_duplicates2():
     hN = get_hN("tests/switched_capacitor_filter-freeze.json")
     cnv = remove_duplicates( hN)
-    assert len(cnv.rd.different_widths) == 0
-    assert len(cnv.rd.shorts) == 0
+    assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
+    assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
+    assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
 
 def test_remove_duplicates3():
     hN = get_hN("tests/switched_capacitor_combination-freeze.json")
     cnv = remove_duplicates( hN)
-    assert len(cnv.rd.different_widths) == 0
-    assert len(cnv.rd.shorts) == 0
+    assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
+    assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
+    assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)

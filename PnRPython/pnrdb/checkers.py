@@ -5,7 +5,7 @@ def check_bbox( b):
 #    assert b.LL.x < b.UR.x, (b.LL.x,b.UR.x)
 #    assert b.LL.y < b.UR.y, (b.LL.y,b.UR.y)
 
-def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False):
+def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -111,7 +111,7 @@ def gen_viewer_json( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
     return d
 
-def remove_duplicates( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json"):
+def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json"):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -186,6 +186,6 @@ def remove_duplicates( hN, *, pdk_fn="../../PDK_Abstraction/FinFET14nm_Mock_PDK/
                 pass                
 #                add_terminal( '!interVias', con.metal, con.placedBox)
 
-    cnv.removeDuplicates()
+    cnv.gen_data()
 
     return cnv
