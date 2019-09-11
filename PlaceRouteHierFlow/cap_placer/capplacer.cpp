@@ -108,6 +108,11 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   unit_cap_demension.first = uc.width;
   unit_cap_demension.second= uc.height;
+
+  // We are dividing by two later
+  assert( unit_cap_demension.first % 2 == 0);
+  assert( unit_cap_demension.second % 2 == 0);
+
   int pin_minx = INT_MAX;
   int pin_miny = INT_MAX;
   string pin_metal;
@@ -498,7 +503,8 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     for (unsigned int i = 0; i < Nets_pos.size(); i++) {
 	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 3.1"<<endl;
-            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1].x;
+	    auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1];
+            int width = r.x;
 
  	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
 	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
@@ -506,7 +512,7 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
 
-            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1].y;
+            width = r.y;
         
 	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
 	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
@@ -1005,12 +1011,9 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
 
 
 void Placer_Router_Cap::perturbation_pair_sequence(){
-//perturbate pair sequence
-
 }
 
 void Placer_Router_Cap::Placer_Cap(vector<int> & ki){
-  
 }
 
 void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, bool dummy_flag, bool cap_ratio, int cap_r, int cap_s){
@@ -1030,26 +1033,23 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
         } 
     }
   cout<<"broken down 2"<<endl;
-  int net_size = ki.size();
   double sum = 0;
-  double r;
-  double s;
-  for(int i=0;i<net_size;i++){
-     sum = sum + ki[i];
-    }
+  for(unsigned int i=0;i<ki.size();i++){
+      sum += ki[i];
+  }
   cout<<"broken down 3"<<endl;
 
-   r = ceil(sqrt(sum));
-   s = ceil(sum/r);
+  double r = ceil(sqrt(sum));
+  double s = ceil(sum/r);
 
    if(cap_ratio){
-   r = cap_r;
-   s = cap_s;
+       r = cap_r;
+       s = cap_s;
    }
 
    if(dummy_flag){
-   r= r+2;
-   s= s+2;
+       r += 2;
+       s += 2;
    }
 
    double Cx = (r)/2; //note this is different
@@ -1195,15 +1195,10 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
                     }
                 }
             }
-         if(1){
          Nets_pos[i].line_v[choosed_router]=1;
          Nets_pos[i].line_v[2*Cx-choosed_router]=1;
          num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
          num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
-            }else{
-            Nets_pos[i].line_v[choosed_router]=1;
-            num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-            }
              
        }else{
          //use the information of half_routable_line_v
@@ -1252,15 +1247,10 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
                     }
                 }
             }
-         if(1){
          Nets_neg[i].line_v[choosed_router]=1;
          Nets_neg[i].line_v[2*Cx-choosed_router]=1;
          num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
          num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
-            }else{
-            Nets_neg[i].line_v[2*Cx-choosed_router]=1;
-            num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
-            }
              
        }else{
          //use the information of half_routable_line_v
@@ -1290,27 +1280,28 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
      }
 
   cout<<"broken down 12"<<endl;
-   vector<int> num_line;
-   for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){num_line.push_back(0);}
+  vector<int> num_line( Nets_pos[0].line_v.size(), 0);
    for(unsigned int i=0;i<Nets_pos.size();i++){
+       assert( Nets_pos[i].line_v.size() == Nets_neg[i].line_v.size());
+       assert( Nets_pos[i].line_v.size() == num_line.size());
        for(unsigned int j=0;j<Nets_pos[i].line_v.size();j++){
-           num_line[j]=Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j]+num_line[j];
-          }
-      }
+           num_line.at(j)+=Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j];
+       }
+   }
    int max_num_ =0;
-   for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){
-        if(num_line[i]>max_num_){
+   for(unsigned int i=0;i<num_line.size();i++){
+       if(num_line[i]>max_num_){
            max_num_ = num_line[i];
-          }
-      }
+       }
+   }
 
   cout<<"broken down 13"<<endl;
-   span_distance.first = (max_num_+1)*min_dis_x;
+  span_distance.first = (max_num_+1)*min_dis_x;
   cout<<span_distance.first<<endl;
 
   for(unsigned int i=0;i<Caps.size();i++){
       Caps[i].x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
-     }
+  }
 
   cout<<"broken down 14"<<endl;
 //route methdology in paper just for v
@@ -1435,22 +1426,52 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
 
 }
 
+void Placer_Router_Cap::check_grid( const net& n) const
+{
+    assert( n.start_conection_coord.size() == n.end_conection_coord.size());
+    assert( n.metal.size() == n.end_conection_coord.size());
+    for( unsigned int i=0; i<n.start_conection_coord.size(); ++i) {
+	const auto& s = n.start_conection_coord[i];
+	const auto& e = n.end_conection_coord[i];
+	const auto& m = n.metal[i];
+	const auto& p = n.Is_pin[i];
+	cout << "Terminals: " << n.name << " is_pin " << p << " " << m << " " << s.first << "," << s.second << " ";
+	cout << e.first << "," << e.second;
+									     
+	if ( s.first == e.first) {
+	    // Vertical wi
+	    int x = s.first;
+	    assert( x == s.first);
+	    cout << " V " << x % 80;
+	} else {
+	    int y = s.first;
+	    assert( y == s.first);
+	    cout << " H " << y % 84;
+	}
+	cout << endl;									     
+    }
+}
+
 void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_metal_index, const string& V_metal, int V_metal_index, const PnRDB::Drc_info &drc_info){
 
-  int grid_offset;
-  int height_cap = INT_MIN;
-
-  for(unsigned int i=0;i<Caps.size();i++){
-      if(Caps[i].y+unit_cap_demension.second/2 > height_cap){
-          height_cap = Caps[i].y + unit_cap_demension.second/2;
-        }
-     }
-
   const auto& mH = drc_info.Metal_info.at(H_metal_index);
+  int grid_offset;
+  {
+      int height_cap = INT_MIN;
+      for(unsigned int i=0;i<Caps.size();i++){
+	  height_cap = max( height_cap, (int) Caps[i].y + unit_cap_demension.second/2);
+      }
 
-  int near_grid = ceil(height_cap/mH.grid_unit_y)*mH.grid_unit_y;
+      int near_grid = ceil(height_cap/mH.grid_unit_y)*mH.grid_unit_y;
 
-  grid_offset = (near_grid - height_cap)/2;
+  // Alternative way to compile next larger grid
+      assert( near_grid == ((height_cap+mH.grid_unit_y-1)/mH.grid_unit_y)*mH.grid_unit_y);
+
+      assert( near_grid % 2 == 0);
+      assert( height_cap % 2 == 0);
+
+      grid_offset = (near_grid - height_cap)/2;
+  }
 
 
   string HV_via_metal;
@@ -1475,18 +1496,28 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
 
 
    for(int i=0;i<num_trail;i++){trails.push_back(0);}
-
    
-   std::vector<
-
+   // SMB
+   // Unsuccessful attempt to merge the two code streams for Nets_pos and Nets_neg
+   //    TODO: merge max logic for Nets_pos and min logic for Nets_neg
+   //    TODO: several adjustments are done with different signs
+   //    TODO: One offset is 0 and the other some positive number
+   // (Probably 1 hour of work to get right.)
+   //
+   vector<vector<net>*> twoItems;
+   twoItems.push_back( &Nets_pos);
+   //   twoItems.push_back( &Nets_neg);
+   
+   for(auto ait=twoItems.begin(); ait != twoItems.end(); ++ait) {
+       auto& n_array = **ait;
 
   for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
   }
   routed_trail=0;
 //for positive net
-   for(unsigned int i=0;i<Nets_pos.size();i++){
-       auto& n = Nets_pos[i];
+   for(unsigned int i=0;i<n_array.size();i++){
+       auto& n = n_array[i];
 
       if(n.cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
@@ -1625,75 +1656,82 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
          }
        //connect to each trail
        if(first_lock==1 and end_close==1){
-       n.start_conection_coord.push_back(first_coord);
-       n.end_conection_coord.push_back(end_coord);
-       n.Is_pin.push_back(1);
+	   n.start_conection_coord.push_back(first_coord);
+	   n.end_conection_coord.push_back(end_coord);
+	   n.Is_pin.push_back(1);
 
-       n.metal.push_back(H_metal);
+	   n.metal.push_back(H_metal);
        }    
+
+       check_grid(n);
+
    }
-    for(unsigned int i=0;i<Nets_pos.size();i++){
-	auto& n = Nets_pos[i];
+   for(unsigned int i=0;i<n_array.size();i++){
+       auto& n = n_array[i];
 
       //connection for each connection set
-      for(unsigned int j=0;j<n.Set.size();j++){
+       for(unsigned int j=0;j<n.Set.size();j++){
 
-              unsigned int end_flag = n.Set[j].cap_index.size();
-              unsigned int index = 0;
-              while(index<end_flag){
-                     if(Caps[n.Set[j].cap_index[index]].access==1){
-                        int found=0;
-                        for(unsigned int k=0;k<end_flag;k++){
-                            if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1)and !(Caps[n.Set[j].cap_index[k]].access)){
-                              Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
+	   unsigned int end_flag = n.Set[j].cap_index.size();
+	   unsigned int index = 0;
+	   while(index<end_flag){
+	       if(Caps[n.Set[j].cap_index[index]].access==1){
+		   int found=0;
+		   for(unsigned int k=0;k<end_flag;k++){
+		       if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and
+			   abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1)and !(Caps[n.Set[j].cap_index[k]].access)){
+			   Caps[n.Set[j].cap_index[k]].access=1;
+			   coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
+			   coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
                               
 
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-                              n.end_conection_coord.push_back(coord);
-                              n.Is_pin.push_back(0);
-                              n.metal.push_back(H_metal);
-                              //
+			   n.start_conection_coord.push_back(coord);
+			   coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
+			   coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
+			   n.end_conection_coord.push_back(coord);
+			   n.Is_pin.push_back(0);
+			   n.metal.push_back(H_metal);
 
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                               
-                              //
-                              index = 0;
-                              found = 1;
-                             }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1) and !(Caps[n.Set[j].cap_index[k]].access)){
-                              Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			   index = 0;
+			   found = 1;
+		       }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and
+				 abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1) and
+				!(Caps[n.Set[j].cap_index[k]].access)){
+			   Caps[n.Set[j].cap_index[k]].access=1;
+			   coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
+			   coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
+			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-                              n.end_conection_coord.push_back(coord);
-                              n.Is_pin.push_back(0);
-                              n.metal.push_back(V_metal);
+			   n.start_conection_coord.push_back(coord);
+			   coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
+			   coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
+			   n.end_conection_coord.push_back(coord);
+			   n.Is_pin.push_back(0);
+			   n.metal.push_back(V_metal);
 
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
-                              index = 0;
-                              found = 1;
-                             }
-                           }
-                           if(found==0){
-                              index = index +1;
-                             }
-                       }else{
-                        index=index+1;
-                       }
-                   }
-              }
-         }
+			   index = 0;
+			   found = 1;
+		       }
+		   }
+		   if(found==0){
+		       ++index;
+		   }
+	       }else{
+		   ++index;
+	       }
+	   }
+      }
+      check_grid(n);
+    }
+
      
+   }
 
 //for negative net
   for(unsigned int i=0;i<Caps.size();i++){
@@ -2050,7 +2088,7 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 	for (json::iterator str = js.begin(); str != js.end(); ++str) {
 	    jsonStrAry.push_back (*str);
 	}
-
+ 
 	if (strBlocks.size())
 	    strBlocks_Top.push_back(strBlocks.back());
 	else
@@ -2068,133 +2106,78 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
     jsonStr["strname"] = TopCellName.c_str();
     json jsonElements = json::array();
 
-    //for positive nets
+    vector<vector<net>*> twoItems = { &Nets_pos, &Nets_neg};
 
-    for(unsigned int i=0; i< Nets_pos.size(); i++){//for each net
-	for(unsigned int j=0; j< Nets_pos[i].start_conection_coord.size();j++){ //for segment
+    for (auto ait=twoItems.begin(); ait!=twoItems.end(); ++ait) {
+	auto& n_array = **ait;
 
-	    const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j]));
-            int width = mi.width/2;
-	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
-				 Nets_pos[i].end_conection_coord[j], width);
+	for(unsigned int i=0; i< n_array.size(); i++){//for each net
+	    auto& n = n_array[i];
+	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
 
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= unitScale;
-		y[i] *= unitScale;
-	    }
+		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
+		int width = mi.width/2;
+		fillPathBoundingBox (x, y, n.start_conection_coord[j],
+				     n.end_conection_coord[j], width);
 
-	    json bound;
-	    bound["type"] = "boundary";
-	    bound["datatype"] = 0;
-	    json xy = json::array();
-	    for (size_t i = 0; i < 5; i++) {
-		xy.push_back (x[i]);
-		xy.push_back (y[i]);
-	    }
-	    bound["xy"] = xy;
-	    bound["layer"] = getLayerMask (Nets_pos[i].metal[j], drc_info);
-	    jsonElements.push_back (bound);
-	}   
-    }
-  
-    //for neg nets
-    for(unsigned int i =0; i < Nets_neg.size(); i++) {//for each net
-	for(unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
-	    const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j]));
-            int width = mi.width/2;
-	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
-				 Nets_neg[i].end_conection_coord[j], width);
+		for (int i = 0; i < 5; i++) {
+		    x[i] *= unitScale;
+		    y[i] *= unitScale;
+		}
 
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= unitScale;
-		y[i] *= unitScale;
-	    }
-
-	    json bound;
-	    bound["type"] = "boundary";
-	    bound["datatype"] = 0;
-	    json xy = json::array();
-	    for (size_t i = 0; i < 5; i++) {
-		xy.push_back (x[i]);
-		xy.push_back (y[i]);
-	    }
-	    bound["xy"] = xy;
-	    bound["layer"] = getLayerMask (Nets_neg[i].metal[j], drc_info);
-	    jsonElements.push_back (bound);
+		json bound;
+		bound["type"] = "boundary";
+		bound["datatype"] = 0;
+		json xy = json::array();
+		for (size_t i = 0; i < 5; i++) {
+		    xy.push_back (x[i]);
+		    xy.push_back (y[i]);
+		}
+		bound["xy"] = xy;
+		bound["layer"] = getLayerMask (n.metal[j], drc_info);
+		jsonElements.push_back (bound);
+	    }   
 	}
     }
   
-    //wirting vias
-    //for positive net
-    //width = via_width[0];
-    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
-	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
-	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1];
-            int width = r.x;
- 	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
-	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
-	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
-	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
-	    x[4]=x[0];
-            width = r.y;
-	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
-	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
-	    y[2]=Nets_pos[i].via[j].second + width+offset_y;
-	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
-	    y[4]=y[0];
-        
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= unitScale;
-		y[i] *= unitScale;
-	    }
-    
-	    json bound;
-	    bound["type"] = "boundary";
-	    bound["datatype"] = 0;
-	    json xy = json::array();
-	    for (size_t i = 0; i < 5; i++) {
-		xy.push_back (x[i]);
-		xy.push_back (y[i]);
-	    }
-	    bound["xy"] = xy;
-	    bound["layer"] = getLayerViaMask (Nets_pos[i].via_metal[j], drc_info);
-	    jsonElements.push_back (bound);
-	}
-    }
-    
-    //for negative net
-    for (unsigned int i = 0; i < Nets_neg.size(); i++) {
-	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
-	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1];
-            int width = r.x;
-	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
-	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
-	    x[2]=Nets_neg[i].via[j].first + width+offset_x;
-	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
-	    x[4]=x[0];
-            width = r.y;
-	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
-	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
-	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
-	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
-	    y[4]=y[0];
-        
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= unitScale;
-		y[i] *= unitScale;
-	    }
+  
+    for (auto ait=twoItems.begin(); ait!=twoItems.end(); ++ait) {
+	auto& n_array = **ait;
 
-	    json bound;
-	    bound["type"] = "boundary";
-	    bound["datatype"] = 0;
-	    json xy = json::array();
-	    for (size_t i = 0; i < 5; i++) {
-		xy.push_back (x[i]);
-		xy.push_back (y[i]);
+	for (unsigned int i = 0; i < n_array.size(); i++) {
+	    auto& n = n_array[i];
+	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
+		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
+		int width = r.x;
+		x[0]=n.via[j].first - width+offset_x;
+		x[1]=n.via[j].first - width+offset_x;
+		x[2]=n.via[j].first + width+offset_x;
+		x[3]=n.via[j].first + width+offset_x;
+		x[4]=x[0];
+		width = r.y;
+		y[0]=n.via[j].second - width+offset_y;
+		y[1]=n.via[j].second + width+offset_y;
+		y[2]=n.via[j].second + width+offset_y;
+		y[3]=n.via[j].second - width+offset_y;
+		y[4]=y[0];
+        
+		for (int i = 0; i < 5; i++) {
+		    x[i] *= unitScale;
+		    y[i] *= unitScale;
+		}
+    
+		json bound;
+		bound["type"] = "boundary";
+		bound["datatype"] = 0;
+		json xy = json::array();
+		for (size_t i = 0; i < 5; i++) {
+		    xy.push_back (x[i]);
+		    xy.push_back (y[i]);
+		}
+		bound["xy"] = xy;
+		bound["layer"] = getLayerViaMask (n.via_metal[j], drc_info);
+		jsonElements.push_back (bound);
 	    }
-	    bound["xy"] = xy;
-	    bound["layer"] = getLayerViaMask (Nets_neg[i].via_metal[j], drc_info);
-	    jsonElements.push_back (bound);
 	}
     }
   
@@ -2448,12 +2431,27 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
 
   leffile.open(leffile_name);
 
-  double time = 2000;
-  
+  auto s = [](int v) {
+      return (double) v/2000.0;
+  };
+
+  auto p_rect = [&](auto& p,const string& sp) {
+      leffile<<sp<<"  LAYER "<< p.metal<<" ;"<<std::endl;
+      const auto& b = p.originBox;
+      leffile << "        RECT "
+              << s(b.LL.x)<<" "
+              << s(b.LL.y)<<" "
+	      << s(b.UR.x)<<" "
+	      << s(b.UR.y)<<" ;"<<std::endl;
+  };
+
   leffile<<"MACRO "<<temp_block.master<<std::endl;
   leffile<<"  ORIGIN 0 0 ;"<<std::endl;
   leffile<<"  FOREIGN "<<temp_block.master<<" 0 0 ;"<<std::endl;
-  leffile<<"  SIZE "<< (double) temp_block.width/time<<" BY "<<(double) temp_block.height/time <<" ;"<<std::endl;
+  leffile<<"  SIZE "<< s(temp_block.width)<<" BY "<< s(temp_block.height) <<" ;"<<std::endl;
+
+  assert( temp_block.width % 80 == 0);
+  assert( temp_block.height % 84 == 0);
 
   //pins
   for(unsigned int i=0;i<temp_block.blockPins.size();i++){
@@ -2461,31 +2459,31 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
       leffile<<"  PIN "<<temp_block.blockPins[i].name<<std::endl;
       leffile<<"    DIRECTION INOUT ;"<<std::endl;
       leffile<<"    USE SIGNAL ;"<<std::endl;
-      //leffile<<"    DIRECTION "<<node.blockPins[i].type<<" ;"<<std::endl;
-      //leffile<<"    USE "<<node.blockPins[i].use<<" 0 0 ;"<<std::endl;
       leffile<<"    PORT "<<std::endl;
 
-      for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
-
-         leffile<<"      LAYER "<<temp_block.blockPins[i].pinContacts[j].metal<<" ;"<<std::endl;
-         leffile<<"        RECT "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.LL.y/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.x/time<<" "<<(double) temp_block.blockPins[i].pinContacts[j].originBox.UR.y/time<<" ;"<<std::endl;
-
+       for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+	   const auto& p = temp_block.blockPins[i].pinContacts[j];
+	   p_rect( p, "    ");
+	   const auto& b = p.originBox;
+	   if ( p.metal == "M1") {
+	       int c = (b.LL.x + b.UR.x)/2;
+	       cout << "M1 LEF PIN " << c % 80 << endl;
+	   }
+	   if ( p.metal == "M2") {
+	       int c = (b.LL.y + b.UR.y)/2;
+	       cout << "M2 LEF PIN " << c % 84 << endl;
+	       assert( c % 84 == 0);
+	   }
          }
       
       leffile<<"    END"<<std::endl;
       leffile<<"  END "<<temp_block.blockPins[i].name<<std::endl;  
-      
- 
      }
 
   leffile<<"  OBS "<<std::endl;
   for(unsigned int i=0;i<temp_block.interMetals.size();i++){
-
-     
-     leffile<<"  LAYER "<<temp_block.interMetals[i].metal<<" ;"<<std::endl;
-     leffile<<"        RECT "<<(double) temp_block.interMetals[i].originBox.LL.x/time<<" "<<(double) temp_block.interMetals[i].originBox.LL.y/time<<" "<<(double) temp_block.interMetals[i].originBox.UR.x/time<<" "<<(double) temp_block.interMetals[i].originBox.UR.y/time<<" ;"<<std::endl;
-
-     }
+      p_rect( temp_block.interMetals[i], "");
+  }
   leffile<<"  END "<<std::endl;
 
   leffile<<"END "<<temp_block.master<<std::endl;
