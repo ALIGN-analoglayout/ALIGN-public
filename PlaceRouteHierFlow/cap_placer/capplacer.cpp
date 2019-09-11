@@ -1544,7 +1544,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                     
                       //
                       n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
                       Caps[n.cap_index[k]].access = 1;
             
                       n.end_conection_coord.push_back(coord);
@@ -1574,7 +1574,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
 
@@ -1607,7 +1607,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
                       n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
 
@@ -1765,9 +1765,8 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2 + shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
                       Caps[n.cap_index[k]].access = 1;
-
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
 
@@ -1788,10 +1787,10 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       n.start_conection_coord.push_back(coord);
-                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
-                      n.metal.push_back(V_metal);
+                      n.metal.push_back(H_metal);
 
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
@@ -1819,28 +1818,24 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
                       coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
                       
-                      //
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      //
+
                       n.start_conection_coord.push_back(coord);
                       coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
                       n.metal.push_back(V_metal);
-                      //
+
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      //
                       n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
                       n.metal.push_back(H_metal);
-                      //
+
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      //
                       Caps[n.cap_index[k]].access = 1;
                       if(Caps[n.cap_index[k]].index_y<min){
                          min=Caps[n.cap_index[k]].index_y;
