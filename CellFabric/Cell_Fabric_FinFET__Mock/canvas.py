@@ -94,22 +94,23 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
 
         # Source, Drain, Gate Connections
+
+        def _connect_diffusion(x, port):
+            self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
+            for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
+                self.addVia( self.v0, port, None, x, (y, j))
+
         grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
         grid_y1 = grid_y0+(fin+2)//2
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
-        # Connect Gate
+        # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
         self.addVia( self.va, None, None, gate_x, (y*self.m2PerUnitCell//2, 1))
         # Connect Source (gate_x - 1)
-        self.addWire( self.m1, None, None, gate_x - 1, (grid_y0, -1), (grid_y1, 1))
-        self.addWire( self.LISD, None, None, gate_x - 1, (y, 1), (y+1, -1))
-        for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-            self.addVia( self.v0, None, None, gate_x - 1, (y, j))
+        _connect_diffusion(gate_x - 1, None)
         # Connect Drain (gate_x - 1)
-        self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1))
-        self.addWire( self.m1, None, None, gate_x + 1, (grid_y0, -1), (grid_y1, 1))
-        for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-            self.addVia( self.v0, None, None, gate_x + 1, (y, j))
+        _connect_diffusion(gate_x + 1, None)
 
     def _gen_routing(self, y, y_cells, Routing):
             for (pin, contact, track, m3route) in Routing:
