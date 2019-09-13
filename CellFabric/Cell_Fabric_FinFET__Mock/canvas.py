@@ -26,16 +26,10 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
         self.unitCellHeight = self.m2PerUnitCell* p['M2']['Pitch']
         unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch'] 
-        activeWidth1 =  p['Fin']['Pitch']*fin_u
-        activeWidth =  p['Fin']['Pitch']*fin
-        activeOffset = activeWidth//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
+        activeWidth =  p['Fin']['Pitch']*fin_u
+        activeOffset = p['Fin']['Pitch']*fin//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
-        RVTWidth = activeWidth1 + 2*p['Feol']['active_enclosure']
-        ##PcLength = (gate-1)*p['Poly']['Pitch']+p['Poly']['Width']+2*p['Feol']['PcExt']
-  
-        self.m0 = self.addGen( Wire( 'm0', 'M0', 'v',
-                                     clg=UncoloredCenterLineGrid( pitch=   p['Feol']['m0Pitch'], width= p['Feol']['m0Width'], offset= p['Feol']['m0Pitch']//2),
-                                     spg=EnclosureGrid( pitch=activePitch, offset=activeOffset, stoppoint=activeWidth//2, check=True)))
+        RVTWidth = activeWidth + 2*p['Feol']['active_enclosure']
 
         self.pl = self.addGen( Wire( 'pl', 'poly', 'v',
                                      clg=UncoloredCenterLineGrid( pitch= p['Poly']['Pitch'], width= p['Poly']['Width'], offset= p['Poly']['Offset']),
@@ -48,7 +42,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
         stoppoint = (gateDummy-1)* p['Poly']['Pitch'] +  p['Poly']['Offset']
         self.active = self.addGen( Wire( 'active', 'active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth1, offset=activeOffset),
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
         
         
@@ -56,7 +50,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
                                       clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
                                       spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
         
-        stoppoint = activeOffset-activeWidth1//2
+        stoppoint = activeOffset-activeWidth//2
         self.LISD = self.addGen( Wire( 'LISD', 'LISD', 'v',
                                          clg=UncoloredCenterLineGrid( pitch=p['M1']['Pitch'], width=p['Feol']['LISDWidth'], offset=p['M1']['Offset']),
                                          spg=EnclosureGrid( pitch=self.unitCellHeight, offset=0, stoppoint=stoppoint, check=True)))
@@ -85,7 +79,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 p['V0']['WidthY'], False)
-        for i in range(max(activeWidth1//(2*p['M2']['Pitch']), 1) + ((fin-fin_u)//2 + finDummy+1)//2):
+        for i in range(max(activeWidth//(2*p['M2']['Pitch']), 1) + ((fin-fin_u)//2 + finDummy+1)//2):
             self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
