@@ -1,24 +1,27 @@
-### Placer Crash
+### Cap Placer Generates Off Grid Terminals
 
-To reproduce the second cascode_current_mirror_ota bug:
-
-```bash
-../PlaceRouteHierFlow/pnr_compiler placer_crash2/ cascode_current_mirror_ota.{lef,v,map} FinFET_Mock_PDK_Abstraction.json cascode_current_mirror_ota 1 0 > LOG2
-```
-
-To reproduce the telescope_ota bug (pin misalignment):
+Here is an example:
 
 ```bash
-../PlaceRouteHierFlow/pnr_compiler telescopic_ota/ telescopic_ota.{lef,v,map} FinFET_Mock_PDK_Abstraction.json telescopic_ota 1 0 > telescopic_ota.log
+../PlaceRouteHierFlow/pnr_compiler switched_capacitor_filter switched_capacitor_filter.{lef,v,map} FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 1 0 > LOG
 ```
 
-To reproduce current_mirror_ota bug (PnR crash):
-
+To visualize the DB in the viewer (install the package in PlaceRouteHierFlow/PnRPython first):
 ```bash
-../PlaceRouteHierFlow/pnr_compiler current_mirror_ota/ current_mirror_ota.{lef,v,map} FinFET_Mock_PDK_Abstraction.json current_mirror_ota 1 0 > current_mirror_ota.log
+./gen_viewer_json.py -b switched_capacitor_filter
 ```
-To reproduce a crash in the bug/drc_bug branch (PnR crash):
-
+The file `switched_capacitor_filter_dr_globalrouting.json` is generated.
+To view, you can do the following:
 ```bash
-../PlaceRouteHierFlow/pnr_compiler switched_capacitor_filter/ switched_capacitor_filter.{lef,v,map} FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 1 0 > switched_capacitor_filter.log
+cp switched_capacitor_filter_dr_globalrouting.json ../CellFabric/Viewer/INPUT
+(cd ../CellFabric/Viewer && python -m http.server&)
 ```
+Then visit `localhost:8000?design=switched_capacitor_filter` in your browser.
+
+Add the option `-c` if you instead want to check for opens, shorts, etc.
+```bash
+./gen_viewer_json.py -b switched_capacitor_filter -c
+```
+
+
+

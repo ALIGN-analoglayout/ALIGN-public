@@ -614,28 +614,26 @@ workflows:
   make:
     jobs:
       - start
-      # - build-make-compose:
-      #     requires:
-      #       - start 
-      - build-make:
+      - build-make-compose:
           requires:
             - start 
-  # scheduled:
+      # - build-make:
+      #     requires:
+      #       - start 
+
+  # scheduled-jobs:
   #   triggers:
   #     - schedule:
   #         cron: "35 13 * * *"
   #         filters:
   #           branches:
-  #             only: feature/native_make
-
+  #             only: master
+  #
     # jobs:
     #   - start
-    #   - build-make-monolithic:
+    #   - build-make-monolithic
     #       requires:
     #         - start
-      # - build-make:
-      #     requires:
-      #       - start 
 
   full:
     jobs:

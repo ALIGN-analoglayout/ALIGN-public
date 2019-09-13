@@ -114,15 +114,17 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         _connect_diffusion(gate_x + 1, None)
 
     def _gen_routing(self, y, y_cells, Routing):
-            for (pin, contact, track, m3route) in Routing:
+        for (pin, contact, track, m3route) in Routing:
+            if y_cells > 1:
+                self.addWire( self.m2, pin, None, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
+                self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*self.m2PerUnitCell+track, 1))
+                self.addVia( self.v2, None, None, m3route, track)
+                self.addVia( self.v2, None, None, m3route, y*self.m2PerUnitCell+track)
+            else:
                 self.addWire( self.m2, pin, pin, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
-                if y_cells > 1:
-                   self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*self.m2PerUnitCell+track, 1))
-                   self.addVia( self.v2, None, None, m3route, track)
-                   self.addVia( self.v2, None, None, m3route, y*self.m2PerUnitCell+track)
 
-                for i in contact:
-                    self.addVia( self.v1, None, None, i, y*self.m2PerUnitCell+track)
+            for i in contact:
+                self.addVia( self.v1, None, None, i, y*self.m2PerUnitCell+track)
 
     def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 

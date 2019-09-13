@@ -1,6 +1,7 @@
 This directory contains a Docker Compose specification that runs the
 end-to-end ALIGN flow using a container-based flow, where individual
-engines have isolated software environments. 
+engines have isolated software environments. In addition to Docker,
+you will need to install docker-compose.
 
 Software components that are in container images can be thought of as
 'installed' and we are using Make to run the flow through the
@@ -27,15 +28,15 @@ the full path to a working directory or a docker volume name.
 To setup for using a Docker volume in a container-based flow:
 
 		% docker volume create <volumeName>
-		% export ALIGN_WORKING_DIR=<volumeName>
+		% export ALIGN_WORK_DIR=<volumeName>
 
-To setup ofr using a working directory in a container-based flow using
-a working directory. (In WSL, this directory must be the full path to
-a Windows shared directory):
+To setup for using a working directory in a container-based flow (In WSL,
+this directory must be the full path to a Windows shared directory):
 
-		% export ALIGN_WORKING_DIR=<working directory path for output>
 
-Now to invoke the flow:
+		% export ALIGN_WORK_DIR=<working directory path for output>
+
+Now invoke the flow:
 
 		% cd $ALIGN_HOME/compose
 		% make docker DESIGN=<design>
@@ -58,11 +59,18 @@ You can work inside the container to modify or debug its behavior:
 > it will bring up the rest of the services from within the
 > make-docker-service.  After that, make will run the flow for the
 > given design.
->
-> If the services don't all come up, you can bring down the services
-> to retry:
+
+If the services don't all come up, you can bring down the services (removing the containers)
+to retry:
 
 		% make docker-down
+
+If you change source and start with a fresh set of images from which
+containers are built, you can either bring them down then up
+individually using the docker-compose commands (see end of this page)
+or flush all images and restart:
+
+		% make docker-fulldown
 		
 ## Native Environment Flow
 
@@ -121,5 +129,5 @@ bring up the services.
 
 Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
-modifying files in the relevant containers.  You can git push from
+modifying files inside the relevant containers.  You can git push from
 those containers as well.

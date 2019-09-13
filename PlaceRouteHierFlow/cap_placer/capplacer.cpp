@@ -150,7 +150,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
            V_metal_index = drc_info.Metalmap[pin_metal]-1;
          }else{
            V_metal = drc_info.Metal_info[drc_info.Metalmap[pin_metal]+1].name;
-           V_metal_index = drc_info.Metalmap[pin_metal]-1;
+           V_metal_index = drc_info.Metalmap[pin_metal]+1;
          }
        
      }else{
@@ -455,12 +455,11 @@ fillContact (PnRDB::contact& con, int* x, int*y) {
 	PnRDB::point temp_point;
 	temp_point.x = x[i];
 	temp_point.y = y[i];
-	con.originBox.polygon.push_back (temp_point);
 	switch (i) {
 	case 0: con.originBox.LL = temp_point; break;
-	case 1: con.originBox.UL = temp_point; break;
+	case 1: break;
 	case 2: con.originBox.UR = temp_point; break;
-	case 3: con.originBox.LR = temp_point; break;
+	case 3: break;
 	}
     }
     con.originCenter.x = (x[0]+x[2])/2;
@@ -597,17 +596,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
 
             h_contact.originBox.UR.x = h_contact.originBox.UR.x + temp_contact.placedCenter.x;
             h_contact.originBox.UR.y = h_contact.originBox.UR.y + temp_contact.placedCenter.y;
-            //cout<<"Extract Data Step 3.32"<<endl;
-	    h_contact.originBox.UL.x = h_contact.originBox.LL.x;
-            h_contact.originBox.UL.y = h_contact.originBox.UR.y;
-
-	    h_contact.originBox.LR.x = h_contact.originBox.UR.x;
-            h_contact.originBox.LR.y = h_contact.originBox.LL.y;
-            //cout<<"Extract Data Step 3.33"<<endl;
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
             v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
@@ -619,16 +607,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             v_contact.originBox.UR.x = v_contact.originBox.UR.x + temp_contact.placedCenter.x;
             v_contact.originBox.UR.y = v_contact.originBox.UR.y + temp_contact.placedCenter.y;
 
-	    v_contact.originBox.UL.x = v_contact.originBox.LL.x;
-            v_contact.originBox.UL.y = v_contact.originBox.UR.y;
-
-	    v_contact.originBox.LR.x = v_contact.originBox.UR.x;
-            v_contact.originBox.LR.y = v_contact.originBox.LL.y;
-
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
             cout<<"Extract Data Step 3.5"<<endl;
             lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
             upper_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].UpperIdx].name;
@@ -698,16 +676,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             h_contact.originBox.UR.x = h_contact.originBox.UR.x + temp_contact.placedCenter.x;
             h_contact.originBox.UR.y = h_contact.originBox.UR.y + temp_contact.placedCenter.y;
 
-	    h_contact.originBox.UL.x = h_contact.originBox.LL.x;
-            h_contact.originBox.UL.y = h_contact.originBox.UR.y;
-
-	    h_contact.originBox.LR.x = h_contact.originBox.UR.x;
-            h_contact.originBox.LR.y = h_contact.originBox.LL.y;
-
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UL);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.UR);
-	    h_contact.originBox.polygon.push_back(h_contact.originBox.LR);
             cout<<"Extract Data Step 4.25"<<endl;
 	    PnRDB::contact v_contact;
             v_contact.originBox.LL = drc_info.Via_model[via_model_index].LowerRect[0];
@@ -719,16 +687,6 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
             v_contact.originBox.UR.x = v_contact.originBox.UR.x + temp_contact.placedCenter.x;
             v_contact.originBox.UR.y = v_contact.originBox.UR.y + temp_contact.placedCenter.y;
 
-	    v_contact.originBox.UL.x = v_contact.originBox.LL.x;
-            v_contact.originBox.UL.y = v_contact.originBox.UR.y;
-
-	    v_contact.originBox.LR.x = v_contact.originBox.UR.x;
-            v_contact.originBox.LR.y = v_contact.originBox.LL.y;
-
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UL);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.UR);
-	    v_contact.originBox.polygon.push_back(v_contact.originBox.LR);
             cout<<"Extract Data Step 4.3"<<endl;
             lower_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].LowerIdx].name;
             upper_contact.metal = drc_info.Metal_info[drc_info.Via_model[via_model_index].UpperIdx].name;
@@ -801,20 +759,10 @@ Placer_Router_Cap::ExtractData (string fpath, string unit_capacitor, string fina
     PnRDB::point temp_point;
     temp_point.x = Min_x;
     temp_point.y = Min_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
     CheckOutBlock.originBox.LL = temp_point;
-    temp_point.x = Min_x;
-    temp_point.y = Max_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.UL = temp_point;
     temp_point.x = Max_x;
     temp_point.y = Max_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
     CheckOutBlock.originBox.UR = temp_point;
-    temp_point.x = Max_x;
-    temp_point.y = Min_y;
-    CheckOutBlock.originBox.polygon.push_back(temp_point);
-    CheckOutBlock.originBox.LR = temp_point;
     CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
     CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
     CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
@@ -1721,7 +1669,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                     
                       //
                       Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x- unit_cap_demension.first/2-shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      //coord.first = Caps[Nets_pos[i].cap_index[k]].x- unit_cap_demension.first/2-shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      coord.first = Caps[Nets_pos[i].cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
                       Caps[Nets_pos[i].cap_index[k]].access = 1;
             
                       Nets_pos[i].end_conection_coord.push_back(coord);
@@ -1759,7 +1708,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                       
                       //
                       Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      //coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       Nets_pos[i].end_conection_coord.push_back(coord);
                       Nets_pos[i].Is_pin.push_back(0);
                       //
@@ -1824,7 +1774,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
 
                       //
                       Nets_pos[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      //coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2-shifting_x+(min_dis_x*trails[l]);
+                      coord.first = Caps[Nets_pos[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       Nets_pos[i].end_conection_coord.push_back(coord);
                       Nets_pos[i].Is_pin.push_back(0);
                       //
@@ -2112,7 +2063,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
 
                       //
                       Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2 + shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      //coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2 + shifting_x-(span_distance.first-min_dis_x*trails[l]);
+                      coord.first = Caps[Nets_neg[i].cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
                       Caps[Nets_neg[i].cap_index[k]].access = 1;
                       //
                       Nets_neg[i].end_conection_coord.push_back(coord);
@@ -2152,7 +2104,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                       
                       //
                       Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      //coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       Nets_neg[i].end_conection_coord.push_back(coord);
                       Nets_neg[i].Is_pin.push_back(0);
                       Nets_neg[i].metal.push_back(H_metal);
@@ -2221,7 +2174,8 @@ void Placer_Router_Cap::GetPhsicalInfo_router(string H_metal, int H_metal_index,
                       
                       //
                       Nets_neg[i].start_conection_coord.push_back(coord);
-                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      //coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
+                      coord.first = Caps[Nets_neg[i].cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
                       Nets_neg[i].end_conection_coord.push_back(coord);
                       Nets_neg[i].Is_pin.push_back(0);
                       Nets_neg[i].metal.push_back(H_metal);
