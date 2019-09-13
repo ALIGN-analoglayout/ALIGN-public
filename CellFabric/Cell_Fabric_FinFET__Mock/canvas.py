@@ -82,35 +82,36 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
-    def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy):
 
+        # Draw FEOL Layers
         self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.RVT,    None,    None, y, (x, 1), (x+1, -1))
         self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
-
         for i in range(1,  self.finsPerUnitCell):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
-
-        #####   Gate Placement   #####
         for i in range(self.gatesPerUnitCell):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
 
-        #####   This part generats locations of S/D/G   #####
-        (SA, GA, DA, SB, GB, DB) = SDG
-        (S, D, G) = (SA+SB, DA+DB, GA+GB)
+        # Source, Drain, Gate Connections
+        grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
+        grid_y1 = grid_y0+(fin+2)//2
+        gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
+        # Connect Gate
+        self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
+        self.addVia( self.va, None, None, gate_x, (y*self.m2PerUnitCell//2, 1))
+        # Connect Source (gate_x - 1)
+        self.addWire( self.m1, None, None, gate_x - 1, (grid_y0, -1), (grid_y1, 1))
+        self.addWire( self.LISD, None, None, gate_x - 1, (y, 1), (y+1, -1))
+        for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
+            self.addVia( self.v0, None, None, gate_x - 1, (y, j))
+        # Connect Drain (gate_x - 1)
+        self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1))
+        self.addWire( self.m1, None, None, gate_x + 1, (grid_y0, -1), (grid_y1, 1))
+        for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
+            self.addVia( self.v0, None, None, gate_x + 1, (y, j))
 
-        if x_cells-1==x:
-            grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
-            grid_y1 = grid_y0+(fin+2)//2
-            for i in G:
-                self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
-                self.addVia( self.va, None, None, i, (y*self.m2PerUnitCell//2, 1))
-            for i in S+D:
-                self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
-                self.addWire( self.LISD, None, None, i, (y, 1), (y+1, -1))
-                for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-                    self.addVia( self.v0, None, None, i, (y, j))
-
+    def _gen_routing(self, y, y_cells, Routing):
             for (pin, contact, track, m3route) in Routing:
                 self.addWire( self.m2, pin, pin, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
                 if y_cells > 1:
@@ -123,7 +124,10 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
     def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
+
+        if x == x_cells -1:
+            self._gen_routing(y, y_cells, Routing)
 
         #####   Nselect Placement   #####
         if x == x_cells -1 and y == y_cells -1:
@@ -131,9 +135,12 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
     def genPMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
+
+        if x == x_cells -1:
+            self._gen_routing(y, y_cells, Routing)
 
         #####   Pselect and Nwell Placement   #####
         if x == x_cells -1 and y == y_cells -1:
             self.addRegion( self.pselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
-            self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)    
+            self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
