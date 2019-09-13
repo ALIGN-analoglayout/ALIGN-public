@@ -84,7 +84,14 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
     def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy):
 
+        def _connect_diffusion(x, port):
+            self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
+            for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
+                self.addVia( self.v0, port, None, x, (y, j))
+
         # Draw FEOL Layers
+
         self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.RVT,    None,    None, y, (x, 1), (x+1, -1))
         self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
@@ -94,12 +101,6 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
 
         # Source, Drain, Gate Connections
-
-        def _connect_diffusion(x, port):
-            self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
-            for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-                self.addVia( self.v0, port, None, x, (y, j))
 
         grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
         grid_y1 = grid_y0+(fin+2)//2
