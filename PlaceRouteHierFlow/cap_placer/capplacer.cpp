@@ -1700,10 +1700,7 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
           if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
-	      MinBox( Caps.size());
-              int min=Caps.size();
-              int min_cap_index=-1;
-              int left_right = 0;
+	      MinBox mb( Caps.size());
 
               int found = 0;
               for(unsigned int k=0;k<n.cap_index.size();k++){
@@ -1723,11 +1720,6 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
 
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
-                      if(Caps[n.cap_index[k]].index_y<=min){
-                         min=Caps[n.cap_index[k]].index_y;
-                         min_cap_index = n.cap_index[k];
-                         left_right = 0;
-                        }
 		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 0);
 
                     }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
@@ -1755,11 +1747,6 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
                       
                       Caps[n.cap_index[k]].access = 1;
 
-                      if(Caps[n.cap_index[k]].index_y<min){
-                         min=Caps[n.cap_index[k]].index_y;
-                         min_cap_index = n.cap_index[k];
-                         left_right = 1;
-                        }
 		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
                     }
                  }
@@ -1789,12 +1776,7 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       Caps[n.cap_index[k]].access = 1;
-                      if(Caps[n.cap_index[k]].index_y<min){
-                         min=Caps[n.cap_index[k]].index_y;
-                         min_cap_index = n.cap_index[k];
-                         left_right = 1;
-                        }
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 0);
+		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
                     }
                  }
                  }
