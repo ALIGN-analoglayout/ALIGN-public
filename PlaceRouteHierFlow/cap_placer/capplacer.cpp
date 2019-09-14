@@ -1503,10 +1503,28 @@ public:
 
 
 class MinMaxBox {
-    
-
-
+    int best=0; // initialization not required except to satisfy -Wall 
+    int best_cap_index=-1;
+    int left_right = 0;
+    int sign;
 public:
+    MinMaxBox( int s) : sign(s) {}
+
+    void update( int value, int idx, int lr) {
+	if( best_cap_index == -1 || (lr == 0 && sign*value>=sign*best) || (lr == 1 && sign*value>sign*best)){
+	    best=value;
+	    best_cap_index = idx;
+	    left_right = lr;
+	}
+    }    
+
+    int get_best_cap_index() const {
+	return best_cap_index;
+    }
+
+    int get_left_right() const {
+	return left_right;
+    }
 
 };
 
@@ -1546,7 +1564,8 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
           if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
-	      MaxBox mb;
+	      //	      MaxBox mb;
+	      MinMaxBox mb(sign);
               int found = 0;
               for(unsigned int k=0;k<n.cap_index.size();k++){
 
