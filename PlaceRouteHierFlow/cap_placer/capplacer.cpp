@@ -1452,72 +1452,33 @@ void Placer_Router_Cap::check_grid( const net& n) const
     }
 }
 
-void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_metal_index, const string& V_metal, int V_metal_index, const PnRDB::Drc_info &drc_info){
-
-  const auto& mH = drc_info.Metal_info.at(H_metal_index);
-  int grid_offset;
-  {
-      int height_cap = INT_MIN;
-      for(unsigned int i=0;i<Caps.size();i++){
-	  height_cap = max( height_cap, (int) Caps[i].y + unit_cap_demension.second/2);
-      }
-
-      int near_grid = ceil(height_cap/mH.grid_unit_y)*mH.grid_unit_y;
-
-  // Alternative way to compile next larger grid
-      assert( near_grid == ((height_cap+mH.grid_unit_y-1)/mH.grid_unit_y)*mH.grid_unit_y);
-
-      assert( near_grid % 2 == 0);
-      assert( height_cap % 2 == 0);
-
-      grid_offset = (near_grid - height_cap)/2;
-  }
 
 
-  string HV_via_metal;
-  int HV_via_metal_index;
 
-  if(H_metal_index>V_metal_index){
-      HV_via_metal = V_metal;
-      HV_via_metal_index = V_metal_index;
-    }else{
-      HV_via_metal = H_metal;
-      HV_via_metal_index = H_metal_index;
-    }
-
-
+void Placer_Router_Cap::GetPhysicalInfo_pos_net(
+				    vector<net>& n_array,
+				    vector<int>& trails,
+				    const PnRDB::Drc_info& drc_info,
+				    const string& H_metal,
+				    const string& V_metal,
+				    const string& HV_via_metal,
+				    int HV_via_metal_index,
+				    int grid_offset,
+				    int sign)
+{
   pair<double,double> coord;
-  pair<double,double> via_coord;
-
-   //connection for trails
-   int num_trail = Nets_pos[0].line_v.size();
-   int routed_trail=0;
-   vector<int> trails;
-
-
-   for(int i=0;i<num_trail;i++){trails.push_back(0);}
-   
-   // SMB
-   // Unsuccessful attempt to merge the two code streams for Nets_pos and Nets_neg
-   //    TODO: merge max logic for Nets_pos and min logic for Nets_neg
-   //    TODO: several adjustments are done with different signs
-   //    TODO: One offset is 0 and the other some positive number
-   // (Probably 1 hour of work to get right.)
-   //
-   vector<vector<net>*> twoItems;
-   twoItems.push_back( &Nets_pos);
-   //   twoItems.push_back( &Nets_neg);
-   
-   for(auto ait=twoItems.begin(); ait != twoItems.end(); ++ait) {
-       auto& n_array = **ait;
 
   for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
   }
-  routed_trail=0;
-//for positive net
+
+  int routed_trail=0;
+
+
    for(unsigned int i=0;i<n_array.size();i++){
        auto& n = n_array[i];
+
+//for positive net
 
       if(n.cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
@@ -1537,8 +1498,8 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
 
                   if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x + 1*(unit_cap_demension.first/2-shifting_x);
+                      coord.second = Caps[n.cap_index[k]].y - 1*(unit_cap_demension.second/2-shifting_y);
                       // via coverage???
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                     
@@ -1559,8 +1520,8 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                         }
                     }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
+                      coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
                       
                       //
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
@@ -1593,8 +1554,8 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                  if(found == 0){
                  for(unsigned int k=0;k<n.cap_index.size();k++){
                     if(l-Caps[n.cap_index[k]].index_x==1){
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2-shifting_x;
-                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y;
+			coord.first = Caps[n.cap_index[k]].x+ 1*(unit_cap_demension.first/2-shifting_x);
+			coord.second = Caps[n.cap_index[k]].y- 1*(unit_cap_demension.second/2-shifting_y);
                       
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
@@ -1666,6 +1627,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
        check_grid(n);
 
    }
+
    for(unsigned int i=0;i<n_array.size();i++){
        auto& n = n_array[i];
 
@@ -1679,11 +1641,11 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
 		   int found=0;
 		   for(unsigned int k=0;k<end_flag;k++){
 		       if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and
-			   abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1)and !(Caps[n.Set[j].cap_index[k]].access)){
+			   abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1) and
+			  !(Caps[n.Set[j].cap_index[k]].access)){
 			   Caps[n.Set[j].cap_index[k]].access=1;
 			   coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
 			   coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
-                              
 
 			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
@@ -1728,19 +1690,32 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
 	   }
       }
       check_grid(n);
-    }
-
-     
    }
+}
+
+
+void Placer_Router_Cap::GetPhysicalInfo_neg_net(
+				    vector<net>& n_array,
+				    vector<int>& trails,
+				    const PnRDB::Drc_info& drc_info,
+				    const string& H_metal,
+				    const string& V_metal,
+				    const string& HV_via_metal,
+				    int HV_via_metal_index,
+				    int grid_offset,
+				    int sign)
+{
+
+  pair<double,double> coord;
 
 //for negative net
   for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
   }
    //connection for trails
-   routed_trail=0;
-   for(unsigned int i=0;i<Nets_neg.size();i++){
-       auto& n = Nets_neg[i];
+   int routed_trail=0;
+   for(unsigned int i=0;i<n_array.size();i++){
+       auto& n = n_array[i];
 
       if(n.cap_index.size()==0){continue;}
       routed_trail=routed_trail+1;
@@ -1759,8 +1734,8 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
               for(unsigned int k=0;k<n.cap_index.size();k++){
                   if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
                       found = 1;
-                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2+shifting_x;
-                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2-shifting_y;
+                      coord.first = Caps[n.cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
+                      coord.second = Caps[n.cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
                       
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
@@ -1769,7 +1744,6 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                       Caps[n.cap_index[k]].access = 1;
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
-
                       n.metal.push_back(H_metal);
 
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
@@ -1882,8 +1856,25 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
        
        }    
    }
-  for(unsigned int i=0;i<Nets_neg.size();i++){
-      auto& n = Nets_neg[i];
+
+}
+
+
+void Placer_Router_Cap::GetPhysicalInfo_common_net(
+				    vector<net>& n_array,
+				    vector<int>& trails,
+				    const PnRDB::Drc_info& drc_info,
+				    const string& H_metal,
+				    const string& V_metal,
+				    const string& HV_via_metal,
+				    int HV_via_metal_index,
+				    int grid_offset,
+				    int sign)
+{
+  pair<double,double> coord;
+
+  for(unsigned int i=0;i<n_array.size();i++){
+      auto& n = n_array[i];
       //connection for each connection set
       for(unsigned int j=0;j<n.Set.size();j++){
               unsigned int end_flag = n.Set[j].cap_index.size();
@@ -1940,6 +1931,72 @@ void Placer_Router_Cap::GetPhysicalInfo_router(const string& H_metal, int H_meta
                    }
               }
          }
+
+}   
+
+
+
+void Placer_Router_Cap::GetPhysicalInfo_router(
+   const string& H_metal, int H_metal_index,
+   const string& V_metal, int V_metal_index,
+   const PnRDB::Drc_info &drc_info){
+
+  const auto& mH = drc_info.Metal_info.at(H_metal_index);
+  int grid_offset;
+  {
+      int height_cap = INT_MIN;
+      for(unsigned int i=0;i<Caps.size();i++){
+	  height_cap = max( height_cap, (int) Caps[i].y + unit_cap_demension.second/2);
+      }
+
+      int near_grid = ceil(height_cap/mH.grid_unit_y)*mH.grid_unit_y;
+
+  // Alternative way to compile next larger grid
+      assert( near_grid == ((height_cap+mH.grid_unit_y-1)/mH.grid_unit_y)*mH.grid_unit_y);
+
+      assert( near_grid % 2 == 0);
+      assert( height_cap % 2 == 0);
+
+      grid_offset = (near_grid - height_cap)/2;
+  }
+
+
+  string HV_via_metal;
+  int HV_via_metal_index;
+
+  if(H_metal_index>V_metal_index){
+      HV_via_metal = V_metal;
+      HV_via_metal_index = V_metal_index;
+    }else{
+      HV_via_metal = H_metal;
+      HV_via_metal_index = H_metal_index;
+    }
+
+   
+   // SMB
+   // Unsuccessful attempt to merge the two code streams for Nets_pos and Nets_neg
+   //    TODO: merge max logic for Nets_pos and min logic for Nets_neg
+   //    TODO: several adjustments are done with different signs
+   //    TODO: One offset is 0 and the other some positive number
+   // (Probably 1 hour of work to get right.)
+   // 
+   
+   //connection for trails
+   vector<int> trails;
+   for(unsigned int i=0;i<Nets_pos[0].line_v.size();i++){trails.push_back(0);}
+
+   assert( Nets_pos[0].line_v.size() == Nets_neg[0].line_v.size());
+
+   GetPhysicalInfo_pos_net( Nets_pos, trails, drc_info,
+			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset,  1);
+
+   GetPhysicalInfo_neg_net( Nets_neg, trails, drc_info,
+			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset, -1);
+
+   GetPhysicalInfo_common_net( Nets_neg, trails, drc_info,
+			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset, -1);
+
+
 
 }
 
