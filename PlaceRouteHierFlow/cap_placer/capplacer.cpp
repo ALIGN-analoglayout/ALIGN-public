@@ -1454,20 +1454,20 @@ void Placer_Router_Cap::check_grid( const net& n) const
 
 
 class MaxBox {
-    int max=-1;
-    int max_cap_index=-1;
+    int best=0; // initialization not required except to satisfy -Wall
+    int best_cap_index=-1;
     int left_right = 0;
 public:
     void update( int value, int idx, int lr) {
-	if((lr == 0 && value>=max) || (lr == 1 && value>max)){
-	    max=value;
-	    max_cap_index = idx;
+	if(best_cap_index == -1 || (lr == 0 && value>=best) || (lr == 1 && value>best)){
+	    best=value;
+	    best_cap_index = idx;
 	    left_right = lr;
 	}
     }    
 
-    int get_max_cap_index() const {
-	return max_cap_index;
+    int get_best_cap_index() const {
+	return best_cap_index;
     }
 
     int get_left_right() const {
@@ -1475,6 +1475,41 @@ public:
     }
 
 };
+
+class MinBox {
+    int best=0; // initialization not required except to satisfy -Wall 
+    int best_cap_index=-1;
+    int left_right = 0;
+public:
+    MinBox() {}
+
+    void update( int value, int idx, int lr) {
+	if( best_cap_index == -1 || (lr == 0 && value<=best) || (lr == 1 && value<best)){
+	    best=value;
+	    best_cap_index = idx;
+	    left_right = lr;
+	}
+    }    
+
+    int get_best_cap_index() const {
+	return best_cap_index;
+    }
+
+    int get_left_right() const {
+	return left_right;
+    }
+
+};
+
+
+class MinMaxBox {
+    
+
+
+public:
+
+};
+
 
 void Placer_Router_Cap::GetPhysicalInfo_pos_net(
 				    vector<net>& n_array,
@@ -1606,7 +1641,7 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
                  n.metal.push_back(V_metal);
 
                  n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[mb.get_max_cap_index()].y- unit_cap_demension.second/2-mb.get_left_right()*min_dis_y+shifting_y;
+                 coord.second = Caps[mb.get_best_cap_index()].y- unit_cap_demension.second/2-mb.get_left_right()*min_dis_y+shifting_y;
                  n.end_conection_coord.push_back(coord);
                  n.Is_pin.push_back(0);
                  //
@@ -1639,30 +1674,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
 }
 
 
-class MinBox {
-    int min;
-    int min_cap_index=-1;
-    int left_right = 0;
-public:
-    MinBox( int max_value) : min(max_value) {}
-
-    void update( int value, int idx, int lr) {
-	if((lr == 0 && value<=min) || (lr == 1 && value<min)){
-	    min=value;
-	    min_cap_index = idx;
-	    left_right = lr;
-	}
-    }    
-
-    int get_min_cap_index() const {
-	return min_cap_index;
-    }
-
-    int get_left_right() const {
-	return left_right;
-    }
-
-};
 
 
 
@@ -1700,7 +1711,7 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
           if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
-	      MinBox mb( Caps.size());
+	      MinBox mb;
 
               int found = 0;
               for(unsigned int k=0;k<n.cap_index.size();k++){
@@ -1791,7 +1802,7 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
                  n.Is_pin.push_back(0);
                  n.metal.push_back(V_metal);
                  n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[mb.get_min_cap_index()].y+ unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y;
+                 coord.second = Caps[mb.get_best_cap_index()].y+ unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y;
                  n.end_conection_coord.push_back(coord);
                  n.Is_pin.push_back(0);
                  n.metal.push_back(V_metal);
