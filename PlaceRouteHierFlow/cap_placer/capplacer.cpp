@@ -1628,69 +1628,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
 
    }
 
-   for(unsigned int i=0;i<n_array.size();i++){
-       auto& n = n_array[i];
-
-      //connection for each connection set
-       for(unsigned int j=0;j<n.Set.size();j++){
-
-	   unsigned int end_flag = n.Set[j].cap_index.size();
-	   unsigned int index = 0;
-	   while(index<end_flag){
-	       if(Caps[n.Set[j].cap_index[index]].access==1){
-		   int found=0;
-		   for(unsigned int k=0;k<end_flag;k++){
-		       if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and
-			   abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1) and
-			  !(Caps[n.Set[j].cap_index[k]].access)){
-			   Caps[n.Set[j].cap_index[k]].access=1;
-			   coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-			   coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
-
-			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-			   n.start_conection_coord.push_back(coord);
-			   coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-			   coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-			   n.end_conection_coord.push_back(coord);
-			   n.Is_pin.push_back(0);
-			   n.metal.push_back(H_metal);
-
-			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                              
-			   index = 0;
-			   found = 1;
-		       }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and
-				 abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1) and
-				!(Caps[n.Set[j].cap_index[k]].access)){
-			   Caps[n.Set[j].cap_index[k]].access=1;
-			   coord.first = Caps[n.Set[j].cap_index[k]].x + unit_cap_demension.first/2-shifting_x;
-			   coord.second = Caps[n.Set[j].cap_index[k]].y - unit_cap_demension.second/2+shifting_y;  
-			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-			   n.start_conection_coord.push_back(coord);
-			   coord.first = Caps[n.Set[j].cap_index[index]].x + unit_cap_demension.first/2-shifting_x;
-			   coord.second = Caps[n.Set[j].cap_index[index]].y - unit_cap_demension.second/2+shifting_y;
-			   n.end_conection_coord.push_back(coord);
-			   n.Is_pin.push_back(0);
-			   n.metal.push_back(V_metal);
-
-			   addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-			   index = 0;
-			   found = 1;
-		       }
-		   }
-		   if(found==0){
-		       ++index;
-		   }
-	       }else{
-		   ++index;
-	       }
-	   }
-      }
-      check_grid(n);
-   }
 }
 
 
@@ -1885,15 +1822,15 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
                         for(unsigned int k=0;k<end_flag;k++){
                             if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1 and !(Caps[n.Set[j].cap_index[k]].access))){
                               Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
+                              coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
+                              coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
                              
                               //
                               addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
                               n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
+                              coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
+                              coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
                               n.end_conection_coord.push_back(coord);
                               n.Is_pin.push_back(0);
                               n.metal.push_back(H_metal);
@@ -1905,13 +1842,13 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
                               found = 1;
                              }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1 and !(Caps[n.Set[j].cap_index[k]].access))){
                               Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[k]].y + unit_cap_demension.second/2-shifting_y;  
+                              coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
+                              coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
                               addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
                               n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x - unit_cap_demension.first/2+shifting_x;
-                              coord.second = Caps[n.Set[j].cap_index[index]].y + unit_cap_demension.second/2-shifting_y;
+                              coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
+                              coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
                               n.end_conection_coord.push_back(coord);
                               n.Is_pin.push_back(0);
                               n.metal.push_back(V_metal);
@@ -1988,6 +1925,9 @@ void Placer_Router_Cap::GetPhysicalInfo_router(
    assert( Nets_pos[0].line_v.size() == Nets_neg[0].line_v.size());
 
    GetPhysicalInfo_pos_net( Nets_pos, trails, drc_info,
+			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset,  1);
+
+   GetPhysicalInfo_common_net( Nets_pos, trails, drc_info,
 			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset,  1);
 
    GetPhysicalInfo_neg_net( Nets_neg, trails, drc_info,
