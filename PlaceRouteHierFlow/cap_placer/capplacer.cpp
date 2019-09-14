@@ -1512,9 +1512,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
 	      MaxBox mb;
-              int max=-1;
-              int max_cap_index=-1;
-              int left_right = 0;
               int found = 0;
               for(unsigned int k=0;k<n.cap_index.size();k++){
 
@@ -1535,12 +1532,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
                       n.metal.push_back(H_metal);
 
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);                     
-                      if(Caps[n.cap_index[k]].index_y>=max){
-                         max=Caps[n.cap_index[k]].index_y;
-                         max_cap_index = n.cap_index[k];
-                         left_right = 0;
-                        }
-		      // redo using more modular techniques
 		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 0);
 
                     }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
@@ -1569,12 +1560,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       Caps[n.cap_index[k]].access = 1;
-                      if(Caps[n.cap_index[k]].index_y>max){
-			  max=Caps[n.cap_index[k]].index_y;
-			  max_cap_index = n.cap_index[k];
-			  left_right = 1;
-		      }
-		      // redo using more modular techniques
 		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
 		  }
 	      }
@@ -1605,11 +1590,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
                       
                       Caps[n.cap_index[k]].access = 1;
 
-                      if(Caps[n.cap_index[k]].index_y>max){
-                         max=Caps[n.cap_index[k]].index_y;
-                         max_cap_index = n.cap_index[k];
-                         left_right = 1;
-                        }
 		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
                     }
                  }
@@ -1625,12 +1605,8 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
                  n.Is_pin.push_back(0);
                  n.metal.push_back(V_metal);
 
-		 assert( mb.get_max_cap_index() == max_cap_index);
-		 assert( mb.get_left_right() == left_right);
-
-
                  n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[max_cap_index].y- unit_cap_demension.second/2-left_right*min_dis_y+shifting_y;
+                 coord.second = Caps[mb.get_max_cap_index()].y- unit_cap_demension.second/2-mb.get_left_right()*min_dis_y+shifting_y;
                  n.end_conection_coord.push_back(coord);
                  n.Is_pin.push_back(0);
                  //
