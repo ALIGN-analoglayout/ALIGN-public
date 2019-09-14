@@ -82,7 +82,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
-    def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy):
+    def _gen_abstract_MOS( self, x, y, fin_u, fin, finDummy, reflect=False):
 
         def _connect_diffusion(x, port):
             self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
@@ -108,10 +108,13 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
         self.addVia( self.va, None, None, gate_x, (y*self.m2PerUnitCell//2, 1))
-        # Connect Source (gate_x - 1)
-        _connect_diffusion(gate_x - 1, None)
-        # Connect Drain (gate_x - 1)
-        _connect_diffusion(gate_x + 1, None)
+        # Connect Source & Drain
+        if reflect:
+            _connect_diffusion(gate_x - 1, None) #D
+            _connect_diffusion(gate_x + 1, None) #S
+        else:
+            _connect_diffusion(gate_x - 1, None) #S
+            _connect_diffusion(gate_x + 1, None) #D
 
     def _gen_routing(self, y, y_cells, Routing):
         for (pin, contact, track, m3route) in Routing:
@@ -128,7 +131,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
     def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
+        self._gen_abstract_MOS(x, y, fin_u, fin, finDummy)
 
         if x == x_cells -1:
             self._gen_routing(y, y_cells, Routing)
@@ -139,7 +142,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
     def genPMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
 
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
+        self._gen_abstract_MOS(x, y, fin_u, fin, finDummy)
 
         if x == x_cells -1:
             self._gen_routing(y, y_cells, Routing)
