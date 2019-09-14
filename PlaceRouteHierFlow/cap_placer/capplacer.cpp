@@ -1453,55 +1453,6 @@ void Placer_Router_Cap::check_grid( const net& n) const
 }
 
 
-class MaxBox {
-    int best=0; // initialization not required except to satisfy -Wall
-    int best_cap_index=-1;
-    int left_right = 0;
-public:
-    void update( int value, int idx, int lr) {
-	if(best_cap_index == -1 || (lr == 0 && value>=best) || (lr == 1 && value>best)){
-	    best=value;
-	    best_cap_index = idx;
-	    left_right = lr;
-	}
-    }    
-
-    int get_best_cap_index() const {
-	return best_cap_index;
-    }
-
-    int get_left_right() const {
-	return left_right;
-    }
-
-};
-
-class MinBox {
-    int best=0; // initialization not required except to satisfy -Wall 
-    int best_cap_index=-1;
-    int left_right = 0;
-public:
-    MinBox() {}
-
-    void update( int value, int idx, int lr) {
-	if( best_cap_index == -1 || (lr == 0 && value<=best) || (lr == 1 && value<best)){
-	    best=value;
-	    best_cap_index = idx;
-	    left_right = lr;
-	}
-    }    
-
-    int get_best_cap_index() const {
-	return best_cap_index;
-    }
-
-    int get_left_right() const {
-	return left_right;
-    }
-
-};
-
-
 class MinMaxBox {
     int best=0; // initialization not required except to satisfy -Wall 
     int best_cap_index=-1;
@@ -1692,11 +1643,6 @@ void Placer_Router_Cap::GetPhysicalInfo_pos_net(
 
 }
 
-
-
-
-
-
 void Placer_Router_Cap::GetPhysicalInfo_neg_net(
 				    vector<net>& n_array,
 				    vector<int>& trails,
@@ -1730,7 +1676,7 @@ void Placer_Router_Cap::GetPhysicalInfo_neg_net(
           if(n.line_v[l]==1){
               trails[l]=trails[l]+1;
               //connect to connection set and found the end point
-	      MinBox mb;
+	      MinMaxBox mb(sign);
 
               int found = 0;
               for(unsigned int k=0;k<n.cap_index.size();k++){
