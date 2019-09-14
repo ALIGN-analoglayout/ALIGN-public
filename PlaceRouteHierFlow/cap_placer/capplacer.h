@@ -271,24 +271,6 @@ class Placer_Router_Cap
 				  int grid_offset,
 				  int sign);
 
-    void GetPhysicalInfo_pos_net( vector<net>& n_array, vector<int>& trails,
-				    const PnRDB::Drc_info& drc_info,
-				    const string& H_metal,
-				    const string& V_metal,
-				    const string& HV_via_metal,
-				  int HV_via_metal_index,
-				  int grid_offset,
-				  int sign);
-
-    void GetPhysicalInfo_neg_net( vector<net>& n_array, vector<int>& trails,
-				    const PnRDB::Drc_info& drc_info,
-				    const string& H_metal,
-				    const string& V_metal,
-				    const string& HV_via_metal,
-				  int HV_via_metal_index,
-				  int grid_offset,
-				  int sign);
-
     void GetPhysicalInfo_common_net( vector<net>& n_array, vector<int>& trails,
 				    const PnRDB::Drc_info& drc_info,
 				    const string& H_metal,

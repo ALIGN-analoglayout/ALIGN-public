@@ -1546,7 +1546,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                     
                       n.start_conection_coord.push_back(coord);
-		      if ( sign == 1) {
+		      if ( sign == 1) { // SMB This really looks wrong
 			  coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
 		      } else {
 			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
@@ -1559,7 +1559,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
                       n.start_conection_coord.push_back(coord);
-		      if ( sign == 1) {
+		      if ( sign == 1) { // SMB This is also wrong
 			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
 		      } else {
 			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
@@ -1584,11 +1584,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
                       n.start_conection_coord.push_back(coord);
-		      if ( sign == 1) {
-			  coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
-		      } else {
-			  coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
-		      }
+		      coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y+min_dis_y);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
                       n.metal.push_back(V_metal);
@@ -1611,31 +1607,25 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                  }
                  }
 
-	      int num_cap = Caps.size();
-	      if (sign == 1) {
-                 coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
+	      int pos_neg_offset;
+	      if ( sign == 1) {
+		  pos_neg_offset = 0;
 	      } else {
-                 coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y + grid_offset;
+		  pos_neg_offset = Caps.back().y+unit_cap_demension.second/2;
 	      }
+
+	      coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
                  addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
                  
                  n.start_conection_coord.push_back(coord);
 
-		 if ( sign == 1) {
-		     coord.second = -2*min_dis_y+shifting_y;
-		 } else {
-		     coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2+2*min_dis_y-shifting_y;
-		 }
+		 coord.second = pos_neg_offset - sign*(2*min_dis_y-shifting_y);
                  n.end_conection_coord.push_back(coord);
                  n.Is_pin.push_back(0);
                  n.metal.push_back(V_metal);
 
                  n.start_conection_coord.push_back(coord);
-		 if ( sign == 1) {
-		     coord.second = Caps[mb.get_best_cap_index()].y- unit_cap_demension.second/2-mb.get_left_right()*min_dis_y+shifting_y;
-		 } else {
-		     coord.second = Caps[mb.get_best_cap_index()].y+ unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y;
-		 }
+		 coord.second = Caps[mb.get_best_cap_index()].y- sign*(unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y);
                  n.end_conection_coord.push_back(coord);
                  n.Is_pin.push_back(0);
                  //
@@ -1643,20 +1633,12 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                  //
                  if(first_lock==0){
                     first_coord.first = coord.first;
-		    if ( sign == 1) {
-			first_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-		    } else {
-			first_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
-		    }
+		    first_coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
                     first_lock=1;
                  }else{
                     end_close=1;
                     end_coord.first = coord.first;;
-		    if ( sign == 1) {
-			end_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-		    } else {
-			end_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
-		    }
+		    end_coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
                  }
             }
          }
@@ -1674,326 +1656,6 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
    }
 
 }
-
-
-
-
-void Placer_Router_Cap::GetPhysicalInfo_pos_net(
-				    vector<net>& n_array,
-				    vector<int>& trails,
-				    const PnRDB::Drc_info& drc_info,
-				    const string& H_metal,
-				    const string& V_metal,
-				    const string& HV_via_metal,
-				    int HV_via_metal_index,
-				    int grid_offset,
-				    int sign)
-{
-  pair<double,double> coord;
-
-  for(unsigned int i=0;i<Caps.size();i++){
-     Caps[i].access = 0;
-  }
-
-  int routed_trail=0;
-
-
-   for(unsigned int i=0;i<n_array.size();i++){
-       auto& n = n_array[i];
-
-//for positive net
-
-      if(n.cap_index.size()==0){continue;}
-      routed_trail=routed_trail+1;
-      pair<double,double> first_coord;
-      pair<double,double> end_coord;
-      int first_lock=0;
-      int end_close=0;
-      for(unsigned int l=0;l<n.line_v.size();l++){
-          if(n.line_v[l]==1){
-              trails[l]=trails[l]+1;
-              //connect to connection set and found the end point
-	      //	      MaxBox mb;
-	      MinMaxBox mb(sign);
-              int found = 0;
-              for(unsigned int k=0;k<n.cap_index.size();k++){
-
-                  if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
-                      found = 1;
-                      coord.first = Caps[n.cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                      coord.second = Caps[n.cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
-                      // via coverage???
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                    
-                      //
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
-                      Caps[n.cap_index[k]].access = 1;
-            
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);                     
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 0);
-
-                    }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
-                      found = 1;
-                      coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
-                      coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
-                      
-                      //
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                    
-                      n.start_conection_coord.push_back(coord);
-                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(V_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      Caps[n.cap_index[k]].access = 1;
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
-		  }
-	      }
-	      if(found == 0){
-                 for(unsigned int k=0;k<n.cap_index.size();k++){
-                    if(l-Caps[n.cap_index[k]].index_x==1){
-			coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
-			coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
-                      
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-                      n.start_conection_coord.push_back(coord);
-                      coord.second = Caps[n.cap_index[k]].y- unit_cap_demension.second/2+shifting_y-min_dis_y;
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(V_metal);
-                      
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      Caps[n.cap_index[k]].access = 1;
-
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
-                    }
-                 }
-                 }
-
-                 coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-                 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
-                 
-                 n.start_conection_coord.push_back(coord);
-
-                 coord.second = -2*min_dis_y+shifting_y;
-                 n.end_conection_coord.push_back(coord);
-                 n.Is_pin.push_back(0);
-                 n.metal.push_back(V_metal);
-
-                 n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[mb.get_best_cap_index()].y- unit_cap_demension.second/2-mb.get_left_right()*min_dis_y+shifting_y;
-                 n.end_conection_coord.push_back(coord);
-                 n.Is_pin.push_back(0);
-                 //
-                 n.metal.push_back(V_metal);
-                 //
-                 if(first_lock==0){
-                    first_coord.first = coord.first;
-                    first_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-                    first_lock=1;
-                 }else{
-                    end_close=1;
-                    end_coord.first = coord.first;;
-                    end_coord.second = 0 - min_dis_y*routed_trail-2*min_dis_y-grid_offset;
-                 }
-            }
-         }
-       //connect to each trail
-       if(first_lock==1 and end_close==1){
-	   n.start_conection_coord.push_back(first_coord);
-	   n.end_conection_coord.push_back(end_coord);
-	   n.Is_pin.push_back(1);
-
-	   n.metal.push_back(H_metal);
-       }    
-
-       check_grid(n);
-
-   }
-
-}
-
-void Placer_Router_Cap::GetPhysicalInfo_neg_net(
-				    vector<net>& n_array,
-				    vector<int>& trails,
-				    const PnRDB::Drc_info& drc_info,
-				    const string& H_metal,
-				    const string& V_metal,
-				    const string& HV_via_metal,
-				    int HV_via_metal_index,
-				    int grid_offset,
-				    int sign)
-{
-
-  pair<double,double> coord;
-
-//for negative net
-  for(unsigned int i=0;i<Caps.size();i++){
-     Caps[i].access = 0;
-  }
-   //connection for trails
-   int routed_trail=0;
-   for(unsigned int i=0;i<n_array.size();i++){
-       auto& n = n_array[i];
-
-      if(n.cap_index.size()==0){continue;}
-      routed_trail=routed_trail+1;
-      pair<double,double> first_coord;
-      pair<double,double> end_coord;
-      int first_lock=0;
-      int end_close=0;
-      for(unsigned int l=0;l<n.line_v.size();l++){
-          if(n.line_v[l]==1){
-              trails[l]=trails[l]+1;
-              //connect to connection set and found the end point
-	      MinMaxBox mb(sign);
-
-              int found = 0;
-              for(unsigned int k=0;k<n.cap_index.size();k++){
-                  if(Caps[n.cap_index[k]].index_x==l and Caps[n.cap_index[k]].access==0){
-                      found = 1;
-                      coord.first = Caps[n.cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                      coord.second = Caps[n.cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
-                      
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
-                      Caps[n.cap_index[k]].access = 1;
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 0);
-
-                    }else if(l-Caps[n.cap_index[k]].index_x==1 and Caps[n.cap_index[k]].access==0){
-                      found = 1;
-                      coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
-                      coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
-                      
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(V_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      Caps[n.cap_index[k]].access = 1;
-
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
-                    }
-                 }
-                 if(found == 0){
-                 for(unsigned int k=0;k<n.cap_index.size();k++){
-		     if(l-Caps[n.cap_index[k]].index_x==1){
-                      
-			 coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
-			 coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
-                      
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-
-                      n.start_conection_coord.push_back(coord);
-                      coord.second = Caps[n.cap_index[k]].y+ unit_cap_demension.second/2+min_dis_y-shifting_y;
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(V_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      n.start_conection_coord.push_back(coord);
-                      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-                      n.end_conection_coord.push_back(coord);
-                      n.Is_pin.push_back(0);
-                      n.metal.push_back(H_metal);
-
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      Caps[n.cap_index[k]].access = 1;
-		      mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], 1);
-                    }
-                 }
-                 }
-                 //connect from start to end for each trail 
-                 int num_cap = Caps.size();
-                 coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y + grid_offset;
-                 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
-
-                 n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2+2*min_dis_y-shifting_y;
-                 n.end_conection_coord.push_back(coord);
-                 n.Is_pin.push_back(0);
-                 n.metal.push_back(V_metal);
-                 n.start_conection_coord.push_back(coord);
-                 coord.second = Caps[mb.get_best_cap_index()].y+ unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y;
-                 n.end_conection_coord.push_back(coord);
-                 n.Is_pin.push_back(0);
-                 n.metal.push_back(V_metal);
-                 if(first_lock==0){
-                    first_coord.first = coord.first;
-                    first_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
-                    first_lock=1;
-                 }else{
-                    end_close=1;
-                    end_coord.first = coord.first;
-                    end_coord.second = Caps[num_cap-1].y+unit_cap_demension.second/2 + min_dis_y*routed_trail+2*min_dis_y+grid_offset;
-                 }
-            }
-         }
-       //connect to each trail
-       if(first_lock==1 and end_close==1){
-       n.start_conection_coord.push_back(first_coord);
-       n.end_conection_coord.push_back(end_coord);
-       n.Is_pin.push_back(1);
-       //
-       n.metal.push_back(H_metal);
-       //
-       
-       }    
-   }
-
-}
-
 
 void Placer_Router_Cap::GetPhysicalInfo_common_net(
 				    vector<net>& n_array,
