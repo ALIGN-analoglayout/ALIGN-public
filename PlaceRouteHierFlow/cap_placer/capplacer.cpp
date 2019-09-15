@@ -1796,8 +1796,6 @@ void Placer_Router_Cap::GetPhysicalInfo_router(
    GetPhysicalInfo_common_net( Nets_neg, trails, drc_info,
 			    H_metal, V_metal, HV_via_metal, HV_via_metal_index, grid_offset, -1);
 
-
-
 }
 
 extern
