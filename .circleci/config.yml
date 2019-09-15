@@ -612,31 +612,30 @@ jobs:
 workflows:
   version: 2.1
 
-##  make:
-##    jobs:
-##      - start
-      # - build-make-compose:
+  make:
+    jobs:
+      - start
+      - build-make-compose:
+          requires:
+            - start 
+      # - build-make:
       #     requires:
       #       - start 
-##      - build-make:
-##          requires:
-##            - start 
-  # scheduled:
+
+  # scheduled-jobs:
+
   #   triggers:
   #     - schedule:
   #         cron: "35 13 * * *"
   #         filters:
   #           branches:
-  #             only: feature/native_make
-
+  #             only: master
+  #
     # jobs:
     #   - start
-    #   - build-make-monolithic:
+    #   - build-make-monolithic
     #       requires:
     #         - start
-      # - build-make:
-      #     requires:
-      #       - start 
 
   full:
     jobs:
@@ -653,34 +652,34 @@ workflows:
       - build-PlaceRouteHierFlow:
           requires:
             - start 
-##      - build-GDSConv:
-##          requires:
-##            - start 
-##      - build-sci:
-##          requires:
-##            - start 
-##      - build-cktgen:
-##          requires:
-##            - start 
-##      - build-cellfabric:
-##          requires:
-##            - start 
+      - build-GDSConv:
+          requires:
+            - start 
+      - build-sci:
+          requires:
+            - start 
+      - build-cktgen:
+          requires:
+            - start 
+      - build-cellfabric:
+          requires:
+            - start 
 #      - build-satplacer:
 #          requires:
 #            - start 
-##      - build-pdk:
-##          requires:
-##            - start 
+      - build-pdk:
+          requires:
+            - start 
       - finish:
           requires:
 #            - build-tally 
 #            - build-sgi 
 #            - build-PlacementEditor 
-##            - build-GDSConv 
-##            - build-sci 
-##            - build-cellfabric
-##            - build-cktgen 
-##            - build-pdk 
+            - build-GDSConv 
+            - build-sci 
+            - build-cellfabric
+            - build-cktgen 
+            - build-pdk 
             - build-PlaceRouteHierFlow
 #            - build-satplacer
 

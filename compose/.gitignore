@@ -1,5 +1,3 @@
-tmp/
-docker-compose.yml
 make-docker-service
 vol-type
 volume

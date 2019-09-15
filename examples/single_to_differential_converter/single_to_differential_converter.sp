@@ -8,7 +8,7 @@
     MN1 n1 g s b    nfet l=0.014u nfin=p1
 .ends nfet2x
 
-.subckt sdc vb vin vout_sdc1 vout_sdc2 vps vgnd
+.subckt single_to_differential_converter vb vin vout_sdc1 vout_sdc2 vps vgnd
 .param fin_count=24 rb=20k rl=900 cc=48f cl=12f
 
 	xI0 vd net1 vs vgnd nfet2x p1=fin_count
@@ -18,4 +18,4 @@
 	C2 vs vout_sdc2 capacitor c=cl
 	C1 vd vout_sdc1 capacitor c=cl
 	C0 vin net1 capacitor c=cc
-.ends sdc
+.ends single_to_differential_converter
