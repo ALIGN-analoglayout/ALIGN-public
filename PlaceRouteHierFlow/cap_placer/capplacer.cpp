@@ -1632,6 +1632,7 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
                      if(Caps[n.Set[j].cap_index[index]].access==1){
                         int found=0;
                         for(unsigned int k=0;k<end_flag;k++){
+			    if (Caps[n.Set[j].cap_index[k]].access) continue;
                             if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and
 				abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1 and
 				!(Caps[n.Set[j].cap_index[k]].access))){
