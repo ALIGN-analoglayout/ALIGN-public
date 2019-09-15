@@ -1148,14 +1148,16 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 //create router line for each net (cap) half horizontal
   for(unsigned int i=0;i<Nets_pos.size();i++){
      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+	 auto& ci = Nets_pos[i].Set[j].cap_index;
          connection_set temp_router_line;
          //initial temp_router_line
          for(int k=0;k<=s;k++){
              temp_router_line.cap_index.push_back(0);
             }
-         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
+         for(unsigned int l=0;l<ci.size();l++){
+	     auto& Ci = temp_router_line.cap_index;
+             Ci[Caps[ci[l]].index_y]=1;
+             Ci[Caps[ci[l]].index_y+1]=1;
             }
          Nets_pos[i].half_router_line_h.push_back(temp_router_line);
         }
@@ -1638,12 +1640,11 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
 		      int absy = abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y);
 
 		      if( !((absy == 0 and absx == 1) or (absx == 0 and absy == 1))) continue;
-				
-		      Caps[n.Set[j].cap_index[k]].access=1;
+
 		      coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
 		      coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
-
 		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+
 		      n.start_conection_coord.push_back(coord);
 		      coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
 		      coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
@@ -1657,6 +1658,7 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
 		      }
 		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                    
+		      Caps[n.Set[j].cap_index[k]].access=1;
 		      index = 0;
 		      found = 1;
 		  }
@@ -1863,9 +1865,7 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 
     vector<vector<net>*> twoItems = { &Nets_pos, &Nets_neg};
 
-    for (auto ait=twoItems.begin(); ait!=twoItems.end(); ++ait) {
-	auto& n_array = **ait;
-
+    auto doit0 = [&](auto& n_array) {
 	for(unsigned int i=0; i< n_array.size(); i++){//for each net
 	    auto& n = n_array[i];
 	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
@@ -1880,7 +1880,7 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 		    y[i] *= unitScale;
 		}
 
-		json bound;
+ 		json bound;
 		bound["type"] = "boundary";
 		bound["datatype"] = 0;
 		json xy = json::array();
@@ -1893,12 +1893,11 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 		jsonElements.push_back (bound);
 	    }   
 	}
-    }
+    };
+    doit0( Nets_pos);
+    doit0( Nets_neg);
   
-  
-    for (auto ait=twoItems.begin(); ait!=twoItems.end(); ++ait) {
-	auto& n_array = **ait;
-
+    auto doit1 = [&](auto& n_array) {
 	for (unsigned int i = 0; i < n_array.size(); i++) {
 	    auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
@@ -1934,7 +1933,10 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 		jsonElements.push_back (bound);
 	    }
 	}
-    }
+    };
+    doit1( Nets_pos);
+    doit1( Nets_neg);
+
   
     //write orientation for each cap
     for (unsigned int i = 0; i < Caps.size(); i++) {
