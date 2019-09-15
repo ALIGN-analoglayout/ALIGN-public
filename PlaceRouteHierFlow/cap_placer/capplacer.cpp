@@ -1626,69 +1626,50 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
       auto& n = n_array[i];
       //connection for each connection set
       for(unsigned int j=0;j<n.Set.size();j++){
-              unsigned int end_flag = n.Set[j].cap_index.size();
-              unsigned int index = 0;
-              while(index<end_flag){
-                     if(Caps[n.Set[j].cap_index[index]].access==1){
-                        int found=0;
-                        for(unsigned int k=0;k<end_flag;k++){
-			    if (Caps[n.Set[j].cap_index[k]].access) continue;
-                            if((Caps[n.Set[j].cap_index[k]].index_y==Caps[n.Set[j].cap_index[index]].index_y and
-				abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x) ==1 and
-				!(Caps[n.Set[j].cap_index[k]].access))){
-                              Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                              coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
-                             
-                              //
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+	  unsigned int end_flag = n.Set[j].cap_index.size();
+	  unsigned int index = 0;
+	  while(index<end_flag){
+	      if(Caps[n.Set[j].cap_index[index]].access==1){
+		  int found=0;
+		  for(unsigned int k=0;k<end_flag;k++){
+		      if (Caps[n.Set[j].cap_index[k]].access) continue;
+			    
+		      int absx = abs(Caps[n.Set[j].cap_index[k]].index_x-Caps[n.Set[j].cap_index[index]].index_x);
+		      int absy = abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y);
 
-                              n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                              coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
-                              n.end_conection_coord.push_back(coord);
-                              n.Is_pin.push_back(0);
-                              n.metal.push_back(H_metal);
+		      if( !((absy == 0 and absx == 1) or (absx == 0 and absy == 1))) continue;
+				
+		      Caps[n.Set[j].cap_index[k]].access=1;
+		      coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
+		      coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
 
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                      
-                      
-                              index = 0;
-                              found = 1;
-                             }else if((Caps[n.Set[j].cap_index[k]].index_x==Caps[n.Set[j].cap_index[index]].index_x and
-				       abs(Caps[n.Set[j].cap_index[k]].index_y-Caps[n.Set[j].cap_index[index]].index_y) ==1 and
-				       !(Caps[n.Set[j].cap_index[k]].access))){
-                              Caps[n.Set[j].cap_index[k]].access=1;
-                              coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                              coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      n.start_conection_coord.push_back(coord);
+		      coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
+		      coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
+		      n.end_conection_coord.push_back(coord);
+		      n.Is_pin.push_back(0);
 
-                              n.start_conection_coord.push_back(coord);
-                              coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
-                              coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
-                              n.end_conection_coord.push_back(coord);
-                              n.Is_pin.push_back(0);
-                              n.metal.push_back(V_metal);
-
-                              addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      if( absy==0 and absx==1) {
+			  n.metal.push_back(H_metal);
+		      }else if( absx == 0 and absy ==1) {
+			  n.metal.push_back(V_metal);
+		      }
+		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
                    
-                              index = 0;
-                              found = 1;
-                             }
-                           }
-                           if(found==0){
-                              index = index +1;
-                             }
-                       }else{
-                        index=index+1;
-                       }
-                   }
-              }
-         }
-
+		      index = 0;
+		      found = 1;
+		  }
+		  if(found==0){
+		      index += 1;
+		  }
+	      }else{
+		  index += 1;
+	      }
+	  }
+      }
+  }
 }   
-
-
 
 void Placer_Router_Cap::GetPhysicalInfo_router(
    const string& H_metal, int H_metal_index,
@@ -1770,64 +1751,31 @@ void
 Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
 					const pair<double,double> &start,
 					const pair<double,double> &end,
-					double width) {
-    x[0] = offset_x;
-    x[1] = offset_x;
-    x[2] = offset_x;
-    x[3] = offset_x;
-    y[0] = offset_y;
-    y[1] = offset_y;
-    y[2] = offset_y;
-    y[3] = offset_y;
+	 				double width) {
+    for( unsigned int i=0; i<4; ++i) {
+	x[i] = offset_x; y[i] = offset_y;
+    }
+
+    auto f = [&](int idx, const auto& a) {
+	x[idx] += a.first;
+	y[idx] += a.second;
+    };
+    auto g = [&](const auto& a0,const auto& a1,const auto& a2,const auto& a3) {
+	f(0,a0); f(1,a1); f(2,a2); f(3,a3);
+    };
 
     if (start.first == end.first) {
-	// NO offset for Failure2
 	if (start.second < end.second) {
-	    x[0] += start.first;
-	    x[1] += end.first;
-	    x[2] += end.first;
-	    x[3] += start.first;
-             
-	    y[0] += start.second;
-	    y[1] += end.second;
-	    y[2] += end.second;
-	    y[3] += start.second;
+	    g( start, end, end, start);
 	} else {
-	    x[0] += end.first;
-	    x[1] += start.first;
-	    x[2] += start.first;
-	    x[3] += end.first;
-             
-	    y[0] += end.second;
-	    y[1] += start.second;
-	    y[2] += start.second;
-	    y[3] += end.second;
+	    g( end, start, start, end);
 	}
     } else {
 	if (start.first < end.first){
-	    x[0] += start.first;
-	    x[1] += start.first;
-	    x[2] += end.first;
-	    x[3] += end.first;
-             
-	    y[0] += start.second;
-	    y[1] += start.second;
-	    y[2] += end.second;
-	    y[3] += end.second;
-
-	} else {
-	    x[0] += end.first;
-	    x[1] += end.first;
-	    x[2] += start.first;
-	    x[3] += start.first;
-             
-	    y[0] += end.second;
-	    y[1] += end.second;
-	    y[2] += start.second;
-	    y[3] += start.second;
+	    g( start, start, end, end);
+	} else { // start.first > end.first
+	    g( end, end, start, start);
 	}
-	
-
     }
 
     if (start.first == end.first) {
