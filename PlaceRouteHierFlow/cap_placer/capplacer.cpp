@@ -120,7 +120,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   /*
    * SMB: This does something weird
    * it updates the LL if both the x and y coords are less than the previous best
-   * So not necessarily the smallest x or the smalles t y
+   * So not necessarily the smallest x or the smallest y
    */
   cout << "Find pin_minx, pin_miny" << endl;
   for(unsigned int i=0;i<uc.macroPins.size();i++){
@@ -143,26 +143,22 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 	  
   const auto& mm = drc_info.Metalmap.at(pin_metal);
 
+  auto setup = [&]( auto& this_metal, auto& this_metal_idx, auto& other_metal, auto& other_metal_idx) {
+      this_metal = pin_metal;
+      this_metal_idx = mm;
+      if(mm>0){ // metal pin has metal - 1 and
+	  other_metal_idx = mm-1;
+      }else{
+	  other_metal_idx = mm+1;
+      }
+      other_metal = drc_info.Metal_info.at(other_metal_idx).name;
+  };
+
+
   if(drc_info.Metal_info.at(mm).direct == 1){ // metal pin is H
-      H_metal = pin_metal;
-      H_metal_index = mm;
-      if(mm>0){ // metal pin has metal - 1 and
-	  V_metal = drc_info.Metal_info[mm-1].name;
-	  V_metal_index = mm-1;
-      }else{
-	  V_metal = drc_info.Metal_info[mm+1].name;
-	  V_metal_index = mm+1;
-      }
+      setup( H_metal, H_metal_index, V_metal, V_metal_index);
   }else{
-      V_metal = pin_metal;
-      V_metal_index = mm;
-      if(mm>0){ // metal pin has metal - 1 and
-	  H_metal = drc_info.Metal_info.at(mm-1).name;
-	  H_metal_index = mm-1;
-      }else{
-	  H_metal = drc_info.Metal_info.at(mm+1).name;
-	  H_metal_index = mm+1;
-      }
+      setup( V_metal, V_metal_index, H_metal, H_metal_index);
   }
 	  
   if(H_metal_index>V_metal_index){
