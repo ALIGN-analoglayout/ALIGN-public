@@ -49,7 +49,7 @@ def main( args):
                 GB.append(lG)
                 DB.append(lD)
     ### End ###
-    
+
     if args.primitive in ["Switch_NMOS", "Switch_PMOS", "DCL_NMOS", "DCL_PMOS"]:
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
@@ -60,14 +60,14 @@ def main( args):
             SA.append(lSA)
             GA.append(lGA)
             DA.append(lDA)
-   
+
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
-    
+
     if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
-        uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.NMOSGenerator( fin, finDummy, gate, gateDummy)
     else:
-        uc = primitive.PMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
+        uc = primitive.PMOSGenerator( fin, finDummy, gate, gateDummy)
 
 
     def gen( f):

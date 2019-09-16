@@ -7,7 +7,7 @@ pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
 class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
-    def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
+    def __init__( self, fin, finDummy, gate, gateDummy,
                   pdkfile=pdkfile):
 
         p = Pdk().load(pdkfile)
@@ -19,15 +19,14 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         self.finsPerUnitCell = fin + 2*finDummy
        # Should be a multiple of 4 for maximum utilization
         assert self.finsPerUnitCell % 4 == 0
-        assert fin >= fin_u, "number of fins in the transistor is greater than unit cell fins" 
-        assert fin_u > 3, "number of fins in the transistor must be more than 2"
+        assert fin > 3, "number of fins in the transistor must be more than 2"
         assert finDummy % 2 == 0
         assert gateDummy > 0
         self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
         self.unitCellHeight = self.m2PerUnitCell* p['M2']['Pitch']
-        unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch'] 
-        activeWidth =  p['Fin']['Pitch']*fin_u
-        activeOffset = p['Fin']['Pitch']*fin//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
+        unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch']
+        activeWidth =  p['Fin']['Pitch']*fin
+        activeOffset = activeWidth//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*p['Feol']['active_enclosure']
 
@@ -78,8 +77,9 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 p['V0']['WidthY'], False)
-        for i in range(max(activeWidth//(2*p['M2']['Pitch']), 1) + ((fin-fin_u)//2 + finDummy+1)//2):
-            self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
+        v0pitch = activeWidth//(2*p['M2']['Pitch']) * p['Fin']['Pitch']
+        for i in range(activeWidth // v0pitch + 1):
+            self.v0.h_clg.addCenterLine(i*v0pitch,    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
     def _gen_abstract_MOS( self, x, y, fin_u, fin, finDummy, reflect=False):
@@ -87,7 +87,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         def _connect_diffusion(x, port):
             self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
             self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
-            for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
+            for j in range(((finDummy+3)//2), self.v0.h_clg.n):
                 self.addVia( self.v0, port, None, x, (y, j))
 
         # Draw FEOL Layers
