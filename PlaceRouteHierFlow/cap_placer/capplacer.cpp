@@ -1381,7 +1381,7 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
   if(drc_info.Metal_info.at(vm.LowerIdx).direct==1){
       apply_via1( vm.LowerRect, vm.LowerIdx);
       apply_via0( vm.UpperRect, vm.UpperIdx);
-  }else{ // SMB this can't be right either
+  }else{
       apply_via0( vm.LowerRect, vm.LowerIdx);
       apply_via1( vm.UpperRect, vm.UpperIdx);
   }
