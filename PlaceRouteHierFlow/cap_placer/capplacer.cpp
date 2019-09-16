@@ -2203,8 +2203,18 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
   leffile<<"  FOREIGN "<<temp_block.master<<" 0 0 ;"<<std::endl;
   leffile<<"  SIZE "<< s(temp_block.width)<<" BY "<< s(temp_block.height) <<" ;"<<std::endl;
 
-  assert( temp_block.width % 80 == 0);
-  assert( temp_block.height % 84 == 0);
+  {
+      int m1_pitch = 80;
+      if ( temp_block.width % m1_pitch != 0) {
+	  cout << "WriteLef: block boundary off M1 grid (default PDK): " << temp_block.width << " " << temp_block.width % m1_pitch << endl;
+      }
+  }
+  {
+      int m2_pitch = 84;
+      if ( temp_block.height % m2_pitch != 0) {
+	  cout << "WriteLef: block boundary off M2 grid (default PDK): " << temp_block.height << " " << temp_block.height % m2_pitch << endl;
+      }
+  }
 
   //pins
   for(unsigned int i=0;i<temp_block.blockPins.size();i++){
@@ -2225,7 +2235,9 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
 	   if ( p.metal == "M2") {
 	       int c = (b.LL.y + b.UR.y)/2;
 	       cout << "M2 LEF PIN " << c % 84 << endl;
-	       assert( c % 84 == 0);
+	       if ( c % 84 != 0) {
+		   cout << "WriteLef: M2 LEF PIN off grid: " << c << " " << c % 84 << endl;
+	       }
 	   }
          }
       
