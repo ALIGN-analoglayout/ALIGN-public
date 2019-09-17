@@ -59,8 +59,6 @@ double ConstGraph::PHI=1500;
 
 static void generic_placer_test( const string& topcell)
 {
-  string tag = "pl";
-
   string dfile="FinFET_Mock_PDK_Abstraction.json";
   string binary_directory = "./";
   string opath = "cand/";
@@ -68,7 +66,7 @@ static void generic_placer_test( const string& topcell)
   PnRdatabase DB("gold", topcell, "", "", "", dfile);
 
   PnRDB::hierNode current_node;
-  DB.ReadDBJSON( current_node, "gold/" + topcell + ".db.json");
+  DB.ReadDBJSON( current_node, "gold/" + topcell + ".pre_pl.db.json");
 
   EXPECT_EQ( current_node.name, topcell);
 
@@ -76,7 +74,7 @@ static void generic_placer_test( const string& topcell)
   Placer curr_plc( nodeVec, opath, 0);
 
   PnRDB::hierNode post_current_node;
-  DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_" + tag + ".db.json");
+  DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_pl.db.json");
 
   EXPECT_EQ( json( nodeVec[0]), json(post_current_node));
 }

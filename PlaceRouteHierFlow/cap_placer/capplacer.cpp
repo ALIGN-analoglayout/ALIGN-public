@@ -2,6 +2,9 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <cassert>
+#include <utility>
+#include <algorithm>
+#include <unordered_set>
 
 using namespace std;
 using namespace nlohmann;
@@ -94,20 +97,28 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   vector<string> obs;
 
+  unordered_set<string> obs_map;
+
   const auto &uc = lefData.at(unit_capacitor);
 
   for(unsigned int i=0;i<uc.interMetals.size();i++){
-       int found = 0;
-       for(unsigned int j=0;j<obs.size();j++){
-          if(obs[j]==uc.interMetals[i].metal){
-             found = 1;
-            }
-         }
-       if(found == 0){obs.push_back(uc.interMetals[i].metal);}
+      obs_map.insert( uc.interMetals[i].metal);
+      if( std::find( obs.begin(), obs.end(), uc.interMetals[i].metal) == obs.end()) {
+	  obs.push_back(uc.interMetals[i].metal);
       }
+  }
+
+  assert( obs_map.size() == obs.size());
 
   unit_cap_demension.first = uc.width;
   unit_cap_demension.second= uc.height;
+
+  //round up to grid size
+  auto roundup = []( int& v, int pitch) {
+      v = pitch*((v+pitch-1)/pitch);
+  };
+  //  roundup( unit_cap_demension.first, 80);
+  //  roundup( unit_cap_demension.second, 84);
 
   // We are dividing by two later
   assert( unit_cap_demension.first % 2 == 0);
@@ -221,26 +232,33 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"span_distance:" << span_distance.first << "," << span_distance.second << endl;
 
 //initial cap information
-  int net_size = ki.size();
-  double sum = 0;
+
   double r;
   double s;
-  for(int i=0;i<net_size;i++){
-      sum = sum + ki[i];
-  }
-  r = ceil(sqrt(sum));
-  s = ceil(sum/r);
 
   if(cap_ratio==1){ //cap_ratio = 1, pass the ratio by user otherwise calculate it by the code
       r = cap_r;
       s = cap_s;
-  }    
+  } else { // compute r and making it as square as possible
+      double sum = 0;
+      for(unsigned int i=0;i<ki.size();i++){
+	  sum += ki[i];
+      }
+      r = ceil(sqrt(sum));
+      s = ceil(sum/r);
+  }
 
 //for dummy caps
   if(dummy_flag){
       r += 2;
       s += 2;
   }
+
+  cout << "unit_cap_demension.first: " << unit_cap_demension.first << " " << (unit_cap_demension.first % 80) << endl;
+  cout << "span_distance.first: " << span_distance.first << " " << (span_distance.first % 80) << endl;
+
+  cout << "unit_cap_demension.second " << unit_cap_demension.second << " " << (unit_cap_demension.second % 84) << endl;
+  cout << "span_distance.second: " << span_distance.second << " " << (span_distance.second % 84) << endl;
 
   cout<<"step2.3"<<endl;
   for(int i=0;i<(int) r;i++){
@@ -263,39 +281,32 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   double Cy = (s-1)/2;
   vector<double> dis;
   vector<int> index;
-  double distance;
   for(unsigned int i=0;i<Caps.size();i++){
-        distance = sqrt((Caps[i].index_x-Cx)*(Caps[i].index_x-Cx)+(Caps[i].index_y-Cy)*(Caps[i].index_y-Cy));
+        double distance = sqrt((Caps[i].index_x-Cx)*(Caps[i].index_x-Cx)+(Caps[i].index_y-Cy)*(Caps[i].index_y-Cy));
         dis.push_back(distance);
         index.push_back(i);
     }
   //sort the distance
-  int temp_index;
   for(unsigned int i=0;i<dis.size();i++){
      for(unsigned int j=i+1;j<dis.size();j++){
         if(dis[index[i]]>dis[index[j]]){
-           temp_index = index[i];
-           index[i]=index[j];
-           index[j]=temp_index;
-          }
-        }
+	    std::swap( index[i], index[j]);
+	}
      }
+  }
+  // this doesn't replace the above
+  //  std::stable_sort( index.begin(), index.end(), [&](int i, int j) { return dis[i] < dis[j]; });
+
   cout<<"step2.5"<<endl;
   //generate the cap pair sequence
 
   if (index.size()==1) {
-      pair<int,int> temp_pair;
-      temp_pair.first = index[0];
-      temp_pair.second = -1;
-      cap_pair_sequence.push_back(temp_pair);
+      cap_pair_sequence.push_back(make_pair( index[0], -1));
   } else {
     
       int start_index=0;
       if(dis[index[0]]<dis[index[1]]){
-	  pair<int,int> temp_pair;
-	  temp_pair.first = index[0];
-	  temp_pair.second = -1;
-	  cap_pair_sequence.push_back(temp_pair);
+	  cap_pair_sequence.push_back(make_pair( index[0], -1));
 	  start_index = 1;
       }
 
@@ -306,10 +317,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 		  break;
               }
 	      if(Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy){
-		  pair<int,int> temp_pair;
-		  temp_pair.first  = min( index[i], index[j]);
-		  temp_pair.second = max( index[i], index[j]);
-		  cap_pair_sequence.push_back(temp_pair);
+		  cap_pair_sequence.push_back(make_pair( min( index[i], index[j]), max( index[i], index[j])));
 		  break;
 	      }
 	  }
@@ -320,34 +328,22 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step2.6"<<endl;  
 
   if(dummy_flag){
+      auto not_on_border = [&]( const auto& c) {
+	  return c.index_x!=0 and c.index_x!=r-1 and c.index_y!=0 and c.index_y!=s-1;
+      };
+
       vector<pair<int,int> > temp_cap_pair_sequence;
       for(unsigned int i=0;i<cap_pair_sequence.size();i++){
-	  if(cap_pair_sequence[i].second!=-1){
-	      if(Caps[cap_pair_sequence[i].first].index_x!=0   and
-		 Caps[cap_pair_sequence[i].first].index_x!=r-1 and
-		 Caps[cap_pair_sequence[i].first].index_y!=0   and
-		 Caps[cap_pair_sequence[i].first].index_y!=s-1 and
-		 Caps[cap_pair_sequence[i].second].index_x!=0  and
-		 Caps[cap_pair_sequence[i].second].index_x!=r-1 and
-		 Caps[cap_pair_sequence[i].second].index_y!=0 and
-		 Caps[cap_pair_sequence[i].second].index_y!=s-1){
-		  temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
-	      }
-	  }else{
-	      if(Caps[cap_pair_sequence[i].first].index_x!=0 and
-		 Caps[cap_pair_sequence[i].first].index_x!=r-1 and
-		 Caps[cap_pair_sequence[i].first].index_y!=0 and
-		 Caps[cap_pair_sequence[i].first].index_y!=s-1){
+	  int fi = cap_pair_sequence[i].first; 
+	  if( not_on_border(Caps[fi])) {
+	      int si = cap_pair_sequence[i].second;
+	      if(si==-1 or not_on_border( Caps[si])) {
 		  temp_cap_pair_sequence.push_back(cap_pair_sequence[i]);
 	      }
 	  }
       }
 
-      int num_pair= cap_pair_sequence.size();
-      for(int i=0;i<num_pair;i++){
-	  cap_pair_sequence.pop_back();
-      }
-      cap_pair_sequence= temp_cap_pair_sequence; //remove dummy capacitors
+      cap_pair_sequence = temp_cap_pair_sequence;
   }
 
 // to be continued here.
@@ -434,86 +430,67 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
   
 //    int width = metal_width[0];
     MinMax minmax;
+
+    /// common for both Nets_pos and Nets_neg
+    auto extract_data_1_2 = [&]( auto& n_array) {
+	for (unsigned int i = 0; i < n_array.size(); i++) {//for each net
+	    PnRDB::pin temp_Pins;
+	    for (unsigned int j = 0; j < n_array[i].start_conection_coord.size(); j++) { //for segment
+
+		int width = drc_info.Metal_info.at(drc_info.Metalmap.at(n_array[i].metal[j])).width/2;
+
+		fillPathBoundingBox (x, y, n_array[i].start_conection_coord[j],
+				     n_array[i].end_conection_coord[j], width);
+
+		minmax.update( x, y);
+
+		PnRDB::contact temp_contact;
+		fillContact (temp_contact, x, y);
+
+		for (int i = 0; i < 5; i++) {
+		    x[i] *= gds_unit;
+		    y[i] *= gds_unit;
+		}
+		temp_contact.metal = n_array[i].metal[j];
+		if (n_array[i].Is_pin[j] == 1) {
+		    temp_Pins.name = n_array[i].name;
+		    temp_Pins.pinContacts.push_back(temp_contact);
+		}
+		CheckOutBlock.interMetals.push_back(temp_contact);
+	    }   
+	    CheckOutBlock.blockPins.push_back(temp_Pins);
+	}
+    };
+
+
     //for positive nets
     cout<<"Extract Data Step 1"<<endl;
-    for (unsigned int i = 0; i < Nets_pos.size(); i++) {//for each net
-	PnRDB::pin temp_Pins;
-	for (unsigned int j = 0; j < Nets_pos[i].start_conection_coord.size(); j++) { //for segment
+    extract_data_1_2( Nets_pos);
 
-            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j])).width/2;
-
-	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
-				 Nets_pos[i].end_conection_coord[j], width);
-
-	    minmax.update( x, y);
-
-	    PnRDB::contact temp_contact;
-            fillContact (temp_contact, x, y);
-
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= gds_unit;
-		y[i] *= gds_unit;
-	    }
-	    temp_contact.metal = Nets_pos[i].metal[j];
-	    if (Nets_pos[i].Is_pin[j] == 1) {
-		temp_Pins.name = Nets_pos[i].name;
-		temp_Pins.pinContacts.push_back(temp_contact);
-	    }
-	    CheckOutBlock.interMetals.push_back(temp_contact);
-	}   
-	CheckOutBlock.blockPins.push_back(temp_Pins);
-    }
     cout<<"Extract Data Step 2"<<endl;
-    //for neg nets
-    for (unsigned int i = 0; i < Nets_neg.size(); i++) {//for each net
-	PnRDB::pin temp_Pins_neg;
-	for (unsigned int j = 0; j < Nets_neg[i].start_conection_coord.size(); j++) { //for segment
+    extract_data_1_2( Nets_neg);
 
-            int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j])).width/2;
 
-	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
-				 Nets_neg[i].end_conection_coord[j], width);
-            
-	    minmax.update( x, y);
+    auto extract_data_3_4 = [&]( auto& n_array) {
 
-            PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
-
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= gds_unit;
-		y[i] *= gds_unit;
-	    }
-            temp_contact.metal = Nets_neg[i].metal[j];
-	    if (Nets_neg[i].Is_pin[j] == 1) {
-                temp_Pins_neg.name = Nets_neg[i].name;
-                temp_Pins_neg.pinContacts.push_back(temp_contact);
-	    }
-	    CheckOutBlock.interMetals.push_back(temp_contact);
-	}
-	CheckOutBlock.blockPins.push_back(temp_Pins_neg);
-    }
-    cout<<"Extract Data Step 3"<<endl;
-    //wirting vias
-    //for positive net
-    //width = via_width[0];
-    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
-	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
+    for (unsigned int i = 0; i < n_array.size(); i++) {
+	for (unsigned int j = 0; j < n_array[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 3.1"<<endl;
-	    auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_pos[i].via_metal[j])).ViaRect[1];
+	    auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n_array[i].via_metal[j])).ViaRect[1];
             int width = r.x;
 
- 	    x[0]=Nets_pos[i].via[j].first - width+offset_x;
-	    x[1]=Nets_pos[i].via[j].first - width+offset_x;
-	    x[2]=Nets_pos[i].via[j].first + width+offset_x;
-	    x[3]=Nets_pos[i].via[j].first + width+offset_x;
+ 	    x[0]=n_array[i].via[j].first - width+offset_x;
+	    x[1]=n_array[i].via[j].first - width+offset_x;
+	    x[2]=n_array[i].via[j].first + width+offset_x;
+	    x[3]=n_array[i].via[j].first + width+offset_x;
 	    x[4]=x[0];
 
             width = r.y;
         
-	    y[0]=Nets_pos[i].via[j].second - width+offset_y;
-	    y[1]=Nets_pos[i].via[j].second + width+offset_y;
-	    y[2]=Nets_pos[i].via[j].second + width+offset_y;
-	    y[3]=Nets_pos[i].via[j].second - width+offset_y;
+	    y[0]=n_array[i].via[j].second - width+offset_y;
+	    y[1]=n_array[i].via[j].second + width+offset_y;
+	    y[2]=n_array[i].via[j].second + width+offset_y;
+	    y[3]=n_array[i].via[j].second - width+offset_y;
 	    y[4]=y[0];
         
 	    minmax.update( x, y);
@@ -535,7 +512,7 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
             cout<<"Extract Data Step 3.3"<<endl;
 	    PnRDB::contact h_contact;
             int via_model_index;
-            via_model_index = drc_info.Metalmap.at(Nets_pos[i].via_metal[j]);
+            via_model_index = drc_info.Metalmap.at(n_array[i].via_metal[j]);
             temp_contact.metal = drc_info.Via_model.at(via_model_index).name;
             h_contact.originBox.LL = drc_info.Via_model.at(via_model_index).UpperRect[0];
             h_contact.originBox.UR = drc_info.Via_model.at(via_model_index).UpperRect[1];
@@ -570,83 +547,15 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 	    CheckOutBlock.interVias.push_back(temp_via);
 	}
     }
+    };
+
+    cout<<"Extract Data Step 3"<<endl;
+    extract_data_3_4( Nets_pos);
+
     cout<<"Extract Data Step 4"<<endl;
-    //for negative net
-    for (unsigned int i = 0; i < Nets_neg.size(); i++) {
-	for (unsigned int j = 0; j <Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
-            cout<<"Extract Data Step 4.1"<<endl;
-            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].x;
-
-	    x[0]=Nets_neg[i].via[j].first - width+offset_x;
-	    x[1]=Nets_neg[i].via[j].first - width+offset_x;
-	    x[2]=Nets_neg[i].via[j].first + width+offset_x;
-	    x[3]=Nets_neg[i].via[j].first + width+offset_x;
-	    x[4]=x[0];
-
-            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].y;        
-	    y[0]=Nets_neg[i].via[j].second - width+offset_y;
-	    y[1]=Nets_neg[i].via[j].second + width+offset_y;
-	    y[2]=Nets_neg[i].via[j].second + width+offset_y;
-	    y[3]=Nets_neg[i].via[j].second - width+offset_y;
-	    y[4]=y[0];
-        
-	    minmax.update( x, y);
-
-	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
-
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= gds_unit;
-		y[i] *= gds_unit;
-	    }
-            cout<<"Extract Data Step 4.2"<<endl;
-	    PnRDB::Via temp_via;
-	    PnRDB::contact upper_contact;
-	    PnRDB::contact lower_contact;
-	    upper_contact.placedCenter = temp_contact.placedCenter;
-	    lower_contact.placedCenter = temp_contact.placedCenter;
-
-//this part needs to be modify
+    extract_data_3_4( Nets_neg);
 
 
-	    PnRDB::contact h_contact;
-            int via_model_index;
-            via_model_index = drc_info.Metalmap.at(Nets_neg[i].via_metal[j]);
-            temp_contact.metal = drc_info.Via_model.at(via_model_index).name;
-            h_contact.originBox.LL = drc_info.Via_model.at(via_model_index).UpperRect[0];
-            h_contact.originBox.UR = drc_info.Via_model.at(via_model_index).UpperRect[1];
-
-            h_contact.originBox.LL.x += temp_contact.placedCenter.x;
-            h_contact.originBox.LL.y += temp_contact.placedCenter.y;
-
-            h_contact.originBox.UR.x += temp_contact.placedCenter.x;
-            h_contact.originBox.UR.y += temp_contact.placedCenter.y;
-
-            cout<<"Extract Data Step 4.25"<<endl;
-	    PnRDB::contact v_contact;
-            v_contact.originBox.LL = drc_info.Via_model.at(via_model_index).LowerRect[0];
-            v_contact.originBox.UR = drc_info.Via_model.at(via_model_index).LowerRect[1];
-
-            v_contact.originBox.LL.x += temp_contact.placedCenter.x;
-            v_contact.originBox.LL.y += temp_contact.placedCenter.y;
-
-            v_contact.originBox.UR.x += temp_contact.placedCenter.x;
-            v_contact.originBox.UR.y += temp_contact.placedCenter.y;
-
-            cout<<"Extract Data Step 4.3"<<endl;
-            lower_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).LowerIdx).name;
-            upper_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).UpperIdx).name;
-            lower_contact.originBox = v_contact.originBox;
-            upper_contact.originBox = h_contact.originBox;
-            temp_via.model_index = via_model_index;
-            cout<<"Extract Data Step 4.4"<<endl;
-	    temp_via.placedpos = temp_contact.originCenter;
-	    temp_via.ViaRect = temp_contact;
-	    temp_via.LowerMetalRect = lower_contact;
-	    temp_via.UpperMetalRect = upper_contact;
-	    CheckOutBlock.interVias.push_back(temp_via);
-	}
-    }
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
     for (unsigned int i = 0; i < Caps.size(); i++) {
@@ -1005,159 +914,153 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
      }
 }
 
-
-void Placer_Router_Cap::perturbation_pair_sequence(){
-}
-
-void Placer_Router_Cap::Placer_Cap(vector<int> & ki){
-}
-
 void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string> > &cap_pin, bool dummy_flag, bool cap_ratio, int cap_r, int cap_s){
 
   cout<<"broken down 1"<<endl;
 //route for cap
   for(unsigned int i=0;i<Nets_pos.size();i++){ // for each net
-     for(unsigned int j=0;j<Nets_pos[i].cap_index.size();j++){ //for each unaccessed cap
-        if(Caps[Nets_pos[i].cap_index[j]].access==0){
-           connection_set temp_set;
-           temp_set.cap_index.push_back(Nets_pos[i].cap_index[j]); //new set & marked accessed
-           Caps[Nets_pos[i].cap_index[j]].access = 1;
-           //found its neighbor recursively
-           found_neighbor(j,Nets_pos[i],temp_set);
-           Nets_pos[i].Set.push_back(temp_set);
+      for(unsigned int j=0;j<Nets_pos[i].cap_index.size();j++){ //for each unaccessed cap
+	  if(Caps[Nets_pos[i].cap_index[j]].access==0){
+	      connection_set temp_set;
+	      temp_set.cap_index.push_back(Nets_pos[i].cap_index[j]); //new set & marked accessed
+	      Caps[Nets_pos[i].cap_index[j]].access = 1;
+	      //found its neighbor recursively
+	      found_neighbor(j,Nets_pos[i],temp_set);
+	      Nets_pos[i].Set.push_back(temp_set);
           }
-        } 
-    }
+      } 
+  }
+
   cout<<"broken down 2"<<endl;
   double sum = 0;
   for(unsigned int i=0;i<ki.size();i++){
       sum += ki[i];
   }
-  cout<<"broken down 3"<<endl;
 
+  cout<<"broken down 3"<<endl;
   double r = ceil(sqrt(sum));
   double s = ceil(sum/r);
 
-   if(cap_ratio){
-       r = cap_r;
-       s = cap_s;
-   }
+  if(cap_ratio){
+      r = cap_r;
+      s = cap_s;
+  }
 
-   if(dummy_flag){
-       r += 2;
-       s += 2;
-   }
+  if(dummy_flag){
+      r += 2;
+      s += 2;
+  }
 
-   double Cx = (r)/2; //note this is different
-   double Cy = (s)/2; //note this is different
+  double Cx = r/2; //note this is different
+  double Cy = s/2; //note this is different
 //create router line for each net (cap) vertical 
 
   cout<<"broken down 3.1"<<endl;
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
-         cout<<"broken down 3.11"<<endl;
-         connection_set temp_router_line;
-         //initial temp_router_line
-         for(int k=0;k<=r;k++){
-             temp_router_line.cap_index.push_back(0);
-            }
-         cout<<"broken down 3.2"<<endl;
-         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
-             cout<<"broken down 3.3"<<endl;
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
-             cout<<"broken down 3.4"<<endl;
-             temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
-             cout<<"broken down 3.5"<<endl;
-             temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x-1]=1;//-1
-            }
-         cout<<"broken down 3.6"<<endl;
-         Nets_pos[i].router_line_v.push_back(temp_router_line);
-         cout<<"broken down 3.7"<<endl;
-        }
-     }
-
+      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+	  cout<<"broken down 3.11"<<endl;
+	  connection_set temp_router_line;
+	  //initial temp_router_line
+	  for(int k=0;k<=r;k++){
+	      temp_router_line.cap_index.push_back(0);
+	  }
+	  cout<<"broken down 3.2"<<endl;
+	  for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
+	      cout<<"broken down 3.3"<<endl;
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
+	      cout<<"broken down 3.4"<<endl;
+	      temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
+	      cout<<"broken down 3.5"<<endl;
+	      temp_router_line.cap_index[2*Cx-Caps[Nets_pos[i].Set[j].cap_index[l]].index_x-1]=1;//-1
+	  }
+	  cout<<"broken down 3.6"<<endl;
+	  Nets_pos[i].router_line_v.push_back(temp_router_line);
+	  cout<<"broken down 3.7"<<endl;
+      }
+  }
+  
   cout<<"broken down 4"<<endl;
 //common overlap checking vertical
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<=r;j++){
+      for(int j=0;j<=r;j++){
           Nets_pos[i].routable_line_v.push_back(1);
-        }
-     for(unsigned int k=0;k<Nets_pos[i].router_line_v.size();k++){
+      }
+      for(unsigned int k=0;k<Nets_pos[i].router_line_v.size();k++){
           for(unsigned int l=0;l<Nets_pos[i].router_line_v[k].cap_index.size();l++){
-             Nets_pos[i].routable_line_v[l] =(int) Nets_pos[i].routable_line_v[l] and Nets_pos[i].router_line_v[k].cap_index[l];
-             }
-        }
-     }
+	      Nets_pos[i].routable_line_v[l] =(int) Nets_pos[i].routable_line_v[l] and Nets_pos[i].router_line_v[k].cap_index[l];
+	  }
+      }
+  }
 
   cout<<"broken down 5"<<endl;
 //create router line for each net (cap) horizontal
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
-         connection_set temp_router_line;
-         //initial temp_router_line
-         for(int k=0;k<=s;k++){
-             temp_router_line.cap_index.push_back(0);
-            }
-         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
-             temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
-             temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y-1]=1;//-1
-            }
-         Nets_pos[i].router_line_h.push_back(temp_router_line);
-        }
-     }
+      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+	  connection_set temp_router_line;
+	  //initial temp_router_line
+	  for(int k=0;k<=s;k++){
+	      temp_router_line.cap_index.push_back(0);
+	  }
+	  for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_y+1]=1;
+	      temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y]=1;
+	      temp_router_line.cap_index[2*Cy-Caps[Nets_pos[i].Set[j].cap_index[l]].index_y-1]=1;//-1
+	  }
+	  Nets_pos[i].router_line_h.push_back(temp_router_line);
+      }
+  }
 
   cout<<"broken down 6"<<endl;
 //common overlap checking horizontal
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(int j=0;j<=s;j++){
+      for(int j=0;j<=s;j++){
           Nets_pos[i].routable_line_h.push_back(1);
-        }
-     for(unsigned int k=0;k<Nets_pos[i].router_line_h.size();k++){
+      }
+      for(unsigned int k=0;k<Nets_pos[i].router_line_h.size();k++){
           for(unsigned int l=0;l<Nets_pos[i].router_line_h[k].cap_index.size();l++){
-             Nets_pos[i].routable_line_h[l] =(int) Nets_pos[i].routable_line_h[l] and Nets_pos[i].router_line_h[k].cap_index[l];
-             }
-        }
-     }
+	      Nets_pos[i].routable_line_h[l] = Nets_pos[i].routable_line_h[l] and Nets_pos[i].router_line_h[k].cap_index[l];
+	  }
+      }
+  }
 
 
   cout<<"broken down 7"<<endl;
 //create router line for each net (cap) half vertical 
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
-         connection_set temp_router_line;
-         //initial temp_router_line
-         for(int k=0;k<=r;k++){
-             temp_router_line.cap_index.push_back(0);
-            }
-         for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
-             temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
-            }
-         Nets_pos[i].half_router_line_v.push_back(temp_router_line);
-        }
-     }
+      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+	  connection_set temp_router_line;
+	  //initial temp_router_line
+	  for(int k=0;k<=r;k++){
+	      temp_router_line.cap_index.push_back(0);
+	  }
+	  for(unsigned int l=0;l<Nets_pos[i].Set[j].cap_index.size();l++){
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x]=1;
+	      temp_router_line.cap_index[Caps[Nets_pos[i].Set[j].cap_index[l]].index_x+1]=1;
+	  }
+	  Nets_pos[i].half_router_line_v.push_back(temp_router_line);
+      }
+  }
 
   cout<<"broken down 8"<<endl;
 //create router line for each net (cap) half horizontal
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
-	 auto& ci = Nets_pos[i].Set[j].cap_index;
-         connection_set temp_router_line;
-         //initial temp_router_line
-         for(int k=0;k<=s;k++){
-             temp_router_line.cap_index.push_back(0);
-            }
-         for(unsigned int l=0;l<ci.size();l++){
-	     auto& Ci = temp_router_line.cap_index;
-             Ci[Caps[ci[l]].index_y]=1;
-             Ci[Caps[ci[l]].index_y+1]=1;
-            }
-         Nets_pos[i].half_router_line_h.push_back(temp_router_line);
-        }
-     }
+      for(unsigned int j=0;j<Nets_pos[i].Set.size();j++){
+	  auto& ci = Nets_pos[i].Set[j].cap_index;
+	  connection_set temp_router_line;
+	  //initial temp_router_line
+	  for(int k=0;k<=s;k++){
+	      temp_router_line.cap_index.push_back(0);
+	  }
+	  for(unsigned int l=0;l<ci.size();l++){
+	      auto& Ci = temp_router_line.cap_index;
+	      Ci[Caps[ci[l]].index_y]=1;
+	      Ci[Caps[ci[l]].index_y+1]=1;
+	  }
+	  Nets_pos[i].half_router_line_h.push_back(temp_router_line);
+      }
+  }
   
 
   cout<<"broken down 9"<<endl;
@@ -1167,157 +1070,94 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
   
   Nets_neg = Nets_pos;
   for(unsigned int i=0;i<Nets_pos.size();i++){
-       if(i!=Nets_pos.size()-1){
-           Nets_neg[i].name = cap_pin[i].first;
-         }else{
-           Nets_neg[i].name = "dummy_gnd";
-         }
-     }
+      if(i!=Nets_pos.size()-1){
+	  Nets_neg[i].name = cap_pin[i].first;
+      }else{
+	  Nets_neg[i].name = "dummy_gnd";
+      }
+  }
   
-  cout<<"broken down 10"<<endl;
-//Next work for good router
-//sample route methodology just for v pos
-  for(unsigned int i=0;i<Nets_pos.size();i++){
-      for(int k=0;k<=r;k++){Nets_pos[i].line_v.push_back(0);}
-      int sum=0;
-      for(unsigned int k=0;k<Nets_pos[i].routable_line_v.size();k++){sum=sum+Nets_pos[i].routable_line_v[k];}
-      if(sum>0){
-         //use the information of routable_line_v
-         int router_num=Nets_pos.size();
-         int choosed_router=-1;
-         for(int j=0;j<=Cx;j++){
-              if(Nets_pos[i].routable_line_v[j]==1){
-                  if(num_router_net_v[j]<=router_num){
-                     choosed_router=j;
-                     router_num = num_router_net_v[j];
-                    }
-                }
-            }
-         Nets_pos[i].line_v[choosed_router]=1;
-         Nets_pos[i].line_v[2*Cx-choosed_router]=1;
-         num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-         num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
+
+  auto router_cap_10_11 = [&]( auto& n_array, int sign) {
+
+      for(unsigned int i=0;i<n_array.size();i++){
+	  for(int k=0;k<=r;k++){n_array[i].line_v.push_back(0);}
+	  int sum=0;
+	  for(unsigned int k=0;k<n_array[i].routable_line_v.size();k++){sum=sum+n_array[i].routable_line_v[k];}
+	  if(sum>0){
+	      //use the information of routable_line_v
+	      int router_num=n_array.size();
+	      if ( sign == -1) {
+		  router_num = 2*n_array.size();
+	      }
+	      int choosed_router=-1;
+	      for(int j=0;j<=Cx;j++){
+		  if(n_array[i].routable_line_v[j]==1){
+		      if(num_router_net_v[j]<=router_num){
+			  choosed_router=j;
+			  router_num = num_router_net_v[j];
+		      }
+		  }
+	      }
+	      n_array[i].line_v[choosed_router]=1;
+	      n_array[i].line_v[2*Cx-choosed_router]=1;
+	      num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
+	      num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
              
-       }else{
-         //use the information of half_routable_line_v
-         for(unsigned int l=0;l<Nets_pos[i].half_router_line_v.size();l++){
-             int found=0;
-             for(unsigned int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
-                 if(Nets_pos[i].half_router_line_v[l].cap_index[k]==1 and Nets_pos[i].line_v[k]==1){
-                   found =1;
-                   }
-                }
-             if(found ==0){
-                int router_num=Nets_pos.size();
-                int choosed_router=-1;
-                for(unsigned int k=0;k<Nets_pos[i].half_router_line_v[l].cap_index.size();k++){
-                    if(Nets_pos[i].half_router_line_v[l].cap_index[k]==1){
-                       if(num_router_net_v[k]<=router_num){
-                          choosed_router=k;
-                          router_num = num_router_net_v[k];
-                         }
-                      }
-                   }
-                Nets_pos[i].line_v[choosed_router]=1;
-               // Nets_pos[i].line_v[2*Cx-choosed_router]=1;
-                num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-               // num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
-               }
-            }
-       }
-     }
+	  }else{
+	      //use the information of half_routable_line_v
+	      for(unsigned int l=0;l<n_array[i].half_router_line_v.size();l++){
+		  int found=0;
+		  for(unsigned int k=0;k<n_array[i].half_router_line_v[l].cap_index.size();k++){
+		      if(n_array[i].half_router_line_v[l].cap_index[k]==1 and n_array[i].line_v[k]==1){
+			  found =1;
+		      }
+		  }
+		  if(found ==0){
+		      int router_num=n_array.size();
+		      int choosed_router=-1;
+		      for(unsigned int k=0;k<n_array[i].half_router_line_v[l].cap_index.size();k++){
+			  if(n_array[i].half_router_line_v[l].cap_index[k]==1){
+			      if(num_router_net_v[k]<=router_num){
+				  choosed_router=k;
+				  router_num = num_router_net_v[k];
+			      }
+			  }
+		      }
+		      n_array[i].line_v[choosed_router] = 1;
+		      num_router_net_v[choosed_router] += 1;
+		  }
+	      }
+	  }
+      }
+  };
+  cout<<"broken down 10"<<endl;
+  router_cap_10_11( Nets_pos, 1);
 
   cout<<"broken down 11"<<endl;
-//sample route methodology just for v neg
-  for(unsigned int i=0;i<Nets_neg.size();i++){
-      for(int k=0;k<=r;k++){Nets_neg[i].line_v.push_back(0);}
-      int sum=0;
-      for(unsigned int k=0;k<Nets_neg[i].routable_line_v.size();k++){sum=sum+Nets_neg[i].routable_line_v[k];}
-      if(sum>0){
-         //use the information of routable_line_v
-         int router_num=2*Nets_neg.size();
-         int choosed_router=-1;
-         for(int j=0;j<=Cx;j++){
-              if(Nets_neg[i].routable_line_v[j]==1){
-                  if(num_router_net_v[j]<=router_num){
-                     choosed_router=j;
-                     router_num = num_router_net_v[j];
-                    }
-                }
-            }
-         Nets_neg[i].line_v[choosed_router]=1;
-         Nets_neg[i].line_v[2*Cx-choosed_router]=1;
-         num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-         num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
-             
-       }else{
-         //use the information of half_routable_line_v
-         for(unsigned int l=0;l<Nets_neg[i].half_router_line_v.size();l++){
-             int found=0;
-             for(unsigned int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
-                 if(Nets_neg[i].half_router_line_v[l].cap_index[k]==1 and Nets_neg[i].line_v[k]==1){
-                   found =1;
-                   }
-                }
-             if(found ==0){
-                int router_num=Nets_neg.size();
-                int choosed_router=-1;
-                for(unsigned int k=0;k<Nets_neg[i].half_router_line_v[l].cap_index.size();k++){
-                    if(Nets_neg[i].half_router_line_v[l].cap_index[k]==1){
-                       if(num_router_net_v[k]<=router_num){
-                          choosed_router=k;
-                          router_num = num_router_net_v[k];
-                         }
-                      }
-                   }
-                Nets_neg[i].line_v[choosed_router]=1;
-                num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-               }
-            }
-       }
-     }
+  router_cap_10_11( Nets_neg, -1);
 
   cout<<"broken down 12"<<endl;
   vector<int> num_line( Nets_pos[0].line_v.size(), 0);
-   for(unsigned int i=0;i<Nets_pos.size();i++){
-       assert( Nets_pos[i].line_v.size() == Nets_neg[i].line_v.size());
-       assert( Nets_pos[i].line_v.size() == num_line.size());
-       for(unsigned int j=0;j<Nets_pos[i].line_v.size();j++){
-           num_line.at(j)+=Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j];
-       }
-   }
-   int max_num_ =0;
-   for(unsigned int i=0;i<num_line.size();i++){
-       if(num_line[i]>max_num_){
-           max_num_ = num_line[i];
-       }
-   }
+  for(unsigned int i=0;i<Nets_pos.size();i++){
+      assert( Nets_pos[i].line_v.size() == Nets_neg[i].line_v.size());
+      assert( Nets_pos[i].line_v.size() == num_line.size());
+      for(unsigned int j=0;j<Nets_pos[i].line_v.size();j++){
+	  num_line[j] += Nets_pos[i].line_v[j]+Nets_neg[i].line_v[j];
+      }
+  }
 
   cout<<"broken down 13"<<endl;
+  int max_num_ =0;
+  for(unsigned int i=0;i<num_line.size();i++){
+      max_num_ = max(max_num_, num_line[i]);
+  }
   span_distance.first = (max_num_+1)*min_dis_x;
   cout<<span_distance.first<<endl;
 
   for(unsigned int i=0;i<Caps.size();i++){
       Caps[i].x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
   }
-
-  cout<<"broken down 14"<<endl;
-//route methdology in paper just for v
-  //for one routable net
-
-//route for the rest net (the same as sample router mathodology)
-
-//generate the route phsical information
-  //determine the start point and end point
-  //for common cap both positive and negative
-  //for dummy just negative is fine
-  //finally return the port phsical information
-  //adjust a uniform margin between the caps
-
-//write gds file
-  //based on the location of unit capacitor
-
-  //and also give out the location of generated capacitor path to the centor database
 
 }
 
