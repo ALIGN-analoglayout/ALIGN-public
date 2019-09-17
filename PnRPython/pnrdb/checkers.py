@@ -5,7 +5,7 @@ def check_bbox( b):
 #    assert b.LL.x < b.UR.x, (b.LL.x,b.UR.x)
 #    assert b.LL.y < b.UR.y, (b.LL.y,b.UR.y)
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False):
+def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -53,6 +53,19 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 p = gen.clg.inverseBounds(center)
                 if p[0] != p[1]:
                     print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1])
+
+    if draw_grid:
+        m1_pitch = 80
+        m2_pitch = 84
+        for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
+            x = m1_pitch*ix
+            r = [ x-1, 0, x+1, hN.height]
+            terminals.append( { "netName": 'm1_grid', "layer": 'M1', "rect": r})
+
+        for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
+            y = m2_pitch*iy
+            r = [ 0, y-1, hN.width, y+1]
+            terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
     for n in hN.Nets:
         print( n.name)

@@ -1161,8 +1161,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
 }
 
-int Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set){
-  int found = -1;
+void Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set){
   const auto& pcj = Caps[pos.cap_index[j]];
   for(unsigned int i=0;i<pos.cap_index.size();i++){
       auto& pci = Caps[pos.cap_index[i]];
@@ -1172,16 +1171,10 @@ int Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set)
 	  if((adiffx == 0 and adiffy==1) or (adiffy == 0 and adiffx==1)) {
 	      pci.access = 1;
 	      temp_set.cap_index.push_back(pos.cap_index[i]);
-	      found = i;
 	      found_neighbor(i, pos, temp_set);
 	  }
       }
   } 
-  if(found == -1){
-      return -1;
-  }else{
-      return 1;
-  }
 }
 
 void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin){
