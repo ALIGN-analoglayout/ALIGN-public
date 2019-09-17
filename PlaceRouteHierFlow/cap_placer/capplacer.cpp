@@ -1490,15 +1490,10 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 
 		  if( lr == 1) {
                       n.start_conection_coord.push_back(coord);
-		      if ( sign == 1) { // SMB This really looks wrong (it should be the first one)
-			  coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y+min_dis_y);
-		      } else {
-			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-		      }
+                      coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y+min_dis_y);
                       n.end_conection_coord.push_back(coord);
                       n.Is_pin.push_back(0);
                       n.metal.push_back(V_metal);
-
                       addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 		  }
 
@@ -1507,11 +1502,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                   if( lr == 0){
                       coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
 		  }else if( lr == 1) {
-		      if ( sign == 1) { // SMB This is also wrong (it should be the first one)
-			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
-		      } else {
-			  coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l])+shifting_x;
-		      }
+		      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
 		  }
 		  n.end_conection_coord.push_back(coord);
 
