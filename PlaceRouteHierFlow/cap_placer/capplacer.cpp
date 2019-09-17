@@ -1370,20 +1370,20 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
      temp_net.metal.push_back(drc_info.Metal_info[idx].name);
   };
 
-  auto apply_via1 = [&]( const auto& ra, int idx) {
+  auto apply_viax = [&]( const auto& ra, int idx) {
       apply_aux( ra[0].x, 0, ra[1].x, 0, idx);
   };
 
-  auto apply_via0 = [&]( const auto& ra, int idx) {
+  auto apply_viay = [&]( const auto& ra, int idx) {
       apply_aux( 0, ra[0].y, 0, ra[1].y, idx);
   };
 
   if(drc_info.Metal_info.at(vm.LowerIdx).direct==1){
-      apply_via1( vm.LowerRect, vm.LowerIdx);
-      apply_via0( vm.UpperRect, vm.UpperIdx);
+      apply_viax( vm.LowerRect, vm.LowerIdx);
+      apply_viay( vm.UpperRect, vm.UpperIdx);
   }else{
-      apply_via0( vm.LowerRect, vm.LowerIdx);
-      apply_via1( vm.UpperRect, vm.UpperIdx);
+      apply_viay( vm.LowerRect, vm.LowerIdx);
+      apply_viax( vm.UpperRect, vm.UpperIdx);
   }
 
 }
@@ -1861,7 +1861,7 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 
     vector<vector<net>*> twoItems = { &Nets_pos, &Nets_neg};
 
-    auto doit0 = [&](auto& n_array) {
+    auto doit0 = [&](const auto& n_array) {
 	for(unsigned int i=0; i< n_array.size(); i++){//for each net
 	    auto& n = n_array[i];
 	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
