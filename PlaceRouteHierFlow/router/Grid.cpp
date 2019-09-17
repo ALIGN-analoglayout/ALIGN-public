@@ -2786,10 +2786,10 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
     this->routeDirect.at(i)=drc_info.Metal_info.at(i).direct;
     if(drc_info.Metal_info.at(i).direct==0) { //vertical
       this->x_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x*grid_scale;
-      this->y_min.at(i)=this->x_unit.at(i)/2;
+      this->y_min.at(i)=drc_info.Metal_info.at(i).minL;
     } else if (drc_info.Metal_info.at(i).direct==1) { // horizontal
       this->y_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y*grid_scale;
-      this->x_min.at(i)=this->y_unit.at(i)/2;
+      this->x_min.at(i)=drc_info.Metal_info.at(i).minL;
     } else {
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }
