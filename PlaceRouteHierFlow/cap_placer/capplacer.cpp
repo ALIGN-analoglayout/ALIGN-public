@@ -240,10 +240,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       r = cap_r;
       s = cap_s;
   } else { // compute r and making it as square as possible
-      double sum = 0;
-      for(unsigned int i=0;i<ki.size();i++){
-	  sum += ki[i];
-      }
+      double sum = std::accumulate( ki.begin(), ki.end(), 0);
       r = ceil(sqrt(sum));
       s = ceil(sum/r);
   }
@@ -510,32 +507,32 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 	    upper_contact.placedCenter = temp_contact.placedCenter;
 	    lower_contact.placedCenter = temp_contact.placedCenter;
             cout<<"Extract Data Step 3.3"<<endl;
-	    PnRDB::contact h_contact;
-            int via_model_index;
-            via_model_index = drc_info.Metalmap.at(n_array[i].via_metal[j]);
-            temp_contact.metal = drc_info.Via_model.at(via_model_index).name;
-            h_contact.originBox.LL = drc_info.Via_model.at(via_model_index).UpperRect[0];
-            h_contact.originBox.UR = drc_info.Via_model.at(via_model_index).UpperRect[1];
-            //cout<<"Extract Data Step 3.31"<<endl;
-            h_contact.originBox.LL.x += temp_contact.placedCenter.x;
-            h_contact.originBox.LL.y += temp_contact.placedCenter.y;
 
-            h_contact.originBox.UR.x += temp_contact.placedCenter.x;
-            h_contact.originBox.UR.y += temp_contact.placedCenter.y;
+            int via_model_index = drc_info.Metalmap.at(n_array[i].via_metal[j]);
+	    const auto& vm = drc_info.Via_model.at(via_model_index);
+
+            temp_contact.metal = vm.name;
+
+	    auto adjust = [&]( auto& p) {
+		p.x += temp_contact.placedCenter.x;
+		p.y += temp_contact.placedCenter.y;
+	    };
+
+	    auto init = [&]( auto& b, const auto& ra) {
+		b.LL = ra[0]; b.UR = ra[1];
+		adjust( b.LL); adjust( b.UR);
+	    };
+
+	    PnRDB::contact h_contact;
+	    init( h_contact.originBox, vm.UpperRect);
+
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
-            v_contact.originBox.LL = drc_info.Via_model.at(via_model_index).LowerRect[0];
-            v_contact.originBox.UR = drc_info.Via_model.at(via_model_index).LowerRect[1];
-
-            v_contact.originBox.LL.x += temp_contact.placedCenter.x;
-            v_contact.originBox.LL.y += temp_contact.placedCenter.y;
-
-            v_contact.originBox.UR.x += temp_contact.placedCenter.x;
-            v_contact.originBox.UR.y += temp_contact.placedCenter.y;
+	    init( v_contact.originBox, vm.LowerRect);
 
             cout<<"Extract Data Step 3.5"<<endl;
-            lower_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).LowerIdx).name;
-            upper_contact.metal = drc_info.Metal_info.at(drc_info.Via_model.at(via_model_index).UpperIdx).name;
+            lower_contact.metal = drc_info.Metal_info.at(vm.LowerIdx).name;
+            upper_contact.metal = drc_info.Metal_info.at(vm.UpperIdx).name;
             lower_contact.originBox = v_contact.originBox;
             upper_contact.originBox = h_contact.originBox;
             temp_via.model_index = via_model_index;
@@ -573,14 +570,14 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
      
 	minmax.update( x, y);
 
-//this part need modify, here the 
+	//this part need modify, here the 
 	PnRDB::contact temp_contact;
 	fillContact (temp_contact, x, y);
 
         for(unsigned int i=0;i<obs.size();i++){
             temp_contact.metal = obs[i];
             CheckOutBlock.interMetals.push_back(temp_contact);
-           }
+	}
     }
     cout<<"Extract Data Step 7"<<endl;
 
@@ -664,52 +661,34 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     //wirting vias
     //for positive net
     //width  =  via_width[0];
-    for (unsigned int i = 0; i < Nets_pos.size(); i++) {
-	for (unsigned int j = 0; j < Nets_pos[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
 
-	    const auto& vm = Nets_pos[i].via_metal[j];
-	    const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect[1];
-	    const auto& n = Nets_pos[i].via[j];
+    auto update_mm = [&](const auto& n_array) {
+	for (unsigned int i = 0; i < n_array.size(); i++) {
+	    for (unsigned int j = 0; j < n_array[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
 
-	    x[0] = n.first - r.x;
-	    x[1] = n.first - r.x;
-	    x[2] = n.first + r.x;
-	    x[3] = n.first + r.x;
-	    x[4] = x[0];
+		const auto& vm = n_array[i].via_metal[j];
+		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect[1];
+		const auto& n = n_array[i].via[j];
 
-	    y[0] = n.second - r.y;
-	    y[1] = n.second + r.y;
-	    y[2] = n.second + r.y;
-	    y[3] = n.second - r.y;
-	    y[4] = y[0];
+		x[0] = n.first - r.x;
+		x[1] = n.first - r.x;
+		x[2] = n.first + r.x;
+		x[3] = n.first + r.x;
+		x[4] = x[0];
 
-	    minmax.update( x, y);
+		y[0] = n.second - r.y;
+		y[1] = n.second + r.y;
+		y[2] = n.second + r.y;
+		y[3] = n.second - r.y;
+		y[4] = y[0];
+
+		minmax.update( x, y);
+	    }
 	}
-    }
-    
-    //for negative net
-    for (unsigned int i = 0;i < Nets_neg.size(); i++) {
-	for (unsigned int j = 0; j < Nets_neg[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
- 
-            int width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].x;
+    };
+    update_mm( Nets_pos);
+    update_mm( Nets_neg);
 
-	    x[0] = Nets_neg[i].via[j].first - width;
-	    x[1] = Nets_neg[i].via[j].first - width;
-	    x[2] = Nets_neg[i].via[j].first + width;
-	    x[3] = Nets_neg[i].via[j].first + width;
-	    x[4] = x[0];
-
-            width = drc_info.Via_model.at(drc_info.Metalmap.at(Nets_neg[i].via_metal[j])).ViaRect[1].y;
-        
-	    y[0] = Nets_neg[i].via[j].second - width;
-	    y[1] = Nets_neg[i].via[j].second + width;
-	    y[2] = Nets_neg[i].via[j].second + width;
-	    y[3] = Nets_neg[i].via[j].second - width;
-	    y[4] = y[0];
-        
-	    minmax.update( x, y);
-	}
-    }
   
     for (unsigned int i = 0; i < Caps.size(); i++) {
 	x[0] = Caps[i].x - unit_cap_demension.first/2;
@@ -727,25 +706,24 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
 	minmax.update( x, y);
     }
 
-    int coverage_x;
-    int coverage_y;
-  
     const auto& vm = drc_info.Via_model[HV_via_index]; 
+
+    int coverage_x = vm.ViaRect[0].x;
+    int coverage_y = vm.ViaRect[0].y;
+
     if(vm.LowerIdx == V_metal){
-       coverage_y = vm.ViaRect[0].y - vm.LowerRect[0].y;
-       coverage_x = vm.ViaRect[0].x - vm.UpperRect[0].x;
+       coverage_y -= vm.LowerRect[0].y;
+       coverage_x -= vm.UpperRect[0].x;
     }else{
-       coverage_y = vm.ViaRect[0].y - vm.UpperRect[0].y;
-       coverage_x = vm.ViaRect[0].x - vm.LowerRect[0].x;
+       coverage_y -= vm.UpperRect[0].y;
+       coverage_x -= vm.LowerRect[0].x;
     }
 
     const auto& vmv = drc_info.Metal_info[V_metal];
-    offset_x = 0-minmax.get_Min_x();
-    offset_x = offset_x + vmv.grid_unit_x - vmv.width/2 - coverage_x;
+    offset_x = vmv.grid_unit_x - vmv.width/2 - coverage_x - minmax.get_Min_x();
 
     const auto& vmh = drc_info.Metal_info[H_metal];
-    offset_y = 0-minmax.get_Min_y();
-    offset_y = offset_y + vmh.grid_unit_y - vmh.width/2 - coverage_y;
+    offset_y = vmh.grid_unit_y - vmh.width/2 - coverage_y - minmax.get_Min_y();
     
 }
 
@@ -772,25 +750,15 @@ void Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<
      }
   //initial net pair sequence for pair
   cout<<"test case 2"<<endl;
-  int size;
-  for(unsigned int i=0;i<C_even.size();i++){
-     size = ki[C_even[i]];
-     while(size>1){
-         temp_pair.first=C_even[i];
-         temp_pair.second=C_even[i];
-         size=size-2;
-         S.push_back(temp_pair);
-        }
-     }
-  for(unsigned int i=0;i<C_odd.size();i++){
-     size = ki[C_odd[i]];
-     while(size>1){
-         temp_pair.first=C_odd[i];
-         temp_pair.second=C_odd[i];
-         size=size-2;
-         S.push_back(temp_pair);
-        }
-     }
+  auto genS = [&]( const auto& C) {
+      for(unsigned int i=0;i<C.size();i++){
+	  for( int size=ki[C[i]]; size>1; size -= 2){
+	      S.push_back(make_pair( C[i], C[i]));
+	  }
+      }
+  };
+  genS( C_even);
+  genS( C_odd);
 
   cout<<"test case 3"<<endl;
   //initial net pair sequence for odd 
@@ -1082,50 +1050,56 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 
       for(unsigned int i=0;i<n_array.size();i++){
 	  for(int k=0;k<=r;k++){n_array[i].line_v.push_back(0);}
-	  int sum=0;
-	  for(unsigned int k=0;k<n_array[i].routable_line_v.size();k++){sum=sum+n_array[i].routable_line_v[k];}
+	  
+	  const auto& rlv = n_array[i].routable_line_v;
+	  int sum=std::accumulate( rlv.begin(), rlv.end(), 0); 
+
 	  if(sum>0){
 	      //use the information of routable_line_v
 	      int router_num=n_array.size();
 	      if ( sign == -1) {
 		  router_num = 2*n_array.size();
 	      }
-	      int choosed_router=-1;
+	      int choosen_route=-1;
 	      for(int j=0;j<=Cx;j++){
-		  if(n_array[i].routable_line_v[j]==1){
+		  if(rlv[j]==1){
 		      if(num_router_net_v[j]<=router_num){
-			  choosed_router=j;
+			  choosen_route=j;
 			  router_num = num_router_net_v[j];
 		      }
 		  }
 	      }
-	      n_array[i].line_v[choosed_router]=1;
-	      n_array[i].line_v[2*Cx-choosed_router]=1;
-	      num_router_net_v[choosed_router]=num_router_net_v[choosed_router]+1;
-	      num_router_net_v[2*Cx-choosed_router]=num_router_net_v[2*Cx-choosed_router]+1;
+	      n_array[i].line_v[choosen_route]=1;
+	      n_array[i].line_v[2*Cx-choosen_route]=1;
+	      num_router_net_v[choosen_route]=num_router_net_v[choosen_route]+1;
+	      num_router_net_v[2*Cx-choosen_route]=num_router_net_v[2*Cx-choosen_route]+1;
              
 	  }else{
 	      //use the information of half_routable_line_v
-	      for(unsigned int l=0;l<n_array[i].half_router_line_v.size();l++){
-		  int found=0;
-		  for(unsigned int k=0;k<n_array[i].half_router_line_v[l].cap_index.size();k++){
-		      if(n_array[i].half_router_line_v[l].cap_index[k]==1 and n_array[i].line_v[k]==1){
-			  found =1;
-		      }
-		  }
+	      const auto& hrlv = n_array[i].half_router_line_v;
+
+	      for(unsigned int l=0;l<hrlv.size();l++){
+		  const auto& ci = hrlv[l].cap_index;
+		  const auto& lv = n_array[i].line_v;
+
+		  assert( ci.size() == lv.size());
+		  int found = std::inner_product( ci.begin(), ci.end(), lv.begin(), false,
+						  []( bool a, bool b) { return a || b; },
+						  []( int a, int b) { return a==1 and b==1; });
 		  if(found ==0){
 		      int router_num=n_array.size();
-		      int choosed_router=-1;
-		      for(unsigned int k=0;k<n_array[i].half_router_line_v[l].cap_index.size();k++){
-			  if(n_array[i].half_router_line_v[l].cap_index[k]==1){
+		      int choosen_route=-1;
+		      for(unsigned int k=0;k<ci.size();k++){
+			  if(ci[k]==1){
 			      if(num_router_net_v[k]<=router_num){
-				  choosed_router=k;
+				  choosen_route=k;
 				  router_num = num_router_net_v[k];
 			      }
 			  }
 		      }
-		      n_array[i].line_v[choosed_router] = 1;
-		      num_router_net_v[choosed_router] += 1;
+		      assert( choosen_route != -1);
+		      n_array[i].line_v[choosen_route] = 1;
+		      num_router_net_v[choosen_route] += 1;
 		  }
 	      }
 	  }
@@ -1508,7 +1482,7 @@ void Placer_Router_Cap::GetPhysicalInfo_router(
 
       int near_grid = ceil(height_cap/mH.grid_unit_y)*mH.grid_unit_y;
 
-  // Alternative way to compile next larger grid
+  // Alternative way to compute next larger grid
       assert( near_grid == ((height_cap+mH.grid_unit_y-1)/mH.grid_unit_y)*mH.grid_unit_y);
 
       assert( near_grid % 2 == 0);
@@ -1529,14 +1503,6 @@ void Placer_Router_Cap::GetPhysicalInfo_router(
       HV_via_metal_index = H_metal_index;
     }
 
-   
-   // SMB
-   // Unsuccessful attempt to merge the two code streams for Nets_pos and Nets_neg
-   //    TODO: merge max logic for Nets_pos and min logic for Nets_neg
-   //    TODO: several adjustments are done with different signs
-   //    TODO: One offset is 0 and the other some positive number
-   // (Probably 1 hour of work to get right.)
-   // 
    
    //connection for trails
    vector<int> trails;
@@ -1687,7 +1653,7 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
 
     auto doit0 = [&](const auto& n_array) {
 	for(unsigned int i=0; i< n_array.size(); i++){//for each net
-	    auto& n = n_array[i];
+	    const auto& n = n_array[i];
 	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
 
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
@@ -1717,9 +1683,9 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
     doit0( Nets_pos);
     doit0( Nets_neg);
   
-    auto doit1 = [&](auto& n_array) {
+    auto doit1 = [&](const auto& n_array) {
 	for (unsigned int i = 0; i < n_array.size(); i++) {
-	    auto& n = n_array[i];
+	    const auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
 		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
 		int width = r.x;
@@ -1826,25 +1792,22 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
                       std::cout<<"New CC 3 "<<j<<std::endl;
                       if(aspect_ratio){
-                         int sum = 0;
-                         for(unsigned int k=0;k<ki.size();k++){
-			     sum = sum+ ki[k];
-			 }
-                         double temp_r = ceil(sqrt(sum));
-                         double temp_s = ceil(sum/temp_r);
-                         int aspect_num = num_aspect;
-                         while(aspect_num > 0 and temp_r > 0){
+			  int sum = std::accumulate( ki.begin(), ki.end(), 0);
+			  double temp_r = ceil(sqrt(sum));
+			  double temp_s = ceil(sum/temp_r);
+			  int aspect_num = num_aspect;
+			  while(aspect_num > 0 and temp_r > 0){
                                
-			     cap_r.push_back(temp_r);
-			     cap_s.push_back(ceil(sum/temp_r));
-			     cap_r.push_back(ceil(sum/temp_s));
-			     cap_s.push_back(temp_s);
+			      cap_r.push_back(temp_r);
+			      cap_s.push_back(ceil(sum/temp_r));
+			      cap_r.push_back(ceil(sum/temp_s));
+			      cap_s.push_back(temp_s);
 
-			     aspect_num = aspect_num - 2;
-			     temp_r = temp_r - 1;
-			     temp_s = temp_s + 1;
+			      aspect_num = aspect_num - 2;
+			      temp_r = temp_r - 1;
+			      temp_s = temp_s + 1;
 
-			 }
+			  }
                                                   
 		      }
                       //increase other aspect ratio
