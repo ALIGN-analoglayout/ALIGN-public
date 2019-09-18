@@ -17,6 +17,7 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 ######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
         self.finsPerUnitCell = fin + 2*finDummy
+        self.finDummy = finDummy
        # Should be a multiple of 4 for maximum utilization
         assert self.finsPerUnitCell % 4 == 0
         assert fin > 3, "number of fins in the transistor must be more than 2"
@@ -82,12 +83,12 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine(i*v0pitch,    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
-    def _gen_abstract_MOS( self, x, y, fin_u, fin, finDummy, reflect=False):
+    def _addMOS( self, x, y, reflect=False):
 
         def _connect_diffusion(x, port):
             self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
             self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
-            for j in range(((finDummy+3)//2), self.v0.h_clg.n):
+            for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
                 self.addVia( self.v0, port, None, x, (y, j))
 
         # Draw FEOL Layers
@@ -102,8 +103,8 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
         # Source, Drain, Gate Connections
 
-        grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
-        grid_y1 = grid_y0+(fin+2)//2
+        grid_y0 = y*self.m2PerUnitCell + self.finDummy//2-1
+        grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
@@ -116,8 +117,8 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             _connect_diffusion(gate_x - 1, None) #S
             _connect_diffusion(gate_x + 1, None) #D
 
-    def _gen_routing(self, y, y_cells, Routing):
-        for (pin, contact, track, m3route) in Routing:
+    def _addRouting(self, y, y_cells, Routing):
+        for (pin, contact, track, m3route) in Routing(y):
             if y_cells > 1:
                 self.addWire( self.m2, pin, None, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
                 self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*self.m2PerUnitCell+track, 1))
@@ -129,25 +130,28 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
             for i in contact:
                 self.addVia( self.v1, None, None, i, y*self.m2PerUnitCell+track)
 
-    def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def _addMOSArray( self, x_cells, y_cells, Routing):
+        for y in range(y_cells):
+            for x in range(x_cells):
+                self._addMOS(x, y)
+            self._addRouting(y, y_cells, Routing)
 
-        self._gen_abstract_MOS(x, y, fin_u, fin, finDummy)
+    def addNMOSArray( self, x_cells, y_cells, Routing):
 
-        if x == x_cells -1:
-            self._gen_routing(y, y_cells, Routing)
+        self._addMOSArray(x_cells, y_cells, Routing)
 
         #####   Nselect Placement   #####
-        if x == x_cells -1 and y == y_cells -1:
-            self.addRegion( self.nselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
+        x = x_cells - 1
+        y = y_cells - 1
 
-    def genPMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+        self.addRegion( self.nselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
 
-        self._gen_abstract_MOS(x, y, fin_u, fin, finDummy)
+    def addPMOSArray( self, x_cells, y_cells, Routing):
 
-        if x == x_cells -1:
-            self._gen_routing(y, y_cells, Routing)
+        self._addMOSArray(x_cells, y_cells, Routing)
 
         #####   Pselect and Nwell Placement   #####
-        if x == x_cells -1 and y == y_cells -1:
-            self.addRegion( self.pselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
-            self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
+        x = x_cells - 1
+        y = y_cells - 1
+        self.addRegion( self.pselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
+        self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)

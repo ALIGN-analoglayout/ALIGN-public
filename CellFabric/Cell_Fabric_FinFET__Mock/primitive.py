@@ -2,12 +2,12 @@ from canvas import FinFET_Mock_PDK_Canvas
 
 class NMOSGenerator(FinFET_Mock_PDK_Canvas):
 
-    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def unit( self, x_cells, y_cells, Routing):
         
-        super().genNMOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        super().addNMOSArray(x_cells, y_cells, Routing)
 
 class PMOSGenerator(FinFET_Mock_PDK_Canvas):
 
-    def unit( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
+    def unit( self, x_cells, y_cells, Routing):
 
-        super().genPMOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+        super().addPMOSArray(x_cells, y_cells, Routing)

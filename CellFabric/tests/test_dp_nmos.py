@@ -27,10 +27,9 @@ def setup():
 
     uc = primitive.NMOSGenerator( fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
 
-    for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
-        Routing = [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
+    Routing = lambda y: [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
 
-        uc.unit( x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+    uc.unit( x_cells, y_cells, Routing)
 
     return uc
 
