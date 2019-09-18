@@ -141,17 +141,12 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
         self._addMOSArray(x_cells, y_cells, Routing)
 
         #####   Nselect Placement   #####
-        x = x_cells - 1
-        y = y_cells - 1
-
-        self.addRegion( self.nselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
+        self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
 
     def addPMOSArray( self, x_cells, y_cells, Routing):
 
         self._addMOSArray(x_cells, y_cells, Routing)
 
         #####   Pselect and Nwell Placement   #####
-        x = x_cells - 1
-        y = y_cells - 1
-        self.addRegion( self.pselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
-        self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
+        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
