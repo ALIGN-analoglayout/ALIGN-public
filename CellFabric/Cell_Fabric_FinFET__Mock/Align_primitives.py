@@ -63,14 +63,13 @@ def main( args):
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
 
-    if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
-        uc = primitive.NMOSGenerator( fin, finDummy, gate, gateDummy)
-    else:
-        uc = primitive.PMOSGenerator( fin, finDummy, gate, gateDummy)
-
+    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
     def gen( f):
-        uc.unit( x_cells, y_cells, f)
+        if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
+            uc.addNMOSArray( x_cells, y_cells, f)
+        else:
+            uc.addPMOSArray( x_cells, y_cells, f)
         return [ t[0] for t in f(0)]
 
     if args.primitive in ["Switch_NMOS", "Switch_PMOS"]:
