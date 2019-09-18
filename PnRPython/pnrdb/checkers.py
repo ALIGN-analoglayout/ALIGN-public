@@ -1,4 +1,5 @@
 from cell_fabric import DefaultCanvas, Pdk, transformation
+from pprint import pformat
 
 def check_bbox( b):
     pass
@@ -200,5 +201,8 @@ def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/Fin
 #                add_terminal( '!interVias', con.metal, con.placedBox)
 
     cnv.gen_data()
+
+    if len(cnv.drc.errors) > 0:
+        pformat(cnv.drc.errors)
 
     return cnv
