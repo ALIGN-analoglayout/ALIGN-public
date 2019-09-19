@@ -355,7 +355,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step4"<<endl;
   cal_offset(drc_info, H_metal_index, V_metal_index, HV_via_metal_index);
   cout<<"step5"<<endl;
-  ExtractData(fpath ,unit_capacitor, final_gds, obs, drc_info, H_metal_index, V_metal_index, HV_via_metal_index, opath);
+  ExtractData(fpath ,unit_capacitor, final_gds, uc, drc_info, H_metal_index, V_metal_index, HV_via_metal_index, opath);
   cout<<"step6"<<endl;
   WriteJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
   cout<<"step7"<<endl;
@@ -419,7 +419,7 @@ public:
 };
 
 void
-Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, vector<string> & obs, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, const string& opath) {
+Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::lefMacro &uc, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, const string& opath) {
     string topGDS_loc = opath+final_gds+".gds";
     int gds_unit = 20;
     //writing metals
@@ -555,30 +555,37 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
+
     for (unsigned int i = 0; i < Caps.size(); i++) {
-	x[0]=Caps[i].x - unit_cap_demension.first/2+offset_x;
-	x[1]=Caps[i].x - unit_cap_demension.first/2+offset_x;
-	x[2]=Caps[i].x + unit_cap_demension.first/2+offset_x;
-	x[3]=Caps[i].x + unit_cap_demension.first/2+offset_x;
-	x[4]=x[0];
-       
-	y[0]=Caps[i].y - unit_cap_demension.second/2+offset_y;
-	y[1]=Caps[i].y + unit_cap_demension.second/2+offset_y;
-	y[2]=Caps[i].y + unit_cap_demension.second/2+offset_y;
-	y[3]=Caps[i].y - unit_cap_demension.second/2+offset_y;
-	y[4]=y[0];
-     
-	minmax.update( x, y);
 
-	//this part need modify, here the 
-	PnRDB::contact temp_contact;
-	fillContact (temp_contact, x, y);
+        int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;
+        int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;
+        
+        for (unsigned int j = 0; j< uc.interMetals.size(); j++) {
+            
+            x[0] = temp_x + uc.interMetals[j].originBox.LL.x;
+            x[1] = temp_x + uc.interMetals[j].originBox.LL.x;
+            x[2] = temp_x + uc.interMetals[j].originBox.UR.x;
+            x[3] = temp_x + uc.interMetals[j].originBox.UR.x;
+            x[4] = x[0];
 
-        for(unsigned int i=0;i<obs.size();i++){
-            temp_contact.metal = obs[i];
+            y[0] = temp_y + uc.interMetals[j].originBox.LL.y;
+            y[1] = temp_y + uc.interMetals[j].originBox.UR.y;
+            y[2] = temp_y + uc.interMetals[j].originBox.UR.y;
+            y[3] = temp_y + uc.interMetals[j].originBox.LL.y;
+            y[4] = y[0];
+	
+            minmax.update( x, y);
+
+            PnRDB::contact temp_contact;
+            temp_contact.metal = uc.interMetals[j].metal;
+	    fillContact (temp_contact, x, y);
             CheckOutBlock.interMetals.push_back(temp_contact);
-	}
+
+        }
+        
     }
+
     cout<<"Extract Data Step 7"<<endl;
 
 
