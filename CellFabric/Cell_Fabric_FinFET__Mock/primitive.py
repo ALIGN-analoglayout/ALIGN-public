@@ -2,7 +2,7 @@ from canvas import FinFET_Mock_PDK_Canvas
 
 class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
 
-    def _addMOS( self, x, y, reflect=False):
+    def _addMOS( self, x, y):
 
         def _connect_diffusion(x, port):
             self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
@@ -29,12 +29,8 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
         self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
         self.addVia( self.va, None, None, gate_x, (y*self.m2PerUnitCell//2, 1))
         # Connect Source & Drain
-        if reflect:
-            _connect_diffusion(gate_x - 1, None) #D
-            _connect_diffusion(gate_x + 1, None) #S
-        else:
-            _connect_diffusion(gate_x - 1, None) #S
-            _connect_diffusion(gate_x + 1, None) #D
+        _connect_diffusion(gate_x - 1, None) #S
+        _connect_diffusion(gate_x + 1, None) #D
 
     def _addRouting(self, y, y_cells, Routing):
         for (pin, contact, track, m3route) in Routing(y):

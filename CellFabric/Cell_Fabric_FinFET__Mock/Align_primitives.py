@@ -7,7 +7,7 @@ import gen_gds_json
 import gen_lef
 import primitive
 import pattern_generator
-                                                           
+
 def main( args):
     fin = args.height
     pattern = args.pattern
@@ -57,7 +57,7 @@ def main( args):
             SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.interdigitated(x_cells, gu, gate, gateDummy)
 
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
-    CcM3 = (min(S)+max(S))//2
+    CcM3 = (max(S))//2
 
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
