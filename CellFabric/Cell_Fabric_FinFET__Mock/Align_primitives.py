@@ -17,22 +17,13 @@ def main( args):
     gu = gate + 2*gateDummy
     y_cells = args.Ycells
     x_cells = 2*args.Xcells
+    # Why do we have this condition? x_cells == 3 allows CC
     pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
 
-    if args.primitive in ["Switch_NMOS", "Switch_PMOS", "DCL_NMOS", "DCL_PMOS"]:
-        x_cells = args.Xcells
-    elif args.primitive in ["CM_NMOS", "CM_PMOS", "CMFB_NMOS", "CMFB_PMOS"]:
+    ### For Current Mirror; need to be updated later ###
+    if any(args.primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
+        # What pattern are we trying to do here?
         x_cells = x_cells + 2
-    else:
-        pass
-
-    if pattern == 1:  
-        SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
-    else:
-        SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.interdigitated(x_cells, gu, gate, gateDummy)
-
-    ### For Current Mirror; need to be updated later ###    
-    if args.primitive in ["CM_NMOS", "CM_PMOS", "CMFB_NMOS", "CMFB_PMOS"]:
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
         for k in range(x_cells):
@@ -47,9 +38,9 @@ def main( args):
                 SB.append(lS)
                 GB.append(lG)
                 DB.append(lD)
-    ### End ###
-
-    if args.primitive in ["Switch_NMOS", "Switch_PMOS", "DCL_NMOS", "DCL_PMOS"]:
+    elif any(args.primitive.startswith(f'{x}_') for x in ["Switch", "DCL"]):
+        # What pattern are we trying to do here?
+        x_cells = args.Xcells
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
         for k in range(x_cells):
@@ -59,6 +50,11 @@ def main( args):
             SA.append(lSA)
             GA.append(lGA)
             DA.append(lDA)
+    elif any(args.primitive.startswith(f'{x}_') for x in ["CMC", "DP"]):
+        if pattern == 1:
+            SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
+        else:
+            SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.interdigitated(x_cells, gu, gate, gateDummy)
 
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
@@ -66,7 +62,7 @@ def main( args):
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
     def gen( f):
-        if args.primitive in ["Switch_NMOS", "DCL_NMOS", "DP_NMOS", "CM_NMOS", "CMC_NMOS", "SCM_NMOS", "CMC_NMOS_S"]:
+        if 'NMOS' in args.primitive:
             uc.addNMOSArray( x_cells, y_cells, f)
         else:
             uc.addPMOSArray( x_cells, y_cells, f)
@@ -118,7 +114,7 @@ def main( args):
                                    ('GB', GB if y%2==0 else GA, 5, CcM3+2)])
 
     else:
-        assert False
+        assert False, "Unrecognized primitive"
 
     with open(args.block_name + '.json', "wt") as fp:
         uc.writeJSON( fp)
