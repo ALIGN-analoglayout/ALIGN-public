@@ -47,7 +47,7 @@ def main( args):
             SA.append(lSA)
             GA.append(lGA)
             DA.append(lDA)
-    elif any(args.primitive.startswith(f'{x}_') for x in ["CMC", "DP"]):
+    elif any(args.primitive.startswith(f'{x}_') for x in ["CMC", "DP", "SCM"]):
         # Dual transistor primitives
         x_cells = 2*args.Xcells
         # TODO: Fix difficulties associated with CC patterns matching this condition
