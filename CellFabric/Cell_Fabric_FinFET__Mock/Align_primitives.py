@@ -20,9 +20,9 @@ def main( args):
     # Why do we have this condition? x_cells == 3 allows CC
     pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
 
-    ### For Current Mirror; need to be updated later ###
     if any(args.primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
-        # What pattern are we trying to do here?
+        # Dual transistor (current mirror) primitives
+        # TODO: Generalize this (pattern is ignored)
         x_cells = x_cells + 2
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
@@ -39,7 +39,7 @@ def main( args):
                 GB.append(lG)
                 DB.append(lD)
     elif any(args.primitive.startswith(f'{x}_') for x in ["Switch", "DCL"]):
-        # What pattern are we trying to do here?
+        # Single transistor primitives
         x_cells = args.Xcells
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
@@ -51,6 +51,7 @@ def main( args):
             GA.append(lGA)
             DA.append(lDA)
     elif any(args.primitive.startswith(f'{x}_') for x in ["CMC", "DP"]):
+        # Dual transistor primitives
         if pattern == 1:
             SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
         else:
