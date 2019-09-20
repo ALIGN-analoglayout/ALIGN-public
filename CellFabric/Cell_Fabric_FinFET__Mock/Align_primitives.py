@@ -16,14 +16,11 @@ def main( args):
     gate = 2
     gu = gate + 2*gateDummy
     y_cells = args.Ycells
-    x_cells = 2*args.Xcells
-    # Why do we have this condition? x_cells == 3 allows CC
-    pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
 
     if any(args.primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
-        x_cells = x_cells + 2
+        x_cells = 2*args.Xcells + 2
         SA, SB, DA, DB, GA, GB = ([] for i in range(6))
         SDG =(SA, GA, DA, SB, GB, DB)
         for k in range(x_cells):
@@ -52,6 +49,9 @@ def main( args):
             DA.append(lDA)
     elif any(args.primitive.startswith(f'{x}_') for x in ["CMC", "DP"]):
         # Dual transistor primitives
+        x_cells = 2*args.Xcells
+        # TODO: Fix difficulties associated with CC patterns matching this condition
+        pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
         if pattern == 1:
             SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
         else:
