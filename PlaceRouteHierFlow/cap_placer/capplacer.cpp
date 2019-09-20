@@ -618,7 +618,7 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     Max_y += deltay;
 
     const auto gu = drc_info.Metal_info[V_metal].grid_unit_x;
-    Max_x = ceil(Max_x/gu)*gu;
+    Max_x = ceil( (double) Max_x/gu)*gu;
 
     CheckOutBlock.gdsFile = topGDS_loc;
     PnRDB::point temp_point;
