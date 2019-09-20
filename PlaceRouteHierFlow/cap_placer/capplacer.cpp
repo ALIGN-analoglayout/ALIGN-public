@@ -113,17 +113,6 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   unit_cap_demension.first = uc.width;
   unit_cap_demension.second= uc.height;
 
-  //round up to grid size
-  auto roundup = []( int& v, int pitch) {
-      v = pitch*((v+pitch-1)/pitch);
-  };
-  //  roundup( unit_cap_demension.first, 80);
-  //  roundup( unit_cap_demension.second, 84);
-
-  // We are dividing by two later
-  assert( unit_cap_demension.first % 2 == 0);
-  assert( unit_cap_demension.second % 2 == 0);
-
   int pin_minx = INT_MAX;
   int pin_miny = INT_MAX;
   string pin_metal;
@@ -179,6 +168,19 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       HV_via_metal = H_metal;
       HV_via_metal_index = H_metal_index;
   }
+
+  //round up to grid size
+  auto roundup = []( int& v, int pitch) {
+      v = pitch*((v+pitch-1)/pitch);
+  };
+
+  //  roundup( unit_cap_demension.first, drc_info.Metal_info.at(V_metal_index).grid_unit_x);
+  //  roundup( unit_cap_demension.second, drc_info.Metal_info.at(H_metal_index).grid_unit_y);
+
+  // We are dividing by two later
+  assert( unit_cap_demension.first % 2 == 0);
+  assert( unit_cap_demension.second % 2 == 0);
+
 
   const auto& mv = drc_info.Metalmap.at(HV_via_metal);
   const auto& mvm = drc_info.Via_model.at(mv);
