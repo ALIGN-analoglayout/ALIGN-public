@@ -29,7 +29,7 @@ def setup():
 
     Routing = lambda y: [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
 
-    uc.addNMOSArray( x_cells, y_cells, Routing)
+    uc.addNMOSArray( x_cells, y_cells, 2, Routing)
 
     return uc
 
