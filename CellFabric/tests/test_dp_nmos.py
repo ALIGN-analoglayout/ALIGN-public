@@ -29,7 +29,7 @@ def setup():
 
     Routing = lambda y: [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
 
-    uc.addNMOSArray( x_cells, y_cells, 2, Routing)
+    uc.addNMOSArray( x_cells, y_cells, 1, Routing)
 
     return uc
 
@@ -70,6 +70,10 @@ def test_fabric_pex(setup):
     c = setup
 
     c.gen_data()
+
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 2, c.rd.subinsts
 
     fn = 'tests/_dp_nmos.cir'
 

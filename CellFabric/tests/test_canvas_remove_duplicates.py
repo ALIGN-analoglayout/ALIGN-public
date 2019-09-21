@@ -223,10 +223,10 @@ def test_via_multi_terminal_connection():
                    {'layer': 'via1', 'netName': None, 'rect': [0,  -50, 50,  50]}
     ]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.opens) == 0
-    assert len(c.rd.subinsts) == 1
-    assert len(c.rd.subinsts['M1']) == 2
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
 
 def test_via_multi_terminal_open():
     c = Canvas()
