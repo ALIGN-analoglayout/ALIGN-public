@@ -31,6 +31,14 @@ class Canvas:
             if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
             if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
 
+    def setBboxFromBoundary( self):
+        res = []
+        for x in self.terminals:
+            if x.layer == 'boundary':
+                res.append(x)
+        assert len(res) == 1
+        self.bbox = transformation.Rect( res[0]['rect'])
+
     def addGen( self, gen):
         assert gen.nm not in self.generators, gen.nm
         self.generators[gen.nm] = gen
@@ -198,7 +206,7 @@ class Canvas:
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
 
-    def gen_data( self):
+    def gen_data( self, *, draw_grid=False):
         self.computeBbox()
 
         data = { 'bbox' : self.bbox.toList(),
@@ -206,20 +214,56 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
 
+
+
         data['terminals'] = self.postprocessor.run(data['terminals'])
 
+
         if self.pdk is not None:
+            if draw_grid:
+                self.draw_grid(data)
+
             self.drc = DesignRuleCheck( self)
             self.drc.run()
             self.pex = ParasiticExtraction( self)
             self.pex.run()
 
+
+
         return data
 
-    def writeJSON(self, fp):
-        data = self.gen_data()
+    def writeJSON(self, fp, *, draw_grid=False):
+        data = self.gen_data( draw_grid=draw_grid)
         json.dump( data, fp, indent=2)
         return data
+
+    def draw_grid(self,data):
+        width = self.bbox.urx
+        height = self.bbox.ury
+
+        ly = "M1"
+        if ly in self.pdk:
+            pitch = self.pdk[ly]["Pitch"]
+            assert self.pdk[ly]["Direction"] == 'v'
+            assert pitch == 80
+
+            for ix in range( (width+pitch-1)//pitch):
+                x = pitch*ix
+                r = [ x-1, 0, x+1, height]
+                data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
+
+            
+        ly = "M2"
+        if ly in self.pdk:
+            pitch = self.pdk[ly]["Pitch"]
+            assert pitch == 84
+            assert self.pdk[ly]["Direction"] == 'h'
+
+            for iy in range( (height+pitch-1)//pitch):
+                y = pitch*iy
+                r = [ 0, y-1, width, y+1]
+                data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
+
 
     def writeGDS(self, fp1, timestamp=None):
 
