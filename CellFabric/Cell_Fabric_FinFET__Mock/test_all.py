@@ -33,8 +33,8 @@ def test_a8():
 def test_a9():
     build_test( 'CMC_NMOS',    n=12, X=3, Y=1)
 def test_a10():
-    build_test( 'CMC_NMOS',    n=12, X=1, Y=1)
+    build_test( 'SCM_NMOS',    n=12, X=1, Y=1)
 def test_a11():
-    build_test( 'CMC_PMOS',    n=12, X=1, Y=1)
+    build_test( 'SCM_PMOS',    n=12, X=1, Y=1)
 
 
