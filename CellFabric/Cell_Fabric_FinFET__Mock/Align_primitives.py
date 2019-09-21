@@ -62,53 +62,61 @@ def main( args):
 
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
-    def gen( f):
+    def gen( pattern, f):
         if 'NMOS' in args.primitive:
-            uc.addNMOSArray( x_cells, y_cells, f)
+            uc.addNMOSArray( x_cells, y_cells, pattern, f)
         else:
-            uc.addPMOSArray( x_cells, y_cells, f)
+            uc.addPMOSArray( x_cells, y_cells, pattern, f)
         return [ t[0] for t in f(0)]
 
     if args.primitive in ["Switch_NMOS", "Switch_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( 0,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('D', D, 2, CcM3+1),
                                    ('G', G, 3, CcM3-1)])
  
     elif args.primitive in ["DCL_NMOS", "DCL_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( 0,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('D', G+D, 2, CcM3+1)])
     
     elif args.primitive in ["SCM_NMOS", "SCM_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( pattern,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('DA', DA+G if y%2==0 else DB+G, 2, CcM3-1),
                                    ('DB', DB if y%2==0 else DA, 3, CcM3+1)])
 
     elif args.primitive in ["CMC_NMOS", "CMC_PMOS"]:
-        cell_pin = gen( lambda y: [('SA', SA if y%2==0 else SB, 1, CcM3-1),
+        cell_pin = gen( pattern,
+                        lambda y: [('SA', SA if y%2==0 else SB, 1, CcM3-1),
                                    ('DA', DA if y%2==0 else DB, 2, CcM3-2),
                                    ('SB', SB if y%2==0 else SA, 3, CcM3+1),
                                    ('DB', DB if y%2==0 else DA, 4, CcM3+2),
                                    ('G', G, 5, CcM3)])
     
     elif args.primitive in ["CM_NMOS", "CM_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( 3, 
+                        lambda y: [('S', S, 1, CcM3),
                                    ('DA', DA+G, 2, CcM3-1),
                                    ('DB', DB, 3, CcM3+1)])
 
     elif args.primitive in ["CMC_NMOS_S", "CMC_PMOS_S"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( pattern,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('DA', DA if y%2==0 else DB, 2, CcM3-1),
                                    ('DB', DB if y%2==0 else DA, 3, CcM3+1),
                                    ('G', G, 4, CcM3-2)])
 
     elif args.primitive in ["CMFB_NMOS", "CMFB_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( 3,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('DA', DA+GA, 2, CcM3-1),
                                    ('DB', DB, 3, CcM3+1),
                                    ('GB', GB, 4, CcM3-2)])
 
     elif args.primitive in ["DP_NMOS", "DP_PMOS"]:
-        cell_pin = gen( lambda y: [('S', S, 1, CcM3),
+        cell_pin = gen( pattern,
+                        lambda y: [('S', S, 1, CcM3),
                                    ('DA', DA if y%2==0 else DB, 2, CcM3-1),
                                    ('DB', DB if y%2==0 else DA, 3, CcM3+1),
                                    ('GA', GA if y%2==0 else GB, 4, CcM3-2),
