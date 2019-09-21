@@ -73,13 +73,19 @@ class ParasiticExtraction():
     def _extract_via_parasitics(self, layer, vv):
         for v in vv.values():
             for slr in v.rects:
-                self._create_via_netcells(slr.root().netName, layer, slr.rect)
+                self._create_via_netcells(slr.root().netName, slr.terminal, layer, slr.rect)
 
-    def _create_via_netcells(self, net, layer, rect):
+    def _create_via_netcells(self, net, terminal, layer, rect):
         x = ( rect[0] + rect[2] ) // 2
         y = ( rect[1] + rect[3] ) // 2
-        node1 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][0], x, y)
-        node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
+        if terminal is None:
+            node1 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][0], x, y)
+            node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
+        elif self.canvas.pdk[layer]['Stack'][0] is None:
+            node1 = f'{terminal[0]}_{terminal[1]}'
+            node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
+        else:
+            raise NotImplementedError
         self.netCells[ (node1, node2) ] = (layer, rect)
 
     @staticmethod

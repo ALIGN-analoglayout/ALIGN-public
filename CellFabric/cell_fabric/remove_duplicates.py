@@ -27,6 +27,7 @@ class ScanlineRect(UnionFind):
         super().__init__()
         self.rect = None
         self.netName = None
+        self.terminal = None
         self.isPorted = False
 
     def __repr__(self):
@@ -237,6 +238,7 @@ class RemoveDuplicates():
             instance, pin = a.netName.split(':')
             if len(self.subinsts[instance][pin]) == 0 \
                     or next(iter(self.subinsts[instance][pin])).netName == b.netName:
+                a.terminal = (instance, pin)
                 a.netName = b.netName
                 self.subinsts[instance][pin].add( a)
                 b.connect( a)
