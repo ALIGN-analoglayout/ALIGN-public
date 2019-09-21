@@ -17,10 +17,26 @@ class CanvasCap(Canvas):
         super().__init__()
         p = Pdk().load(pdkfile)
         
-        self.x_number = int(2*round(((x_length+p['Cap']['m1Pitch']-p['Cap']['m1Width'])/(2.0*p['Cap']['m1Pitch']))))
-        self.y_number = int(2 *round(((y_length+p['Cap']['m2Pitch']-p['Cap']['m2Width'])/(2.0*p['Cap']['m2Pitch']))))
+        c_m1_p = p['Cap']['m1Pitch']
+        c_m1_w = p['Cap']['m1Width']
+        c_m2_p = p['Cap']['m2Pitch']
+        c_m2_w = p['Cap']['m2Width']
+        m2_p = p['M2']['Pitch']
+
+        print( f"Pitches {c_m1_p} {c_m2_p} {m2_p}")
+
+        def compute( l, p, w):
+            return int( 2*round(  (l+p-w)/(2.0*p) ))
+
+        self.x_number = compute( x_length, c_m1_p, c_m1_w)
+        self.y_number = compute( x_length, c_m2_p, c_m2_w)
        
-        self.last_y1_track = ((self.y_number-1)*p['Cap']['m2Pitch']+p['M2']['Pitch']-1)//p['M2']['Pitch']
+        print( f"Number of wires {self.x_number} {self.y_number}")
+
+        def roundup( x, p):
+            return (x+p-1)//p
+
+        self.last_y1_track = roundup( (self.y_number-1)*c_m2_p, m2_p)
         self.last_x_track = self.x_number - 1
 
         self.m1 = self.addGen( Wire( 'm1', 'M1', 'v',
@@ -42,12 +58,14 @@ class CanvasCap(Canvas):
         self.boundary = self.addGen( Region( 'boundary', 'boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
 
         self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg, v_clg=self.m1.clg))
-        self.v2 = self.addGen( Via( 'v2', 'V1', h_clg=self.m2.clg, v_clg=self.m3.clg))
+        self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg, v_clg=self.m3.clg))
 
 
 class UnitCell(CanvasCap):
 
     def unit( self, x, y, x_cells, y_cells):
+        assert x == 0 and y == 0 and x_cells == 1 and y_cells == 1
+
         m2factor = 2 ### number of m2-tracks (m2factor-1)in between two unitcells in y-direction
         m1factor = 3
                 
@@ -88,8 +106,8 @@ class UnitCell(CanvasCap):
                     clg=self.m2n.clg.copyShift( self.m2.clg.value( grid_cell_y_pitch*y)[0]),
                     spg=self.m2n.spg)
 
-        v1n = Via( 'v1', 'V1', h_clg=m2n.clg, v_clg=self.m1.clg)
-        v2n = Via( 'v2', 'V2', h_clg=m2n.clg, v_clg=self.m3.clg)
+        v1n = Via( 'v1n', 'V1', h_clg=m2n.clg, v_clg=self.m1.clg)
+        v2n = Via( 'v2n', 'V2', h_clg=m2n.clg, v_clg=self.m3.clg)
 
         grid_x0 = x*grid_cell_x_pitch
         grid_x1 = grid_x0 + self.last_x_track
@@ -117,35 +135,35 @@ class UnitCell(CanvasCap):
                             self.last_x_track  + x*grid_cell_x_pitch + 1,
                             self.last_y1_track + y*grid_cell_y_pitch + 1)
                                                                           
-if __name__ == "__main__":
-    
+def gen_parser():
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
     parser.add_argument( "-b", "--block_name", type=str, required=True)
     parser.add_argument( "-n", "--unit_cap", type=float, required=True)
-    #parser.add_argument( "-X", "--Xcells", type=int, required=True)
-    #parser.add_argument( "-Y", "--Ycells", type=int, required=True)
-    args = parser.parse_args()
+    return parser
+
+
     
-    #x_cells = args.Xcells
-    #y_cells = args.Ycells
+def main( args):    
     unit_cap = args.unit_cap
-    x_cells = 1
-    y_cells = 1
     x_length = float((math.sqrt(unit_cap/2))*1000)
     y_length = float((math.sqrt(unit_cap/2))*1000)  
 
     uc = UnitCell(x_length, y_length)
 
-    for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
-        uc.unit( x, y, x_cells, y_cells)
+    uc.unit( 0, 0, 1, 1)
 
     uc.computeBbox()
 
     with open(args.block_name + '.json', "wt") as fp:
-        data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
-        fp.write( json.dumps( data, indent=2) + '\n')
+        uc.writeJSON( fp)
+
     cell_pin = ["PLUS", "MINUS"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
         gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
+
+    return uc
+
+if __name__ == "__main__":
+    main( gen_parser().parse_args())
