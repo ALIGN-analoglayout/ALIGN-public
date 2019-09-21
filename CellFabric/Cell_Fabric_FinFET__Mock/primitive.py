@@ -54,39 +54,41 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
 
     def _addMOSArray( self, x_cells, y_cells, pattern, Routing):
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
-        self._dbg = []
+        _dbg = []
         for y in range(y_cells):
             self._xpins = defaultdict(lambda: defaultdict(list))
-            self._dbg.append([])
+            _dbg.append([])
             for x in range(x_cells):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, names[0], False)
-                    self._dbg[-1].append( (names[0], False) )
+                    _dbg[-1].append( (names[0], False) )
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2)
-                    self._dbg[-1].append( (names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2) )
+                    _dbg[-1].append( (names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2) )
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False)
-                    self._dbg[-1].append( (names[((x % 2) + (y % 2)) % 2], False) )
+                    _dbg[-1].append( (names[((x % 2) + (y % 2)) % 2], False) )
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
-                    self._dbg[-1].append( (names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False) )
+                    _dbg[-1].append( (names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False) )
                 else:
                     assert False, "Unknown pattern"
             self._addRouting(y, y_cells, Routing)
+        from pprint import pprint
+        pprint(_dbg)
 
     def addNMOSArray( self, x_cells, y_cells, pattern, Routing):
 
