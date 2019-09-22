@@ -23,21 +23,22 @@ import gdsconv.json2gds
 class Canvas:
     def computeBbox( self):
         """Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly"""
-        self.bbox = transformation.Rect(None,None,None,None)
-        for term in self.terminals:
-            r = transformation.Rect( *term['rect'])
-            if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
-            if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
-            if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
-            if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
+        if self.bbox is None:
+            self.bbox = transformation.Rect(None,None,None,None)
+            for term in self.terminals:
+                r = transformation.Rect( *term['rect'])
+                if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
+                if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
+                if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
+                if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
 
     def setBboxFromBoundary( self):
         res = []
-        for x in self.terminals:
-            if x.layer == 'boundary':
-                res.append(x)
+        for term in self.terminals:
+            if term['layer'] == 'boundary':
+                res.append(term)
         assert len(res) == 1
-        self.bbox = transformation.Rect( res[0]['rect'])
+        self.bbox = transformation.Rect( *res[0]['rect'])
 
     def addGen( self, gen):
         assert gen.nm not in self.generators, gen.nm
@@ -191,6 +192,7 @@ class Canvas:
         self.layer_stack = [( "via1", ("M1", "M2")),
                             ( "via2", ("M3", "M2"))]
         self.gds_layer_map = gds_layer_map
+        self.bbox = None
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))
@@ -213,8 +215,6 @@ class Canvas:
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
-
-
 
         data['terminals'] = self.postprocessor.run(data['terminals'])
 

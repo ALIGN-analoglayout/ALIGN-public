@@ -127,6 +127,9 @@ class UnitCell(CanvasCap):
                         0, 0,
                         self.last_x1_track,
                         self.last_y1_track)
+        
+        print( "Computed Boundary:", self.terminals[-1], self.terminals[-1]['rect'][2], self.terminals[-1]['rect'][2]%80)
+
                                                                           
 def gen_parser():
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
@@ -146,6 +149,8 @@ def main( args):
     uc.unit()
 
     uc.setBboxFromBoundary()
+
+    print( "bbox", uc.bbox)
 
     with open(args.block_name + '.json', "wt") as fp:
         uc.writeJSON( fp, draw_grid=True)
