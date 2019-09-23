@@ -27,6 +27,7 @@ class CanvasCap(Canvas):
         print( f"Pitches {c_m1_p} {c_m2_p} {m1_p} {m2_p}")
 
         def compute( l, p, w):
+            # this is nonsense but if l is a multiple of 2p say 2kp, then 2kp+p-w/(2p) is always k
             return int( 2*round(  (l+p-w)/(2.0*p) ))
 
         self.x_number = compute( x_length, c_m1_p, c_m1_w)
@@ -38,8 +39,22 @@ class CanvasCap(Canvas):
             return (x+p-1)//p
 
         self.last_y1_track = roundup( (self.y_number-1)*c_m2_p, m2_p)
-        self.last_x_track = self.x_number - 1
         self.last_x1_track = roundup( (self.x_number-1)*c_m1_p, m1_p)
+
+        
+
+        if (self.y_number-1) % 2 != self.last_y1_track % 2:
+            print( "Bump up last_y1_track for color compatibility")
+            self.last_y1_track += 1 # so the last color is compatible with the external view of the cell
+        if (self.x_number-1) % 2 != self.last_x1_track % 2:
+            print( "Bump up last_x1_track for color compatibility")
+            self.last_x1_track += 1 # so the last color is compatible with the external view of the cell
+
+        print( "last_x1_track (m1Pitches_standards)", self.last_x1_track, "last_y1_track (m2Pitch_standards)", self.last_y1_track)
+
+        #gcd = math.gcd( self.m2Pitch_narrow, self.m2Pitch_standard)
+        #print( "GCD,LCM,(LCM in m2Pitch_narrowes),(LCM in m2Pitch_standards) of m2Pitch_narrow (minimum) and m2Pitch_standard (devices)", gcd, self.m2Pitch_narrow, self.m2Pitch_standard, (self.m2Pitch_narrow*self.m2Pitch_standard)//gcd, self.m2Pitch_standard//gcd, self.m2Pitch_narrow//gcd)
+
 
         self.m1 = self.addGen( Wire( 'm1', 'M1', 'v',
                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M1']['Pitch'], width=p['M1']['Width']),
@@ -77,17 +92,6 @@ class CanvasCap(Canvas):
 class UnitCell(CanvasCap):
 
     def unit( self):
-
-        m1factor = 3
-                
-        if (self.y_number-1) % 2 != self.last_y1_track % 2:
-            self.last_y1_track += 1 # so the last color is compatible with the external view of the cell
-
-
-        #print( "last_x_track (m1Pitches)", last_x_track, "last_y1_track (m2Pitch_standards)", last_y1_track)
-
-        #gcd = math.gcd( self.m2Pitch_narrow, self.m2Pitch_standard)
-        #print( "GCD,LCM,(LCM in m2Pitch_narrowes),(LCM in m2Pitch_standards) of m2Pitch_narrow (minimum) and m2Pitch_standard (devices)", gcd, self.m2Pitch_narrow, self.m2Pitch_standard, (self.m2Pitch_narrow*self.m2Pitch_standard)//gcd, self.m2Pitch_standard//gcd, self.m2Pitch_narrow//gcd)
 
         grid_y0 = 0
         grid_y1 = grid_y0 + self.last_y1_track
@@ -134,15 +138,24 @@ class UnitCell(CanvasCap):
 def gen_parser():
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
     parser.add_argument( "-b", "--block_name", type=str, required=True)
-    parser.add_argument( "-n", "--unit_cap", type=float, required=True)
+    parser.add_argument( "-n", "--unit_cap", type=float, default=None)
+    parser.add_argument( "--x_length", type=int, default=None)
+    parser.add_argument( "--y_length", type=int, default=None)
     return parser
 
 
     
 def main( args):    
-    unit_cap = args.unit_cap
-    x_length = float((math.sqrt(unit_cap/2))*1000)
-    y_length = float((math.sqrt(unit_cap/2))*1000)  
+    if args.unit_cap is None:
+        assert args.x_length is not None and args.y_length is not None
+        x_length = args.x_length * 64
+        y_length = args.y_length * 64
+        print( "No unit_cap", x_length, y_length)
+    else:
+        unit_cap = args.unit_cap
+        x_length = float((math.sqrt(unit_cap/2))*1000)
+        y_length = float((math.sqrt(unit_cap/2))*1000)  
+        print( "With unit_cap", x_length, y_length)
 
     uc = UnitCell(x_length, y_length)
 

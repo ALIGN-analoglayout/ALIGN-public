@@ -12,11 +12,16 @@ def check_shorts( cmdlist):
 def build_test( b, *, n):
     check_shorts( ['-b', b, '-n', f"{n}"])
 
+def test_range():
+    for i in range( 4, 32, 2):
+        check_shorts( ['-b', f'cap_{i}', '--x_length', f"{i}", '--y_length', f"{i}"])
+
+
 def test_small():
-    build_test( 'cap', n=4)
+    build_test( 'cap_4fF', n=4)
 
 def x_test_a0():
-    build_test( 'cap', n=12)
+    build_test( 'cap_12fF', n=12)
 def x_test_a1():
-    build_test( 'cap', n=10)
+    build_test( 'cap_10fF', n=10)
 
