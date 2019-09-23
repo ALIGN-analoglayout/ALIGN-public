@@ -13,7 +13,7 @@ bool PnRdatabase::ReadVerilog(const string& fpath, const string& vname, const st
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(verilogfile.c_str());
-  } catch(ifstream::failure e) {
+  } catch(ifstream::failure& e) {
       cerr<<"PnRDB-Error: failed to open Verilog file "<<verilogfile<<endl;
       return false;
   }
