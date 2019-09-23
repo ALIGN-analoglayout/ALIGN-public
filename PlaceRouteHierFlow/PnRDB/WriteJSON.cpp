@@ -160,7 +160,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 	}
     }
     int test_font=1,test_vp=1,test_hp=1;
-    int test_texttype=251;//pin purpose
+    const int test_texttype=251;//pin purpose
     double test_mag=0.03; 
     int center_x[1],center_y[1];
     
@@ -216,7 +216,7 @@ assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
 void
 addTextElements (json& jsonElements, int cenX, int cenY, int layer, const string& text) {
     int test_font=1,test_vp=1,test_hp=1;
-    int test_texttype=251; //draw 0, label 2, pin 251, blockage 4
+    const int test_texttype=251; //draw 0, label 2, pin 251, blockage 4
     double test_mag=0.03; 
     json element;
     element["type"] = "text";
@@ -481,7 +481,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     }
 
     if (includePowerGrid) {
-	int vdd = 1; int gnd = 1;
+	const int vdd = 1; const int gnd = 1;
 	if (vdd == 1) {
 	    for (unsigned int i = 0; i < node.Vdd.metals.size(); i++) 
 		addMetalBoundaries (jsonElements, node.Vdd.metals[i], drc_info, unitScale);

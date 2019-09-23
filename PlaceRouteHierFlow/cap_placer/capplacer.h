@@ -20,18 +20,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-//#include "Capdatatype.h"
+
 #include "../PnRDB/datatype.h"
 
-//#include "/home/grads/l/liyg/Research/hierFlow_dev_Prometheus_010319/router/grid.h"
 extern "C"
 {
 #include <stdio.h>
 }
-
-//using std::string;
-//using std::cout;
-//using std::endl;
 
 using std::vector;
 using std::string;
@@ -43,126 +38,6 @@ using std::endl;
 using std::cout;
 using std::cerr;
 
-//using PnRDB::hierNode;
-
-
-
-/*
-/// @brief test enum callbacks
-struct EnumDataBase : public GdsParser::GdsDataBaseKernel
-{
-//{{{
-    /// @brief constructor 
-    EnumDataBase()
-    {
-        cout << "constructing EnumDataBase" << endl;
-    }
-    ///////////////////// required callbacks /////////////////////
-    /// @brief bit array callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param vBitArray data array  
-    virtual void bit_array_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, vector<int> const& vBitArray)
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, vBitArray);
-    }
-    /// @brief 2-byte integer callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param vInteger data array  
-    virtual void integer_2_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, vector<int> const& vInteger)
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, vInteger);
-    }
-    /// @brief 4-byte integer callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param vInteger data array  
-    virtual void integer_4_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, vector<int> const& vInteger)
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, vInteger);
-    }
-    /// @brief 4-byte floating point number callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param vFloat data array  
-    virtual void real_4_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, vector<double> const& vFloat) 
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, vFloat);
-    }
-    /// @brief 8-byte floating point number callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param vFloat data array  
-    virtual void real_8_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, vector<double> const& vFloat) 
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, vFloat);
-    }
-    /// @brief string callback 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param str data 
-    virtual void string_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, string const& str) 
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, data_type, str);
-    }
-    /// @brief begin or end indicator of a block 
-    /// @param record_type record 
-    virtual void begin_end_cbk(GdsParser::GdsRecords::EnumType record_type)
-    {
-        cout << __func__ << endl;
-        this->general_cbk(record_type, GdsParser::GdsData::NO_DATA, vector<int>(0));
-    }
-
-    /// @brief A generic callback function handles all other callback functions. 
-    /// It is not efficient but concise as a demo. 
-    /// @tparam ContainerType container type 
-    /// @param record_type record 
-    /// @param data_type data type 
-    /// @param data data values 
-    template <typename ContainerType>
-    void general_cbk(GdsParser::GdsRecords::EnumType record_type, GdsParser::GdsData::EnumType data_type, ContainerType const& data)
-    {
-        cout << "ascii_record_type: " << GdsParser::gds_record_ascii(record_type) << endl
-            << "ascii_data_type: " << GdsParser::gds_data_ascii(data_type) << endl 
-            << "data size: " << data.size() << endl;
-		//GdsParser::GdsCell GDSCELL;
-		//std::stringstream oss;
-		switch (record_type)
-        {
-            case GdsParser::GdsRecords::UNITS:
-				break;
-            case GdsParser::GdsRecords::STRNAME:
-				//std::copy(data.begin(), data.end(), std::ostream_iterator<char>(oss));
-				//GDSCELL.cell_name = oss.str();
-				//cout <<	"Cell Name: "<<GDSCELL.cell_name <<endl;
-				break;
-            case GdsParser::GdsRecords::BOUNDARY:
-                break;
-            case GdsParser::GdsRecords::LAYER:
-                cout << "LAYER = " << data[0] <<  endl;
-                break;
-            case GdsParser::GdsRecords::XY:
-                for (typename ContainerType::const_iterator it = data.begin(); it != data.end(); ++it)
-                    cout << *it << " "; 
-                cout << endl; 
-                cout << data.size() << endl;
-                break;
-            case GdsParser::GdsRecords::ENDEL:
-                break;
-            default:
-                break;
-        }
-    }
-//}}}
-};
-*/
 struct point {
   int x=0;
   int y=0;
