@@ -39,67 +39,67 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             _connect_diffusion(gate_x - 1, name, 'S') #S
             _connect_diffusion(gate_x + 1, name, 'D') #D
 
-    def _addRouting(self, y, y_cells, Routing):
-        for (pin, contact, track, m3route) in Routing(y):
-            if y_cells > 1:
-                self.addWire( self.m2, pin, None, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
-                self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*self.m2PerUnitCell+track, 1))
-                self.addVia( self.v2, None, None, m3route, track)
-                self.addVia( self.v2, None, None, m3route, y*self.m2PerUnitCell+track)
-            else:
-                self.addWire( self.m2, pin, pin, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
+    def _routeX(self, y, routing, pinned=False):
+        for track, (net, conn) in enumerate(routing.items(), start=1):
+            contacts = set()
+            for inst, v in self._xpins.items():
+                for pin, vv in v.items():
+                    if (inst, pin) in conn:
+                        contacts.update(vv)
+            self.addWire( self.m2, net, net if pinned else None, y * self.m2PerUnitCell+track, (min(contacts), -1), (max(contacts), 1))
+            for i in contacts:
+                self.addVia( self.v1, None, None, i, y * self.m2PerUnitCell + track)
 
-            for i in contact:
-                self.addVia( self.v1, None, None, i, y*self.m2PerUnitCell+track)
+    def _routeY(self, x_cells, y_cells, routing):
+        # TODO: Need to keep track of all M2 tracks & route intelligently. Center-point assumption may not work for all cases.
+        m3start = ( x_cells * self.gatesPerUnitCell - len(routing) ) // 2
+        for track, net in enumerate(routing.keys(), start=1):
+            self.addWire( self.m3, net, net, m3start + track, (track, -1), ( (y_cells-1) * self.m2PerUnitCell + track, 1))
+            for y in range(y_cells):
+                self.addVia( self.v2, None, None, m3start + track, y*self.m2PerUnitCell + track)
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, Routing):
+    def _addMOSArray( self, x_cells, y_cells, pattern, routing):
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
-        _dbg = []
         for y in range(y_cells):
             self._xpins = defaultdict(lambda: defaultdict(list))
-            _dbg.append([])
             for x in range(x_cells):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, names[0], False)
-                    _dbg[-1].append( (names[0], False) )
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2)
-                    _dbg[-1].append( (names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2) )
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False)
-                    _dbg[-1].append( (names[((x % 2) + (y % 2)) % 2], False) )
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
-                    _dbg[-1].append( (names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False) )
                 else:
                     assert False, "Unknown pattern"
-            self._addRouting(y, y_cells, Routing)
-        from pprint import pprint
-        pprint(_dbg)
+            self._routeX(y, routing, y_cells == 1)
+        if y_cells > 1:
+            self._routeY(x_cells, y_cells, routing)
 
-    def addNMOSArray( self, x_cells, y_cells, pattern, Routing):
+    def addNMOSArray( self, x_cells, y_cells, pattern, routing):
 
-        self._addMOSArray(x_cells, y_cells, pattern, Routing)
+        self._addMOSArray(x_cells, y_cells, pattern, routing)
 
         #####   Nselect Placement   #####
         self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
 
-    def addPMOSArray( self, x_cells, y_cells, pattern, Routing):
+    def addPMOSArray( self, x_cells, y_cells, pattern, routing):
 
-        self._addMOSArray(x_cells, y_cells, pattern, Routing)
+        self._addMOSArray(x_cells, y_cells, pattern, routing)
 
         #####   Pselect and Nwell Placement   #####
         self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)

@@ -7,27 +7,23 @@ sys.path.append('./Cell_Fabric_FinFET__Mock')
 
 import gen_gds_json
 import primitive
-import pattern_generator
 
 @pytest.fixture
 def setup():
-    fin_u = 12
     fin = 12
     x_cells = 4
     y_cells = 2
     gate = 2
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
-    gu = gate + 2*gateDummy
-     ##### Routing
-    SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
-
-    S = SA+SB
-    CcM3 = (min(S)+max(S))//2
 
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
 
-    Routing = lambda y: [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
+    Routing = {'S':  [('M1', 'S'), ('M2', 'S')],
+               'DA': [('M1', 'D')],
+               'DB': [('M2', 'D')],
+               'GA': [('M1', 'G')],
+               'GB': [('M2', 'G')]}
 
     uc.addNMOSArray( x_cells, y_cells, 1, Routing)
 
