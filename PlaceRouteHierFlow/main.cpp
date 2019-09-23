@@ -7,6 +7,8 @@
 #include "./cap_placer/capplacer.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <cstdlib>
+#include <sstream>
 
 using std::string;
 using std::cout;
@@ -18,7 +20,115 @@ double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
 double ConstGraph::PHI=1500;
 
+static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
+			const string& opath, const string& tag, const string& ltag, bool skip)
+{
+  if ( skip) return;
+
+  string ofn;
+  if ( lidx >= 0) {
+    ofn = opath+current_node.name + "_" + std::to_string(lidx) + tag + ".db.json";
+  } else {
+    ofn = opath+current_node.name + tag + ".db.json";
+  }
+  DB.WriteDBJSON(current_node,ofn);
+  std::cout << ltag << std::endl;
+}
+
+static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state)
+{
+  std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+  DB.Extract_RemovePowerPins(current_node);
+
+  std::cout<<"Checkpoint : before route"<<std::endl;
+  DB.PrintHierNode(current_node);
+
+  DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
+
+  Router curr_route;
+
+  bool NEW_GLOBAL_ROUTER = 1;
+
+  if ( NEW_GLOBAL_ROUTER) {
+    // Gcell Global Routing
+    save_state( DB, current_node, lidx, opath, ".pre_gr", "Starting Gcell Global Routing", skip_saving_state);
+    curr_route.RouteWork(4, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
+
+    save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
+  } else {
+    // Global Routing (old version)
+    save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
+
+    DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
+    // The following line is used to write global route results for Intel router (only for old version)
+    DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
+
+    // Detail Routing
+    save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
+  }
+
+  DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
+
+  if(current_node.isTop){
+    save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
+
+    DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
+        
+    std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
+    save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
+
+    DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
+        
+  }
+
+  DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
+  std::cout<<"Check point : before checkin\n";
+  DB.PrintHierNode(current_node);
+      
+  save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state);
+
+  DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
+
+  /*
+  std::ostringstream oss;
+  oss << "gen_viewer_json.py"
+      << " -b " << current_node.name
+      << " -v " << lidx
+      << " -d " << opath
+      << " -o " << opath;
+  string cmd(oss.str());
+
+  int rc = system( cmd.c_str());
+  std::cout << "System call to: \"" << cmd << "\" returned " << rc << std::endl;
+  
+  PnRDB::hierNode current_node2;
+
+  DB.ReadDBJSON( current_node2,ofn);
+  DB.WriteDBJSON( current_node2,ofn+"2");
+  */
+
+}
+
+
 int main(int argc, char** argv ){
+
+  //
+  // Enable or disable state saving in json at intermediate points
+  // Currently adds 4 seconds to a 29 second baseline for the switched_capacitor_filter
+  // And generates 69MB in files
+  bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
+
   string opath="./Results/";
   string fpath=argv[1];
   string lfile=argv[2];
@@ -32,8 +142,7 @@ int main(int argc, char** argv ){
   if(opath.back()!='/') {opath+="/";}
 
   // Following codes try to get the path of binary codes
-  string binary_directory;
-  binary_directory = argv[0];
+  string binary_directory = argv[0];
   cout <<"argv[0]: "<<binary_directory <<endl;
   int beginIdx = binary_directory.rfind('/');//find the last slash
   string str_lastOne = binary_directory.substr(beginIdx+1);
@@ -55,83 +164,32 @@ int main(int argc, char** argv ){
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
+    
+    save_state( DB, current_node, -1, opath, ".pre_prc", "Placer_Router_Cap", skip_saving_state);
     DB.AddingPowerPins(current_node);
-
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
+    save_state( DB, current_node, -1, opath, ".post_prc", "Placer_Router_Cap", skip_saving_state);
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
-    DB.WriteDBJSON(current_node,opath+current_node.name+ ".db.json");
+
+    save_state( DB, current_node, -1, opath, ".pre_pl", "Before Placement", skip_saving_state);
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort); // do placement and update data in current node
+
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      save_state( DB, nodeVec[lidx], lidx, opath, ".post_pl", "End Placement", skip_saving_state);
+    }
+
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      // Route each placement
-      current_node=nodeVec[lidx];
-      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
-      DB.Extract_RemovePowerPins(current_node);
+      route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state);
+    }
 
-      std::cout<<"Checkpoint : before route"<<std::endl;
-      DB.PrintHierNode(current_node);
-
-      DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
-
-      Router curr_route;
-
-      bool NEW_GLOBAL_ROUTER = 1;
-
-      if ( NEW_GLOBAL_ROUTER) {
-	// Gcell Global Routing
-	std::cout<<"Starting Gcell Global Routing"<<std::endl;
-	curr_route.RouteWork(4, current_node, drcInfo, 1, 6, binary_directory);
-	std::cout<<"Ending Gcell Global Routing"<<std::endl;
-
-	std::cout<<"Starting Gcell Detail Routing"<<std::endl;
-	curr_route.RouteWork(5, current_node, drcInfo, 1, 6, binary_directory);
-	std::cout<<"Ending Gcell Detail Routing"<<std::endl;
-      } else {
-	// Global Routing (old version)
-	std::cout<<"Checkpoint : global route"<<std::endl;
-	curr_route.RouteWork(0, current_node, drcInfo, 1, 6, binary_directory);
-	std::cout<<"Checkpoint : after global route"<<std::endl;
-
-	DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
-	// The following line is used to write global route results for Intel router (only for old version)
-	DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
-
-	// Detail Routing
-	std::cout<<"Checkpoint : detail route"<<std::endl;
-	curr_route.RouteWork(1, current_node, drcInfo, 1, 6, binary_directory);
-	std::cout<<"Checkpoint : after detail route"<<std::endl;
-      }
-
-      DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
-
-      if(current_node.isTop){
-	std::cout<<"Checkpoint : Starting Power Grid Creation"<<std::endl;
-	curr_route.RouteWork(2, current_node, drcInfo, 5, 6, binary_directory);
-	std::cout<<"Checkpoint : End Power Grid Creation"<<std::endl;
-
-	DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
-        
-	std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
-	curr_route.RouteWork(3, current_node, drcInfo, 1, 6, binary_directory);
-	std::cout<<"Checkpoint : End Power Grid Routing"<<std::endl;
-
-	DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
-        
-      }
-
-      DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
-      std::cout<<"Check point : before checkin\n";
-      DB.PrintHierNode(current_node);
-      DB.WriteDBJSON(current_node,opath+current_node.name+"_"+std::to_string(lidx) + ".db.json");
-
-      DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
-      DB.CheckinHierNode(idx, current_node);
-      //return 0;
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
 
     Q.pop();

@@ -1170,7 +1170,7 @@ std::vector<int> A_star::A_star_algorithm(Grid& grid, int left_up, int right_dow
     if(!near_node_exist){
        continue;
       }else{
-       std::cout<<"near_node_exist"<<std::endl;
+      //       std::cout<<"near_node_exist"<<std::endl;
       }
     //std::cout<<"A start checkout point3.1"<<std::endl;
   //for sheilding and multi-connection
