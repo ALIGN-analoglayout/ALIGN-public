@@ -4,9 +4,8 @@ def check_shorts( cmdlist):
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
     uc = main(args)
-    assert len(uc.rd.shorts) == 0
-    for op in uc.rd.opens:
-        assert op[0] in ['g','v0','fin','active','RVT']
+    assert len(uc.rd.shorts) == 0, uc.rd.shorts
+    assert len(uc.rd.opens) == 0, uc.rd.opens
 
 def build_test( p, *, n, X, Y):
     b = f"{p}_n{n}_X{X}_Y{Y}"
@@ -32,4 +31,9 @@ def test_a8():
     build_test( 'CMC_PMOS',    n=12, X=2, Y=1)
 def test_a9():
     build_test( 'CMC_NMOS',    n=12, X=3, Y=1)
+def test_a10():
+    build_test( 'SCM_NMOS',    n=12, X=1, Y=1)
+def test_a11():
+    build_test( 'SCM_PMOS',    n=12, X=1, Y=1)
+
 

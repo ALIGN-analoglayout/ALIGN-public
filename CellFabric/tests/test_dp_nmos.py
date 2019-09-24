@@ -7,30 +7,25 @@ sys.path.append('./Cell_Fabric_FinFET__Mock')
 
 import gen_gds_json
 import primitive
-import pattern_generator
 
 @pytest.fixture
 def setup():
-    fin_u = 12
     fin = 12
     x_cells = 4
     y_cells = 2
     gate = 2
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
-    gu = gate + 2*gateDummy
-     ##### Routing
-    SDG =(SA, GA, DA, SB, GB, DB) = pattern_generator.pattern.common_centroid(x_cells, gu, gate, gateDummy)
 
-    S = SA+SB
-    CcM3 = (min(S)+max(S))//2
+    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
 
-    uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    Routing = {'S':  [('M1', 'S'), ('M2', 'S')],
+               'DA': [('M1', 'D')],
+               'DB': [('M2', 'D')],
+               'GA': [('M1', 'G')],
+               'GB': [('M2', 'G')]}
 
-    for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
-        Routing = [('S', S, 1, CcM3), ('DA', DA if y%2==0 else DB, 2, CcM3-1), ('DB', DB if y%2==0 else DA, 3, CcM3+1), ('GA', GA if y%2==0 else GB, 4, CcM3-2), ('GB', GB if y%2==0 else GA, 5, CcM3+2)]
-
-        uc.unit( x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
+    uc.addNMOSArray( x_cells, y_cells, 1, Routing)
 
     return uc
 
@@ -72,27 +67,29 @@ def test_fabric_pex(setup):
 
     c.gen_data()
 
-    fn = 'tests/_dp_nmos.cir'
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 2, c.rd.subinsts
+
+    fn = 'tests/__dp_nmos.cir'
 
     with open( fn + '_cand', "wt") as fp:
 
         fp.write("* Extracted network below *\n")
         c.pex.writePex(fp)
 
-        fp.write("\n* Grounding all V0 nodes *\n")
-        for i, sink in enumerate(sorted(\
-                {comp[1] for comp in c.pex.components if comp[1] != 0 and comp[1].startswith('v0_None')},\
-                key = lambda x: tuple([int(n) if n.isdigit() else n for n in x.split('_')]))):
-            fp.write(f"V{i} {sink} 0 0\n")
+        fp.write("\n* Stamping out all devices *\n")
+        for instance, v in c.rd.subinsts.items():
+            fp.write(f'{instance} NMOS ' + ' '.join( [f'{instance}_{pin}' for pin in v.keys()] ) + '\n' )
 
-        toprint = []
-        fp.write("\n* Adding current sources to all M2 nodes *\n")
-        for i, source in enumerate(sorted(\
-                {net for comp in c.pex.components for net in comp[1:2] if 'M2' in net},\
-                key = lambda x: tuple([int(n) if n.isdigit() else n for n in x.split('_')]))):
-            fp.write(f"I{i} {source} 0 1\n")
-            toprint.append(f"V({source})")
+        toprint = ['GA_M3_1360_1212', 'GB_M3_1440_1296', 'S_M3_1120_960', 'DA_M3_1200_1044', 'DB_M3_1280_1128']
 
         fp.write("\n.op")
         fp.write("\n.print dc " + " ".join(toprint))
         fp.write("\n.end")
+
+    with open( fn + "_cand", "rt") as fp0, \
+         open( fn + "_gold", "rt") as fp1:
+        cand = fp0.read()
+        gold = fp1.read()
+        assert cand == gold

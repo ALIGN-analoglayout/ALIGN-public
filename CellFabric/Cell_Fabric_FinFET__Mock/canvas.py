@@ -7,7 +7,7 @@ pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/Fi
 
 class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 
-    def __init__( self, fin_u, fin, finDummy, gate, gateDummy,
+    def __init__( self, fin, finDummy, gate, gateDummy,
                   pdkfile=pdkfile):
 
         p = Pdk().load(pdkfile)
@@ -17,17 +17,17 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
 ######### Derived Parameters ############
         self.gatesPerUnitCell = gate + 2*gateDummy
         self.finsPerUnitCell = fin + 2*finDummy
+        self.finDummy = finDummy
        # Should be a multiple of 4 for maximum utilization
         assert self.finsPerUnitCell % 4 == 0
-        assert fin >= fin_u, "number of fins in the transistor is greater than unit cell fins" 
-        assert fin_u > 3, "number of fins in the transistor must be more than 2"
+        assert fin > 3, "number of fins in the transistor must be more than 2"
         assert finDummy % 2 == 0
         assert gateDummy > 0
         self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
         self.unitCellHeight = self.m2PerUnitCell* p['M2']['Pitch']
-        unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch'] 
-        activeWidth =  p['Fin']['Pitch']*fin_u
-        activeOffset = p['Fin']['Pitch']*fin//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
+        unitCellLength = self.gatesPerUnitCell* p['Poly']['Pitch']
+        activeWidth =  p['Fin']['Pitch']*fin
+        activeOffset = activeWidth//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*p['Feol']['active_enclosure']
 
@@ -78,73 +78,8 @@ class FinFET_Mock_PDK_Canvas(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 p['V0']['WidthY'], False)
-        for i in range(max(activeWidth//(2*p['M2']['Pitch']), 1) + ((fin-fin_u)//2 + finDummy+1)//2):
-            self.v0.h_clg.addCenterLine((i-1+fin_u//fin)*3*p['Fin']['Pitch'],    p['V0']['WidthY'], True)
+        v0pitch = activeWidth//(2*p['M2']['Pitch']) * p['Fin']['Pitch']
+        for i in range(activeWidth // v0pitch + 1):
+            self.v0.h_clg.addCenterLine(i*v0pitch,    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
-    def _gen_abstract_MOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy):
-
-        def _connect_diffusion(x, port):
-            self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
-            for j in range((((fin-fin_u)//2 +finDummy+3)//2),self.v0.h_clg.n):
-                self.addVia( self.v0, port, None, x, (y, j))
-
-        # Draw FEOL Layers
-
-        self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.RVT,    None,    None, y, (x, 1), (x+1, -1))
-        self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
-        for i in range(1,  self.finsPerUnitCell):
-            self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
-        for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
-
-        # Source, Drain, Gate Connections
-
-        grid_y0 = y*self.m2PerUnitCell + finDummy//2-1
-        grid_y1 = grid_y0+(fin+2)//2
-        gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
-        # Connect Gate (gate_x)
-        self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
-        self.addVia( self.va, None, None, gate_x, (y*self.m2PerUnitCell//2, 1))
-        # Connect Source (gate_x - 1)
-        _connect_diffusion(gate_x - 1, None)
-        # Connect Drain (gate_x - 1)
-        _connect_diffusion(gate_x + 1, None)
-
-    def _gen_routing(self, y, y_cells, Routing):
-        for (pin, contact, track, m3route) in Routing:
-            if y_cells > 1:
-                self.addWire( self.m2, pin, None, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
-                self.addWire( self.m3, pin, pin, m3route, (track, -1), (y*self.m2PerUnitCell+track, 1))
-                self.addVia( self.v2, None, None, m3route, track)
-                self.addVia( self.v2, None, None, m3route, y*self.m2PerUnitCell+track)
-            else:
-                self.addWire( self.m2, pin, pin, y*self.m2PerUnitCell+track, (min(contact), -1), (max(contact), 1))
-
-            for i in contact:
-                self.addVia( self.v1, None, None, i, y*self.m2PerUnitCell+track)
-
-    def genNMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
-
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
-
-        if x == x_cells -1:
-            self._gen_routing(y, y_cells, Routing)
-
-        #####   Nselect Placement   #####
-        if x == x_cells -1 and y == y_cells -1:
-            self.addRegion( self.nselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
-
-    def genPMOS( self, x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing):
-
-        self._gen_abstract_MOS(x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy)
-
-        if x == x_cells -1:
-            self._gen_routing(y, y_cells, Routing)
-
-        #####   Pselect and Nwell Placement   #####
-        if x == x_cells -1 and y == y_cells -1:
-            self.addRegion( self.pselect, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
-            self.addRegion( self.nwell, None, None, (0, -1), 0, ((1+x)*self.gatesPerUnitCell, -1), (y+1)* self.finsPerUnitCell)
