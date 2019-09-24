@@ -171,7 +171,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   ILPSolveRouting(Gcell,GGgraph,Tile_Set);
   std::cout<<"Test 16"<<std::endl;
   //5. Return hierNode  Q2. return some to hierNode for detial router
-  ReturnHierNode(node);
+  ReturnHierNode(node, GGgraph);
 
 };
 
