@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include "../router/Rdatatype.h"
 using std::vector;
 using std::string;
 using std::map;
@@ -86,6 +87,7 @@ struct net {
   vector<contact> segments; // segment inform needs to be updated after routing
   vector<contact> interVias;////TEMPORARY!!!+Jinhyun
   vector<Metal> path_metal;
+  vector<std::pair<int,int> > GcellGlobalRouterPath;
   vector<Via> path_via;
   vector<globalContact> connectedContact; // for writing global route results
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
@@ -196,12 +198,15 @@ struct layoutAS {
 struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
+  bool isIntelGcellGlobalRouter=false;
   int width=0;
   int height=0;
   string name="";
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  vector<RouterDB::tile> tiles_total;
+  std::vector<std::vector<int> > Pin_terminals;
   vector<net> Nets;
   vector<terminal> Terminals;
 
