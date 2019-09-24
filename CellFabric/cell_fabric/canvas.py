@@ -181,6 +181,11 @@ class Canvas:
                         else:
                             nm = c + nm
 
+    def _initialize_layer_stack(self):
+        """layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))"""
+        self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
+            for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
+
     def __init__( self, pdk=None, gds_layer_map=None):
         self.pdk = pdk
         self.terminals = []
@@ -193,6 +198,8 @@ class Canvas:
                             ( "via2", ("M3", "M2"))]
         self.gds_layer_map = gds_layer_map
         self.bbox = None
+        if self.pdk is not None:
+            self._initialize_layer_stack()
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))

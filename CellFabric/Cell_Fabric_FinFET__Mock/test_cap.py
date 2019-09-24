@@ -6,8 +6,7 @@ def check_shorts( cmdlist):
     uc = main(args)
     assert len(uc.rd.shorts) == 0
     for op in uc.rd.opens:
-        pass
-        #assert op[0] in ['g','v0','fin','active','RVT']
+        assert op[0] in ['g','v0','fin','active','RVT']
 
 def build_test( b, *, n):
     check_shorts( ['-b', b, '-n', f"{n}"])
