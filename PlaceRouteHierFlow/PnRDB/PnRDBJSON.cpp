@@ -615,7 +615,7 @@ TEST( hierNodeTest, TestInOut)
 
 }
 
-void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename)
+void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename) const
 {
   std::ofstream jsonStream( filename);
   if(jsonStream.fail()) {
@@ -625,7 +625,7 @@ void PnRdatabase::WriteDBJSON( const PnRDB::hierNode& hN, const string& filename
   jsonStream << json(hN);
 }
 
-void PnRdatabase::ReadDBJSON( PnRDB::hierNode& hN, const string& filename)
+void PnRdatabase::ReadDBJSON( PnRDB::hierNode& hN, const string& filename) const
 {
   std::ifstream ifs( filename);
   if(ifs.fail()) {

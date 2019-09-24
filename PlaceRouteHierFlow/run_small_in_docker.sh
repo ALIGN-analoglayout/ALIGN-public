@@ -8,6 +8,7 @@ docker run --name PnR \
        placeroute_coverage_image /bin/bash -c "\
 cd /PlaceRouteHierFlow && \
 lcov -z ; \
+(cd . && ./unit_tests --gtest_output=xml:junit.xml > LOG-ut) && \
 (cd PnRDB && ./unit_tests --gtest_output=xml:junit.xml) && \
 (cd cap_placer && ./unit_tests --gtest_output=xml:junit.xml) && \
 (cd placer && ./unit_tests --gtest_output=xml:junit.xml) && \
