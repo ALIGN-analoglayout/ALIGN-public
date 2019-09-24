@@ -37,6 +37,7 @@ using std::istream;
 using std::ostream;
 using std::max_element;
 
+using namespace nlohmann;
 class PnRdatabase;
 
 class ReadVerilogHelper {
@@ -147,7 +148,12 @@ class PnRdatabase
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
     map<string, PnRDB::lefMacro> checkoutSingleLEF();
+    json WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
+                                   const int MetalIdx, const string net_name, const int width,
+                                   const int first_tile_idx, const int last_tile_idx,
+                                   std::vector<int>& tile_idxs, const string MetalDirection, const int net_id) const;
     void WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
+	void WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
     void WriteLef(const PnRDB::hierNode& node, const string& file, const string& opath) const;
     
 };
