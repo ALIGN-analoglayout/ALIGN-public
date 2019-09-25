@@ -421,7 +421,7 @@ void PnRdatabase::WriteLef(const PnRDB::hierNode &node, const string& file, cons
 json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
                                             const int MetalIdx, const string net_name, const int width,
                                             const int first_tile_idx, const int last_tile_idx,
-                                            std::vector<int>& tile_idxs, const string MetalDirection, const int net_id) const {
+                                            std::vector<int>& tile_idxs, const int MetalDirection, const int net_id) const {
     //do output tiles (first_tile_idx, ..., last_tile_idx)
     std::cout << "output data " << std::endl;
     std::cout << "layer " << DRC_info.Metal_info.at(MetalIdx).name;
@@ -443,7 +443,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
 
     std::cout << " MetalDirection: " << MetalDirection ;
     json jsonRect =  json::array();
-    if(MetalDirection == "H"){
+    if(MetalDirection == 1){
         if(x_first <= x_last){
             //going right
             std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
@@ -456,12 +456,12 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             //going left
             std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
             std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
-            jsonRect.push_back((x_last + w_last / 2));
-            jsonRect.push_back(y_last);
-            jsonRect.push_back((x_first - w_first / 2));
+            jsonRect.push_back((x_first + w_first / 2));
             jsonRect.push_back(y_first);
+            jsonRect.push_back((x_last - w_last / 2));
+            jsonRect.push_back(y_last);
         }
-    }else if(MetalDirection == "V"){
+    }else if(MetalDirection == 0){
         if(y_first <= y_last){
             //go up
             std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
@@ -474,10 +474,10 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             //go down
             std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
             std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
-            jsonRect.push_back(x_last);
-            jsonRect.push_back((y_last + h_last / 2));
             jsonRect.push_back(x_first);
-            jsonRect.push_back((y_first - h_first / 2));
+            jsonRect.push_back((y_first + h_first / 2));
+            jsonRect.push_back(x_last);
+            jsonRect.push_back((y_last - h_last / 2));
         }
     }
     jsonWire["rect"] = jsonRect;
@@ -497,6 +497,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                 if(*tile_idx != *j){continue;}
                 //current tile index == pin_terminal
                 json jsonConnectedPin;
+                std::cout << "pin_id " << pin_id << std::endl;
                 if (net.connected.at(pin_id).type==PnRDB::Block) {
                     string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().name + "/" + node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).name;
                     std::cout << "sink_name: " << sink_name;
@@ -540,6 +541,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                     
                     jsonConnectedPins.push_back( jsonConnectedPin);
                 }
+                break;
             }
         }
     }
@@ -558,14 +560,14 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
     
     for(vector<PnRDB::net>::const_iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
         //std::cout << "Net degree:" << it->degree << std::endl;
-        int MetalIdx = 0; // used to store metal_idx of the consecutive tiles with same tile_idx 
+        int MetalIdx = -1; // used to store metal_idx of the consecutive tiles with same tile_idx 
         int first_tile_idx = -1, last_tile_idx = -1; //first and last tile_idx of consecutive tiles in the same metal layers
         int width = 0; //width of consecutive tiles, not always the tile.width, 
                    //=tile.width in vertical metals(even layer), 
                    //=tile.height in horizontal metals(odd layer)
         std::vector<int> tile_idxs; //store tile idxs of consecutive tiles
         int net_id = it - node.Nets.begin(); 
-        string MetalDirection = ""; //vertical metal in even layers, horizontal metal in odd layers
+        int MetalDirection = -1; //vertical metal in even layers, horizontal metal in odd layers
         for(vector<std::pair<int,int>>::const_iterator it2=it->GcellGlobalRouterPath.begin(); it2!=it->GcellGlobalRouterPath.end(); ++it2) {            
             int MetalIdx1 = 0, MetalIdx2 = 0; //metal id of the two tiles in the pair
             int tile_idx1 = it2->first, tile_idx2 = it2->second; //tile ids
@@ -586,11 +588,7 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
             std::cout << "second tile x/y/width/height: " << x2 << " " << y2 << " " << w2 << " " << h2 << endl;
 
             if(MetalIdx1 == MetalIdx2){
-                if(MetalIdx1%2 == 0){
-                    MetalDirection = "V";//vertical metal in even layers
-                }else if(MetalIdx1%2 == 1){
-                    MetalDirection = "H";//horizontal metal in odd layers
-                }
+                MetalDirection = DRC_info.Metal_info.at(MetalIdx1).direct;
             }
 
             if(MetalIdx1 != MetalIdx2){
@@ -614,9 +612,9 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
                     tile_idxs.push_back(first_tile_idx);
                     if(first_tile_idx != last_tile_idx)tile_idxs.push_back(last_tile_idx);//ignore same idx
                     MetalIdx = MetalIdx1;
-                    if(MetalDirection == "V"){
+                    if(MetalDirection == 0){
                         width = w1;
-                    }else if(MetalDirection == "H"){
+                    }else if(MetalDirection == 1){
                         width = h1;
                     }
                     
@@ -629,7 +627,7 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
             bool can_append = false; //True only if the above criteria are all satisfied
                                      //otherwise output data (first_tile_idx, ..., last_tile_idx)
             if(MetalIdx1 == MetalIdx){
-                if((MetalDirection == "V" && width == w1) || (MetalDirection == "H" && width == h1)){
+                if((MetalDirection == 0 && width == w1) || (MetalDirection == 1 && width == h1)){
                     can_append = true;
                 }
             }
@@ -638,18 +636,18 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
             std::cout << "can append: " << can_append << std::endl;
 
             if(can_append == false){
+                //do output tiles (first_tile_idx, ..., last_tile_idx)
+                json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
+                                            first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);
+                jsonWiresArray.push_back( jsonWire);
                 first_tile_idx = tile_idx1;//start a new consecutive tiles
                 last_tile_idx = tile_idx2;
                 tile_idxs.push_back(first_tile_idx);
                 if(first_tile_idx != last_tile_idx)tile_idxs.push_back(last_tile_idx);//ignore same idx
                 MetalIdx = MetalIdx1;
-                //do output tiles (first_tile_idx, ..., last_tile_idx)
-                json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
-                                            first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);
-                jsonWiresArray.push_back( jsonWire);     
-                if(MetalDirection == "V"){
+                if(MetalDirection == 0){
                     width = w1;
-                }else if(MetalDirection == "H"){
+                }else if(MetalDirection == 1){
                     width = h1;
                 }
                 if(it2 + 1 == it->GcellGlobalRouterPath.end()){
