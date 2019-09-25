@@ -130,7 +130,7 @@ class GcellGlobalRouter : public RawRouter {
     //void NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net);
     //void NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net);
     //void BlockInterMetalToNodeInterMetal(PnRDB::hierNode& HierNode);
-    //void ReturnHierNode(PnRDB::hierNode& HierNode);
+    void ReturnHierNode(PnRDB::hierNode& HierNode);
     //void ConvertToContactPnRDB_Placed_Origin(PnRDB::contact& pnr_contact,RouterDB::contact& router_contact);
     //void ConvertToContactPnRDB_Placed_Placed(PnRDB::contact& pnr_contact,RouterDB::contact& router_contact);
     //void ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterDB::Via& router_via);
