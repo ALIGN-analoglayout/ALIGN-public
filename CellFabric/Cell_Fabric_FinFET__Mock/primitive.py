@@ -40,25 +40,35 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             _connect_diffusion(gate_x + 1, name, 'D') #D
 
     def _routeX(self, y, routing, pinned=False):
+        center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
         for track, (net, conn) in enumerate(routing.items(), start=1):
             contacts = set()
             for inst, v in self._xpins.items():
                 for pin, vv in v.items():
                     if (inst, pin) in conn:
                         contacts.update(vv)
-            self.addWire( self.m2, net, net if pinned else None, y * self.m2PerUnitCell+track, (min(contacts), -1), (max(contacts), 1))
-            for i in contacts:
-                self.addVia( self.v1, None, None, i, y * self.m2PerUnitCell + track)
+            for j in range(self.minvias):
+                current_track = y * self.m2PerUnitCell + len(routing) * j + track
+                self.addWireAndViaSet(net, net if pinned else None, self.m2, self.v1, current_track, contacts)
+                # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
+                direction = 1 if current_track > center_track else -1
+                for i in contacts:
+                    self.addWire( self.m1, None, None, i, (center_track, -1 * direction), (current_track, direction))
 
     def _routeY(self, x_cells, y_cells, routing):
         # TODO: Need to keep track of all M2 tracks & route intelligently. Center-point assumption may not work for all cases.
-        m3start = ( x_cells * self.gatesPerUnitCell - len(routing) ) // 2
+        m3start = (x_cells * self.gatesPerUnitCell - len(routing) * self.minvias) // 2
         for track, net in enumerate(routing.keys(), start=1):
-            self.addWire( self.m3, net, net, m3start + track, (track, -1), ( (y_cells-1) * self.m2PerUnitCell + track, 1))
-            for y in range(y_cells):
-                self.addVia( self.v2, None, None, m3start + track, y*self.m2PerUnitCell + track)
+            for j in range(self.minvias):
+                for i in range(self.minvias):
+                    self.addWireAndViaSet(net, net, self.m3, self.v2, m3start + len(routing) * i + track, [y * self.m2PerUnitCell + len(routing) * j  + track for y in range(y_cells)])
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, routing):
+    def _addMOSArray( self, x_cells, y_cells, pattern, routing, minvias = 2):
+        if minvias * len(routing) > self.m2PerUnitCell - 1:
+            self.minvias = (self.m2PerUnitCell - 1) // len(routing)
+            print( f"WARNING: Using minvias = {self.minvias}. Cannot route {len(routing)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
+        else:
+            self.minvias = minvias
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
         for y in range(y_cells):
             self._xpins = defaultdict(lambda: defaultdict(list))
