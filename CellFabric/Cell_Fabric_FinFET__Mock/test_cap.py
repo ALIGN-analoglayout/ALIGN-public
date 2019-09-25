@@ -19,8 +19,8 @@ def test_range():
 def test_small():
     build_test( 'cap_4fF', n=4)
 
-def x_test_a0():
+def test_a0():
     build_test( 'cap_12fF', n=12)
-def x_test_a1():
+def test_a1():
     build_test( 'cap_10fF', n=10)
 

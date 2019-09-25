@@ -41,14 +41,13 @@ class CanvasCap(Canvas):
         self.last_y1_track = roundup( (self.y_number-1)*c_m2_p, m2_p)
         self.last_x1_track = roundup( (self.x_number-1)*c_m1_p, m1_p)
 
-        
-
-        if (self.y_number-1) % 2 != self.last_y1_track % 2:
-            print( "Bump up last_y1_track for color compatibility")
-            self.last_y1_track += 1 # so the last color is compatible with the external view of the cell
-        if (self.x_number-1) % 2 != self.last_x1_track % 2:
-            print( "Bump up last_x1_track for color compatibility")
-            self.last_x1_track += 1 # so the last color is compatible with the external view of the cell
+        if False: # probably don't need this (Better to do recoloring if necessary)
+            if (self.y_number-1) % 2 != self.last_y1_track % 2:
+                print( "Bump up last_y1_track for color compatibility")
+                self.last_y1_track += 1 # so the last color is compatible with the external view of the cell
+            if (self.x_number-1) % 2 != self.last_x1_track % 2:
+                print( "Bump up last_x1_track for color compatibility")
+                self.last_x1_track += 1 # so the last color is compatible with the external view of the cell
 
         print( "last_x1_track (m1Pitches_standards)", self.last_x1_track, "last_y1_track (m2Pitch_standards)", self.last_y1_track)
 
