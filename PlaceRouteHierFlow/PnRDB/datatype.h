@@ -92,6 +92,7 @@ struct net {
   vector<globalContact> connectedContact; // for writing global route results
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
+  vector<std::vector<int>> connectedTile;
 }; // structure of nets
 
 struct Metal{
@@ -206,7 +207,6 @@ struct hierNode {
   vector<int> parent;
   vector<blockComplex> Blocks;
   vector<RouterDB::tile> tiles_total;
-  std::vector<std::vector<int> > Pin_terminals;
   vector<net> Nets;
   vector<terminal> Terminals;
 

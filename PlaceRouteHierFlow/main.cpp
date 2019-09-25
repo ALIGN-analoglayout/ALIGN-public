@@ -52,8 +52,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Starting Gcell Global Routing", skip_saving_state);
-    curr_route.RouteWork(4, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(6, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
+
+    std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
+    DB.WriteGcellGlobalRoute(current_node, current_node.name+"_GcellGlobalRoute_"+std::to_string(lidx)+".json", opath);
+    std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);

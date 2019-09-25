@@ -418,6 +418,137 @@ void PnRdatabase::WriteLef(const PnRDB::hierNode &node, const string& file, cons
   leffile.close();
 }
 
+json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
+                                            const int MetalIdx, const string net_name, const int width,
+                                            const int first_tile_idx, const int last_tile_idx,
+                                            std::vector<int>& tile_idxs, const string MetalDirection, const int net_id) const {
+    //do output tiles (first_tile_idx, ..., last_tile_idx)
+    std::cout << "output data " << std::endl;
+    std::cout << "layer " << DRC_info.Metal_info.at(MetalIdx).name;
+    std::cout << " net_name " << net_name;
+    std::cout << " width " << width << std::endl;
+    std::cout << " rect ";
+    json jsonWire;
+    jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
+    jsonWire["net_name"] = net_name;
+    jsonWire["width"] = width;
+    int x_first = node.tiles_total.at(first_tile_idx).x;
+    int x_last = node.tiles_total.at(last_tile_idx).x;
+    int y_first = node.tiles_total.at(first_tile_idx).y;
+    int y_last = node.tiles_total.at(last_tile_idx).y;
+    int w_first = node.tiles_total.at(first_tile_idx).width;
+    int w_last = node.tiles_total.at(last_tile_idx).width;
+    int h_first = node.tiles_total.at(first_tile_idx).height;
+    int h_last = node.tiles_total.at(last_tile_idx).height;
+
+    std::cout << " MetalDirection: " << MetalDirection ;
+    json jsonRect =  json::array();
+    if(MetalDirection == "H"){
+        if(x_first <= x_last){
+            //going right
+            std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
+            std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
+            jsonRect.push_back((x_first - w_first / 2));
+            jsonRect.push_back(y_first);
+            jsonRect.push_back((x_last + w_first / 2));
+            jsonRect.push_back(y_last);
+        }else if(x_first >= x_last){
+            //going left
+            std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
+            std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
+            jsonRect.push_back((x_last + w_last / 2));
+            jsonRect.push_back(y_last);
+            jsonRect.push_back((x_first - w_first / 2));
+            jsonRect.push_back(y_first);
+        }
+    }else if(MetalDirection == "V"){
+        if(y_first <= y_last){
+            //go up
+            std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
+            std::cout << x_last << ", " << (y_last + h_last / 2) << ")" ;
+            jsonRect.push_back(x_first);
+            jsonRect.push_back((y_first - h_first / 2));
+            jsonRect.push_back(x_last);
+            jsonRect.push_back((y_last + h_last / 2));
+        }else if(y_first >= y_last){
+            //go down
+            std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
+            std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
+            jsonRect.push_back(x_last);
+            jsonRect.push_back((y_last + h_last / 2));
+            jsonRect.push_back(x_first);
+            jsonRect.push_back((y_first - h_first / 2));
+        }
+    }
+    jsonWire["rect"] = jsonRect;
+    std::cout << std::endl;
+
+    std::cout << "connected pins: " << std::endl;
+    PnRDB::net net = node.Nets.at(net_id);
+    json jsonConnectedPins = json::array();
+    std::cout << "tile_idx: ";
+    for(vector<int>::const_iterator tile_idx = tile_idxs.begin(); tile_idx!=tile_idxs.end(); ++tile_idx){
+        std::cout << *tile_idx << ", ";
+        //search all the tiles in the consecutive tiles
+        for(vector<std::vector<int>>::const_iterator i = net.connectedTile.begin(); i!=net.connectedTile.end();++i){
+            int pin_id = i - net.connectedTile.begin();
+            //pin_id is the index in net.connectedTile
+            for(vector<int>::const_iterator j = i->begin(); j!=i->end();++j){
+                if(*tile_idx != *j){continue;}
+                //current tile index == pin_terminal
+                json jsonConnectedPin;
+                if (net.connected.at(pin_id).type==PnRDB::Block) {
+                    string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().name + "/" + node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).name;
+                    std::cout << "sink_name: " << sink_name;
+                    jsonConnectedPin["sink_name"] = sink_name;
+
+                    string layer = "";
+                    layer = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().metal;
+                    jsonConnectedPin["layer"] = layer;
+                    std::cout << " layer: " << layer << std::endl;
+
+                    json jsonRect = json::array();
+                    PnRDB::bbox rect = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().originBox;
+                    jsonRect.push_back(rect.LL.x);
+                    jsonRect.push_back(rect.LL.y);
+                    jsonRect.push_back(rect.UR.x);
+                    jsonRect.push_back(rect.UR.y);
+                    std::cout << "#pincontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
+                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                    jsonConnectedPin["rect"] = jsonRect;
+
+                    jsonConnectedPins.push_back( jsonConnectedPin);
+                } else if (node.Nets.at(net_id).connected.at(pin_id).type==PnRDB::Terminal){
+                    string sink_name = node.Terminals.at(net.connected.at(pin_id).iter).name;
+                    std::cout << "sink_name: " << sink_name;
+                    jsonConnectedPin["sink_name"] = sink_name;
+
+                    string layer = "";
+                    layer = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().metal;
+                    jsonConnectedPin["layer"] = layer;
+                    std::cout << " layer: " << layer << std::endl;
+
+                    json jsonRect = json::array();
+                    PnRDB::bbox rect = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().originBox;
+                    jsonRect.push_back(rect.LL.x);
+                    jsonRect.push_back(rect.LL.y);
+                    jsonRect.push_back(rect.UR.x);
+                    jsonRect.push_back(rect.UR.y);
+                    std::cout << "#termcontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
+                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                    jsonConnectedPin["rect"] = jsonRect;
+                    
+                    jsonConnectedPins.push_back( jsonConnectedPin);
+                }
+            }
+        }
+    }
+    jsonWire["connected_pins"] = jsonConnectedPins;
+    tile_idxs.clear();
+	return jsonWire;
+    
+}
+
 void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
     //this function write gcell global router result into json for detail route use
     //combine consecutive tiles into one
@@ -554,136 +685,6 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
     
 }
 
-json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
-                                            const int MetalIdx, const string net_name, const int width,
-                                            const int first_tile_idx, const int last_tile_idx,
-                                            std::vector<int>& tile_idxs, const string MetalDirection, const int net_id) const {
-    //do output tiles (first_tile_idx, ..., last_tile_idx)
-    std::cout << "output data " << std::endl;
-    std::cout << "layer " << DRC_info.Metal_info.at(MetalIdx).name;
-    std::cout << " net_name " << net_name;
-    std::cout << " width " << width << std::endl;
-    std::cout << " rect ";
-    json jsonWire;
-    jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
-    jsonWire["net_name"] = net_name;
-    jsonWire["width"] = width;
-    int x_first = node.tiles_total.at(first_tile_idx).x;
-    int x_last = node.tiles_total.at(last_tile_idx).x;
-    int y_first = node.tiles_total.at(first_tile_idx).y;
-    int y_last = node.tiles_total.at(last_tile_idx).y;
-    int w_first = node.tiles_total.at(first_tile_idx).width;
-    int w_last = node.tiles_total.at(last_tile_idx).width;
-    int h_first = node.tiles_total.at(first_tile_idx).height;
-    int h_last = node.tiles_total.at(last_tile_idx).height;
-
-    std::cout << " MetalDirection: " << MetalDirection ;
-    json jsonRect =  json::array();
-    if(MetalDirection == "H"){
-        if(x_first <= x_last){
-            //going right
-            std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
-            std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
-            jsonRect.push_back((x_first - w_first / 2));
-            jsonRect.push_back(y_first);
-            jsonRect.push_back((x_last + w_first / 2));
-            jsonRect.push_back(y_last);
-        }else if(x_first >= x_last){
-            //going left
-            std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
-            std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
-            jsonRect.push_back((x_last + w_last / 2));
-            jsonRect.push_back(y_last);
-            jsonRect.push_back((x_first - w_first / 2));
-            jsonRect.push_back(y_first);
-        }
-    }else if(MetalDirection == "V"){
-        if(y_first <= y_last){
-            //go up
-            std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
-            std::cout << x_last << ", " << (y_last + h_last / 2) << ")" ;
-            jsonRect.push_back(x_first);
-            jsonRect.push_back((y_first - h_first / 2));
-            jsonRect.push_back(x_last);
-            jsonRect.push_back((y_last + h_last / 2));
-        }else if(y_first >= y_last){
-            //go down
-            std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
-            std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
-            jsonRect.push_back(x_last);
-            jsonRect.push_back((y_last + h_last / 2));
-            jsonRect.push_back(x_first);
-            jsonRect.push_back((y_first - h_first / 2));
-        }
-    }
-    jsonWire["rect"] = jsonRect;
-    std::cout << std::endl;
-
-    std::cout << "connected pins: " << std::endl;
-    PnRDB::net net = node.Nets.at(net_id);
-    json jsonConnectedPins = json::array();
-    std::cout << "tile_idx: ";
-    for(vector<int>::const_iterator tile_idx = tile_idxs.begin(); tile_idx!=tile_idxs.end(); ++tile_idx){
-        std::cout << *tile_idx << ", ";
-        //search all the tiles in the consecutive tiles
-        for(vector<std::vector<int>>::const_iterator i = node.Pin_terminals.begin(); i!=node.Pin_terminals.end();++i){
-            int pin_id = i - node.Pin_terminals.begin();
-            //pin_id is the index in Pin_terminals
-            for(vector<int>::const_iterator j = i->begin(); j!=i->end();++j){
-                if(*tile_idx != *j){continue;}
-                //current tile index == pin_terminal
-                json jsonConnectedPin;
-                if (net.connected.at(pin_id).type==PnRDB::Block) {
-                    string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().name + "/" + node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).name;
-                    std::cout << "sink_name: " << sink_name;
-                    jsonConnectedPin["sink_name"] = sink_name;
-
-                    string layer = "";
-                    layer = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().metal;
-                    jsonConnectedPin["layer"] = layer;
-                    std::cout << " layer: " << layer << std::endl;
-
-                    json jsonRect = json::array();
-                    PnRDB::bbox rect = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().originBox;
-                    jsonRect.push_back(rect.LL.x);
-                    jsonRect.push_back(rect.LL.y);
-                    jsonRect.push_back(rect.UR.x);
-                    jsonRect.push_back(rect.UR.y);
-                    std::cout << "#pincontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
-                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
-                    jsonConnectedPin["rect"] = jsonRect;
-
-                    jsonConnectedPins.push_back( jsonConnectedPin);
-                } else if (node.Nets.at(net_id).connected.at(pin_id).type==PnRDB::Terminal){
-                    string sink_name = node.Terminals.at(net.connected.at(pin_id).iter).name;
-                    std::cout << "sink_name: " << sink_name;
-                    jsonConnectedPin["sink_name"] = sink_name;
-
-                    string layer = "";
-                    layer = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().metal;
-                    jsonConnectedPin["layer"] = layer;
-                    std::cout << " layer: " << layer << std::endl;
-
-                    json jsonRect = json::array();
-                    PnRDB::bbox rect = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().originBox;
-                    jsonRect.push_back(rect.LL.x);
-                    jsonRect.push_back(rect.LL.y);
-                    jsonRect.push_back(rect.UR.x);
-                    jsonRect.push_back(rect.UR.y);
-                    std::cout << "#termcontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
-                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
-                    jsonConnectedPin["rect"] = jsonRect;
-                    
-                    jsonConnectedPins.push_back( jsonConnectedPin);
-                }
-            }
-        }
-    }
-    jsonWire["connected_pins"] = jsonConnectedPins;
-    tile_idxs.clear();
-	return jsonWire;
-    
-}
 
 void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
 

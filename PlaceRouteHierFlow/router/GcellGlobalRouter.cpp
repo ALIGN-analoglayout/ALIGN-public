@@ -171,7 +171,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   ILPSolveRouting(Gcell,GGgraph,Tile_Set);
   std::cout<<"Test 16"<<std::endl;
   //5. Return hierNode  Q2. return some to hierNode for detial router
-  ReturnHierNode(node, GGgraph);
+  ReturnHierNode(node);
 
 };
 
@@ -1752,9 +1752,8 @@ void GlobalRouter::judge_symmety(RouterDB::Net &temp_net1, RouterDB::Net &temp_n
 }
 */
 
-void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode, GlobalGraph& GGgraph) {
+void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
     HierNode.tiles_total = Gcell.tiles_total;
-    HierNode.Pin_terminals = GGgraph.Pin_terminals;
     for(vector<PnRDB::net>::iterator H_NET_it=HierNode.Nets.begin();H_NET_it!=HierNode.Nets.end();++H_NET_it){
         for(vector<RouterDB::Net>::const_iterator NET_it=Nets.begin(); NET_it!=Nets.end(); ++NET_it){
             if(H_NET_it->name!=NET_it->netName){
@@ -1762,6 +1761,7 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode, GlobalGraph& G
             }else{
                 std::vector<std::pair<int,int> > path = NET_it->STs.at(NET_it->STindex).path;
                 H_NET_it->GcellGlobalRouterPath = path;
+                H_NET_it->connectedTile = NET_it->connectedTile;
                 break;
             }
         }
