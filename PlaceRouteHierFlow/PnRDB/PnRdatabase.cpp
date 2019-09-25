@@ -508,15 +508,21 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                     jsonConnectedPin["layer"] = layer;
                     std::cout << " layer: " << layer << std::endl;
 
-                    json jsonRect = json::array();
-                    PnRDB::bbox rect = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().originBox;
-                    jsonRect.push_back(rect.LL.x);
-                    jsonRect.push_back(rect.LL.y);
-                    jsonRect.push_back(rect.UR.x);
-                    jsonRect.push_back(rect.UR.y);
-                    std::cout << "#pincontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
-                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
-                    jsonConnectedPin["rect"] = jsonRect;
+                    json jsonRects = json::array();
+                    vector<PnRDB::contact> pinContacts = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts;
+                    std::cout << "contacts size " << pinContacts.size() << std::endl;
+                    for(vector<PnRDB::contact>::const_iterator contact_it = pinContacts.begin(); contact_it != pinContacts.end(); ++contact_it){
+                        PnRDB::bbox rect = contact_it->originBox;
+                        json jsonRect = json::array();
+                        jsonRect.push_back(rect.LL.x);
+                        jsonRect.push_back(rect.LL.y);
+                        jsonRect.push_back(rect.UR.x);
+                        jsonRect.push_back(rect.UR.y);
+                        jsonRects.push_back(jsonRect);
+                        std::cout << "#pincontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
+                        std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                    }
+                    jsonConnectedPin["rect"] = jsonRects;
 
                     jsonConnectedPins.push_back( jsonConnectedPin);
                 } else if (node.Nets.at(net_id).connected.at(pin_id).type==PnRDB::Terminal){
