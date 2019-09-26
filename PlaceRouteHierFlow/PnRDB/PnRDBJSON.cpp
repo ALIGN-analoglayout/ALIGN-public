@@ -514,6 +514,7 @@ namespace PnRDB {
   void to_json(json& j, const hierNode& v) {
     j["isCompleted"] = v.isCompleted;
     j["isTop"] = v.isTop;
+    j["isIntelGcellGlobalRouter"] = v.isIntelGcellGlobalRouter;
     j["width"] = v.width;
     j["height"] = v.height;
     j["name"] = v.name;
@@ -547,6 +548,7 @@ namespace PnRDB {
   void from_json(const json& j, hierNode& v) {
     j["isCompleted"].get_to( v.isCompleted);
     j["isTop"].get_to( v.isTop);
+    j["isIntelGcellGlobalRouter"].get_to( v.isIntelGcellGlobalRouter);
     j["width"].get_to( v.width);
     j["height"].get_to( v.height);
     j["name"].get_to( v.name);
