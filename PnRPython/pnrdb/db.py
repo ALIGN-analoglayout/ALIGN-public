@@ -1,6 +1,26 @@
 import json
 
 abstract_structs = [
+           ("tileEdge",[("next",None),
+                        ("capacity",None)
+           ]),
+           ("tile",[("x",None),
+                    ("y",None),
+                    ("width",None),
+                    ("height",None),
+                    ("metal",None),
+                    ("tileLayer",None),
+                    ("index",None),
+                    ("Yidx",None),
+                    ("Xidx",None),
+                    ("north",(list,"tileEdge")),
+                    ("south",(list,"tileEdge")),
+                    ("east",(list,"tileEdge")),
+                    ("west",(list,"tileEdge")),
+                    ("down",(list,"tileEdge")),
+                    ("up",(list,"tileEdge"))
+           ]),
+
            ("point",[("x",None),
                    ("y",None)
            ]),
@@ -36,10 +56,12 @@ abstract_structs = [
                  ("segments",(list,"contact")),
                  ("interVias",(list,"contact")),
                  ("path_metal",(list,"Metal")),
+                 ("GcellGlobalRouterPath",(list,None)),
                  ("path_via",(list,"Via")),
                  ("connectedContact",(list,"globalContact")),
                  ("axis_dir",None),
-                 ("axis_coor",None)
+                 ("axis_coor",None),
+                 ("connectedTile",(list,None))
            ]),
            ("SymmNet",[("net1","net"),
                      ("net2","net"),
@@ -147,12 +169,14 @@ abstract_structs = [
 
           ("hierNode",[("isCompleted",None),
                       ("isTop",None),
+                      ("isIntelGcellGlobalRouter",None),
                       ("width",None),
                       ("height",None),
                       ("name",None),
                       ("gdsFile",None),
                       ("parent",(list,None)),
                       ("Blocks", (list, "blockComplex")),
+                      ("tiles_total", (list, "tile")),
                       ("Nets", (list, "net")),
                       ("Terminals", (list, "terminal")),
                       ("Vdd", "PowerGrid"),
