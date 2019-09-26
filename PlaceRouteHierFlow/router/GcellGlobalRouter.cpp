@@ -41,9 +41,12 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
 
 
+
   int tileLayerNo = Hmetal-Lmetal + 1;
   if(node.isIntelGcellGlobalRouter == true){
+    //SMB Override for Intel router
      tileLayerNo = 1;
+     tile_size = 10;
   }
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   std::cout<<"Test 3"<<std::endl;
