@@ -138,14 +138,15 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             for v in vv:
                 ly = v['layer']
                 r = v['rect'][:]
-                r[0], r[2] = min(r[0],r[2]), max(r[0],r[2]), 
-                r[1], r[3] = min(r[1],r[3]), max(r[1],r[3]), 
-                if r[0] == r[2]:
-                    r[0] -= 20
-                    r[2] += 20
-                if r[1] == r[3]:
-                    r[1] -= 20
-                    r[3] += 20
+                for q in [0,1]:
+                    r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
+
+                assert r[0] == r[2] or r[1] == r[3], (v,r)
+
+                for q in [0,1]:
+                    if r[q] == r[q+2]:
+                        r[q] -= 20
+                        r[q+2] += 20
                 print(k,ly,r)
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
 
