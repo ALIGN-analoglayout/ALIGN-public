@@ -141,7 +141,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 for q in [0,1]:
                     r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
 
-                assert r[0] == r[2] or r[1] == r[3], (v,r)
+#                assert r[0] == r[2] or r[1] == r[3], (v,r)
 
                 for q in [0,1]:
                     if r[q] == r[q+2]:
@@ -149,6 +149,20 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                         r[q+2] += 20
                 print(k,ly,r)
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
+
+        if draw_grid:
+            m1_pitch = 800
+            m2_pitch = 840
+            for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
+                x = m1_pitch*ix
+                r = [ x-1, 0, x+1, hN.height]
+                terminals.append( { "netName": 'm1_bin', "layer": 'M1', "rect": r})
+
+            for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
+                y = m2_pitch*iy
+                r = [ 0, y-1, hN.width, y+1]
+                terminals.append( { "netName": 'm2_bin', "layer": 'M2', "rect": r})
+
 
     d["terminals"] = terminals
 
