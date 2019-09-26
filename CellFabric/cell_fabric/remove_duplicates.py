@@ -76,7 +76,7 @@ class Scanline:
                 result = metal_rect
                 break
 
-        assert result is not None
+        assert result is not None, (via_rect, self.rects)
         return result
 
 class RemoveDuplicates():
