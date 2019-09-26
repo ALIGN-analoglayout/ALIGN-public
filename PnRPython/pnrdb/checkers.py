@@ -24,7 +24,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
               "M4": "m4", "M5": "m5", "M6": "m6"}
 
-    def add_terminal( netName, layer, b):
+    def add_terminal( netName, layer, b, *, tag=None):
         check_bbox( b)
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
@@ -53,7 +53,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 gen = cnv.generators[t_tbl[layer]]
                 p = gen.clg.inverseBounds(center)
                 if p[0] != p[1]:
-                    print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1])
+                    print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1], tag)
 
     if draw_grid:
         m1_pitch = 80
@@ -71,12 +71,12 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
     for n in hN.Nets:
         print( n.name)
 
-        def addt( obj, con):
+        def addt( obj, con, tag=None):
             b = con.originBox if use_orig else con.placedBox
             if obj == n:
-                add_terminal( obj.name, con.metal, b)
+                add_terminal( obj.name, con.metal, b, tag)
             else:
-                add_terminal( obj, con.metal, b)
+                add_terminal( obj, con.metal, b, tag)
 
         for c in n.connected:
             if c.type == 'Block':
@@ -87,9 +87,10 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 pin = blk.blockPins[c.iter]
                 formal_name = pin.name
 
-                print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
+                tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
+                print( f'\t{tag}')
                 for con in pin.pinContacts:
-                    addt( n, con)
+                    addt( n, con, tag)
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
@@ -134,22 +135,21 @@ def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/Fin
 
     cnv.terminals = []
 
-    def add_terminal( netName, layer, b):
+    def add_terminal( netName, layer, b, tag=None):
         check_bbox( b)
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
-        if layer == "M1":
-            p = cnv.m2.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
+
+        triples = dict( [("M1", (cnv.m1, 0)), ("M2", (cnv.m2, 1)), 
+                         ("M3", (cnv.m3, 0)), ("M4", (cnv.m4, 1)), 
+                         ("M5", (cnv.m5, 0)), ("M6", (cnv.m6, 1))])
+        
+        if layer in triples:
+            gen,si = triples[layer]
+            p = gen.clg.inverseBounds( (r[si+0]+r[si+2])//2)
             if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M2":
-            p = cnv.m2.clg.inverseBounds( (b.LL.y + b.UR.y)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
-        if layer == "M3":
-            p = cnv.m3.clg.inverseBounds( (b.LL.x + b.UR.x)//2)
-            if p[0] != p[1]:
-                print( "Off grid", layer, netName, p, r)
+                print( "Off grid", layer, netName, p, r, tag)
+
         cnv.terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
     for n in hN.Nets:
@@ -163,42 +163,43 @@ def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/Fin
                 pin = blk.blockPins[c.iter]
                 formal_name = pin.name
 
-                print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
+                tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
+                print( f'\t{tag}')
                 for con in pin.pinContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
-
+                    add_terminal( n.name, con.metal, con.placedBox, tag)
 
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
-                print( f'\tTerminal formal_index: {c.iter},{terminal_name}')
+                tag = f'Terminal formal_index: {c.iter},{terminal_name}'
+                print( f'\t{tag}')
                 for con in term.termContacts:
-                    add_terminal( n.name, con.metal, con.placedBox)
+                    add_terminal( n.name, con.metal, con.placedBox, tag)
 
         for metal in n.path_metal:
             con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
+            add_terminal( n.name, con.metal, con.placedBox, 'net path_metal')
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
+                add_terminal( n.name, con.metal, con.placedBox, 'net path_via')
 
         for via in n.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( n.name, con.metal, con.placedBox)
+                add_terminal( n.name, con.metal, con.placedBox, 'net interVias')
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
         for con in blk.interMetals:
             pass
-#            add_terminal( '!interMetals', con.metal, con.placedBox)
+            add_terminal( '!interMetals', con.metal, con.placedBox, 'block interMetals')
 
 
         for via in blk.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 pass                
-#                add_terminal( '!interVias', con.metal, con.placedBox)
+                add_terminal( '!interVias', con.metal, con.placedBox, 'block interVias')
 
     cnv.gen_data()
 
