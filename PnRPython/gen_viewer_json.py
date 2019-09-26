@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument( "-ifn", "--input_file_name", type=str, default="")
     parser.add_argument( "--use_orig", action='store_true')
     parser.add_argument( "--draw_grid", action='store_true')
+    parser.add_argument( "--global_route_json", type=str, default=None)
  
     args = parser.parse_args()
 
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     if args.check:
         cnv = remove_duplicates( hN, pdk_fn=args.pdk_fn)
     else:
-        d = gen_viewer_json( hN, pdk_fn=args.pdk_fn, use_orig=args.use_orig, draw_grid=args.draw_grid)
+        d = gen_viewer_json( hN, pdk_fn=args.pdk_fn, use_orig=args.use_orig, draw_grid=args.draw_grid, global_route_json=args.global_route_json)
         with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
             json.dump( d, fp=fp, indent=2)
 

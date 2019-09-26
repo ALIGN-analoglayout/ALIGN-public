@@ -1,12 +1,13 @@
 from cell_fabric import DefaultCanvas, Pdk, transformation
 from pprint import pformat
+import json
 
 def check_bbox( b):
     pass
 #    assert b.LL.x < b.UR.x, (b.LL.x,b.UR.x)
 #    assert b.LL.y < b.UR.y, (b.LL.y,b.UR.y)
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False):
+def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -121,6 +122,33 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
         add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.originBox if use_orig else blk.placedBox)
 
+    if global_route_json is not None:
+        with open(global_route_json, "rt") as fp:
+            gr_json = json.load( fp)
+        tbl = {}
+        for wire in gr_json['wires']:
+            nm = wire['net_name']
+            if nm not in tbl:
+                tbl[nm] = []
+            tbl[nm].append(wire)
+
+        print( tbl)
+
+        for (k,vv) in tbl.items():
+            for v in vv:
+                ly = v['layer']
+                r = v['rect'][:]
+                r[0], r[2] = min(r[0],r[2]), max(r[0],r[2]), 
+                r[1], r[3] = min(r[1],r[3]), max(r[1],r[3]), 
+                if r[0] == r[2]:
+                    r[0] -= 20
+                    r[2] += 20
+                if r[1] == r[3]:
+                    r[1] -= 20
+                    r[3] += 20
+                print(k,ly,r)
+                terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
+
     d["terminals"] = terminals
 
     return d
@@ -199,6 +227,7 @@ def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/Fin
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 pass                
 #                add_terminal( '!interVias', con.metal, con.placedBox)
+
 
     cnv.gen_data()
 
