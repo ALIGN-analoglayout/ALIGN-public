@@ -3,6 +3,8 @@
 
 using namespace nlohmann;
 
+//#define ADDED_FIELDS
+
 namespace PnRDB {
   
   void to_json(json& j, const point& v) {
@@ -235,10 +237,16 @@ namespace PnRDB {
     j["segments"] = json(v.segments);
     j["interVias"] = json(v.interVias);
     j["path_metal"] = json(v.path_metal);
+#ifdef ADDED_FIELDS
+    j["GcellGlobalRouterPath"] = json(v.GcellGlobalRouterPath);
+#endif
     j["path_via"] = json(v.path_via);
     j["connectedContact"] = json(v.connectedContact);
     j["axis_dir"] = json(v.axis_dir);
     j["axis_coor"] = json(v.axis_coor);
+#ifdef ADDED_FIELDS
+    j["connectedTile"] = json(v.connectedTile);
+#endif
   }
 
   void from_json(const json& j, net& v) {
@@ -253,10 +261,16 @@ namespace PnRDB {
     j["segments"].get_to( v.segments);
     j["interVias"].get_to( v.interVias);
     j["path_metal"].get_to( v.path_metal);
+#ifdef ADDED_PATHS
+    j["GcellGlobalRouterPath"].get_to( v.GcellGlobalRouterPath);
+#endif
     j["path_via"].get_to( v.path_via);
     j["connectedContact"].get_to( v.connectedContact);
     j["axis_dir"].get_to( v.axis_dir);
     j["axis_coor"].get_to( v.axis_coor);
+#ifdef ADDED_FIELDS
+    j["connectedTile"].get_to( v.connectedTile);
+#endif
   }
 
   void to_json(json& j, const pin& v) {
@@ -514,7 +528,9 @@ namespace PnRDB {
   void to_json(json& j, const hierNode& v) {
     j["isCompleted"] = v.isCompleted;
     j["isTop"] = v.isTop;
+#ifdef ADDED_FIELDS
     j["isIntelGcellGlobalRouter"] = v.isIntelGcellGlobalRouter;
+#endif
     j["width"] = v.width;
     j["height"] = v.height;
     j["name"] = v.name;
@@ -548,7 +564,9 @@ namespace PnRDB {
   void from_json(const json& j, hierNode& v) {
     j["isCompleted"].get_to( v.isCompleted);
     j["isTop"].get_to( v.isTop);
+#ifdef ADDED_FIELDS
     j["isIntelGcellGlobalRouter"].get_to( v.isIntelGcellGlobalRouter);
+#endif
     j["width"].get_to( v.width);
     j["height"].get_to( v.height);
     j["name"].get_to( v.name);
