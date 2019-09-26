@@ -450,7 +450,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
             jsonRect.push_back((x_first - w_first / 2));
             jsonRect.push_back(y_first);
-            jsonRect.push_back((x_last + w_first / 2));
+            jsonRect.push_back((x_last + w_last / 2));
             jsonRect.push_back(y_last);
         }else if(x_first >= x_last){
             //going left
