@@ -67,6 +67,10 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                     current_track = m3start + len(self._nets) * k + track
                     contacts = [y * self.m2PerUnitCell + len(self._nets) * j  + track for y in range(y_cells)]
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    # Extend m2 if needed. TODO: Should we draw longer M2s to begin with?
+                    direction = 1 if current_track > center_track else -1
+                    for i in contacts:
+                        self.addWire(self.m2, None, None, i, (center_track, -1 * direction), (current_track, direction))
 
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
