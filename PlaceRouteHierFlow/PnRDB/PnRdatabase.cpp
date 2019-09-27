@@ -432,14 +432,18 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
     jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
     jsonWire["net_name"] = net_name;
     jsonWire["width"] = width;
-    int x_first = node.tiles_total.at(first_tile_idx).x;
-    int x_last = node.tiles_total.at(last_tile_idx).x;
-    int y_first = node.tiles_total.at(first_tile_idx).y;
-    int y_last = node.tiles_total.at(last_tile_idx).y;
-    int w_first = node.tiles_total.at(first_tile_idx).width;
-    int w_last = node.tiles_total.at(last_tile_idx).width;
-    int h_first = node.tiles_total.at(first_tile_idx).height;
-    int h_last = node.tiles_total.at(last_tile_idx).height;
+
+    const auto& first = node.tiles_total.at(first_tile_idx);
+    const auto& last = node.tiles_total.at(last_tile_idx);
+
+    int x_first = first.x;
+    int x_last = last.x;
+    int y_first = first.y;
+    int y_last = last.y;
+    int w_first = first.width;
+    int w_last = last.width;
+    int h_first = first.height;
+    int h_last = last.height;
 
     std::cout << " MetalDirection: " << MetalDirection ;
     json jsonRect =  json::array();
@@ -512,7 +516,7 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
                     vector<PnRDB::contact> pinContacts = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts;
                     std::cout << "contacts size " << pinContacts.size() << std::endl;
                     for(vector<PnRDB::contact>::const_iterator contact_it = pinContacts.begin(); contact_it != pinContacts.end(); ++contact_it){
-                        PnRDB::bbox rect = contact_it->originBox;
+                        PnRDB::bbox rect = contact_it->placedBox;
                         json jsonRect = json::array();
                         jsonRect.push_back(rect.LL.x);
                         jsonRect.push_back(rect.LL.y);
@@ -576,17 +580,22 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
         int MetalDirection = -1; //vertical metal in even layers, horizontal metal in odd layers
         for(vector<std::pair<int,int>>::const_iterator it2=it->GcellGlobalRouterPath.begin(); it2!=it->GcellGlobalRouterPath.end(); ++it2) {            
             int MetalIdx1 = 0, MetalIdx2 = 0; //metal id of the two tiles in the pair
-            int tile_idx1 = it2->first, tile_idx2 = it2->second; //tile ids
-            int x1 = node.tiles_total.at(tile_idx1).x, y1 = node.tiles_total.at(tile_idx1).y; //coordinate of first tile's center
-            int x2 = node.tiles_total.at(tile_idx2).x, y2 = node.tiles_total.at(tile_idx2).y; //coordinate of sencond tile's center
-            int w1 = node.tiles_total.at(tile_idx1).width, h1 = node.tiles_total.at(tile_idx1).height; //w/h of first tile
-            int w2 = node.tiles_total.at(tile_idx2).width, h2 = node.tiles_total.at(tile_idx2).height; //w/h of second tile
+            const int tile_idx1 = it2->first;
+	    const int tile_idx2 = it2->second; //tile ids
 
-            if(node.tiles_total.at(tile_idx1).metal.size() != 1 || node.tiles_total.at(tile_idx2).metal.size() != 1){
+	    const auto& tile1 = node.tiles_total.at(tile_idx1);
+	    const auto& tile2 = node.tiles_total.at(tile_idx2);
+
+            int x1 = tile1.x, y1 = tile1.y; //coordinate of first tile's center
+            int x2 = tile2.x, y2 = tile2.y; //coordinate of sencond tile's center
+            int w1 = tile1.width, h1 = tile1.height; //w/h of first tile
+            int w2 = tile2.width, h2 = tile2.height; //w/h of second tile
+
+            if( tile1.metal.size() != 1 || tile2.metal.size() != 1){
                 std::cout << "ERROR: tile.metal.size != 1 !" << std::endl;
             }else{
-                MetalIdx1 = node.tiles_total.at(tile_idx1).metal.front();
-                MetalIdx2 = node.tiles_total.at(tile_idx2).metal.front();
+                MetalIdx1 = tile1.metal.front();
+                MetalIdx2 = tile2.metal.front();
             }
             std::cout << "tile indexs: " << tile_idx1 << " " << tile_idx2 << std::endl;
             std::cout << "tile layers: " << MetalIdx1 << " " << MetalIdx2 << endl;
