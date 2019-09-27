@@ -36,4 +36,17 @@ def test_a10():
 def test_a11():
     build_test( 'SCM_PMOS',    n=12, X=1, Y=1)
 
+def test_ALL():
+    fins = [12, 16]
+    types = ["NMOS", "PMOS"]
+    pstrs = ["Switch_{}", "DCL_{}", "CM_{}", "CMFB_{}", "SCM_{}", "CMC_{}", "CMC_{}_S", "DP_{}"]
+    for typ in types:
+        for pstr in pstrs:
+            prim = pstr.format(typ)
+            for j in range(1,6):
+                for i in range(1,4):
+                    for nfins in fins:
+                        print(f'Testing {prim}_n{nfins}_X{i}_Y{j} ...')
+                        build_test( prim, n=nfins, X=i, Y=j)
+
 
