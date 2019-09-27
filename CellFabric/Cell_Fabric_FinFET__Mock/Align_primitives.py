@@ -84,7 +84,7 @@ def main( args):
                                  'GB': [('M2', 'G')]})
 
     else:
-        assert False, "Unrecognized primitive"
+        assert False, f"Unrecognized primitive {args.primitive}"
 
     with open(args.block_name + '.json', "wt") as fp:
         uc.writeJSON( fp)
