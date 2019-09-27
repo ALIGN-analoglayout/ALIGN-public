@@ -36,7 +36,8 @@ def test_short():
     c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'y', 'rect': [200, -50, 600, 50]}]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 1
+    assert len(c.rd.shorts) == 1, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
 
 def test_open():
     c = Canvas()
@@ -44,7 +45,8 @@ def test_open():
     c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'x', 'rect': [400, -50, 600, 50]}]
     c.removeDuplicates()
-    assert len(c.rd.opens) == 1
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 1, c.rd.opens
 
 def test_metal_terminal_connection():
     c = Canvas()
@@ -52,8 +54,9 @@ def test_metal_terminal_connection():
     c.terminals = [{'layer': 'metal2', 'netName': 'x', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'M1:S', 'rect': [200, -50, 600, 50]}]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.subinsts) == 1
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
 
 def test_metal_multi_terminal_open():
     c = Canvas()
@@ -61,10 +64,10 @@ def test_metal_multi_terminal_open():
     c.terminals = [{'layer': 'metal2', 'netName': 'M1:S', 'rect': [  0, -50, 300, 50]},
                    {'layer': 'metal2', 'netName': 'M1:D', 'rect': [200, -50, 600, 50]}]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.subinsts) == 1
-    assert len(c.rd.subinsts['M1']) == 2
-    assert len(c.rd.opens) == 2
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 2, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
 
 def test_metal_multi_terminal_connection():
     c = Canvas()
@@ -75,11 +78,11 @@ def test_metal_multi_terminal_connection():
                    {'layer': 'metal2', 'netName': None, 'rect': [700, -50, 1000, 50]},
                    {'layer': 'metal2', 'netName': 'M2:inp', 'rect': [900, -50, 1200, 50]}]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert len(c.rd.subinsts) == 2
-    assert len(c.rd.subinsts['M1']) == 2
+    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
     assert len(c.rd.subinsts['M2']) == 1
-    assert len(c.rd.opens) == 0
 
 def test_via_connecta():
     c = Canvas()
@@ -92,7 +95,8 @@ def test_via_connecta():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_connectb():
@@ -106,7 +110,8 @@ def test_via_connectb():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_connectc():
@@ -120,7 +125,8 @@ def test_via_connectc():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_connectd():
@@ -134,7 +140,8 @@ def test_via_connectd():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_connecte():
@@ -148,7 +155,8 @@ def test_via_connecte():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_connectf():
@@ -162,7 +170,8 @@ def test_via_connectf():
     ]
     terms = c.removeDuplicates()
     print(terms)
-    assert len(c.rd.shorts) == 0
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
     assert { d['netName'] for d in terms} == { 'b'}
 
 def test_via_short1():
@@ -175,7 +184,8 @@ def test_via_short1():
                    {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
     ]
     print(c.removeDuplicates())
-    assert len(c.rd.shorts) == 1
+    assert len(c.rd.shorts) == 1, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
 
 def test_underlapping():
     c = Canvas()
@@ -206,9 +216,9 @@ def test_via_terminal_connection():
                    {'layer': 'via1', 'netName': None, 'rect': [100,  -50, 200,  50]}
     ]
     print(c.removeDuplicates())
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.opens) == 0
-    assert len(c.rd.subinsts) == 1
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
     assert len(c.rd.subinsts['M1']) == 1
 
 def test_via_multi_terminal_connection():
@@ -223,10 +233,10 @@ def test_via_multi_terminal_connection():
                    {'layer': 'via1', 'netName': None, 'rect': [0,  -50, 50,  50]}
     ]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.opens) == 0
-    assert len(c.rd.subinsts) == 1
-    assert len(c.rd.subinsts['M1']) == 2
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
 
 def test_via_multi_terminal_open():
     c = Canvas()
@@ -240,10 +250,10 @@ def test_via_multi_terminal_open():
                    {'layer': 'via1', 'netName': None, 'rect': [0,  -50, 50,  50]}
     ]
     c.removeDuplicates()
-    assert len(c.rd.shorts) == 0
-    assert len(c.rd.opens) == 2
-    assert len(c.rd.subinsts) == 1
-    assert len(c.rd.subinsts['M1']) == 2
+    assert len(c.rd.shorts) == 0, c.rd.shorts
+    assert len(c.rd.opens) == 2, c.rd.opens
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
 
 def test_via_multi_terminal_short():
     c = Canvas()
@@ -256,7 +266,7 @@ def test_via_multi_terminal_short():
     ]
     c.layer_stack.append( ('via0', ('M1', None)))
     c.removeDuplicates()
-    assert len(c.rd.subinsts) == 1
-    assert len(c.rd.subinsts['M1']) == 1
-    assert len(c.rd.shorts) == 1
-    assert len(c.rd.opens) == 0
+    assert len(c.rd.subinsts) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']) == 1, c.rd.subinsts
+    assert len(c.rd.shorts) == 1, c.rd.shorts
+    assert len(c.rd.opens) == 0, c.rd.opens

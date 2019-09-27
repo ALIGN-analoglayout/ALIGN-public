@@ -1,7 +1,60 @@
 #include <gtest/gtest.h>
 #include "PnRdatabase.h"
+#include "../router/Rdatatype.h"
 
 using namespace nlohmann;
+
+#define ADDED_FIELDS
+
+#ifdef ADDED_FIELDS
+namespace RouterDB {
+  void to_json(json& j, const tileEdge& v) {
+    j["next"] = v.next;
+    j["capacity"] = v.capacity;
+  }
+
+  void from_json(const json& j, tileEdge& v) {
+    j["next"].get_to( v.next);
+    j["capacity"].get_to( v.capacity);
+  }
+
+  void to_json(json& j, const tile& v) {
+    j["x"] = v.x;
+    j["y"] = v.y;
+    j["width"] = v.width;
+    j["height"] = v.height;
+    j["metal"] = v.metal;
+    j["tileLayer"] = v.tileLayer;
+    j["index"] = v.index;
+    j["Yidx"] = v.Yidx;
+    j["Xidx"] = v.Xidx;
+    j["north"] = json( v.north);
+    j["south"] = json( v.south);
+    j["east"] = json( v.east);
+    j["west"] = json( v.west);
+    j["down"] = json( v.down);
+    j["up"] = json( v.up);
+  }
+
+  void from_json(const json& j, tile& v) {
+    j["x"].get_to( v.x);
+    j["y"].get_to( v.y);
+    j["width"].get_to( v.width);
+    j["height"].get_to( v.height);
+    j["metal"].get_to( v.metal);
+    j["tileLayer"].get_to( v.tileLayer);
+    j["index"].get_to( v.index);
+    j["Yidx"].get_to( v.Yidx);
+    j["Xidx"].get_to( v.Xidx);
+    j["north"].get_to( v.north);
+    j["south"].get_to( v.south);
+    j["east"].get_to( v.east);
+    j["west"].get_to( v.west);
+    j["down"].get_to( v.down);
+    j["up"].get_to( v.up);
+  }
+};
+#endif
 
 namespace PnRDB {
   
@@ -235,10 +288,16 @@ namespace PnRDB {
     j["segments"] = json(v.segments);
     j["interVias"] = json(v.interVias);
     j["path_metal"] = json(v.path_metal);
+#ifdef ADDED_FIELDS
+    j["GcellGlobalRouterPath"] = json(v.GcellGlobalRouterPath);
+#endif
     j["path_via"] = json(v.path_via);
     j["connectedContact"] = json(v.connectedContact);
     j["axis_dir"] = json(v.axis_dir);
     j["axis_coor"] = json(v.axis_coor);
+#ifdef ADDED_FIELDS
+    j["connectedTile"] = json(v.connectedTile);
+#endif
   }
 
   void from_json(const json& j, net& v) {
@@ -253,10 +312,16 @@ namespace PnRDB {
     j["segments"].get_to( v.segments);
     j["interVias"].get_to( v.interVias);
     j["path_metal"].get_to( v.path_metal);
+#ifdef ADDED_FIELDS
+    j["GcellGlobalRouterPath"].get_to( v.GcellGlobalRouterPath);
+#endif
     j["path_via"].get_to( v.path_via);
     j["connectedContact"].get_to( v.connectedContact);
     j["axis_dir"].get_to( v.axis_dir);
     j["axis_coor"].get_to( v.axis_coor);
+#ifdef ADDED_FIELDS
+    j["connectedTile"].get_to( v.connectedTile);
+#endif
   }
 
   void to_json(json& j, const pin& v) {
@@ -514,12 +579,18 @@ namespace PnRDB {
   void to_json(json& j, const hierNode& v) {
     j["isCompleted"] = v.isCompleted;
     j["isTop"] = v.isTop;
+#ifdef ADDED_FIELDS
+    j["isIntelGcellGlobalRouter"] = v.isIntelGcellGlobalRouter;
+#endif
     j["width"] = v.width;
     j["height"] = v.height;
     j["name"] = v.name;
     j["gdsFile"] = v.gdsFile;
     j["parent"] = json(v.parent);
     j["Blocks"] = json(v.Blocks);
+#ifdef ADDED_FIELDS
+    j["tiles_total"] = json(v.tiles_total);
+#endif
     j["Nets"] = json(v.Nets);
     j["Terminals"] = json(v.Terminals);
     j["Vdd"] = json(v.Vdd);
@@ -547,12 +618,18 @@ namespace PnRDB {
   void from_json(const json& j, hierNode& v) {
     j["isCompleted"].get_to( v.isCompleted);
     j["isTop"].get_to( v.isTop);
+#ifdef ADDED_FIELDS
+    j["isIntelGcellGlobalRouter"].get_to( v.isIntelGcellGlobalRouter);
+#endif
     j["width"].get_to( v.width);
     j["height"].get_to( v.height);
     j["name"].get_to( v.name);
     j["gdsFile"].get_to( v.gdsFile);
     j["parent"].get_to( v.parent);
     j["Blocks"].get_to( v.Blocks);
+#ifdef ADDED_FIELDS
+    j["tiles_total"].get_to( v.tiles_total);
+#endif
     j["Nets"].get_to( v.Nets);
     j["Terminals"].get_to( v.Terminals);
     j["Vdd"].get_to( v.Vdd);

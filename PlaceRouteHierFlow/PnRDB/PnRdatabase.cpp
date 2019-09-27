@@ -418,6 +418,278 @@ void PnRdatabase::WriteLef(const PnRDB::hierNode &node, const string& file, cons
   leffile.close();
 }
 
+json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
+                                            const int MetalIdx, const string net_name, const int width,
+                                            const int first_tile_idx, const int last_tile_idx,
+                                            std::vector<int>& tile_idxs, const int MetalDirection, const int net_id) const {
+    //do output tiles (first_tile_idx, ..., last_tile_idx)
+    std::cout << "output data " << std::endl;
+    std::cout << "layer " << DRC_info.Metal_info.at(MetalIdx).name;
+    std::cout << " net_name " << net_name;
+    std::cout << " width " << width << std::endl;
+    std::cout << " rect ";
+    json jsonWire;
+    jsonWire["layer"] = DRC_info.Metal_info.at(MetalIdx).name;
+    jsonWire["net_name"] = net_name;
+    jsonWire["width"] = width;
+    int x_first = node.tiles_total.at(first_tile_idx).x;
+    int x_last = node.tiles_total.at(last_tile_idx).x;
+    int y_first = node.tiles_total.at(first_tile_idx).y;
+    int y_last = node.tiles_total.at(last_tile_idx).y;
+    int w_first = node.tiles_total.at(first_tile_idx).width;
+    int w_last = node.tiles_total.at(last_tile_idx).width;
+    int h_first = node.tiles_total.at(first_tile_idx).height;
+    int h_last = node.tiles_total.at(last_tile_idx).height;
+
+    std::cout << " MetalDirection: " << MetalDirection ;
+    json jsonRect =  json::array();
+    if(MetalDirection == 1){
+        if(x_first <= x_last){
+            //going right
+            std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
+            std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
+            jsonRect.push_back((x_first - w_first / 2));
+            jsonRect.push_back(y_first);
+            jsonRect.push_back((x_last + w_first / 2));
+            jsonRect.push_back(y_last);
+        }else if(x_first >= x_last){
+            //going left
+            std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
+            std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
+            jsonRect.push_back((x_first + w_first / 2));
+            jsonRect.push_back(y_first);
+            jsonRect.push_back((x_last - w_last / 2));
+            jsonRect.push_back(y_last);
+        }
+    }else if(MetalDirection == 0){
+        if(y_first <= y_last){
+            //go up
+            std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
+            std::cout << x_last << ", " << (y_last + h_last / 2) << ")" ;
+            jsonRect.push_back(x_first);
+            jsonRect.push_back((y_first - h_first / 2));
+            jsonRect.push_back(x_last);
+            jsonRect.push_back((y_last + h_last / 2));
+        }else if(y_first >= y_last){
+            //go down
+            std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
+            std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
+            jsonRect.push_back(x_first);
+            jsonRect.push_back((y_first + h_first / 2));
+            jsonRect.push_back(x_last);
+            jsonRect.push_back((y_last - h_last / 2));
+        }
+    }
+    jsonWire["rect"] = jsonRect;
+    std::cout << std::endl;
+
+    std::cout << "connected pins: " << std::endl;
+    PnRDB::net net = node.Nets.at(net_id);
+    json jsonConnectedPins = json::array();
+    std::cout << "tile_idx: ";
+    for(vector<int>::const_iterator tile_idx = tile_idxs.begin(); tile_idx!=tile_idxs.end(); ++tile_idx){
+        std::cout << *tile_idx << ", ";
+        //search all the tiles in the consecutive tiles
+        for(vector<std::vector<int>>::const_iterator i = net.connectedTile.begin(); i!=net.connectedTile.end();++i){
+            int pin_id = i - net.connectedTile.begin();
+            //pin_id is the index in net.connectedTile
+            for(vector<int>::const_iterator j = i->begin(); j!=i->end();++j){
+                if(*tile_idx != *j){continue;}
+                //current tile index == pin_terminal
+                json jsonConnectedPin;
+                std::cout << "pin_id " << pin_id << std::endl;
+                if (net.connected.at(pin_id).type==PnRDB::Block) {
+                    string sink_name = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().name + "/" + node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).name;
+                    std::cout << "sink_name: " << sink_name;
+                    jsonConnectedPin["sink_name"] = sink_name;
+
+                    string layer = "";
+                    layer = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts.back().metal;
+                    jsonConnectedPin["layer"] = layer;
+                    std::cout << " layer: " << layer << std::endl;
+
+                    json jsonRects = json::array();
+                    vector<PnRDB::contact> pinContacts = node.Blocks.at(net.connected.at(pin_id).iter2).instance.back().blockPins.at(net.connected.at(pin_id).iter).pinContacts;
+                    std::cout << "contacts size " << pinContacts.size() << std::endl;
+                    for(vector<PnRDB::contact>::const_iterator contact_it = pinContacts.begin(); contact_it != pinContacts.end(); ++contact_it){
+                        PnRDB::bbox rect = contact_it->originBox;
+                        json jsonRect = json::array();
+                        jsonRect.push_back(rect.LL.x);
+                        jsonRect.push_back(rect.LL.y);
+                        jsonRect.push_back(rect.UR.x);
+                        jsonRect.push_back(rect.UR.y);
+                        jsonRects.push_back(jsonRect);
+                        std::cout << "#pincontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
+                        std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                    }
+                    jsonConnectedPin["rect"] = jsonRects;
+
+                    jsonConnectedPins.push_back( jsonConnectedPin);
+                } else if (node.Nets.at(net_id).connected.at(pin_id).type==PnRDB::Terminal){
+                    string sink_name = node.Terminals.at(net.connected.at(pin_id).iter).name;
+                    std::cout << "sink_name: " << sink_name;
+                    jsonConnectedPin["sink_name"] = sink_name;
+
+                    string layer = "";
+                    layer = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().metal;
+                    jsonConnectedPin["layer"] = layer;
+                    std::cout << " layer: " << layer << std::endl;
+
+                    json jsonRect = json::array();
+                    PnRDB::bbox rect = node.Terminals.at(net.connected.at(pin_id).iter).termContacts.back().originBox;
+                    jsonRect.push_back(rect.LL.x);
+                    jsonRect.push_back(rect.LL.y);
+                    jsonRect.push_back(rect.UR.x);
+                    jsonRect.push_back(rect.UR.y);
+                    std::cout << "#termcontact:" << rect.LL.x << ", " << rect.LL.y << ", ";
+                    std::cout << rect.UR.x << ", " << rect.UR.y << std::endl;
+                    jsonConnectedPin["rect"] = jsonRect;
+                    
+                    jsonConnectedPins.push_back( jsonConnectedPin);
+                }
+                break;
+            }
+        }
+    }
+    jsonWire["connected_pins"] = jsonConnectedPins;
+    tile_idxs.clear();
+	return jsonWire;
+    
+}
+
+void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
+    //this function write gcell global router result into json for detail route use
+    //combine consecutive tiles into one
+    json jsonWiresArray = json::array();
+    std::cout << "#Nets:" << node.Nets.size() << std::endl;
+    //std::cout << "#Pin_terminals:" << node.Pin_terminals.size() <<std::endl;
+    
+    for(vector<PnRDB::net>::const_iterator it=node.Nets.begin(); it!=node.Nets.end(); ++it) {
+        //std::cout << "Net degree:" << it->degree << std::endl;
+        int MetalIdx = -1; // used to store metal_idx of the consecutive tiles with same tile_idx 
+        int first_tile_idx = -1, last_tile_idx = -1; //first and last tile_idx of consecutive tiles in the same metal layers
+        int width = 0; //width of consecutive tiles, not always the tile.width, 
+                   //=tile.width in vertical metals(even layer), 
+                   //=tile.height in horizontal metals(odd layer)
+        std::vector<int> tile_idxs; //store tile idxs of consecutive tiles
+        int net_id = it - node.Nets.begin(); 
+        int MetalDirection = -1; //vertical metal in even layers, horizontal metal in odd layers
+        for(vector<std::pair<int,int>>::const_iterator it2=it->GcellGlobalRouterPath.begin(); it2!=it->GcellGlobalRouterPath.end(); ++it2) {            
+            int MetalIdx1 = 0, MetalIdx2 = 0; //metal id of the two tiles in the pair
+            int tile_idx1 = it2->first, tile_idx2 = it2->second; //tile ids
+            int x1 = node.tiles_total.at(tile_idx1).x, y1 = node.tiles_total.at(tile_idx1).y; //coordinate of first tile's center
+            int x2 = node.tiles_total.at(tile_idx2).x, y2 = node.tiles_total.at(tile_idx2).y; //coordinate of sencond tile's center
+            int w1 = node.tiles_total.at(tile_idx1).width, h1 = node.tiles_total.at(tile_idx1).height; //w/h of first tile
+            int w2 = node.tiles_total.at(tile_idx2).width, h2 = node.tiles_total.at(tile_idx2).height; //w/h of second tile
+
+            if(node.tiles_total.at(tile_idx1).metal.size() != 1 || node.tiles_total.at(tile_idx2).metal.size() != 1){
+                std::cout << "ERROR: tile.metal.size != 1 !" << std::endl;
+            }else{
+                MetalIdx1 = node.tiles_total.at(tile_idx1).metal.front();
+                MetalIdx2 = node.tiles_total.at(tile_idx2).metal.front();
+            }
+            std::cout << "tile indexs: " << tile_idx1 << " " << tile_idx2 << std::endl;
+            std::cout << "tile layers: " << MetalIdx1 << " " << MetalIdx2 << endl;
+            std::cout << "first tile x/y/width/height: " << x1 << " " << y1 << " " << w1 << " " << h1 << endl;
+            std::cout << "second tile x/y/width/height: " << x2 << " " << y2 << " " << w2 << " " << h2 << endl;
+
+            if(MetalIdx1 == MetalIdx2){
+                MetalDirection = DRC_info.Metal_info.at(MetalIdx1).direct;
+            }
+
+            if(MetalIdx1 != MetalIdx2){
+                //tiles in this pair belongs to different layers
+                if(first_tile_idx != -1 && last_tile_idx != -1){
+                    //do output tiles (first_tile_idx, ..., last_tile_idx)
+                    json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
+                                                first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);                   
+                    jsonWiresArray.push_back( jsonWire);
+                    first_tile_idx = -1;//reset consecutive tiles
+                    last_tile_idx = -1;
+                }
+                continue;
+            } 
+            
+
+            if(first_tile_idx == -1 && last_tile_idx == -1){
+                if(MetalIdx1 == MetalIdx2){
+                    first_tile_idx = tile_idx1;//start a new consecutive tiles
+                    last_tile_idx = tile_idx2;
+                    tile_idxs.push_back(first_tile_idx);
+                    if(first_tile_idx != last_tile_idx)tile_idxs.push_back(last_tile_idx);//ignore same idx
+                    MetalIdx = MetalIdx1;
+                    if(MetalDirection == 0){
+                        width = w1;
+                    }else if(MetalDirection == 1){
+                        width = h1;
+                    }
+                    
+                }
+            }
+
+            //current pair of tiles can be appended to (first_tile_idx, ..., last_tile_idx) only when
+            //1.same metal id 
+            //2.same width
+            bool can_append = false; //True only if the above criteria are all satisfied
+                                     //otherwise output data (first_tile_idx, ..., last_tile_idx)
+            if(MetalIdx1 == MetalIdx){
+                if((MetalDirection == 0 && width == w1) || (MetalDirection == 1 && width == h1)){
+                    can_append = true;
+                }
+            }
+
+            std::cout << "MetalDirection: " <<MetalDirection << std::endl;
+            std::cout << "can append: " << can_append << std::endl;
+
+            if(can_append == false){
+                //do output tiles (first_tile_idx, ..., last_tile_idx)
+                json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
+                                            first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);
+                jsonWiresArray.push_back( jsonWire);
+                first_tile_idx = tile_idx1;//start a new consecutive tiles
+                last_tile_idx = tile_idx2;
+                tile_idxs.push_back(first_tile_idx);
+                if(first_tile_idx != last_tile_idx)tile_idxs.push_back(last_tile_idx);//ignore same idx
+                MetalIdx = MetalIdx1;
+                if(MetalDirection == 0){
+                    width = w1;
+                }else if(MetalDirection == 1){
+                    width = h1;
+                }
+                if(it2 + 1 == it->GcellGlobalRouterPath.end()){
+                    //do output tiles (first_tile_idx, ..., last_tile_idx)
+                    json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
+                                                first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);
+                    jsonWiresArray.push_back( jsonWire);     
+                }
+            }else{
+                if(tile_idx2 != last_tile_idx)tile_idxs.push_back(tile_idx2); //ignore same idx
+                last_tile_idx = tile_idx2;//can append, set last tile to the second tile of current pair
+                if(it2 + 1 == it->GcellGlobalRouterPath.end()){
+                    //do output tiles (first_tile_idx, ..., last_tile_idx)
+                    json jsonWire = WriteGcellGlobalRouteFile(node, rofile, opath, MetalIdx, it->name, width,
+                                                first_tile_idx, last_tile_idx, tile_idxs, MetalDirection, net_id);   
+                    jsonWiresArray.push_back(jsonWire);  
+                }
+            }
+        }
+        std::cout << std::endl;
+    }
+
+    json jsonTop;
+    jsonTop["wires"] = jsonWiresArray;
+
+    std::ofstream jsonStream(opath+rofile);
+    if(jsonStream.fail()) {
+	cout<< "PnRData-Error: cannot open file "<<opath+rofile<<" for writing"<<endl;
+	return;
+    }
+    jsonStream << std::setw(4) << jsonTop;
+    jsonStream.close();
+    
+}
+
+
 void PnRdatabase::WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const {
 
     json jsonWiresArray = json::array();

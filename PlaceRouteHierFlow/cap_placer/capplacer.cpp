@@ -1769,7 +1769,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
 
   for(unsigned int i = 0;i<current_node.Blocks.size();i++){
+
       auto& b = current_node.Blocks[i].instance.back();
+      //PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
       if(b.isLeaf == 1 and b.gdsFile ==""){
 	   //this block must be CC
@@ -1781,15 +1783,20 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
             for(unsigned int j=0;j<current_node.CC_Caps.size();j++){
 
                  std::cout<<"New CC 1 "<<j<<std::endl;
+                 std::cout<<"bug error "<<current_node.CC_Caps.size()<<std::endl;
+                 std::cout<<"bug error "<<b.name<<std::endl;
                  if(current_node.CC_Caps[j].CCCap_name == b.name){
+                      std::cout<<"core dump 0"<<std::endl;
                       ki = current_node.CC_Caps[j].size;
                       unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
                       final_gds = b.master;
+                      std::cout<<"core dump 1"<<std::endl;
                       for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index+=2){
                          pins.first = b.blockPins[pin_index].name;
                          pins.second = b.blockPins[pin_index+1].name;
                          pin_names.push_back(pins);
                       }
+                      std::cout<<"core dump 2"<<std::endl;
                       bool cap_ratio = current_node.CC_Caps[j].cap_ratio;
                       std::cout<<"New CC 2 "<<j<<std::endl;
                       vector<int> cap_r;

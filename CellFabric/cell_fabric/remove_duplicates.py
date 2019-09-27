@@ -27,6 +27,7 @@ class ScanlineRect(UnionFind):
         super().__init__()
         self.rect = None
         self.netName = None
+        self.terminal = None
         self.isPorted = False
 
     def __repr__(self):
@@ -50,7 +51,11 @@ class Scanline:
         slr.rect = self.proto[:]
         slr.rect[self.dIndex] = rect[self.dIndex]
         slr.rect[self.dIndex+2] = rect[self.dIndex+2]
-        slr.netName = netName
+        if netName is not None and ':' in netName:
+            slr.terminal = tuple(netName.split(':'))
+            assert len(slr.terminal) == 2
+        else:
+            slr.netName = netName
         slr.isPorted = isPorted
         self.rects.append(slr)
         return slr
@@ -71,7 +76,7 @@ class Scanline:
                 result = metal_rect
                 break
 
-        assert result is not None
+        assert result is not None, (via_rect, self.rects)
         return result
 
 class RemoveDuplicates():
@@ -98,13 +103,12 @@ class RemoveDuplicates():
                     nm = root.netName
                     if nm is not None:
                         tbl[nm][id(root)].append( (layer, slr.rect))
+                    elif slr.terminal is not None:
+                        self.subinsts[slr.terminal[0]][slr.terminal[1]].add( None)
+                        self.opens.append( slr.terminal)
 
         for (nm,s) in tbl.items():
-            if ':' in nm:
-                instance, pin = nm.split(':')
-                self.subinsts[instance][pin].add( None)
-                self.opens.append( (nm,list(s.values())))
-            elif len(s) > 1:
+            if len(s) > 1:
                 self.opens.append( (nm,list(s.values())))
 
     @staticmethod
@@ -223,29 +227,31 @@ class RemoveDuplicates():
                         else:
                             self.connectPair( metal_rect_v.root(), via_rect.root())
 
+    def check_shorts_induced_by_terminals( self):
+        for instance, v in self.subinsts.items():
+            for pin, slrs in v.items():
+                names = {x.root().netName for x in slrs}
+                if len(names) > 1:
+                    self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
+
     def connectPair( self, a, b):
         numshorts = len(self.shorts)
         if a.netName is None:
-            b.connect( a)
-        elif b.netName is None or a.netName == b.netName:
+            a.netName = b.netName
             a.connect( b)
-        elif ':' in a.netName and ':' in b.netName:
-            return False
-        elif ':' in a.netName or ':' in b.netName:
-            if ':' in b.netName:
-                a, b = b, a
-            instance, pin = a.netName.split(':')
-            if len(self.subinsts[instance][pin]) == 0 \
-                    or next(iter(self.subinsts[instance][pin])).netName == b.netName:
-                a.netName = b.netName
-                self.subinsts[instance][pin].add( a)
-                b.connect( a)
-            else:
-                self.shorts.append( (b, self.subinsts[instance][pin], 'THROUGH', a) )
-                b.connect( a)
+        elif b.netName is None or a.netName == b.netName:
+            b.netName = a.netName
+            a.connect( b)
         else:
             self.shorts.append( (a, b) )
-        return numshorts == len(self.shorts)
+        if a.terminal is None and b.terminal is None:
+            return numshorts == len(self.shorts)
+        else:
+            if a.terminal is not None:
+                self.subinsts[a.terminal[0]][a.terminal[1]].add( a)
+            if b.terminal is not None:
+                self.subinsts[b.terminal[0]][b.terminal[1]].add( b)
+            return False
 
     def generate_rectangles( self):
 
@@ -276,6 +282,7 @@ class RemoveDuplicates():
         self.build_scan_lines( self.build_centerline_tbl())
 
         self.check_shorts_induced_by_vias()
+        self.check_shorts_induced_by_terminals()
         self.check_opens()
 
         for short in self.shorts:
