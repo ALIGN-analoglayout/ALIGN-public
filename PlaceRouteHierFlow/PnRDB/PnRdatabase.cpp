@@ -454,11 +454,11 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             jsonRect.push_back(y_last);
         }else if(x_first >= x_last){
             //going left
-            std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
-            std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
+            std::cout << "(" << (x_first + w_first / 2) << ", " << y_first << ", ";
+            std::cout << (x_last - w_last / 2) << ", " << y_last << ")" ;
             jsonRect.push_back((x_first + w_first / 2));
             jsonRect.push_back(y_first);
-            jsonRect.push_back((x_last - w_last / 2));
+            jsonRect.push_back((x_last - w_last / 2)); 
             jsonRect.push_back(y_last);
         }
     }else if(MetalDirection == 0){
@@ -472,8 +472,8 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
             jsonRect.push_back((y_last + h_last / 2));
         }else if(y_first >= y_last){
             //go down
-            std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
-            std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
+            std::cout << "(" << x_first << ", " << (y_first + h_first / 2) << ", ";
+            std::cout << x_last << ", " << (y_last - h_last / 2) << ")";
             jsonRect.push_back(x_first);
             jsonRect.push_back((y_first + h_first / 2));
             jsonRect.push_back(x_last);
@@ -633,7 +633,11 @@ void PnRdatabase::WriteGcellGlobalRoute(const PnRDB::hierNode& node, const strin
             bool can_append = false; //True only if the above criteria are all satisfied
                                      //otherwise output data (first_tile_idx, ..., last_tile_idx)
             if(MetalIdx1 == MetalIdx){
-                if((MetalDirection == 0 && width == w1) || (MetalDirection == 1 && width == h1)){
+                if(tile_idx1 == last_tile_idx){
+                    if((MetalDirection == 0 && width == w1) || (MetalDirection == 1 && width == h1)){
+                        can_append = true;
+                    }
+                }else if(first_tile_idx == tile_idx1 && last_tile_idx == tile_idx2){
                     can_append = true;
                 }
             }
