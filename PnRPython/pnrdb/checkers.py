@@ -132,10 +132,30 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 tbl[nm] = []
             tbl[nm].append(wire)
 
-        print( tbl)
+        print( tbl) 
 
         for (k,vv) in tbl.items():
             for v in vv:
+                for conn in v['connected_pins']:
+                    ly = conn['layer']
+                    print( conn['rect'])
+                    if not isinstance( conn['rect'][0], list):
+                        # Seems to be the external terminal case
+                        print( "non-list", conn['rect'])
+                        assert ly == ""
+                        rects = [ conn['rect']]
+                    else:
+                        print( "list", conn['rect'])
+                        rects = conn['rect']
+
+                    for rect in rects:
+                        r = rect[:]
+                        for q in [0,1]:
+                            r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
+                        terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
+                        terminals.append( {"netName": conn['sink_name'], "layer": ly, "rect": r})
+                        
+
                 ly = v['layer']
                 r = v['rect'][:]
                 for q in [0,1]:
