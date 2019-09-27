@@ -1,6 +1,9 @@
 from canvas import FinFET_Mock_PDK_Canvas
 from collections import defaultdict
 
+import logging
+logger = logging.getLogger(__name__)
+
 class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
 
     def _addMOS( self, x, y, name='M1', reflect=False):
@@ -39,39 +42,42 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             _connect_diffusion(gate_x - 1, name, 'S') #S
             _connect_diffusion(gate_x + 1, name, 'D') #D
 
-    def _routeX(self, y, routing, pinned=False):
+    def _connectDevicePins(self, y, connections, pinned=False):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
-        for track, (net, conn) in enumerate(routing.items(), start=1):
-            contacts = set()
-            for inst, v in self._xpins.items():
-                for pin, vv in v.items():
-                    if (inst, pin) in conn:
-                        contacts.update(vv)
+        for track, (net, conn) in enumerate(connections.items(), start=1):
+            contacts = {track for inst, pins in self._xpins.items()
+                              for pin, m1tracks in pins.items()
+                              for track in m1tracks if (inst, pin) in conn}
             for j in range(self.minvias):
-                current_track = y * self.m2PerUnitCell + len(routing) * j + track
+                current_track = y * self.m2PerUnitCell + len(connections) * j + track
                 self.addWireAndViaSet(net, net if pinned else None, self.m2, self.v1, current_track, contacts)
+                self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 direction = 1 if current_track > center_track else -1
                 for i in contacts:
                     self.addWire( self.m1, None, None, i, (center_track, -1 * direction), (current_track, direction))
 
-    def _routeY(self, x_cells, y_cells, routing):
+    def _connectNets(self, x_cells, y_cells):
         # TODO: Need to keep track of all M2 tracks & route intelligently. Center-point assumption may not work for all cases.
-        m3start = (x_cells * self.gatesPerUnitCell - len(routing) * self.minvias) // 2
-        for track, net in enumerate(routing.keys(), start=1):
+        center_track = x_cells * self.gatesPerUnitCell // 2
+        m3start = (x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
+        for track, net in enumerate(self._nets.keys(), start=1):
             for j in range(self.minvias):
-                for i in range(self.minvias):
-                    self.addWireAndViaSet(net, net, self.m3, self.v2, m3start + len(routing) * i + track, [y * self.m2PerUnitCell + len(routing) * j  + track for y in range(y_cells)])
+                for k in range(self.minvias):
+                    current_track = m3start + len(self._nets) * k + track
+                    contacts = [y * self.m2PerUnitCell + len(self._nets) * j  + track for y in range(y_cells)]
+                    self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, routing, minvias = 2):
-        if minvias * len(routing) > self.m2PerUnitCell - 1:
-            self.minvias = (self.m2PerUnitCell - 1) // len(routing)
-            print( f"WARNING: Using minvias = {self.minvias}. Cannot route {len(routing)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
+    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
+        if minvias * len(connections) > self.m2PerUnitCell - 1:
+            self.minvias = (self.m2PerUnitCell - 1) // len(connections)
+            logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
         else:
             self.minvias = minvias
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
+        self._nets = defaultdict(lambda: defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
         for y in range(y_cells):
-            self._xpins = defaultdict(lambda: defaultdict(list))
+            self._xpins = defaultdict(lambda: defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
             for x in range(x_cells):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
@@ -96,20 +102,20 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
                 else:
                     assert False, "Unknown pattern"
-            self._routeX(y, routing, y_cells == 1)
+            self._connectDevicePins(y, connections, y_cells == 1)
         if y_cells > 1:
-            self._routeY(x_cells, y_cells, routing)
+            self._connectNets(x_cells, y_cells)
 
-    def addNMOSArray( self, x_cells, y_cells, pattern, routing):
+    def addNMOSArray( self, x_cells, y_cells, pattern, connections):
 
-        self._addMOSArray(x_cells, y_cells, pattern, routing)
+        self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Nselect Placement   #####
         self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
 
-    def addPMOSArray( self, x_cells, y_cells, pattern, routing):
+    def addPMOSArray( self, x_cells, y_cells, pattern, connections):
 
-        self._addMOSArray(x_cells, y_cells, pattern, routing)
+        self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Pselect and Nwell Placement   #####
         self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
