@@ -42,7 +42,7 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             _connect_diffusion(gate_x - 1, name, 'S') #S
             _connect_diffusion(gate_x + 1, name, 'D') #D
 
-    def _connectDevicePins(self, y, connections, pinned=False):
+    def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
         for track, (net, conn) in enumerate(connections.items(), start=1):
             contacts = {track for inst, pins in self._xpins.items()
@@ -50,12 +50,12 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                               for track in m1tracks if (inst, pin) in conn}
             for j in range(self.minvias):
                 current_track = y * self.m2PerUnitCell + len(connections) * j + track
-                self.addWireAndViaSet(net, net if pinned else None, self.m2, self.v1, current_track, contacts)
+                self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
                 self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 direction = 1 if current_track > center_track else -1
                 for i in contacts:
-                    self.addWire( self.m1, None, None, i, (center_track, -1 * direction), (current_track, direction))
+                    self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
     def _connectNets(self, x_cells, y_cells):
         m3start = (x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
@@ -63,10 +63,15 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             for j in range(self.minvias):
                 current_track = m3start + len(self._nets) * j + track
                 contacts = conn.keys()
-                self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
-                # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
-                for i, locs in conn.items():
-                    self.addWire(self.m2, None, None, i, (min(*locs, current_track), -1), (max(*locs, current_track), 1))
+                if len(contacts) == 1: # Create m2 terminal
+                    i = next(iter(contacts))
+                    minx, maxx = min(conn[i]), max(conn[i])
+                    self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
+                else: # create m3 terminal(s)
+                    self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
+                    for i, locs in conn.items():
+                        self.addWire(self.m2, net, None, i, (min(*locs, current_track), -1), (max(*locs, current_track), 1))
 
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
@@ -103,9 +108,8 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
                 else:
                     assert False, "Unknown pattern"
-            self._connectDevicePins(y, connections, nets_are_connected)
-        if not nets_are_connected:
-            self._connectNets(x_cells, y_cells)
+            self._connectDevicePins(y, connections)
+        self._connectNets(x_cells, y_cells)
 
     def addNMOSArray( self, x_cells, y_cells, pattern, connections):
 
