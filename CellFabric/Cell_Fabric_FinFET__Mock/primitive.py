@@ -58,6 +58,7 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                     self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
     def _connectNets(self, x_cells, y_cells):
+        center_track = (x_cells * self.gatesPerUnitCell) // 2
         m3start = (x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
         for track, (net, conn) in enumerate(self._nets.items(), start=1):
             for j in range(self.minvias):
@@ -66,12 +67,15 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                 if len(contacts) == 1: # Create m2 terminal
                     i = next(iter(contacts))
                     minx, maxx = min(conn[i]), max(conn[i])
+                    if minx == maxx: # Quick & dirty DRC error fix. TODO: Make this MinL dependent
+                        minx, maxx = (minx - 2, maxx) if minx > center_track else (minx, maxx + 2)
                     self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
                 else: # create m3 terminal(s)
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
-                        self.addWire(self.m2, net, None, i, (min(*locs, current_track), -1), (max(*locs, current_track), 1))
+                        minx, maxx = min(*locs, current_track), max(*locs, current_track)
+                        self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
@@ -79,7 +83,6 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
         else:
             self.minvias = minvias
-        nets_are_connected = (y_cells == 1 and self.minvias == 1)
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
         self._nets = defaultdict(lambda: defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
         for y in range(y_cells):
