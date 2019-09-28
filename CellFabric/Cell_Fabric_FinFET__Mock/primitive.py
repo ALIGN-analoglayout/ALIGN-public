@@ -74,6 +74,7 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
         else:
             self.minvias = minvias
+        nets_are_connected = (y_cells == 1 and self.minvias == 1)
         names = ['M1'] if pattern == 0 else ['M1', 'M2']
         self._nets = defaultdict(lambda: defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
         for y in range(y_cells):
@@ -102,8 +103,8 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
                 else:
                     assert False, "Unknown pattern"
-            self._connectDevicePins(y, connections, y_cells == 1)
-        if y_cells > 1:
+            self._connectDevicePins(y, connections, nets_are_connected)
+        if not nets_are_connected:
             self._connectNets(x_cells, y_cells)
 
     def addNMOSArray( self, x_cells, y_cells, pattern, connections):
