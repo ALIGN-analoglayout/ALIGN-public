@@ -57,8 +57,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                     print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1])
 
     if draw_grid:
-        m1_pitch = 80
-        m2_pitch = 84
+        m1_pitch = 80*2
+        m2_pitch = 84*2
         for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
             x = m1_pitch*ix
             r = [ x-1, 0, x+1, hN.height]
@@ -165,14 +165,14 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
                 for q in [0,1]:
                     if r[q] == r[q+2]:
-                        r[q] -= 20
+                        r[q]   -= 20
                         r[q+2] += 20
                 print(k,ly,r)
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
 
         if draw_grid:
-            m1_pitch = 800
-            m2_pitch = 840
+            m1_pitch = 800*2
+            m2_pitch = 840*2
             for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
                 x = m1_pitch*ix
                 r = [ x-1, 0, x+1, hN.height]
