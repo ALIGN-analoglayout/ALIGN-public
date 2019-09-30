@@ -77,7 +77,7 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                         minx, maxx = min(*locs, current_track), max(*locs, current_track)
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
+    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 1):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
