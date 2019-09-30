@@ -1,4 +1,4 @@
-FROM with_protobuf:latest as placeroute_image
+FROM darpaalign/with_protobuf:2019sept30 as placeroute_image
 
 RUN \
     git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  && \

@@ -100,8 +100,7 @@ docker-core.yml:	${ALIGN_HOME}/compose/docker-core.yml
 docker:	volume services make-docker-service
 	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/compose/Makefile DESIGN=${DESIGN}"
 
-services:	transfer-service protobuf-service \
-		protobuf-service cellfabric-service placeroute-service \
+services:	transfer-service cellfabric-service placeroute-service \
 		topology-service klayoutconvert-service
 
 transfer-service:	docker-compose.yml
