@@ -4,7 +4,7 @@ RUN \
     git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  && \
     cp -r lpsolve /usr/local/lib/ && \
     apt-get update && \
-    apt-get install -yq libboost-all-dev git vim && \
+    apt-get install -yq vim && \
     apt-get clean
 
 COPY . /PlaceRouteHierFlow
