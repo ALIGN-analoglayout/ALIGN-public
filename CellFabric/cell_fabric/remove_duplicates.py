@@ -66,6 +66,7 @@ class Scanline:
 
     def merge_slr(self, base_slr, new_slr):
         base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
