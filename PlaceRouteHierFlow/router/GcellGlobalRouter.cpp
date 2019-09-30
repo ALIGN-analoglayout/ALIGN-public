@@ -21,7 +21,9 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout<<"Test 1"<<std::endl;
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
-  placeTerminals();
+  if(node.isIntelGcellGlobalRouter == false){
+    placeTerminals();
+  }
   std::cout<<"Test 2"<<std::endl;
 
   //2. create GcellGlobalGrid
