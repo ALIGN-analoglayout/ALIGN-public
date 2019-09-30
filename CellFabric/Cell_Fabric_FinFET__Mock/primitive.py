@@ -57,7 +57,21 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                 for i in contacts:
                     self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
+
     def _connectNets(self, x_cells, y_cells):
+
+        def _get_wire_terminators(intersecting_tracks):
+            minx, maxx = min(intersecting_tracks), max(intersecting_tracks)
+            # BEGIN: Quick & dirty MinL DRC error fix.
+            minL = 2 # TODO: Make this MinL dependent
+            L = maxx - minx
+            if center_track - minL // 2 <= minx and maxx <= center_track + minL // 2:
+                minx, maxx = (center_track - minL // 2, center_track + minL // 2)
+            elif L < minL:
+                minx, maxx = (minx - (minL - L), maxx) if minx >= center_track else (minx, maxx + (minL - L))
+            # END: Quick & dirty MinL DRC error fix.
+            return (minx, maxx)
+
         center_track = (x_cells * self.gatesPerUnitCell) // 2
         m3start = (x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
         for track, (net, conn) in enumerate(self._nets.items(), start=1):
@@ -66,15 +80,13 @@ class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
                 contacts = conn.keys()
                 if len(contacts) == 1: # Create m2 terminal
                     i = next(iter(contacts))
-                    minx, maxx = min(conn[i]), max(conn[i])
-                    if minx == maxx: # Quick & dirty DRC error fix. TODO: Make this MinL dependent
-                        minx, maxx = (minx - 2, maxx) if minx > center_track else (minx, maxx + 2)
+                    minx, maxx = _get_wire_terminators(conn[i])
                     self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
                 else: # create m3 terminal(s)
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
-                        minx, maxx = min(*locs, current_track), max(*locs, current_track)
+                        minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 1):
