@@ -4,7 +4,7 @@ import json
 import logging
 
 def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None):
-    logger = logging.getLogger('gen_viewer_json')
+    logger = logging.getLogger(__name__)
 
     p = Pdk().load( pdk_fn)
 
