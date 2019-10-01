@@ -2,6 +2,7 @@
 
 import json
 import argparse
+import logging
 
 from pnrdb import *
 
@@ -16,9 +17,16 @@ if __name__ == "__main__":
     parser.add_argument( "-ifn", "--input_file_name", type=str, default="")
     parser.add_argument( "--use_orig", action='store_true')
     parser.add_argument( "--draw_grid", action='store_true')
+    parser.add_argument( "--verbose", action='store_true')
     parser.add_argument( "--global_route_json", type=str, default=None)
  
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.CRITICAL)
+
+    logger = logging.getLogger()
+    if ( args.verbose):
+        logger.setLevel( logging.INFO)
 
     fn = args.input_dir + "/" + args.block + "_" + args.variant + ".db.json"
     if args.input_file_name:

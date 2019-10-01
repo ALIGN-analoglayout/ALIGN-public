@@ -1,13 +1,11 @@
 from cell_fabric import DefaultCanvas, Pdk, transformation
 from pprint import pformat
 import json
-
-def check_bbox( b):
-    pass
-#    assert b.LL.x < b.UR.x, (b.LL.x,b.UR.x)
-#    assert b.LL.y < b.UR.y, (b.LL.y,b.UR.y)
+import logging
 
 def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None):
+    logger = logging.getLogger('gen_viewer_json')
+
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -26,7 +24,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
               "M4": "m4", "M5": "m5", "M6": "m6"}
 
     def add_terminal( netName, layer, b):
-        check_bbox( b)
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
@@ -70,7 +67,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
     for n in hN.Nets:
-        print( n.name)
+        print( f"Net: {n.name}")
 
         def addt( obj, con):
             b = con.originBox if use_orig else con.placedBox
@@ -132,28 +129,29 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 tbl[nm] = []
             tbl[nm].append(wire)
 
-        print( tbl) 
-
         for (k,vv) in tbl.items():
             for v in vv:
                 for conn in v['connected_pins']:
                     ly = conn['layer']
-                    print( conn['rect'])
                     if not isinstance( conn['rect'][0], list):
                         # Seems to be the external terminal case
-                        print( "non-list", conn['rect'])
+                        logger.info( f"non-list {conn['rect']}")
                         assert ly == ""
                         rects = [ conn['rect']]
                     else:
-                        print( "list", conn['rect'])
+                        logger.info( f"list {conn['rect']}")
                         rects = conn['rect']
 
                     for rect in rects:
                         r = rect[:]
                         for q in [0,1]:
                             r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
-                        terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
-                        terminals.append( {"netName": conn['sink_name'], "layer": ly, "rect": r})
+
+                        d0 = {"netName": k+"_tm", "layer": ly, "rect": r}
+                        d1 = {"netName": conn['sink_name'], "layer": ly, "rect": r}
+                        logger.info( f"Terminal: {d0} {d1}")
+                        terminals.append( d0)
+                        terminals.append( d1)
                         
 
                 ly = v['layer']
@@ -161,13 +159,18 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 for q in [0,1]:
                     r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
 
-#                assert r[0] == r[2] or r[1] == r[3], (v,r)
+                if  r[0] < r[2] and r[1] < r[3]:
+                    logger.error( f"2-dimensional global route {v} {r}")
+                if r[0] == r[2] and r[1] == r[3]:
+                    logger.error( f"0-dimensional global route {v} {r}")
+
+                logger.info( f"Global route: {k} {ly} {r}")
 
                 for q in [0,1]:
                     if r[q] == r[q+2]:
                         r[q]   -= 20
                         r[q+2] += 20
-                print(k,ly,r)
+
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
 
         if draw_grid:
@@ -198,7 +201,6 @@ def remove_duplicates( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/Fin
     cnv.terminals = []
 
     def add_terminal( netName, layer, b):
-        check_bbox( b)
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         if layer == "M1":

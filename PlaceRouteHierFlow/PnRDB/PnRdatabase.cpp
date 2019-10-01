@@ -434,26 +434,69 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
     jsonWire["width"] = width;
 
     {
+      int m1_p = 80*2;
+      int m2_p = 84*2;
       const auto& f = node.tiles_total.at(first_tile_idx);
       const auto& l = node.tiles_total.at(last_tile_idx);
-      std::cout << " MetalDirection: " << MetalDirection << std::endl;
       std::cout << "ABS(" << f.x << ", " << f.y << ", " << l.x << ", " << l.y << ")" << std::endl;
       std::cout << "IDX(" << f.Xidx << ", " << f.Yidx << ", " << l.Xidx << ", " << l.Yidx << ")" << std::endl;
-      std::cout << "MOD(" << f.x/80 << " " << f.x%80
-		<< ", "   << f.y/84 << " " << f.y%84
-	        << ", "   << l.x/80 << " " << l.x%80
-	        << ", "   << l.y/84 << " " << l.y%84 << std::endl;
-      std::cout << "ALT(" << f.x/84 << " " << f.x%84
-		<< ", "   << f.y/80 << " " << f.y%80
-	        << ", "   << l.x/84 << " " << l.x%84
-	        << ", "   << l.y/80 << " " << l.y%80 << std::endl;
+      std::cout << "MOD(" << f.x/m1_p << " " << f.x%m1_p
+		<< ", "   << f.y/m2_p << " " << f.y%m2_p
+	        << ", "   << l.x/m1_p << " " << l.x%m1_p
+	        << ", "   << l.y/m2_p << " " << l.y%m2_p << std::endl;
+      std::cout << "ALT(" << f.x/m2_p << " " << f.x%m2_p
+		<< ", "   << f.y/m1_p << " " << f.y%m1_p
+	        << ", "   << l.x/m2_p << " " << l.x%m2_p
+	        << ", "   << l.y/m1_p << " " << l.y%m1_p << std::endl;
 
+      int x_first = f.x;
+      int x_last = l.x;
+      int y_first = f.y;
+      int y_last = l.y;
+      int w_first = f.width;
+      int w_last = l.width;
+      int h_first = f.height;
+      int h_last = l.height;
+
+      std::cout << " MetalDirection: " << MetalDirection ;
       json jsonRect =  json::array();
-      jsonRect.push_back(f.x);
-      jsonRect.push_back(f.y);
-      jsonRect.push_back(l.x);
-      jsonRect.push_back(l.y);
-      jsonWire["rect"] = jsonRect;
+      if(MetalDirection == 1){
+        if(x_first <= x_last){
+	  //going right
+	  std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
+	  std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
+	  jsonRect.push_back((x_first - w_first / 2));
+	  jsonRect.push_back(y_first);
+	  jsonRect.push_back((x_last + w_last / 2));
+	  jsonRect.push_back(y_last);
+        }else if(x_first >= x_last){
+	  //going left
+	  std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
+	  std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
+	  jsonRect.push_back((x_first + w_first / 2));
+	  jsonRect.push_back(y_first);
+	  jsonRect.push_back((x_last - w_last / 2));
+	  jsonRect.push_back(y_last);
+        }
+      }else if(MetalDirection == 0){
+        if(y_first <= y_last){
+	  //go up
+	  std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
+	  std::cout << x_last << ", " << (y_last + h_last / 2) << ")" ;
+	  jsonRect.push_back(x_first);
+	  jsonRect.push_back((y_first - h_first / 2));
+	  jsonRect.push_back(x_last);
+	  jsonRect.push_back((y_last + h_last / 2));
+        }else if(y_first >= y_last){
+	  //go down
+	  std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
+	  std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
+	  jsonRect.push_back(x_first);
+	  jsonRect.push_back((y_first + h_first / 2));
+	  jsonRect.push_back(x_last);
+	  jsonRect.push_back((y_last - h_last / 2));
+        }
+      }
     }
 
     std::cout << "connected pins: " << std::endl;
