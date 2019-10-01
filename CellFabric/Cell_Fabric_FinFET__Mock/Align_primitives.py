@@ -6,8 +6,12 @@ sys.path.append('.')
 import gen_gds_json
 import gen_lef
 import primitive
+import logging
 
 def main( args):
+
+    logging.basicConfig(level=logging.getLevelName(args.logLevel))
+
     fin = args.height
     pattern = args.pattern
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
@@ -84,7 +88,7 @@ def main( args):
                                  'GB': [('M2', 'G')]})
 
     else:
-        assert False, "Unrecognized primitive"
+        assert False, f"Unrecognized primitive {args.primitive}"
 
     with open(args.block_name + '.json', "wt") as fp:
         uc.writeJSON( fp)
@@ -105,6 +109,7 @@ def gen_parser():
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
+    parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 
 if __name__ == "__main__":
