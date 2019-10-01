@@ -22,7 +22,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
   if(node.isIntelGcellGlobalRouter == false){
-     placeTerminals();
+    placeTerminals();
   }
   std::cout<<"Test 2"<<std::endl;
 
