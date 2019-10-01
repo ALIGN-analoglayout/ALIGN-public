@@ -46,7 +46,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${
 	cp $(DESIGN)/$(PDK_FILE) \$$_ && \
 	cp $(GEN_OUTPUT)/$(DESIGN).lef \$$_ && \
 	cp $(GEN_OUTPUT)/$(DESIGN).map \$$_ && \
-	cp $(GEN_OUTPUT)/*.gds.json \$$_ && \
+	cp $(GEN_OUTPUT)/*.json \$$_ && \
 	cp $(TPO_OUTPUT)/$(DESIGN).v \$$_ && \
 	cp $(TPO_OUTPUT)/*.const \$$_")
 	$(call execute, placeroute-service, /bin/bash -c "mkdir -p ${PNR_OUTPUT} && cd \$$_/.. && make -f $(TOP)/PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log")

@@ -29,4 +29,4 @@ LEF:	$(TOP)/sub_circuit_identification/LEF
 
 clean:
 	rm -rf circuit_graphs/${DESIGN}.yaml
-	rm -rf Results/${DESIGN}.{p,v,_lef.sh}
+	rm -rf Results/${DESIGN}{.p,.v,_lef.sh}
