@@ -210,7 +210,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                     if not isinstance( conn['rect'][0], list):
                         # Seems to be the external terminal case
                         logger.info( f"non-list {conn['rect']}")
-                        assert ly == ""
                         rects = [ conn['rect']]
                     else:
                         logger.info( f"list {conn['rect']}")
@@ -229,6 +228,10 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                         
 
                 ly = v['layer']
+                if 'rect' not in v:
+                    logger.error( f"No global route 'rect' in {v}")
+                    continue
+
                 r = v['rect'][:]
                 for q in [0,1]:
                     r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
