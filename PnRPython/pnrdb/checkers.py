@@ -59,12 +59,12 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
         m2_pitch = 2*p['M2']['Pitch']
         for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
             x = m1_pitch*ix
-            r = [ x-1, 0, x+1, hN.height]
+            r = [ x-2, 0, x+2, hN.height]
             terminals.append( { "netName": 'm1_grid', "layer": 'M1', "rect": r})
 
         for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
             y = m2_pitch*iy
-            r = [ 0, y-1, hN.width, y+1]
+            r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
     fa_map = {}
@@ -116,14 +116,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
-                logger.info( f"{term['rect']}")
-
-            def s( b):
-                return f"{b.LL.x} {b.LL.y} {b.UR.x} {b.UR.y}"
-
-            # Determine the transformation
-            logger.info( f"{blk.master} {blk.orient} {s(blk.originBox)} {s(blk.placedBox)}")
-
             for term in d['terminals']:
                 if term['layer'] in ["pselect","nwell","poly","fin","active","polycon","LISD","pc","V0","cellarea","nselect"]: continue
                 nm = term['netName']
@@ -255,15 +247,23 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             m2_pitch = 2*10*p['M2']['Pitch']
             for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
                 x = m1_pitch*ix
-                r = [ x-1, 0, x+1, hN.height]
+                r = [ x-2, 0, x+2, hN.height]
                 terminals.append( { "netName": 'm1_bin', "layer": 'M1', "rect": r})
 
             for iy in range( (hN.height+m2_pitch-1)//m2_pitch):
                 y = m2_pitch*iy
-                r = [ 0, y-1, hN.width, y+1]
+                r = [ 0, y-2, hN.width, y+2]
                 terminals.append( { "netName": 'm2_bin', "layer": 'M2', "rect": r})
 
     d["terminals"] = terminals
+
+    # scale by two be make it be in CellFabric units (nanometer)
+    assert all( c%2 == 0 for c in d['bbox'])
+    d['bbox'] = [ c//2 for c in d['bbox']]
+    for term in d['terminals']:
+        if not all( c%2 == 0 for c in term['rect']):
+            logger.error( f"Terminal {term} not a multiple of two in PnRDB units.")
+        term['rect'] = [ c//2 for c in term['rect']]
 
     if checkOnly:
         cnv.bbox = transformation.Rect( *d["bbox"])
