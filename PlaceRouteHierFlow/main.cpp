@@ -35,7 +35,7 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
   std::cout << ltag << std::endl;
 }
 
-static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state)
+static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
   std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   DB.Extract_RemovePowerPins(current_node);
@@ -52,7 +52,11 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Starting Gcell Global Routing", skip_saving_state);
-    curr_route.RouteWork(4, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    int global_router_mode = 4;
+    if ( adr_mode) {
+      global_router_mode = 6;
+    }
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
@@ -132,6 +136,7 @@ int main(int argc, char** argv ){
   // Currently adds 4 seconds to a 29 second baseline for the switched_capacitor_filter
   // And generates 69MB in files
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
+  bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
 
   string opath="./Results/";
   string fpath=argv[1];
@@ -189,7 +194,7 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state);
+      route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
     }
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
