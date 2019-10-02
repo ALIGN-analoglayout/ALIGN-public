@@ -3,9 +3,17 @@ from pprint import pformat
 import json
 import logging
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
-    logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
+def rational_scaling( d, *, mul=1, div=1):
+    assert all( (mul*c) % div == 0 for c in d['bbox'])
+    d['bbox'] = [ (mul*c) //div for c in d['bbox']]
+    for term in d['terminals']:
+        if not all( (mul*c) % div == 0 for c in term['rect']):
+            logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
+        term['rect'] = [ (mul*c)//div for c in term['rect']]
+
+def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -32,11 +40,16 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             if netName == "!interMetals": return
             if netName == "!interVias": return
 
-        if layer == "cellarea":
-            def f( gen, value, tag):
-                p = gen.clg.inverseBounds( value)
+        def f( gen, value, tag=""):
+            # value is in 2x units
+            if value%2 != 0:
+                logger.error( f"Off grid:{tag} {layer} {netName} {p} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two.")
+            else:
+                p = gen.clg.inverseBounds( value//2)
                 if p[0] != p[1]:
-                    print( f"Off grid {tag}", layer, netName, p, r)
+                    logger.error( f"Off grid:{tag} {layer} {netName} {p} {r} {r[2]-r[0]} {r[3]-r[1]}")
+
+        if layer == "cellarea":
             f( cnv.m1, b.LL.x, "LL.x")
             f( cnv.m1, b.UR.x, "UR.x")
             f( cnv.m2, b.LL.y, "LL.y")
@@ -49,10 +62,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             else:
                 center = None
             if center is not None:
-                gen = cnv.generators[t_tbl[layer]]
-                p = gen.clg.inverseBounds(center)
-                if p[0] != p[1]:
-                    print( "Off grid", layer, netName, p, r, r[2]-r[0], r[3]-r[1])
+                f( cnv.generators[t_tbl[layer]], center)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*p['M1']['Pitch']
@@ -91,21 +101,9 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             with open( json_dir + "/" + blk.master + ".json", "rt") as fp:
                 d = json.load( fp)
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            assert all( c % 5 ==0 for c in d['bbox'])
-            d['bbox'] = [ c//5 for c in d['bbox']]
-            for term in d['terminals']:
-                term['rect'] = [ c//5 for c in term['rect']]
+            rational_scaling( d, div=5)
 
-            if   blk.orient == "FN":
-                tr = transformation.Transformation(                oY=-blk.height, sX=-1       )
-            elif blk.orient == "FS":
-                tr = transformation.Transformation( oX=-blk.width,                        sY=-1)
-            elif blk.orient == "N":
-                tr = transformation.Transformation(                                            )
-            elif blk.orient == "S":
-                tr = transformation.Transformation( oX=-blk.width, oY=-blk.height, sX=-1, sY=-1)
-            else:
-                assert blk.orient in ["FN","FS","N","S"]
+            tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
 
             tr2 = transformation.Transformation( oX=blk.placedBox.UR.x - blk.originBox.LL.x,
                                                  oY=blk.placedBox.UR.y - blk.originBox.LL.y)
@@ -116,6 +114,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
             for term in d['terminals']:
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
+
             for term in d['terminals']:
                 if term['layer'] in ["pselect","nwell","poly","fin","active","polycon","LISD","pc","V0","cellarea","nselect"]: continue
                 nm = term['netName']
@@ -258,12 +257,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
     d["terminals"] = terminals
 
     # scale by two be make it be in CellFabric units (nanometer)
-    assert all( c%2 == 0 for c in d['bbox'])
-    d['bbox'] = [ c//2 for c in d['bbox']]
-    for term in d['terminals']:
-        if not all( c%2 == 0 for c in term['rect']):
-            logger.error( f"Terminal {term} not a multiple of two in PnRDB units.")
-        term['rect'] = [ c//2 for c in term['rect']]
+    rational_scaling( d, div=2)
 
     if checkOnly:
         cnv.bbox = transformation.Rect( *d["bbox"])
