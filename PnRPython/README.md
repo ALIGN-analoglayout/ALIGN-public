@@ -39,7 +39,7 @@ mkdir $ALIGN_WORK_DIR
 cd $ALIGN_WORK_DIR
 ln -s <path to general virtual enviornment> .
 ln -s ../Makefile
-PNRDB_SAVE_STATE=1 make
+PNRDB_SAVE_STATE= PNRDB_ADR_MODE= make
 ```
 This will generate flow intermediate files in the `telescopic_ota` directory.
 Then run this to generate a visualization JSON file which include global routes (it is put in the ../Viewer/INPUT directory)

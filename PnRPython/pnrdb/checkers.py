@@ -13,7 +13,7 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", use_orig=False, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
+def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
     p = Pdk().load( pdk_fn)
 
     cnv = DefaultCanvas( p)
@@ -35,10 +35,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
-
-        if checkOnly:
-            if netName == "!interMetals": return
-            if netName == "!interVias": return
 
         def f( gen, value, tag=""):
             # value is in 2x units
@@ -125,27 +121,21 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                     del term['pin']
                 terminals.append( term)
 
-        def addt( obj, con):
-            b = con.originBox if use_orig else con.placedBox
-            add_terminal( obj, con.metal, b)
-
-            
         if not checkOnly:
-
             for con in blk.interMetals:
-                addt( '!interMetals', con)
+                add_terminal( '!interMetals', con.metal, con.placedBox)
 
             for via in blk.interVias:
                 for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                    addt( '!interVias', con)
+                    add_terminal( '!interVias', con.metal, con.placedBox)
 
-            add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.originBox if use_orig else blk.placedBox)
+            add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     for n in hN.Nets:
         print( f"Net: {n.name}")
 
         def addt( obj, con):
-            b = con.originBox if use_orig else con.placedBox
+            b = con.placedBox
             if obj == n:
                 add_terminal( obj.name, con.metal, b)
             else:
@@ -198,22 +188,14 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
             for v in vv:
                 for conn in v['connected_pins']:
                     ly = conn['layer']
-                    if not isinstance( conn['rect'][0], list):
-                        # Seems to be the external terminal case
-                        logger.info( f"non-list {conn['rect']}")
-                        rects = [ conn['rect']]
-                    else:
-                        logger.info( f"list {conn['rect']}")
-                        rects = conn['rect']
+                    r = conn['rect'][:]
+                    for q in [0,1]:
+                        r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
 
-                    for rect in rects:
-                        r = rect[:]
-                        for q in [0,1]:
-                            r[q], r[q+2] = min(r[q],r[q+2]), max(r[q],r[q+2])
-
+                    if ly != "":
                         d0 = {"netName": k+"_tm", "layer": ly, "rect": r}
                         d1 = {"netName": conn['sink_name'], "layer": ly, "rect": r}
-                        logger.info( f"Terminal: {d0} {d1}")
+                        logger.info( f"Add two terminals: {d0} {d1}")
                         terminals.append( d0)
                         terminals.append( d1)
                         
@@ -256,18 +238,23 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
     d["terminals"] = terminals
 
-    # scale by two be make it be in CellFabric units (nanometer)
-    rational_scaling( d, div=2)
+
+
 
     if checkOnly:
+        # divide by two be make it be in CellFabric units (nanometer)
+        rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
         cnv.gen_data()
 
         if len(cnv.drc.errors) > 0:
             pformat(cnv.drc.errors)
-        return cnv
+
+        return d
     else:
+        # multiply by five make it be in JSON file units (angstroms) This is a mess!
+        rational_scaling( d, mul=5)
         return d
 
 
