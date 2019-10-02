@@ -1,7 +1,11 @@
 
 from collections import defaultdict, OrderedDict
+import pprint
 
 from .generators import *
+
+import logging
+logger = logging.getLogger(__name__)
 
 class UnionFind:
     def __init__(self):
@@ -62,6 +66,7 @@ class Scanline:
 
     def merge_slr(self, base_slr, new_slr):
         base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -90,7 +95,7 @@ class RemoveDuplicates():
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
 
         for (i,s) in tbl.items():
-            print( "Equivalence classes:", i, s)
+            logger.info( pprint.pformat(["Equivalence classes:", i, s]))
 
     def check_opens(self):
 
@@ -213,7 +218,7 @@ class RemoveDuplicates():
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
                     assert mv is not None, "PLEASE IMPLEMENT ME !"
                     if twice_center not in self.store_scan_lines[mv]:
-                        print( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
+                        logger.warning( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
                         continue
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
@@ -286,13 +291,13 @@ class RemoveDuplicates():
         self.check_opens()
 
         for short in self.shorts:
-            print( "SHORT", *short)
+            logger.warning("SHORT" + pprint.pformat(short))
         for opn in self.opens:
-            print( "OPEN", *opn)
+            logger.warning( "OPEN" + pprint.pformat(opn))
         for dif in self.different_widths:
-            print( "DIFFERENT WIDTH", *dif)
+            logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
         for subinst in self.subinsts:
-            print("SUBINST", *subinst)
+            logger.info("SUBINST" + pprint.pformat(subinst))
 
         return self.generate_rectangles()
 
