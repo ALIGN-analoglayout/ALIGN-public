@@ -58,3 +58,8 @@ To run the short and open checker, you can use this command line:
 ./gen_viewer_json.py -b telescopic_ota -d ../compose/tmp/telescopic_ota/pnr_output/Results -o ../Viewer/INPUT --draw_grid -l INFO  --json_dir ../compose/tmp/telescopic_ota/pnr_output/inputs/ --check
 ```
 Here we don't include the global routes (no `--global_route_json` option).
+
+This probably only works with one level of hierarchy (routing leaf cells together.)
+
+Currently there are a number of OPENs: `net10`, `voutn`, and `voutp`.
+There seems to be no connection between the leaf cells.
