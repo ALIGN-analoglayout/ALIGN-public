@@ -460,43 +460,11 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
 
       std::cout << " MetalDirection: " << MetalDirection ;
       json jsonRect =  json::array();
-      if(MetalDirection == 1){
-        if(x_first <= x_last){
-	  //going right
-	  std::cout << "(" << (x_first - w_first / 2) << ", " << y_first << ", ";
-	  std::cout << (x_last + w_first / 2) << ", " << y_last << ")" ;
-	  jsonRect.push_back((x_first - w_first / 2));
-	  jsonRect.push_back(y_first);
-	  jsonRect.push_back((x_last + w_last / 2));
-	  jsonRect.push_back(y_last);
-        }else if(x_first >= x_last){
-	  //going left
-	  std::cout << "(" << (x_last + w_last / 2) << ", " << y_last << ", ";
-	  std::cout << (x_first - w_first / 2) << ", " << y_first << ")" ;
-	  jsonRect.push_back((x_first + w_first / 2));
-	  jsonRect.push_back(y_first);
-	  jsonRect.push_back((x_last - w_last / 2));
-	  jsonRect.push_back(y_last);
-        }
-      }else if(MetalDirection == 0){
-        if(y_first <= y_last){
-	  //go up
-	  std::cout << "(" << x_first << ", " << (y_first - h_first / 2) << ", ";
-	  std::cout << x_last << ", " << (y_last + h_last / 2) << ")" ;
-	  jsonRect.push_back(x_first);
-	  jsonRect.push_back((y_first - h_first / 2));
-	  jsonRect.push_back(x_last);
-	  jsonRect.push_back((y_last + h_last / 2));
-        }else if(y_first >= y_last){
-	  //go down
-	  std::cout << "(" << x_last << ", " << (y_last + h_last / 2) << ", ";
-	  std::cout << x_first << ", " << (y_first - h_first / 2) << ")";
-	  jsonRect.push_back(x_first);
-	  jsonRect.push_back((y_first + h_first / 2));
-	  jsonRect.push_back(x_last);
-	  jsonRect.push_back((y_last - h_last / 2));
-        }
-      }
+      jsonRect.push_back(f.x);
+      jsonRect.push_back(f.y);
+      jsonRect.push_back(l.x);
+      jsonRect.push_back(l.y);
+      jsonWire["rect"] = jsonRect;
     }
 
     std::cout << "connected pins: " << std::endl;
