@@ -39,11 +39,11 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
         def f( gen, value, tag=""):
             # value is in 2x units
             if value%2 != 0:
-                logger.error( f"Off grid:{tag} {layer} {netName} {p} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two.")
+                logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two.")
             else:
                 p = gen.clg.inverseBounds( value//2)
                 if p[0] != p[1]:
-                    logger.error( f"Off grid:{tag} {layer} {netName} {p} {r} {r[2]-r[0]} {r[3]-r[1]}")
+                    logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}")
 
         if layer == "cellarea":
             f( cnv.m1, b.LL.x, "LL.x")
