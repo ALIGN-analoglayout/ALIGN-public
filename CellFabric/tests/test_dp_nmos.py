@@ -36,19 +36,21 @@ def test_fabric_Dp(setup):
     fn = "tests/__json_dp_nmos"
 
     with open( fn + "_cand", "wt") as fp:
-        data = uc.writeJSON( fp)
+        uc.writeJSON( fp)
 
-    with open( fn + "_gold", "rt") as fp:
-        data_golden = json.load( fp)
-        assert data['bbox'] == data_golden['bbox']
-        assert data == data_golden
+    # Re-opening file to take care of JSON tuple to list conversion
+    with open( fn + "_cand", "rt") as fp0, \
+         open( fn + "_gold", "rt") as fp1:
+        cand = json.load( fp0)
+        gold = json.load( fp1)
+        assert cand['bbox'] == gold['bbox']
+        assert cand == gold
 
 def test_fabric_gds_json(setup):
 
     uc = setup
 
     fn = "tests/__json_dp_nmos"
-
 
     with open( fn + "_cand", "rt") as fp0, \
          open(fn + "_gds_cand", 'wt') as fp1:
