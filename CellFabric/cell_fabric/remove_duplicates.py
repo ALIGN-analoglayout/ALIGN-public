@@ -171,7 +171,7 @@ class RemoveDuplicates():
 
             if layer in self.skip_layers: continue
 
-            assert layer in self.layers, layer
+            assert layer in self.layers, (self.layers, layer)
             twice_center = sum(rect[index]
                                for index in self.indicesTbl[self.layers[layer]][0])
 

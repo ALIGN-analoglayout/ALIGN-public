@@ -18,11 +18,6 @@ class DefaultCanvas(Canvas):
             elif layer.startswith('V'):
                 self._create_via(layer, info)
 
-    def _initialize_layer_stack(self):
-        """layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))"""
-        self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
-            for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
-
     def _get_metal_width( self, layer):
         return self.pdk[layer]['Width'][0] if isinstance(self.pdk[layer]['Width'], list) else self.pdk[layer]['Width']
 

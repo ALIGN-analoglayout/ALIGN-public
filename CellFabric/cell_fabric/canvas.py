@@ -23,13 +23,22 @@ import gdsconv.json2gds
 class Canvas:
     def computeBbox( self):
         """Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly"""
-        self.bbox = transformation.Rect(None,None,None,None)
+        if self.bbox is None:
+            self.bbox = transformation.Rect(None,None,None,None)
+            for term in self.terminals:
+                r = transformation.Rect( *term['rect'])
+                if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
+                if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
+                if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
+                if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
+
+    def setBboxFromBoundary( self):
+        res = []
         for term in self.terminals:
-            r = transformation.Rect( *term['rect'])
-            if self.bbox.llx is None or self.bbox.llx > r.llx: self.bbox.llx = r.llx
-            if self.bbox.lly is None or self.bbox.lly > r.lly: self.bbox.lly = r.lly
-            if self.bbox.urx is None or self.bbox.urx < r.urx: self.bbox.urx = r.urx
-            if self.bbox.ury is None or self.bbox.ury < r.ury: self.bbox.ury = r.ury
+            if term['layer'] == 'boundary':
+                res.append(term)
+        assert len(res) == 1
+        self.bbox = transformation.Rect( *res[0]['rect'])
 
     def addGen( self, gen):
         assert gen.nm not in self.generators, gen.nm
@@ -172,6 +181,11 @@ class Canvas:
                         else:
                             nm = c + nm
 
+    def _initialize_layer_stack(self):
+        """layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))"""
+        self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
+            for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
+
     def __init__( self, pdk=None, gds_layer_map=None):
         self.pdk = pdk
         self.terminals = []
@@ -183,6 +197,9 @@ class Canvas:
         self.layer_stack = [( "via1", ("M1", "M2")),
                             ( "via2", ("M3", "M2"))]
         self.gds_layer_map = gds_layer_map
+        self.bbox = None
+        if self.pdk is not None:
+            self._initialize_layer_stack()
 
     def pushTr( self, tr):
         self.trStack.append( self.trStack[-1].postMult( tr))
@@ -198,7 +215,7 @@ class Canvas:
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
 
-    def gen_data( self):
+    def gen_data( self, *, draw_grid=False):
         self.computeBbox()
 
         data = { 'bbox' : self.bbox.toList(),
@@ -208,18 +225,52 @@ class Canvas:
 
         data['terminals'] = self.postprocessor.run(data['terminals'])
 
+
         if self.pdk is not None:
+            if draw_grid:
+                self.draw_grid(data)
+
             self.drc = DesignRuleCheck( self)
             self.drc.run()
             self.pex = ParasiticExtraction( self)
             self.pex.run()
 
+
+
         return data
 
-    def writeJSON(self, fp):
-        data = self.gen_data()
+    def writeJSON(self, fp, *, draw_grid=False):
+        data = self.gen_data( draw_grid=draw_grid)
         json.dump( data, fp, indent=2)
         return data
+
+    def draw_grid(self,data):
+        width = self.bbox.urx
+        height = self.bbox.ury
+
+        ly = "M1"
+        if ly in self.pdk:
+            pitch = self.pdk[ly]["Pitch"]
+            assert self.pdk[ly]["Direction"] == 'v'
+            assert pitch == 80
+
+            for ix in range( (width+pitch-1)//pitch):
+                x = pitch*ix
+                r = [ x-1, 0, x+1, height]
+                data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
+
+            
+        ly = "M2"
+        if ly in self.pdk:
+            pitch = self.pdk[ly]["Pitch"]
+            assert pitch == 84
+            assert self.pdk[ly]["Direction"] == 'h'
+
+            for iy in range( (height+pitch-1)//pitch):
+                y = pitch*iy
+                r = [ 0, y-1, width, y+1]
+                data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
+
 
     def writeGDS(self, fp1, timestamp=None):
 

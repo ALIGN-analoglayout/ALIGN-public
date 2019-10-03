@@ -10,18 +10,15 @@ def json_lef(input_json,out_lef,cell_pin):
   with open( input_json, "rt") as fp:
     j = json.load(fp, object_pairs_hook=OrderedDict)
   
-  x0 = 10*j['bbox'][0]
-  y0 = 10*j['bbox'][1]
-  j['bbox'][0] = 0
-  j['bbox'][1] = 0
-  j['bbox'][2] = 10*j['bbox'][2] - x0
-  j['bbox'][3] = 10*j['bbox'][3] - y0
+    for i in range(4):
+      j['bbox'][i] *= 10
 
-  for obj in j['terminals']:
-    obj['rect'][0] = 10*obj['rect'][0] - x0
-    obj['rect'][1] = 10*obj['rect'][1] - y0
-    obj['rect'][2] = 10*obj['rect'][2] - x0
-    obj['rect'][3] = 10*obj['rect'][3] - y0
+    assert (j['bbox'][3]-j['bbox'][1]) % 840 == 0, f"Cell height not a multiple of the grid {j['bbox']}"
+    assert (j['bbox'][2]-j['bbox'][0]) % 800 == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+
+    for obj in j['terminals']:
+      for i in range(4):
+        obj['rect'][i] *= 10
 
   with open(input_json, "wt") as fp:
     fp.write( json.dumps( j, indent=2) + '\n')
@@ -54,11 +51,12 @@ def json_lef(input_json,out_lef,cell_pin):
           fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
           ### Check Pins are on grid or not
           if obj['layer'] == 'M2':
-            assert (obj['rect'][1] + 160)%84 == 0, "M2 pin is not on grid"
-            assert (j['bbox'][3] - obj['rect'][1] - 160)%84 == 0, "M2 pin is not on grid from top cell boundary; can't flip it"
+            cy = (obj['rect'][1]+obj['rect'][3])//2
+            assert cy%840 == 0, (f"M2 pin is not on grid {cy} {cy%84}")
           if obj['layer'] == 'M1' or obj['layer'] == 'M3':
-            assert (obj['rect'][0] + 200)%80 == 0, "M1 pin is not on grid"
-            assert (j['bbox'][2] - obj['rect'][0] - 200)%80 == 0, "M1 pin is not on grid from right side; can't mirror it"         
+            cx = (obj['rect'][0]+obj['rect'][2])//2
+            assert cx%800 == 0, (f"M1 pin is not on grid {cx} {cx%80}")
+
       fp.write( "    END\n")
       fp.write( "  END %s\n" % i)
     fp.write( "  OBS\n")

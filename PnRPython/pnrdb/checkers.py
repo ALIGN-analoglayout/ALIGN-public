@@ -150,14 +150,16 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 pin = blk.blockPins[c.iter]
                 formal_name = pin.name
 
-                print( f'\tBlock formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}')
+                tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
+                print( f'\t{tag}')
                 for con in pin.pinContacts:
                     addt( n, con)
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
-                print( f'\tTerminal formal_index: {c.iter},{terminal_name}')
+                tag = f'Terminal formal_index: {c.iter},{terminal_name}'
+                print( f'\t{tag}')
                 for con in term.termContacts:
                     pass
 #                    addt( n, con)
@@ -238,9 +240,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
 
     d["terminals"] = terminals
 
-
-
-
     if checkOnly:
         # divide by two be make it be in CellFabric units (nanometer)
         rational_scaling( d, div=2)
@@ -251,13 +250,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
         if len(cnv.drc.errors) > 0:
             pformat(cnv.drc.errors)
 
-        return d
+        return cnv
     else:
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=5)
         return d
-
-
-
-
-
