@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     d = gen_viewer_json( hN, pdk_fn=args.pdk_fn, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check)
 
-    if args.check:
+    if not args.check:
         with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
             json.dump( d, fp=fp, indent=2)
 
