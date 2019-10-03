@@ -267,20 +267,19 @@ class RemoveDuplicates():
         for d in self.canvas.terminals:
             if d['layer'] in self.skip_layers:
                 terminals.append( d)
-
 #
 # Write out the rectangles stored in the scan line data structure
 #
-        for (layer,vv) in self.store_scan_lines.items():
-            for (twice_center, v) in vv.items():
+        for layer, vv in self.store_scan_lines.items():
+            for _, v in vv.items():
                 for slr in v.rects:
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect})
                     if slr.isPorted:
                         terminals[-1]['pin'] = root.netName
-
+                    if slr.terminal is not None:
+                        terminals[-1]['terminal'] = slr.terminal
         return terminals
-
 
     def remove_duplicates( self):
 
