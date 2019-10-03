@@ -1,3 +1,7 @@
+import pprint
+import logging
+logger = logging.getLogger(__name__)
+
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
@@ -22,6 +26,8 @@ class DesignRuleCheck():
                 self._check_via_rules(layer, vv)
             else:
                 self._check_metal_rules(layer, vv)
+        for error in self.errors:
+            logger.warning(pprint.pformat(error))
         return self.num_errors
 
     def _check_via_rules(self, layer, vv):

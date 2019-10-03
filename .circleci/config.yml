@@ -447,10 +447,6 @@ jobs:
           at: /work/workspace
 
       - run: |
-          cd Build
-          docker build -f Dockerfile.build -t with_protobuf .
-
-      - run: |
           cd PlaceRouteHierFlow
           docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol

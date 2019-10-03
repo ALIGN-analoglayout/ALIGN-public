@@ -6,6 +6,10 @@ def check_shorts( cmdlist):
     uc = main(args)
     assert len(uc.rd.shorts) == 0, uc.rd.shorts
     assert len(uc.rd.opens) == 0, uc.rd.opens
+    assert len(uc.rd.different_widths) == 0, uc.rd.different_widths
+    assert 1 <= len(uc.rd.subinsts) <= 2, uc.rd.subinsts
+    assert all(len(x) == 3 for x in uc.rd.subinsts.values()), uc.rd.subinsts
+    assert len(uc.drc.errors) == 0, uc.drc.errors
 
 def build_test( p, *, n, X, Y):
     b = f"{p}_n{n}_X{X}_Y{Y}"
@@ -35,5 +39,18 @@ def test_a10():
     build_test( 'SCM_NMOS',    n=12, X=1, Y=1)
 def test_a11():
     build_test( 'SCM_PMOS',    n=12, X=1, Y=1)
+
+def test_ALL():
+    fins = [12, 16]
+    types = ["NMOS", "PMOS"]
+    pstrs = ["Switch_{}", "DCL_{}", "CM_{}", "CMFB_{}", "SCM_{}", "CMC_{}", "CMC_{}_S", "DP_{}"]
+    for typ in types:
+        for pstr in pstrs:
+            prim = pstr.format(typ)
+            for j in range(1,4):
+                for i in range(1,5):
+                    for nfins in fins:
+                        print(f'Testing {prim}_n{nfins}_X{i}_Y{j} ...')
+                        build_test( prim, n=nfins, X=i, Y=j)
 
 

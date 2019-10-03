@@ -354,9 +354,9 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, 
   std::cout<<"width "<<URx<<" height "<<URy<<std::endl;
   if(drc_info.Metal_info.at(Lmetal).direct==0) { //vertical
     this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
-    this->y_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
+    this->y_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_y*scale;
   } else { // horizontal
-    this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_y*scale;
+    this->x_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_x*scale;
     this->y_unit=drc_info.Metal_info.at(Lmetal).grid_unit_y*scale;
   }
   // 1. Create tiles

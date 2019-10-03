@@ -119,15 +119,6 @@ services:
       dockerfile: CellFabric/Dockerfile
     container_name: cellfabric_cont
 
-  protobuf-service:
-    <<: *default-service
-    image: with_protobuf
-    build:
-      <<: *default-build
-      context: ${ALIGN_HOME}/Build
-      dockerfile: Dockerfile.build
-    container_name: protobuf_cont
-
   placeroute-service:
     <<: *default-service
     image: placeroute_image

@@ -23,8 +23,7 @@ def gen_lef_data(data, fp, macro_name, cell_pin):
     fp.write( "  PORT\n")
     for obj in data['terminals']:
       if 'pin' in obj:
-        print( obj['pin'], i)
-        if obj['pin'] == i:                  
+        if obj['pin'] == i:
           fp.write( "      LAYER %s ;\n" % obj['layer'])
           fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
     fp.write( "    END\n")

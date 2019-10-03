@@ -1770,7 +1770,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
   for(unsigned int i = 0;i<current_node.Blocks.size();i++){
 
-      auto& b = current_node.Blocks[i].instance.back();
+      const auto& b = current_node.Blocks[i].instance.back();
       //PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
       if(b.isLeaf == 1 and b.gdsFile ==""){
@@ -1791,6 +1791,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                       unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
                       final_gds = b.master;
                       std::cout<<"core dump 1"<<std::endl;
+		      assert( b.blockPins.size() % 2 == 0);
                       for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index+=2){
                          pins.first = b.blockPins[pin_index].name;
                          pins.second = b.blockPins[pin_index+1].name;
