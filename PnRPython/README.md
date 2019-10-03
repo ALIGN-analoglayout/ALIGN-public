@@ -45,7 +45,8 @@ This will generate flow intermediate files in the `telescopic_ota` directory.
 Then run this to generate a visualization JSON file which include global routes (it is put in the ../Viewer/INPUT directory)
 ```bash
 cd $ALIGN_HOME/PnRPython
-./gen_viewer_json.py -b telescopic_ota -d ../compose/tmp/telescopic_ota/pnr_output/Results -o ../Viewer/INPUT --draw_grid -l INFO  --json_dir ../compose/tmp/telescopic_ota/pnr_output/inputs/ --global_route_json ../compose/tmp/telescopic_ota/pnr_output/Results/telescopic_ota_GcellGlobalRoute_0.json 
+export DESIGN=telescopic_ota
+./gen_viewer_json.py -b $DESIGN -d ../compose/tmp/$DESIGN/pnr_output/Results -o ../Viewer/INPUT --draw_grid -l INFO  --json_dir ../compose/tmp/$DESIGN/pnr_output/inputs/ --global_route_json ../compose/tmp/$DESIGN/pnr_output/Results/${DESIGN}_GcellGlobalRoute_0.json 
 ```
 You can visualize this by running:
 ```bash
