@@ -4,7 +4,7 @@ import json
 import argparse
 import logging
 
-from pnrdb import *
+from pnrdb import hierNode, gen_viewer_json
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser( description="Visualize PnR database")
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument( "-v", "--variant", type=str, default="0")
     parser.add_argument( "-c", "--check", action='store_true')
     parser.add_argument( "-t", "--tag", type=str, default="")
-    parser.add_argument( "-p", "--pdk_fn", type=str, default="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json")
+    parser.add_argument( "-p", "--pdk", type=str, default="../PDK_Abstraction/FinFET14nm_Mock_PDK/")
     parser.add_argument( "-o", "--output_dir", type=str, default=".")
     parser.add_argument( "-ifn", "--input_file_name", type=str, default="")
     parser.add_argument( "--draw_grid", action='store_true')
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     with open(fn,"rt") as fp:
         hN = hierNode(json.load(fp))
 
-    d = gen_viewer_json( hN, pdk_fn=args.pdk_fn, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check)
+    d = gen_viewer_json( hN, pdk=args.pdk, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check)
 
     if not args.check:
         with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
