@@ -21,6 +21,11 @@ class Rect:
 class Transformation:
     @staticmethod
     def genTr( tag, *, w, h):
+      """This seems like non-sense but it matches the PnR flow
+         It seems that the oX and oY should be swapped.
+         N should be the identity, but we need to translate.
+         In FN, we mirror the X coord, but somehow offset the Y coord  
+      """
       if   tag == "FN":
           tr = Transformation(        oY=-h, sX=-1       )
       elif tag == "FS":
