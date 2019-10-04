@@ -2,8 +2,8 @@
 
 INPUT=/dataVolume/topology_output/Results
 
-LOC_GENERATOR=Cell_Fabric_FinFET__Mock
-CELL_GENERATOR=/CellFabric/$(LOC_GENERATOR)
+LOC_GENERATOR=FinFET14nm_Mock_PDK
+CELL_GENERATOR=/PDK_Abstraction/$(LOC_GENERATOR)
 # Run the generator script
 
 ${DESIGN}.map:	${DESIGN}.lef
