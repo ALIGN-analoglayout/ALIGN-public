@@ -2,6 +2,7 @@ from cell_fabric import DefaultCanvas, Pdk, transformation
 from pprint import pformat
 import json
 import logging
+import pathlib
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +14,8 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
-    p = Pdk().load( pdk_fn)
+def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
+    p = Pdk().load((pathlib.Path(pdk) / 'FinFET_Mock_PDK_Abstraction.json').resolve())
 
     cnv = DefaultCanvas( p)
 
@@ -119,6 +120,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                     term['netName'] = fa_map.get( formal_name, formal_name)
                 if 'pin' in term:
                     del term['pin']
+                if 'terminal' in term:
+                    term['netName'] = f"{blk.name}/{term['terminal']}"
                 terminals.append( term)
 
         if not checkOnly:

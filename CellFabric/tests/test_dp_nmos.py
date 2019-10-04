@@ -2,8 +2,10 @@ import json
 import sys
 import datetime
 import pytest
+import pathlib
 
-sys.path.append('./Cell_Fabric_FinFET__Mock')
+pdkpath = '../PDK_Abstraction/FinFET14nm_Mock_PDK'
+sys.path.append(pdkpath)
 
 import gen_gds_json
 import primitive
@@ -17,7 +19,7 @@ def setup():
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
 
-    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, (pathlib.Path(pdkpath) / 'FinFET_Mock_PDK_Abstraction.json').resolve() )
 
     Routing = {'S':  [('M1', 'S'), ('M2', 'S')],
                'DA': [('M1', 'D')],
