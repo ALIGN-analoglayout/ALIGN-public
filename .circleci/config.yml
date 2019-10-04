@@ -324,6 +324,10 @@ jobs:
           at: /work/workspace
 
       - run: |
+          cd CellFabric
+          docker build -t cellfabric_image -f ./Dockerfile ..
+
+      - run: |
           cd PDK_Abstraction
           docker build -t pdk_image .
 
