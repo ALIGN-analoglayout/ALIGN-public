@@ -15,7 +15,7 @@ def rational_scaling( d, *, mul=1, div=1):
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
 def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
-    p = Pdk().load((pathlib.Path(pdk) / 'FinFET_Mock_PDK_Abstraction.json').resolve())
+    p = Pdk().load((pathlib.Path(pdk) / 'layers.json').resolve())
 
     cnv = DefaultCanvas( p)
 

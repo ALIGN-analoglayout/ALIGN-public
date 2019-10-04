@@ -13,9 +13,9 @@
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
-PDK_DIR=PDK_Abstraction/FinFET14nm_Mock_PDK/
-PDK_FILE=FinFET_Mock_PDK_Abstraction.json
-CELL_GENERATOR=CellFabric/Cell_Fabric_FinFET__Mock
+PDK_DIR=PDK_Abstraction/FinFET14nm_Mock_PDK
+PDK_FILE=layers.json
+CELL_GENERATOR=${PDK_DIR}
 
 PNRDIR=${DESIGN}/pnr_output/
 PNR_OUTPUT=${DESIGN}/pnr_output/Results
