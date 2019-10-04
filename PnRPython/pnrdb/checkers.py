@@ -1,9 +1,11 @@
-from cell_fabric import DefaultCanvas, Pdk, transformation
+from cell_fabric import transformation
 from pprint import pformat
 import json
-import logging
 import pathlib
+import importlib
+import sys
 
+import logging
 logger = logging.getLogger(__name__)
 
 def rational_scaling( d, *, mul=1, div=1):
@@ -15,9 +17,13 @@ def rational_scaling( d, *, mul=1, div=1):
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
 def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
-    p = Pdk().load((pathlib.Path(pdk) / 'layers.json').resolve())
 
-    cnv = DefaultCanvas( p)
+    sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
+    pdkpkg = pathlib.Path(pdk).name
+    canvas = importlib.import_module(f'{pdkpkg}.canvas')
+    # TODO: Remove these hardcoded widths & heights from __init__()
+    #       (Height may be okay since it defines UnitCellHeight)
+    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
 
     d = {}
 
@@ -113,7 +119,6 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 
             for term in d['terminals']:
-                if term['layer'] in ["pselect","nwell","poly","fin","active","polycon","LISD","pc","V0","cellarea","nselect"]: continue
                 nm = term['netName']
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
@@ -121,7 +126,7 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
-                    term['netName'] = f"{blk.name}/{term['terminal']}"
+                    term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
                 terminals.append( term)
 
         if not checkOnly:
@@ -248,12 +253,14 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
-        cnv.gen_data()
 
-        if len(cnv.drc.errors) > 0:
-            pformat(cnv.drc.errors)
+        d = cnv.gen_data()
 
-        return cnv
+        with open('tmp.cir', 'wt') as fp:
+            cnv.pex.writePex(fp)
+
+        return d
+
     else:
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=5)
