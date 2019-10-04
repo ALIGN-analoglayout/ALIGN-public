@@ -26,9 +26,9 @@ class Transformation:
       elif tag == "FS":
           tr = Transformation( oX=-w,               sY=-1)
       elif tag == "N":
-          tr = Transformation(                           )
+          tr = Transformation( oX=-w, oY=-h              )
       elif tag == "S":
-          tr = Transformation( oX=-w, oY=-h, sX=-1, sY=-1)
+          tr = Transformation(               sX=-1, sY=-1)
       else:
           assert tag in ["FN","FS","N","S"]
       return tr
