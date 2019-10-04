@@ -2,12 +2,13 @@ import json
 import argparse
 from datetime import datetime
 import sys
-sys.path.append('.')
+import pathlib
+import logging
+
+sys.path.append(pathlib.Path(__file__).parent)
 import gen_gds_json
 import gen_lef
 import primitive
-import logging
-
 def main( args):
 
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
