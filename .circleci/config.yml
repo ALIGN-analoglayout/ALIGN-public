@@ -458,7 +458,6 @@ jobs:
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
           mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-          docker cp PnR:/PlaceRouteHierFlow/junit.xml test-reports/PlaceRouteHierFlow
           docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
           docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
