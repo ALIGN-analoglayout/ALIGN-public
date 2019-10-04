@@ -28,13 +28,14 @@ def traverse_hier_in_graph(G, hier_graph_dict):
     """
     for node, attr in G.nodes(data=True):
         if "sub_graph" in attr and attr["sub_graph"]:
-            logging.info("Traversing sub graph:%s %s", node, attr["inst_type"])
+            logging.info("Traversing sub graph:%s %s %s", node, attr["inst_type"],attr["ports"] )
             sub_ports = []
             for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
-
+             
+            logging.info("external ports:%s,%s",sub_ports,attr["connection"])
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
@@ -63,7 +64,8 @@ def read_inputs(file_name):
     logging.info("READING top circuit graph: ")
     hier_graph_dict[file_name.split('/')[-1].split('.')[0]] = {
         "graph": hier_graph,
-        "ports": top_ports
+        "ports": top_ports,
+        "connection": None
     }
     traverse_hier_in_graph(hier_graph, hier_graph_dict)
     return hier_graph_dict
@@ -220,6 +222,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     updated_circuit.append({
                         "name": sub_block_name,
                         "lib_graph": Grest,
+                        "ports": list(matched_ports.keys()),
                         "ports_match": matched_ports,
                         "size": len(subgraph.nodes())
                     })
@@ -363,9 +366,12 @@ if __name__ == '__main__':
         UPDATED_CIRCUIT_LIST.append({
             "name": circuit_name,
             "lib_graph": Grest,
-            "ports": circuit["ports"],
+            "ports":circuit["ports"],
+            "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
         })
+        logging.info("checking connection:%s",circuit["connection"])
+    
 
     #plt_graph(Grest, "Final reduced graph")
 

@@ -9,7 +9,7 @@ library_graphs:	$(TOP)/sub_circuit_identification/basic_library
 	python3 $(SRC)/read_library.py --dir $(TOP)/sub_circuit_identification/basic_library
 
 circuit_graphs/${DESIGN}.yaml: input_circuit/${DESIGN}.sp library_graphs
-	python3 $(SRC)/read_netlist.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat 0
+	python3 $(SRC)/read_netlist.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat $(FLAT)
 
 Results/${DESIGN}.p:	circuit_graphs/${DESIGN}.yaml
 	python3 $(SRC)/match_graph.py
