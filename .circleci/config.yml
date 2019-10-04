@@ -325,7 +325,7 @@ jobs:
 
       - run: |
           cd CellFabric
-          docker build -t cellfabric_image -f ./Dockerfile ..
+          docker build -t cellfabric_image:latest -f ./Dockerfile ..
 
       - run: |
           cd PDK_Abstraction
