@@ -5,10 +5,11 @@ import sys
 import pathlib
 import logging
 
-sys.path.append(pathlib.Path(__file__).parent)
+sys.path.append(pathlib.Path(__file__).parent.resolve())
 import gen_gds_json
 import gen_lef
 import primitive
+
 def main( args):
 
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
