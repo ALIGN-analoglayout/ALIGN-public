@@ -7,7 +7,7 @@ from cell_fabric import DefaultCanvas, Pdk
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = DefaultCanvas(p)
     return c
 

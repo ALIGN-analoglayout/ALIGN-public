@@ -9,7 +9,7 @@ from cell_fabric import EnclosureGrid
 from cell_fabric import ColoredCenterLineGrid
 
 from pathlib import Path
-pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
+pdkfile = (Path(__file__).parent / 'layers.json').resolve()
 
 class CanvasCap(Canvas):
 
