@@ -4147,7 +4147,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
   }
 }
 
-void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel) {
+void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo) {
   vector<vector<placerDB::point> > boundary;
   vector<placerDB::point> center;
   vector<placerDB::point> bbox;
@@ -4161,8 +4161,29 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
     auto roundup = []( int& v, int pitch) {
       v = pitch*((v+pitch-1)/pitch);
     };
-    roundup( x, 2*80);
-    roundup( y, 2*84);
+
+    int v_metal_index = -1;
+    int h_metal_index = -1;
+    
+    for(unsigned int i=0;i<drcInfo.Metal_info.size();++i){
+        if(drcInfo.Metal_info[i].direct==0){
+          v_metal_index = i;
+          break;
+        }
+    }
+
+    for(unsigned int i=0;i<drcInfo.Metal_info.size();++i){
+        if(drcInfo.Metal_info[i].direct==1){
+          h_metal_index = i;
+          break;
+        }
+    }
+
+
+    int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+    int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+    roundup( x, 2*x_pitch);
+    roundup( y, 2*y_pitch);
 
     placerDB::point LL={x,y};
 
@@ -4270,7 +4291,7 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
   }
 }
 
-void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node) {
+void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   //vector<vector<placerDB::point> > boundary;
   //vector<placerDB::point> center;
   //vector<placerDB::point> bbox;
@@ -4283,7 +4304,7 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
     node.Blocks.at(i).selectedInstance=caseAP.GetSelectedInstance(i);
     //placerDB::Omark ort=caseSP.GetBlockOrient(i);
     //cout<<"Blocks "<<i<<endl;
-    UpdateBlockinHierNode(caseNL, caseAP.GetBlockOrient(i), node, i, caseAP.GetSelectedInstance(i));
+    UpdateBlockinHierNode(caseNL, caseAP.GetBlockOrient(i), node, i, caseAP.GetSelectedInstance(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
@@ -4314,7 +4335,7 @@ void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, in
   }
 }
 
-void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node) {
+void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   //vector<vector<placerDB::point> > boundary;
   //vector<placerDB::point> center;
   //vector<placerDB::point> bbox;
@@ -4327,7 +4348,7 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
     node.Blocks.at(i).selectedInstance=caseSP.GetBlockSelected(i);
     //placerDB::Omark ort=caseSP.GetBlockOrient(i);
     //cout<<"Blocks "<<i<<endl;
-    UpdateBlockinHierNode(caseNL, caseSP.GetBlockOrient(i), node, i, caseSP.GetBlockSelected(i));
+    UpdateBlockinHierNode(caseNL, caseSP.GetBlockOrient(i), node, i, caseSP.GetBlockSelected(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);

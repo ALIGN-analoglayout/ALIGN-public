@@ -1,7 +1,7 @@
 #include "Placer.h"
 #define NUM_THREADS 8
 
-Placer::Placer(PnRDB::hierNode& node, string opath, int effort) {
+Placer::Placer(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   //cout<<"Constructor placer"<<endl;
   //this->node=input_node;
   //this->designData=design(input_node);
@@ -9,11 +9,11 @@ Placer::Placer(PnRDB::hierNode& node, string opath, int effort) {
   //this->designData.PrintDesign();
   //PlacementMixAP(node, opath, effort);
   //PlacementMixSA(node, opath, effort);
-  PlacementRegular(node, opath, effort);
+  PlacementRegular(node, opath, effort, drcInfo);
 }
 
-Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
-  PlacementRegularAspectRatio(nodeVec, opath, effort);
+Placer::Placer(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
+  PlacementRegularAspectRatio(nodeVec, opath, effort, drcInfo);
   //PlacementMixSAAspectRatio(nodeVec, opath, effort);
   //PlacementMixAPAspectRatio(nodeVec, opath, effort);
 }
@@ -92,7 +92,7 @@ void Placer::ThreadFunc(Thread_data* MT) {
    }
 };
 
-void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort) {
+void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -114,11 +114,11 @@ void Placer::PlacementRegular(PnRDB::hierNode& node, string opath, int effort) {
   PlacementCore(designData, curr_sp, curr_sol, mode, effort);
   curr_sol.WritePlacement(designData, curr_sp, opath+node.name+".pl");
   curr_sol.PlotPlacement(designData, curr_sp, opath+node.name+".plt");
-  curr_sol.UpdateHierNode(designData, curr_sp, node);
+  curr_sol.UpdateHierNode(designData, curr_sp, node, drcInfo);
 }
 
 
-void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort) {
+void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -156,13 +156,13 @@ void Placer::PlacementMixSA(PnRDB::hierNode& node, string opath, int effort) {
   curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+node.name+".pl");
   curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+node.name+".plt");
   //cout<<"Test: before update node"<<endl;
-  curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node);
+  curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, node, drcInfo);
   //cout<<"Test:: after update node"<<endl;
   //curr_sol.WritePlacement(designData, curr_sp, ofile.c_str());
   //curr_sol.PlotPlacement(designData, curr_sp, pfile.c_str());
 }
 
-void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort) {
+void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   cout<<"Placer-Info: place "<<node.name<<endl;
   #ifdef RFLAG
   cout<<"Placer-Info: run in random mode..."<<endl;
@@ -217,7 +217,7 @@ void Placer::PlacementMixAP(PnRDB::hierNode& node, string opath, int effort) {
   new_sol.updateTerminalCenterAP(designData_full, AP);
   new_sol.WritePlacementAP(designData_full, AP, opath+node.name+".pl");
   new_sol.PlotPlacementAP(designData_full, AP, opath+node.name+".plt");
-  new_sol.UpdateHierNodeAP(designData_full, AP, node);
+  new_sol.UpdateHierNodeAP(designData_full, AP, node, drcInfo);
   //AP.PrintAplace();
   /*
   return;
@@ -501,7 +501,7 @@ void Placer::ReshapeSeqPairMap(std::map<double, SeqPair>& spMap, int nodeSize) {
   if(it!=spMap.end()) {spMap.erase(it, spMap.end());}
 }
 
-void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
+void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   #ifdef RFLAG
@@ -540,11 +540,11 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
     //std::cout<<"write design "<<idx<<std::endl;
     vec_sol.WritePlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
     vec_sol.PlotPlacement(designData, it->second, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
-    vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx]);
+    vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
   }
 }
 
-void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
+void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<" in aspect ratio mode "<<endl;
   cout<<"Placer-Info: initial size "<<nodeSize<<std::endl;
@@ -598,12 +598,12 @@ void Placer::PlacementMixSAAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     curr_sol_full.WritePlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
     curr_sol_full.PlotPlacement(designData_full, curr_sp_full, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
     //cout<<"Test: before update node"<<endl;
-    curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, nodeVec.at(idx));
+    curr_sol_full.UpdateHierNode(designData_full, curr_sp_full, nodeVec.at(idx), drcInfo);
     //cout<<"Test:: after update node"<<endl;
   }
 }
 
-void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort) {
+void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, string opath, int effort, PnRDB::Drc_info& drcInfo) {
   int nodeSize=nodeVec.size();
   cout<<"Placer-Info: place "<<nodeVec.back().name<<endl;
   #ifdef RFLAG
@@ -672,7 +672,7 @@ void Placer::PlacementMixAPAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, st
     new_sol.updateTerminalCenterAP(designData_full, AP);
     new_sol.WritePlacementAP(designData_full, AP, opath+nodeVec.back().name+"_"+std::to_string(idx)+".pl");
     new_sol.PlotPlacementAP(designData_full, AP, opath+nodeVec.back().name+"_"+std::to_string(idx)+".plt");
-    new_sol.UpdateHierNodeAP(designData_full, AP, nodeVec.at(idx));
+    new_sol.UpdateHierNodeAP(designData_full, AP, nodeVec.at(idx), drcInfo);
   }
 
 }

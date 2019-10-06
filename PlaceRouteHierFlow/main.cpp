@@ -186,7 +186,7 @@ int main(int argc, char** argv ){
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
-    Placer curr_plc(nodeVec, opath, effort); // do placement and update data in current node
+    Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       save_state( DB, nodeVec[lidx], lidx, opath, ".post_pl", "End Placement", skip_saving_state);
