@@ -16,6 +16,7 @@ DESIGN=telescopic_ota
 PDK_DIR=PDK_Abstraction/FinFET14nm_Mock_PDK/
 PDK_FILE=FinFET_Mock_PDK_Abstraction.json
 CELL_GENERATOR=CellFabric/Cell_Fabric_FinFET__Mock
+FLAT=0
 
 PNRDIR=${DESIGN}/pnr_output/
 PNR_OUTPUT=${DESIGN}/pnr_output/Results
@@ -57,7 +58,7 @@ ${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
 
 # Build the cell generator script
 ${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp
-	$(call execute,topology-service,/bin/bash -c "source general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN}")
+	$(call execute,topology-service,/bin/bash -c "source general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN} FLAT=${FLAT}")
 
 ${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
 	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
