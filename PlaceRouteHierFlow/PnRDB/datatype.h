@@ -330,6 +330,7 @@ struct ViaModel {
   string name;
   int ViaIdx, LowerIdx, UpperIdx;
   std::vector<point> ViaRect, LowerRect, UpperRect;
+  double R;
 };
 
 struct metal_info {
@@ -343,6 +344,8 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  double unit_R;
+  double unit_C;
 };
 
 struct via_info {
@@ -358,6 +361,7 @@ struct via_info {
   int cover_u_P;
   int dist_ss; //via spacing, X direction spacing
   int dist_ss_y; // Y direction spacing
+  double R;
 };
 
 struct Drc_info {
