@@ -68,8 +68,8 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                 f( cnv.generators[t_tbl[layer]], center)
 
     if not checkOnly and draw_grid:
-        m1_pitch = 2*p['M1']['Pitch']
-        m2_pitch = 2*p['M2']['Pitch']
+        m1_pitch = 2*cnv.pdk['M1']['Pitch']
+        m2_pitch = 2*cnv.pdk['M2']['Pitch']
         for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
             x = m1_pitch*ix
             r = [ x-2, 0, x+2, hN.height]
@@ -208,7 +208,6 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                         logger.info( f"Add two terminals: {d0} {d1}")
                         terminals.append( d0)
                         terminals.append( d1)
-                        
 
                 ly = v['layer']
                 if 'rect' not in v:
@@ -234,8 +233,8 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
 
         if draw_grid:
-            m1_pitch = 2*10*p['M1']['Pitch']
-            m2_pitch = 2*10*p['M2']['Pitch']
+            m1_pitch = 2*10*cnv.pdk['M1']['Pitch']
+            m2_pitch = 2*10*cnv.pdk['M2']['Pitch']
             for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
                 x = m1_pitch*ix
                 r = [ x-2, 0, x+2, hN.height]
