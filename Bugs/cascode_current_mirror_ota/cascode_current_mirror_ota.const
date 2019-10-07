@@ -8,3 +8,6 @@ MatchBlock ( m1nup , m24_m25_m11_m10 )
 MatchBlock ( m1pdown , m1pup )
 MatchBlock ( m1pdown , m22_m26_m20_m21 )
 MatchBlock ( m1pdown , m23_m27_m18_m19 )
+bias_Vgraph ( 168 )
+bias_Hgraph ( 320 )
+
