@@ -435,8 +435,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_r_const.net_name=word;
-        for(int i=3;i<temp.size()-1;i++){
-           word=temp[4];
+        for(int i=4;i<temp.size()-1;i=i+2){
+           word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
            //cout<<word<<endl;
@@ -452,8 +452,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_c_const.net_name=word;
-        for(int i=3;i<temp.size()-1;i++){
-           word=temp[4];
+        for(int i=4;i<temp.size()-1;i=i+2){
+           word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
            //cout<<word<<endl;
