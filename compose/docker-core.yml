@@ -38,6 +38,8 @@ x-service: &default-service
   command: /bin/bash -c "ln -sf /general /dataVolume/ ; /usr/bin/tail -f /dev/null"
 #  user: "1000:1000"
   working_dir: /dataVolume
+  security_opt:
+    -  seccomp:unconfined
   volumes:
     - redirectVolume:/dataVolume
     - /etc/apt/apt.conf:/etc/apt/apt.conf

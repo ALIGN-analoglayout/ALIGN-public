@@ -1,8 +1,8 @@
 from cell_fabric import transformation
 import json
-import pathlib
 import importlib
 import sys
+import pathlib
 
 import logging
 logger = logging.getLogger(__name__)

@@ -30,7 +30,7 @@ namespace PnRDB {
 
 static void generic_router_test( const string& topcell, const string& tag, int mode0, int mode1, int mode2)
 {
-  string dfile="layers.json";
+  string dfile="FinFET_Mock_PDK_Abstraction.json";
   string binary_directory = "./";
 
   PnRdatabase DB("gold", topcell, "", "", "", dfile);
@@ -59,7 +59,7 @@ double ConstGraph::PHI=1500;
 
 static void generic_placer_test( const string& topcell)
 {
-  string dfile="layers.json";
+  string dfile="FinFET_Mock_PDK_Abstraction.json";
   string binary_directory = "./";
   string opath = "cand/";
 
@@ -84,7 +84,7 @@ static void generic_placer_router_cap_test( const string& topcell)
 {
   string fpath = "gold";
 
-  string dfile="layers.json";
+  string dfile="FinFET_Mock_PDK_Abstraction.json";
   string binary_directory = "./";
   string opath = "./Results/";
 
