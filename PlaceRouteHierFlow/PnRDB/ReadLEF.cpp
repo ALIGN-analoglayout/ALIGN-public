@@ -97,6 +97,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
           oBox.LL=tp;
           tp.x=URx; tp.y=URy;
           oBox.UR=tp;
+	  assert( interMetals.size() > 0);
           interMetals.back().originBox=oBox;
           interMetals.back().originCenter.x=(LLx+URx)/2;
           interMetals.back().originCenter.y=(LLy+URy)/2;
