@@ -32,6 +32,8 @@ struct MatchBlock;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
+struct R_const;
+struct C_const;
 struct SymmPairBlock;
 struct Metal;
 struct ViaModel;
@@ -233,6 +235,8 @@ struct hierNode {
   vector<Abument> Abument_blocks;
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
+  vector<R_const> R_Constraints;
+  vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
@@ -305,6 +309,24 @@ struct CCCap {
   bool cap_ratio = 0;
   int cap_r = -1;
   int cap_s = -1;
+};
+
+struct R_const {
+
+  string net_name;
+  vector<string> start_pin;
+  vector<string> end_pin;
+  vector<double> R;
+
+};
+
+struct C_const {
+
+  string net_name;
+  vector<string> start_pin;
+  vector<string> end_pin;
+  vector<double> C;
+
 };
 
 /// Part 4: declaration of structures for LEF data
