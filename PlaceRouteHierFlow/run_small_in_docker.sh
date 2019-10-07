@@ -16,7 +16,7 @@ lcov -z ; \
 (cd placer && ./unit_tests --gtest_output=xml:junit.xml) && \
 (cd router && ./unit_tests --gtest_output=xml:junit.xml) && \
 ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0 > PnR.log ; \
-lcov --capture --directory . --output-file coverage.info ; \
+lcov --capture --directory . --output-file coverage.info && \
 genhtml coverage.info --output-directory coverage.out"
 
 #docker cp PnR:/PlaceRouteHierFlow
