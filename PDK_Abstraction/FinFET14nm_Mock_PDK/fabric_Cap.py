@@ -1,4 +1,3 @@
-import json
 import math
 import argparse
 import gen_gds_json
