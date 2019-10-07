@@ -45,8 +45,10 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
             int le2e=layer["EndToEnd"];
+            //cout<<"read RC"<<endl;
             double unit_C = layer["UnitC"];
             double unit_R = layer["UnitR"];
+            //cout<<"end read RC"<<endl;
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
@@ -85,7 +87,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lvencah= layer["VencA_H"];
             int lvencpl= layer["VencP_L"];
             int lvencph= layer["VencP_H"];
+            //cout<<"read R"<<endl;
             double R = layer["R"];
+            //cout<<"end read R"<<endl;
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
