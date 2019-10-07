@@ -64,14 +64,14 @@ static void generic_placer_test( const string& topcell)
   string opath = "cand/";
 
   PnRdatabase DB("gold", topcell, "", "", "", dfile);
-
+  PnRDB::Drc_info drc_info=DB.getDrc_info();
   PnRDB::hierNode current_node;
   DB.ReadDBJSON( current_node, "gold/" + topcell + ".pre_pl.db.json");
 
   EXPECT_EQ( current_node.name, topcell);
 
   std::vector<PnRDB::hierNode> nodeVec(1, current_node);
-  Placer curr_plc( nodeVec, opath, 0);
+  Placer curr_plc( nodeVec, opath, 0, drc_info);
 
   PnRDB::hierNode post_current_node;
   DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_pl.db.json");
