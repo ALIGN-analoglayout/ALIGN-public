@@ -1,10 +1,18 @@
+### Off grid subblocks in cascode_current_mirror_ota
+
+```bash
+rm -rf Results
+PNRDB_SAVE_STATE= ../PlaceRouteHierFlow/pnr_compiler cascode_current_mirror_ota cascode_current_mirror_ota.{lef,v,map} FinFET_Mock_PDK_Abstraction.json cascode_current_mirror_ota 1 0 > LOG
+```
+
+
 ### Cap Placer Generates Off Grid Terminals
 
 Here is an example:
 
 ```bash
 rm -rf Results
-PNRDB_SAVE_STATE=1 ../PlaceRouteHierFlow/pnr_compiler switched_capacitor_filter switched_capacitor_filter.{lef,v,map} FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 1 0 > LOG
+PNRDB_SAVE_STATE= ../PlaceRouteHierFlow/pnr_compiler switched_capacitor_filter switched_capacitor_filter.{lef,v,map} FinFET_Mock_PDK_Abstraction.json switched_capacitor_filter 1 0 > LOG
 ```
 
 To update the gold input output test files in PlaceRouteHierFlow, then
