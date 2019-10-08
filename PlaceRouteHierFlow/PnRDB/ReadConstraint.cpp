@@ -429,6 +429,40 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
+      } else if (temp[0].compare("R_const")==0){
+        PnRDB::R_const temp_r_const;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_r_const.net_name=word;
+        for(int i=4;i<temp.size()-1;i=i+2){
+           word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           //cout<<word<<endl;
+           tempsec=StringSplitbyChar(word, ',');
+           temp_r_const.start_pin.push_back(tempsec[0]);
+           temp_r_const.end_pin.push_back(tempsec[1]);
+           temp_r_const.R.push_back(atoi(tempsec[2].c_str()));
+        }
+        node.R_Constraints.push_back(temp_r_const);
+      }else if (temp[0].compare("C_const")==0){
+        PnRDB::C_const temp_c_const;
+        string word=temp[2];
+        word=word.substr(1);
+        word=word.substr(0, word.length()-1);
+        temp_c_const.net_name=word;
+        for(int i=4;i<temp.size()-1;i=i+2){
+           word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           //cout<<word<<endl;
+           tempsec=StringSplitbyChar(word, ',');
+           temp_c_const.start_pin.push_back(tempsec[0]);
+           temp_c_const.end_pin.push_back(tempsec[1]);
+           temp_c_const.C.push_back(atoi(tempsec[2].c_str()));
+        }
+        node.C_Constraints.push_back(temp_c_const);
       }
     }
     fin.close();
