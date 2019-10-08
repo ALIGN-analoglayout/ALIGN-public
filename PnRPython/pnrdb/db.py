@@ -103,6 +103,16 @@ abstract_structs = [
                    ("cap_r",None),
                    ("cap_s",None)
            ]),
+           ("R_const",[("net_name",None),
+                   ("start_pin",(list,None)),
+                   ("end_pin",(list,None)),
+                   ("R",(list,None))
+           ]),
+           ("C_const",[("net_name",None),
+                   ("start_pin",(list,None)),
+                   ("end_pin",(list,None)),
+                   ("C",(list,None))
+           ]),
            ("Metal",[("MetalIdx",None),
                    ("LinePoint",(list,"point")),
                    ("width",None),
@@ -195,6 +205,8 @@ abstract_structs = [
                       ("Match_blocks", (list,"MatchBlock")),
                       ("CC_Caps", (list,"CCCap")),
                       ("Port_Location", (list,"PortPos")),
+                      ("R_Constraints",(list,"R_const")),
+                      ("C_Constraints",(list,"C_const")),
                       ("bias_Hgraph",None),
                       ("bias_Vgraph",None)
            ])
