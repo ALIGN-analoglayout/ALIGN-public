@@ -208,16 +208,16 @@ struct Segment {
 
 struct R_const{
 
-  std::vector<pair<int,int> > start_pin;
-  std::vector<pair<int,int> > end_pin;
+  std::vector<std::pair<int,int> > start_pin;
+  std::vector<std::pair<int,int> > end_pin;
   std::vector<double> R;
 
 };
 
 struct C_const{
 
-  std::vector<pair<int,int> > start_pin;
-  std::vector<pair<int,int> > end_pin;
+  std::vector<std::pair<int,int> > start_pin;
+  std::vector<std::pair<int,int> > end_pin;
   std::vector<double> C;
 
 };
