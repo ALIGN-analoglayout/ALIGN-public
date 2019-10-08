@@ -479,9 +479,15 @@ void GcellDetailRouter::create_detailrouter(){
 */
 
 ///////// A_star
-          A_star a_star(grid);
+          A_star a_star(grid, Nets[i].shielding);
+          int left_path_number = 0;
+          int right_path_number = 0;
+          if(Nets[i].shielding){
+             left_path_number = left_path_number + 1;
+             right_path_number = right_path_number + 1;
+          }
           std::cout<<"Detail Router check point 4"<<std::endl;
-          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, left_path_number, right_path_number);
 ///////// A_star
 
            std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
