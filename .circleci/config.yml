@@ -325,13 +325,13 @@ jobs:
 
       - run: |
           cd CellFabric
-          docker build -t cellfabric_image:latest -f ./Dockerfile ..
+          docker build -t cellfabric_image:1.0 -f ./Dockerfile ..
 
       - run: |
           cd PDK_Abstraction
-          docker build -t pdk_image .
+          docker build -t pdk_image:10 .
 
-          docker run --name pdk_container pdk_image bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
+          docker run --name pdk_container pdk_image:1.0 bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
           cd -
 
           docker cp pdk_container:test-reports .
@@ -455,7 +455,7 @@ jobs:
           docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
           docker volume create placerOutputVol
-
+ <
       - run: |
           apk add bash
           (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)

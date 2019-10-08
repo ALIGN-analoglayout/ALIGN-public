@@ -1,4 +1,4 @@
-FROM cellfabric_image:latest as pdk_image
+FROM cellfabric_image:1.0 as pdk_image
 
 COPY . /src/
 
