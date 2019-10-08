@@ -435,11 +435,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_r_const.net_name=word;
-<<<<<<< HEAD
-        for(unsigned int i=4;i<temp.size()-1;i=i+2){
-=======
+
         for(unsigned int i=4;i<temp.size()-1;i+=2){
->>>>>>> aae11590ac03b0f08731956007527f14025fc500
+
            word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
@@ -515,11 +513,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_c_const.net_name=word;
-<<<<<<< HEAD
-        for(unsigned int i=4;i<temp.size()-1;i=i+2){
-=======
+
         for(unsigned int i=4;i<temp.size()-1;i+=2){
->>>>>>> aae11590ac03b0f08731956007527f14025fc500
+
            word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
