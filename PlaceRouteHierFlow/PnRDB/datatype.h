@@ -314,8 +314,10 @@ struct CCCap {
 struct R_const {
 
   string net_name;
-  vector<string> start_pin;
-  vector<string> end_pin;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> R;
 
 };
@@ -323,8 +325,10 @@ struct R_const {
 struct C_const {
 
   string net_name;
-  vector<string> start_pin;
-  vector<string> end_pin;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> C;
 
 };
