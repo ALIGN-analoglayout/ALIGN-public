@@ -208,7 +208,7 @@ MACRO telescopic_ota
   LAYER M2 ;
         RECT 2.284 4.94 2.996 4.972 ;
   LAYER M2 ;
-        RECT 2.2715 4.688 2.369 4.72 ;
+        RECT 2.284 5.276 2.996 5.308 ;
   LAYER M1 ;
         RECT 1.024 1.98 1.056 2.64 ;
   LAYER M1 ;
@@ -300,7 +300,7 @@ MACRO telescopic_ota
   LAYER M2 ;
         RECT 1.644 1.496 4.276 1.528 ;
   LAYER M2 ;
-        RECT 4.191 1.748 4.289 1.78 ;
+        RECT 1.004 1.412 3.636 1.444 ;
   LAYER M1 ;
         RECT 4.864 0.132 4.896 0.792 ;
   LAYER M1 ;
@@ -364,7 +364,7 @@ MACRO telescopic_ota
   LAYER M2 ;
         RECT 0.364 0.404 4.916 0.436 ;
   LAYER M2 ;
-        RECT 0.351 0.152 0.449 0.184 ;
+        RECT 0.364 0.74 4.916 0.772 ;
   LAYER M1 ;
         RECT 1.664 3.828 1.696 4.488 ;
   LAYER M1 ;
@@ -388,7 +388,7 @@ MACRO telescopic_ota
   LAYER M1 ;
         RECT 3.664 3.828 3.696 4.488 ;
   LAYER M1 ;
-        RECT 3.551 4.436 3.649 4.468 ;
+        RECT 3.504 3.828 3.536 4.488 ;
   LAYER M1 ;
         RECT 4.224 2.82 4.256 3.48 ;
   LAYER M1 ;
@@ -424,6 +424,6 @@ MACRO telescopic_ota
   LAYER M1 ;
         RECT 1.104 2.82 1.136 3.48 ;
   LAYER M1 ;
-        RECT 0.991 2.84 1.089 2.872 ;
+        RECT 0.944 2.82 0.976 3.48 ;
   END 
 END telescopic_ota

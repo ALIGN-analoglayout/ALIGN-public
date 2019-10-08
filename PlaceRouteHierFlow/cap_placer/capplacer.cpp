@@ -169,13 +169,16 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       HV_via_metal_index = H_metal_index;
   }
 
+#if 0
+  // Experimental; has fixed bugs in the past
   //round up to grid size
   auto roundup = []( int& v, int pitch) {
       v = pitch*((v+pitch-1)/pitch);
   };
 
-  //  roundup( unit_cap_demension.first, drc_info.Metal_info.at(V_metal_index).grid_unit_x);
-  //  roundup( unit_cap_demension.second, drc_info.Metal_info.at(H_metal_index).grid_unit_y);
+  roundup( unit_cap_demension.first, drc_info.Metal_info.at(V_metal_index).grid_unit_x);
+  roundup( unit_cap_demension.second, drc_info.Metal_info.at(H_metal_index).grid_unit_y);
+#endif
 
   // We are dividing by two later
   assert( unit_cap_demension.first % 2 == 0);

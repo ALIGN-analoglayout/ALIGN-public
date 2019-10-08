@@ -434,31 +434,20 @@ json PnRdatabase::WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const s
     jsonWire["width"] = width;
 
     {
-      int m1_p = 80*2;
-      int m2_p = 84*2;
       const auto& f = node.tiles_total.at(first_tile_idx);
       const auto& l = node.tiles_total.at(last_tile_idx);
+#if 0
       std::cout << "ABS(" << f.x << ", " << f.y << ", " << l.x << ", " << l.y << ")" << std::endl;
       std::cout << "IDX(" << f.Xidx << ", " << f.Yidx << ", " << l.Xidx << ", " << l.Yidx << ")" << std::endl;
+      int m1_p = 80*2;
+      int m2_p = 84*2;
       std::cout << "MOD(" << f.x/m1_p << " " << f.x%m1_p
 		<< ", "   << f.y/m2_p << " " << f.y%m2_p
 	        << ", "   << l.x/m1_p << " " << l.x%m1_p
 	        << ", "   << l.y/m2_p << " " << l.y%m2_p << std::endl;
-      std::cout << "ALT(" << f.x/m2_p << " " << f.x%m2_p
-		<< ", "   << f.y/m1_p << " " << f.y%m1_p
-	        << ", "   << l.x/m2_p << " " << l.x%m2_p
-	        << ", "   << l.y/m1_p << " " << l.y%m1_p << std::endl;
+#endif
 
-      int x_first = f.x;
-      int x_last = l.x;
-      int y_first = f.y;
-      int y_last = l.y;
-      int w_first = f.width;
-      int w_last = l.width;
-      int h_first = f.height;
-      int h_last = l.height;
-
-      std::cout << " MetalDirection: " << MetalDirection ;
+      std::cout << " MetalDirection: " << MetalDirection << std::endl;
       json jsonRect =  json::array();
       jsonRect.push_back(f.x);
       jsonRect.push_back(f.y);
