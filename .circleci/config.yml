@@ -472,6 +472,13 @@ jobs:
           paths:
             - test-reports/PlaceRouteHierFlow
             - coverage-reports/PlaceRouteHierFlow
+            
+      - store_artifacts:
+          path: test-reports
+          
+      - store_artifacts:
+          path: coverage-reports
+
 
   build-GDSConv:
     executor: docker-executor
