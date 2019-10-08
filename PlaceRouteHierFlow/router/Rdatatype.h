@@ -206,6 +206,22 @@ struct Segment {
   int chosenCand=-1;
 };
 
+struct R_const{
+
+  std::vector<pair<int,int> > start_pin;
+  std::vector<pair<int,int> > end_pin;
+  std::vector<double> R;
+
+};
+
+struct C_const{
+
+  std::vector<pair<int,int> > start_pin;
+  std::vector<pair<int,int> > end_pin;
+  std::vector<double> C;
+
+};
+
 
 struct Net{
   std::string netName;
@@ -234,6 +250,8 @@ struct Net{
   std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
   std::vector<int> terminals;
   std::vector<std::vector<int> > connectedTile;
+  std::vector<R_const> R_constraints;
+  std::vector<C_const> C_constraints;
   int STindex = -1;
   //void display();
 };
