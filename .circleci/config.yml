@@ -455,7 +455,7 @@ jobs:
           docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
           docker volume create placerOutputVol
- <
+
       - run: |
           apk add bash
           (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
