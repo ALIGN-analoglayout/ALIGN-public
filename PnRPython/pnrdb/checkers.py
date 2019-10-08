@@ -1,9 +1,10 @@
-from cell_fabric import DefaultCanvas, Pdk, transformation
-from pprint import pformat
+from cell_fabric import transformation
 import json
-import logging
-from pathlib import Path
+import importlib
+import sys
+import pathlib
 
+import logging
 logger = logging.getLogger(__name__)
 
 def rational_scaling( d, *, mul=1, div=1):
@@ -14,10 +15,14 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
-    p = Pdk().load( pdk_fn)
+def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
 
-    cnv = DefaultCanvas( p)
+    sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
+    pdkpkg = pathlib.Path(pdk).name
+    canvas = importlib.import_module(f'{pdkpkg}.canvas')
+    # TODO: Remove these hardcoded widths & heights from __init__()
+    #       (Height may be okay since it defines UnitCellHeight)
+    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
 
     d = {}
 
@@ -62,8 +67,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 f( cnv.generators[t_tbl[layer]], center)
 
     if not checkOnly and draw_grid:
-        m1_pitch = 2*p['M1']['Pitch']
-        m2_pitch = 2*p['M2']['Pitch']
+        m1_pitch = 2*cnv.pdk['M1']['Pitch']
+        m2_pitch = 2*cnv.pdk['M2']['Pitch']
         for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
             x = m1_pitch*ix
             r = [ x-2, 0, x+2, hN.height]
@@ -95,7 +100,7 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
         if json_dir is not None:
-            pth = Path( json_dir + "/" + blk.master + ".json") 
+            pth = pathlib.Path( json_dir + "/" + blk.master + ".json") 
             if not pth.is_file():
                 logger.warning( f"{pth.name} is not available; not importing subblock rectangles")
                 continue
@@ -117,13 +122,14 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 term['rect'] = tr3.hitRect( transformation.Rect( *term['rect'])).canonical().toList()
 
             for term in d['terminals']:
-                if term['layer'] in ["pselect","nwell","poly","fin","active","polycon","LISD","pc","V0","cellarea","nselect"]: continue
                 nm = term['netName']
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
                     term['netName'] = fa_map.get( formal_name, formal_name)
                 if 'pin' in term:
                     del term['pin']
+                if 'terminal' in term:
+                    term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
                 terminals.append( term)
 
         if not checkOnly:
@@ -205,7 +211,6 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                         logger.info( f"Add two terminals: {d0} {d1}")
                         terminals.append( d0)
                         terminals.append( d1)
-                        
 
                 ly = v['layer']
                 if 'rect' not in v:
@@ -231,8 +236,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
                 terminals.append( {"netName": k+"_gr", "layer": ly, "rect": r})
 
         if draw_grid:
-            m1_pitch = 2*10*p['M1']['Pitch']
-            m2_pitch = 2*10*p['M2']['Pitch']
+            m1_pitch = 2*10*cnv.pdk['M1']['Pitch']
+            m2_pitch = 2*10*cnv.pdk['M2']['Pitch']
             for ix in range( (hN.width+m1_pitch-1)//m1_pitch):
                 x = m1_pitch*ix
                 r = [ x-2, 0, x+2, hN.height]
@@ -252,8 +257,8 @@ def gen_viewer_json( hN, *, pdk_fn="../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFE
         cnv.terminals = d["terminals"]
         cnv.gen_data()
 
-        if len(cnv.drc.errors) > 0:
-            pformat(cnv.drc.errors)
+        with open('tmp.cir', 'wt') as fp:
+            cnv.pex.writePex(fp)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals

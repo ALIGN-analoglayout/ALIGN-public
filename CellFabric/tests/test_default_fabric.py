@@ -7,14 +7,14 @@ import itertools
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = DefaultCanvas(p)
     for (i,nm) in itertools.chain( itertools.product( [0,2,4], ['a']), itertools.product( [1,3,5], ['b'])):
         c.addWire( c.m1, nm, None, i, (0,-1), (3,-1)) 
     return c
 
 def test_v3(setup):
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = DefaultCanvas(p)
 
     c.addWire( c.m3, "a", None, 1, (-2,1), (4,-1))
@@ -29,7 +29,7 @@ def test_v3(setup):
 
 
 def test_v2(setup):
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = DefaultCanvas(p)
 
     c.addWire( c.m2, "a", None, 1, (-2,1), (4,-1))
