@@ -329,7 +329,7 @@ jobs:
 
       - run: |
           cd PDK_Abstraction
-          docker build -t pdk_image:10 .
+          docker build -t pdk_image:1.0 .
 
           docker run --name pdk_container pdk_image:1.0 bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
           cd -
