@@ -1,10 +1,10 @@
-from canvas import FinFET_Mock_PDK_Canvas
+from canvas import FinFET14nm_Mock_PDK_Canvas
 from collections import defaultdict
 
 import logging
 logger = logging.getLogger(__name__)
 
-class PrimitiveGenerator(FinFET_Mock_PDK_Canvas):
+class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
     def _addMOS( self, x, y, name='M1', reflect=False):
 

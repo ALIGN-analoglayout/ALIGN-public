@@ -2,8 +2,10 @@ import json
 import sys
 import datetime
 import pytest
+import pathlib
 
-sys.path.append('./Cell_Fabric_FinFET__Mock')
+pdkpath = '../PDK_Abstraction/FinFET14nm_Mock_PDK'
+sys.path.append(pdkpath)
 
 import gen_gds_json
 import primitive
@@ -17,7 +19,7 @@ def setup():
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
 
-    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, '../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy, (pathlib.Path(pdkpath) / 'layers.json').resolve() )
 
     Routing = {'S':  [('M1', 'S'), ('M2', 'S')],
                'DA': [('M1', 'D')],
@@ -36,19 +38,21 @@ def test_fabric_Dp(setup):
     fn = "tests/__json_dp_nmos"
 
     with open( fn + "_cand", "wt") as fp:
-        data = uc.writeJSON( fp)
+        uc.writeJSON( fp)
 
-    with open( fn + "_gold", "rt") as fp:
-        data_golden = json.load( fp)
-        assert data['bbox'] == data_golden['bbox']
-        assert data == data_golden
+    # Re-opening file to take care of JSON tuple to list conversion
+    with open( fn + "_cand", "rt") as fp0, \
+         open( fn + "_gold", "rt") as fp1:
+        cand = json.load( fp0)
+        gold = json.load( fp1)
+        assert cand['bbox'] == gold['bbox']
+        assert cand == gold
 
 def test_fabric_gds_json(setup):
 
     uc = setup
 
     fn = "tests/__json_dp_nmos"
-
 
     with open( fn + "_cand", "rt") as fp0, \
          open(fn + "_gds_cand", 'wt') as fp1:
