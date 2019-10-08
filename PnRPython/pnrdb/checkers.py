@@ -99,8 +99,12 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
-        if json_dir is not None and blk.isLeaf:
-            with open( json_dir + "/" + blk.master + ".json", "rt") as fp:
+        if json_dir is not None:
+            pth = pathlib.Path( json_dir + "/" + blk.master + ".json") 
+            if not pth.is_file():
+                logger.warning( f"{pth.name} is not available; not importing subblock rectangles")
+                continue
+            with pth.open( "rt") as fp:
                 d = json.load( fp)
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
             rational_scaling( d, div=5)
@@ -251,14 +255,18 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
-
-        d = cnv.gen_data()
+        cnv.gen_data()
 
         with open('tmp.cir', 'wt') as fp:
             cnv.pex.writePex(fp)
 
-        return d
+        d['bbox'] = cnv.bbox.toList()
+        d['terminals'] = cnv.terminals
 
+        # multiply by ten make it be in JSON file units (angstroms) This is a mess!
+        rational_scaling( d, mul=10)
+
+        return (cnv, d)
     else:
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=5)

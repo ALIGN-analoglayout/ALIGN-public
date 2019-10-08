@@ -133,7 +133,7 @@ class ConstGraph
     bool SymmetryConstraintCoreAxisCenter(design& caseNL, placerDB::Smark axis, int i);
     void OtherGeometricConstraintCore(design& caseNL);
     void ReverseEdge(int current, int next, vector<Vertex>& graph);
-    void UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel);
+    void UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
     void UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node);
     void RemoveOverlapEdge(design& caseNL, Aplace& caseAP);
     bool RemoveEdgeforVertex(int current, int next, vector<Vertex> &graph, bool isBackward);
@@ -169,8 +169,8 @@ class ConstGraph
     void PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile);
     void WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile);
     void PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile);
-    void UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node);
-    void UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node);
+    void UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
+    void UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
     bool FastInitialScan();
     void AddLargePenalty();
     void UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node);
