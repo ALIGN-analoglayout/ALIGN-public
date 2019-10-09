@@ -237,6 +237,44 @@ std::vector<RouterDB::Metal> GcellDetailRouter::CpSymPath(std::vector<RouterDB::
 
 };
 
+
+std::vector<std::vector<int> > GcellDetailRouter::PartGlobalRouter(RouterDB::Net &temp_net){
+
+  std::vector<std::vector<int> > PieceGlobalPath;
+  std::vector<int> temp_short_path;
+  int temp_tile = -1;
+  //temp_short_path.push_back()
+  for(unsigned int i=0;i<temp_net.global_path.size();++i){
+     if(temp_net.global_path[i].first!=temp_tile){
+       if(temp_short_path.size()>0){
+          PieceGlobalPath.push_back(temp_short_path);
+          temp_short_path.clear();
+         }
+       temp_tile = temp_net.global_path[i].first;
+       temp_short_path.push_back(temp_tile);
+       }
+     if(temp_net.global_path[i].first!=temp_tile){
+       temp_tile = temp_net.global_path[i].second;
+       temp_short_path.push_back(temp_tile);
+     }
+    }
+
+  return PieceGlobalPath;
+
+}; 
+
+/*
+std::vector<double> GcellDetailRouter::EstimateDist(std::vector<RouterDB::R_const> &temp_R){
+
+  for(unsigned int i=0;i<temp_R.size();++i){
+
+
+
+
+     }
+};
+*/
+
 void GcellDetailRouter::create_detailrouter(){
 
   //initial a set for internal metal

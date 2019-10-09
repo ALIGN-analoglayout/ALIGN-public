@@ -125,6 +125,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     int Tile_Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB::SinkData &sym_temp_contact);
     void CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell);
     void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
+    std::vector<std::vector<int> > PartGlobalRouter(RouterDB::Net &temp_net);
 
 };
 
