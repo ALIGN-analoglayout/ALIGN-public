@@ -32,6 +32,8 @@ struct ShieldNet_S;
 struct MatchBlock_S;
 struct Constraint;
 struct contact;
+struct R_const;
+struct C_const;
 struct terminal;
 struct pointXYComp;
 struct SegPiece;
@@ -206,23 +208,6 @@ struct Segment {
   int chosenCand=-1;
 };
 
-struct R_const{
-
-  std::vector<std::pair<int,int> > start_pin;
-  std::vector<std::pair<int,int> > end_pin;
-  std::vector<double> R;
-
-};
-
-struct C_const{
-
-  std::vector<std::pair<int,int> > start_pin;
-  std::vector<std::pair<int,int> > end_pin;
-  std::vector<double> C;
-
-};
-
-
 struct Net{
   std::string netName;
   int degree;
@@ -333,6 +318,22 @@ struct Constraint{
   std::vector<SymmNet_S>   SymmNet;
   std::vector<ShieldNet_S> ShieldNet;
   std::vector<MatchBlock_S>  MatchBlock;
+};
+
+struct R_const {
+
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  std::vector<double> R;
+
+};
+
+struct C_const {
+
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  std::vector<double> C;
+
 };
 
 //struct bbox {

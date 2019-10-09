@@ -588,7 +588,6 @@ long int GcellGlobalRouter::get_number(string str)
 };
 
 
-
 void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   std::cout<<"Router-Info: begin to import data"<<std::endl;
@@ -696,7 +695,33 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
        // cout<<"Remove one connection terminal"<<endl;
        //}	
      }
-	
+
+  //For RC const
+  for(unsigned int i=0;i<node.R_Constraints.size();++i){
+     for(unsigned int j=0;j<Nets.size();++j){
+        if(node.R_Constraints[i].net_name==Nets[j].netName){
+           RouterDB::R_const temp_const;
+           temp_const.start_pin = node.R_Constraints[i].start_pin;
+           temp_const.end_pin = node.R_Constraints[i].end_pin;
+           temp_const.R = node.R_Constraints[i].R;
+           Nets[j].R_constraints.push_back(temp_const);
+          }
+     }
+  }
+
+  for(unsigned int i=0;i<node.C_Constraints.size();++i){
+     for(unsigned int j=0;j<Nets.size();++j){
+        if(node.C_Constraints[i].net_name==Nets[j].netName){
+           RouterDB::C_const temp_const;
+           temp_const.start_pin = node.C_Constraints[i].start_pin;
+           temp_const.end_pin = node.C_Constraints[i].end_pin;
+           temp_const.C = node.C_Constraints[i].C;
+           Nets[j].C_constraints.push_back(temp_const);
+          }
+     }
+  }
+  
+
   //For blocks	
   for(unsigned int i=0;i<node.Blocks.size();++i){
       RouterDB::Block temp_block;
