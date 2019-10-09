@@ -3,9 +3,9 @@ from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 from pathlib import Path
-pdkfile = (Path(__file__).parent / '../../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json').resolve()
+pdkfile = (Path(__file__).parent / 'layers.json').resolve()
 
-class FinFET_Mock_PDK_Canvas(DefaultCanvas):
+class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
 
     def __init__( self, fin, finDummy, gate, gateDummy,
                   pdkfile=pdkfile):

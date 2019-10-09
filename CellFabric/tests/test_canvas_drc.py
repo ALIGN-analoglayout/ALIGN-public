@@ -4,7 +4,7 @@ from cell_fabric import Canvas, Pdk, Wire, Via
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = Canvas(p)
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
     c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))
