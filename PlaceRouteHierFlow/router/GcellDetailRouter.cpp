@@ -306,13 +306,14 @@ int GcellDetailRouter::Estimate_multi_connection_number(RouterDB::R_const &temp_
 
   for(unsigned int i=0;i<temp_R.start_pin.size();++i){
 
-     double temp_res = (double) temp_dis[i]*drc_info.Metal_info[0].unit_R+2*drc_info.Via_model[0].R;
+     //double temp_res = (double) temp_dis[i]*drc_info.Metal_info[0].unit_R+2*drc_info.Via_model[0].R;
+     double temp_res = (double) temp_dis[i]*drc_info.Metal_info[0].unit_R;
      std::cout<<"temp res "<<temp_res<<std::endl;
      temp_resistance.push_back(temp_res);
      std::cout<<"Required R "<<temp_R.R[i]<<std::endl;
-     int m_number = ceil((double)temp_R.R[i]/temp_res);
+     int m_number = ceil((double)temp_res/temp_R.R[i]);
      std::cout<<"m number "<<m_number<<std::endl;
-     m_number = ceil(m_number/2);
+     m_number = ceil((double) m_number/2);
      std::cout<<"half m number "<<m_number<<std::endl;
      M_number.push_back(m_number);
   }
@@ -428,9 +429,10 @@ void GcellDetailRouter::create_detailrouter(){
   //start detail router 
   for(unsigned int i=0;i<Nets.size();i++){
 
+       int multi_number = 0;
        if(Nets[i].R_constraints.size()>0){
            std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
-           int multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
+           multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
        }
 
        //added for terminals
@@ -652,13 +654,14 @@ void GcellDetailRouter::create_detailrouter(){
 
 ///////// A_star
           A_star a_star(grid, Nets[i].shielding);
-          int left_path_number = 0;
-          int right_path_number = 0;
-
+          int left_path_number = multi_number;
+          int right_path_number = multi_number;
+/*
           if(Nets[i].shielding){
              left_path_number = left_path_number + 1;
              right_path_number = right_path_number + 1;
           }
+*/
           std::cout<<"Detail Router check point 4"<<std::endl;
           bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, left_path_number, right_path_number);
 ///////// A_star
