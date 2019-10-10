@@ -237,43 +237,86 @@ std::vector<RouterDB::Metal> GcellDetailRouter::CpSymPath(std::vector<RouterDB::
 
 };
 
+std::vector<std::pair<int,int> > GcellDetailRouter::MappingToConnected(RouterDB::R_const &temp_R, RouterDB::Net &temp_net){
 
-std::vector<std::vector<int> > GcellDetailRouter::PartGlobalRouter(RouterDB::Net &temp_net){
-
-  std::vector<std::vector<int> > PieceGlobalPath;
-  std::vector<int> temp_short_path;
-  int temp_tile = -1;
-  //temp_short_path.push_back()
-  for(unsigned int i=0;i<temp_net.global_path.size();++i){
-     if(temp_net.global_path[i].first!=temp_tile){
-       if(temp_short_path.size()>0){
-          PieceGlobalPath.push_back(temp_short_path);
-          temp_short_path.clear();
-         }
-       temp_tile = temp_net.global_path[i].first;
-       temp_short_path.push_back(temp_tile);
-       }
-     if(temp_net.global_path[i].first!=temp_tile){
-       temp_tile = temp_net.global_path[i].second;
-       temp_short_path.push_back(temp_tile);
+  std::vector<std::pair<int,int> > Connected_Map;
+  std::pair<int,int> temp_pair;
+  for(unsigned int i=0;i<temp_R.start_pin.size();++i){
+     for(unsigned int j=0;j<temp_net.connected.size();++j){
+        if(temp_R.start_pin[i].first!=-1 and temp_R.start_pin[i].first ==temp_net.connected[j].iter and temp_R.start_pin[i].second ==temp_net.connected[j].iter2){
+           temp_pair.first = j;
+           break;
+        }else if(temp_R.start_pin[i].first == -1 and temp_R.start_pin[i].second ==temp_net.connected[j].iter){
+           temp_pair.first = j;
+           break;
+        }
      }
-    }
 
-  return PieceGlobalPath;
-
-}; 
-
-/*
-std::vector<double> GcellDetailRouter::EstimateDist(std::vector<RouterDB::R_const> &temp_R){
-
-  for(unsigned int i=0;i<temp_R.size();++i){
-
-
-
-
+     for(unsigned int j=0;j<temp_net.connected.size();++j){
+        if(temp_R.end_pin[i].first!=-1 and temp_R.end_pin[i].first ==temp_net.connected[j].iter and temp_R.end_pin[i].second ==temp_net.connected[j].iter2){
+           temp_pair.second = j;
+           break;
+        }else if(temp_R.end_pin[i].first == -1 and temp_R.end_pin[i].second ==temp_net.connected[j].iter){
+           temp_pair.second = j;
+           break;
+        }
      }
+
+     Connected_Map.push_back(temp_pair);
+
+  }
+
+  return Connected_Map;
+
 };
-*/
+
+void GcellDetailRouter::GatherSourceDest(std::vector<std::pair<int,int> > & global_path, std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> & Tile_Source, std::vector<int> & Tile_Dest){
+
+  std::set<int> path;
+  
+  for(unsigned int i=0;i<global_path.size();++i){
+    
+    path.insert(global_path[i].first);
+    path.insert(global_path[i].second);
+
+  }
+
+  for(unsigned int i=0;i<temp_src.size();++i){
+   
+     if(path.find(temp_src[i])!=path.end()){Tile_Source.push_back(temp_src[i]);}
+
+  }
+
+  for(unsigned int i=0;i<temp_dest.size();++i){
+   
+     if(path.find(temp_dest[i])!=path.end()){Tile_Dest.push_back(temp_dest[i]);}
+
+  }
+
+
+
+
+};
+
+
+std::vector<double> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net){
+
+  std::vector<std::pair<int,int> > Connected_Map = MappingToConnected(temp_R, temp_net);
+  std::vector<double> Dist;
+
+  for(unsigned int i=0;i<Connected_Map.size();++i){
+
+     std::vector<int> Tile_Source, Tile_Dest;
+     GatherSourceDest(temp_net.global_path, temp_net.connectedTile[Connected_Map[i].first], temp_net.connectedTile[Connected_Map[i].second], Tile_Source, Tile_Dest);
+     Graph graph(temp_net.global_path, temp_net.connectedTile, Tile_Source, Tile_Dest);
+     std::vector<std::vector<int> > global_path = graph.GetShorestPath();
+
+  }
+  
+  return Dist;
+  
+};
+
 
 void GcellDetailRouter::create_detailrouter(){
 
