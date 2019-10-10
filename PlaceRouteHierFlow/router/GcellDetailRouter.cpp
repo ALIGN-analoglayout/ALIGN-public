@@ -328,10 +328,27 @@ std::vector<double> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, R
      GatherSourceDest(temp_net.global_path, temp_net.connectedTile[Connected_Map[i].first], temp_net.connectedTile[Connected_Map[i].second], Tile_Source, Tile_Dest);
      Graph graph(temp_net.global_path, temp_net.connectedTile, Tile_Source, Tile_Dest);
      std::vector<std::vector<int> > global_path = graph.GetShorestPath();
+/*
+     int dis =0;
+      
+     for(unsigned int j=0;j<global_path.size();++j){
+
+        for(unsigned int k =0;k<global_path[j].size()-1;++k){
+
+           dis = dis +global_path[j][k] - global_path[j][k+1]; //x y
+
+        }
+     }
+
+     Dist.push_back(dis);
+*/     
      std::cout<<"Estimate global router dist "<<global_path[0].size()<<std::endl;
 
   }
   
+  
+  
+
   return Dist;
   
 };
