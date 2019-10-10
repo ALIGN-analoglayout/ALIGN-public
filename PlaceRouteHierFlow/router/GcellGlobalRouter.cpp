@@ -1783,6 +1783,13 @@ void GlobalRouter::judge_symmety(RouterDB::Net &temp_net1, RouterDB::Net &temp_n
 */
 
 void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
+
+    for(unsigned int i=0;i<Nets.size();++i){
+
+       Nets[i].global_path = Nets[i].STs[Nets[i].STindex].path;
+
+    }
+
     HierNode.tiles_total = Gcell.tiles_total;
     for(vector<PnRDB::net>::iterator H_NET_it=HierNode.Nets.begin();H_NET_it!=HierNode.Nets.end();++H_NET_it){
         for(vector<RouterDB::Net>::const_iterator NET_it=Nets.begin(); NET_it!=Nets.end(); ++NET_it){
