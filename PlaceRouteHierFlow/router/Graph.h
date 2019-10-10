@@ -42,13 +42,17 @@ class Graph {
     Graph(Grid& grid);
     Graph(Grid& grid, bool power_grid);
     Graph(Grid& grid, int pathNo); //use grid information to find shortest path;
+
+    Graph(std::vector<std::pair<int,int> > &global_path, std::vector<std::vector<int> > &conectedTile, std::vector<int> &Tile_Source, std::vector<int> &Tile_Dest);
+    void CreateAdjacentList_Global_Path(std::vector<std::pair<int,int> > &global_path, std::vector<std::vector<int> > &conectedTile, std::vector<int> &Tile_Source, std::vector<int> &Tile_Dest,   std::map<int,int> &tile_graph_map,std::map<int,int> &graph_tile_map);
+
     bool FindFeasiblePath(Grid& grid, int pathNo);
     RouterDB::PowerGrid GetVdd_grid(){return Vdd_grid;};
     RouterDB::PowerGrid GetGnd_grid(){return Gnd_grid;};
     void CreatePower_Grid(Grid& grid);
 
     void CreateAdjacentList(Grid& grid); //based on LL_graph and UR_graph
-    std::vector<int> dijkstra(Grid& grid); // return path
+    std::vector<int> dijkstra(); // return path
     std::vector<int> dijkstraRetire(Grid& grid); // return path
     void UpdateEdgeWeight(std::vector<int>& path);
     void printPath(std::vector<int> &parent, int j, int Vsize, std::vector<int> & temp_path);

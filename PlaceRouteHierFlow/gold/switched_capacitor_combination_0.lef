@@ -7620,7 +7620,7 @@ MACRO switched_capacitor_combination
   LAYER M2 ;
         RECT 10.204 0.656 10.596 0.688 ;
   LAYER M2 ;
-        RECT 10.431 0.824 10.529 0.856 ;
+        RECT 10.204 0.404 10.596 0.436 ;
   LAYER M1 ;
         RECT 0.384 17.268 0.416 17.928 ;
   LAYER M1 ;
@@ -7638,7 +7638,7 @@ MACRO switched_capacitor_combination
   LAYER M2 ;
         RECT 0.124 17.708 0.516 17.74 ;
   LAYER M2 ;
-        RECT 0.351 17.876 0.449 17.908 ;
+        RECT 0.124 17.456 0.516 17.488 ;
   LAYER M1 ;
         RECT 9.104 0.216 9.136 0.876 ;
   LAYER M1 ;
@@ -7650,7 +7650,7 @@ MACRO switched_capacitor_combination
   LAYER M1 ;
         RECT 9.664 0.216 9.696 0.876 ;
   LAYER M1 ;
-        RECT 9.711 0.824 9.8085 0.856 ;
+        RECT 9.824 0.216 9.856 0.876 ;
   LAYER M1 ;
         RECT 8.384 0.216 8.416 0.876 ;
   LAYER M1 ;
@@ -7662,7 +7662,7 @@ MACRO switched_capacitor_combination
   LAYER M1 ;
         RECT 7.824 0.216 7.856 0.876 ;
   LAYER M1 ;
-        RECT 7.7115 0.824 7.809 0.856 ;
+        RECT 7.664 0.216 7.696 0.876 ;
   LAYER M1 ;
         RECT 6.864 10.212 6.896 10.284 ;
   LAYER M2 ;

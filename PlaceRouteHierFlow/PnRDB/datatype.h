@@ -32,6 +32,8 @@ struct MatchBlock;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
+struct R_const;
+struct C_const;
 struct SymmPairBlock;
 struct Metal;
 struct ViaModel;
@@ -234,6 +236,8 @@ struct hierNode {
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
   vector<PortPos> Port_Location;
+  vector<R_const> R_Constraints;
+  vector<C_const> C_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
@@ -307,6 +311,28 @@ struct CCCap {
   int cap_s = -1;
 };
 
+struct R_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> R;
+
+};
+
+struct C_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> C;
+
+};
+
 /// Part 4: declaration of structures for LEF data
 struct lefMacro {
   int width=0, height=0;
@@ -330,6 +356,7 @@ struct ViaModel {
   string name;
   int ViaIdx, LowerIdx, UpperIdx;
   std::vector<point> ViaRect, LowerRect, UpperRect;
+  double R;
 };
 
 struct metal_info {
@@ -343,6 +370,8 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  double unit_R;
+  double unit_C;
 };
 
 struct via_info {
@@ -358,6 +387,7 @@ struct via_info {
   int cover_u_P;
   int dist_ss; //via spacing, X direction spacing
   int dist_ss_y; // Y direction spacing
+  double R;
 };
 
 struct Drc_info {

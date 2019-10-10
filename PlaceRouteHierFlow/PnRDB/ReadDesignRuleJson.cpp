@@ -45,6 +45,12 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
             int le2e=layer["EndToEnd"];
+
+            double unit_C = 0;
+            if(layer["UnitC"].is_number()){unit_C=layer["UnitC"];}
+            double unit_R = 0;
+            if(layer["UnitR"].is_number()){unit_R=layer["UnitR"];}
+
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
@@ -55,6 +61,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_metal.dist_ss=times*(lpitch-lwidth);
             tmp_metal.minL=times*lminL;
             tmp_metal.dist_ee=times*le2e;
+            double rc_scale = 0.0005;
+            tmp_metal.unit_R = unit_R*rc_scale;
+            tmp_metal.unit_C = unit_C*rc_scale;
             metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
             }
         }
@@ -80,6 +89,10 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lvencah= layer["VencA_H"];
             int lvencpl= layer["VencP_L"];
             int lvencph= layer["VencP_H"];
+
+            double R = 0;
+            if(layer["R"].is_number()){R=layer["R"];}
+            
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
@@ -91,7 +104,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_via.cover_u_P=times*lvencph;
             tmp_via.dist_ss=times*lspacex;
             tmp_via.dist_ss_y=times*lspacey;
-
+            tmp_via.R = R;
 	    {
 	      assert( stackAry.size() == 2);
 
@@ -154,6 +167,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              temp_point.x = 0+vi.width/2;
              temp_point.y = 0+vi.width_y/2;
              temp_viamodel.ViaRect.push_back(temp_point);
+             temp_viamodel.R = vi.R;
 /*             
 	     {
 	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];

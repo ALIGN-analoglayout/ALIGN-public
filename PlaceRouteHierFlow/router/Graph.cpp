@@ -38,7 +38,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      
      std::cout<<"start dijkstra, "<<std::endl;
 
-     temp_path = dijkstra(grid);// grid.Source grid.dest
+     temp_path = dijkstra();// grid.Source grid.dest
      
      std::cout<<"end dijkstra"<<std::endl; 
      if(temp_path.size()>0) {
@@ -81,7 +81,7 @@ Graph::Graph(Grid& grid, int pathNo) {
      
      std::cout<<"start dijkstra, "<<std::endl;
 
-     temp_path = dijkstra(grid);// grid.Source grid.dest
+     temp_path = dijkstra();// grid.Source grid.dest
 
      std::cout<<"end dijkstra"<<std::endl; 
      //update weight
@@ -425,6 +425,148 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 };
 
+
+
+Graph::Graph(std::vector<std::pair<int,int> > &global_path, std::vector<std::vector<int> > &conectedTile, std::vector<int> &Tile_Source, std::vector<int> &Tile_Dest):path_number(1){
+
+  std::map<int,int> tile_graph_map;
+  std::map<int,int> graph_tile_map;
+  CreateAdjacentList_Global_Path(global_path,conectedTile,Tile_Source,Tile_Dest,tile_graph_map,graph_tile_map); //create adjacentList base gird.LL_graph and gird.UR_graph
+  std::vector<int> temp_path = dijkstra();
+  std::vector<int> global_path_return;
+  
+  for(unsigned int i=0;i<temp_path.size();++i){
+
+     global_path_return.push_back(graph_tile_map[temp_path[i]]);
+
+  }
+
+  Path.push_back(global_path_return); 
+
+};
+
+
+void Graph::CreateAdjacentList_Global_Path(std::vector<std::pair<int,int> > &global_path, std::vector<std::vector<int> > &conectedTile, std::vector<int> &Tile_Source, std::vector<int> &Tile_Dest,   std::map<int,int> &tile_graph_map,std::map<int,int> &graph_tile_map){
+
+  std::set<int> temp_set;
+  
+  for(unsigned int i=0;i<global_path.size();++i){
+     temp_set.insert(global_path[i].first);
+     temp_set.insert(global_path[i].second);
+  }
+
+  for(unsigned int i=0;i<conectedTile.size();++i){
+     for(unsigned int j=0;j<conectedTile[i].size();++j){
+        temp_set.insert(conectedTile[i][j]);
+     }
+  }
+
+  std::set<int>::iterator it,it_low,it_up;
+
+  int tile_index = 0; 
+
+  for(it=temp_set.begin();it!=temp_set.end();++it){
+  
+     tile_graph_map[*it] = tile_index;
+     graph_tile_map[tile_index] = *it;
+     tile_index = tile_index + 1;
+     Node tempNode;
+     tempNode.src = *it;
+     graph.push_back(tempNode);
+
+  }
+
+  for(unsigned int i=0;i<global_path.size();++i){
+
+     Edge tempEdge;
+     int start_index = tile_graph_map[global_path[i].first];
+     int end_index = tile_graph_map[global_path[i].second];
+     bool found = false;
+     if(start_index!=end_index){
+        for(unsigned int j=0;j<graph[start_index].list.size();++j){
+           if(graph[start_index].list[j].dest==end_index){
+              found = true;
+              break;
+           }
+        }
+        if(found==false){
+           tempEdge.dest = end_index;
+           tempEdge.weight = 1;
+           graph[start_index].list.push_back(tempEdge);
+           tempEdge.dest = start_index;
+           graph[end_index].list.push_back(tempEdge);
+        }         
+      }
+  }
+
+  for(unsigned int i=0;i<conectedTile.size();++i){
+
+     for(unsigned int j=0;j<conectedTile[i].size()-1;++j){
+
+        Edge tempEdge;
+        int start_index = tile_graph_map[conectedTile[i][j]];
+        int end_index = tile_graph_map[conectedTile[i][j+1]];
+
+        bool found = false;
+        if(start_index!=end_index){
+          for(unsigned int j=0;j<graph[start_index].list.size();++j){
+             if(graph[start_index].list[j].dest==end_index){
+                found = true;
+                break;
+             }
+          }
+          if(found==false){
+             tempEdge.dest = end_index;
+             tempEdge.weight = 1;
+             graph[start_index].list.push_back(tempEdge);
+             tempEdge.dest = start_index;
+             graph[end_index].list.push_back(tempEdge);
+          }         
+        }
+     }
+  }
+
+  source = graph.size();
+  dest = source + 1;
+     
+  Node tempNodeS;
+  tempNodeS.src = source;
+     
+  for(unsigned int i=0;i<Tile_Source.size();++i)
+     {
+          
+        Edge tempEdge;
+        int graph_index = tile_graph_map[Tile_Source[i]];
+        tempEdge.dest = graph_index;
+        tempEdge.weight = 1;
+        tempNodeS.list.push_back(tempEdge);
+        tempEdge.dest = source;
+        graph[graph_index].list.push_back(tempEdge);
+
+     }
+  graph.push_back(tempNodeS);
+
+  Node tempNodeD;
+  tempNodeD.src = dest;
+     
+  for(unsigned int i=0;i<Tile_Dest.size();++i)
+     {
+       
+        Edge tempEdge;
+        int graph_index = tile_graph_map[Tile_Dest[i]];
+        tempEdge.dest = graph_index;
+        tempEdge.weight = 1;
+        tempNodeD.list.push_back(tempEdge);
+        tempEdge.dest = dest;
+        graph[graph_index].list.push_back(tempEdge);
+
+     }
+   graph.push_back(tempNodeD);
+
+};
+
+
+
 void Graph::CreateAdjacentList(Grid& grid){
 
   for(unsigned int i=0;i<grid.vertices_graph.size();++i)
@@ -558,7 +700,7 @@ std::vector<int> Graph::minDistancefromMultiMap(std::multimap<double, int> &mmap
   return min_index; // Has zero or one entry.
 };
 
-std::vector<int>  Graph::dijkstra(Grid& grid){
+std::vector<int>  Graph::dijkstra(){
 
   std::vector<int> temp_path;
 
