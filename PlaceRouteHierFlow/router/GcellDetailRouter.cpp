@@ -655,6 +655,7 @@ void GcellDetailRouter::create_detailrouter(){
 ///////// A_star
           A_star a_star(grid, Nets[i].shielding);
           int left_path_number = multi_number;
+
           int right_path_number = multi_number;
 /*
           if(Nets[i].shielding){
