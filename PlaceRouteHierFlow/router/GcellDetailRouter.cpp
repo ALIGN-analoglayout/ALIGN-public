@@ -299,6 +299,42 @@ void GcellDetailRouter::GatherSourceDest(std::vector<std::pair<int,int> > & glob
 };
 
 
+int GcellDetailRouter::Estimate_multi_connection_number(RouterDB::R_const &temp_R, std::vector<int> &temp_dis){
+
+  std::vector<double> temp_resistance;
+  std::vector<int> M_number;
+
+  for(unsigned int i=0;i<temp_R.start_pin.size();++i){
+
+     double temp_res = (double) temp_dis[i]*drc_info.Metal_info[0].unit_R+2*drc_info.Via_model[0].R;
+     std::cout<<"temp res "<<temp_res<<std::endl;
+     temp_resistance.push_back(temp_res);
+     std::cout<<"Required R "<<temp_R.R[i]<<std::endl;
+     int m_number = ceil((double)temp_R.R[i]/temp_res);
+     std::cout<<"m number "<<m_number<<std::endl;
+     m_number = ceil(m_number/2);
+     std::cout<<"half m number "<<m_number<<std::endl;
+     M_number.push_back(m_number);
+  }
+
+  int net_m_number = 0;
+
+  for(unsigned int i=0;i<M_number.size();++i){
+
+     if(net_m_number<M_number[i]){
+
+         net_m_number = M_number[i];
+         
+       }
+
+  }
+
+  std::cout<<"Multi Number "<<net_m_number<<std::endl;
+  return net_m_number;
+
+};
+
+
 std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net){
 
   std::cout<<"Start Estimation"<<std::endl;
@@ -394,6 +430,7 @@ void GcellDetailRouter::create_detailrouter(){
 
        if(Nets[i].R_constraints.size()>0){
            std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
+           int multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
        }
 
        //added for terminals
