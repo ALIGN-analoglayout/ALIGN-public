@@ -127,7 +127,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
     std::vector<std::pair<int,int> > MappingToConnected(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
     void GatherSourceDest(std::vector<std::pair<int,int> > & global_path, std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> & Tile_Source, std::vector<int> & Tile_Dest);
-    std::vector<double> EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
+    std::vector<int> EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
     
 };
 

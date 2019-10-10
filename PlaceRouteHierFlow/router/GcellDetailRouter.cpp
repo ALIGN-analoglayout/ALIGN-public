@@ -299,10 +299,15 @@ void GcellDetailRouter::GatherSourceDest(std::vector<std::pair<int,int> > & glob
 };
 
 
-std::vector<double> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net){
+std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net){
+
+  std::cout<<"Start Estimation"<<std::endl;
 
   std::vector<std::pair<int,int> > Connected_Map = MappingToConnected(temp_R, temp_net);
-  std::vector<double> Dist;
+
+  //std::cout<<"Connected_Map size "<<Connected_Map.size()<<std::endl;
+
+  std::vector<int> Dist_es;
 
   std::cout<<"Global Path"<<std::endl;
   for(unsigned int i=0;i<temp_net.global_path.size();++i){
@@ -311,45 +316,54 @@ std::vector<double> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, R
 
   }
 
-  std::cout<<"ConnectedTile"<<std::endl;
+  //std::cout<<"ConnectedTile"<<std::endl;
   for(unsigned int i=0;i<temp_net.connectedTile.size();++i){
 
       std::cout<<"ConnectedTile"<<std::endl;
       for(unsigned int j=0;j<temp_net.connectedTile[i].size();++j){
-         std::cout<<temp_net.connectedTile[i][j]<<" ";
+         std::cout<<temp_net.connectedTile[i][j]<<" "<<std::endl;
       }
-      std::cout<<std::endl;
 
   }
 
+  //std::cout<<"Connected_Map size "<<Connected_Map.size()<<std::endl;
+
   for(unsigned int i=0;i<Connected_Map.size();++i){
 
+     //std::cout<<"i "<<i<<std::endl;
+     //std::cout<<"Connected_Map "<<Connected_Map[i].first<<" "<<Connected_Map[i].second<<std::endl;
      std::vector<int> Tile_Source, Tile_Dest;
      GatherSourceDest(temp_net.global_path, temp_net.connectedTile[Connected_Map[i].first], temp_net.connectedTile[Connected_Map[i].second], Tile_Source, Tile_Dest);
-     Graph graph(temp_net.global_path, temp_net.connectedTile, Tile_Source, Tile_Dest);
-     std::vector<std::vector<int> > global_path = graph.GetShorestPath();
-/*
+     //std::cout<<"Tile_Source "<<Tile_Source[0]<<std::endl;
+     //std::cout<<"Tile_Dest "<<Tile_Dest[0]<<std::endl;
+     Graph temp_graph(temp_net.global_path, temp_net.connectedTile, Tile_Source, Tile_Dest);
+     std::vector<std::vector<int> > global_path_return = temp_graph.GetShorestPath();
+
      int dis =0;
-      
-     for(unsigned int j=0;j<global_path.size();++j){
+ 
+     for(unsigned int j=0;j<global_path_return.size();++j){
 
-        for(unsigned int k =0;k<global_path[j].size()-1;++k){
+        //std::cout<<"j "<<j<<std::endl;        
 
-           dis = dis +global_path[j][k] - global_path[j][k+1]; //x y
+        for(unsigned int k =0;k<global_path_return[j].size()-1;++k){
+
+           //std::cout<<"k "<<k<<std::endl;        
+   
+           int index1 = global_path_return[j][k];
+           int index2 = global_path_return[j][k+1];
+           //std::cout<<"index1 "<<index1<<" "<<"index2 "<<index2<<std::endl;
+           dis = dis + abs( Gcell.tiles_total[index1].x- Gcell.tiles_total[index2].x) + abs( Gcell.tiles_total[index1].y- Gcell.tiles_total[index2].y);
 
         }
      }
 
-     Dist.push_back(dis);
-*/     
-     std::cout<<"Estimate global router dist "<<global_path[0].size()<<std::endl;
 
+     Dist_es.push_back(dis);
+     std::cout<<"Estimate dist "<<dis<<std::endl;     
   }
   
-  
-  
-
-  return Dist;
+  //drc_info
+  return Dist_es;
   
 };
 
@@ -377,6 +391,10 @@ void GcellDetailRouter::create_detailrouter(){
   //end initial set
   //start detail router 
   for(unsigned int i=0;i<Nets.size();i++){
+
+       if(Nets[i].R_constraints.size()>0){
+           std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
+       }
 
        //added for terminals
        CreatePlistTerminals(plist, this->Terminals);
@@ -599,11 +617,6 @@ void GcellDetailRouter::create_detailrouter(){
           A_star a_star(grid, Nets[i].shielding);
           int left_path_number = 0;
           int right_path_number = 0;
-          
-          if(Nets[i].R_constraints.size()>0){
-             EstimateDist(Nets[i].R_constraints[0], Nets[i]);
-          }
-
 
           if(Nets[i].shielding){
              left_path_number = left_path_number + 1;
