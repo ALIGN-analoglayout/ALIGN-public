@@ -7,6 +7,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include "Mdatatype.h"
+
 
 typedef boost::numeric::ublas::matrix<double> boost_matrix;
 
@@ -25,8 +27,8 @@ class MNASimulation {
 
   public:
       //MNASimulation(std::vector<std::vector<double>> &out_R, std::vector<double>& out_I);
-	MNASimulation(boost_matrix &out_R, boost_matrix &out_I);
-	void read();
+      MNASimulation(boost_matrix &out_R, boost_matrix &out_I);
+      void ExtractPowerGrid();
       boost_matrix ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Istore);
       //void ConstructI();
       int SolveIR_drop();

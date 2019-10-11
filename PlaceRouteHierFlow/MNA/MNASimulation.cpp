@@ -8,18 +8,8 @@ this->I = out_I;
 
 }
 
-void read(){
+void MNASimulation::ExtractPowerGrid(){
 
-  struct element{
-    string key = [r,i,v,c,l]
-    start point
-    end point
-    value
-  }
-
-  map<pair<int,int> index> node_map;
-
-  vector<element> circuits;
 
 }
 
