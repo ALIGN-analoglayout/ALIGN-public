@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include "../router/Rdatatype.h"
 using std::vector;
 using std::string;
 using std::map;
@@ -31,6 +32,8 @@ struct MatchBlock;
 struct lefMacro;
 struct blockComplex;
 struct CCCap;
+struct R_const;
+struct C_const;
 struct SymmPairBlock;
 struct Metal;
 struct ViaModel;
@@ -52,8 +55,7 @@ struct point {
 }; // structure of integer coordinate
 
 struct bbox {
-  vector<point> polygon; // list of coordinates of polygon
-  point LL,LR,UL,UR;
+  point LL,UR;
 }; // structure of boundary box, assum rectangle
 
 struct contact {
@@ -87,10 +89,12 @@ struct net {
   vector<contact> segments; // segment inform needs to be updated after routing
   vector<contact> interVias;////TEMPORARY!!!+Jinhyun
   vector<Metal> path_metal;
+  vector<std::pair<int,int> > GcellGlobalRouterPath;
   vector<Via> path_via;
   vector<globalContact> connectedContact; // for writing global route results
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
+  vector<std::vector<int>> connectedTile;
 }; // structure of nets
 
 struct Metal{
@@ -197,12 +201,14 @@ struct layoutAS {
 struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
+  bool isIntelGcellGlobalRouter=false;
   int width=0;
   int height=0;
   string name="";
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
+  vector<RouterDB::tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
 
@@ -230,11 +236,13 @@ struct hierNode {
   vector<MatchBlock> Match_blocks;
   vector<CCCap> CC_Caps;
   vector<PortPos> Port_Location;
+  vector<R_const> R_Constraints;
+  vector<C_const> C_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
-}; // structure of vertex in heirarchical tree
 
+}; // structure of vertex in heirarchical tree
 
 
 /// Part 3: declaration of structures for constraint data
@@ -303,6 +311,28 @@ struct CCCap {
   int cap_s = -1;
 };
 
+struct R_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> R;
+
+};
+
+struct C_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> C;
+
+};
+
 /// Part 4: declaration of structures for LEF data
 struct lefMacro {
   int width=0, height=0;
@@ -326,6 +356,7 @@ struct ViaModel {
   string name;
   int ViaIdx, LowerIdx, UpperIdx;
   std::vector<point> ViaRect, LowerRect, UpperRect;
+  double R;
 };
 
 struct metal_info {
@@ -339,6 +370,8 @@ struct metal_info {
   int minL;
   int maxL;
   int dist_ee;
+  double unit_R;
+  double unit_C;
 };
 
 struct via_info {
@@ -354,6 +387,7 @@ struct via_info {
   int cover_u_P;
   int dist_ss; //via spacing, X direction spacing
   int dist_ss_y; // Y direction spacing
+  double R;
 };
 
 struct Drc_info {

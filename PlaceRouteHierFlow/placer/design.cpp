@@ -1,4 +1,5 @@
 #include "design.h"
+#include <cassert>
 
 design::design() {
   bias_Hgraph=92;
@@ -75,7 +76,7 @@ design::design(design& other, int mode) {
         placerDB::Node tnode=Q.front(); Q.pop();
         placerDB::Node snode;
         //cout<<"Test: check Q node "<<tnode.type<<" "<<tnode.iter<<" " <<tnode.iter2<<endl;
-        for(int i=0;i<other.Blocks.at(tnode.iter2).back().blockPins.size();i++) {
+        for(unsigned int i=0;i<other.Blocks.at(tnode.iter2).back().blockPins.size();i++) {
           //cout<<"Test: i "<<i<<endl;
           snode.type=placerDB::Block;
           snode.iter=i;
@@ -127,7 +128,7 @@ design::design(design& other, int mode) {
           } else if (nnode.type==placerDB::Block) {
             nnode.iter=it4->iter;
             nnode.iter2=other.Blocks.at(it4->iter2).back().mapIdx;
-            for(int w=0;w<this->Blocks.at(nnode.iter2).size();++w) {
+            for(unsigned int w=0;w<this->Blocks.at(nnode.iter2).size();++w) {
               this->Blocks.at(nnode.iter2).at(w).blockPins.at(nnode.iter).netIter=this->Nets.size(); // link block to net
             }
           } else {
@@ -146,7 +147,7 @@ design::design(design& other, int mode) {
         }
         for(std::set<int>::iterator it5=sset.begin(); it5!=sset.end(); ++it5) {
           int M=0;
-          for(int w=0;w<other.Blocks.at(*it5).size();++w) {
+          for(unsigned int w=0;w<other.Blocks.at(*it5).size();++w) {
             int wl= other.Blocks.at(*it5).at(w).width>other.Blocks.at(*it5).at(w).height?other.Blocks.at(*it5).at(w).width:other.Blocks.at(*it5).at(w).height;
             if(wl>M) {M=wl;}
           }
@@ -170,7 +171,7 @@ design::design(design& other, int mode) {
       placerDB::SymmBlock SB;
       // new symmetry pair
       for(std::vector< std::pair<int,int> >::iterator spit=sbit->sympair.begin(); spit!=sbit->sympair.end(); ++spit) {
-        if(spit->first>=other.Blocks.size() or spit->second>=other.Blocks.size()) {continue;}
+        if(spit->first>=(int)other.Blocks.size() or spit->second>=(int)other.Blocks.size()) {continue;}
         if(other.Blocks.at(spit->first).back().bigMacro and other.Blocks.at(spit->second).back().bigMacro) {
           int m1=other.Blocks.at(spit->first).back().mapIdx;
           int m2=other.Blocks.at(spit->second).back().mapIdx;
@@ -179,7 +180,7 @@ design::design(design& other, int mode) {
       }
       // new self-symmetry block
       for(vector< pair<int,placerDB::Smark> >::iterator sfit=sbit->selfsym.begin(); sfit!=sbit->selfsym.end(); ++sfit) {
-        if(sfit->first>=other.Blocks.size()) {continue;}
+        if(sfit->first>=(int)other.Blocks.size()) {continue;}
         if(other.Blocks.at(sfit->first).back().bigMacro) {
           SB.selfsym.push_back( make_pair( other.Blocks.at(sfit->first).back().mapIdx, sfit->second) );
         }
@@ -187,17 +188,17 @@ design::design(design& other, int mode) {
       if(SB.sympair.size()>0 or SB.selfsym.size()>0) {
         // if the symmetry group exists
         for(vector< pair<int,int> >::iterator spit=SB.sympair.begin(); spit!=SB.sympair.end(); ++spit) {
-          for(int w=0;w<this->Blocks.at(spit->first).size();++w) {
+          for(unsigned int w=0;w<this->Blocks.at(spit->first).size();++w) {
             this->Blocks.at(spit->first).at(w).SBidx=this->SBlocks.size();
             this->Blocks.at(spit->first).at(w).counterpart=spit->second;
           }
-          for(int w=0;w<this->Blocks.at(spit->second).size();++w) {
+          for(unsigned int w=0;w<this->Blocks.at(spit->second).size();++w) {
             this->Blocks.at(spit->second).at(w).SBidx=this->SBlocks.size();
             this->Blocks.at(spit->second).at(w).counterpart=spit->first;
           }
         }
         for( vector< pair<int,placerDB::Smark> >::iterator sfit=SB.selfsym.begin(); sfit!=SB.selfsym.end(); ++sfit  ) {
-          for(int w=0;w<this->Blocks.at(sfit->first).size();++w) {
+          for(unsigned int w=0;w<this->Blocks.at(sfit->first).size();++w) {
             this->Blocks.at(sfit->first).at(w).SBidx=this->SBlocks.size();
             this->Blocks.at(sfit->first).at(w).counterpart=sfit->first;
           }
@@ -336,10 +337,18 @@ design::design(PnRDB::hierNode& node) {
       block tmpblock;
       tmpblock.name=(it->instance).at(bb).name;
       //cout<<tmpblock.name<<endl;
+      /*
       for(vector<PnRDB::point>::iterator pit=(it->instance).at(bb).originBox.polygon.begin(); pit!=(it->instance).at(bb).originBox.polygon.end();++pit) {
         placerDB::point tmppoint={pit->x, pit->y};
         tmpblock.boundary.polygon.push_back(tmppoint);
       }
+      */
+      const auto& pit = (it->instance).at(bb).originBox;
+      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.LL.y});
+      tmpblock.boundary.polygon.push_back( {pit.LL.x,pit.UR.y});
+      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.UR.y});
+      tmpblock.boundary.polygon.push_back( {pit.UR.x,pit.LL.y});
+
       tmpblock.type=(it->instance).at(bb).type;
       tmpblock.width=(it->instance).at(bb).width;
       tmpblock.height=(it->instance).at(bb).height;
@@ -356,10 +365,17 @@ design::design(PnRDB::hierNode& node) {
           tpoint={ cit->originCenter.x, cit->originCenter.y };
           tmppin.center.push_back(tpoint);
           tmppin.boundary.resize(tmppin.boundary.size()+1);
+	  /*
           for(vector<PnRDB::point>::iterator qit=cit->originBox.polygon.begin(); qit!=cit->originBox.polygon.end(); ++qit) {
             tpoint={qit->x, qit->y};
             tmppin.boundary.back().polygon.push_back(tpoint);
           }
+	  */
+	  const auto& qit=cit->originBox;
+	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.LL.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.LL.x,qit.UR.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.UR.y});
+	  tmppin.boundary.back().polygon.push_back( {qit.UR.x,qit.LL.y});
         }
         tmpblock.blockPins.push_back(tmppin);
       }
@@ -396,10 +412,10 @@ design::design(PnRDB::hierNode& node) {
     tmpnet.priority=it->priority;
     tmpnet.weight=1;
     for(vector<PnRDB::connectNode>::iterator nit=it->connected.begin(); nit!=it->connected.end(); ++nit) {
-      placerDB::NType tmptype;
+      placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl;}
+      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet.connected.push_back(tmpnode);
     }
@@ -427,20 +443,20 @@ design::design(PnRDB::hierNode& node) {
     tmpnet1.name=it->net1.name;
     //tmpnet1.priority=it->net1.priority;
     for(vector<PnRDB::connectNode>::iterator nit=it->net1.connected.begin(); nit!=it->net1.connected.end(); ++nit) {
-      placerDB::NType tmptype;
+      placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl;}
+      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet1.connected.push_back(tmpnode);
     }
     tmpnet2.name=it->net2.name;
     //tmpnet2.priority=it->net2.priority;
     for(vector<PnRDB::connectNode>::iterator nit=it->net2.connected.begin(); nit!=it->net2.connected.end(); ++nit) {
-      placerDB::NType tmptype;
+      placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl;}
+      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet2.connected.push_back(tmpnode);
     }
@@ -512,7 +528,7 @@ int design::GetSizeBlock4Move(int mode) {
   // mode-1: never check mapIdx for reduced design
   if(mode==0) {
     int ss=0;
-    for(int i=0;i<this->Blocks.size();++i) {
+    for(unsigned int i=0;i<this->Blocks.size();++i) {
       if(this->Blocks.at(i).back().mapIdx==-1) {ss++;}
     }
     return ss;
@@ -525,7 +541,7 @@ int design::GetSizeAsymBlock4Move(int mode) {
   // mode-0: check mapIdx for original design
   // mode-1: never check mapIdx for reduced design
   int ss=0;
-  for(int i=0;i<this->Blocks.size();++i) {
+  for(unsigned int i=0;i<this->Blocks.size();++i) {
     if(mode==0) {
     if(this->Blocks.at(i).back().mapIdx==-1 and this->Blocks.at(i).back().SBidx==-1) {ss++;}
     } else {
@@ -540,7 +556,7 @@ int design::GetSizeSymGroup4PartMove(int mode) {
   // mode-1: never check mapIdx for reduced design
   int ss=0;
   if(mode==0) {
-    for(int i=0;i<this->SBlocks.size();++i) {
+    for(unsigned int i=0;i<this->SBlocks.size();++i) {
       std::cout<<"i "<<i<<std::endl;
       bool mark=false;
       for(std::vector< std::pair<int,int> >::iterator it=this->SBlocks.at(i).sympair.begin(); it!=this->SBlocks.at(i).sympair.end() and !mark; ++it) {
@@ -566,7 +582,7 @@ int design::GetSizeSymGroup4FullMove(int mode) {
   // mode-1: never check mapIdx for reduced design
   int ss=0;
   if(mode==0) {
-    for(int i=0;i<this->SBlocks.size();++i) {
+    for(unsigned int i=0;i<this->SBlocks.size();++i) {
       if(this->SBlocks.at(i).mapIdx==-1) {ss++;}
     }
   } else {
@@ -721,11 +737,9 @@ void design::Generate_random_const(string random_constrain_file) {
                          distance = 0;
 		}
 		if(Const_type_list[i]==3){
-	                 int h_abu = (rand()%2);
                          while(distance<100){
                         distance = (rand()%10)*50;
                         }
-			//fout<<"MatchBlock ("<<" "<<Blocks[const_pair_vector[i].first].name<<" "<<Blocks[const_pair_vector[i].second].name<<" "<<0<<" "<<h_abu<<" "<<")"<<endl;
 			fout<<"MatchBlock ("<<" "<<Blocks[const_pair_vector[i].first].back().name<<" "<<Blocks[const_pair_vector[i].second].back().name<<" "<<")"<<endl;
                          distance = 0;
 		}
@@ -751,11 +765,6 @@ void design::readRandConstFile(string random_constrain_file) {
 	fin.open(random_constrain_file.c_str());
 	
 	vector<string> temp, tempsec;
-	size_t found;
-	
-	int *p=0;
-	int p_temp=0;
-	p=&p_temp;
 	
 	while(!fin.eof()) {
 		getline(fin, def);
@@ -769,13 +778,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
                 
 			Preplace preplace_const;
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 			     if(Blocks.at(i).back().name.compare(block_first)==0) {
 					 preplace_const.blockid1 = i;
 					 break;
 				 }
 			}
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					preplace_const.blockid2 = i;
 					break;
@@ -796,13 +805,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			int horizon = atoi(temp[5].c_str());
 
 			Alignment alignment_const;
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					alignment_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					alignment_const.blockid2 = i;
 					break;
@@ -821,13 +830,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			Abument abument_const;
 			
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					abument_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					abument_const.blockid2 = i;
 					break;
@@ -845,13 +854,13 @@ void design::readRandConstFile(string random_constrain_file) {
 			
 			MatchBlock match_const;
 			
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_first)==0) {
 					match_const.blockid1 = i;
 					break;
 				}
 			}
-			for(int i=0;i<(int)Blocks.size();++i) {
+			for(unsigned int i=0;i<Blocks.size();++i) {
 				if(Blocks.at(i).back().name.compare(block_second)==0) {
 					match_const.blockid2 = i;
 					break;
@@ -1244,10 +1253,10 @@ void design::PrintDesign() {
   PrintNets();
   PrintConstraints();
   PrintSymmGroup();
-  for(int i=0;i<(int)SNets.size();++i) {
+  for(unsigned int i=0;i<SNets.size();++i) {
     std::cout<<"Symmetry net "<<i<<" SBidx "<<SNets.at(i).SBidx<<std::endl;
   }
-  for(int i=0;i<(int)Port_Location.size();++i) {
+  for(unsigned int i=0;i<Port_Location.size();++i) {
     std::cout<<"Port location "<<Port_Location.at(i).tid<<" @ "<<Port_Location.at(i).pos<<std::endl; 
   }
 }
@@ -1547,37 +1556,33 @@ PnRDB::point design::GetPlacedBlockInterMetalRelPoint(int blockid, placerDB::Oma
 }
 
 PnRDB::bbox design::GetPlacedBlockInterMetalRelBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, int sel) {
-  PnRDB::bbox placedBox;
+
+  const auto& blk = Blocks.at(blockid).at(sel);
+
+  vector<PnRDB::point> points;
+  points.push_back( GetPlacedPnRPosition( originBox.LL, blk.width, blk.height, ort));
+  points.push_back( GetPlacedPnRPosition( originBox.UR, blk.width, blk.height, ort));
+  
   int x=INT_MAX; int X=INT_MIN;
   int y=INT_MAX; int Y=INT_MIN;
-  for(int i=0;i<(int)originBox.polygon.size();++i) {
-    placedBox.polygon.push_back( GetPlacedPnRPosition(originBox.polygon.at(i), Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
+
+  for(unsigned int i=0;i<points.size();++i) {
+    if(x>points[i].x) {x=points[i].x;}
+    if(X<points[i].x) {X=points[i].x;}
+    if(y>points[i].y) {y=points[i].y;}
+    if(Y<points[i].y) {Y=points[i].y;}
   }
-  for(int i=0;i<(int)placedBox.polygon.size();++i) {
-    if(x>placedBox.polygon.at(i).x) {x=placedBox.polygon.at(i).x;}
-    if(X<placedBox.polygon.at(i).x) {X=placedBox.polygon.at(i).x;}
-    if(y>placedBox.polygon.at(i).y) {y=placedBox.polygon.at(i).y;}
-    if(Y<placedBox.polygon.at(i).y) {Y=placedBox.polygon.at(i).y;}
-  }
+
+  PnRDB::bbox placedBox;
   placedBox.LL.x=x; placedBox.LL.y=y;
-  placedBox.LR.x=X; placedBox.LR.y=y;
   placedBox.UR.x=X; placedBox.UR.y=Y;
-  placedBox.UL.x=x; placedBox.UL.y=Y;
   return placedBox;
 }
 
 PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark ort, PnRDB::bbox& originBox, placerDB::point LL, int sel) {
   PnRDB::bbox placedBox=GetPlacedBlockInterMetalRelBox(blockid, ort, originBox, sel);
-  for(int i=0;i<(int)placedBox.polygon.size();++i) {
-    placedBox.polygon.at(i).x+=LL.x;
-    placedBox.polygon.at(i).y+=LL.y;
-  }
   placedBox.LL.x+=LL.x;
   placedBox.LL.y+=LL.y;
-  placedBox.UL.x+=LL.x;
-  placedBox.UL.y+=LL.y;
-  placedBox.LR.x+=LL.x;
-  placedBox.LR.y+=LL.y;
   placedBox.UR.x+=LL.x;
   placedBox.UR.y+=LL.y;
   return placedBox;
@@ -1602,9 +1607,9 @@ string design::GetTerminalName(int termid) {
 vector<pair<int,int> > design::checkSympairInSymmBlock(vector<placerDB::SymmBlock>& SBs, vector< pair<int,int> >& Tsympair) {
   vector<pair<int,int> > pp;
   //vector<int> first; vector<int> second; bool mark=false;
-  for(int j=0; j<(int)SBs.size(); ++j ) {
+  for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,int> >::iterator pi=SBs.at(j).sympair.begin(); pi!=SBs.at(j).sympair.end(); ++pi) {
-      for( int i=0; i<(int)Tsympair.size(); ++i ) {
+      for( unsigned int i=0; i<Tsympair.size(); ++i ) {
         if( pi->first==Tsympair.at(i).first and pi->second==Tsympair.at(i).second ) {
           pp.push_back(make_pair(j,i));
         }
@@ -1618,9 +1623,9 @@ vector<pair<int,int> > design::checkSympairInSymmBlock(vector<placerDB::SymmBloc
 vector<pair<int,int> > design::checkSelfsymInSymmBlock(vector<placerDB::SymmBlock>& SBs, vector< pair<int,placerDB::Smark> >& Tselfsym) {
   vector<pair<int,int> > pp;
   //int first=-1; int second=-1; bool mark=false;
-  for(int j=0; j<(int)SBs.size(); ++j ) {
+  for(unsigned int j=0; j<SBs.size(); ++j ) {
     for(vector< pair<int,placerDB::Smark> >::iterator pi=SBs.at(j).selfsym.begin(); pi!=SBs.at(j).selfsym.end(); ++pi) {
-      for( int i=0; i<(int)Tselfsym.size(); ++i ) {
+      for( unsigned int i=0; i<Tselfsym.size(); ++i ) {
         if( pi->first==Tselfsym.at(i).first and pi->second==Tselfsym.at(i).second ) { 
           pp.push_back(make_pair(j,i));
         }
@@ -1663,7 +1668,7 @@ void design::constructSymmGroup() {
   for(vector<SymmNet>::iterator sni=SNets.begin(); sni!=SNets.end(); ++sni) {
     tmpsympair.clear(); tmpselfsym.clear();
     //cout<<sni->net1.name<<" vs "<<sni->net2.name<<endl;
-    for(int i=0;i<(int)(sni->net1).connected.size();++i) {
+    for(unsigned int i=0;i<sni->net1.connected.size();++i) {
       //std::cout<<"type "<<sni->net1.connected.at(i).type<<" vs "<<sni->net2.connected.at(i).type<<std::endl;
       if(sni->net1.connected.at(i).type!=sni->net2.connected.at(i).type) {
         cout<<"Placer-Warning: different object type found in symmetric nets! Skip those objects..."<<endl; continue;
@@ -1696,10 +1701,10 @@ void design::constructSymmGroup() {
         tmpsympair.push_back(tpair);
       }
     }
-    for(int i=0;i<(int)tmpsympair.size();++i) {
+    for(unsigned int i=0;i<tmpsympair.size();++i) {
       cout<<"paired-symmectric: "<<tmpsympair.at(i).first<<","<<tmpsympair.at(i).second<<endl;
     }
-    for(int i=0;i<(int)tmpselfsym.size();++i) {
+    for(unsigned int i=0;i<tmpselfsym.size();++i) {
       cout<<"self-symmectric: "<<tmpselfsym.at(i).first<<","<<tmpselfsym.at(i).second<<endl;
     }
     int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets);
@@ -1805,17 +1810,17 @@ void design::constructSymmGroup() {
     SBlocks.back().selfsym=it->selfsym;
     SBlocks.back().dnode=dnidx++;
   }
-  for(int i=0;i<(int)SBlocks.size(); ++i) {
+  for(unsigned int i=0;i<SBlocks.size(); ++i) {
     for(vector< pair<int,int> >::iterator pit=SBlocks[i].sympair.begin(); pit!=SBlocks[i].sympair.end(); ++pit) {
       if(pit->first<(int)Blocks.size()) {
-        for(int w=0;w<Blocks.at(pit->first).size();++w) {
+        for(unsigned int w=0;w<Blocks.at(pit->first).size();++w) {
           Blocks.at(pit->first).at(w).SBidx=i; Blocks.at(pit->first).at(w).counterpart=pit->second;  
         }
       } else {
         Terminals.at(pit->first-Blocks.size()).SBidx=i; Terminals.at(pit->first-Blocks.size()).counterpart=pit->second-Blocks.size();
       }
       if(pit->second<(int)Blocks.size()) {
-        for(int w=0;w<Blocks.at(pit->second).size();++w) {
+        for(unsigned int w=0;w<Blocks.at(pit->second).size();++w) {
           Blocks.at(pit->second).at(w).SBidx=i; Blocks.at(pit->second).at(w).counterpart=pit->first;  
         }
       } else {
@@ -1824,7 +1829,7 @@ void design::constructSymmGroup() {
     }
     for(vector< pair<int,placerDB::Smark> >::iterator sit=SBlocks[i].selfsym.begin(); sit!=SBlocks[i].selfsym.end(); ++sit) {
       if(sit->first<(int)Blocks.size()) {
-        for(int w=0;w<Blocks.at(sit->first).size();++w) {
+        for(unsigned int w=0;w<Blocks.at(sit->first).size();++w) {
           Blocks.at(sit->first).at(w).SBidx=i; Blocks.at(sit->first).at(w).counterpart=sit->first;  
         }
       } else {
@@ -1863,11 +1868,11 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
-      for(int i=0;i<(int)tmpsympair.size();++i) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
-      for(int i=0;i<(int)tmpselfsym.size();++i) {
+      for(unsigned int i=0;i<tmpsympair.size();++i) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
+      for(unsigned int i=0;i<tmpselfsym.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
-          if(i==mit->second) {found=true;break;}
+          if((int)i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
       }
@@ -1889,14 +1894,14 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         }
       }
       cout<<"Append symmetric group #"<<gidx<<endl;
-      for(int i=0;i<(int)tmpsympair.size();++i) { 
+      for(unsigned int i=0;i<tmpsympair.size();++i) { 
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
-          if(i==mit->second) {found=true;break;}
+          if((int)i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
-      for(int i=0;i<(int)tmpselfsym.size();++i) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
+      for(unsigned int i=0;i<tmpselfsym.size();++i) { SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); }
       sbidx=gidx;
     } else { // both matched
       int gidx=matchedSelf[0].first;
@@ -1924,17 +1929,17 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           }
         }
       }
-      for(int i=0;i<(int)tmpselfsym.size();++i) {
+      for(unsigned int i=0;i<tmpselfsym.size();++i) {
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedSelf.begin();mit!=matchedSelf.end();++mit) {
-          if(i==mit->second) {found=true;break;}
+          if((int)i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).selfsym.push_back( tmpselfsym.at(i) ); 
       }
-      for(int i=0;i<(int)tmpsympair.size();++i) { 
+      for(unsigned int i=0;i<tmpsympair.size();++i) { 
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
-          if(i==mit->second) {found=true;break;}
+          if((int)i==mit->second) {found=true;break;}
         }
         if(!found) SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); 
       }
@@ -1944,7 +1949,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
   return sbidx;
 }
 
-int design::GetBlockSymmGroup(int blockid) {
+int design::GetBlockSymmGroup(int blockid) const {
   return Blocks.at(blockid).back().SBidx;
 }
 
@@ -2011,7 +2016,7 @@ placerDB::point design::GetTerminalCenter(int teridx) {
 
 bool design::checkSymmetricBlockExist() {
   bool mark=false;
-  for(int i=0;i<(int)Blocks.size();++i) {
+  for(unsigned int i=0;i<Blocks.size();++i) {
     if (Blocks.at(i).back().SBidx!=-1) {mark=true; break;}
   }
   return mark;
@@ -2020,7 +2025,7 @@ bool design::checkSymmetricBlockExist() {
 bool design::checkAsymmetricBlockExist() {
   bool mark=false;
   //std::cout<<"check asym\n";
-  for(int i=0;i<(int)Blocks.size();++i) {
+  for(unsigned int i=0;i<Blocks.size();++i) {
     //std::cout<<Blocks.at(i).back().SBidx<<std::endl;
     if (Blocks.at(i).back().SBidx==-1) {mark=true; break;}
   }
@@ -2049,7 +2054,7 @@ int design::CheckCommonSymmGroup(design& reducedNL, placerDB::SymmBlock& reduced
 }
 
 int design::GetMappedBlockIdx(int idx) {
-  if(idx>=0 and idx<Blocks.size()) {
+  if(idx>=0 and idx<(int)Blocks.size()) {
     return Blocks.at(idx).back().mapIdx;
   } else {
     return -1;
@@ -2057,7 +2062,7 @@ int design::GetMappedBlockIdx(int idx) {
 }
 
 int design::GetMappedSymmBlockIdx(int idx) {
-  if(idx>=0 and idx<SBlocks.size()) {
+  if(idx>=0 and idx<(int)SBlocks.size()) {
     return SBlocks.at(idx).mapIdx;
   } else {
     return -1;
@@ -2066,7 +2071,7 @@ int design::GetMappedSymmBlockIdx(int idx) {
 
 void design::ResetBlockMapIdx() {
   for(std::vector<std::vector<block> >::iterator it=this->Blocks.begin(); it!=this->Blocks.end(); ++it) {
-    for(int w=0;w<it->size();++w) {
+    for(unsigned int w=0;w<it->size();++w) {
       it->at(w).mapIdx=-1;
     }
   }
@@ -2113,7 +2118,7 @@ std::vector<placerDB::SymmBlock> design::SplitSymmBlock(design& reducedNL, int o
 
 std::set<int> design::GetUnmappedBlocks() {
   std::set<int> unmap;
-  for(int i=0;i<(int)this->Blocks.size();i++) {
+  for(unsigned int i=0;i<this->Blocks.size();i++) {
     if(this->Blocks.at(i).back().mapIdx==-1) {unmap.insert(i);}
   }
   return unmap;
@@ -2121,7 +2126,7 @@ std::set<int> design::GetUnmappedBlocks() {
 
 int design::GetBlockMargin(int i, int j) {
   int margin=0;
-  for(int a=0;a<(int)this->Blocks.at(i).back().blockPins.size();a++) {
+  for(unsigned int a=0;a<this->Blocks.at(i).back().blockPins.size();a++) {
     int inet=this->Blocks.at(i).back().blockPins.at(a).netIter;
     if(inet==-1) {continue;}
     for(vector<placerDB::Node>::iterator it=this->Nets.at(inet).connected.begin(); it!=this->Nets.at(inet).connected.end(); ++it) {
@@ -2134,6 +2139,6 @@ int design::GetBlockMargin(int i, int j) {
 }
 
 int design::GetBlockSymmGroupDnode(int i) {
-  if(i<0 or i>=SBlocks.size()) {return -1;}
+  if(i<0 or i>=(int)SBlocks.size()) {return -1;}
   return SBlocks.at(i).dnode;
 }

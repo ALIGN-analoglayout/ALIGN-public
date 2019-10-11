@@ -9,9 +9,9 @@ void GlobalGrid::CreateGridDataCap(){
   std::ofstream matlabfile;
   matlabfile.open("GlobalGrid_Cap.txt");
 
-  for(int i=0;i<tiles_total.size();i++){
+  for(unsigned int i=0;i<tiles_total.size();i++){
 
-      for(int j=0;j<tiles_total[i].north.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].north.size();j++){
 
            if(tiles_total[i].north[j].capacity>0){    
                
@@ -34,7 +34,7 @@ void GlobalGrid::CreateGridDataCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].south.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].south.size();j++){
 
            if(tiles_total[i].south[j].capacity>0){    
                
@@ -57,7 +57,7 @@ void GlobalGrid::CreateGridDataCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].east.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].east.size();j++){
 
            if(tiles_total[i].east[j].capacity>0){    
                
@@ -81,7 +81,7 @@ void GlobalGrid::CreateGridDataCap(){
           }
 
 
-      for(int j=0;j<tiles_total[i].west.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].west.size();j++){
 
            if(tiles_total[i].west[j].capacity>0){    
                
@@ -105,7 +105,7 @@ void GlobalGrid::CreateGridDataCap(){
           }
 
 
-      for(int j=0;j<tiles_total[i].down.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].down.size();j++){
 
            if(tiles_total[i].down[j].capacity>0){    
                
@@ -128,7 +128,7 @@ void GlobalGrid::CreateGridDataCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].up.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].up.size();j++){
 
            if(tiles_total[i].up[j].capacity>0){    
                
@@ -163,9 +163,9 @@ void GlobalGrid::CreateGridDataNCap(){
   std::ofstream matlabfile;
   matlabfile.open("GlobalGrid_NCap.txt");
 
-  for(int i=0;i<tiles_total.size();i++){
+  for(unsigned int i=0;i<tiles_total.size();i++){
 
-      for(int j=0;j<tiles_total[i].north.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].north.size();j++){
 
            if(1){    
                
@@ -188,7 +188,7 @@ void GlobalGrid::CreateGridDataNCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].south.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].south.size();j++){
 
            if(1){    
                
@@ -211,7 +211,7 @@ void GlobalGrid::CreateGridDataNCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].east.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].east.size();j++){
 
            if(1){    
                
@@ -235,7 +235,7 @@ void GlobalGrid::CreateGridDataNCap(){
           }
 
 
-      for(int j=0;j<tiles_total[i].west.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].west.size();j++){
 
            if(1){    
                
@@ -259,7 +259,7 @@ void GlobalGrid::CreateGridDataNCap(){
           }
 
 
-      for(int j=0;j<tiles_total[i].down.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].down.size();j++){
 
            if(1){    
                
@@ -282,7 +282,7 @@ void GlobalGrid::CreateGridDataNCap(){
              }
           }
 
-      for(int j=0;j<tiles_total[i].up.size();j++){
+      for(unsigned int j=0;j<tiles_total[i].up.size();j++){
 
            if(1){    
                
@@ -312,7 +312,7 @@ void GlobalGrid::CreateGridDataNCap(){
 
 }
 
-GlobalGrid::GlobalGrid(const GlobalGrid& other):x_unit(other.x_unit), y_unit(other.y_unit), metal2tile(other.metal2tile), tile2metal(other.tile2metal), Start_index(other.Start_index), End_index(other.End_index), tiles_total(other.tiles_total), drc_info(other.drc_info), layerNo(other.layerNo), metalLayerNo(other.metalLayerNo), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), LL(other.LL), UR(other.UR), XYmap(other.XYmap), YXmap(other.YXmap), XYSet(other.XYSet), YXSet(other.YXSet), maxXidx(other.maxXidx), maxYidx(other.maxYidx) {
+GlobalGrid::GlobalGrid(const GlobalGrid& other):x_unit(other.x_unit), y_unit(other.y_unit), metal2tile(other.metal2tile), tile2metal(other.tile2metal), Start_index(other.Start_index), End_index(other.End_index), tiles_total(other.tiles_total), drc_info(other.drc_info), layerNo(other.layerNo), metalLayerNo(other.metalLayerNo), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), maxXidx(other.maxXidx), maxYidx(other.maxYidx), LL(other.LL), UR(other.UR), XYmap(other.XYmap), YXmap(other.YXmap), XYSet(other.XYSet), YXSet(other.YXSet) {
    ////this->x_unit         =other.x_unit;
    //this->y_unit         =other.y_unit;
    //this->metal2tile     =other.metal2tile;
@@ -354,9 +354,9 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, 
   std::cout<<"width "<<URx<<" height "<<URy<<std::endl;
   if(drc_info.Metal_info.at(Lmetal).direct==0) { //vertical
     this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
-    this->y_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
+    this->y_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_y*scale;
   } else { // horizontal
-    this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_y*scale;
+    this->x_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_x*scale;
     this->y_unit=drc_info.Metal_info.at(Lmetal).grid_unit_y*scale;
   }
   // 1. Create tiles
@@ -604,7 +604,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
       RouterDB::point LL,UL,UR,LR;
       LL.x=LLx; LL.y=LLy; UL.x=LLx; UL.y=URy;
       UR.x=URx; UR.y=URy; LR.x=URx; LR.y=LLy;
-      for(int j=0;j<(int)this->tiles_total.at(i).metal.size();++j) {
+      for(unsigned int j=0;j<this->tiles_total.at(i).metal.size();++j) {
         int mIdx=this->tiles_total.at(i).metal.at(j);
         std::cout<<"\t check metal "<<j<<"@"<<mIdx<<" {"<<LLx<<","<< LLy<<"} {"<< URx<<"," <<URy<<"}"<<std::endl;
         int capR;
@@ -834,7 +834,7 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
     for(std::set<int>::iterator tit=tSet.begin(); tit!=tSet.end(); ++tit) {
       nit->terminals.push_back(*tit);
     }
-    for(int i=0;i<nit->terminals.size();i++){
+    for(unsigned int i=0;i<nit->terminals.size();i++){
 
         std::cout<<"terminal tile index"<< nit->terminals[i]<<"center ( "<<tiles_total[nit->terminals[i]].x<<" "<<tiles_total[nit->terminals[i]].y<<std::endl;
        

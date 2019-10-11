@@ -8,3 +8,15 @@ router/FastSteinerUM/*.o
 router/FastSteinerUM/*.a
 router/FastSteinerUM/gen
 router/FastSteinerUM/steiner
+*.gcno
+*.gcda
+unit_tests
+coverage-reports/
+coverage.info
+coverage.out
+junit.xml
+*.a
+.depend
+__json
+*-A.json
+*-B.json

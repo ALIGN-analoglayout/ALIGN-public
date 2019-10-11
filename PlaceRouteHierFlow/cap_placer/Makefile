@@ -1,17 +1,20 @@
-SOURCE_LP = ../lpsolve/lp_solve_5.5
+# Need CXX and CXXFLAGS
 
-CC=g++ -w -Wall -std=c++11 -g -pthread -I$(SOURCE_LP)
-#CC=g++ -w -Wall -std=c++11 -g -DRFLAG
+OBJS=capplacer.o
+SRCS=$(OBJS:.o=.cpp)
 
-# JSON place can be over-ridden:  nlohmann/json
-JSON?=/opt/json
-SOURCE=./
-OBJECTS=main.o capplacer.o
+all: depend unit_tests cap_placer.a
 
-all: capplacer.o 
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
-capplacer.o :	capplacer.cpp capplacer.h
-		$(CC) -c capplacer.cpp -I$(JSON)/include
+-include .depend
+
+unit_tests: unit_tests.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
+
+cap_placer.a: $(OBJS)
+	ar -r -o $@ $^
 
 clean:		
-		/bin/rm -f *.o 
+	/bin/rm -f *.o unit_tests

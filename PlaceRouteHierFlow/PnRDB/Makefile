@@ -1,19 +1,20 @@
-#CC=g++ -g -w -Wall -std=c++11
-CC=g++ -g -w -Wall -std=c++11 -DHFLAG
-#CC=g++ -w -Wall -std=c++11 -g -DRFLAG
+# Need CXX, and CXXFLAGS to be defined
 
-# JSON place can be over-ridden:  nlohmann/json
-JSON?=/opt/json
-SOURCE=./
-OBJECTS=readfile.o PnRdatabase.o main.o
+OBJS=readfile.o PnRdatabase.o ReadDesignRule.o ReadDesignRuleJson.o HardDesignRule.o WriteJSON.o ReadVerilog.o ReadConstraint.o Print.o ReadLEF.o PnRDBJSON.o
+SRCS=$(OBJS:.o=.cpp)
 
-all: readfile.o PnRdatabase.o
+all: depend unit_tests PnRDB.a
 
-readfile.o :    readfile.cpp readfile.h
-		$(CC) -c readfile.cpp 
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
-PnRdatabase.o:	PnRdatabase.cpp PnRdatabase.h readfile.h datatype.h
-		$(CC) -c PnRdatabase.cpp -I$(JSON)/include
+-include .depend
+
+unit_tests: unit_tests.o PnRDB.a
+	$(CXX) $(CXXFLAGS) -o $@ -Wl,--whole-archive $^ -Wl,--no-whole-archive -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
+
+PnRDB.a: $(OBJS)
+	ar -r -o $@ $^
 
 clean:		
-		/bin/rm -f *.o tester
+	/bin/rm -f *.o *.a unit_tests .depend

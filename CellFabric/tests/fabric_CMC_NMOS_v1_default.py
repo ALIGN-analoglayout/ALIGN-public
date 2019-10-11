@@ -10,7 +10,7 @@ from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 class CanvasNMOS(DefaultCanvas):
 
     def __init__( self, fin_u, fin, finDummy, gate, gateDummy):
-        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+        p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
         super().__init__(p)
         assert   3*p['Fin']['Pitch'] < 2*p['M2']['Pitch']
 

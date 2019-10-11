@@ -20,6 +20,7 @@
 #include <utility>//std::pair, make_pair
 #include "Grid.h"
 #include "Graph.h"
+#include "A_star.h"
 #include "GlobalGrid.h"
 #include "GlobalGraph.h"
 #include "RawRouter.h"
@@ -124,7 +125,11 @@ class GcellDetailRouter : public GcellGlobalRouter{
     int Tile_Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB::SinkData &sym_temp_contact);
     void CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell);
     void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
-
+    std::vector<std::pair<int,int> > MappingToConnected(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
+    void GatherSourceDest(std::vector<std::pair<int,int> > & global_path, std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> & Tile_Source, std::vector<int> & Tile_Dest);
+    std::vector<int> EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
+    int Estimate_multi_connection_number(RouterDB::R_const &temp_R, std::vector<int> &temp_dis);
+    
 };
 
 #endif

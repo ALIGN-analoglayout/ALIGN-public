@@ -45,7 +45,7 @@ vector<string> readfile_words(string filename){
 	while(!fin.eof()){
 		getline(fin,line);
 		int recording=0;
-		for(int i=0;i<line.length();i++){
+		for(unsigned int i=0;i<line.length();i++){
 			if(line[i]!=' '&&line[i]!='\n'){
 				if(recording==0){
 					output.push_back("");
@@ -83,8 +83,8 @@ vector<string> split_by_spaces_yg(string text){
 }
 vector<string> get_true_word(int start,string text,int textnum,char endflag,int *p){
 	vector<string> output;
-	int i,recording;//,record_num=0;
-	recording=0;
+	unsigned int i;
+	bool recording=0;
 	if(textnum>0){
                 int record_num=0;
 		for(i=start;i<text.length();i++){
@@ -126,7 +126,7 @@ string get_word(string text, char startflag, char endflag){
 	string output;
 	int start=0;
 	int end=0;
-	for(int i=0;i<text.length();i++){
+	for(unsigned int i=0;i<text.length();i++){
 		if(text[i]==startflag){
 			start=i;
 			continue;

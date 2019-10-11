@@ -1,6 +1,6 @@
 FROM ubuntu:18.04 as curl
 
-RUN apt-get update && apt-get install -yq curl && apt-get clean
+RUN apt-get update && apt-get install -yq curl && vim git apt-get clean
 
 FROM curl as klayout1
 

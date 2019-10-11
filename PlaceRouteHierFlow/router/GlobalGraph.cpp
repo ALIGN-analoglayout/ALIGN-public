@@ -66,14 +66,14 @@ void GlobalGraph::UpdateEdgeWeight(std::vector<std::pair<int,int> > temp_path){
 
    int times = 2;
 
-   for(int i=0;i<temp_path.size();i++){
-        for(int j=0;j<graph[temp_path[i].first].list.size();j++){
+   for(unsigned int i=0;i<temp_path.size();i++){
+        for(unsigned int j=0;j<graph[temp_path[i].first].list.size();j++){
              if(graph[temp_path[i].first].list[j].dest == temp_path[i].second){
                   graph[temp_path[i].first].list[j].weight = graph[temp_path[i].first].list[j].weight*times;
                }
            }
 
-        for(int j=0;j<graph[temp_path[i].second].list.size();j++){
+        for(unsigned int j=0;j<graph[temp_path[i].second].list.size();j++){
              if(graph[temp_path[i].second].list[j].dest == temp_path[i].first){
                   graph[temp_path[i].second].list[j].weight = graph[temp_path[i].second].list[j].weight*times;
                }
@@ -84,8 +84,8 @@ void GlobalGraph::UpdateEdgeWeight(std::vector<std::pair<int,int> > temp_path){
 
 void GlobalGraph::refreshWeight(GlobalGrid &grid){
 
- for(int i=0;i<graph.size()-2;i++){
-      for(int j=0;j<graph[i].list.size();j++){
+ for(unsigned int i=0;i<graph.size()-2;i++){
+      for(unsigned int j=0;j<graph[i].list.size();j++){
            graph[i].list[j].weight =(double) abs(grid.tiles_total[graph[i].src].x - grid.tiles_total[graph[i].list[j].dest].x)+abs(grid.tiles_total[graph[i].src].y - grid.tiles_total[graph[i].list[j].dest].y);
           }
     }
@@ -140,9 +140,9 @@ void GlobalGraph::AddStinerNodeToTerminals(std::vector<int> &Pontential_Stiner_n
 
   std::vector<int> Potential_node;
 
-  for(int i = 0;i<Pontential_Stiner_node.size();i++){
+  for(unsigned int i = 0;i<Pontential_Stiner_node.size();i++){
        
-      if(i==index){
+    if((int)i==index){
          
          std::vector<int> temp_pin;
          temp_pin.push_back(Pontential_Stiner_node[i]);
@@ -225,7 +225,7 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
 
   int Last_WireLength = INT_MAX; 
 
-  for(int i=0;i<Pontential_Stiner_node.size();i++){
+  for(unsigned int i=0;i<Pontential_Stiner_node.size();i++){
       
       std::vector<int> temp_pin;
       temp_pin.push_back(Pontential_Stiner_node[i]);
@@ -255,17 +255,17 @@ void GlobalGraph::InitialSrcDest(std::vector<int> & temp_src, std::vector<int> &
   std::set<int> src_set;
   std::set<int> dest_set;
 
-  for(int i=0;i<Pin_terminals.size();i++){
+  for(unsigned int i=0;i<Pin_terminals.size();i++){
       //for(int j=0;j<Pin_terminals[i].size();j++){
 
      if(i==0){
-        for(int j=0;j<Pin_terminals[i].size();j++){
+        for(unsigned int j=0;j<Pin_terminals[i].size();j++){
             src_set.insert(Pin_terminals[i][j]);
            }
         pin_access.push_back(1);
         //pin_access.push_back(0);
        }else{
-        for(int j=0;j<Pin_terminals[i].size();j++){
+        for(unsigned int j=0;j<Pin_terminals[i].size();j++){
             dest_set.insert(Pin_terminals[i][j]);
            }
         pin_access.push_back(0);
@@ -298,9 +298,9 @@ void GlobalGraph::InitialSrcDest(std::vector<int> & temp_src, std::vector<int> &
 void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> temp_single_path, std::vector<int> &pin_access){
 
   std::cout<<"Test1"<<std::endl;
-  for(int i=0;i<temp_single_path.size();i++){
-        for(int j=0;j<Pin_terminals.size();j++){
-             for(int k=0;k<Pin_terminals[j].size();k++){
+  for(unsigned int i=0;i<temp_single_path.size();i++){
+        for(unsigned int j=0;j<Pin_terminals.size();j++){
+             for(unsigned int k=0;k<Pin_terminals[j].size();k++){
                   if(temp_single_path[i]==Pin_terminals[j][k]){
                       pin_access[j]=1;
                     }
@@ -318,19 +318,19 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
   std::cout<<"pin_access size "<<pin_access.size()<<std::endl;
   std::cout<<"Pin_terminals size "<<Pin_terminals.size()<<std::endl;
 
-  for(int i=0;i<pin_access.size();i++){
+  for(unsigned int i=0;i<pin_access.size();i++){
       if(pin_access[i]==1){
-         for(int j=0;j<Pin_terminals[i].size();j++){
+         for(unsigned int j=0;j<Pin_terminals[i].size();j++){
              src_set.insert(Pin_terminals[i][j]);
             }
         }else{
-         for(int j=0;j<Pin_terminals[i].size();j++){
+         for(unsigned int j=0;j<Pin_terminals[i].size();j++){
              dest_set.insert(Pin_terminals[i][j]);
             }
         }
      }
   std::cout<<"Test3"<<std::endl;
-  for(int i=0;i<temp_single_path.size();i++){
+  for(unsigned int i=0;i<temp_single_path.size();i++){
      src_set.insert(temp_single_path[i]);
      }
 
@@ -386,18 +386,18 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
          //std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
          std::vector<int> src_set = temp_src;
          std::cout<<"temp_src size "<<temp_src.size()<<std::endl;
-         for(int p=0;p<temp_src.size();p++){std::cout<<temp_src[p];}
+         for(unsigned int p=0;p<temp_src.size();p++){std::cout<<temp_src[p];}
          std::cout<<std::endl;
          std::vector<int> dest_set = temp_dest;
          std::cout<<"temp_dest size "<<temp_dest.size()<<std::endl;
-         for(int p=0;p<temp_dest.size();p++){std::cout<<temp_dest[p];}
+         for(unsigned int p=0;p<temp_dest.size();p++){std::cout<<temp_dest[p];}
          std::cout<<std::endl;
          std::cout<<"start setting src and dest"<<std::endl;
          SetSrcDest(src_set, dest_set);
          std::cout<<"End setting src and dest"<<std::endl;
          std::vector<int> temp_single_path = dijkstra(grid);
          std::cout<<"temp_single_path size "<<temp_single_path.size()<<std::endl;
-         for(int p=0;p<temp_single_path.size();p++){std::cout<<temp_single_path[p];}
+         for(unsigned int p=0;p<temp_single_path.size();p++){std::cout<<temp_single_path[p];}
          std::cout<<std::endl;
          std::cout<<"End dijkstra"<<std::endl;
          MST_path.push_back(temp_single_path);
@@ -418,11 +418,11 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
 int GlobalGraph::Calculate_Weigt(std::vector<std::vector<int> > temp_path){
 
    int sum = 0;
-   for(int i=0;i<temp_path.size();i++){
+   for(unsigned int i=0;i<temp_path.size();i++){
        
-        for(int j=0;j<temp_path[i].size()-1;j++){
+        for(unsigned int j=0;j<temp_path[i].size()-1;j++){
            
-             for(int k=0;k<graph[temp_path[i][j]].list.size();k++){
+             for(unsigned int k=0;k<graph[temp_path[i][j]].list.size();k++){
                  
                  if(graph[temp_path[i][j]].list[k].dest == temp_path[i][j+1]){
                      sum = sum + graph[temp_path[i][j]].list[k].weight;
@@ -444,7 +444,7 @@ std::vector<std::pair<int,int> > GlobalGraph::Get_MST_Edges(std::vector<std::vec
    std::vector<std::pair<int,int> > temp_MST_Edges;
    std::pair<int,int> temp_Edge;
    
-   for(int i=0;i<temp_path.size();i++){
+   for(unsigned int i=0;i<temp_path.size();i++){
 
         if(temp_path[i].size()==1){
         
@@ -454,7 +454,7 @@ std::vector<std::pair<int,int> > GlobalGraph::Get_MST_Edges(std::vector<std::vec
 
         }     
        
-        for(int j=0;j<temp_path[i].size()-1;j++){
+        for(int j=0;j<(int)temp_path[i].size()-1;j++){
            
              temp_Edge.first = temp_path[i][j];
              temp_Edge.second = temp_path[i][j+1];
@@ -472,13 +472,13 @@ std::vector<std::pair<int,int> > GlobalGraph::Get_MST_Edges(std::vector<std::vec
 void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
 
 
-  for(int i=0;i<grid.tiles_total.size();i++){
+  for(unsigned int i=0;i<grid.tiles_total.size();i++){
       
         Node tempNode;
         tempNode.src=i;
         Edge tempEdge;
 
-        for(int j=0;j<grid.tiles_total[i].north.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].north.size();j++){
 
            std::cout<<"Grid capacity north"<<grid.tiles_total[i].north[j].capacity<<std::endl;
 
@@ -492,7 +492,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
                }           
            }
 
-        for(int j=0;j<grid.tiles_total[i].south.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].south.size();j++){
 
             std::cout<<"Grid capacity south"<<grid.tiles_total[i].south[j].capacity<<std::endl;
 
@@ -506,7 +506,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
                }           
            }
 
-        for(int j=0;j<grid.tiles_total[i].east.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].east.size();j++){
 
             std::cout<<"Grid capacity east"<<grid.tiles_total[i].east[j].capacity<<std::endl;
 
@@ -520,7 +520,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
                }           
            }
 
-        for(int j=0;j<grid.tiles_total[i].west.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].west.size();j++){
 
             std::cout<<"Grid capacity west"<<grid.tiles_total[i].west[j].capacity<<std::endl;
 
@@ -534,7 +534,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
                }           
            }
 
-        for(int j=0;j<grid.tiles_total[i].up.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].up.size();j++){
 
             std::cout<<"Grid capacity up"<<grid.tiles_total[i].up[j].capacity<<std::endl;
 
@@ -548,7 +548,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
                }           
            }
 
-        for(int j=0;j<grid.tiles_total[i].down.size();j++){
+        for(unsigned int j=0;j<grid.tiles_total[i].down.size();j++){
 
             std::cout<<"Grid capacity down"<<grid.tiles_total[i].down[j].capacity<<std::endl;
 
@@ -585,7 +585,7 @@ void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
 void GlobalGraph::SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest){
 
     std::cout<<"Start Set Src"<<std::endl;
-    for(int i=0;i<temp_src.size();++i)
+    for(unsigned int i=0;i<temp_src.size();++i)
      {
         //if(temp_src[i]<graph.size()-1){
         Edge tempEdge;
@@ -600,7 +600,7 @@ void GlobalGraph::SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_de
     std::cout<<"End Set Src"<<std::endl;
 
     std::cout<<"Start Set Dest"<<std::endl;
-    for(int i=0;i<temp_dest.size();++i)
+    for(unsigned int i=0;i<temp_dest.size();++i)
      {
         //if(temp_dest[i]<graph.size()-1){
         Edge tempEdge;
@@ -626,7 +626,7 @@ void GlobalGraph::RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_des
     graph[source].list.clear();
     graph[dest].list.clear();
 
-    for(int i=0;i<temp_src.size();++i)
+    for(unsigned int i=0;i<temp_src.size();++i)
      {   
         //if(temp_src[i]<graph.size()-1){
         graph[temp_src[i]].list.pop_back();
@@ -634,7 +634,7 @@ void GlobalGraph::RMSrcDest(std::vector<int> temp_src, std::vector<int> temp_des
         //std::cout<<"graph S "<<grid.vertices_graph[graph_index].x<<" "<<grid.vertices_graph[graph_index].y<<std::endl;
      }
 
-    for(int i=0;i<temp_dest.size();++i)
+    for(unsigned int i=0;i<temp_dest.size();++i)
      {
         //if(temp_dest[i]<graph.size()-1){
         graph[temp_dest[i]].list.pop_back();
@@ -702,7 +702,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
 
   std::multimap<double, int> distMap;
     
-  for(int i = 0; i < graph.size(); ++i)
+  for(unsigned int i = 0; i < graph.size(); ++i)
      {
         parent[i] = -1;
         dist[i] = INT_MAX;
@@ -717,7 +717,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-  while(status[dest]!=2 and count<graph.size()-1)
+  while(status[dest]!=2 and count<(int)graph.size()-1)
        {
           std::vector<int> ulist = minDistancefromMultiMap (distMap);
           //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
@@ -727,7 +727,7 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
           //std::cout<<"check u: "<<u<<" x: "<<grid.vertices_graph[u].x<<" y: "<<grid.vertices_graph[u].y <<std::endl;
           status[u] = 2;
           
-          for (int j = 0; j < graph[u].list.size(); ++j)
+          for (unsigned int j = 0; j < graph[u].list.size(); ++j)
               {
                  v=graph[u].list[j].dest;
                  if(v!=u)

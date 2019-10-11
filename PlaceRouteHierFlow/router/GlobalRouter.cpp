@@ -1,4 +1,7 @@
 #include "GlobalRouter.h"
+
+#include <cassert>
+
 // wbxu: 20190708 the following codes are to enable ILP to choose candidates
 //extern "C"
 //{
@@ -7,7 +10,7 @@
 //#define LPSOLVEAPIFROMLIBDEF
 //#include "lp_explicit.h"
 //}
-// wbxu-end
+// wbxu-end?
 
 GlobalRouter::GlobalRouter(){
 
@@ -21,7 +24,7 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
 //  //update Nets, Blocks according to node. LL, UR;
   placeTerminals();
   listSegments(binaryDIR);
-  for(int i=0;i<(int)node.Nets.size();i++) {
+  for(unsigned int i=0;i<node.Nets.size();i++) {
     std::cout<<"Net "<<i<<" has segment "<<this->Nets.at(i).seg.size()<<std::endl;
   }
 //
@@ -33,15 +36,15 @@ GlobalRouter::GlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int 
   std::cout<<"Router-Info: end of creating grid "<<std::endl;
 //  
 //
-for(int i=0;i<(int)this->Nets.size();i++) {
+for(unsigned int i=0;i<this->Nets.size();i++) {
   std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-  for(int j=0;j<(int)this->Nets.at(i).seg.size();j++) {
+  for(unsigned int j=0;j<this->Nets.at(i).seg.size();j++) {
     std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( this->Nets.at(i).seg.at(j).sourceList, this->Nets.at(i).seg.at(j).destList, this->width, this->height, Smap);
     std::cout<<"Info: set source dest"<<std::endl;
     if(this->isTop and Nets[i].isTerminal and Terminal_contact.size()>0){
        Terminals[Nets[i].terminal_idx].termContacts.clear();
        //std::cout<<"Info:: update terminal "<<Nets[i].terminal_idx<<" contact\n";
-       for(int k=0;k<Terminal_contact.size();k++){
+       for(unsigned int k=0;k<Terminal_contact.size();k++){
              Terminals[Nets[i].terminal_idx].termContacts.push_back(Terminal_contact[k]);
              //std::cout<<"\tinsert terminal metal "<<Terminals[Nets[i].terminal_idx].termContacts.back().metal<<" "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedLL.x<<", "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedLL.y<<" "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedUR.x<<", "<<Terminals[Nets[i].terminal_idx].termContacts.back().placedUR.y<<std::endl;
        }
@@ -89,8 +92,8 @@ for(int i=0;i<(int)this->Nets.size();i++) {
 //
 
   // wbxu: 20190708 the following codes is set to always choose the first candidate for each segment
-  for(int i=0;i<this->Nets.size();++i) {
-    for(int j=0;j<this->Nets.at(i).seg.size();++j) {
+  for(unsigned int i=0;i<this->Nets.size();++i) {
+    for(unsigned int j=0;j<this->Nets.at(i).seg.size();++j) {
       this->Nets.at(i).seg.at(j).candis.at(0).chosen=true;
       this->Nets.at(i).seg.at(j).chosenCand=0;
       std::cout<<"choose: "<<i<<" net "<<j<<" seg "<<0<<" cand "<<std::endl;
@@ -165,10 +168,10 @@ void GlobalRouter::placeTerminals() {
   // Limitation: assume that only 1 terminal for each net
   //bool mark;
   int mj;
-  for(int i=0;i<(int)this->Nets.size();i++) {
+  for(unsigned int i=0;i<this->Nets.size();i++) {
     this->Nets.at(i).isTerminal=false;
     bool mark=false;
-    for(int j=0;j<(int)this->Nets.at(i).connected.size();j++) {
+    for(unsigned int j=0;j<this->Nets.at(i).connected.size();j++) {
       if(this->Nets.at(i).connected.at(j).type==RouterDB::TERMINAL) {
         mj=j; mark=true; break;
       }
@@ -186,7 +189,8 @@ void GlobalRouter::placeTerminals() {
 void GlobalRouter::listSegments(const std::string &binaryDIR) {
   int num_scale=1000000;
   std::string binary_directory=binaryDIR+"router";
-  getcwd(cwd, sizeof(cwd)); 
+  char *getcwd_result = getcwd(cwd, sizeof(cwd)); 
+  assert( !getcwd_result);
   std::string string_cwd(cwd);
   std::string string_steiner=binary_directory + "/FastSteinerUM/steiner -rectilinear -seed 0 <"+ string_cwd + "/output.txt -print_tree >" + string_cwd + "/vals";
   std::cout<<string_steiner<<std::endl;
@@ -197,7 +201,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
   std::ofstream myfile,matlabfile;
   std::ifstream input;
   //matlabfile.open("output_matlab.txt");
-  for(int i=0;i<(int)this->Nets.size();i++) {
+  for(unsigned int i=0;i<this->Nets.size();i++) {
     //added by yg
     std::vector<std::pair<int,int> > original_coord;
     std::vector<std::pair<int, int> > stiner_coord;
@@ -212,7 +216,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
       myfile.open("output.txt");
       myfile<<this->Nets.at(i).degree;
       myfile<<"\n";
-      for(int p=0; p<(int)this->Nets.at(i).connected.size();p++) {
+      for(unsigned int p=0; p<this->Nets.at(i).connected.size();p++) {
         if(this->Nets.at(i).connected.at(p).type==RouterDB::BLOCK) {
           // for multi-contact pins, pick one contact to represent all contacts
           int curr=this->Blocks.at(this->Nets[i].connected[p].iter2).pins.at(this->Nets[i].connected[p].iter).pinContacts.size()/2;
@@ -236,12 +240,13 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         }
       }
       myfile.close();
-      system(string_steiner.c_str());
+      int rc = system(string_steiner.c_str());
+      assert( rc == 0);
       //system("/bin/cat vals >> all_vals");
       //system("/bin/cat output.txt >> all_output.txt");
       input.open("vals");
       input>>this->Nets.at(i).numSeg;
-      for(int a =0;a<(int)this->Nets.at(i).numSeg;a++) {
+      for(int a =0;a<this->Nets.at(i).numSeg;a++) {
         RouterDB::Segment tempSeg;
         RouterDB::point tmpsource, tmpdest;
         input>>dummy;
@@ -253,7 +258,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
         tmpdest.x=get_number(dummy)/num_scale;
         input>>dummy;
         tmpdest.y=get_number(dummy)/num_scale;
-        for(int p=0;p<(int)this->Nets.at(i).connected.size();p++) {
+        for(unsigned int p=0;p<this->Nets.at(i).connected.size();p++) {
           int iter2=this->Nets.at(i).connected.at(p).iter2;
           int iter=this->Nets.at(i).connected.at(p).iter;
           int xx,yy;
@@ -438,7 +443,7 @@ void GlobalRouter::listSegments(const std::string &binaryDIR) {
 long int GlobalRouter::get_number(string str)
 {
     long int val=0;
-    for (int number=0; number < str.length(); number++)
+    for (unsigned int number=0; number < str.length(); number++)
                 {
                     if (isdigit (str[number]))
                     val=(10*val)+(str[number]-48);
@@ -650,10 +655,10 @@ void GlobalRouter::CreateMetalViaPieces() {
   //MetalPieces.resize(this->drc_info.Metal_info.size());
   //ViaPieces.resize(this->drc_info.Via_info.size());
   RouterDB::SegPiece tmpSP;
-  for(int i=0;i<(int)this->Blocks.size();i++) {
+  for(unsigned int i=0;i<this->Blocks.size();i++) {
   // for each block
     tmpSP.valIdx=-1;   tmpSP.aiter=i;
-    for(int j=0;j<(int)this->Blocks.at(i).InternalMetal.size();j++) {
+    for(unsigned int j=0;j<this->Blocks.at(i).InternalMetal.size();j++) {
     // for each block internal metal
       tmpSP.biter=j; tmpSP.citer=-1; tmpSP.diter=-1;
       tmpSP.type=RouterDB::IMM;
@@ -664,7 +669,7 @@ void GlobalRouter::CreateMetalViaPieces() {
       tmpSP.URy=this->Blocks.at(i).InternalMetal.at(j).placedUR.y;
       MetalPieces.at(tmpSP.layerIdx).push_back(tmpSP);
     }
-    for(int j=0;j<(int)this->Blocks.at(i).InternalVia.size();j++) {
+    for(unsigned int j=0;j<this->Blocks.at(i).InternalVia.size();j++) {
     // for each block internal via
       tmpSP.biter=j; tmpSP.citer=-1; tmpSP.diter=-1;
       tmpSP.type=RouterDB::IVM;
@@ -691,10 +696,10 @@ void GlobalRouter::CreateMetalViaPieces() {
       tmpSP.URy=this->Blocks.at(i).InternalVia.at(j).ViaRect.placedUR.y;
       ViaPieces.at(tmpSP.layerIdx).push_back(tmpSP);
     }
-    for(int j=0;j<(int)this->Blocks.at(i).pins.size();j++) {
+    for(unsigned int j=0;j<this->Blocks.at(i).pins.size();j++) {
     // for each block pin
       tmpSP.biter=j;
-      for(int k=0;k<(int)this->Blocks.at(i).pins.at(j).pinContacts.size();k++) {
+      for(unsigned int k=0;k<this->Blocks.at(i).pins.at(j).pinContacts.size();k++) {
       // for each block pin metal
         tmpSP.citer=k; tmpSP.diter=-1;
         tmpSP.type=RouterDB::PMM;
@@ -705,7 +710,7 @@ void GlobalRouter::CreateMetalViaPieces() {
         tmpSP.URy=this->Blocks.at(i).pins.at(j).pinContacts.at(k).placedUR.y;
         MetalPieces.at(tmpSP.layerIdx).push_back(tmpSP);
       }
-      for(int k=0;k<(int)this->Blocks.at(i).pins.at(j).pinVias.size();k++) {
+      for(unsigned int k=0;k<this->Blocks.at(i).pins.at(j).pinVias.size();k++) {
         // for each block pin via
         tmpSP.citer=k; tmpSP.diter=-1;
         tmpSP.type=RouterDB::PVM;
@@ -735,14 +740,14 @@ void GlobalRouter::CreateMetalViaPieces() {
     }
   }
   int val=0;
-  for(int i=0;i<(int)this->Nets.size();i++) {
+  for(unsigned int i=0;i<this->Nets.size();i++) {
     tmpSP.aiter=i;
-    for(int j=0;j<(int)this->Nets.at(i).seg.size();j++) {
+    for(unsigned int j=0;j<this->Nets.at(i).seg.size();j++) {
       tmpSP.biter=j;
-      for(int k=0;k<(int)this->Nets.at(i).seg.at(j).candis.size();k++) {
+      for(unsigned int k=0;k<this->Nets.at(i).seg.at(j).candis.size();k++) {
         tmpSP.citer=k; tmpSP.valIdx=val; val++;
         // for each candidate metal
-        for(int m=0;m<(int)this->Nets.at(i).seg.at(j).candis.at(k).metals.size();m++) {
+        for(unsigned int m=0;m<this->Nets.at(i).seg.at(j).candis.at(k).metals.size();m++) {
           tmpSP.diter=m;
           tmpSP.type=RouterDB::CMM;
           tmpSP.layerIdx=this->Nets.at(i).seg.at(j).candis.at(k).metals.at(m).MetalIdx;
@@ -753,7 +758,7 @@ void GlobalRouter::CreateMetalViaPieces() {
           MetalPieces.at(tmpSP.layerIdx).push_back(tmpSP);
         }
         // for each candidate via
-        for(int m=0;m<(int)this->Nets.at(i).seg.at(j).candis.at(k).vias.size();m++) {
+        for(unsigned int m=0;m<this->Nets.at(i).seg.at(j).candis.at(k).vias.size();m++) {
           tmpSP.diter=m;
           tmpSP.type=RouterDB::CVM;
           // Upper metal of Via 
@@ -1043,12 +1048,12 @@ void GlobalRouter::MetalSpacingCheckFunc(std::set< std::pair<int,int>, IntPairCo
 void GlobalRouter::UpdateCandidate(std::vector<std::vector<RouterDB::Metal> >& phsical_path, int i, int j){
    
    
-   for(int k=0;k<phsical_path.size();k++){
+   for(unsigned int k=0;k<phsical_path.size();k++){
        RouterDB::Candidate temp_candis;
        temp_candis.metals = phsical_path[k];
        temp_candis.CandiBend = phsical_path[k].size()-1;
        int sum=0;
-       for(int l=0;l<phsical_path[k].size();l++){
+       for(unsigned int l=0;l<phsical_path[k].size();l++){
             sum = sum + (abs(phsical_path[k][l].LinePoint[0].x -phsical_path[k][l].LinePoint[1].x)+abs(phsical_path[k][l].LinePoint[0].y -phsical_path[k][l].LinePoint[1].y))*drc_info.metal_weight[phsical_path[k][l].MetalIdx];
           }
        temp_candis.TotMetalWeightByLength = sum;
@@ -1098,11 +1103,11 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //  }
 
   //For terminals	
-  for(int i=0;i<node.Terminals.size();i++){	
+  for(unsigned int i=0;i<node.Terminals.size();i++){	
       RouterDB::terminal temp_terminal;
       temp_terminal.netIter = node.Terminals[i].netIter;
       if(isTop) {
-      for(int j=0;j<node.Terminals[i].termContacts.size();j++){
+      for(unsigned int j=0;j<node.Terminals[i].termContacts.size();j++){
           RouterDB::contact temp_contact;
           //cout<<node.Terminals[i].termContacts[j].metal<<endl;
           //if(drc_info.Metalmap.find(node.Terminals[i].termContacts[j].metal)!=drc_info.Metalmap.end()){
@@ -1128,7 +1133,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   //For nets	
   //need modify with power router.... here the method is just remove the single terminal, but not vdd/gnd
   //wbxu: pay attention to dangling nets and power nets
-  for(int i=0;i<node.Nets.size();i++){	
+  for(unsigned int i=0;i<node.Nets.size();i++){	
       RouterDB::Net temp_net;		
       //if(node.Nets[i].connected.size()!=1){
          //temp_net.isTerminal=0;	
@@ -1149,7 +1154,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
            }  // wbxu? symnet_idx undefined
           */
 
-          for(int j=0;j<node.Nets[i].connected.size();j++){
+          for(unsigned int j=0;j<node.Nets[i].connected.size();j++){
               RouterDB::connectNode temp_connectNode;
               temp_type = RouterDB::NType(node.Nets[i].connected[j].type);  // wbxu? Not Omark, replace with NType
               
@@ -1172,7 +1177,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
      }
 	
   //For blocks	
-  for(int i=0;i<node.Blocks.size();i++){
+  for(unsigned int i=0;i<node.Blocks.size();i++){
       RouterDB::Block temp_block;
       int sel=node.Blocks[i].selectedInstance;
       temp_block.blockName=node.Blocks[i].instance[sel].name;
@@ -1193,11 +1198,11 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       //temp_block.originUR.x=node.Blocks[i].instance[sel].originBox.UR.x;
       //temp_block.originUR.y=node.Blocks[i].instance[sel].originBox.UR.y;
 
-      for(int j=0;j<node.Blocks[i].instance[sel].blockPins.size();j++){
+      for(unsigned int j=0;j<node.Blocks[i].instance[sel].blockPins.size();j++){
           RouterDB::Pin temp_pin;
           temp_pin.pinName=node.Blocks[i].instance[sel].blockPins[j].name;
           temp_pin.netIter=node.Blocks[i].instance[sel].blockPins[j].netIter;
-          for(int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinContacts.size();k++){
+          for(unsigned int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinContacts.size();k++){
              RouterDB::contact temp_contact;
              if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal)!=drc_info.Metalmap.end()){
                  temp_contact.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].blockPins[j].pinContacts[k].metal];
@@ -1214,7 +1219,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
              }
           
 
-          for(int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinVias.size();k++){
+          for(unsigned int k=0;k<node.Blocks[i].instance[sel].blockPins[j].pinVias.size();k++){
                RouterDB::Via temp_via;
                temp_via.model_index = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].model_index;
                temp_via.position.x = node.Blocks[i].instance[sel].blockPins[j].pinVias[k].placedpos.x;
@@ -1263,7 +1268,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
           temp_block.pins.push_back(temp_pin);
       }
 
-   for(int j=0;j<node.Blocks[i].instance[sel].interMetals.size();j++){
+   for(unsigned int j=0;j<node.Blocks[i].instance[sel].interMetals.size();j++){
        RouterDB::contact temp_metal;
        if(drc_info.Metalmap.find(node.Blocks[i].instance[sel].interMetals[j].metal)!=drc_info.Metalmap.end()){
            temp_metal.metal=drc_info.Metalmap[node.Blocks[i].instance[sel].interMetals[j].metal];
@@ -1281,7 +1286,7 @@ void GlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
        temp_block.InternalMetal.push_back(temp_metal);
       }
 	
-   for(int j=0;j<node.Blocks[i].instance[sel].interVias.size();j++){
+   for(unsigned int j=0;j<node.Blocks[i].instance[sel].interVias.size();j++){
        RouterDB::Via temp_via;
        temp_via.model_index=node.Blocks[i].instance[sel].interVias[j].model_index;
        temp_via.position.x=node.Blocks[i].instance[sel].interVias[j].placedpos.x;
@@ -1589,9 +1594,9 @@ void GlobalRouter::getDRCdata(PnRDB::Drc_info& drcData){
 void GlobalRouter::GetPhsical_Metal_Via(int i, int j){
   
   //for each candidate
-  for(int k =0; k<Nets[i].seg[j].candis.size();k++){
+  for(unsigned int k =0; k<Nets[i].seg[j].candis.size();k++){
       //for each metal in candidate
-      for(int h =0; h<Nets[i].seg[j].candis[k].metals.size();h++){
+      for(unsigned int h =0; h<Nets[i].seg[j].candis[k].metals.size();h++){
           //get phsical metal
           Nets[i].seg[j].candis[k].metals[h].MetalRect.metal =  Nets[i].seg[j].candis[k].metals[h].MetalIdx;
           Nets[i].seg[j].candis[k].metals[h].MetalRect.placedCenter.x =( Nets[i].seg[j].candis[k].metals[h].LinePoint[0].x+Nets[i].seg[j].candis[k].metals[h].LinePoint[1].x)/2;
@@ -1623,11 +1628,11 @@ void GlobalRouter::GetPhsical_Metal_Via(int i, int j){
             }           
          }
       //add via
-      for(int h =0; h<Nets[i].seg[j].candis[k].metals.size()-1;h++){
+      for(unsigned int h =0; h<Nets[i].seg[j].candis[k].metals.size()-1;h++){
            int found_index = 0;
            vector<int> via_model;
-           for(int p=0;p<Nets[i].seg[j].candis[k].metals[h].LinePoint.size();p++){
-               for(int q=0;q<Nets[i].seg[j].candis[k].metals[h+1].LinePoint.size();q++){
+           for(unsigned int p=0;p<Nets[i].seg[j].candis[k].metals[h].LinePoint.size();p++){
+               for(unsigned int q=0;q<Nets[i].seg[j].candis[k].metals[h+1].LinePoint.size();q++){
                     if(Nets[i].seg[j].candis[k].metals[h].LinePoint[p].x == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].x and Nets[i].seg[j].candis[k].metals[h].LinePoint[p].y == Nets[i].seg[j].candis[k].metals[h+1].LinePoint[q].y){
                         found_index = p;
                       }
@@ -1650,7 +1655,7 @@ void GlobalRouter::GetPhsical_Metal_Via(int i, int j){
                   via_index = via_index + 1;
                 } 
            
-           for(int q=0;q<via_model.size();q++){
+           for(unsigned int q=0;q<via_model.size();q++){
                RouterDB::Via temp_via;
                temp_via.model_index = via_model[q];
                temp_via.position.x = Nets[i].seg[j].candis[k].metals[h].LinePoint[found_index].x;
@@ -1690,10 +1695,10 @@ void GlobalRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
   PnRDB::point tpoint;  
   //including via
   //std::cout<<"Start NetToNodeNet"<<std::endl;
-  for(int i=0;i<net.seg.size();i++){
+  for(unsigned int i=0;i<net.seg.size();i++){
         //std::cout<<"seg "<<i<<std::endl;
         if(net.seg[i].chosenCand==-1) {continue;}
-        for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
+        for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
              //std::cout<<"metal "<<j<< "size "<<net.seg[i].candis[net.seg[i].chosenCand].metals.size()<<std::endl;
              PnRDB::Metal temp_metal;
              temp_metal.MetalIdx = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalIdx;
@@ -1711,17 +1716,13 @@ void GlobalRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, i
              temp_metal.MetalRect.placedBox.LL.y = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedBox.UR.x = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedUR.x;
              temp_metal.MetalRect.placedBox.UR.y = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.UL.x = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedLL.x;
-             temp_metal.MetalRect.placedBox.UL.y = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedUR.y;
-             temp_metal.MetalRect.placedBox.LR.x = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedUR.x;
-             temp_metal.MetalRect.placedBox.LR.y = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedLL.y;
              temp_metal.MetalRect.placedCenter.x = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedCenter.x;
              temp_metal.MetalRect.placedCenter.y = net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect.placedCenter.y;
              //std::cout<<"checkpoint 3"<<std::endl;
              HierNode.Nets[net_index].path_metal.push_back(temp_metal);
            }
 
-        for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
+        for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
              //std::cout<<"vias "<<j<<" size "<<net.seg[i].candis[net.seg[i].chosenCand].vias.size()<<std::endl;
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Placed(temp_via,net.seg[i].candis[net.seg[i].chosenCand].vias[j]);
@@ -1814,17 +1815,17 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, net.vias[i]);
 void GlobalRouter::NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net){
   //std::cout<<"Start NetToNodeInterMetal"<<std::endl;
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              HierNode.interMetals.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -1835,17 +1836,17 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
 
   //std::cout<<"Via"<<std::endl;
   //including via
-  for(int i=0;i<net.seg.size();i++){
+  for(unsigned int i=0;i<net.seg.size();i++){
       //std::cout<<"seg "<<i<<std::endl;
       if(net.seg[i].chosenCand==-1) {continue;}
-      for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
+      for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
              //std::cout<<"metals "<<j<<std::endl;
 
              PnRDB::contact temp_contact;
              ConvertToContactPnRDB_Placed_Origin(temp_contact, net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect);
              HierNode.interMetals.push_back(temp_contact);
          }
-      for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
+      for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
              //std::cout<<"vias "<<j<<std::endl;
 
              PnRDB::Via temp_via;
@@ -1870,25 +1871,8 @@ void GlobalRouter::ConvertToContactPnRDB_Placed_Origin(PnRDB::contact& pnr_conta
   pnr_contact.originBox.LL.y = router_contact.placedLL.y;
   pnr_contact.originBox.UR.x = router_contact.placedUR.x;
   pnr_contact.originBox.UR.y = router_contact.placedUR.y;
-  pnr_contact.originBox.UL.x = router_contact.placedLL.x;
-  pnr_contact.originBox.UL.y = router_contact.placedUR.y;
-  pnr_contact.originBox.LR.x = router_contact.placedUR.x;
-  pnr_contact.originBox.LR.y = router_contact.placedLL.y;
   pnr_contact.originCenter.x = router_contact.placedCenter.x;
   pnr_contact.originCenter.y = router_contact.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=pnr_contact.originBox.LL.x; 
-  temp_point.y=pnr_contact.originBox.LL.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.UL.x; 
-  temp_point.y=pnr_contact.originBox.UL.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.UR.x; 
-  temp_point.y=pnr_contact.originBox.UR.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.originBox.LR.x; 
-  temp_point.y=pnr_contact.originBox.LR.y;
-  pnr_contact.originBox.polygon.push_back(temp_point);
 
 };
 
@@ -1904,25 +1888,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterD
   temp_via.ViaRect.originBox.LL.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.originBox.UR.x = router_via.ViaRect.placedUR.x;
   temp_via.ViaRect.originBox.UR.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.originBox.UL.x = router_via.ViaRect.placedLL.x;
-  temp_via.ViaRect.originBox.UL.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.originBox.LR.x = router_via.ViaRect.placedUR.x;
-  temp_via.ViaRect.originBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.originCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.originCenter.y = router_via.ViaRect.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.ViaRect.originBox.LL.x; 
-  temp_point.y=temp_via.ViaRect.originBox.LL.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.UL.x; 
-  temp_point.y=temp_via.ViaRect.originBox.UL.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.UR.x; 
-  temp_point.y=temp_via.ViaRect.originBox.UR.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.originBox.LR.x; 
-  temp_point.y=temp_via.ViaRect.originBox.LR.y;
-  temp_via.ViaRect.originBox.polygon.push_back(temp_point);
 
   //LowerMetalRect
   temp_via.LowerMetalRect.metal = drc_info.Metal_info[router_via.LowerMetalRect.metal].name;
@@ -1930,25 +1897,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterD
   temp_via.LowerMetalRect.originBox.LL.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.originBox.UR.x = router_via.LowerMetalRect.placedUR.x;
   temp_via.LowerMetalRect.originBox.UR.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.originBox.UL.x = router_via.LowerMetalRect.placedLL.x;
-  temp_via.LowerMetalRect.originBox.UL.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.originBox.LR.x = router_via.LowerMetalRect.placedUR.x;
-  temp_via.LowerMetalRect.originBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.originCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.originCenter.y = router_via.LowerMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.LowerMetalRect.originBox.LL.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.LL.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.UL.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.UL.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.UR.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.UR.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.originBox.LR.x; 
-  temp_point.y=temp_via.LowerMetalRect.originBox.LR.y;
-  temp_via.LowerMetalRect.originBox.polygon.push_back(temp_point);
 
   //UpperMetalRect
   temp_via.UpperMetalRect.metal = drc_info.Metal_info[router_via.UpperMetalRect.metal].name;
@@ -1956,25 +1906,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterD
   temp_via.UpperMetalRect.originBox.LL.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.originBox.UR.x = router_via.UpperMetalRect.placedUR.x;
   temp_via.UpperMetalRect.originBox.UR.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.originBox.UL.x = router_via.UpperMetalRect.placedLL.x;
-  temp_via.UpperMetalRect.originBox.UL.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.originBox.LR.x = router_via.UpperMetalRect.placedUR.x;
-  temp_via.UpperMetalRect.originBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.originCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.originCenter.y = router_via.UpperMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.UpperMetalRect.originBox.LL.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.LL.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.UL.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.UL.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.UR.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.UR.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.originBox.LR.x; 
-  temp_point.y=temp_via.UpperMetalRect.originBox.LR.y;
-  temp_via.UpperMetalRect.originBox.polygon.push_back(temp_point);
 
 };
 
@@ -1986,25 +1919,8 @@ void GlobalRouter::ConvertToContactPnRDB_Placed_Placed(PnRDB::contact& pnr_conta
   pnr_contact.placedBox.LL.y = router_contact.placedLL.y;
   pnr_contact.placedBox.UR.x = router_contact.placedUR.x;
   pnr_contact.placedBox.UR.y = router_contact.placedUR.y;
-  pnr_contact.placedBox.UL.x = router_contact.placedLL.x;
-  pnr_contact.placedBox.UL.y = router_contact.placedUR.y;
-  pnr_contact.placedBox.LR.x = router_contact.placedUR.x;
-  pnr_contact.placedBox.LR.y = router_contact.placedLL.y;
   pnr_contact.placedCenter.x = router_contact.placedCenter.x;
   pnr_contact.placedCenter.y = router_contact.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=pnr_contact.placedBox.LL.x; 
-  temp_point.y=pnr_contact.placedBox.LL.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.UL.x; 
-  temp_point.y=pnr_contact.placedBox.UL.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.UR.x; 
-  temp_point.y=pnr_contact.placedBox.UR.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
-  temp_point.x=pnr_contact.placedBox.LR.x; 
-  temp_point.y=pnr_contact.placedBox.LR.y;
-  pnr_contact.placedBox.polygon.push_back(temp_point);
 
 };
 
@@ -2020,25 +1936,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterD
   temp_via.ViaRect.placedBox.LL.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.placedBox.UR.x = router_via.ViaRect.placedUR.x;
   temp_via.ViaRect.placedBox.UR.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.placedBox.UL.x = router_via.ViaRect.placedLL.x;
-  temp_via.ViaRect.placedBox.UL.y = router_via.ViaRect.placedUR.y;
-  temp_via.ViaRect.placedBox.LR.x = router_via.ViaRect.placedUR.x;
-  temp_via.ViaRect.placedBox.LR.y = router_via.ViaRect.placedLL.y;
   temp_via.ViaRect.placedCenter.x = router_via.ViaRect.placedCenter.x;
   temp_via.ViaRect.placedCenter.y = router_via.ViaRect.placedCenter.y; 
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.ViaRect.placedBox.LL.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.LL.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.UL.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.UL.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.UR.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.UR.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.ViaRect.placedBox.LR.x; 
-  temp_point.y=temp_via.ViaRect.placedBox.LR.y;
-  temp_via.ViaRect.placedBox.polygon.push_back(temp_point);
 
   //LowerMetalRect
   temp_via.LowerMetalRect.metal = drc_info.Metal_info[router_via.LowerMetalRect.metal].name;
@@ -2046,25 +1945,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterD
   temp_via.LowerMetalRect.placedBox.LL.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.placedBox.UR.x = router_via.LowerMetalRect.placedUR.x;
   temp_via.LowerMetalRect.placedBox.UR.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.placedBox.UL.x = router_via.LowerMetalRect.placedLL.x;
-  temp_via.LowerMetalRect.placedBox.UL.y = router_via.LowerMetalRect.placedUR.y;
-  temp_via.LowerMetalRect.placedBox.LR.x = router_via.LowerMetalRect.placedUR.x;
-  temp_via.LowerMetalRect.placedBox.LR.y = router_via.LowerMetalRect.placedLL.y;
   temp_via.LowerMetalRect.placedCenter.x = router_via.LowerMetalRect.placedCenter.x;
   temp_via.LowerMetalRect.placedCenter.y = router_via.LowerMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.LowerMetalRect.placedBox.LL.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.LL.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.UL.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.UL.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.UR.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.UR.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.LowerMetalRect.placedBox.LR.x; 
-  temp_point.y=temp_via.LowerMetalRect.placedBox.LR.y;
-  temp_via.LowerMetalRect.placedBox.polygon.push_back(temp_point);
 
   //UpperMetalRect
   temp_via.UpperMetalRect.metal = drc_info.Metal_info[router_via.UpperMetalRect.metal].name;
@@ -2072,25 +1954,8 @@ void GlobalRouter::ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterD
   temp_via.UpperMetalRect.placedBox.LL.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.placedBox.UR.x = router_via.UpperMetalRect.placedUR.x;
   temp_via.UpperMetalRect.placedBox.UR.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.placedBox.UL.x = router_via.UpperMetalRect.placedLL.x;
-  temp_via.UpperMetalRect.placedBox.UL.y = router_via.UpperMetalRect.placedUR.y;
-  temp_via.UpperMetalRect.placedBox.LR.x = router_via.UpperMetalRect.placedUR.x;
-  temp_via.UpperMetalRect.placedBox.LR.y = router_via.UpperMetalRect.placedLL.y;
   temp_via.UpperMetalRect.placedCenter.x = router_via.UpperMetalRect.placedCenter.x;
   temp_via.UpperMetalRect.placedCenter.y = router_via.UpperMetalRect.placedCenter.y;
-  // wbxu: polygon in originBox should be updated! [fixed]
-  temp_point.x=temp_via.UpperMetalRect.placedBox.LL.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.LL.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.UL.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.UL.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.UR.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.UR.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
-  temp_point.x=temp_via.UpperMetalRect.placedBox.LR.x; 
-  temp_point.y=temp_via.UpperMetalRect.placedBox.LR.y;
-  temp_via.UpperMetalRect.placedBox.polygon.push_back(temp_point);
 
 };
 
@@ -2106,17 +1971,17 @@ void GlobalRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& 
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   //blockspin to intermetal
-  for(int i=0;i<net.connected.size();i++){
+  for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
           
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts.size();j++){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinContacts[j]);
              temp_pin.pinContacts.push_back(temp_contact);
 
              }
-          for(int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
+          for(unsigned int j=0;j<Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias.size();j++){
              
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
@@ -2125,17 +1990,17 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
         } 
      }
 
-  for(int i=0;i<net.seg.size();i++){
+  for(unsigned int i=0;i<net.seg.size();i++){
         // wbxu: need to check chosenCand to avoid exeption [fixed]
         if(net.seg[i].chosenCand==-1) {continue;}
-        for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
+        for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].metals.size();j++){
 
              // wbxu: placed field -> origin field [fixed]
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,net.seg[i].candis[net.seg[i].chosenCand].metals[j].MetalRect);
              temp_pin.pinContacts.push_back(temp_contact);
         }
-        for(int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
+        for(unsigned int j=0;j<net.seg[i].candis[net.seg[i].chosenCand].vias.size();j++){
 
              // wbxu: placed field -> origin field [fixed]
              PnRDB::Via temp_via;
@@ -2155,10 +2020,10 @@ void GlobalRouter::TerminalToNodeTerminal(PnRDB::hierNode& HierNode){
    //including via
    //includeing blockpin also
 
-  for(int i=0;i<this->Terminals.size();i++){
+  for(unsigned int i=0;i<this->Terminals.size();i++){
        //pins
                //std::cout<<"Info:: update terminal "<<i<<std::endl;
-       for(int j=0;j<this->Terminals[i].termContacts.size();j++){
+       for(unsigned int j=0;j<this->Terminals[i].termContacts.size();j++){
              
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Placed(temp_contact,this->Terminals[i].termContacts[j]);
@@ -2179,7 +2044,7 @@ void GlobalRouter::BlockInterMetalToNodeInterMetal(PnRDB::hierNode& HierNode){
    //including via
    //includeing blockpin also
 
-  for(int i=0;i<Blocks.size();i++){
+  for(unsigned int i=0;i<Blocks.size();i++){
 /*
        //pins
        for(int j=0;j<Blocks[i].pins.size();j++){
@@ -2202,14 +2067,14 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].pins[j].pinContacts[k
           }
 */
        //InternalMetal
-       for(int j=0;j<Blocks[i].InternalMetal.size();j++){
+       for(unsigned int j=0;j<Blocks[i].InternalMetal.size();j++){
             //to internal metal
              PnRDB::contact temp_contact;
              ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].InternalMetal[j]);
              HierNode.interMetals.push_back(temp_contact);
           }
        //via
-       for(int j=0;j<Blocks[i].InternalVia.size();j++){
+       for(unsigned int j=0;j<Blocks[i].InternalVia.size();j++){
             //to interal via
              PnRDB::Via temp_via;
              ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[i].InternalVia[j]);   
@@ -2227,7 +2092,7 @@ void GlobalRouter::AddConnectedContactToNodeNet(PnRDB::hierNode& HierNode, Route
   HierNode.Nets.at(net_index).connectedContact.clear();
   HierNode.Nets.at(net_index).connectedContact.resize( HierNode.Nets.at(net_index).connected.size() );
   int currM=0;
-  for(int i=0;i<net.seg.size();i++){ // for each net segment
+  for(unsigned int i=0;i<net.seg.size();i++){ // for each net segment
     std::cout<<"seg "<<i<<std::endl;
     int sel=net.seg.at(i).chosenCand;
     if(sel==-1) {continue;}
@@ -2259,7 +2124,7 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
     tmpC.metalIdx=mIdx;
     if(stype==RouterDB::BLOCK) { // block pin
       int pos=-1;
-      for(int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
+      for(unsigned int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
         if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Block and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
           pos=k; break;
         }
@@ -2274,18 +2139,30 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
             HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
             mark=true; break;
           } else {
-            if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
-              dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y)) {
-              dist=std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y)) {
-              dist=std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y)) {
-              dist=std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y); target=cit;
-            }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.LL.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.UR.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
           }
         }
         if(!mark and target!=HierNode.Blocks.at(siter2).instance.at(HierNode.Blocks.at(siter2).selectedInstance).blockPins.at(siter).pinContacts.end()) {
@@ -2295,7 +2172,7 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
       }
     } else if (stype==RouterDB::TERMINAL and this->isTop ) {
       int pos=-1;
-      for(int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
+      for(unsigned int k=0;k<HierNode.Nets.at(net_index).connected.size();++k) {
         if(HierNode.Nets.at(net_index).connected.at(k).type==PnRDB::Terminal and HierNode.Nets.at(net_index).connected.at(k).iter==siter and HierNode.Nets.at(net_index).connected.at(k).iter2==siter2) {
           pos=k; break;
         }
@@ -2310,18 +2187,30 @@ void GlobalRouter::AddConnectedContactFunc(PnRDB::hierNode& HierNode, RouterDB::
             HierNode.Nets.at(net_index).connectedContact.at(pos)=tmpC; 
             mark=true; break;
           } else {
-            if(dist>std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y)) {
-              dist=std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y)) {
-              dist=std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y)) {
-              dist=std::abs(sx-cit->placedBox.LR.x)+std::abs(sy-cit->placedBox.LR.y); target=cit;
-            }
-            if(dist>std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y)) {
-              dist=std::abs(sx-cit->placedBox.UL.x)+std::abs(sy-cit->placedBox.UL.y); target=cit;
-            }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.LL.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.UR.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.UR.x)+std::abs(sy-cit->placedBox.LL.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
+	    {
+	      auto cand = std::abs(sx-cit->placedBox.LL.x)+std::abs(sy-cit->placedBox.UR.y);
+	      if(dist>cand) {
+		dist=cand; target=cit;
+	      }
+	    }
           }
         }
         if(!mark and target!=HierNode.Terminals.at(siter).termContacts.end()) {
@@ -2340,7 +2229,7 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   HierNode.interMetals.clear();
   HierNode.interVias.clear();
 
-  for(int i=0;i<HierNode.Nets.size();i++){
+  for(unsigned int i=0;i<HierNode.Nets.size();i++){
         HierNode.Nets[i].path_metal.clear();
         HierNode.Nets[i].path_via.clear();
      }
@@ -2353,7 +2242,7 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
     }
   //distinguish those two net
   //std::cout<<"Start ReturnHierNode"<<std::endl;
-  for(int i=0;i<Nets.size();i++){
+  for(unsigned int i=0;i<Nets.size();i++){
       std::cout<<i<<" ter? "<<Nets[i].isTerminal<<std::endl;
       if(Nets[i].isTerminal){
   // wbxu: not only nets should be put into NodeBlockPins, but also those pins connected to nets
@@ -2372,7 +2261,7 @@ void GlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
          std::cout<<"end: Net to node internal metal"<<std::endl;
         }
        
-       for(int j=0;j<HierNode.Nets.size();j++){
+       for(unsigned int j=0;j<HierNode.Nets.size();j++){
           if(HierNode.Nets[j].name == Nets[i].netName){
               HierNode.Nets.at(j).path_metal.clear();
               HierNode.Nets.at(j).path_via.clear();

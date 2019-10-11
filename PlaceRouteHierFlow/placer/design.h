@@ -190,7 +190,7 @@ class design
     int GetSizeofTerminals();
     int GetSizeofNets();
     int GetSizeofSBlocks();
-    int GetBlockSymmGroup(int blockid);
+    int GetBlockSymmGroup(int blockid) const;
     int GetBlockCounterpart(int blockid);
     void PrintBlocks();
     void PrintTerminals();

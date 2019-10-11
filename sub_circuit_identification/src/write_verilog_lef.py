@@ -18,14 +18,21 @@ if not os.path.exists("./LOG"):
 logging.basicConfig(filename='./LOG/writer.log', level=logging.DEBUG)
 
 
+
 class WriteVerilog:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = inout_pin_names
+        self.subckt_list = subckt_list
+
+    def check_ports_match(self,port,subckt):
+        for members in self.subckt_list:
+            if members["name"]==subckt and port in members["ports"]:
+                return 1
 
     def print_module(self, fp):
         logging.info("Writing module : %s", self.circuit_name)
@@ -49,15 +56,16 @@ class WriteVerilog:
                 ports = []
                 nets = []
                 if "ports_match" in attr:
-                    logging.info("Nets connected to ports: %s",
-                                 ', '.join(attr["ports_match"].values()))
+                    logging.info("Nets connected to ports: %s",attr["ports_match"])
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
                 elif "connection" in attr:
+                    logging.info("connection to ports: %s",attr["connection"])
                     for key, value in attr["connection"].items():
-                        ports.append(key)
-                        nets.append(value)                    
+                        if self.check_ports_match(key,attr['inst_type']):
+                            ports.append(key)
+                            nets.append(value)                    
                 else:
                     logging.info("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
@@ -223,7 +231,7 @@ def generate_lef(fp, name, values, available_block_lef,
             if block_name in available_block_lef:
                 return block_name
             logging.info("Generating parametric lef of: %s", block_name)
-            fp.write("\n$PC fabric_" + name + ".py " +
+            fp.write("\n$PC Align_primitives.py -p " + name +
                      " -b " + block_name +
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +
@@ -293,16 +301,29 @@ if __name__ == '__main__':
     for members in list_graph:
         #print(members)
         name = members["name"]
-        logging.info("Found module: %s", name)
-        if 'ports_match' in members.keys():
-            logging.info("Ports in module: %s",
-                         ", ".join(members['ports_match']))
-
+        logging.info("Found module: %s", name )
+        inoutpin = []
+        logging.info("found ports match: %s",members["ports_match"])
+        floating_ports=[]
+        if members["ports_match"]:
+            for key, value in members["ports_match"].items():
+                inoutpin.append(key)
+            if members["ports"]:
+                logging.info("Found module ports:%s",members["ports"] )
+                floating_ports = list(set(inoutpin) - set(members["ports"]))
+        else:
+            inoutpin = members["ports"]
+        if len(floating_ports)>0:
+            logging.warning("Floating ports in design:%s,%s",len(floating_ports),floating_ports)
+            inoutpin=members["ports"]
+        
         graph = members["lib_graph"].copy()
         logging.info("Reading nodes from graph: %s", str(graph))
         for node, attr in graph.nodes(data=True):
             #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
             if 'net' in attr['inst_type']: continue
+            #Dropping floating ports
+            #if attr['ports'
             lef_name = attr['inst_type']
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name = generate_lef(LEF_FP, lef_name, attr["values"],
@@ -311,21 +332,16 @@ if __name__ == '__main__':
                 ALL_LEF.append(block_name)
                 graph.nodes[node]['inst_type'] = block_name
             else:
-                logging.info("WARNING:No physical information found for: %s",
+                logging.warning("No physical information found for: %s",
                              name)
 
         if name in ALL_LEF or name in generated_module[:-1]:
             continue
-        if "ports" in members.keys():
-            inoutpin = members["ports"]
-        elif "ports_match" in members.keys():
-            inoutpin = members["ports_match"]
-        else:
-            inoutpin = []
+
         #print("inout pins:",inoutpin)
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
-            wv = WriteVerilog(graph, name, inoutpin)
+            wv = WriteVerilog(graph, name, inoutpin, list_graph)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 

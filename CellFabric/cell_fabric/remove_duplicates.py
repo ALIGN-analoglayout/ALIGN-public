@@ -1,7 +1,11 @@
 
 from collections import defaultdict, OrderedDict
+import pprint
 
 from .generators import *
+
+import logging
+logger = logging.getLogger(__name__)
 
 class UnionFind:
     def __init__(self):
@@ -27,6 +31,7 @@ class ScanlineRect(UnionFind):
         super().__init__()
         self.rect = None
         self.netName = None
+        self.terminal = None
         self.isPorted = False
 
     def __repr__(self):
@@ -38,33 +43,30 @@ class Scanline:
         self.indices = indices
         self.dIndex = dIndex
         self.rects = []
-        self.clear()
         self.dad = None
 
-    def clear(self):
-        self.start = None
-        self.end = None
-        self.currentNet = None
-        self.currentIsPorted = False
 
     def isEmpty(self):
-        return self.start is None
+        return len(self.rects) == 0
 
-    def emit(self):
-        r = self.proto[:]
-        r[self.dIndex] = self.start
-        r[self.dIndex+2] = self.end
+
+    def new_slr(self, rect, netName, *, isPorted=False):
         slr = ScanlineRect()
-        slr.rect = r
-        slr.netName = self.currentNet
-        slr.isPorted = self.isPorted
+        slr.rect = self.proto[:]
+        slr.rect[self.dIndex] = rect[self.dIndex]
+        slr.rect[self.dIndex+2] = rect[self.dIndex+2]
+        if netName is not None and ':' in netName:
+            slr.terminal = tuple(netName.split(':'))
+            assert len(slr.terminal) == 2
+        else:
+            slr.netName = netName
+        slr.isPorted = isPorted
         self.rects.append(slr)
+        return slr
 
-    def set_named_rect(self, rect, netName, *, isPorted=False):
-        self.start = rect[self.dIndex]
-        self.end = rect[self.dIndex+2]
-        self.currentNet = netName
-        self.isPorted = isPorted
+    def merge_slr(self, base_slr, new_slr):
+        base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -79,7 +81,7 @@ class Scanline:
                 result = metal_rect
                 break
 
-        assert result is not None
+        assert result is not None, (via_rect, self.rects)
         return result
 
 class RemoveDuplicates():
@@ -93,10 +95,9 @@ class RemoveDuplicates():
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
 
         for (i,s) in tbl.items():
-            print( "Equivalence classes:", i, s)
+            logger.info( pprint.pformat(["Equivalence classes:", i, s]))
 
     def check_opens(self):
-        self.opens = []
 
         tbl = defaultdict(lambda: defaultdict(list))
 
@@ -107,11 +108,13 @@ class RemoveDuplicates():
                     nm = root.netName
                     if nm is not None:
                         tbl[nm][id(root)].append( (layer, slr.rect))
+                    elif slr.terminal is not None:
+                        self.subinsts[slr.terminal[0]][slr.terminal[1]].add( None)
+                        self.opens.append( slr.terminal)
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
                 self.opens.append( (nm,list(s.values())))
-
 
     @staticmethod
     def containedIn( rS, rB):
@@ -127,10 +130,12 @@ class RemoveDuplicates():
     def __init__( self, canvas):
         self.canvas = canvas
         self.store_scan_lines = None
+        self.different_widths = []
         self.shorts = []
+        self.opens = []
+        self.subinsts = defaultdict(lambda: defaultdict(set))
 
         self.setup_layer_structures()
-
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
@@ -166,7 +171,7 @@ class RemoveDuplicates():
 
             if layer in self.skip_layers: continue
 
-            assert layer in self.layers, layer
+            assert layer in self.layers, (self.layers, layer)
             twice_center = sum(rect[index]
                                for index in self.indicesTbl[self.layers[layer]][0])
 
@@ -186,60 +191,72 @@ class RemoveDuplicates():
 
                 (rect0, _, _) = v[0]
                 for (rect, _, _) in v[1:]:
-                    assert all(rect[i] == rect0[i] for i in indices), ("Rectangles on layer %s with the same centerline %d but different widths:" % (layer, twice_center), (indices,v))
+                    if not all(rect[i] == rect0[i] for i in indices):
+                        widths = set()
+                        for (r, _, _) in v:
+                            widths.add( r[indices[1]]-r[indices[0]])
+                        self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
+                current_slr = None
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
                     if sl.isEmpty():
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= sl.end:  # continue
-                        sl.end = max(sl.end, rect[dIndex+2])
-                        if sl.currentNet is None:
-                            sl.currentNet = netName
-                            sl.currentIsPorted = isPorted
-                        elif netName is not None and sl.currentNet != netName:
-                            self.shorts.append( (layer, sl.currentNet, netName))
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
+                    elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
+                        if self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
+                            sl.merge_slr(current_slr, sl.rects.pop())
+                        else:
+                            current_slr = sl.rects[-1]
                     else:  # gap
-                        sl.emit()
-                        sl.set_named_rect(rect, netName, isPorted=isPorted)
-
-                if not sl.isEmpty():
-                    sl.emit()
-                    sl.clear()
-
+                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
 
     def check_shorts_induced_by_vias( self):
-
-        connections = []
 
         for (via, (mv,mh)) in self.canvas.layer_stack:
             if via in self.store_scan_lines:
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
+                    assert mv is not None, "PLEASE IMPLEMENT ME !"
+                    if twice_center not in self.store_scan_lines[mv]:
+                        logger.warning( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
+                        continue
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
                         metal_rect_v = metal_scan_line_vertical.find_touching(via_rect)
                         twice_center_y = via_rect.rect[1] + via_rect.rect[3]
-                        metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
-                        metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                        connections.append( (via_rect, metal_rect_v, metal_rect_h))
-                        
-        def connectPair( a, b):
-            def aux( a, b):
-                if a.netName is None:
-                    b.connect( a)
-                elif b.netName is None or a.netName == b.netName:
-                    a.connect( b)
-            aux( a.root(), b.root())
+                        if mh is not None:
+                            metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
+                            metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via_rect.root(), metal_rect_h.root())
+                        else:
+                            self.connectPair( metal_rect_v.root(), via_rect.root())
 
-        for triple  in connections:
-            connectPair( triple[1], triple[2])
-            connectPair( triple[0], triple[1])
+    def check_shorts_induced_by_terminals( self):
+        for instance, v in self.subinsts.items():
+            for pin, slrs in v.items():
+                names = {x.root().netName for x in slrs}
+                if len(names) > 1:
+                    self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
 
-            nms = { root.netName for slr in list(triple) for root in [slr.root()] if root.netName is not None}
-
-            if len(nms) > 1:
-                self.shorts.append( triple)
+    def connectPair( self, a, b):
+        numshorts = len(self.shorts)
+        if a.netName is None:
+            a.netName = b.netName
+            a.connect( b)
+        elif b.netName is None or a.netName == b.netName:
+            b.netName = a.netName
+            a.connect( b)
+        else:
+            self.shorts.append( (a, b) )
+        if a.terminal is None and b.terminal is None:
+            return numshorts == len(self.shorts)
+        else:
+            if a.terminal is not None:
+                self.subinsts[a.terminal[0]][a.terminal[1]].add( a)
+            if b.terminal is not None:
+                self.subinsts[b.terminal[0]][b.terminal[1]].add( b)
+            return False
 
     def generate_rectangles( self):
 
@@ -250,32 +267,36 @@ class RemoveDuplicates():
         for d in self.canvas.terminals:
             if d['layer'] in self.skip_layers:
                 terminals.append( d)
-
 #
 # Write out the rectangles stored in the scan line data structure
 #
-        for (layer,vv) in self.store_scan_lines.items():
-            for (twice_center, v) in vv.items():
+        for layer, vv in self.store_scan_lines.items():
+            for _, v in vv.items():
                 for slr in v.rects:
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect})
                     if slr.isPorted:
                         terminals[-1]['pin'] = root.netName
-
+                    if slr.terminal is not None:
+                        terminals[-1]['terminal'] = slr.terminal
         return terminals
-
 
     def remove_duplicates( self):
 
         self.build_scan_lines( self.build_centerline_tbl())
 
         self.check_shorts_induced_by_vias()
+        self.check_shorts_induced_by_terminals()
         self.check_opens()
 
         for short in self.shorts:
-            print( "SHORT", *short)
+            logger.warning("SHORT" + pprint.pformat(short))
         for opn in self.opens:
-            print( "OPEN", *opn)
+            logger.warning( "OPEN" + pprint.pformat(opn))
+        for dif in self.different_widths:
+            logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
+        for subinst in self.subinsts:
+            logger.info("SUBINST" + pprint.pformat(subinst))
 
         return self.generate_rectangles()
 

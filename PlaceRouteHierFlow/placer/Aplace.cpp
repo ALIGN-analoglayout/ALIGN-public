@@ -36,7 +36,7 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
   double eps=1e-5;
   double step_size=0.4;
   //double beta;//, step;
-  double f_j;//, f_k;
+  double f_j = 0.0;//, f_k;
   int count=0, MAX_COUNT=300000;
 // 1. initialize g0 and d0, x0
   for(int i=0;i<vec_len;++i) {G_j(i)=0; D_j(i)=0;} // G_j=0, D_j=0
@@ -145,7 +145,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
     for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,this->ABlocks.at(i).orient, tp, this->selected.at(i));
-          for(int k = 0; k<p_pin.size();++k){
+          for(unsigned int k = 0; k<p_pin.size();++k){
       placerDB::point newp = p_pin[k];
       fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
@@ -174,14 +174,14 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
   //cout<<"plot blocks..."<<endl;
   fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\'      with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+    string ort;
     placerDB::point tp;
     tp.x=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     //std::vector<point> newp=caseNL.GetPlacedBlockAbsBoundary(i, E, tp);
     std::vector<placerDB::point> newp=caseNL.GetPlacedBlockAbsBoundary(i, this->ABlocks.at(i).orient, tp, this->selected.at(i));
 
-    for(int it=0; it<(int)newp.size(); ++it ) {
+    for(unsigned int it=0; it<newp.size(); ++it ) {
       fout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
     }
     fout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
@@ -192,15 +192,15 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
   // plot block pins
   //cout<<"plot block pins..."<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
-    int x,y; string ort;
+    string ort;
     placerDB::point tp;
     tp.x=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, this->ABlocks.at(i).orient, tp, this->selected.at(i));
-      for(int k=0;k<newp_pin.size();++k){
+      for(unsigned int k=0;k<newp_pin.size();++k){
           std::vector<placerDB::point> newp_p = newp_pin[k];
-      for(int it=0; it<(int)newp_p.size(); ++it ) {
+      for(unsigned int it=0; it<newp_p.size(); ++it ) {
         fout<<"\t"<<newp_p[it].x<<"\t"<<newp_p[it].y<<endl;
       }
       fout<<"\t"<<newp_p[0].x<<"\t"<<newp_p[0].y<<endl;
@@ -241,7 +241,6 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     //bool hasTerminal=false;
     //int distTerm=INT_MIN;
     //int tno; 
-    placerDB::point tp;
     std::vector<placerDB::point> pins;
     pins.clear();
     // for each pin
@@ -264,7 +263,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     //if(hasTerminal) {pins.push_back(caseNL.Terminals.at(tno).center);}
     fout<<"\n#Net: "<<ni->name<<endl;
     if(pins.size()>=2) {
-    for(int i=1;i<(int)pins.size();++i) {
+    for(unsigned int i=1;i<pins.size();++i) {
       fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl;
       fout<<"\t"<<pins.at(i).x<<"\t"<<pins.at(i).y<<endl;
       fout<<"\t"<<pins.at(0).x<<"\t"<<pins.at(0).y<<endl<<endl;
@@ -546,7 +545,7 @@ double Aplace::CalculateWireLength(design& caseNL, boost_vector& x_k) {
         bp.y=x_k(2*ci->iter2+1)-caseNL.GetBlockHeight(ci->iter2, this->ABlocks.at(ci->iter2).orient,this->selected.at(ci->iter2))/2;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, this->ABlocks.at(ci->iter2).orient, bp, this->selected.at(ci->iter2));
         //pos_pin_all.push_back(pos_pin);
-        for(int i=0;i<pos_pin.size();++i){
+        for(unsigned int i=0;i<pos_pin.size();++i){
           p = pos_pin[i];
           pos.push_back(p);
           //if( caseNL.GetBlockSymmGroup(ci->iter2)==-1  ) { // not in any symmetry group

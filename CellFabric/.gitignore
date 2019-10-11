@@ -1,2 +1,5 @@
 __pycache__/
-*.tap
+*.gds.json
+*.json
+*.lef
+*_cand

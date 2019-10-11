@@ -1,29 +1,21 @@
-BOOST_LP?=/usr/local
-CC=g++ -w -Wall -std=c++11 -g -O3 -pthread
-CC2=$(CC) -I$(BOOST_LP)
-#CC=g++ -w -Wall -std=c++11 -g -DRFLAG
-SOURCE=./
-OBJECTS=main.o design.o Preadfile.o SeqPair.o ConstGraph.o Aplace.o
 
-all: design.o SeqPair.o ConstGraph.o Aplace.o Placer.o
+# Needs CXX and CXXFLAGS to be defined
 
-Placer.o :	Placer.h
-		$(CC2) -c Placer.cpp
+OBJS = design.o SeqPair.o ConstGraph.o Aplace.o Placer.o 
+SRCS=$(OBJS:.o=.cpp)
 
-Preadfile.o :
-		$(CC) -c Preadfile.cpp 
+all: depend unit_tests placer.a
 
-design.o:
-		$(CC) -c design.cpp 
+depend:
+	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
-SeqPair.o:
-		$(CC) -c SeqPair.cpp
+-include .depend
 
-ConstGraph.o:
-		$(CC2) -c ConstGraph.cpp
+unit_tests: unit_tests.o 
+	$(CXX) $(CXXFLAGS) -o $@ $^ -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS)
 
-Aplace.o:
-		$(CC2) -c Aplace.cpp
+placer.a: $(OBJS)
+	ar -r -o $@ $^
 
 clean:		
-		/bin/rm -f *.o 
+	/bin/rm -f *.o *.a unit_tests .depend
