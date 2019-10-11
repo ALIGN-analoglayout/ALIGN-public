@@ -8,8 +8,126 @@ this->I = out_I;
 
 }
 
-void MNASimulation::ExtractPowerGrid(){
+void MNASimulation::ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set){
 
+  MDB::metal_point temp_point; 
+ 
+  for(unsigned int i=0;i<temp_grid.metals.size();++i){
+     temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
+     temp_point.index = -1;
+     temp_point.x = temp_grid.metals[i].LinePoint[0].x;
+     temp_point.y = temp_grid.metals[i].LinePoint[0].y;
+     temp_set.insert(temp_point);
+     temp_point.x = temp_grid.metals[i].LinePoint[1].x;
+     temp_point.y = temp_grid.metals[i].LinePoint[1].y;
+     temp_set.insert(temp_point);
+  }
+
+};
+
+void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices){
+
+   for(unsigned int i=0;i<temp_grid.metals.size();++i){
+     
+       MDB::device temp_device;
+       MDB::metal_point temp_point; 
+       
+       if(temp_grid.metals[i].LinePoint[0].x != temp_grid.metals[i].LinePoint[1].x and temp_grid.metals[i].LinePoint[0].y != temp_grid.metals[i].LinePoint[1].y){
+
+          temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
+          temp_point.index = -1;
+          temp_point.x = temp_grid.metals[i].LinePoint[0].x;
+          temp_point.y = temp_grid.metals[i].LinePoint[0].y;
+          auto frist_point = point_set.find(temp_point);
+          int start_index = frist_point->index;
+
+          temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
+          temp_point.index = -1;
+          temp_point.x = temp_grid.metals[i].LinePoint[1].x;
+          temp_point.y = temp_grid.metals[i].LinePoint[1].y;
+          auto second_point = point_set.find(temp_point);
+          int end_index = end_point->index;
+
+          temp_device.device_type = MDB::R;
+          temp_device.start_point_index = start_index;
+          temp_device.end_point_index = end_index;
+          
+          int metal_index = temp_grid.metals[i].MetalIdx;
+          int metal_width = temp_grid.metals[i].width;
+          int single_width = drc_info.Metal_info[metal_index].width;
+          int unit_R = drc_info.Metal_info[metal_index].unit_R;
+          double times = (double) metal_width / (double) single_width;
+          temp_device.value = ((double) abs(frist_point->x-second_point->x) + (double) abs(frist_point->y-second_point->y))*unit_R/times;
+          
+          Power_Grid_devices.push_back(temp_device);
+
+        } 
+
+     }
+
+
+};
+
+void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices){
+
+   for(unsigned int i=0;i<temp_grid.vias.size();++i){
+     
+       MDB::device temp_device;
+       MDB::metal_point temp_point;
+
+       int model_index = temp_grid.vias[i].model_index;
+       int x = temp_grid.vias[i].placedpos.x;
+       int y = temp_grid.vias[i].placedpos.y;
+
+       temp_point.metal_layer = drc_info.Via_model[model_index].LowerIdx;
+       temp_point.index = -1;
+       temp_point.x = x;
+       temp_point.y = y;
+       auto frist_point = point_set.find(temp_point);
+       int start_index = frist_point->index;
+       
+       temp_point.metal_layer = drc_info.Via_model[model_index].UpperIdx;
+       temp_point.index = -1;
+       temp_point.x = x;
+       temp_point.y = y;
+       auto second_point = point_set.find(temp_point);
+       int end_index = second_point->index;
+
+       temp_device.device_type = MDB::R;
+       temp_device.start_point_index = start_index;
+       temp_device.end_point_index = end_index;
+       temp_device.value = drc_info.Via_model[model_index].R;
+       Power_Grid_devices.push_back(temp_device);
+
+     }
+
+
+};
+
+void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info){
+
+  std::vector<MDB::device> Power_Grid_devices;
+  
+  std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
+
+  ExtractPowerGridPoint(vdd, point_set);
+  ExtractPowerGridPoint(gnd, point_set);
+
+  int refresh_index = 0;
+
+  for(auto it = point_set.begin(); it != point_set.end(); ++it){
+     
+       it->index = refresh_index;
+       refresh_index = refresh_index + 1;
+     
+     }
+
+
+  ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices);
+  ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices);
+
+  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices);
+  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices);
 
 }
 

@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <vector>
 #include "Mdatatype.h"
+#include "../PnRDB/datatype.h"
+#include "../router/Rdatatype.h"
 
 
 typedef boost::numeric::ublas::matrix<double> boost_matrix;
@@ -32,6 +34,12 @@ class MNASimulation {
       boost_matrix ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Istore);
       //void ConstructI();
       int SolveIR_drop();
+
+      //added by yg
+      void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set);
+      void ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices);
+      void ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices);
+      void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info);
 
 };
 
