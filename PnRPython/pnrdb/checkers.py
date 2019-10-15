@@ -289,6 +289,13 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
             d['terminals'].append( term)
 
 
+        for (nm,lst) in cnv.rd.opens:
+            logger.info( f"OP: {nm} {lst}")            
+            for (jdx,l) in enumerate(lst):
+                for (ly,r) in l:
+                    term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
+                    d['terminals'].append( term)
+
         # multiply by ten make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=10)
 
