@@ -3,6 +3,7 @@ import json
 import importlib
 import sys
 import pathlib
+import re
 
 import logging
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False):
+def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, input_dir=None):
 
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name
@@ -99,11 +100,27 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
 
     for cblk in hN.Blocks:
         blk = cblk.instance[cblk.selectedInstance]
+        found = False
         if json_dir is not None:
             pth = pathlib.Path( json_dir + "/" + blk.master + ".json") 
             if not pth.is_file():
-                logger.warning( f"{pth.name} is not available; not importing subblock rectangles")
-                continue
+                logger.warning( f"{pth} is not available; not importing subblock rectangles")
+            else:
+                found = True
+        if not found and input_dir is not None:
+            p = re.compile( r"^\./Results/(\S+)\.gds$")
+            m = p.match( blk.gdsFile)
+            if m:
+                pth = pathlib.Path( input_dir + "/" + m.groups()[0] + ".json")
+                if not pth.is_file():
+                    logger.warning( f"{pth} not found in input_dir")
+                else:
+                    logger.warning( f"{pth} found in input_dir")
+                    found = True
+            else:
+                logger.warning( f"{blk.gdsFile} does not end in .gds")
+
+        if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
@@ -130,7 +147,8 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                     del term['pin']
                 if 'terminal' in term:
                     term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
-                terminals.append( term)
+                if term['layer'] not in ["boundary"]:
+                    terminals.append( term)
 
         if not checkOnly:
             for con in blk.interMetals:

@@ -33,7 +33,7 @@ if __name__ == "__main__":
     with open(fn,"rt") as fp:
         hN = hierNode(json.load(fp))
 
-    res = gen_viewer_json( hN, pdk=args.pdk, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check)
+    res = gen_viewer_json( hN, pdk=args.pdk, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check, input_dir=args.input_dir)
 
     if not args.check:
         d = res
