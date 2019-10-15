@@ -16,7 +16,7 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, input_dir=None):
+def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, input_dir=None, markers=False):
 
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name
@@ -280,6 +280,14 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
+
+        for (idx,(p0, p1)) in enumerate(cnv.rd.shorts):
+            logger.info( f"SH: {p0} {p1}")
+            term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
+            d['terminals'].append( term)
+            term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
+            d['terminals'].append( term)
+
 
         # multiply by ten make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=10)

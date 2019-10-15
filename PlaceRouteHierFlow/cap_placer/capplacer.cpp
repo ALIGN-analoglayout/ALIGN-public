@@ -1891,7 +1891,9 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	json unitTerminals = jsonUnit["terminals"];
 	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
 	    const json& term0 = jsonUnit["terminals"][j];
-	    
+	    	
+	    bool addNetName = true;
+
 	    json term1;
 
 	    if ( ni == -1) {
@@ -1904,16 +1906,22 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		} else {
 		    continue;
 		}
-		//		term1["netName"] = term0["netName"];
+		if ( addNetName) {
+		    term1["netName"] = term0["netName"];
+		}
 	    } else {
 		if ( term0["netName"] == "PLUS") {
 		    ostringstream os;
 		    os << "PLUS" << 1+ni;
-		    //		    term1["netName"] = os.str();
+		    if ( addNetName) {
+			term1["netName"] = os.str();
+		    }
 		} else if ( term0["netName"] == "MINUS") {
 		    ostringstream os;
 		    os << "MINUS" << 1+ni;
-		    //		    term1["netName"] = os.str();
+		    if ( addNetName) {
+			term1["netName"] = os.str();
+		    }
 		} else {
 		    continue;
 		}
@@ -1922,10 +1930,10 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    term1["layer"] = term0["layer"];
 	    json r0 = term0["rect"];
 	    json r1 = json::array();
-	    r1.push_back( r0[0].get<int>() + oX);
-	    r1.push_back( r0[1].get<int>() + oY);
-	    r1.push_back( r0[2].get<int>() + oX);
-	    r1.push_back( r0[3].get<int>() + oY);
+	    r1.push_back( -r0[0].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    r1.push_back(  r0[1].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    r1.push_back( -r0[2].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    r1.push_back(  r0[3].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
 	    term1["rect"] = r1;
 	    terminals.push_back( term1);
 	}
