@@ -52,6 +52,9 @@ class A_star {
     void right_path_SD(int end_index, int number, Grid& grid, std::vector<int>& path);
     void CovertToShieldingNet(Grid& grid, std::vector<int> &real_path, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
+    bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
+    void CheckExtendable(std::vector<int> &candidate_node, int current_node, Grid& grid);
+    int trace_back(int current_node, Grid& grid);
 };
 
 #endif
