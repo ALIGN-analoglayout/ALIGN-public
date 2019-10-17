@@ -2,14 +2,15 @@ import pytest
 
 from circuit.circuit import *
 
-def test_circuit():
-    inst = Circuit('X1')
+def test_n_terminal_device():
+    inst = NTerminalDevice('X1')
     assert inst.name == 'X1'
     with pytest.raises(AssertionError):
-        inst = Circuit('X2', 'net1')
+        inst = NTerminalDevice('X2', 'net1')
 
 def test_subckt():
     subckt = SubCircuit('test_subckt', 'pin1', 'pin2', param1=1, param2=1e-3, param3="0.1f", param4="hello")
+    assert subckt in library
     with pytest.raises(AssertionError):
         inst = subckt('X1')
     with pytest.raises(AssertionError):

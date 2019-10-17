@@ -1,6 +1,9 @@
-class Circuit():
+from networkx import Graph
+import sys, inspect
 
-	_prefix = 'X'
+class NTerminalDevice():
+
+	_prefix = ''
 	_pins = ()
 	_args = {} # name : type
 	_kwargs = {} # name : type
@@ -51,7 +54,7 @@ class Circuit():
 		# Attempt to cast string to float
 		if isinstance(val, str):
 			try:
-				val = Circuit.str2float(val)
+				val = NTerminalDevice.str2float(val)
 			except ValueError:
 				raise AssertionError("Attempting to cast invalid string to float")
 		# Check if it is safe to cast to int
@@ -62,9 +65,9 @@ class Circuit():
 
 	@staticmethod
 	def str2float(val):
-		unit = next((x for x in Circuit.unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
+		unit = next((x for x in NTerminalDevice.unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
 		numstr = val if unit is None else val[:-1*len(unit)]
-		return float(numstr) * Circuit.unit_multipliers[unit]
+		return float(numstr) * NTerminalDevice.unit_multipliers[unit]
 
 	@staticmethod
 	def get_param_type(val):
@@ -73,29 +76,44 @@ class Circuit():
 		# Attempt to cast string to float
 		if isinstance(val, str):
 			try:
-				val = Circuit.str2float(val)
+				val = NTerminalDevice.str2float(val)
 			except ValueError:
 				return str
 		return int if isinstance(val, int) or val.is_integer() else float
 
+class Circuit(Graph):
+	pass
+
+class _SubCircuit(NTerminalDevice, Circuit):
+	_prefix = 'X'
+	_args = {'subckt': str}
+
 def SubCircuit(name, *pins, **parameters):
 	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	return type(name, (Circuit,), {'_pins': pins, '_args': {'subckt': str}, '_kwargs': {x: (str if issubclass(Circuit.get_param_type(y), str) else float, y)  for x, y in parameters.items()}})
+	# Automatically register subcircuit into design library for later reuse
+	library.append(
+		type(name, (_SubCircuit,), {
+			'_pins': pins,
+			'_kwargs': {x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()}}))
+	# return new class containing subcircuit
+	return library[-1]
 
-class MosFET(Circuit):
+class MosFET(NTerminalDevice):
 	_prefix = 'M'
 	_pins = ('D', 'G', 'S', 'B')
 	_args = {'model': str}
 	_kwargs = {'w' : (float, 0), 'l' : (float, 0), 'nfin' : (int, 1)}
 
-class Capacitor(Circuit):
+class Capacitor(NTerminalDevice):
 	_prefix = 'C'
 	_pins = ('plus', 'minus')
 	_args = {'value': float}
 	_kwargs = {}
 
-class Resistor(Circuit):
+class Resistor(NTerminalDevice):
 	_prefix = 'R'
 	_pins = ('plus', 'minus')
 	_args = {'value': float}
 	_kwargs = {}
+
+library = inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and issubclass(x, NTerminalDevice))
