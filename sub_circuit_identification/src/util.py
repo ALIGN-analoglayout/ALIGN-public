@@ -28,7 +28,7 @@ def plt_graph(subgraph,sub_block_name):
     copy_graph=subgraph
     for node,attr in list(copy_graph.nodes(data=True)):
         #print(node)
-        #print(copy_graph.node[node])
+        #print(copy_graph.nodes[node])
         if 'source' in attr["inst_type"]:
             #print("deleting source node",node)
             #   copy_graph.nodes(node)['inst_type']:

@@ -506,7 +506,7 @@ class SpiceParser:
         logging.info(
             "Created bipartitie graph with Total no of Nodes: %i edges: %i",
             len(circuit_graph), circuit_graph.number_of_edges())
-        #print(circuit_graph.node['xM03|MN0']["ports"])
+        #print(circuit_graph.nodes['xM03|MN0']["ports"])
         return circuit_graph
 
 
@@ -576,7 +576,7 @@ if __name__ == '__main__':
                 sp = SpiceParser(NETLIST_DIR + '/' + netlist)
 
             final_circuit_graph = sp.sp_parser()
-            #print(final_circuit_graph.node['xM03|MN0']["ports"])
+            #print(final_circuit_graph.nodes['xM03|MN0']["ports"])
             if final_circuit_graph:
                 ckt_name = netlist.split('.')[0]
                 logging.info("Saving graph: %s", ckt_name)
