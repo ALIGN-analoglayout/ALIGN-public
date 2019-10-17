@@ -248,8 +248,8 @@ def preprocess_stack(G):
                 if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
                         logging.info(" checking nodes: %s , %s",node,next_node)
-                        if not next_node == node and G.node[next_node][
-                                "inst_type"] == G.node[node][
+                        if not next_node == node and G.nodes[next_node][
+                                "inst_type"] == G.nodes[node][
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set(
@@ -267,13 +267,13 @@ def preprocess_stack(G):
                                         ['weight'] >= 2:
 
                                     lequivalent = 0
-                                    for param, value in G.node[next_node][
+                                    for param, value in G.nodes[next_node][
                                             "values"].items():
                                         if param == 'l':
                                             #print("param1",node,param,value)
                                             lequivalent = float(
                                                 convert_unit(value))
-                                    for param, value in G.node[node][
+                                    for param, value in G.nodes[node][
                                             "values"].items():
                                         if param == 'l':
                                             lequivalent += float(
@@ -291,7 +291,7 @@ def preprocess_stack(G):
         G.add_edge(node, attr[0], weight=attr[1])
 
     for node, attr in modified_nodes.items():
-        G.node[node]["values"]['l'] = attr
+        G.nodes[node]["values"]['l'] = attr
 
     for node in remove_nodes:
         G.remove_node(node)
