@@ -1,5 +1,4 @@
 from networkx import Graph
-import sys, inspect
 
 class NTerminalDevice():
 
@@ -88,32 +87,3 @@ class _SubCircuit(NTerminalDevice, Circuit):
 	_prefix = 'X'
 	_args = {'subckt': str}
 
-def SubCircuit(name, *pins, **parameters):
-	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	# Automatically register subcircuit into design library for later reuse
-	library.append(
-		type(name, (_SubCircuit,), {
-			'_pins': pins,
-			'_kwargs': {x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()}}))
-	# return new class containing subcircuit
-	return library[-1]
-
-class MosFET(NTerminalDevice):
-	_prefix = 'M'
-	_pins = ('D', 'G', 'S', 'B')
-	_args = {'model': str}
-	_kwargs = {'w' : (float, 0), 'l' : (float, 0), 'nfin' : (int, 1)}
-
-class Capacitor(NTerminalDevice):
-	_prefix = 'C'
-	_pins = ('plus', 'minus')
-	_args = {'value': float}
-	_kwargs = {}
-
-class Resistor(NTerminalDevice):
-	_prefix = 'R'
-	_pins = ('plus', 'minus')
-	_args = {'value': float}
-	_kwargs = {}
-
-library = inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and issubclass(x, NTerminalDevice))
