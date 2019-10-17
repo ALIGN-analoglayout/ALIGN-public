@@ -78,32 +78,32 @@ def test_PMOS():
         inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet', nfin = 1.5)
 
 def test_res():
-    assert elements.Resistor.__name__ in elements.library
-    assert elements.library[elements.Resistor.__name__] is elements.Resistor
-    assert elements.Resistor in elements.library.values()
+    assert elements.RES.__name__ in elements.library
+    assert elements.library[elements.RES.__name__] is elements.RES
+    assert elements.RES in elements.library.values()
     with pytest.raises(AssertionError):
-        inst = elements.Resistor('R1', 'net10')
+        inst = elements.RES('R1', 'net10')
     with pytest.raises(AssertionError):
-        inst = elements.Resistor('R1', 'net10', 'net12')
+        inst = elements.RES('R1', 'net10', 'net12')
     with pytest.raises(AssertionError):
-        inst = elements.Resistor('X1', 'net10', 'net12', 1.3)
-    inst = elements.Resistor('R1', 'net10', 'net12', 1.3)
+        inst = elements.RES('X1', 'net10', 'net12', 1.3)
+    inst = elements.RES('R1', 'net10', 'net12', 1.3)
     assert inst.name == 'R1'
-    assert type(inst).__name__ == 'Resistor'
+    assert type(inst).__name__ == 'RES'
     assert inst.pins == {'plus': 'net10', 'minus': 'net12'}
     assert inst.parameters['value'] == 1.3
 
 def test_cap():
-    assert elements.Capacitor.__name__ in elements.library
-    assert elements.Capacitor in elements.library.values()
+    assert elements.CAP.__name__ in elements.library
+    assert elements.CAP in elements.library.values()
     with pytest.raises(AssertionError):
-        inst = elements.Capacitor('C1', 'net10')
+        inst = elements.CAP('C1', 'net10')
     with pytest.raises(AssertionError):
-        inst = elements.Capacitor('C1', 'net10', 'net12')
+        inst = elements.CAP('C1', 'net10', 'net12')
     with pytest.raises(AssertionError):
-        inst = elements.Capacitor('X1', 'net10', 'net12', 1.3)
-    inst = elements.Capacitor('C1', 'net10', 'net12', 1.3)
+        inst = elements.CAP('X1', 'net10', 'net12', 1.3)
+    inst = elements.CAP('C1', 'net10', 'net12', 1.3)
     assert inst.name == 'C1'
-    assert type(inst).__name__ == 'Capacitor'
+    assert type(inst).__name__ == 'CAP'
     assert inst.pins == {'plus': 'net10', 'minus': 'net12'}
     assert inst.parameters['value'] == 1.3

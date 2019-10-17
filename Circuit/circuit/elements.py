@@ -22,13 +22,13 @@ class NMOS(_MosFET):
 class PMOS(_MosFET):
 	pass
 
-class Capacitor(NTerminalDevice):
+class CAP(NTerminalDevice):
 	_prefix = 'C'
 	_pins = ('plus', 'minus')
 	_args = {'value': float}
 	_kwargs = {}
 
-class Resistor(NTerminalDevice):
+class RES(NTerminalDevice):
 	_prefix = 'R'
 	_pins = ('plus', 'minus')
 	_args = {'value': float}
