@@ -1119,7 +1119,7 @@ int A_star::trace_back(int current_node, Grid& grid){
 
   while(trace_back_flag){
 
-    int last_node = grid.vertices_total[dummy_node].parent;
+    unsigned int last_node = grid.vertices_total[dummy_node].parent;
 
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
@@ -1141,7 +1141,7 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
 
   std::vector<int> feasible_node;
 
-  for(int i=0;i<candidate_node.size();i++){
+  for(unsigned int i=0;i<candidate_node.size();i++){
 
      int next_node = candidate_node[i];
      if(grid.vertices_total[current_node].metal==grid.vertices_total[next_node].metal){
@@ -1189,21 +1189,21 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
      current_direction = -1;
 
   }
-  
+
   bool search_flag = true;
   int culmulated_length = 0;
   while(search_flag){
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       int next_node = first_node_same_layer + first_direction;
+       unsigned int next_node = first_node_same_layer + first_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x ! = grid.vertices_total[first_node_same_layer].x and grid.vertices_total[next_node].y ! = grid.vertices_total[first_node_same_layer].y) or grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[first_node_same_layer].x and grid.vertices_total[next_node].y != grid.vertices_total[first_node_same_layer].y) or grid.vertices_total[next_node].metal != grid.vertices_total[first_node_same_layer].metal ){
           search_flag = false;
           feasible = false;
        }else {
@@ -1217,14 +1217,14 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       int next_node = current_node + current_direction;
+       unsigned int next_node = current_node + current_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
        }else if(grid.vertices_total[next_node].active==0) {
           search_flag = false;
           feasible = false;
-       }else if( (grid.vertices_total[next_node].x ! = grid.vertices_total[current_node].x and grid.vertices_total[next_node].y ! = grid.vertices_total[current_node].y) or grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
+       }else if( (grid.vertices_total[next_node].x != grid.vertices_total[current_node].x and grid.vertices_total[next_node].y != grid.vertices_total[current_node].y) or grid.vertices_total[next_node].metal != grid.vertices_total[current_node].metal){
           search_flag = false;
           feasible = false;
        }else {
