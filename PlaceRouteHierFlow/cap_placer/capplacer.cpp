@@ -362,7 +362,9 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step5"<<endl;
   ExtractData(fpath ,unit_capacitor, final_gds, uc, drc_info, H_metal_index, V_metal_index, HV_via_metal_index, opath);
   cout<<"step6"<<endl;
-  WriteJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
+  WriteGDSJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
+  cout<<"step6b"<<endl;
+  WriteViewerJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
   cout<<"step7"<<endl;
   //PrintPlacer_Router_Cap(outfile);
   cout<<"step8"<<endl;
@@ -1595,7 +1597,7 @@ Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
 }
 
 void
-Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::Drc_info & drc_info, const string& opath) {
+Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::Drc_info & drc_info, const string& opath) {
     //begin to write JSON file from unit capacitor to final capacitor file
     string gds_unit_capacitor = fpath+"/"+unit_capacitor+".gds";
     string topGDS_loc = opath+final_gds+".gds";
@@ -1766,6 +1768,187 @@ Placer_Router_Cap::WriteJSON (const string& fpath, const string& unit_capacitor,
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
     std::cout << "CAP GDS JSON FINALIZE " <<  unit_capacitor << std::endl;
+}
+
+void
+Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capacitor, const string& top_name, const PnRDB::Drc_info & drc_info, const string& opath) {
+    // write Viewer JSON file for capacitor array
+
+    int unitScale = 5; /* PnRDB units to angstroms */
+
+    json jsonTop;
+
+    json bbox = json::array();
+    bbox.push_back( 0);
+    bbox.push_back( 0);
+    bbox.push_back( CheckOutBlock.width*unitScale);
+    bbox.push_back( CheckOutBlock.height*unitScale);
+
+    jsonTop["bbox"] = bbox;
+
+    jsonTop["globalRoutes"] = json::array();
+    jsonTop["globalRouteGrid"] = json::array();
+
+    json terminals = json::array();
+
+    //writing metals
+    int x[5], y[5];
+
+    auto doit0 = [&](const auto& n_array) {
+	for(unsigned int i=0; i< n_array.size(); i++){//for each net
+	    const auto& n = n_array[i];
+	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
+
+		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
+		int width = mi.width/2;
+		fillPathBoundingBox (x, y, n.start_conection_coord[j],
+				     n.end_conection_coord[j], width);
+
+		for (int i = 0; i < 5; i++) {
+		    x[i] *= unitScale;
+		    y[i] *= unitScale;
+		}
+
+		json term;
+		term["netName"] = n.name;
+		term["layer"] = n.metal[j];
+ 
+		json xy = json::array();
+		xy.push_back( x[0]);
+		xy.push_back( y[0]);
+		xy.push_back( x[2]);
+		xy.push_back( y[2]);
+
+		term["rect"] = xy;
+
+		terminals.push_back( term);
+	    }   
+	}
+    };
+    doit0( Nets_pos);
+    doit0( Nets_neg);
+  
+    auto doit1 = [&](const auto& n_array) {
+	for (unsigned int i = 0; i < n_array.size(); i++) {
+	    const auto& n = n_array[i];
+	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
+		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
+		int width = r.x;
+		x[0]=n.via[j].first - width+offset_x;
+		x[1]=n.via[j].first - width+offset_x;
+		x[2]=n.via[j].first + width+offset_x;
+		x[3]=n.via[j].first + width+offset_x;
+		x[4]=x[0];
+		width = r.y;
+		y[0]=n.via[j].second - width+offset_y;
+		y[1]=n.via[j].second + width+offset_y;
+		y[2]=n.via[j].second + width+offset_y;
+		y[3]=n.via[j].second - width+offset_y;
+		y[4]=y[0];
+        
+		for (int i = 0; i < 5; i++) {
+		    x[i] *= unitScale;
+		    y[i] *= unitScale;
+		}
+    
+		json term;
+		term["netName"] = n.name;
+		term["layer"] = n.via_metal[j];
+
+		json xy = json::array();
+		xy.push_back( x[0]);
+		xy.push_back( y[0]);
+		xy.push_back( x[2]);
+		xy.push_back( y[2]);
+
+		term["rect"] = xy;
+
+		terminals.push_back( term);
+	    }
+	}
+    };
+    doit1( Nets_pos);
+    doit1( Nets_neg);
+
+       
+    json jsonUnit;
+    {
+	std::ifstream jsonStream;
+	jsonStream.open( fpath+"/"+unit_capacitor+".json");
+	jsonStream >> jsonUnit;
+	jsonStream.close();
+    }
+
+    std::cout << "Nets_pos.size(): " << Nets_pos.size() << std::endl;
+    std::cout << "Nets_neg.size(): " << Nets_neg.size() << std::endl;
+
+    for (unsigned int i = 0; i < Caps.size(); i++) {
+	int oX = unitScale*(Caps[i].x-unit_cap_demension.first/2+offset_x);
+	int oY = unitScale*(Caps[i].y-unit_cap_demension.second/2+offset_y);
+
+	int ni = Caps[i].net_index;
+
+	json unitTerminals = jsonUnit["terminals"];
+	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
+	    const json& term0 = jsonUnit["terminals"][j];
+	    	
+	    bool addNetName = true;
+
+	    json term1;
+
+	    if ( ni == -1) {
+		term1["netName"] = "dummy_gnd";
+	    } else if ( Nets_pos.size() == 2) {
+		assert( Nets_neg.size() == 2);
+		assert( ni == 0);
+		if ( term0["netName"] == "PLUS") {
+		} else if ( term0["netName"] == "MINUS") {
+		} else {
+		    continue;
+		}
+		if ( addNetName) {
+		    term1["netName"] = term0["netName"];
+		}
+	    } else {
+		if ( term0["netName"] == "PLUS") {
+		    ostringstream os;
+		    os << "PLUS" << 1+ni;
+		    if ( addNetName) {
+			term1["netName"] = os.str();
+		    }
+		} else if ( term0["netName"] == "MINUS") {
+		    ostringstream os;
+		    os << "MINUS" << 1+ni;
+		    if ( addNetName) {
+			term1["netName"] = os.str();
+		    }
+		} else {
+		    continue;
+		}
+	    }
+
+	    term1["layer"] = term0["layer"];
+	    json r0 = term0["rect"];
+	    json r1 = json::array();
+	    r1.push_back( -r0[0].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    r1.push_back(  r0[1].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    r1.push_back( -r0[2].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    r1.push_back(  r0[3].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    term1["rect"] = r1;
+	    terminals.push_back( term1);
+	}
+    }
+
+    jsonTop["terminals"] = terminals;
+
+    {
+	std::ofstream jsonStream;
+	std::string fn = opath + top_name + ".json";
+	std::cout << "Writing JSON file: " << fn << std::endl;
+	jsonStream.open( fn);
+	jsonStream << std::setw(4) << jsonTop;
+	jsonStream.close();
+    }
 }
 
 void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, bool aspect_ratio, int num_aspect){ //if aspect_ratio 1, then do CC with different aspect_ratio; Else not.
