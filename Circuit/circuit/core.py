@@ -99,3 +99,7 @@ class Circuit(Graph):
 class _SubCircuit(NTerminalDevice, Circuit):
 	_prefix = 'X'
 	_args = {'subckt': str}
+
+	def __init__(self, *args, **kwargs):
+		NTerminalDevice.__init__(self, *args, **kwargs)
+		Circuit.__init__(self)
