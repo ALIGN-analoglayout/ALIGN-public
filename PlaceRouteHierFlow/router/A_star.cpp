@@ -1138,7 +1138,8 @@ int A_star::trace_back(int current_node, Grid& grid){
 };
 
 void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node, Grid& grid){
-
+  
+  std::cout<<"start CheckExtendable"<<std::endl;
   std::vector<int> feasible_node;
 
   for(unsigned int i=0;i<candidate_node.size();i++){
@@ -1147,13 +1148,17 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
      if(grid.vertices_total[current_node].metal==grid.vertices_total[next_node].metal){
        feasible_node.push_back(next_node);
      }else{
+       std::cout<<"start trace_back"<<std::endl;
        int first_node_same_layer = trace_back(current_node,grid);
+       std::cout<<"end trace_back"<<std::endl;
        int metal = grid.vertices_total[current_node].metal;
        int length = abs(grid.vertices_total[current_node].x - grid.vertices_total[first_node_same_layer].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[first_node_same_layer].y);
        int minL = drc_info.Metal_info[metal].minL;
        int delta_length = length - minL;
        if(delta_length<0){
+           std::cout<<"start CheckExendable_With_Certain_Length"<<std::endl;
            bool feasible = CheckExendable_With_Certain_Length(first_node_same_layer,current_node,length,minL,grid);
+           std::cout<<"End CheckExendable_With_Certain_Length"<<std::endl;
            if(feasible){
                feasible_node.push_back(next_node);
              }           
@@ -1165,6 +1170,8 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
   }
 
   candidate_node = feasible_node;
+
+  std::cout<<"End CheckExtendable"<<std::endl;
 
 };
 
@@ -1192,11 +1199,12 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
 
   bool search_flag = true;
   int culmulated_length = 0;
+  int dummy_node = first_node_same_layer;
   while(search_flag){
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       unsigned int next_node = first_node_same_layer + first_direction;
+       unsigned int next_node = dummy_node + first_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
@@ -1208,16 +1216,18 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
           feasible = false;
        }else {
           culmulated_length = abs(grid.vertices_total[next_node].x-grid.vertices_total[first_node_same_layer].x) + abs( grid.vertices_total[next_node].y-grid.vertices_total[first_node_same_layer].y);
+          dummy_node = next_node;
        }
      }
   }
 
   culmulated_length = 0;
+  dummy_node = current_node;
   while(search_flag){
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       unsigned int next_node = current_node + current_direction;
+       unsigned int next_node = dummy_node + current_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
@@ -1229,6 +1239,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
           feasible = false;
        }else {
           culmulated_length = abs(grid.vertices_total[next_node].x-grid.vertices_total[current_node].x) + abs( grid.vertices_total[next_node].y-grid.vertices_total[current_node].y);
+          dummy_node = next_node;
        }
      }
   }
