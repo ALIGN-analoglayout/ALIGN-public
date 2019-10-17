@@ -23,6 +23,24 @@ def test_2_terminal_device():
     assert inst.pins == {'a': 'net1', 'b': 'net2'}
     assert inst.parameters == {}
 
+def test_3_terminal_device_w_parameter():
+    MyThreeTerminalDevice = type('MyThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_kwargs': {'myparameter': (int, 1)}})
+    with pytest.raises(AssertionError):
+        inst = MyThreeTerminalDevice('X1')
+    with pytest.raises(AssertionError):
+        inst = MyThreeTerminalDevice('X1', 'net1')
+    with pytest.raises(AssertionError):
+        inst = MyThreeTerminalDevice('X1', 'net1', 'net2')
+    with pytest.raises(AssertionError):
+        inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3', garbageparameter=2)
+    inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3')
+    assert inst.name == 'X1'
+    assert type(inst).__name__ == 'MyThreeTerminalDevice'
+    assert inst.pins == {'a': 'net1', 'b': 'net2', 'c': 'net3'}
+    assert inst.parameters == {'myparameter': 1}
+    inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3', myparameter = 2)
+    assert inst.parameters == {'myparameter': 2}
+
 def test_subckt_class():
     subckt = type('test_subckt', (_SubCircuit,), {
         '_pins': ['pin1', 'pin2'],
@@ -38,3 +56,32 @@ def test_subckt_class():
     assert type(inst).__name__ == 'test_subckt'
     assert inst.pins == {'pin1': 'net10', 'pin2': 'net12'}
     assert inst.parameters == {'subckt': 'test_subckt', 'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
+
+def test_circuit():
+    TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
+    ThreeTerminalDevice = type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c']})
+    ckt = Circuit()
+    X1 = ckt.add_element(TwoTerminalDevice('X1', 'net1', 'net2'))
+    X2 = ckt.add_element(ThreeTerminalDevice('X2', 'net1', 'net2', 'net3'))
+    assert ckt.elements == [X1, X2]
+    assert ckt.nets == ['net1', 'net2', 'net3']
+    # Advanced graphx functionality test
+    nodes = [X1, (X1, 'a'), (X1, 'b'),
+             X2, (X2, 'a'), (X2, 'b'), (X2, 'c'),
+             'net1', 'net2', 'net3']
+    assert all(x in ckt.nodes for x in nodes)
+    assert all(x in nodes for x in ckt.nodes)
+    edges = [# X1 -> X1 pins
+             (X1, (X1, 'a')), (X1, (X1, 'b')),
+             ((X1, 'a'), X1), ((X1, 'b'), X1),
+             # X1 pins -> nets
+             ((X1, 'a'), 'net1'), ((X1, 'b'), 'net2'),
+             ('net1', (X1, 'a')), ('net2', (X1, 'b')),
+             # X2 -> X2 pins
+             (X2, (X2, 'a')), (X2, (X2, 'b')), (X2, (X2, 'c')),
+             ((X2, 'a'), X2), ((X2, 'b'), X2), ((X2, 'c'), X2),
+             # X2 pins -> nets
+             ((X2, 'a'), 'net1'), ((X2, 'b'), 'net2'), ((X2, 'c'), 'net3'),
+             ('net1', (X2, 'a')), ('net2', (X2, 'b')), ('net3', (X2, 'c'))]
+    assert all(x in ckt.edges for x in edges), ckt.edges
+    assert all(x in edges for x in ckt.edges), ckt.edges

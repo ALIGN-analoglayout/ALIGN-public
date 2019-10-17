@@ -81,9 +81,21 @@ class NTerminalDevice():
 		return int if isinstance(val, int) or val.is_integer() else float
 
 class Circuit(Graph):
-	pass
+
+	@property
+	def elements(self):
+		return [x for x in self.nodes if isinstance(x, NTerminalDevice)]
+
+	@property
+	def nets(self):
+		return [x for x in self.nodes if isinstance(x, str)]
+
+	def add_element(self, element):
+		assert isinstance(element, NTerminalDevice)
+		self.add_edges_from([(element, (element, pin)) for pin in element.pins.keys()])
+		self.add_edges_from([((element, pin), net) for pin, net in element.pins.items()])
+		return element
 
 class _SubCircuit(NTerminalDevice, Circuit):
 	_prefix = 'X'
 	_args = {'subckt': str}
-
