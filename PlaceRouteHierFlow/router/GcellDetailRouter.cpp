@@ -2436,11 +2436,11 @@ void GcellDetailRouter::ExtendMetal(){
    
             if(direction==1){//h
              
-               ExtendX(temp_metal, extend_dis);
+               ExtendX(Nets[i].path_metal[j], extend_dis);
                
             }else{//v
               
-               ExtendY(temp_metal, extend_dis);
+               ExtendY(Nets[i].path_metal[j], extend_dis);
               
             }
 
