@@ -49,13 +49,11 @@ def test_subckt_class():
         inst = subckt('X1')
     with pytest.raises(AssertionError):
         inst = subckt('X1', 'net10')
-    with pytest.raises(AssertionError):
-        inst = subckt('X1', 'net10', 'net12')
-    inst = subckt('X1', 'net10', 'net12', 'test_subckt')
+    inst = subckt('X1', 'net10', 'net12')
     assert inst.name == 'X1'
     assert type(inst).__name__ == 'test_subckt'
     assert inst.pins == {'pin1': 'net10', 'pin2': 'net12'}
-    assert inst.parameters == {'subckt': 'test_subckt', 'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
+    assert inst.parameters == {'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
 
 def test_circuit():
     TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})

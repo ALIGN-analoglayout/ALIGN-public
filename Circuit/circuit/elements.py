@@ -13,7 +13,7 @@ def SubCircuit(name, *pins, **parameters):
 class _MosFET(NTerminalDevice):
 	_prefix = 'M'
 	_pins = ('D', 'G', 'S', 'B')
-	_args = {'model': str}
+	_args = {}
 	_kwargs = {'w' : (float, 0), 'l' : (float, 0), 'nfin' : (int, 1)}
 
 class NMOS(_MosFET):

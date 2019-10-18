@@ -11,23 +11,20 @@ def test_subckt():
         inst = subckt('X1')
     with pytest.raises(AssertionError):
         inst = subckt('X1', 'net10')
-    with pytest.raises(AssertionError):
-        inst = subckt('X1', 'net10', 'net12')
-    inst = subckt('X1', 'net10', 'net12', 'test_subckt')
+    inst = subckt('X1', 'net10', 'net12')
     assert inst.name == 'X1'
     assert type(inst).__name__ == 'test_subckt'
     assert inst.pins == {'pin1': 'net10', 'pin2': 'net12'}
-    assert list(inst.parameters.keys()) == ['subckt', 'param1', 'param2', 'param3', 'param4']
-    assert inst.parameters['subckt'] == 'test_subckt'
+    assert list(inst.parameters.keys()) == ['param1', 'param2', 'param3', 'param4']
     assert inst.parameters['param1'] == 1
     assert inst.parameters['param2'] - 1e-3 <= 1e-19 # safe floating point comparison
     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
     assert inst.parameters['param4'] == 'hello'
     with pytest.raises(AssertionError):
-        inst = subckt('X1', 'net10', 'net12', 'test_subckt', garbage='')
+        inst = subckt('X1', 'net10', 'net12', garbage='')
     with pytest.raises(AssertionError):
-        inst = subckt('X1', 'net10', 'net12', 'test_subckt', param1='invalid_number')
-    inst = subckt('X1', 'net10', 'net12', 'test_subckt', param1=2, param3=1e-16)
+        inst = subckt('X1', 'net10', 'net12', param1='invalid_number')
+    inst = subckt('X1', 'net10', 'net12', param1=2, param3=1e-16)
     assert inst.parameters['param1'] == 2
     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
 
@@ -37,22 +34,19 @@ def test_NMOS():
     with pytest.raises(AssertionError):
         inst = elements.NMOS('M1', 'net10', 'net12', 'net13')
     with pytest.raises(AssertionError):
-        inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss')
-    with pytest.raises(AssertionError):
-        inst = elements.NMOS('X1', 'net10', 'net12', 'net13', 'vss', 'nfet')
-    inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet')
+        inst = elements.NMOS('X1', 'net10', 'net12', 'net13', 'vss')
+    inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss')
     assert inst.name == 'M1'
     assert type(inst).__name__ == 'NMOS'
     assert inst.pins == {'D': 'net10', 'G': 'net12', 'S': 'net13', 'B': 'vss'}
-    assert list(inst.parameters.keys()) == ['model', 'w', 'l', 'nfin']
-    assert inst.parameters['model'] == 'nfet'
+    assert list(inst.parameters.keys()) == ['w', 'l', 'nfin']
     assert inst.parameters['w'] == 0
     assert inst.parameters['l'] == 0
     assert inst.parameters['nfin'] == 1
-    inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet', nfin = 2)
+    inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 2)
     assert inst.parameters['nfin'] == 2
     with pytest.raises(AssertionError):
-        inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet', nfin = 1.5)
+        inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 1.5)
 
 def test_PMOS():
     assert 'PMOS' in elements.library
@@ -60,22 +54,19 @@ def test_PMOS():
     with pytest.raises(AssertionError):
         inst = elements.PMOS('M1', 'net10', 'net12', 'net13')
     with pytest.raises(AssertionError):
-        inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss')
-    with pytest.raises(AssertionError):
-        inst = elements.PMOS('X1', 'net10', 'net12', 'net13', 'vss', 'nfet')
-    inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet')
+        inst = elements.PMOS('X1', 'net10', 'net12', 'net13', 'vss')
+    inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss')
     assert inst.name == 'M1'
     assert type(inst).__name__ == 'PMOS'
     assert inst.pins == {'D': 'net10', 'G': 'net12', 'S': 'net13', 'B': 'vss'}
-    assert list(inst.parameters.keys()) == ['model', 'w', 'l', 'nfin']
-    assert inst.parameters['model'] == 'nfet'
+    assert list(inst.parameters.keys()) == ['w', 'l', 'nfin']
     assert inst.parameters['w'] == 0
     assert inst.parameters['l'] == 0
     assert inst.parameters['nfin'] == 1
-    inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet', nfin = 2)
+    inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 2)
     assert inst.parameters['nfin'] == 2
     with pytest.raises(AssertionError):
-        inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', 'nfet', nfin = 1.5)
+        inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 1.5)
 
 def test_res():
     assert elements.RES.__name__ in elements.library
