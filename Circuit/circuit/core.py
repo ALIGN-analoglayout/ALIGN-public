@@ -4,22 +4,20 @@ class NTerminalDevice():
 
 	_prefix = ''
 	_pins = ()
-	_args = {} # name : type
-	_kwargs = {} # name : type
+	_parameters = {} # name : (type, defaultval)
 
 	name = ''
 	pins = {} # name: net
 	parameters = {} # name : val
 
-	def __init__(self, name, *args, **kwargs):
+	def __init__(self, name, *pins, **parameters):
 		self.name = name
 		assert self.name.startswith(self._prefix)
-		assert len(args) == len(self._pins) + len(self._args), f"One or more positional arguments has not been specified. Need pins {self._pins} and arguments {tuple(self._args.keys())}"
-		self.pins = {pin: net for pin, net in zip(self._pins, args[:len(self._pins)])}
-		self.parameters = {param: self._cast(val, ty) for (param, ty), val in zip(self._args.items(), args[len(self._pins):])}
-		assert all(x in self._kwargs for x in kwargs.keys())
-		self.parameters.update({param: self._cast(val, ty) for param, (ty, val) in self._kwargs.items()})
-		self.parameters.update({param: self._cast(val, self._kwargs[param][0]) for param, val in kwargs.items()})
+		assert len(pins) == len(self._pins), f"One or more positional arguments has not been specified. Need name and pins {self._pins}"
+		self.pins = {pin: net for pin, net in zip(self._pins, pins)}
+		self.parameters = {param: self._cast(val, ty) for param, (ty, val) in self._parameters.items()}
+		assert all(x in self._parameters for x in parameters.keys())
+		self.parameters.update({param: self._cast(val, self._parameters[param][0]) for param, val in parameters.items()})
 
 	unit_multipliers = {
 		'T': 1e12,
@@ -99,6 +97,6 @@ class Circuit(Graph):
 class _SubCircuit(NTerminalDevice, Circuit):
 	_prefix = 'X'
 
-	def __init__(self, *args, **kwargs):
-		NTerminalDevice.__init__(self, *args, **kwargs)
+	def __init__(self, *pins, **parameters):
+		NTerminalDevice.__init__(self, *pins, **parameters)
 		Circuit.__init__(self)

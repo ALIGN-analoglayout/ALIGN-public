@@ -75,10 +75,8 @@ def test_res():
     with pytest.raises(AssertionError):
         inst = elements.RES('R1', 'net10')
     with pytest.raises(AssertionError):
-        inst = elements.RES('R1', 'net10', 'net12')
-    with pytest.raises(AssertionError):
         inst = elements.RES('X1', 'net10', 'net12', 1.3)
-    inst = elements.RES('R1', 'net10', 'net12', 1.3)
+    inst = elements.RES('R1', 'net10', 'net12', value=1.3)
     assert inst.name == 'R1'
     assert type(inst).__name__ == 'RES'
     assert inst.pins == {'plus': 'net10', 'minus': 'net12'}
@@ -90,10 +88,8 @@ def test_cap():
     with pytest.raises(AssertionError):
         inst = elements.CAP('C1', 'net10')
     with pytest.raises(AssertionError):
-        inst = elements.CAP('C1', 'net10', 'net12')
-    with pytest.raises(AssertionError):
         inst = elements.CAP('X1', 'net10', 'net12', 1.3)
-    inst = elements.CAP('C1', 'net10', 'net12', 1.3)
+    inst = elements.CAP('C1', 'net10', 'net12', value=1.3)
     assert inst.name == 'C1'
     assert type(inst).__name__ == 'CAP'
     assert inst.pins == {'plus': 'net10', 'minus': 'net12'}

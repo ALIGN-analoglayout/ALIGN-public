@@ -24,7 +24,7 @@ def test_2_terminal_device():
     assert inst.parameters == {}
 
 def test_3_terminal_device_w_parameter():
-    MyThreeTerminalDevice = type('MyThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_kwargs': {'myparameter': (int, 1)}})
+    MyThreeTerminalDevice = type('MyThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
     with pytest.raises(AssertionError):
         inst = MyThreeTerminalDevice('X1')
     with pytest.raises(AssertionError):
@@ -44,7 +44,7 @@ def test_3_terminal_device_w_parameter():
 def test_subckt_class():
     subckt = type('test_subckt', (_SubCircuit,), {
         '_pins': ['pin1', 'pin2'],
-        '_kwargs': {'param1': (int, 1), 'param2': (float, 1e-3), 'param3': (float, 1e-16), 'param4': (str, "hello")}})
+        '_parameters': {'param1': (int, 1), 'param2': (float, 1e-3), 'param3': (float, 1e-16), 'param4': (str, "hello")}})
     with pytest.raises(AssertionError):
         inst = subckt('X1')
     with pytest.raises(AssertionError):
