@@ -1119,7 +1119,7 @@ int A_star::trace_back(int current_node, Grid& grid){
 
   while(trace_back_flag){
 
-    unsigned int last_node = grid.vertices_total[dummy_node].parent;
+    int last_node = grid.vertices_total[dummy_node].parent;
 
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
@@ -1204,7 +1204,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       unsigned int next_node = dummy_node + first_direction;
+       int next_node = dummy_node + first_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
@@ -1227,7 +1227,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
      if(culmulated_length>=half_minL){
         search_flag = false;
      }else{
-       unsigned int next_node = dummy_node + current_direction;
+       int next_node = dummy_node + current_direction;
        if(next_node<0 or next_node>=grid.vertices_total.size() ) {
           search_flag = false;
           feasible = false;
