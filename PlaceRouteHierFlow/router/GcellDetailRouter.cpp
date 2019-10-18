@@ -44,7 +44,11 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   create_detailrouter(); 
 
   std::cout<<"***************physical metal and via"<<std::endl;
-  Physical_metal_via(); //this needs modify  
+  Physical_metal_via(); //this needs modify
+
+  std::cout<<"Start Extend Metal"<<std::endl;
+  ExtendMetal(); 
+  std::cout<<"End Extend Metal"<<std::endl; 
 
   std::cout<<"***********start return node in detail router********"<<std::endl;
   ReturnHierNode(HierNode);
@@ -3165,6 +3169,30 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
+
+  int direction = drc_info.Metal_info[mIdx].direct;
+  int minL = drc_info.Metal_info[mIdx].minL;
+
+  if(direction==1){ //h
+
+    if( (URx-LLx)<minL ){
+
+        int extend_dis = ceil(minL- (URx-LLx))/2;
+        LLx = LLx - extend_dis;
+        URx = URx + extend_dis;
+      }
+
+  }else{//v
+
+    if( (URy-LLy)<minL ){
+
+        int extend_dis = ceil(minL- (URy-LLy))/2;
+        LLy = LLy - extend_dis;
+        URy = URy + extend_dis;
+      }
+
+  }
+
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
