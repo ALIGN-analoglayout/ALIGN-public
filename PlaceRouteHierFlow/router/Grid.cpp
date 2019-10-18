@@ -2365,6 +2365,69 @@ std::vector<int> Grid::Map_from_seg2gridseg_pin_detail(RouterDB::SinkData& sourc
    return sourceL;
 };
 
+bool Grid::CheckExtendable(int i, int metal){
+
+  bool feasible = true;
+
+  int minL = drc_info.Metal_info[metal].minL;
+
+  int half_minL = ceil(minL/2);
+
+  int up_direction = 1;
+
+  int down_direction = -1;
+
+  bool search_flag = true;
+  int culmulated_length = 0;
+  int dummy_node = i;
+  while(search_flag){
+     if(culmulated_length>=half_minL){
+        search_flag = false;
+     }else{
+       unsigned int next_node = dummy_node + up_direction;
+       if(next_node<0 or next_node>=vertices_total.size() ) {
+          search_flag = false;
+          feasible = false;
+       }else if(vertices_total[next_node].active==0) {
+          search_flag = false;
+          feasible = false;
+       }else if( (vertices_total[next_node].x != vertices_total[i].x and vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal ){
+          search_flag = false;
+          feasible = false;
+       }else {
+          culmulated_length = abs(vertices_total[next_node].x-vertices_total[i].x) + abs(vertices_total[next_node].y-vertices_total[i].y);
+          dummy_node = next_node;
+       }
+     }
+  }
+
+  culmulated_length = 0;
+  dummy_node = i;
+  while(search_flag){
+     if(culmulated_length>=half_minL){
+        search_flag = false;
+     }else{
+       unsigned int next_node = dummy_node + down_direction;
+       if(next_node<0 or next_node>=vertices_total.size() ) {
+          search_flag = false;
+          feasible = false;
+       }else if(vertices_total[next_node].active==0) {
+          search_flag = false;
+          feasible = false;
+       }else if( (vertices_total[next_node].x != vertices_total[i].x and vertices_total[next_node].y != vertices_total[i].y) or vertices_total[next_node].metal != vertices_total[i].metal){
+          search_flag = false;
+          feasible = false;
+       }else {
+          culmulated_length = abs(vertices_total[next_node].x-vertices_total[i].x) + abs( vertices_total[next_node].y-vertices_total[i].y);
+          dummy_node = next_node;
+       }
+     }
+  }
+
+  return feasible;
+
+};
+
 
 std::vector<int> Grid::Map_from_seg2gridseg_terminal(RouterDB::SinkData& sourcelist, int grid_unit_x, int grid_unit_y, int grid_unit_x1, int grid_unit_y1, int grid_scale_func, int index_end_M1_M2, int index_end_M3_M3, int range, int direction){
    // wbxu: similar issue to map_from_seg2gridseg_pin [fixed]
@@ -2472,7 +2535,7 @@ if(sourceL.coord.size()<25){
         if(vertices_total[i].y<grid_region_lly){grid_region_lly=vertices_total[i].y;}
 
         for(unsigned int j=0;j<grid_node_coord.size();j++){
-           if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)) {
+           if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)&&(CheckExtendable(i,vertices_total[i].metal))) {
 		int dist=abs(grid_node_coord[j].x-Cx)+abs(grid_node_coord[j].y-Cy);
                 //std::cout<<"dist "<<dist<<std::endl;
 		if(dist<grid_distance) {grid_distance=dist; min_index=i;}//grid_idx=j;}
