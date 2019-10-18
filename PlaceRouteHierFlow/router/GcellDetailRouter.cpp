@@ -44,7 +44,11 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   create_detailrouter(); 
 
   std::cout<<"***************physical metal and via"<<std::endl;
-  Physical_metal_via(); //this needs modify  
+  Physical_metal_via(); //this needs modify
+
+  std::cout<<"Start Extend Metal"<<std::endl;
+  ExtendMetal(); 
+  std::cout<<"End Extend Metal"<<std::endl; 
 
   std::cout<<"***********start return node in detail router********"<<std::endl;
   ReturnHierNode(HierNode);
@@ -2335,6 +2339,119 @@ void GcellDetailRouter::Physical_metal_via(){
 
 };
 
+void GcellDetailRouter::UpdateMetalContact(RouterDB::Metal &temp_metal){
+
+  temp_metal.MetalRect.metal = temp_metal.MetalIdx;
+  temp_metal.MetalRect.placedCenter.x = (temp_metal.LinePoint[0].x+temp_metal.LinePoint[1].x)/2;
+  temp_metal.MetalRect.placedCenter.y = (temp_metal.LinePoint[0].y+temp_metal.LinePoint[1].y)/2;
+
+  if(temp_metal.LinePoint[0].y==temp_metal.LinePoint[1].y){
+
+     if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[0].x;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[0].y-temp_metal.width/2;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[1].x;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[1].y+temp_metal.width/2;
+     }else{
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[1].x;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[1].y-temp_metal.width/2;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[0].x;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[0].y+temp_metal.width/2;
+     }
+
+  }else{
+
+     if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){               
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[0].x-temp_metal.width/2;;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[0].y;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[1].x+temp_metal.width/2;;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[1].y;  
+       }else{
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[1].x-temp_metal.width/2;;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[1].y;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[0].x+temp_metal.width/2;;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[0].y;
+       }
+  }
+
+};
+
+void GcellDetailRouter::ExtendX(RouterDB::Metal &temp_metal, int extend_dis){
+
+  //extend
+  if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+     temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+     temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+     //rewrite contact
+
+    }else{
+
+     temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x + extend_dis;
+     temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x - extend_dis;
+
+    }
+
+    UpdateMetalContact(temp_metal);
+  
+};
+
+void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
+
+  //extend
+  if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+     temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+     temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+     //rewrite contact
+
+    }else{
+
+     temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y + extend_dis;
+     temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+
+    }
+
+    UpdateMetalContact(temp_metal);
+  
+};
+
+void GcellDetailRouter::ExtendMetal(){
+
+  for(unsigned int i=0;i<Nets.size();i++){
+
+     for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
+
+         int current_metal = Nets[i].path_metal[j].MetalIdx;
+
+         int direction = drc_info.Metal_info[current_metal].direct;
+
+         int minL = drc_info.Metal_info[current_metal].minL;
+         
+         int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
+
+         if(current_length<minL){
+
+            int extend_dis = ceil(minL - current_length)/2;
+   
+            if(direction==1){//h
+             
+               ExtendX(Nets[i].path_metal[j], extend_dis);
+               
+            }else{//v
+              
+               ExtendY(Nets[i].path_metal[j], extend_dis);
+              
+            }
+
+
+         }
+     }
+  }
+
+
+};
+
 
 void GcellDetailRouter::GetPhsical_Metal_Via(int i){
   
@@ -3052,6 +3169,30 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   RouterDB::point tmpP;
   int obs_l=0;
   int obs_h=this->layerNo-1;
+
+  int direction = drc_info.Metal_info[mIdx].direct;
+  int minL = drc_info.Metal_info[mIdx].minL;
+
+  if(direction==1){ //h
+
+    if( (URx-LLx)<minL ){
+
+        int extend_dis = ceil(minL- (URx-LLx))/2;
+        LLx = LLx - extend_dis;
+        URx = URx + extend_dis;
+      }
+
+  }else{//v
+
+    if( (URy-LLy)<minL ){
+
+        int extend_dis = ceil(minL- (URy-LLy))/2;
+        LLy = LLy - extend_dis;
+        URy = URy + extend_dis;
+      }
+
+  }
+
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
