@@ -1024,8 +1024,6 @@ MACRO cap_12f
     DIRECTION INOUT ;
     USE SIGNAL ;
     PORT
-      LAYER M1 ;
-        RECT 2.3840 -0.0360 2.4160 2.4720 ;
       LAYER M2 ;
         RECT -0.0360 -0.0160 2.4360 0.0160 ;
     END
