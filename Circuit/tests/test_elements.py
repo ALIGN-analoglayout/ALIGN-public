@@ -28,6 +28,13 @@ def test_subckt():
     assert inst.parameters['param1'] == 2
     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
 
+def test_library():
+    lib = elements.Library()
+    assert 'test_subckt' not in lib
+    subckt = elements.SubCircuit('test_subckt', 'pin1', 'pin2', param1=1, param2=1e-3, param3="0.1f", param4="hello", library=lib)
+    assert 'test_subckt' in lib
+    assert lib['test_subckt'] is subckt
+
 def test_NMOS():
     assert 'NMOS' in elements.library
     assert elements.library['NMOS'] is elements.NMOS

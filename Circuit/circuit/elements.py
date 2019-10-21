@@ -2,14 +2,6 @@ import sys, inspect
 
 from .core import _SubCircuit, NTerminalDevice
 
-def SubCircuit(name, *pins, **parameters):
-	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	# Automatically register subcircuit into design library for later reuse
-	library[name] = type(name, (_SubCircuit,), {'_pins': pins,
-		'_parameters': {x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()}})
-	# return new class containing subcircuit
-	return library[name]
-
 class _MosFET(NTerminalDevice):
 	_prefix = 'M'
 	_pins = ('D', 'G', 'S', 'B')
@@ -31,7 +23,19 @@ class RES(NTerminalDevice):
 	_pins = ('plus', 'minus')
 	_parameters = {'value': (float, 0)}
 
-library = { x[0]: x[1] for x in
+class Library(dict):
+
+	def __init__(self):
+		self.update({ x[0]: x[1] for x in
 			inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
 																issubclass(x, NTerminalDevice) and
-																not x.__name__.startswith('_')) }
+																not x.__name__.startswith('_')) })
+library = Library()
+
+def SubCircuit(name, *pins, library=library, **parameters):
+	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
+	# Automatically register subcircuit into global library for later reuse
+	library[name] = type(name, (_SubCircuit,), {'_pins': pins,
+		'_parameters': {x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()}})
+	# return new class containing subcircuit
+	return library[name]
