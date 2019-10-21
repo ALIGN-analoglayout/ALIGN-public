@@ -106,7 +106,8 @@ class UnitCell(CanvasCap):
             self.addVia( self.v2_nx, net, None, grid_x, grid_y)
 
         pin = 'PLUS'
-        self.addWire( self.m1, 'PLUS', pin, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        # Don't port m1 per Yaguang instructions
+        self.addWire( self.m1, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
         # don't port m3 (or port one or the other)
         self.addWire( self.m3, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
 
