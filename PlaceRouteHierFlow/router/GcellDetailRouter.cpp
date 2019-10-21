@@ -27,19 +27,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
 
-  printNetsInfo();
- 
-/*
-  Connection();
-  
-  std::cout<<"***********start check overlap**********"<<std::endl;
-  RecoverOverlap();
-  std::cout<<"***********end check overlap*************"<<std::endl;
-
-  //std::cout<<"********start last connection*************"<<std::endl;
-  //AddMetalToPin();
-  //std::cout<<"********end last connection*************"<<std::endl;
-*/  
+  printNetsInfo(); 
 
   create_detailrouter(); 
 
@@ -445,21 +433,14 @@ void GcellDetailRouter::create_detailrouter(){
        //added for teminals
 
        if(Nets[i].path_metal.size()>0){continue;}
-       //judge whether a net should be routed or not
-       //if(Nets[i].seg.size()==0){continue;}
-       //if(Nets[i].seg[0].chosenCand==-1){continue;} //this maybe revised [wbxu: need revision if only other seg has no candidate?]
+
 
        std::vector<std::vector<RouterDB::SinkData> > temp_pins;
        std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins;
        std::vector<std::vector<RouterDB::SinkData> > common_pins;
 
 //////QQQ1 grid creation       
-       //std::cout<<"starting check find path"<<std::endl;
-       //std::vector<RouterDB::Metal> temp_path = findGlobalPath(Nets[i]);
-       //std::cout<<"end check find path"<<std::endl;
-       //create grid
-       //Grid grid(drc_info, grid_scale, lowest_metal, highest_metal, LL, UR, temp_pins, temp_path);
-       //Grid grid ( temp_pins, temp_path,  drc_info, LL, UR, lowest_metal, highest_metal, 1, 5);
+
        RouterDB::point chip_LL;
        RouterDB::point chip_UR;
        chip_LL.x = 0;
@@ -507,11 +488,7 @@ void GcellDetailRouter::create_detailrouter(){
        std::cout<<"Gcell Detail Router Check point 6"<<std::endl;
        Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
        grid.Full_Connected_Vertex();
-       //grid.Check_Full_Connection_Grid();
-//////QQQ1 end of grid creation
-       //grid.CheckVerticesTotal();
-       //grid.CreateGridData();
-       //collect pins & collect metal path
+
        std::cout<<"starting check find pin"<<std::endl;
        RouterDB::point gridll=grid.GetGridLL();
        RouterDB::point gridur=grid.GetGridUR();
@@ -1396,70 +1373,6 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
   //std::cout<<
   std::cout<<"Check point 2"<<std::endl;
 
-/*
-   std::cout<<"Seg info of Net"<<std::endl;
-   std::cout<<"Seg number"<<temp_net.seg.size()<<std::endl;
-   for(int i=0;i<temp_net.seg.size();i++){
-       std::cout<<"sourcelist"<<std::endl;
-       for(int j=0;j<temp_net.seg[i].sourceList.size();j++){
-           if(temp_net.seg[i].sourceList[j].metalIdx!=-1){std::cout<<"{ ("<<temp_net.seg[i].sourceList[j].coord[0].x<<" "<<temp_net.seg[i].sourceList[j].coord[0].y<<" ),("<<temp_net.seg[i].sourceList[j].coord[1].x<<" "<<temp_net.seg[i].sourceList[j].coord[1].y<<") }"<<std::endl;}
-          }
-
-       std::cout<<"destlist"<<std::endl;
-       for(int j=0;j<temp_net.seg[i].destList.size();j++){
-           if(temp_net.seg[i].destList[j].metalIdx!=-1){std::cout<<"{ ("<<temp_net.seg[i].destList[j].coord[0].x<<" "<<temp_net.seg[i].destList[j].coord[0].y<<" ),("<<temp_net.seg[i].destList[j].coord[1].x<<" "<<temp_net.seg[i].destList[j].coord[1].y<<") }"<<std::endl;}
-          }
-       
-      }
-*/   
-
-/*
-   for(int i=0;i<temp_net.seg.size();i++){
-
-       std::vector<RouterDB::SinkData> temp_pin_s;
-       for(int j=0;j<temp_net.seg[i].sourceList.size();j++){
-            if(temp_net.seg[i].sourceList[j].metalIdx!=-1){
-                temp_pin_s.push_back(temp_net.seg[i].sourceList[j]);
-              }
-          }
-
-       std::vector<RouterDB::SinkData> temp_pin_d;
-       for(int j =0;j<temp_net.seg[i].destList.size();j++){
-            if(temp_net.seg[i].destList[j].metalIdx!=-1){
-                temp_pin_d.push_back(temp_net.seg[i].destList[j]);
-              }            
-          }
-       
-       std::vector<RouterDB::SinkData> temp_pin_ss;
-       for(int j=0;j<temp_pin_s.size();j++){
-            int found = 0;
-            for(int k=0;k<temp_Pin.size();k++){
-               for(int l=0;l<temp_Pin[k].size();l++){
-                  if(temp_pin_s[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_s[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_s[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_s[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_s[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
-                  }
-               }
-            if(found==0){temp_pin_ss.push_back(temp_pin_s[j]);}
-          }
-       
-       if(temp_pin_ss.size()>0){temp_Pin.push_back(temp_pin_ss);}
-
-       std::vector<RouterDB::SinkData> temp_pin_dd;
-       for(int j=0;j<temp_pin_d.size();j++){
-            int found = 0;
-            for(int k=0;k<temp_Pin.size();k++){
-               for(int l=0;l<temp_Pin[k].size();l++){
-                  if(temp_pin_d[j].coord[0].x==temp_Pin[k][l].coord[0].x and temp_pin_d[j].coord[0].y==temp_Pin[k][l].coord[0].y and temp_pin_d[j].coord[1].x==temp_Pin[k][l].coord[1].x and temp_pin_d[j].coord[1].y==temp_Pin[k][l].coord[1].y and temp_pin_d[j].metalIdx == temp_Pin[k][l].metalIdx){found=1;}
-                  }
-               }
-            if(found==0){temp_pin_dd.push_back(temp_pin_d[j]);}
-          }
-
-       if(temp_pin_dd.size()>0){temp_Pin.push_back(temp_pin_dd);}
-      }
-*/
-  //sort all the dis
-
-
   return temp_Pin;
 
 
@@ -1537,18 +1450,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
    for(unsigned int i=0;i<dis.size();i++){
          Pin.push_back(temp_Pin[index[i]]);
       }
-/*
-  for(int i=0;i<temp_Pin.size();i++){
-       for(int j=0;j<temp_Pin[i].size();j++){
-            for(int k=0;k<temp_Pin.size();k++){
-                 for(int l=0;l<temp_Pin[k].size();l++){ 
-                       if(i==k and j==l){continue;}
-                       if(temp_Pin[i][j].coord[0].x == temp_Pin[k][l].coord[0].x and temp_Pin[i][j].coord[0].y == temp_Pin[k][l].coord[0].y and temp_Pin[i][j].coord[1].x == temp_Pin[k][l].coord[1].x and temp_Pin[i][j].coord[1].y == temp_Pin[k][l].coord[1].y and temp_Pin[i][j].metalIdx == temp_Pin[k][l].metalIdx){std::cout<<"Pin Error"<<std::endl;}
-                    }
-               }
-          }
-     }
-*/
+
   temp_Pin = Pin;
 
   std::cout<<"End sort pins"<<std::endl;
@@ -2227,23 +2129,7 @@ void GcellDetailRouter::lastmile_dest(std::vector<std::vector<RouterDB::Metal> >
 
 
            }
-
-/*
-        source_point.x = temp_point.x;
-        temp_metal.LinePoint.push_back(source_point);
-        std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
-        temp_path[0].insert(temp_path[0].end(),temp_metal);
-        temp_metal.LinePoint.clear();
-        temp_metal.LinePoint.push_back(source_point);
-        temp_metal.LinePoint.push_back(temp_point);
-        std::cout<<"path ( "<<temp_metal.LinePoint[0].x<<" "<<temp_metal.LinePoint[0].y<<") ("<<temp_metal.LinePoint[1].x<<" "<<temp_metal.LinePoint[1].y<<") "<<std::endl;
-        temp_path[0].insert(temp_path[0].end(),temp_metal); 
-        int last_end_index = temp_path[0].size()-1;
-        std::cout<<temp_path[0][last_end_index-1].LinePoint[0].x<<" "<<temp_path[0][last_end_index-1].LinePoint[0].y<<" "<<temp_path[0][last_end_index-1].LinePoint[1].x<<" "<<temp_path[0][last_end_index-1].LinePoint[1].y<<std::endl;
-        std::cout<<temp_path[0][last_end_index].LinePoint[0].x<<" "<<temp_path[0][last_end_index].LinePoint[0].y<<" "<<temp_path[0][last_end_index].LinePoint[1].x<<" "<<temp_path[0][last_end_index].LinePoint[1].y<<std::endl;
-*/
-
-          
+ 
         }
     }
 
@@ -3687,27 +3573,7 @@ void GcellDetailRouter::BlockInterMetalToNodeInterMetal(PnRDB::hierNode& HierNod
    //includeing blockpin also
 
   for(unsigned int i=0;i<Blocks.size();i++){
-/*
-       //pins
-       for(int j=0;j<Blocks[i].pins.size();j++){
-           for(int k=0;k<Blocks[i].pins[j].pinContacts;k++){
-                //to internal metal
-             
-             PnRDB::contact temp_contact;
-ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[i].pins[j].pinContacts[k]);
-             HierNode.interMetals.push_back(temp_contact);
-                
-              }
-           for(int k=0;k<Blocks[i].pins[j].pinVias;k++){
-             //to internal via
-             PnRDB::Via temp_via;
-             ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[i].pins[j].pinVias[k]);             
 
-             HierNode.interVias.push_back(temp_via);   
-                
-              }
-          }
-*/
        //InternalMetal
        for(unsigned int j=0;j<Blocks[i].InternalMetal.size();j++){
             //to internal metal

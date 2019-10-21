@@ -1,16 +1,11 @@
 #include "GlobalGraph.h"
 
 GlobalGraph::GlobalGraph(GlobalGrid& grid):path_number(1) {
-  //this->grid=grid; 
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
-  //this->path_number=1;
+
   std::cout<<"Start Creating adjacent list (graph), ";
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating adjacent list (graph)"<<std::endl;
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
+
 };
 
 void GlobalGraph::clearPath(){
@@ -20,16 +15,7 @@ void GlobalGraph::clearPath(){
 };
 
 void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node) {
-  //this->grid=grid; &
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
-  //std::cout<<"Start Creating adjacent list (graph), ";
-  //CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  //std::cout<<"End creating adjacent list (graph)"<<std::endl;
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
-  //find shortest path based source and dest
+
 
   this->path_number=pathNo;
 
@@ -94,12 +80,6 @@ void GlobalGraph::refreshWeight(GlobalGrid &grid){
 
 void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontential_Stiner_node){
 
-
-  //std::vector<int> Pontential_Stiner_node = Get_Potential_Steiner_node(grid);
-
-//  std::cout<<"Terminal size "<<terminals.size()<<std::endl;
-//  std::cout<<"Potential_Steiner_node size()"<<Pontential_Stiner_node.size()<<std::endl;
-
   int iterate_number = Pin_terminals.size()-2;
 
   int LastWireLength = INT_MAX;
@@ -160,62 +140,6 @@ void GlobalGraph::AddStinerNodeToTerminals(std::vector<int> &Pontential_Stiner_n
 
 
 };
-
-
-/*
-std::vector<int> GlobalGraph::Get_Potential_Steiner_node(GlobalGrid &grid, std::set<RouterDB::tile, RouterDB::tileComp> Set_tiles){
-
-  std::vector<int> snode;
-  //based on terminals get all snode node in some region
-
-  std::set<RouterDB::tile, RouterDB::tileComp> Set_tiles; //it's better to construct this function when terminals are given in grid function
-
-  for(int i=0;i<grid.tiles_total.size();i++){ //is it possible that some tiles are untouchable?
-       Set_tiles.insert(grid.tiles_total[i]);
-     }
-
-  int min_x = INT_MAX;
-  int min_y = INT_MAX;
-  int max_x = INT_MIN;
-  int max_y = INT_MIN;
-    
-
-  for(int i=0;i<terminals.size();i++){
-       if(grid.tiles_total[terminals[i]].x<min_x){min_x = grid.tiles_total[terminals[i]].x;}
-       if(grid.tiles_total[terminals[i]].y<min_y){min_y = grid.tiles_total[terminals[i]].y;}
-       if(grid.tiles_total[terminals[i]].x>max_x){max_x = grid.tiles_total[terminals[i]].x;}
-       if(grid.tiles_total[terminals[i]].y>max_y){max_y = grid.tiles_total[terminals[i]].y;}
-     }
-
-  RouterDB::tile min_temp_tile = grid.tiles_total[terminals[0]];
-  RouterDB::tile max_temp_tile = grid.tiles_total[terminals[0]];
-  min_temp_tile.x = min_x;
-  min_temp_tile.y = min_y;
-  min_temp_tile.index = 0;
-  max_temp_tile.x = max_x;
-  max_temp_tile.y = max_y;
-  max_temp_tile.index = grid.tiles_total.size()-1;
-
-  std::set<RouterDB::tile, RouterDB::tileComp >::iterator itlow, itup, xit;
-
-  itup = Set_tiles.upper_bound(max_temp_tile);
-  itlow = Set_tiles.lower_bound(min_temp_tile);
-
-  for(xit=itlow;xit!=itup;++xit){
-      
-       snode.push_back(xit->index);
-  }
-  
-  //min x, y, max x, y 
-  //find all the node in this box but except for the node which is all ready terminals
-  
-
-  return snode;
-
-
-};
-
-*/
 
 void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Pontential_Stiner_node, GlobalGrid &grid){
 
@@ -358,9 +282,6 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
 
 void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid){
 
-    //std::vector<int> terminals; //Nodes index of terminals in graph
-    //std::vector<Node> graph;
-    //given any terminals, and graphs find return a path and value
     std::vector<std::vector<int> > MST_path;
     std::vector<int> temp_src;
     std::vector<int> temp_dest;
@@ -408,9 +329,6 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
        }
      WireLength = Calculate_Weigt(MST_path);
      temp_path = Get_MST_Edges(MST_path);
-
-     //need a vector<Edges>??? and a map???
-     //return Cumulated_weight;
 
 };
 
@@ -760,68 +678,6 @@ std::vector<int>  GlobalGraph::dijkstra(GlobalGrid& grid){
 
 };
 
-
-//std::vector<int>  GlobalGraph::dijkstraRetire(GlobalGrid &grid){
-//
-//  std::vector<int> temp_path;
-//  double dist[graph.size()];
-//  int parent[graph.size()];
-//  int status[graph.size()];
-//    
-//  for(int i = 0; i < graph.size(); ++i)
-//     {
-//        parent[i] = -1;
-//        dist[i] = INT_MAX;
-//        status[i] = 0;
-//     }
-//
-//  dist[source] = 0;
-//  status[source] = 1;
-//  int count=0;
-//  int v;
-//  //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-//  //std::cout<<grid.tiles_total[source].x<<" "<<grid.tiles_total[source].y<<std::endl;
-//  //std::cout<<grid.tiles_total[dest].x<<" "<<grid.tiles_total[dest].y<<std::endl;
-//  while(status[dest]!=2 and count<graph.size()-1)
-//       {
-//          std::vector<int> ulist = minDistance(dist, status, graph.size());
-//          //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
-//          if(ulist.empty()) {temp_path.clear();std::cout<<"Error No feasible path"<<std::endl; return temp_path;}
-//          int u=ulist[0];
-//          //std::cout<<"check u: "<<u<<" x: "<<grid.tiles_total[u].x<<" y: "<<grid.tiles_total[u].y <<std::endl;
-//          status[u] = 2;
-//          
-//          for (int j = 0; j < graph[u].list.size(); ++j)
-//              {
-//                 v=graph[u].list[j].dest;
-//                 if(v!=u)
-//                   {
-//                      if(status[v]==0)
-//                        {
-//                           parent[v] = u;
-//                           dist[v] = dist[u]+graph[u].list[j].weight;
-//                           status[v]=1;
-//                         }
-//                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
-//                         {
-//                            parent[v] = u;
-//                            dist[v] = dist[u]+graph[u].list[j].weight;
-//                         }
-//                    }
-//               }
-//          count++;
-//       }
-//
-//  //std::cout<<"End dijstra"<<std::endl;
-//  //std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
-//  //std::cout<<"parent size"<<parent.size()<<std::endl;
-//  printPath(parent, dest, graph.size(), temp_path);
-//  //std::cout<<"temp path"<<std::endl;
-//  //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
-//  return temp_path;
-//
-//};
-
 void GlobalGraph::printPath(std::vector<int>& parent, int j, int Vsize, std::vector<int> & temp_path)
 {
   if(j == -1)
@@ -877,51 +733,3 @@ std::vector<std::vector<std::pair<int,int> > >GlobalGraph::returnPath(){
   return Path;
 
 };
-
-
-/*
-std::vector<std::vector<RouterDB::Metal> >  Graph::ConvertPathintoPhysical(Grid& grid){
-
-  std::vector<std::vector<RouterDB::Metal> > Phsical_Path;
-  for(int i= 0; i<Path.size();++i){
-      std::vector<RouterDB::Metal> temp_physical_path;
-      //int start_index = 0;
-      //int end_index = 0;
-      int flag_start_write = 1;
-      //int flag_end_write = 0;
-      RouterDB::point temp_point;
-      RouterDB::Metal temp_metal;
-      for(int j=0;j<Path[i].size();++j){
-          if(flag_start_write == 1){
-              temp_metal.LinePoint.clear();
-              temp_metal.MetalIdx = grid.vertices_total[Path[i][j]].metal;
-              temp_point.x = grid.vertices_total[Path[i][j]].x;
-              temp_point.y = grid.vertices_total[Path[i][j]].y;
-              temp_metal.LinePoint.push_back(temp_point);
-              flag_start_write = 0;
-            }
-           if(j<Path[i].size()-1 and grid.vertices_total[Path[i][j]].metal!=grid.vertices_total[Path[i][j+1]].metal){
-              flag_start_write = 1;
-              temp_point.x = grid.vertices_total[Path[i][j]].x;
-              temp_point.y = grid.vertices_total[Path[i][j]].y;
-              temp_metal.LinePoint.push_back(temp_point);
-              temp_metal.width = grid.drc_info.Metal_info[grid.vertices_total[Path[i][j]].metal].width;
-              temp_physical_path.push_back(temp_metal);
-            }
-            if(j==Path[i].size()-1 and flag_start_write == 0){
-
-              flag_start_write = 1;
-              temp_point.x = grid.vertices_total[Path[i][j]].x;
-              temp_point.y = grid.vertices_total[Path[i][j]].y;
-              temp_metal.LinePoint.push_back(temp_point);
-              temp_metal.width = grid.drc_info.Metal_info[grid.vertices_total[Path[i][j]].metal].width;
-              temp_physical_path.push_back(temp_metal);
-            }
-            
-         }
-      Phsical_Path.push_back(temp_physical_path);
-     }
-
-  return Phsical_Path;
-};
-*/
