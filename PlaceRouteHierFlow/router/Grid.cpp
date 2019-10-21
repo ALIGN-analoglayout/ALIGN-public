@@ -1395,95 +1395,6 @@ void Grid::InactivateSourceDest() {
   }
 }
 
-/*
-Grid::Grid(GlobalRouter & global){
-  
-  //based on global.LL global.UR
-    //update vertices_total
-    //Start_index_meal_vertices;
-    //End_index_metal_vertices;
-    LL = global.LL;
-    UR = global.UR;
-    createGrid();
-    inactive_node(GlobalRouter & global);
- 
-  //set src dest
-  
-
-
-};
-
-Grid(DetailRouter & detail){
-
-  //based on global.LL global.UR
-    //update vertices_total
-    //Start_index_meal_vertices;
-    //End_index_metal_vertices;
-    LL = detail.LL_graph;
-    UR = detail.UR_graph;
-    createGrid();
-    inactive_node(DetailRouter & detail);
- 
-  //set src dest
-
-
-};
-
-
-Grid::Grid(PowerRouter & power){
-  
-  //based on global.LL global.UR
-    //update vertices_total
-    //Start_index_meal_vertices;
-    //End_index_metal_vertices;
-    LL = power.LL;
-    UR = power.UR;
-    drc_info = power.power_drc_info;
-    createGrid();
-    inactive_node(GlobalRouter & power);
- 
-  //set src dest
-  
-
-
-};
-
-void Grid::setSrcDest(){
-
-
-};
-
-void Grid::createGrid(){
-
-};
-
-void Grid::UpdateLLURSD_global(GlobalRouter & global){
-  
-  //update LL_graph UR_graph
-  //update Source Dest
-
-};
-
-void Grid::UpdateLLURSD_detail(DetailRouter & detail){
-
-  //update LL_graph UR_graph
-  //update Source Dest
-
-};
-
-void Grid::inactive_node_global(GlobalRouter & global){
-  
-  //inactive the vertex with intermatel of all blocks
-
-};
-
-void Grid::inactive_node_detail(DetailRouter & detail){
-  
-  //inactive the vertex with intermatel of blocks within LL_graph and UR_graph
-
-};
-*/
-
 //added by yg
 
 std::vector<RouterDB::contact> Grid::setSrcDest(std::vector<RouterDB::SinkData> &Vsource, std::vector<RouterDB::SinkData> &Vdest, int width, int height, std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp >& Smap){
@@ -2484,25 +2395,6 @@ std::vector<int> Grid::Map_from_seg2gridseg_terminal(RouterDB::SinkData& sourcel
    
     
     //sourceL.metal = sourcelist.metal;
-/* 
-    int grid_distance=INT_MAX;
-    int min_index=-1;
-    int grid_idx;
-
-    for(int i=index_end_M1_M2;i<index_end_M3_M3;i++){
-        for(int j=0;j<grid_node_coord.size();j++){
-           if((grid_node_coord[j].x==vertices_total[i].x)&&(grid_node_coord[j].y==vertices_total[i].y)&&(vertices_total[i].active==1)) {               
-                sourceL.coord.push_back( grid_node_coord[j] );
-		sourceL.ver_idx.push_back(vertices_total[i].index);
-        		}
-              }
-        }
-
-if(sourceL.coord.size()<25){
-  sourceL.coord.clear();
-  sourceL.ver_idx.clear();
-}
-*/
 
     std::cout<<"Terminals coord ("<<Cx<<" "<<Cy<<")"<<std::endl;
     
@@ -2562,27 +2454,6 @@ if(sourceL.coord.size()<25){
         //}
     }
 
-    //int num_ver_idx = sourceL.ver_idx.size();
-    //if(sourceL.ver_idx.size()>0){
-    //  
-    //  for(int i=0;i<sourceL.ver_idx.size();i++){
-    //     if((vertices_total[sourceL.ver_idx[i]].x-grid_x)*(vertices_total[sourceL.ver_idx[i]].x-grid_x)+(vertices_total[sourceL.ver_idx[i]].y-grid_y)*(vertices_total[sourceL.ver_idx[i]].y-grid_y)<grid_distance){
-    //       min_index=i;
-    //      }
-
-    //     }
-
-    //  
-    // }
-    //
-    //
-    //sourceL.ver_idx.clear();
-    //if(num_ver_idx >0){
-    //sourceL.ver_idx.push_back(min_index);
-    //grid_node.x=vertices_total[min_index].x;
-    //grid_node.y=vertices_total[min_index].y;
-    //sourceL.coord.push_back(grid_node);
-    //}
     return sourceL;
 };
 
@@ -2689,27 +2560,6 @@ if(sourceL.coord.size()<25){
         //}
     }
 
-    //int num_ver_idx = sourceL.ver_idx.size();
-    //if(sourceL.ver_idx.size()>0){
-    //  
-    //  for(int i=0;i<sourceL.ver_idx.size();i++){
-    //     if((vertices_total[sourceL.ver_idx[i]].x-grid_x)*(vertices_total[sourceL.ver_idx[i]].x-grid_x)+(vertices_total[sourceL.ver_idx[i]].y-grid_y)*(vertices_total[sourceL.ver_idx[i]].y-grid_y)<grid_distance){
-    //       min_index=i;
-    //      }
-
-    //     }
-
-    //  
-    // }
-    //
-    //
-    //sourceL.ver_idx.clear();
-    //if(num_ver_idx >0){
-    //sourceL.ver_idx.push_back(min_index);
-    //grid_node.x=vertices_total[min_index].x;
-    //grid_node.y=vertices_total[min_index].y;
-    //sourceL.coord.push_back(grid_node);
-    //}
     return sourceL;
 };
 
@@ -2820,10 +2670,7 @@ void Grid::CheckMaptotal2graph() {
 
 Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale):LL(ll), UR(ur) {
   // 1. Initialize member variables I
-  //this->LL=ll;
-  //this->UR=ur;
-  //this->GridLL=ll;
-  //this->GridUR=ur;
+
   this->GridLL.x=INT_MAX; this->GridLL.y=INT_MAX;
   this->GridUR.x=INT_MIN; this->GridUR.y=INT_MIN;
   this->lowest_metal=Lmetal;
@@ -3166,16 +3013,6 @@ int Grid::Find_EndIndex(int start_index, int direction){
 bool Grid::Check_Common_Part(int &start_index1, int &end_index1, int &start_index2, int &end_index2, int direction, int pitches_dis){
 
   //same layer?
-/*
-  std::cout<<"direction "<<direction<<" pitches"<<pitches_dis<<std::endl;
-  std::cout<<"metal info "<<vertices_total[start_index1].metal<<" "<<vertices_total[start_index2].metal<<std::endl;
-  std::cout<<"coordinate "<<vertices_total[start_index1].x<<" "<<vertices_total[start_index1].y<<std::endl;
-  std::cout<<"coordinate "<<vertices_total[start_index2].x<<" "<<vertices_total[start_index2].y<<std::endl;
-
-  std::cout<<"metal info "<<vertices_total[end_index1].metal<<" "<<vertices_total[end_index2].metal<<std::endl;
-  std::cout<<"coordinate "<<vertices_total[end_index1].x<<" "<<vertices_total[end_index1].y<<std::endl;
-  std::cout<<"coordinate "<<vertices_total[end_index2].x<<" "<<vertices_total[end_index2].y<<std::endl;
-*/
 
   if(vertices_total[start_index1].metal!=vertices_total[start_index2].metal){
      //std::cout<<"return point 1"<<std::endl;
