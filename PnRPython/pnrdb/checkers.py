@@ -281,12 +281,16 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
 
-        for (idx,(p0, p1)) in enumerate(cnv.rd.shorts):
-            logger.info( f"SH: {p0} {p1}")
-            term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
-            d['terminals'].append( term)
-            term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
-            d['terminals'].append( term)
+        for (idx,sh) in enumerate(cnv.rd.shorts):
+            if isinstance( sh, tuple) and len(sh) == 2:
+                p0, p1 = sh
+                logger.info( f"SH: {p0} {p1}")
+                term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
+                d['terminals'].append( term)
+                term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
+                d['terminals'].append( term)
+            else:
+                logger.error( f"Unknown short type: {sh}")
 
 
         for (nm,lst) in cnv.rd.opens:
