@@ -39,8 +39,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 100
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [40, 50, 60]
 },
 
 
@@ -71,8 +72,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 60
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [40, 50, 60]
 },
 
 {
@@ -102,8 +104,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 40
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [40, 50, 60]
 },
 
 {
@@ -133,8 +136,9 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 30
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [40, 50, 60]
 },
 
 {
@@ -164,8 +168,9 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 20
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [20, 25, 30]
 },
 
 {
@@ -195,8 +200,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 20
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [20, 25, 30]
 },
 
 {
@@ -226,8 +232,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [20, 25, 30]
 },
 
 {
@@ -257,8 +264,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 20
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [20, 25, 30]
 },
 
 {
@@ -288,8 +296,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 20
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [10, 12, 14]
 },
 
 {
@@ -319,8 +328,9 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [10, 12, 14]
 },
 
 {
@@ -350,8 +360,9 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [5, 6, 7]
 },
 
 {
@@ -381,8 +392,9 @@
 "MaxL": null,
 "EndToEnd":280,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [5, 6, 7]
 },
 
 {
@@ -412,8 +424,9 @@
 "MaxL": null,
 "EndToEnd": 280,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [1.06, 1.33, 1.60]
 },
 
 {
@@ -443,8 +456,9 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [1.06, 1.33, 1.60]
 },
 
 {
@@ -474,8 +488,9 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": [0.16, 0.2, 0.24],
+"UnitCC": [0.08, 0.1, 0.12],
+"UnitR": [1.06, 1.33, 1.60]
 },
 
 {
