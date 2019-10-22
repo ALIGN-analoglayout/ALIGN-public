@@ -1897,7 +1897,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		y[3]=n.via[j].second - width+offset_y;
 		y[4]=y[0];
 
-                std::cout<<"writing out vias ("<<x[0]<<" "<<y[0]<<") ("<<x[2]<<" "<<y[2]<<")";
+                //std::cout<<"writing out vias ("<<x[0]<<" "<<y[0]<<") ("<<x[2]<<" "<<y[2]<<")";
         
 		for (int i = 0; i < 5; i++) {
 		    x[i] *= unitScale;
