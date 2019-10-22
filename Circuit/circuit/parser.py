@@ -38,7 +38,7 @@ class SpiceParser:
         for tok in self._generate_tokens(text):
             if tok.type == 'NEWL':
                 self._dispatch(cache)
-                cache = []
+                cache.clear()
             else:
                 cache.append(tok)
         self._dispatch(cache)
