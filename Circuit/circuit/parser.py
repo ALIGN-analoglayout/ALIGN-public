@@ -35,13 +35,36 @@ class SpiceParser:
 
     def parse(self, text):
         cache = []
-        tokens = self._generate_tokens(text)
-        for tok in tokens:
+        for tok in self._generate_tokens(text):
             if tok.type == 'NEWL':
                 self._dispatch(cache)
                 cache = []
             else:
                 cache.append(tok)
+        self._dispatch(cache)
 
     def _dispatch(self, cache):
+        if len(cache) == 0:
+            return
+        token = cache.pop(0)
+        args, kwargs = self._decompose(cache)
+        if token.type == 'NAME':
+            self._process_instance(token.value, args, kwargs)
+        elif token.type == 'DECL':
+            self._process_declaration(token.value, args, kwargs)
+        else:
+            raise AssertionError(cache, "must begin with DECL or NAME")
+
+    def _decompose(self, cache):
+        assert all(x.type in ('NAME', 'NUM', 'EQUALS') for x in cache)
+        assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
+        assert all(cache[i-1].type == 'NAME' for i in assignments)
+        args = [x.value for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
+        kwargs = {cache[i-1].value: cache[i+1].value for i in assignments}
+        return args, kwargs
+
+    def _process_instance(self, name, args, kwargs):
+        pass
+
+    def _process_declaration(self, decl, args, kwargs):
         pass
