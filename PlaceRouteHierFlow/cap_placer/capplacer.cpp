@@ -1899,6 +1899,8 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		y[2]=n.via[j].second + width+offset_y;
 		y[3]=n.via[j].second - width+offset_y;
 		y[4]=y[0];
+
+                //std::cout<<"writing out vias ("<<x[0]<<" "<<y[0]<<") ("<<x[2]<<" "<<y[2]<<")";
         
 		for (int i = 0; i < 5; i++) {
 		    x[i] *= unitScale;
@@ -1907,10 +1909,9 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = n.via_metal[j];
-
-
-
+		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name; 
+		//term["layer"] = n.via_metal[j];
+                //std::cout<<"net name and via name "<< n.name<<" "<<drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name<<std::endl;
 		json xy = json::array();
 		xy.push_back( x[0]);
 		xy.push_back( y[0]);
