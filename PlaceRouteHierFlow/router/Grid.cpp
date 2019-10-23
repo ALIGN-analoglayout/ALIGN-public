@@ -157,51 +157,40 @@ void Grid::CreateGridData(){
   std::ofstream matlabfile;
   matlabfile.open("Grid.txt");
 
+  auto write_out_matlab_file = [&](const auto&p, const auto&q){
+
+    matlabfile<<vertices_total[p].x;
+    matlabfile<<" ";
+    matlabfile<<vertices_total[p].y;
+    matlabfile<<" ";
+    matlabfile<<vertices_total[p].metal;
+    matlabfile<<" ";
+
+    matlabfile<<vertices_total[q].x;
+    matlabfile<<" ";
+    matlabfile<<vertices_total[q].y;
+    matlabfile<<" ";
+    matlabfile<<vertices_total[q].metal;
+    matlabfile<<" ";
+              
+    matlabfile<<std::endl;
+
+  };
+
+
   for(unsigned int i=0;i<vertices_total.size();i++){
 
       for(unsigned int j=0;j<vertices_total[i].north.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].north[j]].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].north[j]].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].north[j]].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].north[j]].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].north[j]);
              }
           }
 
       for(unsigned int j=0;j<vertices_total[i].south.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].south[j]].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].south[j]].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].south[j]].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].south[j]].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].south[j]);
              }   
          
           }
@@ -209,23 +198,7 @@ void Grid::CreateGridData(){
       for(unsigned int j=0;j<vertices_total[i].west.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].west[j]].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].west[j]].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].west[j]].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].west[j]].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].west[j]);
              }   
          
           }
@@ -233,23 +206,7 @@ void Grid::CreateGridData(){
       for(unsigned int j=0;j<vertices_total[i].east.size();j++){
 
            if(vertices_total[i].active and vertices_total[vertices_total[i].east[j]].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].east[j]].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].east[j]].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].east[j]].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].east[j]);
              }   
          
           }
@@ -257,23 +214,7 @@ void Grid::CreateGridData(){
       for(int j=0;j<1;j++){
 
            if(vertices_total[i].up!=-1 and vertices_total[i].active and vertices_total[vertices_total[i].up].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].up].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].up].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].up].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].up);
              }   
          
           }
@@ -281,23 +222,7 @@ void Grid::CreateGridData(){
       for(int j=0;j<1;j++){
 
            if(vertices_total[i].down != -1 and vertices_total[i].active and vertices_total[vertices_total[i].down].active){
-
-              matlabfile<<vertices_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[i].metal;
-              matlabfile<<" ";
-
-              matlabfile<<vertices_total[vertices_total[i].down].x;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].down].y;
-              matlabfile<<" ";
-              matlabfile<<vertices_total[vertices_total[i].down].metal;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+              write_out_matlab_file(i, vertices_total[i].down);
              }   
          
           }
