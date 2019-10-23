@@ -389,98 +389,40 @@ std::vector<std::pair<int,int> > GlobalGraph::Get_MST_Edges(std::vector<std::vec
 
 void GlobalGraph::CreateAdjacentList(GlobalGrid& grid){
 
+  Node tempNode;  
+  Edge tempEdge;  
+
+  auto update_node = [&](int p, std::vector<RouterDB::tileEdge> & temp_vector){
+
+        for(unsigned int q=0;q<temp_vector.size();q++){
+
+           std::cout<<"Grid capacity north"<<temp_vector[q].capacity<<std::endl;
+
+            if(temp_vector[q].capacity>0 and temp_vector[q].next != -1){
+
+               tempEdge.dest=temp_vector[q].next;
+               tempEdge.weight = (double) abs(grid.tiles_total[p].y-grid.tiles_total[temp_vector[q].next].y)+abs(grid.tiles_total[p].x-grid.tiles_total[temp_vector[q].next].x);
+               tempEdge.capacity = temp_vector[q].capacity;
+               tempNode.list.push_back(tempEdge);
+
+               }           
+           }
+
+  };
 
   for(unsigned int i=0;i<grid.tiles_total.size();i++){
       
-        Node tempNode;
+        //Node tempNode;
+        tempNode.list.clear();
         tempNode.src=i;
-        Edge tempEdge;
+        //Edge tempEdge;
 
-        for(unsigned int j=0;j<grid.tiles_total[i].north.size();j++){
-
-           std::cout<<"Grid capacity north"<<grid.tiles_total[i].north[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].north[j].capacity>0 and grid.tiles_total[i].north[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].north[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].north[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].north[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].north[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-
-        for(unsigned int j=0;j<grid.tiles_total[i].south.size();j++){
-
-            std::cout<<"Grid capacity south"<<grid.tiles_total[i].south[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].south[j].capacity>0 and grid.tiles_total[i].south[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].south[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].south[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].south[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].south[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-
-        for(unsigned int j=0;j<grid.tiles_total[i].east.size();j++){
-
-            std::cout<<"Grid capacity east"<<grid.tiles_total[i].east[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].east[j].capacity>0 and grid.tiles_total[i].east[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].east[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].east[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].east[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].east[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-
-        for(unsigned int j=0;j<grid.tiles_total[i].west.size();j++){
-
-            std::cout<<"Grid capacity west"<<grid.tiles_total[i].west[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].west[j].capacity>0 and grid.tiles_total[i].west[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].west[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].west[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].west[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].west[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-
-        for(unsigned int j=0;j<grid.tiles_total[i].up.size();j++){
-
-            std::cout<<"Grid capacity up"<<grid.tiles_total[i].up[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].up[j].capacity>0 and grid.tiles_total[i].up[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].up[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].up[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].up[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].up[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-
-        for(unsigned int j=0;j<grid.tiles_total[i].down.size();j++){
-
-            std::cout<<"Grid capacity down"<<grid.tiles_total[i].down[j].capacity<<std::endl;
-
-            if(grid.tiles_total[i].down[j].capacity>0 and grid.tiles_total[i].down[j].next != -1){
-
-               tempEdge.dest=grid.tiles_total[i].down[j].next;
-               tempEdge.weight = (double) abs(grid.tiles_total[i].y-grid.tiles_total[grid.tiles_total[i].down[j].next].y)+abs(grid.tiles_total[i].x-grid.tiles_total[grid.tiles_total[i].down[j].next].x);
-               tempEdge.capacity = grid.tiles_total[i].down[j].capacity;
-               tempNode.list.push_back(tempEdge);
-          
-               }           
-           }
-        
-
+        update_node(i,grid.tiles_total[i].north);
+        update_node(i,grid.tiles_total[i].south);
+        update_node(i,grid.tiles_total[i].east);
+        update_node(i,grid.tiles_total[i].west);
+        update_node(i,grid.tiles_total[i].up);
+        update_node(i,grid.tiles_total[i].down);
 
         graph.push_back(tempNode);
 
