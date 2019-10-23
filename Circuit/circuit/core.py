@@ -94,8 +94,8 @@ class Circuit(Graph):
 
 	def add_element(self, element):
 		assert isinstance(element, NTerminalDevice)
-		self.add_edges_from([(element, (element, pin)) for pin in element.pins.keys()])
-		self.add_edges_from([((element, pin), net) for pin, net in element.pins.items()])
+		for pin, net in element.pins.items():
+			self.add_edge(element, net, pin=pin)
 		return element
 
 class _SubCircuit(NTerminalDevice):

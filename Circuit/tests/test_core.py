@@ -64,22 +64,15 @@ def test_circuit():
     assert ckt.elements == [X1, X2]
     assert ckt.nets == ['net1', 'net2', 'net3']
     # Advanced graphx functionality test
-    nodes = [X1, (X1, 'a'), (X1, 'b'),
-             X2, (X2, 'a'), (X2, 'b'), (X2, 'c'),
+    nodes = [X1, X2,
              'net1', 'net2', 'net3']
     assert all(x in ckt.nodes for x in nodes)
     assert all(x in nodes for x in ckt.nodes)
-    edges = [# X1 -> X1 pins
-             (X1, (X1, 'a')), (X1, (X1, 'b')),
-             ((X1, 'a'), X1), ((X1, 'b'), X1),
-             # X1 pins -> nets
-             ((X1, 'a'), 'net1'), ((X1, 'b'), 'net2'),
-             ('net1', (X1, 'a')), ('net2', (X1, 'b')),
-             # X2 -> X2 pins
-             (X2, (X2, 'a')), (X2, (X2, 'b')), (X2, (X2, 'c')),
-             ((X2, 'a'), X2), ((X2, 'b'), X2), ((X2, 'c'), X2),
-             # X2 pins -> nets
-             ((X2, 'a'), 'net1'), ((X2, 'b'), 'net2'), ((X2, 'c'), 'net3'),
-             ('net1', (X2, 'a')), ('net2', (X2, 'b')), ('net3', (X2, 'c'))]
-    assert all(x in ckt.edges for x in edges), ckt.edges
-    assert all(x in edges for x in ckt.edges), ckt.edges
+    edges = [# X1, net, pin
+             (X1, 'net1', 'a'), (X1, 'net2', 'b'),
+             ('net1', X1, 'a'), ('net2', X1, 'b'),
+             # X2, net, pin
+             (X2, 'net1', 'a'), (X2, 'net2', 'b'), (X2, 'net3', 'c'),
+             ('net1', X2, 'a'), ('net2', X2, 'b'), ('net3', X2, 'c')]
+    assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
+    assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
