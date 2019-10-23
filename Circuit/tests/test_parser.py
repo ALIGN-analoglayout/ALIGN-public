@@ -13,6 +13,20 @@ def setup_multiline():
     X1 a b  testdev x =1f y= 0.1
     X2 a  b testdev x = 1f
     '''
+
+@pytest.fixture
+def setup_realistic():
+    return '''
+R1 vcc outplus 1e4
+R2 vcc outminus 1e4
+
+M1 outplus inplus src 0 NMOS   l=0.014u nfin=2
+M2 outminus inminus src 0 NMOS l=0.014u nfin=2
+
+C1 outplus 0 1e-12
+C2 outminus 0 1e-12
+'''
+
 @pytest.fixture
 def parser():
     parser = SpiceParser()
@@ -56,3 +70,24 @@ def test_parser_multiline(setup_multiline, parser):
     assert isinstance(parser.circuit.elements[0], parser.library['testdev'])
     assert isinstance(parser.circuit.elements[1], parser.library['testdev'])
     assert parser.circuit.nets == ['a', 'b']
+
+def test_parser_realistic(setup_realistic, parser):
+    parser.parse(setup_realistic)
+    assert len(parser.circuit.elements) == 6
+    assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2']
+    assert len(parser.circuit.nets) == 7
+    assert parser.circuit.nets == ['vcc', 'outplus', 'outminus', 'inplus', 'src', '0', 'inminus']
+
+def test_subckt_decl(setup_realistic, parser):
+    parser.parse(f'''
+.subckt diffamp vcc outplus outminus inplus src 0 inminus
+.param res = 100
+{setup_realistic}
+.ends
+X1 vcc outplus outminus inplus src 0 inminus diffamp
+''')
+    assert 'diffamp' in parser.library
+    print([x.name for x in parser.library['diffamp'].circuit.elements])
+    assert len(parser.library['diffamp'].circuit.elements) == 6
+    assert len(parser.circuit.elements) == 1
+

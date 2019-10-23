@@ -10,6 +10,10 @@ class NTerminalDevice():
 	pins = {} # name: net
 	parameters = {} # name : val
 
+	@classmethod
+	def add_parameters(self, parameters):
+		self._parameters.update({x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()})
+
 	def __init__(self, name, *pins, **parameters):
 		self.name = name
 		assert self.name.startswith(self._prefix)
@@ -94,9 +98,18 @@ class Circuit(Graph):
 		self.add_edges_from([((element, pin), net) for pin, net in element.pins.items()])
 		return element
 
-class _SubCircuit(NTerminalDevice, Circuit):
+class _SubCircuit(NTerminalDevice):
 	_prefix = 'X'
+	circuit = None
 
-	def __init__(self, *pins, **parameters):
-		NTerminalDevice.__init__(self, *pins, **parameters)
-		Circuit.__init__(self)
+	@property
+	def elements(self):
+		return self.circuit.elements
+
+	@property
+	def nets(self):
+		return self.circuit.nets
+
+	@classmethod
+	def add_element(self, element):
+		return self.circuit.add_element(element)
