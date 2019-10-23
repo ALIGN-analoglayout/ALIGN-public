@@ -64,7 +64,7 @@ class NTerminalDevice():
 	def str2float(val):
 		unit = next((x for x in NTerminalDevice.unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
 		numstr = val if unit is None else val[:-1*len(unit)]
-		return float(numstr) * NTerminalDevice.unit_multipliers[unit]
+		return float(numstr) * NTerminalDevice.unit_multipliers[unit] if unit is not None else float(numstr)
 
 	@staticmethod
 	def get_param_type(val):

@@ -2,7 +2,7 @@ import collections
 import re
 
 from .core import Circuit
-from .elements import library
+from .elements import Library
 
 # Token specification
 pats = []
@@ -24,6 +24,10 @@ Token = collections.namedtuple('Token', ['type','value'])
 class SpiceParser:
 
     _context = []
+
+    def __init__(self):
+        self.library = Library()
+        self.circuit = Circuit()
 
     @staticmethod
     def _generate_tokens(text):
@@ -64,7 +68,17 @@ class SpiceParser:
         return args, kwargs
 
     def _process_instance(self, name, args, kwargs):
-        pass
+        defaults = {'C': 'CAP', 'R': 'RES'}
+        if any(name.startswith(x) for x in ('C', 'R', 'L')):
+            model = defaults[name[0]]
+            kwargs['value'] = args.pop()
+        elif any(name.startswith(x) for x in ('M', 'X')):
+            model = args.pop()
+        else:
+            raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
+
+        assert model in self.library, (model, name, args, kwargs)
+        self.circuit.add_element(self.library[model](name, *args, **kwargs))
 
     def _process_declaration(self, decl, args, kwargs):
         pass

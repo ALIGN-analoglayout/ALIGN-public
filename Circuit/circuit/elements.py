@@ -13,15 +13,18 @@ class NMOS(_MosFET):
 class PMOS(_MosFET):
 	pass
 
-class CAP(NTerminalDevice):
-	_prefix = 'C'
+class _TwoTerminalDevice(NTerminalDevice):
 	_pins = ('plus', 'minus')
 	_parameters = {'value': (float, 0)}
 
-class RES(NTerminalDevice):
+class CAP(_TwoTerminalDevice):
+	_prefix = 'C'
+
+class RES(_TwoTerminalDevice):
 	_prefix = 'R'
-	_pins = ('plus', 'minus')
-	_parameters = {'value': (float, 0)}
+
+class IND(_TwoTerminalDevice):
+	_prefix = 'L'
 
 class Library(dict):
 
