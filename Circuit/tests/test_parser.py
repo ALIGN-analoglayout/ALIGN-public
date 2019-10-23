@@ -84,10 +84,11 @@ def test_subckt_decl(setup_realistic, parser):
 .param res = 100
 {setup_realistic}
 .ends
-X1 vcc outplus outminus inplus src 0 inminus diffamp
+X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
 ''')
     assert 'diffamp' in parser.library
     print([x.name for x in parser.library['diffamp'].circuit.elements])
     assert len(parser.library['diffamp'].circuit.elements) == 6
     assert len(parser.circuit.elements) == 1
+    assert type(parser.circuit.elements[0]).__name__ == 'diffamp'
 
