@@ -98,9 +98,12 @@ class Circuit(Graph):
 			self.add_edge(element, net, pin=pin)
 		return element
 
-class _SubCircuit(NTerminalDevice):
-	_prefix = 'X'
-	circuit = None
+class _SubCircuitMetaClass(type):
+
+	def __new__(mc1, name, bases, nmspc):
+		if 'circuit' not in nmspc: nmspc.update({'circuit': Circuit()})
+		if '_parameters' not in nmspc: nmspc.update({'_parameters': {}})
+		return super(_SubCircuitMetaClass, mc1).__new__(mc1, name, bases, nmspc)
 
 	@property
 	def elements(self):
@@ -110,6 +113,18 @@ class _SubCircuit(NTerminalDevice):
 	def nets(self):
 		return self.circuit.nets
 
-	@classmethod
 	def add_element(self, element):
 		return self.circuit.add_element(element)
+
+class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
+	_prefix = 'X'
+
+	@property
+	def elements(self):
+		return self.circuit.elements
+
+	@property
+	def nets(self):
+		return self.circuit.nets
+
+

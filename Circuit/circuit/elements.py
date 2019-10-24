@@ -37,10 +37,8 @@ library = Library()
 
 def SubCircuit(name, *pins, library=library, **parameters):
 	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	# Automatically register subcircuit into global library for later reuse
-	library[name] = type(name, (_SubCircuit,), {'circuit': Circuit(),
-		'_pins': pins,
-		'_parameters': {}})
+	# Automatically register subcircuit into library for later reuse
+	library[name] = type(name, (_SubCircuit,), {'_pins': pins})
 	library[name].add_parameters(parameters)
 	# return new class containing subcircuit
 	return library[name]

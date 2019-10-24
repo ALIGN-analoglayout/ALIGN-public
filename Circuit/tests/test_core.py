@@ -42,9 +42,16 @@ def test_3_terminal_device_w_parameter():
     assert inst.parameters == {'myparameter': 2}
 
 def test_subckt_class():
-    subckt = type('test_subckt', (_SubCircuit,), {
+    TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
+    subckt = type('test_subckt', (_SubCircuit,), {'circuit': Circuit(),
         '_pins': ['pin1', 'pin2'],
         '_parameters': {'param1': (int, 1), 'param2': (float, 1e-3), 'param3': (float, 1e-16), 'param4': (str, "hello")}})
+    X1 = TwoTerminalDevice('X1', 'net1', 'net2')
+    X2 = TwoTerminalDevice('X2', 'net2', 'net3')
+    subckt.add_element(X1)
+    subckt.add_element(X2)
+    assert subckt.elements == [X1, X2]
+    assert subckt.nets == ['net1', 'net2', 'net3']
     with pytest.raises(AssertionError):
         inst = subckt('X1')
     with pytest.raises(AssertionError):
@@ -54,6 +61,8 @@ def test_subckt_class():
     assert type(inst).__name__ == 'test_subckt'
     assert inst.pins == {'pin1': 'net10', 'pin2': 'net12'}
     assert inst.parameters == {'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
+    assert inst.elements == [X1, X2]
+    assert inst.nets == ['net1', 'net2', 'net3']
 
 def test_circuit():
     TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
