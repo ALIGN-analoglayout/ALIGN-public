@@ -121,7 +121,7 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
 
 def SubCircuit(name, *pins, library=None, **parameters):
 	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	subckt = type(name.upper(), (_SubCircuit,), {'_pins': pins})
+	subckt = type(name, (_SubCircuit,), {'_pins': pins})
 	subckt.add_parameters(parameters)
 	# Automatically register subcircuit into library for later reuse
 	if library is not None:
@@ -129,3 +129,12 @@ def SubCircuit(name, *pins, library=None, **parameters):
 	# return new class containing subcircuit
 	return subckt
 
+def Model(name, base, library=None, **parameters):
+	assert issubclass(base, NTerminalDevice), base
+	model = type(name, (base, ), {'_parameters': base._parameters.copy()})
+	model.add_parameters(parameters)
+	# Automatically register model into library for later reuse
+	if library is not None:
+		library[name] = model
+	# return new class containing model
+	return model

@@ -1,7 +1,7 @@
 import collections
 import re
 
-from .core import Circuit, SubCircuit
+from .core import Circuit, SubCircuit, Model
 from .elements import Library
 
 # Token specification
@@ -93,3 +93,8 @@ class SpiceParser:
         elif decl == '.PARAM':
             assert len(args) == 0
             self._scope[-1].add_parameters(kwargs)
+        elif decl == '.MODEL':
+            assert len(args) == 2, args
+            name, type_ = args[0], args[1]
+            assert type_ in self.library, type_
+            self._scope.append(Model(name, self.library[type_], library=self.library, **kwargs))

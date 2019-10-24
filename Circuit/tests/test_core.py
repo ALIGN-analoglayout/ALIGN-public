@@ -1,6 +1,6 @@
 import pytest
 
-from circuit.core import NTerminalDevice, Circuit, _SubCircuit
+from circuit.core import NTerminalDevice, Circuit, _SubCircuit, Model
 
 def test_n_terminal_device():
     inst = NTerminalDevice('X1')
@@ -87,3 +87,13 @@ def test_circuit():
              ('net1', X2, 'a'), ('net2', X2, 'b'), ('net3', X2, 'c')]
     assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
+
+def test_model():
+    ThreeTerminalDevice = type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
+    CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
+    with pytest.raises(AssertionError):
+        inst = CustomDevice('X1', 'net01', 'net02', 'net03', garbage=2)
+    inst = CustomDevice('X1', 'net01', 'net02', 'net03', myparameter=2, newparam=2)
+    assert type(inst).__name__ == 'CustomDevice'
+    assert inst.pins == {'a': 'net01', 'b': 'net02', 'c': 'net03'}
+    assert inst.parameters == {'myparameter': 2, 'newparam': 2, 'newparam2': 'hello'}
