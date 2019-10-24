@@ -100,31 +100,18 @@ class Circuit(Graph):
 
 class _SubCircuitMetaClass(type):
 
-	def __new__(mc1, name, bases, nmspc):
-		if 'circuit' not in nmspc: nmspc.update({'circuit': Circuit()})
-		if '_parameters' not in nmspc: nmspc.update({'_parameters': {}})
-		return super(_SubCircuitMetaClass, mc1).__new__(mc1, name, bases, nmspc)
+	def __new__(cls, clsname, bases, attributedict):
+		if 'circuit' not in attributedict: attributedict.update({'_circuit': Circuit()})
+		if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
+		return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
 
-	@property
-	def elements(self):
-		return self.circuit.elements
-
-	@property
-	def nets(self):
-		return self.circuit.nets
-
-	def add_element(self, element):
-		return self.circuit.add_element(element)
+	def __getattr__(self, name):
+		return getattr(self._circuit, name)
 
 class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
 	_prefix = 'X'
 
-	@property
-	def elements(self):
-		return self.circuit.elements
-
-	@property
-	def nets(self):
-		return self.circuit.nets
+	def __getattr__(self, name):
+		return getattr(self._circuit, name)
 
 
