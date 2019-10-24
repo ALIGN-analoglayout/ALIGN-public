@@ -112,6 +112,8 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
 	_prefix = 'X'
 
 	def __getattr__(self, name):
+		if name == 'add_element':
+			raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
 		return getattr(self._circuit, name)
 
 

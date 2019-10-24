@@ -63,6 +63,8 @@ def test_subckt_class():
     assert inst.parameters == {'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
     assert inst.elements == [X1, X2]
     assert inst.nets == ['net1', 'net2', 'net3']
+    with pytest.raises(AssertionError):
+        inst.add_element(TwoTerminalDevice('X3', 'net1', 'net3'))
 
 def test_circuit():
     TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
