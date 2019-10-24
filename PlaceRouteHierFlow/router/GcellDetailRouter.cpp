@@ -603,35 +603,6 @@ void GcellDetailRouter::create_detailrouter(){
 
 };
 
-
-/*
-void DetailRouter::FindBoundryofGlobalSymNet(RouterDB::point &gridll,RouterDB::point &gridur, RouterDB::point &global_sym_gridll, RouterDB::point &global_sym_gridur, bool H, int center, int index_sym){
-
-  
-  FinBoundryNet(index_sym, global_sym_gridll, global_sym_gridur);
-
-  RouterDB::SinkData temp_contact;
-  RouterDB::SinkData cover_contact;
-
-  temp_contact.metalIdx = -1;
-  temp_contact.coord.push_back(gridll);
-  temp_contact.coord.push_back(gridur);
-
-  RouterDB::SinkData sym_temp_contact = Sym_contact(temp_contact, H, center);
-
-  int common_flag = Cover_Contact(temp_contact, sym_temp_contact, cover_contact);
-
-  if(common_flag==1){
-     gridll = cover_contact.coord[0];
-     gridur = cover_contact.coord[1];
-    }else{
-     std::cout<<"Grid boundary Error"<<std::endl;
-    }
-
-
-};
-
-*/
 RouterDB::contact GcellDetailRouter::SymContact(RouterDB::contact &temp_contact, bool H, int center){
 
   RouterDB::contact sym_contact;
@@ -1985,10 +1956,8 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
                   set_via.insert(temp_via);
                   }
                 
-
               }
            
-
           }         
 
      }
@@ -2003,6 +1972,7 @@ void GcellDetailRouter::GetPhsical_Metal_Via(int i){
 
 };
 
+
 void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &set_plist, RouterDB::point gridll, RouterDB::point gridur, int H, int center, RouterDB::point symgridll, RouterDB::point symgridur){
 
   //RouterDB::point tmpP;
@@ -2012,83 +1982,40 @@ void GcellDetailRouter::CreatePlistSymBlocks(std::vector<std::set<RouterDB::poin
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   //std::vector<RouterDB::point>
   int LLx, LLy, URx, URy;
+
+  auto push_contact = [&](auto & temp_contact){
+
+       LLx=temp_contact.placedLL.x;
+       LLy=temp_contact.placedLL.y;
+       URx=temp_contact.placedUR.x;
+       URy=temp_contact.placedUR.y;
+        
+       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+           Contacts.push_back(temp_contact);
+         }
+
+  };
+
   for(std::vector<RouterDB::Block>::iterator bit=Blocks.begin(); bit!=Blocks.end(); ++bit) {
     // 1. collect pin contacts on grids
     for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
       for(std::vector<RouterDB::contact>::iterator cit=pit->pinContacts.begin(); cit!=pit->pinContacts.end(); ++cit) {
-        LLx=cit->placedLL.x;
-        LLy=cit->placedLL.y;
-        URx=cit->placedUR.x;
-        URy=cit->placedUR.y;
-        
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
-            Contacts.push_back(*cit);
-          }
+         push_contact(*cit);
       }
       for(std::vector<RouterDB::Via>::iterator cit=pit->pinVias.begin(); cit!=pit->pinVias.end(); ++cit) {
-        LLx=cit->UpperMetalRect.placedLL.x;
-        LLy=cit->UpperMetalRect.placedLL.y;
-        URx=cit->UpperMetalRect.placedUR.x;
-        URy=cit->UpperMetalRect.placedUR.y;
-
-        if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
-           
-            Contacts.push_back(cit->UpperMetalRect);
-          }
-
-        LLx=cit->LowerMetalRect.placedLL.x;
-        LLy=cit->LowerMetalRect.placedLL.y;
-        URx=cit->LowerMetalRect.placedUR.x;
-        URy=cit->LowerMetalRect.placedUR.y;
-
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
-            Contacts.push_back(cit->LowerMetalRect);
-          }
-
+         push_contact(cit->UpperMetalRect);
+         push_contact(cit->LowerMetalRect);
       }
     }
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
-        LLx=pit->placedLL.x;
-        LLy=pit->placedLL.y;
-        URx=pit->placedUR.x;
-        URy=pit->placedUR.y;
-        //std::cout<<"LL ("<<LLx<<","<<LLy<<") UR ("<<URx<<","<<URy<<")"<<std::endl;
-        
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
-            Contacts.push_back(*pit);
-          }
-
+        push_contact(*pit);
         //std::cout<<"check point createplistBlocks 4.5 "<<std::endl;
     }
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        LLx=pit->UpperMetalRect.placedLL.x;
-        LLy=pit->UpperMetalRect.placedLL.y;
-        URx=pit->UpperMetalRect.placedUR.x;
-        URy=pit->UpperMetalRect.placedUR.y;
-        
-        if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
-           
-            Contacts.push_back(pit->UpperMetalRect);
-          }
-
-        LLx=pit->LowerMetalRect.placedLL.x;
-        LLy=pit->LowerMetalRect.placedLL.y;
-        URx=pit->LowerMetalRect.placedUR.x;
-        URy=pit->LowerMetalRect.placedUR.y;
-        
-        if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-            continue;
-          }else{
-            Contacts.push_back(pit->LowerMetalRect);
-          }
+        push_contact(pit->UpperMetalRect);
+        push_contact(pit->LowerMetalRect);
 
     }
 
@@ -2127,67 +2054,46 @@ void GcellDetailRouter::CreatePlistContact(std::vector<std::vector<RouterDB::poi
 
 };
 
-void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Block>& Blocks){
+void GcellDetailRouter::CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts){
   
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
+
+  {
+     mIdx=Contacts.metal;
+     LLx=Contacts.placedLL.x;
+     LLy=Contacts.placedLL.y;
+     URx=Contacts.placedUR.x;
+     URy=Contacts.placedUR.y;
+     ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+
+   }
+
+};
+
+void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Block>& Blocks){
+  
+  //RouterDB::point tmpP;
+  //int mIdx, LLx, LLy, URx, URy;
   for(std::vector<RouterDB::Block>::iterator bit=Blocks.begin(); bit!=Blocks.end(); ++bit) {
     // 1. collect pin contacts on grids
     for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
       for(std::vector<RouterDB::contact>::iterator cit=pit->pinContacts.begin(); cit!=pit->pinContacts.end(); ++cit) {
-        mIdx=cit->metal;
-        LLx=cit->placedLL.x;
-        LLy=cit->placedLL.y;
-        URx=cit->placedUR.x;
-        URy=cit->placedUR.y;
-        //std::cout<<"check point createplistBlocks 1 "<<mIdx<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,*cit);
       }
       for(std::vector<RouterDB::Via>::iterator cit=pit->pinVias.begin(); cit!=pit->pinVias.end(); ++cit) {
-        mIdx=cit->UpperMetalRect.metal;
-        LLx=cit->UpperMetalRect.placedLL.x;
-        LLy=cit->UpperMetalRect.placedLL.y;
-        URx=cit->UpperMetalRect.placedUR.x;
-        URy=cit->UpperMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 2 "<<mIdx<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-        mIdx=cit->LowerMetalRect.metal;
-        LLx=cit->LowerMetalRect.placedLL.x;
-        LLy=cit->LowerMetalRect.placedLL.y;
-        URx=cit->LowerMetalRect.placedUR.x;
-        URy=cit->LowerMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 3 "<<mIdx<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,cit->UpperMetalRect);
+        CreatePlistSingleContact(plist,cit->LowerMetalRect);
       }
     }
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
-        mIdx=pit->metal;
-        LLx=pit->placedLL.x;
-        LLy=pit->placedLL.y;
-        URx=pit->placedUR.x;
-        URy=pit->placedUR.y;
-        //std::cout<<"check point createplistBlocks 4 "<<mIdx<<std::endl;
-        //std::cout<<"LL ("<<LLx<<","<<LLy<<") UR ("<<URx<<","<<URy<<")"<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-        //std::cout<<"check point createplistBlocks 4.5 "<<std::endl;
+        CreatePlistSingleContact(plist,*pit);
     }
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        mIdx=pit->UpperMetalRect.metal;
-        LLx=pit->UpperMetalRect.placedLL.x;
-        LLy=pit->UpperMetalRect.placedLL.y;
-        URx=pit->UpperMetalRect.placedUR.x;
-        URy=pit->UpperMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 5 "<<mIdx<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-        mIdx=pit->LowerMetalRect.metal;
-        LLx=pit->LowerMetalRect.placedLL.x;
-        LLy=pit->LowerMetalRect.placedLL.y;
-        URx=pit->LowerMetalRect.placedUR.x;
-        URy=pit->LowerMetalRect.placedUR.y;
-        //std::cout<<"check point createplistBlocks 6 "<<mIdx<<std::endl;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,pit->UpperMetalRect);
+        CreatePlistSingleContact(plist,pit->LowerMetalRect);
     }
   }  
 
@@ -2198,17 +2104,13 @@ void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::poin
 void GcellDetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::terminal> Terminals){
   
   //RouterDB::point tmpP;
-  int mIdx, LLx, LLy, URx, URy;
-
+  //int mIdx, LLx, LLy, URx, URy;
+  int mIdx;
   for(unsigned int i=0;i<Terminals.size();i++){
       for(unsigned int j=0;j<Terminals[i].termContacts.size();j++){
           mIdx = Terminals[i].termContacts[j].metal;
           if(mIdx>=0){
-             LLx = Terminals[i].termContacts[j].placedLL.x;
-             LLy = Terminals[i].termContacts[j].placedLL.y;
-             URx = Terminals[i].termContacts[j].placedUR.x;
-             URy = Terminals[i].termContacts[j].placedUR.y;
-             ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+             CreatePlistSingleContact(plist, Terminals[i].termContacts[j]);
            }
          }
      }
@@ -2240,14 +2142,7 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
   GetPhsical_Via_contacts(physical_path, temp_via_contact);
 
   for(unsigned int i=0;i<temp_via_contact.size();i++){
-
-          mIdx = temp_via_contact[i].metal;
-          LLx = temp_via_contact[i].placedLL.x;
-          LLy = temp_via_contact[i].placedLL.y;
-          URx = temp_via_contact[i].placedUR.x;
-          URy = temp_via_contact[i].placedUR.y;
-          ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-      
+        CreatePlistSingleContact(plist, temp_via_contact[i]);
      }
 
 
@@ -2337,6 +2232,19 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
   std::vector<std::vector<RouterDB::point> > plist;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; 
 
+  auto push_contact = [&](auto & temp_contact){
+
+       LLx=temp_contact.placedLL.x;
+       LLy=temp_contact.placedLL.y;
+       URx=temp_contact.placedUR.x;
+       URy=temp_contact.placedUR.y;
+        
+       if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
+           Contacts.push_back(temp_contact);
+         }
+
+  };
+
   for(unsigned int k=0;k<Nets.size();k++){  
     
       std::vector<std::vector<RouterDB::Metal> > physical_path;
@@ -2345,17 +2253,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
       
       for(unsigned int i=0;i<physical_path.size();i++){
          for(unsigned int j=0;j<physical_path[i].size();j++){
-             LLx = physical_path[i][j].MetalRect.placedLL.x;
-             LLy = physical_path[i][j].MetalRect.placedLL.y;
-             URx = physical_path[i][j].MetalRect.placedUR.x;
-             URy = physical_path[i][j].MetalRect.placedUR.y;
-
-             if(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y){
-                continue;
-               }else{
-                Contacts.push_back(physical_path[i][j].MetalRect);
-               }             
-
+             push_contact(physical_path[i][j].MetalRect);
             }
         }
 
@@ -2363,16 +2261,7 @@ void GcellDetailRouter::CreatePlistSymNets(std::vector<std::set<RouterDB::point,
       GetPhsical_Via_contacts(physical_path, temp_via_contact);
       
       for(unsigned int i=0;i<temp_via_contact.size();i++){
-
-           LLx = temp_via_contact[i].placedLL.x;
-           LLy = temp_via_contact[i].placedLL.y;
-           URx = temp_via_contact[i].placedUR.x;
-           URy = temp_via_contact[i].placedUR.y;          
-
-           if(!(URx<gridll.x or URy<gridll.y or LLx>gridur.x or LLy>gridur.y)){
-                Contacts.push_back(temp_via_contact[i]);
-               } 
-        
+           push_contact(temp_via_contact[i]);
          }
       
 
@@ -2525,118 +2414,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   } else {
     std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
   }
-// Limitation: 
-// 1. all the grid nodes around the rectangle will be chosen, 
-// only if the rectangle boundary is exactly on grid
-// 2. both nodes crossing with upper layer and lower layer will be chosen
-// which results in perssimism 
-//  RouterDB::point tmpP;
-//  if(this->routeDirect.at(mIdx)==0) { // vertical metal layer
-//    for(int x=(LLx/x_unit.at(mIdx))*x_unit.at(mIdx); x<=int(ceil((double)URx/x_unit.at(mIdx)))*x_unit.at(mIdx); x+=x_unit.at(mIdx)) {
-//      if( mIdx!=this->lowest_metal ) {
-//        for(int y=(LLy/y_unit.at(mIdx-1))*y_unit.at(mIdx-1); y<=int(ceil((double)URy/y_unit.at(mIdx-1)))*y_unit.at(mIdx-1); y+=y_unit.at(mIdx-1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//      if( mIdx!=this->highest_metal ) {
-//        for(int y=(LLy/y_unit.at(mIdx+1))*y_unit.at(mIdx+1); y<=int(ceil((double)URy/y_unit.at(mIdx+1)))*y_unit.at(mIdx+1); y+=y_unit.at(mIdx+1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//    }
-//  } else if (this->routeDirect.at(mIdx)==1) { // horizontal metal layer
-//    for(int y=(LLy/y_unit.at(mIdx))*y_unit.at(mIdx); y<=int(ceil((double)URy/y_unit.at(mIdx)))*y_unit.at(mIdx); y+=y_unit.at(mIdx)) {
-//      if( mIdx!=this->lowest_metal ) {
-//        for(int x=(LLx/x_unit.at(mIdx-1))*x_unit.at(mIdx-1); x<=int(ceil((double)URx/x_unit.at(mIdx-1)))*x_unit.at(mIdx-1); x+=x_unit.at(mIdx-1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//      if( mIdx!=this->highest_metal ) {
-//        for(int x=(LLx/x_unit.at(mIdx+1))*x_unit.at(mIdx+1); x<=int(ceil((double)URx/x_unit.at(mIdx+1)))*x_unit.at(mIdx+1); x+=x_unit.at(mIdx+1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//    }
-//  } else {
-//    std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
-//  }
-}
 
-/*
-void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
-  RouterDB::point tmpP;
-  //tmpP.iterNet = Net_index;
-  if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
-    int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
-    //int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
-    //int newURx=URx+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
-    int newLLx=LLx;
-    int newURx=URx;
-    int boundX=(newLLx%curlayer_unit==0) ? (newLLx+curlayer_unit) : ( (newLLx/curlayer_unit)*curlayer_unit<newLLx ? (newLLx/curlayer_unit+1)*curlayer_unit : (newLLx/curlayer_unit)*curlayer_unit  );
-    for(int x=boundX; x<newURx; x+=curlayer_unit) {
-      if(mIdx!=this->lowest_metal) {
-        int nexlayer_unit=drc_info.Metal_info.at(mIdx-1).grid_unit_y;
-        //int newLLy=LLy-nexlayer_unit;
-        //int newURy=URy+nexlayer_unit;
-        int newLLy=LLy;
-        int newURy=URy;
-        int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        for(int y=boundY; y<newURy; y+=nexlayer_unit) {
-          tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
-        }
-      }
-      if(mIdx!=this->highest_metal) {
-        int nexlayer_unit=drc_info.Metal_info.at(mIdx+1).grid_unit_y;
-        //int newLLy=LLy-nexlayer_unit;
-        //int newURy=URy+nexlayer_unit;
-        int newLLy=LLy;
-        int newURy=URy;
-        int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        for(int y=boundY; y<newURy; y+=nexlayer_unit) {
-          tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
-        }
-      }
-    }
-  } else if(drc_info.Metal_info[mIdx].direct==1) { // horizontal metal layer
-    int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_y;
-    int newLLy=LLy;
-    int newURy=URy;
-    //int newLLy=LLy-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
-    //int newURy=URy+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
-    int boundY=(newLLy%curlayer_unit==0) ? (newLLy+curlayer_unit) : ( (newLLy/curlayer_unit)*curlayer_unit<newLLy ? (newLLy/curlayer_unit+1)*curlayer_unit : (newLLy/curlayer_unit)*curlayer_unit  );
-    for(int y=boundY; y<newURy; y+=curlayer_unit) {
-      if(mIdx!=this->lowest_metal) {
-        int nexlayer_unit=drc_info.Metal_info.at(mIdx-1).grid_unit_x;
-        int newLLx=LLx;
-        int newURx=URx;
-        //int newLLx=LLx-nexlayer_unit;
-        //int newURx=URx+nexlayer_unit;
-        int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        for(int x=boundX; x<newURx; x+=nexlayer_unit) {
-          tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
-        }
-      }
-      if(mIdx!=this->highest_metal) {
-        int nexlayer_unit=drc_info.Metal_info.at(mIdx+1).grid_unit_x;
-        int newLLx=LLx;
-        int newURx=URx;
-        //int newLLx=LLx-nexlayer_unit;
-        //int newURx=URx+nexlayer_unit;
-        int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        for(int x=boundX; x<newURx; x+=nexlayer_unit) {
-          tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
-        }
-      }
-    }
-  } else {
-    std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
-  }
 };
-*/
 
 void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index){
   PnRDB::point tpoint;  
