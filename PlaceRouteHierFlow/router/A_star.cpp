@@ -156,6 +156,154 @@ bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &gr
 
 };
 
+/*
+bool A_star::Check_S_Connection_L(std::vector<int> &left_up_node, std::vector<int> &right_down_node, std::set<int> &src_set, Grid &grid){
+
+  int const_number = -1;
+  bool up = 1;
+  bool down = 1;
+
+  auto up_search = [&](auto current_node, auto const_number, int future_direction, int current_direction){
+
+       if(grid.vertices_total[current_node].up !=-1 and grid.vertices_total[grid.vertices_total[current_node].up].active){
+
+          int future_node = grid.vertices_total[current_node].up;
+          int current_index = const_number;
+
+          while(current_index>0){//down, down
+             future_node = future_node + future_direction ;
+             current_index = current_index + current_direction;                   
+             if(future_node < 0 or future_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[future_node].active==0){up=0;}
+            }
+               //future_node = future_node + 1;
+              
+          if(grid.vertices_total[future_node].down ==-1 or  src_set.find(grid.vertices_total[future_node].down)==src_set.end() ){
+              up=0;
+            }
+         }else{
+            up=0;
+         }
+
+      };
+
+  auto down_search = [&](auto current_node, auto const_number, int future_direction, int current_direction){
+
+       if(grid.vertices_total[current_node].down !=-1 and grid.vertices_total[grid.vertices_total[current_node].down].active){
+
+          int future_node = grid.vertices_total[current_node].down;
+          int current_index = const_number;
+
+          while(current_index>0){//down, down
+             future_node = future_node + future_direction ;
+             current_index = current_index + current_direction;                   
+             if(future_node < 0 or future_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[future_node].active==0){down=0;}
+            }
+              
+          if(grid.vertices_total[future_node].up ==-1 or src_set.find(grid.vertices_total[future_node].up)==src_set.end() ){
+              down=0;
+            }
+
+         }else{
+           down=0;
+         }
+
+      };
+
+
+
+  for(int i=0;i<(int)left_up_node.size();i++){
+
+       const_number = i+1;
+       int current_index = const_number;
+       int current_node = left_up_node[i];
+
+       if(drc_info.Metal_info[grid.vertices_total[left_up_node[i]].metal].direct==1){//heritical
+
+          while(current_index>0){//left, left
+                current_node = current_node -1 ;
+                current_index = current_index -1;                
+                if(current_node < 0 or current_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[current_node].active==0){return 0;}
+              }
+
+          //current_node = current_node + 1;
+          up = 1;
+          down = 1;
+
+          up_search(current_node,const_number,-1,-1);
+          down_search(current_node,const_number,-1,-1);
+
+          if(down==0 and up==0){return 0;}
+
+         }else{
+
+          while(current_index>0){//down, down
+
+                current_node = current_node -1 ;
+                current_index = current_index -1;                
+                if(current_node < 0 or current_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[current_node].active==0){return 0;}
+
+              }
+          up = 1;
+          down = 1;
+
+          up_search(current_node,const_number,1,-1);
+          down_search(current_node,const_number,1,-1);
+
+          if(down==0 and up==0){return 0;}
+
+         }
+
+     }
+
+
+  for(int i=0;i<(int)right_down_node.size();i++){
+
+       int const_number = i+1;
+       int current_index = const_number;
+       int current_node = right_down_node[i];
+
+       if(drc_info.Metal_info[grid.vertices_total[right_down_node[i]].metal].direct==1){//heritical
+
+          while(current_index>0){//left, left
+
+                current_node = current_node +1 ;
+                current_index = current_index -1;                
+                if(current_node < 0 or current_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[current_node].active==0){return 0;}
+
+              }
+          up = 1;
+          down = 1;
+          up_search(current_node,const_number,1,-1);
+          down_search(current_node,const_number,1,-1);
+
+          if(down==0 and up==0){return 0;}
+
+         }else{
+
+          while(current_index>0){//down, down
+
+                current_node = current_node +1 ;
+                current_index = current_index -1;                
+                if(current_node < 0 or current_node > (int) grid.vertices_total.size()-1 or grid.vertices_total[current_node].active==0){return 0;}
+
+              }
+          up = 1;
+          down = 1;
+          up_search(current_node,const_number,-1,-1);
+          down_search(current_node,const_number,-1,-1);
+
+          if(down==0 and up==0){return 0;}
+
+         }
+
+     }
+
+  return 1;
+  
+
+};
+*/
+
 bool A_star::Check_S_Connection_L(std::vector<int> &left_up_node, std::vector<int> &right_down_node, std::set<int> &src_set, Grid &grid){
 
   for(int i=0;i<(int)left_up_node.size();i++){
@@ -661,6 +809,138 @@ bool A_star::found_near_node(int left_up, int right_down, int current_node, Grid
        return false;
       }
 };
+
+/*
+bool A_star::Check_Parallel_SD(int left_up, int right_down, int node_index, std::vector<int> &left_up_node, std::vector<int> &right_down_node, Grid& gird, std::set<int> S_or_D){
+
+  auto check_feasible =[&](auto &temp_number,auto & current_node, auto & store_vector, auto &return_value, int direction_flag){
+
+       while(temp_number>0){
+
+              std::vector<int> grid_full_temp_vector;
+
+              if(direction_flag == 1){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].west;
+              }else if(direction_flag == 2){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].east;
+              }else if(direction_flag == 3){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].north;
+              }else if(direction_flag == 4){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].south;
+              }
+
+              if((int)grid_full_temp_vector.size()==0){
+                 return_value = 0;
+                 return;
+                }else if(gird.vertices_total[grid_full_temp_vector[0]].active==0){
+                 return_value = 0;
+                 return;
+                }else if(S_or_D.find(grid_full_temp_vector[0])==S_or_D.end()){
+                 return_value = 0;
+                 return;
+                }else{
+                 current_node = grid_full_temp_vector[0];
+                 store_vector.push_back(current_node);
+                 temp_number=temp_number-1;
+                }
+
+            }
+       
+       };
+
+  if(gird.vertices_total[node_index].active==0){return 0;}
+
+  if(drc_info.Metal_info[gird.vertices_total[node_index].metal].direct==0){//vertical
+ 
+       int current_node = node_index;
+       int return_value = 1;
+       check_feasible(left_up,current_node,left_up_node,return_value,1);
+       if(return_value ==0){return 0;}
+
+
+       current_node = node_index;
+       check_feasible(right_down,current_node,right_down_node,return_value,2);       
+       if(return_value ==0){return 0;}
+
+     }else{
+
+       int current_node = node_index;
+       int return_value = 1;
+       check_feasible(left_up,current_node,left_up_node,return_value,3);
+       if(return_value ==0){return 0;}
+       current_node = node_index;
+
+       check_feasible(right_down,current_node,right_down_node,return_value,4);       
+       if(return_value ==0){return 0;}
+     }
+
+  return 1;
+
+};
+
+bool A_star::Check_Parallel_Rule(int left_up, int right_down, int node_index, std::vector<int> &left_up_node, std::vector<int> &right_down_node, Grid& gird){
+
+  auto check_feasible =[&](auto &temp_number,auto & current_node, auto & store_vector, auto &return_value, int direction_flag){
+
+       while(temp_number>0){
+              
+              std::vector<int> grid_full_temp_vector;
+
+              if(direction_flag == 1){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].west;
+              }else if(direction_flag == 2){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].east;
+              }else if(direction_flag == 3){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].north;
+              }else if(direction_flag == 4){
+                grid_full_temp_vector = gird.vertices_total_full_connected[current_node].south;
+              }
+
+              if((int)grid_full_temp_vector.size()==0){
+                 return_value = 0;
+                 return;
+                }else if(gird.vertices_total[grid_full_temp_vector[0]].active==0){
+                 return_value = 0;
+                 return;
+                }else{
+                 current_node = grid_full_temp_vector[0];
+                 store_vector.push_back(current_node);
+                 temp_number=temp_number-1;
+                }
+
+            }
+       
+       };
+
+  if(gird.vertices_total[node_index].active==0){return 0;}
+
+  if(drc_info.Metal_info[gird.vertices_total[node_index].metal].direct==0){//vertical
+ 
+       int current_node = node_index;
+       int return_value = 1;
+       check_feasible(left_up,current_node,left_up_node,return_value,1);
+       if(return_value==0){return 0;}
+       current_node = node_index;
+
+       check_feasible(right_down,current_node,right_down_node,return_value,2); 
+       if(return_value==0){return 0;}
+     }else{
+
+       int current_node = node_index;
+       int return_value = 1;
+       check_feasible(left_up,current_node,left_up_node,return_value,3);
+       if(return_value==0){return 0;}
+       current_node = node_index;
+
+       check_feasible(right_down,current_node,right_down_node,return_value,4);     
+       if(return_value==0){return 0;}
+     }
+
+  return 1;
+ 
+};
+*/
+
 
 // one direction xuanzhuande 
 bool A_star::Check_Parallel_SD(int left_up, int right_down, int node_index, std::vector<int> &left_up_node, std::vector<int> &right_down_node, Grid& gird, std::set<int> S_or_D){
