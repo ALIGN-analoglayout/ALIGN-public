@@ -11,12 +11,13 @@ pats.append( r'(?P<EMPTY>^\s+)')
 pats.append( r'(?P<CONTINUE>\s*\+)')
 pats.append( r'(?P<NEWL>[\n\r]+)')
 pats.append( r'(?P<DECL>\.[A-Z]+)')
-pats.append( r'(?P<NUM>-?\d+\.?\d*(?:[Ee]-?\d+)?(?:T|G|X|MEG|K|M|U|N|P|F)?)')
+pats.append( r'(?P<NUM>-?\d+\.?\d*(?:[E]-?\d+)?(?:T|G|X|MEG|K|M|U|N|P|F)?)')
 pats.append( r'(?P<NAME>[A-Z_0-9]+)')
 pats.append( r'(?P<EQUALS>\s*=\s*)')
 pats.append( r'(?P<WS>\s+)')
 
-spice_pat = re.compile('|'.join(pats), re.IGNORECASE)
+# re.IGNORECASE is not required since everything is capitalized prior to tokenization
+spice_pat = re.compile('|'.join(pats))
 
 # Tokenizer
 Token = collections.namedtuple('Token', ['type','value'])
@@ -32,7 +33,7 @@ class SpiceParser:
 
     @staticmethod
     def _generate_tokens(text):
-        scanner = spice_pat.scanner(text)
+        scanner = spice_pat.scanner(text.upper())
         for m in iter(scanner.match, None):
             tok = Token(m.lastgroup, m.group())
             if tok.type not in ['WS', 'COMMENT', 'CONTINUE', 'EMPTY']:
@@ -73,7 +74,7 @@ class SpiceParser:
         defaults = {'C': 'CAP', 'R': 'RES'}
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
-            kwargs['value'] = args.pop()
+            kwargs['VALUE'] = args.pop()
         elif any(name.startswith(x) for x in ('M', 'X')):
             model = args.pop()
         else:
@@ -83,12 +84,12 @@ class SpiceParser:
         self._scope[-1].add_element(self.library[model](name, *args, **kwargs))
 
     def _process_declaration(self, decl, args, kwargs):
-        if decl == '.subckt':
+        if decl == '.SUBCKT':
             name = args.pop(0)
             subckt = SubCircuit(name, *args, library=self.library, **kwargs)
             self._scope.append(subckt)
-        elif decl == '.ends':
+        elif decl == '.ENDS':
             self._scope.pop()
-        elif decl == '.param':
+        elif decl == '.PARAM':
             assert len(args) == 0
             self._scope[-1].add_parameters(kwargs)

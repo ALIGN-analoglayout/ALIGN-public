@@ -3,6 +3,9 @@ import pytest
 from circuit.core import SubCircuit
 from circuit.parser import SpiceParser
 
+'''WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
+            Please formulate tests accordingly'''
+
 @pytest.fixture
 def setup_basic():
     return 'X1 a b testdev x=1f y=0.1'
@@ -30,7 +33,7 @@ C2 outminus 0 1e-12
 @pytest.fixture
 def parser():
     parser = SpiceParser()
-    parser.library['testdev'] = SubCircuit('testdev', 'pin1', 'pin2', x='1f', y=0.1)
+    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
     return parser
 
 def test_lexer_basic(setup_basic):
@@ -59,24 +62,24 @@ def test_parser_basic(setup_basic, parser):
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
-    assert isinstance(parser.circuit.elements[0], parser.library['testdev'])
-    assert parser.circuit.nets == ['a', 'b']
+    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
+    assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
     assert parser.circuit.elements[1].name == 'X2'
-    assert isinstance(parser.circuit.elements[0], parser.library['testdev'])
-    assert isinstance(parser.circuit.elements[1], parser.library['testdev'])
-    assert parser.circuit.nets == ['a', 'b']
+    assert isinstance(parser.circuit.elements[0], parser.library['TESTDEV'])
+    assert isinstance(parser.circuit.elements[1], parser.library['TESTDEV'])
+    assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_realistic(setup_realistic, parser):
     parser.parse(setup_realistic)
     assert len(parser.circuit.elements) == 6
     assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2']
     assert len(parser.circuit.nets) == 7
-    assert parser.circuit.nets == ['vcc', 'outplus', 'outminus', 'inplus', 'src', '0', 'inminus']
+    assert parser.circuit.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS']
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''
@@ -86,8 +89,7 @@ def test_subckt_decl(setup_realistic, parser):
 .ends
 X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
 ''')
-    assert 'diffamp' in parser.library
-    assert len(parser.library['diffamp'].elements) == 6
+    assert 'DIFFAMP' in parser.library
+    assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert type(parser.circuit.elements[0]).__name__ == 'diffamp'
-
+    assert type(parser.circuit.elements[0]).__name__ == 'DIFFAMP'

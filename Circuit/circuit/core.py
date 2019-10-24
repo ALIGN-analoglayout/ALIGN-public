@@ -121,7 +121,7 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
 
 def SubCircuit(name, *pins, library=None, **parameters):
 	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	subckt = type(name, (_SubCircuit,), {'_pins': pins})
+	subckt = type(name.upper(), (_SubCircuit,), {'_pins': pins})
 	subckt.add_parameters(parameters)
 	# Automatically register subcircuit into library for later reuse
 	if library is not None:
