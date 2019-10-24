@@ -1027,59 +1027,46 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
   //CheckVerticesTotal();
 }
 
+void Grid::CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts){
+  
+  //RouterDB::point tmpP;
+  int mIdx, LLx, LLy, URx, URy;
+
+  {
+     mIdx=Contacts.metal;
+     LLx=Contacts.placedLL.x;
+     LLy=Contacts.placedLL.y;
+     URx=Contacts.placedUR.x;
+     URy=Contacts.placedUR.y;
+     ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+
+   }
+
+};
+
 void Grid::InactiveGlobalInternalMetal(std::vector<RouterDB::Block>& Blocks) {
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
   //RouterDB::point tmpP;
-  int mIdx, LLx, LLy, URx, URy;
+  //int mIdx, LLx, LLy, URx, URy;
   for(std::vector<RouterDB::Block>::iterator bit=Blocks.begin(); bit!=Blocks.end(); ++bit) {
     // 1. collect pin contacts on grids
     for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
       for(std::vector<RouterDB::contact>::iterator cit=pit->pinContacts.begin(); cit!=pit->pinContacts.end(); ++cit) {
-        mIdx=cit->metal;
-        LLx=cit->placedLL.x;
-        LLy=cit->placedLL.y;
-        URx=cit->placedUR.x;
-        URy=cit->placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,*cit);
       }
       for(std::vector<RouterDB::Via>::iterator cit=pit->pinVias.begin(); cit!=pit->pinVias.end(); ++cit) {
-        mIdx=cit->UpperMetalRect.metal;
-        LLx=cit->UpperMetalRect.placedLL.x;
-        LLy=cit->UpperMetalRect.placedLL.y;
-        URx=cit->UpperMetalRect.placedUR.x;
-        URy=cit->UpperMetalRect.placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-        mIdx=cit->LowerMetalRect.metal;
-        LLx=cit->LowerMetalRect.placedLL.x;
-        LLy=cit->LowerMetalRect.placedLL.y;
-        URx=cit->LowerMetalRect.placedUR.x;
-        URy=cit->LowerMetalRect.placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,cit->UpperMetalRect);
+        CreatePlistSingleContact(plist,cit->LowerMetalRect);
       }
     }
     // 2. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
-        mIdx=pit->metal;
-        LLx=pit->placedLL.x;
-        LLy=pit->placedLL.y;
-        URx=pit->placedUR.x;
-        URy=pit->placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,*pit);
     }
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        mIdx=pit->UpperMetalRect.metal;
-        LLx=pit->UpperMetalRect.placedLL.x;
-        LLy=pit->UpperMetalRect.placedLL.y;
-        URx=pit->UpperMetalRect.placedUR.x;
-        URy=pit->UpperMetalRect.placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
-        mIdx=pit->LowerMetalRect.metal;
-        LLx=pit->LowerMetalRect.placedLL.x;
-        LLy=pit->LowerMetalRect.placedLL.y;
-        URx=pit->LowerMetalRect.placedUR.x;
-        URy=pit->LowerMetalRect.placedUR.y;
-        ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+        CreatePlistSingleContact(plist,pit->UpperMetalRect);
+        CreatePlistSingleContact(plist,pit->LowerMetalRect);
     }
   }  
   // 3. inactive grid poins in collected list
