@@ -3,7 +3,7 @@
 import json
 import argparse
 import logging
-import cProfile
+#import cProfile
 
 from pnrdb import hierNode, gen_viewer_json
 

@@ -2,26 +2,23 @@ import pathlib
 import json
 
 from pnrdb import *
-from cell_fabric import DefaultCanvas, Pdk, transformation
+from cell_fabric import DefaultCanvas, transformation
 from pprint import pformat
-import json
+
 import pytest
 import os
 
 import re
 
-dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / "switched_capacitor_filter/pnr_output/Results"
-assert dir.is_dir()
+rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / "switched_capacitor_filter/pnr_output/Results"
+assert rdir.is_dir()
 
 p = re.compile( r'^.*AspectRatio.*_\d+x\d+\.json$')
-res = [ nm for child in dir.iterdir() for nm in (child.name,) if p.match( nm)]
+res = [ nm for child in rdir.iterdir() for nm in (child.name,) if p.match( nm)]
 
 @pytest.mark.parametrize("fn",res)
 def test_remove_duplicates(fn):
-
-    filepath = dir / fn
-
-    with filepath.open( "rt") as fp:
+    with (rdir / fn).open( "rt") as fp:
         d = json.load( fp)
         
     pdk = "../PDK_Abstraction/FinFET14nm_Mock_PDK"
