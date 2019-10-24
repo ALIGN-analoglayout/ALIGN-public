@@ -273,20 +273,24 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
-        cnv.gen_data()
+        cnv.gen_data(run_pex=False)
 
-        with open('tmp.cir', 'wt') as fp:
-            cnv.pex.writePex(fp)
+#        with open('tmp.cir', 'wt') as fp:
+#            cnv.pex.writePex(fp)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
 
-        for (idx,(p0, p1)) in enumerate(cnv.rd.shorts):
-            logger.info( f"SH: {p0} {p1}")
-            term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
-            d['terminals'].append( term)
-            term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
-            d['terminals'].append( term)
+        for (idx,sh) in enumerate(cnv.rd.shorts):
+            if isinstance( sh, tuple) and len(sh) == 2:
+                p0, p1 = sh
+                logger.info( f"SH: {p0} {p1}")
+                term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
+                d['terminals'].append( term)
+                term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
+                d['terminals'].append( term)
+            else:
+                logger.error( f"Unknown short type: {sh}")
 
 
         for (nm,lst) in cnv.rd.opens:

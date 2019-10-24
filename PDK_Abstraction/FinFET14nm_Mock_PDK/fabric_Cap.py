@@ -165,7 +165,7 @@ def main( args):
     print( "bbox", uc.bbox)
 
     with open(args.block_name + '.json', "wt") as fp:
-        uc.writeJSON( fp, draw_grid=True)
+        uc.writeJSON( fp, draw_grid=False)
 
     cell_pin = ["PLUS", "MINUS"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)

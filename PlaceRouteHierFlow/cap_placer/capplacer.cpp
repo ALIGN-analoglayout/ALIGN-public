@@ -1883,6 +1883,9 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	for (unsigned int i = 0; i < n_array.size(); i++) {
 	    const auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
+
+
+
 		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
 		int width = r.x;
 		x[0]=n.via[j].first - width+offset_x;
@@ -1916,6 +1919,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		xy.push_back( y[2]);
 
 		term["rect"] = xy;
+		std::cout << "Printing via: " << i << "," << j << "," << term["netName"] << "," << term["layer"] << "," << term["rect"] << std::endl;
 
 		terminals.push_back( term);
 	    }
@@ -1928,7 +1932,9 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     json jsonUnit;
     {
 	std::ifstream jsonStream;
-	jsonStream.open( fpath+"/"+unit_capacitor+".json");
+	string fn = fpath+"/"+unit_capacitor+".json";
+	std::cout << "Reading JSON for unit_capacitor " << fn << std::endl;
+	jsonStream.open( fn);
 	jsonStream >> jsonUnit;
 	jsonStream.close();
     }
@@ -1942,7 +1948,6 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 
 	int ni = Caps[i].net_index;
 
-	json unitTerminals = jsonUnit["terminals"];
 	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
 	    const json& term0 = jsonUnit["terminals"][j];
 	    	
@@ -1984,10 +1989,10 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    term1["layer"] = term0["layer"];
 	    json r0 = term0["rect"];
 	    json r1 = json::array();
-	    r1.push_back( -r0[0].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
-	    r1.push_back(  r0[1].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
-	    r1.push_back( -r0[2].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
-	    r1.push_back(  r0[3].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    r1.push_back( r0[0].get<int>() + oX);
+	    r1.push_back( r0[1].get<int>() + oY);
+	    r1.push_back( r0[2].get<int>() + oX);
+	    r1.push_back( r0[3].get<int>() + oY);
 	    term1["rect"] = r1;
 	    terminals.push_back( term1);
 	}
@@ -1998,7 +2003,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     {
 	std::ofstream jsonStream;
 	std::string fn = opath + top_name + ".json";
-	std::cout << "Writing JSON file: " << fn << std::endl;
+	std::cout << "Writing JSON for cap array: " << fn << std::endl;
 	jsonStream.open( fn);
 	jsonStream << std::setw(4) << jsonTop;
 	jsonStream.close();
