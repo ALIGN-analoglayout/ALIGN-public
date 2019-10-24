@@ -215,7 +215,7 @@ class Canvas:
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
 
-    def gen_data( self, *, draw_grid=False):
+    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True):
         self.computeBbox()
 
         data = { 'bbox' : self.bbox.toList(),
@@ -230,12 +230,12 @@ class Canvas:
             if draw_grid:
                 self.draw_grid(data)
 
-            self.drc = DesignRuleCheck( self)
-            self.drc.run()
-            self.pex = ParasiticExtraction( self)
-            self.pex.run()
-
-
+            if run_drc:
+                self.drc = DesignRuleCheck( self)
+                self.drc.run()
+            if run_pex:
+                self.pex = ParasiticExtraction( self)
+                self.pex.run()
 
         return data
 

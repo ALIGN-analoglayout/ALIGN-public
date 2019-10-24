@@ -273,10 +273,10 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
-        cnv.gen_data()
+        cnv.gen_data(run_pex=False)
 
-        with open('tmp.cir', 'wt') as fp:
-            cnv.pex.writePex(fp)
+#        with open('tmp.cir', 'wt') as fp:
+#            cnv.pex.writePex(fp)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals

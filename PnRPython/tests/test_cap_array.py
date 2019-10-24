@@ -35,7 +35,7 @@ def test_remove_duplicates(fn):
     cnv.bbox = transformation.Rect( *d["bbox"])
     cnv.terminals = d["terminals"]
     
-    cnv.gen_data()
+    cnv.gen_data(run_pex=False)
 
     assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
     assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)

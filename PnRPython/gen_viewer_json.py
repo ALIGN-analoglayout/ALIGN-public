@@ -3,10 +3,12 @@
 import json
 import argparse
 import logging
+import cProfile
 
 from pnrdb import hierNode, gen_viewer_json
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser( description="Visualize PnR database")
     parser.add_argument( "-d", "--input_dir", type=str, default="Results")
     parser.add_argument( "-b", "--block", type=str, default="telescopic_ota")
@@ -47,3 +49,7 @@ if __name__ == "__main__":
         if args.markers:
             with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
                 json.dump( d, fp=fp, indent=2)
+
+if __name__ == "__main__":
+    #cProfile.run("main()")
+    main()
