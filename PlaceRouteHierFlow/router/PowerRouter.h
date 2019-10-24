@@ -71,6 +71,7 @@ class PowerRouter : public DetailRouter {
     void ConvertToMetalPnRDB_Placed_Placed(PnRDB::Metal &temp_metal,RouterDB::Metal router_metal);
     void ReturnPowerGridData(PnRDB::hierNode& node);
     void ReturnPowerNetData(PnRDB::hierNode& node);
+    void UpdateVia(RouterDB::Via &temp_via);
 
 };
 
