@@ -1139,45 +1139,6 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
   } else {
     std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
   }
-// Limitation: 
-// 1. all the grid nodes around the rectangle will be chosen, 
-// only if the rectangle boundary is exactly on grid
-// 2. both nodes crossing with upper layer and lower layer will be chosen
-// which results in perssimism 
-//  RouterDB::point tmpP;
-//  if(this->routeDirect.at(mIdx)==0) { // vertical metal layer
-//    for(int x=(LLx/x_unit.at(mIdx))*x_unit.at(mIdx); x<=int(ceil((double)URx/x_unit.at(mIdx)))*x_unit.at(mIdx); x+=x_unit.at(mIdx)) {
-//      if( mIdx!=this->lowest_metal ) {
-//        for(int y=(LLy/y_unit.at(mIdx-1))*y_unit.at(mIdx-1); y<=int(ceil((double)URy/y_unit.at(mIdx-1)))*y_unit.at(mIdx-1); y+=y_unit.at(mIdx-1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//      if( mIdx!=this->highest_metal ) {
-//        for(int y=(LLy/y_unit.at(mIdx+1))*y_unit.at(mIdx+1); y<=int(ceil((double)URy/y_unit.at(mIdx+1)))*y_unit.at(mIdx+1); y+=y_unit.at(mIdx+1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//    }
-//  } else if (this->routeDirect.at(mIdx)==1) { // horizontal metal layer
-//    for(int y=(LLy/y_unit.at(mIdx))*y_unit.at(mIdx); y<=int(ceil((double)URy/y_unit.at(mIdx)))*y_unit.at(mIdx); y+=y_unit.at(mIdx)) {
-//      if( mIdx!=this->lowest_metal ) {
-//        for(int x=(LLx/x_unit.at(mIdx-1))*x_unit.at(mIdx-1); x<=int(ceil((double)URx/x_unit.at(mIdx-1)))*x_unit.at(mIdx-1); x+=x_unit.at(mIdx-1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//      if( mIdx!=this->highest_metal ) {
-//        for(int x=(LLx/x_unit.at(mIdx+1))*x_unit.at(mIdx+1); x<=int(ceil((double)URx/x_unit.at(mIdx+1)))*x_unit.at(mIdx+1); x+=x_unit.at(mIdx+1)) {
-//          tmpP.x=x; tmpP.y=y;
-//          plist.at(mIdx).push_back(tmpP);
-//        }
-//      }
-//    }
-//  } else {
-//    std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
-//  }
 }
 
 /*
