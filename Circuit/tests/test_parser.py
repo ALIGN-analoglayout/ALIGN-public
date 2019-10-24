@@ -1,6 +1,6 @@
 import pytest
 
-from circuit.elements import SubCircuit
+from circuit.core import SubCircuit
 from circuit.parser import SpiceParser
 
 @pytest.fixture

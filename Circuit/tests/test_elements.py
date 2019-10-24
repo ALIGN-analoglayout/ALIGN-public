@@ -1,12 +1,16 @@
 import pytest
 
-import circuit.elements as elements
+from circuit import elements, core
 
-def test_subckt():
-    assert 'test_subckt' not in elements.library
-    subckt = elements.SubCircuit('test_subckt', 'pin1', 'pin2', param1=1, param2=1e-3, param3="0.1f", param4="hello")
-    assert 'test_subckt' in elements.library
-    assert elements.library['test_subckt'] is subckt
+@pytest.fixture
+def library():
+    return elements.Library()
+
+def test_subckt(library):
+    assert 'test_subckt' not in library
+    subckt = core.SubCircuit('test_subckt', 'pin1', 'pin2', library=library, param1=1, param2=1e-3, param3="0.1f", param4="hello")
+    assert 'test_subckt' in library
+    assert library['test_subckt'] is subckt
     with pytest.raises(AssertionError):
         inst = subckt('X1')
     with pytest.raises(AssertionError):
@@ -28,16 +32,9 @@ def test_subckt():
     assert inst.parameters['param1'] == 2
     assert inst.parameters['param3'] - 1e-16 <= 1e-19 # safe floating point comparison
 
-def test_library():
-    lib = elements.Library()
-    assert 'test_subckt' not in lib
-    subckt = elements.SubCircuit('test_subckt', 'pin1', 'pin2', param1=1, param2=1e-3, param3="0.1f", param4="hello", library=lib)
-    assert 'test_subckt' in lib
-    assert lib['test_subckt'] is subckt
-
-def test_NMOS():
-    assert 'NMOS' in elements.library
-    assert elements.library['NMOS'] is elements.NMOS
+def test_NMOS(library):
+    assert 'NMOS' in library
+    assert library['NMOS'] is elements.NMOS
     with pytest.raises(AssertionError):
         inst = elements.NMOS('M1', 'net10', 'net12', 'net13')
     with pytest.raises(AssertionError):
@@ -55,9 +52,9 @@ def test_NMOS():
     with pytest.raises(AssertionError):
         inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 1.5)
 
-def test_PMOS():
-    assert 'PMOS' in elements.library
-    assert elements.library['PMOS'] is elements.PMOS
+def test_PMOS(library):
+    assert 'PMOS' in library
+    assert library['PMOS'] is elements.PMOS
     with pytest.raises(AssertionError):
         inst = elements.PMOS('M1', 'net10', 'net12', 'net13')
     with pytest.raises(AssertionError):
@@ -75,10 +72,10 @@ def test_PMOS():
     with pytest.raises(AssertionError):
         inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', nfin = 1.5)
 
-def test_res():
-    assert elements.RES.__name__ in elements.library
-    assert elements.library[elements.RES.__name__] is elements.RES
-    assert elements.RES in elements.library.values()
+def test_res(library):
+    assert elements.RES.__name__ in library
+    assert library[elements.RES.__name__] is elements.RES
+    assert elements.RES in library.values()
     with pytest.raises(AssertionError):
         inst = elements.RES('R1', 'net10')
     with pytest.raises(AssertionError):
@@ -89,9 +86,9 @@ def test_res():
     assert inst.pins == {'plus': 'net10', 'minus': 'net12'}
     assert inst.parameters['value'] == 1.3
 
-def test_cap():
-    assert elements.CAP.__name__ in elements.library
-    assert elements.CAP in elements.library.values()
+def test_cap(library):
+    assert elements.CAP.__name__ in library
+    assert elements.CAP in library.values()
     with pytest.raises(AssertionError):
         inst = elements.CAP('C1', 'net10')
     with pytest.raises(AssertionError):

@@ -1,8 +1,8 @@
 import collections
 import re
 
-from .core import Circuit
-from .elements import Library, SubCircuit
+from .core import Circuit, SubCircuit
+from .elements import Library
 
 # Token specification
 pats = []
@@ -60,7 +60,8 @@ class SpiceParser:
         else:
             raise AssertionError(cache, "must begin with DECL or NAME")
 
-    def _decompose(self, cache):
+    @staticmethod
+    def _decompose(cache):
         assert all(x.type in ('NAME', 'NUM', 'EQUALS') for x in cache)
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
         assert all(cache[i-1].type == 'NAME' for i in assignments)

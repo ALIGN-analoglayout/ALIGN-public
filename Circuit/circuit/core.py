@@ -119,4 +119,13 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
 			raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
 		return getattr(self._circuit, name)
 
+def SubCircuit(name, *pins, library=None, **parameters):
+	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
+	subckt = type(name, (_SubCircuit,), {'_pins': pins})
+	subckt.add_parameters(parameters)
+	# Automatically register subcircuit into library for later reuse
+	if library is not None:
+		library[name] = subckt
+	# return new class containing subcircuit
+	return subckt
 

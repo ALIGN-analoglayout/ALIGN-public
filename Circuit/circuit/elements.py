@@ -1,6 +1,6 @@
 import sys, inspect
 
-from .core import _SubCircuit, NTerminalDevice, Circuit
+from .core import NTerminalDevice
 
 class _MosFET(NTerminalDevice):
 	_prefix = 'M'
@@ -33,12 +33,4 @@ class Library(dict):
 			inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
 																issubclass(x, NTerminalDevice) and
 																not x.__name__.startswith('_')) })
-library = Library()
 
-def SubCircuit(name, *pins, library=library, **parameters):
-	assert len(pins) >= 1, "Subcircuit must have at least 1 pin"
-	# Automatically register subcircuit into library for later reuse
-	library[name] = type(name, (_SubCircuit,), {'_pins': pins})
-	library[name].add_parameters(parameters)
-	# return new class containing subcircuit
-	return library[name]
