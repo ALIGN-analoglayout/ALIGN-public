@@ -1,18 +1,12 @@
 #include "A_star.h"
 
 A_star::A_star(Grid& grid, bool shielding):drc_info(grid.drc_info){
-  //this->grid=grid; 
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
+
   this->path_number=1;
   source = grid.Source;
   dest = grid.Dest;
   this->shielding = shielding;
-  //this->drc_info = grid.drc_info;
-  //FindFeasiblePath(grid, path_number);
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
+
 };
 
 
@@ -940,17 +934,7 @@ bool A_star::L_shape_Connection(int nodeS, int nodeD, Grid& grid){
                if(h_search ==0 or h_search_temp ==0){
 
                   h_lock =1;
-/*
-                  if(metal_index_next>metal_index){
-                      current_node = grid.vertices_total[current_node].up;
-                      h_lock = 1;
-                      if(current_node==-1){return 0;}
-                     }else{
-                      current_node = grid.vertices_total[current_node].down;
-                      h_lock = 1;
-                      if(current_node==-1){return 0;}
-                     }
-*/
+
                  }else if(h_search_temp == h_search){
                    
                     if(h_search_temp==1){
@@ -1043,17 +1027,7 @@ bool A_star::L_shape_Connection(int nodeS, int nodeD, Grid& grid){
                if(v_search ==0 or v_search_temp ==0){
 
                   v_lock =1;
-/*
-                  if(metal_index_next>metal_index){
-                      current_node = grid.vertices_total[current_node].up;
-                      h_lock = 1;
-                      if(current_node==-1){return 0;}
-                     }else{
-                      current_node = grid.vertices_total[current_node].down;
-                      h_lock = 1;
-                      if(current_node==-1){return 0;}
-                     }
-*/
+
                  }else if(v_search_temp == v_search){
                    
                     if(v_search_temp==1){

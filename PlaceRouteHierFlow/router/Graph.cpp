@@ -1,30 +1,21 @@
 #include "Graph.h"
 
 Graph::Graph(Grid& grid):path_number(1) {
-  //this->grid=grid; 
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
-  //this->path_number=1;
+
   std::cout<<"Start Creating adjacent list (graph), ";
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating adjacent list (graph)"<<std::endl;
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
+
 };
 
 Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
-  //this->grid=grid; 
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
-  //this->path_number=1;
+
+  std::cout<<"Enter Graph, ";
   this->source=-1; this->dest=-1;
   std::cout<<"Start Creating power grid (graph), ";
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating power grid (graph)"<<std::endl;
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
+
 };
 
 bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
@@ -61,16 +52,11 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
 }
 
 Graph::Graph(Grid& grid, int pathNo) {
-  //this->grid=grid; 
-  //std::cout<<"~~~~~Before list \n";
-  //this->grid.CheckVerticesTotal();
-  //use grid information to create adjacentlist
+
   std::cout<<"Start Creating adjacent list (graph), ";
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
   std::cout<<"End creating adjacent list (graph)"<<std::endl;
-  //std::cout<<"~~~~~After list \n";
-  //this->grid.CheckVerticesTotal();
-  //find shortest path based source and dest
+
   this->path_number=pathNo;
   for(int i =0;i<pathNo;++i){
     
@@ -98,6 +84,7 @@ Graph::Graph(Grid& grid, int pathNo) {
 
 };
 
+
 void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed..... or 
 
   std::set<RouterDB::Metal, RouterDB::MetalComp> VddPower_Set;
@@ -112,289 +99,94 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
   RouterDB::Via temp_via;
   RouterDB::point LL_point;
   RouterDB::point UR_point;
+
+  auto adjust_line = [&](auto& graph_index){
+
+       UR_point.x = grid.vertices_graph[graph_index].x;
+       UR_point.y = grid.vertices_graph[graph_index].y;
+       if(LL_point.x == UR_point.x){
+           if(LL_point.y<=UR_point.y){
+               temp_metal.LinePoint.push_back(LL_point);
+               temp_metal.LinePoint.push_back(UR_point);
+             }else{
+               temp_metal.LinePoint.push_back(UR_point);
+               temp_metal.LinePoint.push_back(LL_point);
+             }
+       }else{
+           if(LL_point.x<=UR_point.x){
+               temp_metal.LinePoint.push_back(LL_point);
+               temp_metal.LinePoint.push_back(UR_point);
+             }else{
+               temp_metal.LinePoint.push_back(UR_point);
+               temp_metal.LinePoint.push_back(LL_point);
+             }
+       }
+  };
+
+  auto collect_vdd_gnd = [&](auto &i, auto&temp_vector){
+
+       for(unsigned int j=0;j<temp_vector.size();++j) 
+          {   
+             temp_metal.LinePoint.clear();
+             if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
+               {
+                  int graph_index = grid.total2graph[temp_vector[j]];
+                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
+                    {  
+                      adjust_line(graph_index);
+                      VddPower_Set.insert(temp_metal);
+                    }
+
+                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
+                   {  
+                      adjust_line(graph_index);
+                      GndPower_Set.insert(temp_metal);
+                   }
+               }
+                   
+         }
+
+  };
+
+  auto collect_vdd_gnd_via = [&](auto &i, auto& temp_index){
+
+       if(temp_index!=-1)
+         {
+            if(grid.total2graph.find(temp_index)!=grid.total2graph.end()){
+                 int graph_index = grid.total2graph[temp_index];
+                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
+                   { 
+                     temp_via.model_index = grid.vertices_graph[i].metal;
+                     VddVia_Set.insert(temp_via);
+                     //VddPower_Set.insert(temp_metal);
+                   }
+
+                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
+                   { 
+                     temp_via.model_index = grid.vertices_graph[i].metal; 
+                     GndVia_Set.insert(temp_via);
+                     //GndPower_Set.insert(temp_metal);
+                   }
+               }
+           }
+  };
   
   for(unsigned int i=0;i<grid.vertices_graph.size();++i)
      {
         if(grid.vertices_graph[i].active == 1)
           {
-             //Node tempNode;
-             //tempNode.src=i;
-             //Edge tempEdge;
+
              temp_metal.MetalIdx = grid.vertices_graph[i].metal;
              temp_metal.width = grid.drc_info.Metal_info[grid.vertices_graph[i].metal].width;
              LL_point.x = grid.vertices_graph[i].x;
              LL_point.y = grid.vertices_graph[i].y;
              temp_via.position = LL_point;
-
-             for(unsigned int j=0;j<grid.vertices_graph[i].north.size();++j) 
-                {   
-                   temp_metal.LinePoint.clear();
-                   if(grid.total2graph.find(grid.vertices_graph[i].north[j])!=grid.total2graph.end())
-                     {
-                       int graph_index = grid.total2graph[grid.vertices_graph[i].north[j]];
-                       if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            GndPower_Set.insert(temp_metal);
-                           }
-                      }
-                   
-                }
-
-             for(unsigned int j=0;j<grid.vertices_graph[i].south.size();++j) 
-                {   
-                   temp_metal.LinePoint.clear();
-                   if(grid.total2graph.find(grid.vertices_graph[i].south[j])!=grid.total2graph.end())
-                     {
-                       int graph_index = grid.total2graph[grid.vertices_graph[i].south[j]];
-                       if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            GndPower_Set.insert(temp_metal);
-                           }
-                      }
-                   
-                }
-             
-
-             for(unsigned int j=0;j<grid.vertices_graph[i].east.size();++j) 
-                {   
-                   temp_metal.LinePoint.clear();
-                   if(grid.total2graph.find(grid.vertices_graph[i].east[j])!=grid.total2graph.end())
-                     {
-                       int graph_index = grid.total2graph[grid.vertices_graph[i].east[j]];
-                       if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            GndPower_Set.insert(temp_metal);
-                           }
-                      }
-                   
-                }
-
-             for(unsigned int j=0;j<grid.vertices_graph[i].west.size();++j) 
-                {   
-                   temp_metal.LinePoint.clear();
-                   if(grid.total2graph.find(grid.vertices_graph[i].west[j])!=grid.total2graph.end())
-                     {
-                       int graph_index = grid.total2graph[grid.vertices_graph[i].west[j]];
-                       if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          {  
-                            UR_point.x = grid.vertices_graph[graph_index].x;
-                            UR_point.y = grid.vertices_graph[graph_index].y;
-                            if(LL_point.x == UR_point.x){
-                                if(LL_point.y<=UR_point.y){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }else{
-                                if(LL_point.x<=UR_point.x){
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                  }else{
-                                   temp_metal.LinePoint.push_back(UR_point);
-                                   temp_metal.LinePoint.push_back(LL_point);
-                                  }
-                              }
-                            GndPower_Set.insert(temp_metal);
-                           }
-                      }
-                   
-                }
-
- 	
-             if(grid.vertices_graph[i].down!=-1)
-               {  
-                  if(grid.total2graph.find(grid.vertices_graph[i].down)!=grid.total2graph.end()){
-                      int graph_index = grid.total2graph[grid.vertices_graph[i].down];
-                      if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          { 
-                            temp_via.model_index = grid.vertices_graph[graph_index].metal;
-                            VddVia_Set.insert(temp_via);
-                            //VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          { 
-                            temp_via.model_index = grid.vertices_graph[graph_index].metal; 
-                            GndVia_Set.insert(temp_via);
-                            //GndPower_Set.insert(temp_metal);
-                           }
-                    }
-                }
-
-             if(grid.vertices_graph[i].up!=-1)
-               {
-                  if(grid.total2graph.find(grid.vertices_graph[i].up)!=grid.total2graph.end()){
-                        int graph_index = grid.total2graph[grid.vertices_graph[i].up];
-                        if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
-                          { 
-                            temp_via.model_index = grid.vertices_graph[i].metal;
-                            VddVia_Set.insert(temp_via);
-                            //VddPower_Set.insert(temp_metal);
-                           }
-
-                          if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
-                          { 
-                            temp_via.model_index = grid.vertices_graph[i].metal; 
-                            GndVia_Set.insert(temp_via);
-                            //GndPower_Set.insert(temp_metal);
-                           }
-                     }
-                }
+             collect_vdd_gnd(i,grid.vertices_graph[i].north);
+             collect_vdd_gnd(i,grid.vertices_graph[i].south);
+             collect_vdd_gnd(i,grid.vertices_graph[i].east);
+             collect_vdd_gnd(i,grid.vertices_graph[i].west);
+	     collect_vdd_gnd_via(i,grid.vertices_graph[i].down);
+             collect_vdd_gnd_via(i,grid.vertices_graph[i].up);
              //graph.push_back(tempNode); 
           }
      }
@@ -424,7 +216,6 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
      }
 
 };
-
 
 
 Graph::Graph(std::vector<std::pair<int,int> > &global_path, std::vector<std::vector<int> > &conectedTile, std::vector<int> &Tile_Source, std::vector<int> &Tile_Dest):path_number(1){
@@ -860,79 +651,6 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
   return temp_path;
 
 };
-
-/*
-std::vector<int>  Graph::dijkstra(Grid& grid){
-
-  std::vector<int> temp_path;
-
-  std::cout<<"checkpoint 0"<<std::endl;
- 
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
-
-  double dist[graph.size()];
-
-  std::cout<<"check point 0.1"<<std::endl;
-  int parent[graph.size()];
-
-  std::cout<<"check point 0.2"<<std::endl;
-  int status[graph.size()];
-
-  std::cout<<"check point 0.3"<<std::endl;
-    
-  for(int i = 0; i < graph.size(); ++i)
-     {
-        parent[i] = -1;
-        dist[i] = INT_MAX;
-        status[i] = 0;
-     }
-
-  std::cout<<"checkpoint 1"<<std::endl;
-  dist[source] = 0;
-  status[source] = 1;
-  std::cout<<"checkpoint 2"<<std::endl;
-  int count=0;
-  int v;
-  //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
-  while(status[dest]!=2 and count<graph.size()-1)
-       {
-          std::vector<int> ulist = minDistance(dist, status, graph.size());
-          //std::cout<<"size of Q: "<<ulist.size()<<std::endl;
-          if(ulist.empty()) {temp_path.clear(); return temp_path;}
-          int u=ulist[0];
-          //std::cout<<"check u: "<<u<<" x: "<<grid.vertices_graph[u].x<<" y: "<<grid.vertices_graph[u].y <<std::endl;
-          status[u] = 2;
-          
-          for (int j = 0; j < graph[u].list.size(); ++j)
-              {
-                 v=graph[u].list[j].dest;
-                 if(v!=u)
-                   {
-                      if(status[v]==0)
-                        {
-                           parent[v] = u;
-                           dist[v] = dist[u]+graph[u].list[j].weight;
-                           status[v]=1;
-                         }
-                      else if (status[v]==1 and dist[v]>dist[u]+graph[u].list[j].weight)
-                         {
-                            parent[v] = u;
-                            dist[v] = dist[u]+graph[u].list[j].weight;
-                         }
-                    }
-               }
-          count++;
-       }
-
-  std::cout<<"checkpoint 3"<<std::endl;
-  printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
-  //std::cout<<"temp path"<<std::endl;
-  //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
-  return temp_path;
-
-};
-*/
 
 void Graph::printPath(std::vector<int> &parent, int j, int Vsize, std::vector<int> & temp_path)
 {
