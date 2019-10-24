@@ -1032,15 +1032,13 @@ void Grid::CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& 
   //RouterDB::point tmpP;
   int mIdx, LLx, LLy, URx, URy;
 
-  {
-     mIdx=Contacts.metal;
-     LLx=Contacts.placedLL.x;
-     LLy=Contacts.placedLL.y;
-     URx=Contacts.placedUR.x;
-     URy=Contacts.placedUR.y;
-     ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
+  mIdx=Contacts.metal;
+  LLx=Contacts.placedLL.x;
+  LLy=Contacts.placedLL.y;
+  URx=Contacts.placedUR.x;
+  URy=Contacts.placedUR.y;
+  ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
 
-   }
 
 };
 
