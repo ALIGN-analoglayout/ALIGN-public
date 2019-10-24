@@ -98,13 +98,9 @@ class Circuit(Graph):
 			self.add_edge(element, net, pin=pin)
 		return element
 
-#
-# WARNING: DO NOT CHANGE ANYTHING BELOW THIS LINE
-#          UNLESS YOU ARE ABSOLUTELY SURE YOU KNOW
-#          WHAT YOU ARE DOING
-#          (__getattr__ is called only when attribute
-#           is not found in current / parent class)
-#
+# WARNING: Do not add attributes/methods which may exist
+#          in Circuit to _SubCircuitMetaClass/_SubCircuit
+
 class _SubCircuitMetaClass(type):
 
 	def __new__(cls, clsname, bases, attributedict):
