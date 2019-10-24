@@ -77,19 +77,19 @@ MACRO telescopic_ota
       LAYER M2 ;
         RECT 1.564 2.924 4.196 2.956 ;
       LAYER M2 ;
-        RECT 2.144 4.352 2.176 4.384 ;
+        RECT 2.06 4.352 2.26 4.384 ;
       LAYER M3 ;
         RECT 2.14 3.108 2.18 4.368 ;
       LAYER M4 ;
-        RECT 2.14 3.088 2.18 3.128 ;
+        RECT 2.09 3.088 2.23 3.128 ;
       LAYER M5 ;
         RECT 2.128 2.94 2.192 3.108 ;
       LAYER M4 ;
-        RECT 2.14 2.92 2.18 2.96 ;
+        RECT 2.09 2.92 2.23 2.96 ;
       LAYER M3 ;
-        RECT 2.14 2.92 2.18 2.96 ;
+        RECT 2.14 2.835 2.18 3.045 ;
       LAYER M2 ;
-        RECT 2.144 2.924 2.176 2.956 ;
+        RECT 2.06 2.924 2.26 2.956 ;
     END
   END voutn
   PIN vbiasp2
@@ -109,19 +109,19 @@ MACRO telescopic_ota
       LAYER M2 ;
         RECT 0.924 3.092 3.556 3.124 ;
       LAYER M2 ;
-        RECT 2.864 4.184 2.896 4.216 ;
+        RECT 2.78 4.184 2.98 4.216 ;
       LAYER M3 ;
         RECT 2.86 3.948 2.9 4.2 ;
       LAYER M4 ;
-        RECT 2.86 3.928 2.9 3.968 ;
+        RECT 2.81 3.928 2.95 3.968 ;
       LAYER M5 ;
         RECT 2.848 3.612 2.912 3.948 ;
       LAYER M4 ;
-        RECT 2.86 3.592 2.9 3.632 ;
+        RECT 2.81 3.592 2.95 3.632 ;
       LAYER M3 ;
         RECT 2.86 3.108 2.9 3.612 ;
       LAYER M2 ;
-        RECT 2.864 3.092 2.896 3.124 ;
+        RECT 2.78 3.092 2.98 3.124 ;
     END
   END voutp
   PIN vbiasn
@@ -142,7 +142,7 @@ MACRO telescopic_ota
   LAYER M3 ;
         RECT 2.46 4.284 2.5 4.788 ;
   LAYER M2 ;
-        RECT 2.464 4.268 2.496 4.3 ;
+        RECT 2.38 4.268 2.58 4.3 ;
   LAYER M3 ;
         RECT 2.7 4.836 2.74 5.244 ;
   LAYER M3 ;
@@ -152,7 +152,7 @@ MACRO telescopic_ota
   LAYER M3 ;
         RECT 2.38 4.452 2.42 4.956 ;
   LAYER M2 ;
-        RECT 2.384 4.436 2.416 4.468 ;
+        RECT 2.3 4.436 2.5 4.468 ;
   LAYER M3 ;
         RECT 2.54 1.644 2.58 2.556 ;
   LAYER M2 ;
@@ -160,7 +160,7 @@ MACRO telescopic_ota
   LAYER M3 ;
         RECT 2.54 2.52 2.58 3.024 ;
   LAYER M2 ;
-        RECT 2.544 3.008 2.576 3.04 ;
+        RECT 2.46 3.008 2.66 3.04 ;
   LAYER M3 ;
         RECT 2.46 1.728 2.5 2.64 ;
   LAYER M3 ;
@@ -180,7 +180,7 @@ MACRO telescopic_ota
   LAYER M3 ;
         RECT 2.62 2.352 2.66 2.856 ;
   LAYER M2 ;
-        RECT 2.624 2.84 2.656 2.872 ;
+        RECT 2.54 2.84 2.74 2.872 ;
   LAYER M1 ;
         RECT 2.944 4.668 2.976 5.328 ;
   LAYER M1 ;
