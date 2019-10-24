@@ -57,7 +57,7 @@ class NTerminalDevice():
 			try:
 				val = NTerminalDevice.str2float(val)
 			except ValueError:
-				raise AssertionError("Attempting to cast invalid string to float")
+				return val # probably a parameter reference
 		# Check if it is safe to cast to int
 		if issubclass(ty, int):
 			assert isinstance(val, int) or val.is_integer(), "Attempting to cast non-integral number to int"

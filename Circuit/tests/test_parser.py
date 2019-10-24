@@ -99,3 +99,7 @@ def test_model(parser):
     assert 'NMOS_RVT' in parser.library
     print(parser.library['NMOS_RVT']._parameters)
     assert list(parser.library['NMOS_RVT']._parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
+
+def test_ota_parsing(parser):
+    with open('tests/ota.sp') as fp:
+        parser.parse(fp.read())

@@ -12,7 +12,7 @@ pats.append( r'(?P<CONTINUE>\s*\+)')
 pats.append( r'(?P<NEWL>[\n\r]+)')
 pats.append( r'(?P<DECL>\.[A-Z]+)')
 pats.append( r'(?P<NUM>-?\d+\.?\d*(?:[E]-?\d+)?(?:T|G|X|MEG|K|M|U|N|P|F)?)')
-pats.append( r'(?P<NAME>[A-Z_0-9]+)')
+pats.append( r'(?P<NAME>[A-Z_0-9!]+)')
 pats.append( r'(?P<EQUALS>\s*=\s*)')
 pats.append( r'(?P<WS>\s+)')
 
