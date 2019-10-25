@@ -6,34 +6,34 @@ from .core import NTerminalDevice
 #          to support case-insensitive parsing
 
 class _MosFET(NTerminalDevice):
-	_prefix = 'M'
-	_pins = ('D', 'G', 'S', 'B')
-	_parameters = {'W' : (float, 0), 'L' : (float, 0), 'NFIN' : (int, 1)}
+    _prefix = 'M'
+    _pins = ('D', 'G', 'S', 'B')
+    _parameters = {'W' : (float, 0), 'L' : (float, 0), 'NFIN' : (int, 1)}
 
 class NMOS(_MosFET):
-	pass
+    pass
 
 class PMOS(_MosFET):
-	pass
+    pass
 
 class _TwoTerminalDevice(NTerminalDevice):
-	_pins = ('+', '-')
-	_parameters = {'VALUE': (float, 0)}
+    _pins = ('+', '-')
+    _parameters = {'VALUE': (float, 0)}
 
 class CAP(_TwoTerminalDevice):
-	_prefix = 'C'
+    _prefix = 'C'
 
 class RES(_TwoTerminalDevice):
-	_prefix = 'R'
+    _prefix = 'R'
 
 class IND(_TwoTerminalDevice):
-	_prefix = 'L'
+    _prefix = 'L'
 
 class Library(dict):
 
-	def __init__(self):
-		self.update({ x[0]: x[1] for x in
-			inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
-																issubclass(x, NTerminalDevice) and
-																not x.__name__.startswith('_')) })
+    def __init__(self):
+        self.update({ x[0]: x[1] for x in
+            inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
+                                                                issubclass(x, NTerminalDevice) and
+                                                                not x.__name__.startswith('_')) })
 

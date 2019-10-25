@@ -4,7 +4,7 @@ from circuit.core import SubCircuit
 from circuit.parser import SpiceParser
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
-#          Please formulate tests accordingly'''
+#          Please formulate tests accordingly
 
 @pytest.fixture
 def setup_basic():
