@@ -6,13 +6,11 @@ from .elements import Library
 
 # Token specification
 pats = []
+pats.append( r'(?P<NLCOMMENT>(^|[\n\r])+\*[^\n\r]*)')
 pats.append( r'(?P<COMMENT>\s*;[^\n\r]*)')
-pats.append( r'(?P<EMPTY>^\s+)')
-pats.append( r'(?P<CONTINUE>\s*\+)')
+pats.append( r'(?P<CONTINUE>(^|[\n\r])+\+)')
 pats.append( r'(?P<NEWL>[\n\r]+)')
-pats.append( r'(?P<DECL>\.[A-Z]+)')
-pats.append( r'(?P<NUM>-?\d+\.?\d*(?:[E]-?\d+)?(?:T|G|X|MEG|K|M|U|N|P|F)?)')
-pats.append( r'(?P<NAME>[A-Z_0-9!]+)')
+pats.append( r'(?P<TOKEN>[A-Z0-9!_\.\-]+)')
 pats.append( r'(?P<EQUALS>\s*=\s*)')
 pats.append( r'(?P<WS>\s+)')
 
@@ -36,7 +34,7 @@ class SpiceParser:
         scanner = spice_pat.scanner(text.upper())
         for m in iter(scanner.match, None):
             tok = Token(m.lastgroup, m.group())
-            if tok.type not in ['WS', 'COMMENT', 'CONTINUE', 'EMPTY']:
+            if tok.type in ['TOKEN', 'NEWL', 'EQUALS']:
                 yield tok
 
     def parse(self, text):
@@ -53,25 +51,24 @@ class SpiceParser:
         if len(cache) == 0:
             return
         token = cache.pop(0)
+        assert token.type == 'TOKEN', token
         args, kwargs = self._decompose(cache)
-        if token.type == 'NAME':
-            self._process_instance(token.value, args, kwargs)
-        elif token.type == 'DECL':
+        if token.value.startswith('.'):
             self._process_declaration(token.value, args, kwargs)
         else:
-            raise AssertionError(cache, "must begin with DECL or NAME")
+            self._process_instance(token.value, args, kwargs)
 
     @staticmethod
     def _decompose(cache):
-        assert all(x.type in ('NAME', 'NUM', 'EQUALS') for x in cache)
+        assert all(x.type in ('TOKEN', 'EQUALS') for x in cache)
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
-        assert all(cache[i-1].type == 'NAME' for i in assignments)
+        assert all(cache[i-1].type == 'TOKEN' for i in assignments)
         args = [x.value for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
         kwargs = {cache[i-1].value: cache[i+1].value for i in assignments}
         return args, kwargs
 
     def _process_instance(self, name, args, kwargs):
-        defaults = {'C': 'CAP', 'R': 'RES'}
+        defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
         if any(name.startswith(x) for x in ('C', 'R', 'L')):
             model = defaults[name[0]]
             kwargs['VALUE'] = args.pop()
@@ -97,4 +94,4 @@ class SpiceParser:
             assert len(args) == 2, args
             name, type_ = args[0], args[1]
             assert type_ in self.library, type_
-            self._scope.append(Model(name, self.library[type_], library=self.library, **kwargs))
+            Model(name, self.library[type_], library=self.library, **kwargs)

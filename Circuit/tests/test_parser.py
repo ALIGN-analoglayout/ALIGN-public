@@ -33,32 +33,51 @@ C2 outminus 0 1e-12
 @pytest.fixture
 def parser():
     parser = SpiceParser()
-    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
     return parser
 
 def test_lexer_basic(setup_basic):
-    types = ['NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUM', 'NAME', 'EQUALS', 'NUM']
-    assert len(list(SpiceParser._generate_tokens(setup_basic))) == len(types)
-    assert all(tok.type == type_ for tok, type_ in zip(SpiceParser._generate_tokens(setup_basic), types))
+    types = ['TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN']
+    tokens = list(SpiceParser._generate_tokens(setup_basic))
+    print(tokens)
+    assert len(tokens) == len(types), tokens
+    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
 
-def test_lexer_with_comments(setup_basic):
-    str_ = '''
+def test_lexer_with_comments1(setup_basic):
+    str_ = '''* Some comment here
 X1 a b testdev; COMMENT ABOUT M1 pins
 ; SOME MORE COMMENTS ABOUT PARAMETERS
 + x=1f y=0.1; AND A FW MORE FOR GOOD MEASURE
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
-    assert tokens.pop().type == 'NEWL'
+    assert tokens.pop(0).type == 'NEWL'
+    print(tokens)
+    print(list(SpiceParser._generate_tokens(setup_basic)))
+    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
+
+def test_lexer_with_comments2(setup_basic):
+    str_ = '''; Some comment here
+X1 a b testdev; COMMENT ABOUT M1 pins
+* SOME MORE COMMENTS ABOUT PARAMETERS
++ x=1f y=0.1; AND A FW MORE FOR GOOD MEASURE
+'''
+    tokens = list(SpiceParser._generate_tokens(str_))
+    assert tokens.pop(0).type == 'NEWL'
+    print(tokens)
+    print(list(SpiceParser._generate_tokens(setup_basic)))
     assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
 
 def test_lexer_multiline(setup_multiline):
     str_ = setup_multiline
-    types = ['NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUM', 'NAME', 'EQUALS', 'NUM', 'NEWL',
-             'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUM', 'NEWL']
-    assert len(list(SpiceParser._generate_tokens(str_))) == len(types)
-    assert all(tok.type == type_ for tok, type_ in zip(SpiceParser._generate_tokens(str_), types))
+    types = ['NEWL',
+             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL',
+             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL']
+    tokens = list(SpiceParser._generate_tokens(str_))
+    print(tokens)
+    assert len(tokens) == len(types), tokens
+    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
 
 def test_parser_basic(setup_basic, parser):
+    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
     parser.parse(setup_basic)
     assert len(parser.circuit.elements) == 1
     assert parser.circuit.elements[0].name == 'X1'
@@ -66,6 +85,7 @@ def test_parser_basic(setup_basic, parser):
     assert parser.circuit.nets == ['A', 'B']
 
 def test_parser_multiline(setup_multiline, parser):
+    parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
     parser.parse(setup_multiline)
     assert len(parser.circuit.elements) == 2
     assert parser.circuit.elements[0].name == 'X1'
@@ -76,10 +96,10 @@ def test_parser_multiline(setup_multiline, parser):
 
 def test_parser_realistic(setup_realistic, parser):
     parser.parse(setup_realistic)
-    assert len(parser.circuit.elements) == 6
-    assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2']
-    assert len(parser.circuit.nets) == 7
-    assert parser.circuit.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS']
+    assert len(parser.circuit.elements) == 6, parser.circuit.elements
+    assert [x.name for x in parser.circuit.elements] == ['R1', 'R2', 'M1', 'M2', 'C1', 'C2'], parser.circuit.elements
+    assert len(parser.circuit.nets) == 7, parser.circuit.nets
+    assert parser.circuit.nets == ['VCC', 'OUTPLUS', 'OUTMINUS', 'INPLUS', 'SRC', '0', 'INMINUS'], parser.circuit.nets
 
 def test_subckt_decl(setup_realistic, parser):
     parser.parse(f'''
@@ -103,3 +123,11 @@ def test_model(parser):
 def test_ota_parsing(parser):
     with open('tests/ota.sp') as fp:
         parser.parse(fp.read())
+    assert 'OTA' in parser.library
+    assert len(parser.library['OTA'].elements) == 10
+
+def test_basic_template_parsing(parser):
+    libsize = len(parser.library)
+    with open('tests/basic_template.sp') as fp:
+        parser.parse(fp.read())
+    assert len(parser.library) - libsize == 22
