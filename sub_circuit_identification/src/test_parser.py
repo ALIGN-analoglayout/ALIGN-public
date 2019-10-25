@@ -59,10 +59,11 @@ def test_verilog_writer():
             if 'values' in attr:
                 block_name = generate_lef(LEF_FP, attr['inst_type'], attr["values"],
                             available_cell_generator, unit_mos, unit_cap)
+                block_name_ext = block_name.replace(attr['inst_type'],'')
         wv = WriteVerilog(subckt["lib_graph"],subckt["name"]  , subckt["ports"], subckts)
         wv.print_module(VERILOG_FP)
         if subckt["name"] in available_cell_generator:
-            ws = WriteSpice(subckt["lib_graph"],subckt["name"]  , subckt["ports"], subckts)
+            ws = WriteSpice(subckt["lib_graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts)
             ws.print_subckt(SP_FP)
     VERILOG_FP.close()
     LEF_FP.close()

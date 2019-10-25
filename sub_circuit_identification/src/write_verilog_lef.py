@@ -412,7 +412,9 @@ if __name__ == '__main__':
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name = generate_lef(LEF_FP, lef_name, attr["values"],
                                          ALL_LEF, UNIT_SIZE_MOS, UNIT_SIZE_CAP)
+                block_name_ext = block_name.replace(lef_name,'')
                 logging.info("Created new lef for: %s", block_name)
+
                 ALL_LEF.append(block_name)
                 graph.nodes[node]['inst_type'] = block_name
             else:
@@ -421,7 +423,7 @@ if __name__ == '__main__':
 
         if name in ALL_LEF or name in generated_module[:-1]:
             logging.info("writing spice for block: %s", name)
-            ws = WriteSpice(graph, block_name, inoutpin, list_graph)
+            ws = WriteSpice(graph, name+block_name_ext, inoutpin, list_graph)
             ws.print_subckt(SP_FP)
             continue
 
