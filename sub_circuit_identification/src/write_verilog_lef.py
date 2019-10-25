@@ -161,14 +161,15 @@ class WriteSpice:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) +' '+ attr['real_inst_type'] + ' '+ self.all_values(attr['values']) )
+                fp.write(' '.join(nets) +' '+ attr['real_inst_type'] + ' '+ concat_values(attr['values']) )
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
-    def all_values(self,values):
-        merged_values =""
-        for key,value in values.items():
-            merged_values = merged_values+' '+key+'='+str(value).replace('.0','')
-        return merged_values
+        
+def concat_values(self,values):
+    merged_values =""
+    for key,value in values.items():
+        merged_values = merged_values+' '+key+'='+str(value).replace('.0','')
+    return merged_values
 
 
 
