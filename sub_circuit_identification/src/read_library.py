@@ -11,7 +11,7 @@ import argparse
 import logging
 import networkx as nx
 
-from util import _write_circuit_graph, _show_circuit_graph
+from util import _write_circuit_graph, _show_circuit_graph, max_connectivity
 from basic_element import _parse_inst
 
 if not os.path.exists("./LOG"):
@@ -19,7 +19,7 @@ if not os.path.exists("./LOG"):
 logging.basicConfig(filename='./LOG/read_library.log', level=logging.DEBUG)
 
 
-class SpiceParser:
+class LibSpiceParser:
     """
     Read a spice file (.sp/.cdl) and converts it to a graph.
     Device properties are inherited from BasicElement.py
@@ -35,6 +35,7 @@ class SpiceParser:
         self._global = []
         self.option = []
         self.top_insts = []
+        self.library_list = []
 
     def sp_parser(self):
         """Parse the defined file line wise"""
@@ -94,11 +95,23 @@ class SpiceParser:
                 subckt_graph = self._create_bipartite_circuit_graph(
                     elements["nodes"], subckt_ports)
                 self.subckts[subckt_name]['node_graph'] = subckt_graph
+                subckt_ports = []
+                for sub_node, sub_attr in subckt_graph.nodes(data=True):
+                    if 'net_type' in sub_attr:
+                        if sub_attr['net_type'] == "external":
+                            subckt_ports.append(sub_node)
                 logging.info("Saving graph: %s", subckt_name)
                 #_show_circuit_graph(subckt_name, subckt_graph, "./library_graph_images/")
                 _write_circuit_graph(subckt_name, subckt_graph,
                                      "./library_graphs/")
+                self.library_list.append({
+                "name": subckt_name,
+                "lib_graph": subckt_graph,
+                "ports": subckt_ports, 
+                "conn": max_connectivity(subckt_graph)
+                })
                 fp_l.close()
+        return self.library_list
 
     def _merge_stacked_transistor(self, ckt_graph):
         #ckt_graph_copy = ckt_graph.copy()
@@ -189,6 +202,7 @@ class SpiceParser:
             if not node: continue
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
+                                   real_inst_type=node["real_inst_type"],
                                    ports=node['ports'],
                                    edge_weight=node['edge_weight'],
                                    values=node['values'])
@@ -232,6 +246,6 @@ if __name__ == '__main__':
         if lib_file.endswith(".sp"):
             fp = os.path.join(LIB_DIR, lib_file)
             print("Reading library file: ", fp)
-            sp = SpiceParser(fp)
+            sp = LibSpiceParser(fp)
             sp.sp_parser()
     print("Reading Library Successful. Graphs are stored in library_graphs")

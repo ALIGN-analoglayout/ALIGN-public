@@ -94,7 +94,6 @@ def read_lib(lib_dir_path):
             for node, attr in graph.nodes(data=True):
                 if 'net' in attr['inst_type']:
                     if 'external' in attr['net_type']:
-                        #print("external nets",node)
                         subgraph_ports.append(node)
             library.append({
                 "name": sub_block_name[:-5],
