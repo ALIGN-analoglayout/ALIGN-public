@@ -165,13 +165,11 @@ class WriteSpice:
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
         
-def concat_values(self,values):
+def concat_values(values):
     merged_values =""
     for key,value in values.items():
         merged_values = merged_values+' '+key+'='+str(value).replace('.0','')
     return merged_values
-
-
 
 
 def print_globals(fp, power):
