@@ -16,7 +16,8 @@ class NTerminalDevice():
 
 	def __init__(self, name, *pins, **parameters):
 		self.name = name
-		assert self.name.startswith(self._prefix)
+		assert self.name.startswith(self._prefix), f'Prefix is {self._prefix}' + \
+			'. Did you try overwriting an inbuilt element with subckt?' if self._prefix == 'X' else ''
 		assert len(pins) == len(self._pins), f"One or more positional arguments has not been specified. Need name and pins {self._pins}"
 		self.pins = {pin: net for pin, net in zip(self._pins, pins)}
 		self.parameters = {param: self._cast(val, ty) for param, (ty, val) in self._parameters.items()}
