@@ -12,8 +12,9 @@
 "MaxL": null,
 "EndToEnd": null,
 "Offset": 40,
-"UnitC": 0.2,
-"UnitR": 10
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":80, "Mean":100, "U_3Sigma":120}
 },
 
 {
@@ -39,9 +40,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [40, 50, 60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":40, "Mean":50, "U_3Sigma":60}
 },
 
 
@@ -58,7 +59,7 @@
     "VencP_L": 0,
     "VencP_H": 0,
     "MinNo":1,
-    "R": 50
+    "UnitR": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
     },
 
 {
@@ -72,9 +73,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [40, 50, 60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":40, "Mean":50, "U_3Sigma":60}
 },
 
 {
@@ -90,7 +91,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo":1,
-"R": 50
+"UnitR": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
 {
@@ -104,9 +105,9 @@
 "MaxL": null,
 "EndToEnd": 48,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [40, 50, 60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":40, "Mean":50, "U_3Sigma":60}
 },
 
 {
@@ -122,7 +123,7 @@
 "VencP_L": 0,
 "VencP_H": 4,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
 {
@@ -136,9 +137,9 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [40, 50, 60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":40, "Mean":50, "U_3Sigma":60}
 },
 
 {
@@ -154,7 +155,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
 {
@@ -168,9 +169,9 @@
 "MaxL": null,
 "EndToEnd": 65,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [20, 25, 30]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":20, "Mean":25, "U_3Sigma":30}
 },
 
 {
@@ -186,7 +187,7 @@
 "VencP_L": 0,
 "VencP_H": 12,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
 {
@@ -200,9 +201,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [20, 25, 30]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":20, "Mean":25, "U_3Sigma":30}
 },
 
 {
@@ -218,7 +219,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
 {
@@ -232,9 +233,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [20, 25, 30]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":20, "Mean":25, "U_3Sigma":30}
 },
 
 {
@@ -250,7 +251,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
 {
@@ -264,9 +265,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [20, 25, 30]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":20, "Mean":25, "U_3Sigma":30}
 },
 
 {
@@ -282,7 +283,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
 {
@@ -296,9 +297,9 @@
 "MaxL": null,
 "EndToEnd": 70,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [10, 12, 14]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":10, "Mean":12, "U_3Sigma":14}
 },
 
 {
@@ -314,7 +315,7 @@
 "VencP_L": 0,
 "VencP_H": 32,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
 {
@@ -328,9 +329,9 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [10, 12, 14]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":10, "Mean":12, "U_3Sigma":14}
 },
 
 {
@@ -346,7 +347,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
 {
@@ -360,9 +361,9 @@
 "MaxL": null,
 "EndToEnd": 128,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [5, 6, 7]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":5, "Mean":6, "U_3Sigma":7}
 },
 
 {
@@ -378,7 +379,7 @@
 "VencP_L": 0,
 "VencP_H": 64,
 "MinNo":1,
-"R": 50
+"UnitR": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
 {
@@ -392,9 +393,9 @@
 "MaxL": null,
 "EndToEnd":280,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [5, 6, 7]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":5, "Mean":6, "U_3Sigma":7}
 },
 
 {
@@ -410,7 +411,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
 {
@@ -424,9 +425,9 @@
 "MaxL": null,
 "EndToEnd": 280,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [1.06, 1.33, 1.60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":1.06, "Mean":1.33, "U_3Sigma":1.60}
 },
 
 {
@@ -442,7 +443,7 @@
 "VencP_L": 0,
 "VencP_H": 472,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
 {
@@ -456,9 +457,9 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [1.06, 1.33, 1.60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":1.06, "Mean":1.33, "U_3Sigma":1.60}
 },
 
 {
@@ -474,7 +475,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
 {
@@ -488,9 +489,9 @@
 "MaxL": null,
 "EndToEnd": 1200,
 "Offset": 0,
-"UnitC": [0.16, 0.2, 0.24],
-"UnitCC": [0.08, 0.1, 0.12],
-"UnitR": [1.06, 1.33, 1.60]
+"UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
+"UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
+"UnitR": {"L_3Sigma":1.06, "Mean":1.33, "U_3Sigma":1.60}
 },
 
 {
@@ -506,7 +507,7 @@
 "VencP_L": 0,
 "VencP_H": 0,
 "MinNo": 1,
-"R": 50
+"UnitR": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
 {
