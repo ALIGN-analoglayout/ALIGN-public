@@ -136,7 +136,7 @@ class WriteSpice:
                 continue
             if 'net' not in attr['inst_type']:
                 logging.info("Writing node: %s", attr['inst_type'])
-                fp.write("\n" + node + ' '+ attr['real_inst_type'] + ' ')
+                fp.write("\n" + node + ' ')
                 ports = []
                 nets = []
                 if "ports_match" in attr:
@@ -144,17 +144,24 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
+                    # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
-                    elif 'DCL_NMOS' in attr['inst_type']:
+                    elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[2]]
+                    # add body ports to transistor
+                    if 'PMOS' in attr['inst_type']:
+                        nets.append('vdd')
+                    elif 'NMOS' in attr['inst_type']:
+                        nets.append('vss')
+
                 else:
                     logging.error("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) + self.all_values(attr['values']) )
+                fp.write(' '.join(nets) +' '+ attr['real_inst_type'] + ' '+ self.all_values(attr['values']) )
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
     def all_values(self,values):
@@ -440,4 +447,4 @@ if __name__ == '__main__':
 
     print("OUTPUT LEF generator:", RESULT_DIR + INPUT_PICKLE + "_lef.sh")
     print("OUTPUT verilog netlist at:", RESULT_DIR + INPUT_PICKLE + ".v")
-    print("OUTPUT spice netlist at:", RESULT_DIR + INPUT_PICKLE + "_block.sp")
+    print("OUTPUT spice netlist at:", RESULT_DIR + INPUT_PICKLE + "_blocks.sp")

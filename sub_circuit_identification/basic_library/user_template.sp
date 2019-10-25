@@ -85,3 +85,14 @@ c3 Vin_ota Voutn 60e-15
 c1 net63 net67 30e-15
 c0 net72 net63 60e-15
 .ends switched_capacitor_combination
+
+.subckt res_array_8 MINUS0 PLUS0 PLUS1 PLUS2 PLUS3 PLUS4 PLUS5 PLUS6 PLUS7
+r0 PLUS0 MINUS0 500
+r1 PLUS1 PLUS0 1e3
+r2 PLUS2 PLUS1 1e3
+r3 PLUS3 PLUS2 1e3
+r4 PLUS4 PLUS3 1e3
+r5 PLUS5 PLUS4 1e3
+r6 PLUS6 PLUS5 1e3
+r7 PLUS7 PLUS6 500
+.ends res_array_8
