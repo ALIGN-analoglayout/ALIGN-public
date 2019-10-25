@@ -2,8 +2,8 @@ import sys, inspect
 
 from .core import NTerminalDevice
 
-'''WARNING: All pin & parameter names must be capitalized
-			to support case-insensitive parsing'''
+# WARNING: All pin & parameter names must be capitalized
+#          to support case-insensitive parsing
 
 class _MosFET(NTerminalDevice):
 	_prefix = 'M'
