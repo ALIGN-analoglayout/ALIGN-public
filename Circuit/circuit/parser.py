@@ -83,6 +83,7 @@ class SpiceParser:
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
             name = args.pop(0)
+            assert name not in self.library, f"User is attempting to redeclare {name}"
             subckt = SubCircuit(name, *args, library=self.library, **kwargs)
             self._scope.append(subckt)
         elif decl == '.ENDS':
@@ -93,5 +94,6 @@ class SpiceParser:
         elif decl == '.MODEL':
             assert len(args) == 2, args
             name, type_ = args[0], args[1]
+            assert name not in self.library, f"User is attempting to redeclare {name}"
             assert type_ in self.library, type_
             Model(name, self.library[type_], library=self.library, **kwargs)

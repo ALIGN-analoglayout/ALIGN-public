@@ -70,11 +70,10 @@ M1 DB G SB 0 NMOS_VTL w=w l=90n
 .param cap=60f
 .ends Cap_b
 
-** RECREATING DEFAULT CAP AS SUBCKT MAKES PREFIX X NOT C
+** You may not redeclare an existing library element
 ; .subckt Cap PLUS MINUS
 ; CC1 PLUS MINUS 60f
 ; .ends Cap
-.model CAP CAP value=60f
 
 .subckt DCL_NMOS D S
 M0 D D S 0 NMOS_VTL w=w l=90n
@@ -84,7 +83,7 @@ M0 D D S 0 NMOS_VTL w=w l=90n
 M0 D D S 0 PMOS_VTL w=w l=90n
 .ends DCL_PMOS
 
-** RECREATING DEFAULT RES AS SUBCKT MAKES PREFIX X NOT R
+** You may not redeclare an existing library element
 ; .subckt Res PLUS MINUS
 ; RR1 PLUS MINUS 10k
 ; .ends Res
