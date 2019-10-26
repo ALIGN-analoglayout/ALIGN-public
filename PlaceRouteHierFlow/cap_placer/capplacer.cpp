@@ -562,54 +562,54 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
-
-    std::set<std::string> internal_metal_layer;
-    std::vector<std::string> internal_metal;    
-
-    for(unsigned int i=0;i<uc.interMetals.size();i++){
-
-       internal_metal_layer.insert(uc.interMetals[i].metal);
-
-    }
-
+    
+    std::set<std::string> internal_metal_layer;                       
+    std::vector<std::string> internal_metal;                          
+                                                                      
+    for(unsigned int i=0;i<uc.interMetals.size();i++){                
+                                                                      
+       internal_metal_layer.insert(uc.interMetals[i].metal);          
+                                                                      
+    }                                                                 
+                                                                      
    for(auto it = internal_metal_layer.begin();it!=internal_metal_layer.end();it++){
-
-      internal_metal.push_back(*it);
+                                                                                   
+      internal_metal.push_back(*it);                                               
+                                                                                   
+   }
    
-   }
-
-   for(unsigned int i=0;i < Caps.size(); i++){
-
-      int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;
-      int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;
-
-      x[0] = temp_x;
-      x[1] = temp_x;
-      x[2] = temp_x + unit_cap_demension.first;
-      x[3] = temp_x + unit_cap_demension.first;
-      x[4] = x[0];
-
-      y[0] = temp_y;
-      y[1] = temp_y + unit_cap_demension.second;
-      y[2] = temp_y + unit_cap_demension.second;
-      y[3] = temp_y;
-      y[4] = y[0];
-	
-      minmax.update( x, y);
-
-      for(unsigned int j=0;j<internal_metal.size();j++){
-         PnRDB::contact temp_contact;
-         temp_contact.metal = internal_metal[j];
-         //std::cout<<"Cap internal metal layer "<<temp_contact.metal<<std::endl;
-         fillContact (temp_contact, x, y);
-         CheckOutBlock.interMetals.push_back(temp_contact);
-      }
-
-   }
+   for(unsigned int i=0;i < Caps.size(); i++){                                     
+                                                                                   
+      int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;                
+      int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;               
+                                                                                   
+      x[0] = temp_x;                                                               
+      x[1] = temp_x;                                                               
+      x[2] = temp_x + unit_cap_demension.first;                                    
+      x[3] = temp_x + unit_cap_demension.first;                                    
+      x[4] = x[0];                                                                 
+                                                                                   
+      y[0] = temp_y;                                                               
+      y[1] = temp_y + unit_cap_demension.second;                                   
+      y[2] = temp_y + unit_cap_demension.second;                                   
+      y[3] = temp_y;                                                               
+      y[4] = y[0];                                                                 
+                                                                                   
+      minmax.update( x, y);                                                        
+                                                                                   
+      for(unsigned int j=0;j<internal_metal.size();j++){                           
+         PnRDB::contact temp_contact;                                              
+         temp_contact.metal = internal_metal[j];                                   
+         //std::cout<<"Cap internal metal layer "<<temp_contact.metal<<std::endl;  
+         fillContact (temp_contact, x, y);                                         
+         CheckOutBlock.interMetals.push_back(temp_contact);                        
+      }                                                                            
+                                                                                   
+   }              
 
 
-
-/*
+   
+   /*                                                                                   
     for (unsigned int i = 0; i < Caps.size(); i++) {
 
         int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;
@@ -633,14 +633,13 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
             PnRDB::contact temp_contact;
             temp_contact.metal = uc.interMetals[j].metal;
-            std::cout<<"Cap internal metal layer "<<temp_contact.metal<<std::endl;
 	    fillContact (temp_contact, x, y);
             CheckOutBlock.interMetals.push_back(temp_contact);
 
         }
         
     }
-*/
+   */
     cout<<"Extract Data Step 7"<<endl;
 
 
@@ -1217,8 +1216,6 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
 
   pair<double,double> via_coord;
 
-  std::cout<<"adding via in cap at metal "<< HV_via_metal <<" "<<HV_via_metal_index<<std::endl;
-
   const auto& vm = drc_info.Via_model.at(HV_via_metal_index);
 
   temp_net.via.push_back(coord);                      
@@ -1358,7 +1355,6 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 		  coord.first = Caps[n.cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
 		  coord.second = Caps[n.cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
 		  addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
-                  std::cout<<"Cap print "<<"sign "<<sign<<" ("<<coord.first<<" "<<coord.second<<") "<<std::endl;
 
 		  if( lr == 1) {
                       n.start_conection_coord.push_back(coord);
@@ -1883,9 +1879,6 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	for (unsigned int i = 0; i < n_array.size(); i++) {
 	    const auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
-
-
-
 		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
 		int width = r.x;
 		x[0]=n.via[j].first - width+offset_x;
@@ -1899,8 +1892,6 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		y[2]=n.via[j].second + width+offset_y;
 		y[3]=n.via[j].second - width+offset_y;
 		y[4]=y[0];
-
-                //std::cout<<"writing out vias ("<<x[0]<<" "<<y[0]<<") ("<<x[2]<<" "<<y[2]<<")";
         
 		for (int i = 0; i < 5; i++) {
 		    x[i] *= unitScale;
@@ -1909,7 +1900,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name; 
+		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 		//term["layer"] = n.via_metal[j];
                 //std::cout<<"net name and via name "<< n.name<<" "<<drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name<<std::endl;
 		json xy = json::array();
@@ -1989,10 +1980,10 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    term1["layer"] = term0["layer"];
 	    json r0 = term0["rect"];
 	    json r1 = json::array();
-	    r1.push_back( r0[0].get<int>() + oX);
-	    r1.push_back( r0[1].get<int>() + oY);
-	    r1.push_back( r0[2].get<int>() + oX);
-	    r1.push_back( r0[3].get<int>() + oY);
+	    r1.push_back(  r0[0].get<int>() + oX);
+	    r1.push_back(  r0[1].get<int>() + oY);
+	    r1.push_back(  r0[2].get<int>() + oX);
+	    r1.push_back(  r0[3].get<int>() + oY);
 	    term1["rect"] = r1;
 	    terminals.push_back( term1);
 	}
