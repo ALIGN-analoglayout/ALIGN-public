@@ -1214,6 +1214,43 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   return ret;
 }
 
+void
+CopyTileEdge (const RouterDB::tileEdge& it, PnRDB::tileEdge& ot) {
+  ot.next = it.next;
+  ot.capacity = it.capacity;
+}
+
+void
+CopyTile (const RouterDB::tile& it, PnRDB::tile& ot) {
+  ot.x = it.x;
+  ot.y = it.y;
+  ot.width = it.width;
+  ot.height = it.height;
+  ot.metal = it.metal;
+  ot.tileLayer = it.tileLayer;
+  ot.index = it.index;
+  ot.Yidx = it.Yidx;
+  ot.Xidx = it.Xidx;
+  ot.north.resize (it.north.size());
+  for (unsigned i = 0; i < it.north.size(); i++) 
+    CopyTileEdge(it.north[i], ot.north[i]);
+  ot.south.resize (it.south.size());
+  for (unsigned i = 0; i < it.south.size(); i++) 
+    CopyTileEdge(it.south[i], ot.south[i]);
+  ot.west.resize (it.west.size());
+  for (unsigned i = 0; i < it.west.size(); i++) 
+    CopyTileEdge(it.west[i], ot.west[i]);
+  ot.east.resize (it.east.size());
+  for (unsigned i = 0; i < it.east.size(); i++) 
+    CopyTileEdge(it.east[i], ot.east[i]);
+  ot.down.resize (it.down.size());
+  for (unsigned i = 0; i < it.down.size(); i++) 
+    CopyTileEdge(it.down[i], ot.down[i]);
+  ot.up.resize (it.up.size());
+  for (unsigned i = 0; i < it.up.size(); i++) 
+    CopyTileEdge(it.up[i], ot.up[i]);
+}
+
 void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
 
     for(unsigned int i=0;i<Nets.size();++i){
@@ -1222,7 +1259,11 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
 
     }
 
-    HierNode.tiles_total = Gcell.tiles_total;
+    //    HierNode.tiles_total = Gcell.tiles_total;
+    HierNode.tiles_total.resize(Gcell.tiles_total.size());
+    for (unsigned i = 0; i < Gcell.tiles_total.size(); i++) 
+      CopyTile (Gcell.tiles_total[i], HierNode.tiles_total[i]);
+
     for(vector<PnRDB::net>::iterator H_NET_it=HierNode.Nets.begin();H_NET_it!=HierNode.Nets.end();++H_NET_it){
         for(vector<RouterDB::Net>::const_iterator NET_it=Nets.begin(); NET_it!=Nets.end(); ++NET_it){
             if(H_NET_it->name!=NET_it->netName){
