@@ -645,10 +645,10 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
 
     std::cout << "JSON WRITE Routability Analysis " << node.name << std::endl;
     std::ofstream jsonStream;
-    jsonStream.open (node.name + ".json");
+    jsonStream.open (opath+node.name + ".json");
     json jsonTop;
     jsonTop["Cell Name"] = node.name;
-    jsonTop["units"] = "0.5nm";
+    jsonTop["Units"] = "0.5nm";
 
     //Node terminals
     json jsonTerminals = json::array();
