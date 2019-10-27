@@ -1930,10 +1930,12 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 	      shift = min_dis * 2 - shifting;
 	      shift_final = shift.scale (sign, -sign);
 	      
-	      PnRDB::point pt2 = Caps.back().pos + shift_final;
+	      PnRDB::point pt2 = Caps.back().pos + half_cap_dim;
+	      if (sign == 1)  pt2 = PnRDB::point(0,0);
+	      pt2 = pt2 + shift_final;
 
 	      cout << "DAK:NEW4n " << coord.second << " versus " << pt2.y << endl;
-	      assert (pt2.y = coord.second);
+	      assert (pt2.y == coord.second);
 	      assert (opt.x == coord.first);
 
 	      coordP.y = pt2.y;
