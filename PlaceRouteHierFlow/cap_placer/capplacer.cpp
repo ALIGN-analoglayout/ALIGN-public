@@ -9,6 +9,43 @@
 using namespace std;
 using namespace nlohmann;
 
+ostream & operator<< (ostream& os, const PnRDB::point& p) {
+    os << "(" << p.x << ", " << p.y << ")";
+    return os;
+}
+ostream & operator<< (ostream& os, const PnRDB::bbox& p) {
+    os << "[" << p.LL << ", " << p.UR << "]";
+    return os;
+}
+ostream & operator<< (ostream& os, int vec[5]) {
+    os << "[";
+    for (unsigned i = 0; i < 5; i++) {
+	if (i > 0) os << ", ";
+	os << vec[i];
+    }
+    os << "]";
+    return os;
+}
+
+json
+ToJsonAry (const PnRDB::bbox& box) {
+    json xy = json::array();
+    xy.push_back (box.LL.x);    xy.push_back (box.LL.y);
+    xy.push_back (box.LL.x);    xy.push_back (box.UR.y);
+    xy.push_back (box.UR.x);    xy.push_back (box.UR.y);
+    xy.push_back (box.UR.x);    xy.push_back (box.LL.y);
+    xy.push_back (box.LL.x);    xy.push_back (box.LL.y);
+    return xy;
+}
+
+json
+ToJsonAry (const PnRDB::point& p0, const PnRDB::point& p1) {
+    json xy = json::array();
+    xy.push_back (p0.x);    xy.push_back (p0.y);
+    xy.push_back (p1.x);    xy.push_back (p1.y);
+    return xy;
+}
+    
 // These are in PnRDB
 extern unsigned short JSON_Presentation (int font, int vp, int hp);
 extern unsigned short JSON_STrans (bool reflect, bool abs_angle, bool abs_mag);
@@ -75,9 +112,14 @@ void Placer_Router_Cap::Placer_Router_Cap_clean(){
 }
 
 
-
-
-void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, const string& fpath, const string& unit_capacitor, const string& final_gds, bool cap_ratio, int cap_r, int cap_s, const PnRDB::Drc_info& drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, const string& opath){
+void
+Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<string, string> > &cap_pin,
+					       const string& fpath, const string& unit_capacitor,
+					       const string& final_gds,
+					       bool cap_ratio, int cap_r, int cap_s,
+					       const PnRDB::Drc_info& drc_info,
+					       const map<string, PnRDB::lefMacro>& lefData,
+					       bool dummy_flag, const string& opath) {
 
 //dummy_flag is 1, dummy capacitor is added; Else, dummy capacitor do not exist.
 //not added, needed to be added 
@@ -112,6 +154,8 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   unit_cap_demension.first = uc.width;
   unit_cap_demension.second= uc.height;
+
+  unit_cap_dim = PnRDB::point (uc.width, uc.height);
 
   int pin_minx = INT_MAX;
   int pin_miny = INT_MAX;
@@ -184,6 +228,9 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   assert( unit_cap_demension.first % 2 == 0);
   assert( unit_cap_demension.second % 2 == 0);
 
+  assert (unit_cap_dim.x % 2 == 0);
+  assert (unit_cap_dim.y % 2 == 0);
+
 
   const auto& mv = drc_info.Metalmap.at(HV_via_metal);
   const auto& mvm = drc_info.Via_model.at(mv);
@@ -199,6 +246,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
       shifting_y = pin_miny-r.y;
   }
 
+  shifting = PnRDB::point (shifting_x, shifting_y);
   cout << "pin_minx " <<pin_minx << " "
        << "pin_miny " <<pin_miny << " "
        << "shifting_x "<<shifting_x<<" "
@@ -211,6 +259,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 
   offset_x = 0;
   offset_y = 0;
+  offset = PnRDB::point (0, 0);
   
   for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       metal_width.push_back(drc_info.Metal_info.at(i).width); //change 
@@ -231,10 +280,14 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   min_dis_x *= 2;
   min_dis_y *= 2;
 
+  min_dis = PnRDB::point (min_dis_x, min_dis_y);
+
   cout<<"step2.2"<<endl;
   span_distance.first = min_dis_x;
   span_distance.second = 3*min_dis_y; //m1 distance
-  cout<<"span_distance:" << span_distance.first << "," << span_distance.second << endl;
+  // DAK: Replace span_distance with span_dist
+  span_dist = PnRDB::point (min_dis_x, 3 * min_dis_y); // m1 distance
+  cout<<"span_dist:" << span_dist << endl;
 
 //initial cap information
 
@@ -262,14 +315,27 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout << "unit_cap_demension.second " << unit_cap_demension.second << " " << (unit_cap_demension.second % 84) << endl;
   cout << "span_distance.second: " << span_distance.second << " " << (span_distance.second % 84) << endl;
 
+  // DAK: Replace above with thee
+  cout << "unit_cap_dim " << unit_cap_dim << endl;
+  cout << "span_dist " << span_dist << endl;
+
   cout<<"step2.3"<<endl;
   for(int i=0;i<(int) r;i++){
      for(int j=0;j<(int) s;j++){
          cap temp_cap;
          temp_cap.index_x=(double) i;
          temp_cap.index_y=(double) j;
+	 PnRDB::point cap_dim = unit_cap_dim + span_dist;
+	 PnRDB::point cap_pos = PnRDB::bbox(unit_cap_dim).center() + cap_dim.scale(i, j);
+	 
          temp_cap.x=unit_cap_demension.first/2 +  i* (unit_cap_demension.first+span_distance.first);
          temp_cap.y=unit_cap_demension.second/2 +  j* (unit_cap_demension.second+span_distance.second);
+
+	 // DAK: Check here
+	 assert (temp_cap.x == cap_pos.x);
+	 assert (temp_cap.y == cap_pos.y);
+	 // DAK: Replace cap.x,y with cap.pos throughout
+	 temp_cap.pos = cap_pos;
          temp_cap.net_index = -1;
          temp_cap.access = 0;
          Caps.push_back(temp_cap);
@@ -318,7 +384,8 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
 	      if(dis[index[i]]!=dis[index[j]]){
 		  break;
               }
-	      if(Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy){
+	      if (Caps[index[i]].index_x+Caps[index[j]].index_x==2*Cx and
+		  Caps[index[i]].index_y+Caps[index[j]].index_y==2*Cy) {
 		  cap_pair_sequence.push_back(make_pair( min( index[i], index[j]), max( index[i], index[j])));
 		  break;
 	      }
@@ -366,7 +433,7 @@ void Placer_Router_Cap::Placer_Router_Cap_function(vector<int> & ki, vector<pair
   cout<<"step6b"<<endl;
   WriteViewerJSON (fpath ,unit_capacitor, final_gds, drc_info, opath);
   cout<<"step7"<<endl;
-  PrintPlacer_Router_Cap(outfile);
+  //PrintPlacer_Router_Cap(outfile);
   cout<<"step8"<<endl;
 
 
@@ -391,6 +458,15 @@ getLayerViaMask (const std::string & layer, const PnRDB::Drc_info & drc_info) {
     return mask;
 }
 
+// DAK: Fills a contact with a bbox
+void
+fillContact (PnRDB::contact& con, const PnRDB::bbox& box) {
+    con.originBox.LL = box.LL;
+    cout << "DAK: Filling with " << box << endl;
+    con.originBox.UR = box.UR;
+    con.originCenter = box.center();
+}
+
 // DAK: Fills a contact with a 4 point rectangle
 void
 fillContact (PnRDB::contact& con, int* x, int*y) {
@@ -411,26 +487,49 @@ fillContact (PnRDB::contact& con, int* x, int*y) {
 
 class MinMax {
     int Min_x, Min_y, Max_x, Max_y;
+    PnRDB::bbox box;
 public:
-    MinMax() : Min_x(INT_MAX), Min_y(INT_MAX), Max_x(INT_MIN), Max_y(INT_MIN) {}
+    MinMax() : Min_x(INT_MAX), Min_y(INT_MAX), Max_x(INT_MIN), Max_y(INT_MIN),
+	       box (INT_MAX, INT_MAX, INT_MIN, INT_MIN){}
     void update( int x[], int y[]) {
 	Min_x = min( x[0], Min_x);
 	Max_x = max( x[2], Max_x);
 	Min_y = min( y[0], Min_y);
 	Max_y = max( y[2], Max_y);
+	
+	box.LL.x = min( x[0], box.LL.x);
+	box.UR.x = max( x[2], box.UR.x);
+	box.LL.y = min( y[0], box.LL.y);
+	box.UR.y = max( y[2], box.UR.y);
     }
-    int get_Min_x() const { return Min_x; }
-    int get_Min_y() const { return Min_y; }
-    int get_Max_x() const { return Max_x; }
-    int get_Max_y() const { return Max_y; }
+    void update (const PnRDB::bbox& obox) {
+	int x[3];
+	int y[3];
+	x[0] = obox.LL.x;
+	x[1] = obox.LL.x;
+	x[2] = obox.UR.x;
+	y[0] = obox.LL.y;
+	y[1] = obox.LL.y;
+	y[2] = obox.UR.y;
+	update (x, y);
+    }
+    PnRDB::bbox rect () const { return box; }
+    int get_Min_x() const { return box.LL.x; }
+    int get_Min_y() const { return box.LL.y; }
+    int get_Max_x() const { return box.UR.x; }
+    int get_Max_y() const { return box.UR.y; }
+    // int get_Min_x() const { return Min_x; }
+    // int get_Min_y() const { return Min_y; }
+    // int get_Max_x() const { return Max_x; }
+    // int get_Max_y() const { return Max_y; }
 };
 
 void
 Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::lefMacro &uc, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_index, const string& opath) {
     string topGDS_loc = opath+final_gds+".gds";
-    int gds_unit = 20;
+    //    int gds_unit = 20;
     //writing metals
-    int x[5], y[5];
+    //    int x[5], y[5];
   
 //    int width = metal_width[0];
     MinMax minmax;
@@ -439,28 +538,39 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     auto extract_data_1_2 = [&]( auto& n_array) {
 	for (unsigned int i = 0; i < n_array.size(); i++) {//for each net
 	    PnRDB::pin temp_Pins;
-	    for (unsigned int j = 0; j < n_array[i].start_conection_coord.size(); j++) { //for segment
+	    for (unsigned int j = 0; j < n_array[i].start_connection_pos.size(); j++) { //for segment
 
 		int width = drc_info.Metal_info.at(drc_info.Metalmap.at(n_array[i].metal[j])).width/2;
 
-		fillPathBoundingBox (x, y, n_array[i].start_conection_coord[j],
-				     n_array[i].end_conection_coord[j], width);
+		// fillPathBoundingBox (x, y, n_array[i].start_conection_coord[j],
+		// 		     n_array[i].end_conection_coord[j], width);
 
-		minmax.update( x, y);
+		//		minmax.update( x, y);
 
-		PnRDB::contact temp_contact;
-		fillContact (temp_contact, x, y);
+		// PnRDB::contact temp_contact;
+		// fillContact (temp_contact, x, y);
 
-		for (int i = 0; i < 5; i++) {
-		    x[i] *= gds_unit;
-		    y[i] *= gds_unit;
-		}
-		temp_contact.metal = n_array[i].metal[j];
+		// for (int i = 0; i < 5; i++) {
+		//     x[i] *= gds_unit;
+		//     y[i] *= gds_unit;
+		// }
+		// temp_contact.metal = n_array[i].metal[j];
+
+		PnRDB::bbox box = fillPathBBox (n_array[i].start_connection_pos[j],
+						n_array[i].end_connection_pos[j], width);
+		//		box = box * gds_unit;
+		minmax.update (box);
+		PnRDB::contact mtemp_contact;
+		fillContact (mtemp_contact, box);
+		mtemp_contact.metal = n_array[i].metal[j];
+		// assert (temp_contact.originBox.LL == mtemp_contact.originBox.LL);
+		// assert (temp_contact.originBox.UR == mtemp_contact.originBox.UR);
+		
 		if (n_array[i].Is_pin[j] == 1) {
 		    temp_Pins.name = n_array[i].name;
-		    temp_Pins.pinContacts.push_back(temp_contact);
+		    temp_Pins.pinContacts.push_back(mtemp_contact);
 		}
-		CheckOutBlock.interMetals.push_back(temp_contact);
+		CheckOutBlock.interMetals.push_back(mtemp_contact);
 	    }   
 	    CheckOutBlock.blockPins.push_back(temp_Pins);
 	}
@@ -480,31 +590,43 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     for (unsigned int i = 0; i < n_array.size(); i++) {
 	for (unsigned int j = 0; j < n_array[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
             cout<<"Extract Data Step 3.1"<<endl;
-	    auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n_array[i].via_metal[j])).ViaRect[1];
-            int width = r.x;
+  
+	    // auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n_array[i].via_metal[j])).ViaRect[1];
+            // int width = r.x;
 
- 	    x[0]=n_array[i].via[j].first - width+offset_x;
-	    x[1]=n_array[i].via[j].first - width+offset_x;
-	    x[2]=n_array[i].via[j].first + width+offset_x;
-	    x[3]=n_array[i].via[j].first + width+offset_x;
-	    x[4]=x[0];
+ 	    // x[0]=n_array[i].via[j].first - width+offset_x;
+	    // x[1]=n_array[i].via[j].first - width+offset_x;
+	    // x[2]=n_array[i].via[j].first + width+offset_x;
+	    // x[3]=n_array[i].via[j].first + width+offset_x;
+	    // x[4]=x[0];
 
-            width = r.y;
+            // width = r.y;
         
-	    y[0]=n_array[i].via[j].second - width+offset_y;
-	    y[1]=n_array[i].via[j].second + width+offset_y;
-	    y[2]=n_array[i].via[j].second + width+offset_y;
-	    y[3]=n_array[i].via[j].second - width+offset_y;
-	    y[4]=y[0];
+	    // y[0]=n_array[i].via[j].second - width+offset_y;
+	    // y[1]=n_array[i].via[j].second + width+offset_y;
+	    // y[2]=n_array[i].via[j].second + width+offset_y;
+	    // y[3]=n_array[i].via[j].second - width+offset_y;
+	    // y[4]=y[0];
         
-	    minmax.update( x, y);
+	    //	    minmax.update( x, y);
 
+	    auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(n_array[i].via_metal[j])).ViaRect;
+	    PnRDB::bbox viaBox (viaRect[0], viaRect[1]);
+	    viaBox = viaBox + offset + n_array[i].via_pos[j];;
+
+	    minmax.update (viaBox);
+	    
 	    PnRDB::contact temp_contact;
-	    fillContact (temp_contact, x, y);
-	    for (int i = 0; i < 5; i++) {
-		x[i] *= gds_unit;
-		y[i] *= gds_unit;
-	    }
+	    // fillContact (temp_contact, x, y);
+	    // for (int i = 0; i < 5; i++) {
+	    // 	x[i] *= gds_unit;
+	    // 	y[i] *= gds_unit;
+	    // }
+	    fillContact (temp_contact, viaBox);
+	    //	    cout << "DAKVIAL: " << viaBox.LL << " versus " << temp_contact.originBox.LL << endl;
+	    //	    cout << "DAKVIAU: " << viaBox.UR << " versus " << temp_contact.originBox.UR << endl;
+	    //	    assert (viaBox.LL == temp_contact.originBox.LL);
+	    //	    assert (viaBox.UR == temp_contact.originBox.UR);
 
 //this part needs modify 2019/6/3
             cout<<"Extract Data Step 3.2"<<endl;
@@ -520,23 +642,36 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
             temp_contact.metal = vm.name;
 
-	    auto adjust = [&]( auto& p) {
-		p.x += temp_contact.placedCenter.x;
-		p.y += temp_contact.placedCenter.y;
-	    };
+	    // auto adjust = [&]( auto& p) {
+	    // 	p.x += temp_contact.placedCenter.x;
+	    // 	p.y += temp_contact.placedCenter.y;
+	    // };
 
-	    auto init = [&]( auto& b, const auto& ra) {
-		b.LL = ra[0]; b.UR = ra[1];
-		adjust( b.LL); adjust( b.UR);
-	    };
+	    // auto init = [&]( auto& b, const auto& ra) {
+	    // 	b.LL = ra[0]; b.UR = ra[1];
+	    // 	adjust( b.LL); adjust( b.UR);
+	    // };
 
 	    PnRDB::contact h_contact;
-	    init( h_contact.originBox, vm.UpperRect);
+	    //	    init( h_contact.originBox, vm.UpperRect);
+	    // DAK: This should replace the above?
+	    PnRDB::bbox upRect (vm.UpperRect[0], vm.UpperRect[1]);
+	    // assert (h_contact.originBox.LL == upRect.LL);
+	    // assert (h_contact.originBox.UR == upRect.UR);
+	    // assert (h_contact.originBox.LL == upRect.LL + temp_contact.placedCenter);
+	    // assert (h_contact.originBox.UR == upRect.UR + temp_contact.placedCenter);
+	    h_contact.originBox = upRect;
+	    h_contact.originBox = h_contact.originBox + temp_contact.placedCenter;
 
             cout<<"Extract Data Step 3.4"<<endl;
 	    PnRDB::contact v_contact;
-	    init( v_contact.originBox, vm.LowerRect);
-
+	    //	    init( v_contact.originBox, vm.LowerRect);
+	    PnRDB::bbox dnRect (vm.LowerRect[0], vm.LowerRect[1]);
+	    // assert (v_contact.originBox.LL == dnRect.LL);
+	    // assert (v_contact.originBox.UR == dnRect.UR);
+	    v_contact.originBox = dnRect;
+	    v_contact.originBox = v_contact.originBox + temp_contact.placedCenter;
+	    
             cout<<"Extract Data Step 3.5"<<endl;
             lower_contact.metal = drc_info.Metal_info.at(vm.LowerIdx).name;
             upper_contact.metal = drc_info.Metal_info.at(vm.UpperIdx).name;
@@ -562,7 +697,8 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
-    
+
+    // DAK:  Steve inserted a bunch of new code here that we can include to av
     std::set<std::string> internal_metal_layer;                       
     std::vector<std::string> internal_metal;                          
                                                                       
@@ -577,21 +713,22 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
       internal_metal.push_back(*it);                                               
                                                                                    
    }
+    int x[5], y[5];
    
    for(unsigned int i=0;i < Caps.size(); i++){                                     
                                                                                    
-      int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;                
-      int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;               
+      int temp_x = Caps[i].pos.x - unit_cap_dim.x/2+offset.x;                
+      int temp_y = Caps[i].pos.y - unit_cap_dim.y/2+offset.y;               
                                                                                    
       x[0] = temp_x;                                                               
       x[1] = temp_x;                                                               
-      x[2] = temp_x + unit_cap_demension.first;                                    
-      x[3] = temp_x + unit_cap_demension.first;                                    
+      x[2] = temp_x + unit_cap_dim.x;                                    
+      x[3] = temp_x + unit_cap_dim.x;                                    
       x[4] = x[0];                                                                 
                                                                                    
       y[0] = temp_y;                                                               
-      y[1] = temp_y + unit_cap_demension.second;                                   
-      y[2] = temp_y + unit_cap_demension.second;                                   
+      y[1] = temp_y + unit_cap_dim.y;                                   
+      y[2] = temp_y + unit_cap_dim.y;                                   
       y[3] = temp_y;                                                               
       y[4] = y[0];                                                                 
                                                                                    
@@ -612,29 +749,50 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
    /*                                                                                   
     for (unsigned int i = 0; i < Caps.size(); i++) {
 
-        int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;
-        int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;
-        
+	//        int temp_x = Caps[i].x - unit_cap_demension.first/2+offset_x;
+	//        int temp_y = Caps[i].y - unit_cap_demension.second/2+offset_y;
+
+	// assert (Caps[i].pos.y == Caps[i].y);
+	// assert (Caps[i].pos.x == Caps[i].x);
+
+	PnRDB::point half_cap_dim = unit_cap_dim / 2;
+	PnRDB::point pos = Caps[i].pos - half_cap_dim + offset;
+
+	// assert(pos.x == temp_x);
+	// assert(pos.y == temp_y);
         for (unsigned int j = 0; j< uc.interMetals.size(); j++) {
             
-            x[0] = temp_x + uc.interMetals[j].originBox.LL.x;
-            x[1] = temp_x + uc.interMetals[j].originBox.LL.x;
-            x[2] = temp_x + uc.interMetals[j].originBox.UR.x;
-            x[3] = temp_x + uc.interMetals[j].originBox.UR.x;
-            x[4] = x[0];
+            // x[0] = temp_x + uc.interMetals[j].originBox.LL.x;
+            // x[1] = temp_x + uc.interMetals[j].originBox.LL.x;
+            // x[2] = temp_x + uc.interMetals[j].originBox.UR.x;
+            // x[3] = temp_x + uc.interMetals[j].originBox.UR.x;
+            // x[4] = x[0];
 
-            y[0] = temp_y + uc.interMetals[j].originBox.LL.y;
-            y[1] = temp_y + uc.interMetals[j].originBox.UR.y;
-            y[2] = temp_y + uc.interMetals[j].originBox.UR.y;
-            y[3] = temp_y + uc.interMetals[j].originBox.LL.y;
-            y[4] = y[0];
+            // y[0] = temp_y + uc.interMetals[j].originBox.LL.y;
+            // y[1] = temp_y + uc.interMetals[j].originBox.UR.y;
+            // y[2] = temp_y + uc.interMetals[j].originBox.UR.y;
+            // y[3] = temp_y + uc.interMetals[j].originBox.LL.y;
+            // y[4] = y[0];
 	
-            minmax.update( x, y);
+	    // //            minmax.update( x, y);
 
-            PnRDB::contact temp_contact;
-            temp_contact.metal = uc.interMetals[j].metal;
-	    fillContact (temp_contact, x, y);
-            CheckOutBlock.interMetals.push_back(temp_contact);
+            // PnRDB::contact temp_contact;
+            // temp_contact.metal = uc.interMetals[j].metal;
+	    // fillContact (temp_contact, x, y);
+
+	    cout << "DAK: Check this code runs" << endl;
+	    PnRDB::bbox box = uc.interMetals[j].originBox;
+	    box = box + pos;
+	    minmax.update (box);
+	    PnRDB::contact mtemp_contact;
+            mtemp_contact.metal = uc.interMetals[j].metal;
+	    fillContact (mtemp_contact, box);
+	    // cout << "DAK: contactL" << temp_contact.originBox.LL << " vs " << mtemp_contact.originBox.LL << endl;
+	    // cout << "DAK: contactU" << temp_contact.originBox.UR << " vs " << mtemp_contact.originBox.UR << endl;
+	    // assert (mtemp_contact.originBox.LL == temp_contact.originBox.LL);
+	    // assert (mtemp_contact.originBox.UR == temp_contact.originBox.UR);
+	    
+            CheckOutBlock.interMetals.push_back(mtemp_contact);
 
         }
         
@@ -645,52 +803,90 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
 
     int coverage_x;
     int coverage_y;
+
+    PnRDB::point cp;
   
     const auto& vm = drc_info.Via_model.at(HV_via_index);
 
     if(drc_info.Via_model[HV_via_index].LowerIdx == V_metal){
+	cp.y = vm.ViaRect[0].y - vm.LowerRect[0].y;
 	coverage_y = vm.ViaRect[0].y - vm.LowerRect[0].y;
+	cp.x = vm.ViaRect[0].x - vm.UpperRect[0].x;
 	coverage_x = vm.ViaRect[0].x - vm.UpperRect[0].x;
     }else{
+	cp.y = vm.ViaRect[0].y - vm.UpperRect[0].y;
        coverage_y = vm.ViaRect[0].y - vm.UpperRect[0].y;
+       cp.x = vm.ViaRect[0].x - vm.LowerRect[0].x;
        coverage_x = vm.ViaRect[0].x - vm.LowerRect[0].x;
     }
+    //DAK:  Bloat in x and Y
+    // int Min_x = minmax.get_Min_x();
+    // int Min_y = minmax.get_Min_y();
+    // int Max_x = minmax.get_Max_x();
+    // int Max_y = minmax.get_Max_y();
 
-    int Min_x = minmax.get_Min_x();
-    int Min_y = minmax.get_Min_y();
-    int Max_x = minmax.get_Max_x();
-    int Max_y = minmax.get_Max_y();
+    PnRDB::point gp (drc_info.Metal_info.at(V_metal).grid_unit_x,
+		     drc_info.Metal_info.at(H_metal).grid_unit_y);
+    PnRDB::point mw (drc_info.Metal_info.at(V_metal).width,
+		     drc_info.Metal_info.at(H_metal).width);
 
-    int deltax = drc_info.Metal_info.at(V_metal).grid_unit_x
-               - drc_info.Metal_info.at(V_metal).width/2-coverage_x;
-    Min_x -= deltax;
-    Max_x += deltax;
+    PnRDB::point delta = gp - mw / 2 - cp;
+
+    // int deltax = drc_info.Metal_info.at(V_metal).grid_unit_x
+    //            - drc_info.Metal_info.at(V_metal).width/2-coverage_x;
+
+    // assert (deltax == delta.x);
+    // Min_x -= deltax;
+    // Max_x += deltax;
 	
-    int deltay = drc_info.Metal_info.at(H_metal).grid_unit_y
-	       - drc_info.Metal_info.at(H_metal).width/2-coverage_y;
-    Min_y -= deltay;
-    Max_y += deltay;
+    // int deltay = drc_info.Metal_info.at(H_metal).grid_unit_y
+    // 	       - drc_info.Metal_info.at(H_metal).width/2-coverage_y;
+    // assert (deltay == delta.y);
+    // Min_y -= deltay;
+    // Max_y += deltay;
 
-    const auto gu = drc_info.Metal_info[V_metal].grid_unit_x;
-    Max_x = ceil( (double) Max_x/gu)*gu;
+    PnRDB::bbox bl = minmax.rect().bloat(delta.x, delta.y);
+    // cout << "DAK: bloatMax" << endl;
+    // assert (bl.LL.x == Min_x);
+    // assert (bl.LL.y == Min_y);
+    // assert (bl.UR.x == Max_x);
+    // assert (bl.UR.y == Max_y);
+    // int Min_x = bl.LL.x;
+    // int Min_y = bl.LL.y;
+    // int Max_x = bl.UR.x;
+    // int Max_y = bl.UR.y;
+
+    //    const auto gu = drc_info.Metal_info[V_metal].grid_unit_x;
+    // DAK: TODO: is this bad snapping code
+    //    Max_x = ceil( (double) Max_x/gu)*gu;
 
     CheckOutBlock.gdsFile = topGDS_loc;
     PnRDB::point temp_point;
-    temp_point.x = Min_x;
-    temp_point.y = Min_y;
-    CheckOutBlock.originBox.LL = temp_point;
-    temp_point.x = Max_x;
-    temp_point.y = Max_y;
-    CheckOutBlock.originBox.UR = temp_point;
-    CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
-    CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
-    CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
-    CheckOutBlock.height = CheckOutBlock.originBox.UR.y-CheckOutBlock.originBox.LL.y;
+    //    temp_point.x = Min_x;
+    //    temp_point.y = Min_y;
+    //    temp_point = bl.LL;
+    CheckOutBlock.originBox.LL = bl.LL;
+    //    temp_point.x = Max_x;
+    //    temp_point.y = Max_y;
+    //    temp_point = bl.UR;
+    CheckOutBlock.originBox.UR = bl.UR;
+    // CheckOutBlock.originCenter.x = (CheckOutBlock.originBox.LL.x + CheckOutBlock.originBox.UR.x)/2;
+    // CheckOutBlock.originCenter.y = (CheckOutBlock.originBox.LL.y + CheckOutBlock.originBox.UR.y)/2;
+    // CheckOutBlock.width = CheckOutBlock.originBox.UR.x-CheckOutBlock.originBox.LL.x;
+    // CheckOutBlock.height = CheckOutBlock.originBox.UR.y-CheckOutBlock.originBox.LL.y;
+    // cout << "DAK: Width " << endl;
+
+    // assert (CheckOutBlock.width == CheckOutBlock.originBox.width());
+    // assert (CheckOutBlock.height == CheckOutBlock.originBox.height());
+    // assert (CheckOutBlock.originCenter == CheckOutBlock.originBox.center());
+    CheckOutBlock.width = CheckOutBlock.originBox.width();
+    CheckOutBlock.height = CheckOutBlock.originBox.height();
+    CheckOutBlock.originCenter = CheckOutBlock.originBox.center();
 }
 
 void
 Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index) {
-    int x[5], y[5];
+    //    int x[5], y[5];
     //int width = metal_width[0];
 
     MinMax minmax;
@@ -699,23 +895,33 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     // vector<pair<double,double> f, s;  int width
   
     for (unsigned int i = 0; i< Nets_pos.size(); i++) {//for each net
-	for (unsigned int j = 0; j< Nets_pos[i].start_conection_coord.size();j++) { //for segment
+	for (unsigned int j = 0; j< Nets_pos[i].start_connection_pos.size();j++) { //for segment
             int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_pos[i].metal[j])).width/2;
-	    fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
-				 Nets_pos[i].end_conection_coord[j], width);
+	    // fillPathBoundingBox (x, y, Nets_pos[i].start_conection_coord[j],
+	    // 			 Nets_pos[i].end_conection_coord[j], width);
+	    auto box = fillPathBBox(Nets_pos[i].start_connection_pos[j],
+				    Nets_pos[i].end_connection_pos[j], width);
 
-	    minmax.update( x, y);
+	    //	    minmax.update( x, y);
+	    minmax.update (box);
         }
     }
   
     //for neg nets
     for (unsigned int i = 0; i <  Nets_neg.size(); i++) {//for each net
-	for (unsigned int j = 0; j <  Nets_neg[i].start_conection_coord.size();j++) { //for segment
+	for (unsigned int j = 0; j <  Nets_neg[i].start_connection_pos.size();j++) { //for segment
             int width = drc_info.Metal_info.at(drc_info.Metalmap.at(Nets_neg[i].metal[j])).width/2;
-	    fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
-				 Nets_neg[i].end_conection_coord[j], width);
-
-	    minmax.update( x, y);
+	    // fillPathBoundingBox (x, y, Nets_neg[i].start_conection_coord[j],
+	    // 			 Nets_neg[i].end_conection_coord[j], width);
+	    auto box = fillPathBBox(Nets_neg[i].start_connection_pos[j],
+				    Nets_neg[i].end_connection_pos[j], width);
+	    //	    minmax.update( x, y);
+	    minmax.update (box);
+		// cout << "DAK: minmax update 1" << endl;
+		// assert (x[0] == box.LL.x);
+		// assert (x[2] == box.UR.x);
+		// assert (y[0] == box.LL.y);
+		// assert (y[2] == box.UR.y);
         }
     }
   
@@ -728,22 +934,34 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
 	    for (unsigned int j = 0; j < n_array[i].via.size(); j++) {//the size of via needs to be modified according to different PDK
 
 		const auto& vm = n_array[i].via_metal[j];
-		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect[1];
-		const auto& n = n_array[i].via[j];
+		// const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect[1];
+		// const auto& n = n_array[i].via[j];
 
-		x[0] = n.first - r.x;
-		x[1] = n.first - r.x;
-		x[2] = n.first + r.x;
-		x[3] = n.first + r.x;
-		x[4] = x[0];
+		const auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(vm)).ViaRect;
+		auto viaBox = PnRDB::bbox(viaRect[0], viaRect[1]);
+		const auto& viaPos = n_array[i].via_pos[j];
 
-		y[0] = n.second - r.y;
-		y[1] = n.second + r.y;
-		y[2] = n.second + r.y;
-		y[3] = n.second - r.y;
-		y[4] = y[0];
+		// x[0] = n.first - r.x;
+		// x[1] = n.first - r.x;
+		// x[2] = n.first + r.x;
+		// x[3] = n.first + r.x;
+		// x[4] = x[0];
 
-		minmax.update( x, y);
+		// y[0] = n.second - r.y;
+		// y[1] = n.second + r.y;
+		// y[2] = n.second + r.y;
+		// y[3] = n.second - r.y;
+		// y[4] = y[0];
+
+		//		minmax.update( x, y);
+		viaBox = viaBox + viaPos;
+		minmax.update (viaBox);
+		// cout << "DAK: minmax update 2" << endl;
+		// assert (x[0] == viaBox.LL.x);
+		// assert (x[2] == viaBox.UR.x);
+		// assert (y[0] == viaBox.LL.y);
+		// assert (y[2] == viaBox.UR.y);
+		
 	    }
 	}
     };
@@ -752,31 +970,48 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
 
   
     for (unsigned int i = 0; i < Caps.size(); i++) {
-	x[0] = Caps[i].x - unit_cap_demension.first/2;
-	x[1] = Caps[i].x - unit_cap_demension.first/2;
-	x[2] = Caps[i].x + unit_cap_demension.first/2;
-	x[3] = Caps[i].x + unit_cap_demension.first/2;
-	x[4] = x[0];
+	// x[0] = Caps[i].x - unit_cap_demension.first/2;
+	// x[1] = Caps[i].x - unit_cap_demension.first/2;
+	// x[2] = Caps[i].x + unit_cap_demension.first/2;
+	// x[3] = Caps[i].x + unit_cap_demension.first/2;
+	// x[4] = x[0];
        
-	y[0] = Caps[i].y - unit_cap_demension.second/2;
-	y[1] = Caps[i].y + unit_cap_demension.second/2;
-	y[2] = Caps[i].y + unit_cap_demension.second/2;
-	y[3] = Caps[i].y - unit_cap_demension.second/2;
-	y[4] = y[0];
+	// y[0] = Caps[i].y - unit_cap_demension.second/2;
+	// y[1] = Caps[i].y + unit_cap_demension.second/2;
+	// y[2] = Caps[i].y + unit_cap_demension.second/2;
+	// y[3] = Caps[i].y - unit_cap_demension.second/2;
+	// y[4] = y[0];
 
-	minmax.update( x, y);
+	PnRDB::point half_cap_dim = unit_cap_dim / 2;
+
+	PnRDB::point pos = Caps[i].pos - half_cap_dim;
+	auto cap_rect = PnRDB::bbox (unit_cap_dim);
+	cap_rect = cap_rect + pos;
+
+	// cout << "DAK: cap update " << endl;
+	// assert (x[0] == cap_rect.LL.x);
+	// assert (x[2] == cap_rect.UR.x);
+	// assert (y[0] == cap_rect.LL.y);
+	// assert (y[2] == cap_rect.UR.y);
+	//	minmax.update( x, y);
+	minmax.update( cap_rect);
     }
 
     const auto& vm = drc_info.Via_model[HV_via_index]; 
 
+    auto cp = vm.ViaRect[0];
     int coverage_x = vm.ViaRect[0].x;
     int coverage_y = vm.ViaRect[0].y;
 
     if(vm.LowerIdx == V_metal){
+	cp.y -= vm.LowerRect[0].y;
        coverage_y -= vm.LowerRect[0].y;
+	cp.x -= vm.UpperRect[0].x;
        coverage_x -= vm.UpperRect[0].x;
     }else{
+	cp.y -= vm.UpperRect[0].y;
        coverage_y -= vm.UpperRect[0].y;
+	cp.x -= vm.LowerRect[0].x;
        coverage_x -= vm.LowerRect[0].x;
     }
 
@@ -785,6 +1020,30 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
 
     const auto& vmh = drc_info.Metal_info[H_metal];
     offset_y = vmh.grid_unit_y - vmh.width/2 - coverage_y - minmax.get_Min_y();
+
+    // DAK: Replace all offset_ with offset
+    auto gp = PnRDB::point (vmv.grid_unit_x, vmh.grid_unit_y);
+    auto wp = PnRDB::point (vmv.width, vmh.width) / 2;
+    auto mp = minmax.rect().LL;
+    //    auto cp = PnRDB::point (coverage_x, coverage_y);
+    
+    offset = PnRDB::point (vmv.grid_unit_x - vmv.width/2 - coverage_x - minmax.get_Min_x(),
+			   vmh.grid_unit_y - vmh.width/2 - coverage_y - minmax.get_Min_y());
+
+    cout << "DAK: compare gp " << vmv.grid_unit_x << " "
+	 << vmh.grid_unit_y << " versus " << gp << endl;
+
+    cout << "DAK: compare " << vmv.width/2 << " " << vmh.width/2 << " versus "
+	 <<  wp  << endl;
+    
+    cout << "DAK: compare " << vmv.grid_unit_x - vmv.width/2 - coverage_x - minmax.get_Min_x() << " "
+	 << vmh.grid_unit_y - vmh.width/2 - coverage_y - minmax.get_Min_y() << " versus "
+	 <<  (gp - wp - cp - mp) << endl;
+    
+    cout << "DAK: MAJOR" << endl;
+    assert (offset == (gp - wp - cp - mp));
+    assert (offset.x == offset_x);
+    assert (offset.y == offset_y);
     
 }
 
@@ -1190,8 +1449,15 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
   span_distance.first = (max_num_+1)*min_dis_x;
   cout<<span_distance.first<<endl;
 
+  span_dist = PnRDB::point(span_distance.first, span_distance.second);
+
   for(unsigned int i=0;i<Caps.size();i++){
+      PnRDB::point cap_dim = unit_cap_dim + span_dist;
+      PnRDB::point cap_pos = PnRDB::bbox(unit_cap_dim).center() + cap_dim.scale(Caps[i].index_x, Caps[i].index_x);
       Caps[i].x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
+      cout << "DAK: NEW10" << cap_pos << " " << Caps[i].x << endl;
+      assert (cap_pos.x == Caps[i].x);
+      Caps[i].pos.x = unit_cap_demension.first/2 +  Caps[i].index_x* (unit_cap_demension.first+span_distance.first);
   }
 
 }
@@ -1212,22 +1478,90 @@ void Placer_Router_Cap::found_neighbor(int j, net& pos, connection_set& temp_set
   } 
 }
 
-void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin){
+void Placer_Router_Cap::addVia(net &temp_net,
+			       PnRDB::point &pt,
+			       const PnRDB::Drc_info &drc_info,
+			       const string& HV_via_metal,
+			       int HV_via_metal_index,
+			       int isPin) {
+    pair<double,double> coord (pt.x, pt.y);
+    addVia (temp_net, coord, drc_info, HV_via_metal, HV_via_metal_index, isPin);
+}
+
+    void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin){
 
   pair<double,double> via_coord;
 
+  PnRDB::point coord_pos (coord.first, coord.second);;
+
   const auto& vm = drc_info.Via_model.at(HV_via_metal_index);
 
-  temp_net.via.push_back(coord);                      
+  temp_net.via.push_back(coord);
+  temp_net.via_pos.push_back (coord_pos); // DAK: Replace .via with .via_pos throughout
+
   temp_net.via_metal.push_back(HV_via_metal);
 
+  auto apply_aux_pt = [&]( PnRDB::point p0, PnRDB::point p1, int idx) {
+      // Either the seconds are both 0 or the firsts are both zero
+     //start point
+     via_coord.first = p0.x;
+     via_coord.second = p0.y;
+     via_coord.first = via_coord.first + coord.first;
+     via_coord.second = via_coord.second + coord.second;
+     temp_net.start_conection_coord.push_back(via_coord);
+
+     // DAK: Replace .via with .via_pos throughout
+     PnRDB::point start_pos = p0;
+     start_pos = start_pos + coord_pos;
+     temp_net.start_connection_pos.push_back (start_pos);
+
+     //     cout << "DAK: start computex " << start_pos.x << " versus " << via_coord.first << endl;
+     //     cout << "DAK: start computey " << start_pos.y << " versus " << via_coord.second << endl;
+     
+     assert(via_coord.first == start_pos.x);
+     assert(via_coord.second == start_pos.y);
+     
+     //end point
+     via_coord.first = p1.x;
+     via_coord.second = p1.y;
+     via_coord.first = via_coord.first + coord.first;
+     via_coord.second = via_coord.second + coord.second; 
+     temp_net.end_conection_coord.push_back(via_coord); 
+     temp_net.Is_pin.push_back(isPin);
+     temp_net.metal.push_back(drc_info.Metal_info[idx].name);
+
+     // DAK: Replace .via with .via_pos throughout
+     
+     PnRDB::point end_pos = p1;
+     end_pos = end_pos + coord_pos;
+     temp_net.end_connection_pos.push_back (end_pos);
+
+     //     cout << "DAK: end computex " << end_pos.x << " versus " << via_coord.first << endl;
+     //     cout << "DAK: end computey " << end_pos.y << " versus " << via_coord.second << endl;
+     assert(via_coord.first == end_pos.x);
+     assert(via_coord.second == end_pos.y);
+  };
+  
   auto apply_aux = [&]( int first0,  int second0, int first1, int second1, int idx) {
+      // Either the seconds are both 0 or the firsts are both zero
      //start point
      via_coord.first = first0;
      via_coord.second = second0;
      via_coord.first = via_coord.first + coord.first;
      via_coord.second = via_coord.second + coord.second;
      temp_net.start_conection_coord.push_back(via_coord);
+
+     // DAK: Replace .via with .via_pos throughout
+     PnRDB::point start_pos (first0, second0);
+     start_pos = start_pos + coord_pos;
+     temp_net.start_connection_pos.push_back (start_pos);
+
+     cout << "DAK: start computex " << start_pos.x << " versus " << via_coord.first << endl;
+     cout << "DAK: start computey " << start_pos.y << " versus " << via_coord.second << endl;
+     
+     assert(via_coord.first == start_pos.x);
+     assert(via_coord.second == start_pos.y);
+     
      //end point
      via_coord.first = first1;
      via_coord.second = second1;
@@ -1236,21 +1570,35 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
      temp_net.end_conection_coord.push_back(via_coord); 
      temp_net.Is_pin.push_back(isPin);
      temp_net.metal.push_back(drc_info.Metal_info[idx].name);
+
+     // DAK: Replace .via with .via_pos throughout
+     
+     PnRDB::point end_pos (first1, second1);
+     end_pos = end_pos + coord_pos;
+     temp_net.end_connection_pos.push_back (end_pos);
+
+     cout << "DAK: end computex " << end_pos.x << " versus " << via_coord.first << endl;
+     cout << "DAK: end computey " << end_pos.y << " versus " << via_coord.second << endl;
+     assert(via_coord.first == end_pos.x);
+     assert(via_coord.second == end_pos.y);
   };
 
+  // DAK: almost unreadable: what does this do?  In the end create via rectangles on the net
   auto apply_viax = [&]( const auto& ra, int idx) {
-      apply_aux( ra[0].x, 0, ra[1].x, 0, idx);
+      //      apply_aux( ra[0].x, 0, ra[1].x, 0, idx);
+      apply_aux_pt( PnRDB::point(ra[0].x, 0), PnRDB::point(ra[1].x, 0), idx);
   };
 
   auto apply_viay = [&]( const auto& ra, int idx) {
-      apply_aux( 0, ra[0].y, 0, ra[1].y, idx);
+      //      apply_aux( 0, ra[0].y, 0, ra[1].y, idx);
+      apply_aux_pt( PnRDB::point(0, ra[0].y), PnRDB::point(0, ra[1].y), idx);
   };
 
   if(drc_info.Metal_info.at(vm.LowerIdx).direct==1){
-      apply_viax( vm.LowerRect, vm.LowerIdx);
-      apply_viay( vm.UpperRect, vm.UpperIdx);
+      apply_viax( vm.LowerRect, vm.LowerIdx); // use the LL.x and the UR.x with y = 0 for LoweRect
+      apply_viay( vm.UpperRect, vm.UpperIdx); // Use the LL.y and the UR.y with x = 0 for UpperRect
   }else{
-      apply_viay( vm.LowerRect, vm.LowerIdx);
+      apply_viay( vm.LowerRect, vm.LowerIdx); // 
       apply_viax( vm.UpperRect, vm.UpperIdx);
   }
 
@@ -1258,27 +1606,46 @@ void Placer_Router_Cap::addVia(net &temp_net, pair<double,double> &coord, const 
 
 void Placer_Router_Cap::check_grid( const net& n) const
 {
-    assert( n.start_conection_coord.size() == n.end_conection_coord.size());
-    assert( n.metal.size() == n.end_conection_coord.size());
-    for( unsigned int i=0; i<n.start_conection_coord.size(); ++i) {
-	const auto& s = n.start_conection_coord[i];
-	const auto& e = n.end_conection_coord[i];
+    // assert( n.metal.size() == n.end_conection_coord.size());
+    // for( unsigned int i=0; i<n.start_conection_coord.size(); ++i) {
+    // 	const auto& s = n.start_conection_coord[i];
+    // 	const auto& e = n.end_conection_coord[i];
+    // 	const auto& m = n.metal[i];
+    // 	const auto& p = n.Is_pin[i];
+    // 	cout << "Terminals: " << n.name << " is_pin " << p << " " << m << " " << s.first << "," << s.second << " ";
+    // 	cout << e.first << "," << e.second;
+    // 	// DAK: TODO: Do this with connection_pos[]
+    // 	if ( s.first == e.first) {
+    // 	    // Vertical wi
+    // 	    int x = s.first;
+    // 	    assert( x == s.first);
+    // 	    //	    cout << " V " << x % 80;
+    // 	} else {
+    // 	    int y = s.first;
+    // 	    assert( y == s.first);
+    // 	    //	    cout << " H " << y % 84;
+    // 	}
+    // 	cout << endl;
+    // }
+    assert( n.start_connection_pos.size() == n.end_connection_pos.size());
+    for( unsigned int i=0; i<n.start_connection_pos.size(); ++i) {
+	const auto& s = n.start_connection_pos[i];
+	const auto& e = n.end_connection_pos[i];
 	const auto& m = n.metal[i];
 	const auto& p = n.Is_pin[i];
-	cout << "Terminals: " << n.name << " is_pin " << p << " " << m << " " << s.first << "," << s.second << " ";
-	cout << e.first << "," << e.second;
-									     
-	if ( s.first == e.first) {
+	cout << "Terminals: " << n.name << " is_pin " << p << " " << m << " " << s.x << "," << s.y << " " << e.x << "," << e.y;
+	// DAK: TODO: There is no check to do here as we are using ints not doubles
+	if ( s.x == e.x) {
 	    // Vertical wi
-	    int x = s.first;
-	    assert( x == s.first);
+	    int x = s.x;
+	    assert( x == s.x);
 	    cout << " V " << x % 80;
 	} else {
-	    int y = s.first;
-	    assert( y == s.first);
+	    int y = s.x;
+	    assert( y == s.x);
 	    cout << " H " << y % 84;
 	}
-	cout << endl;									     
+	cout << endl;
     }
 }
 
@@ -1321,6 +1688,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 				    int sign)
 {
   pair<double,double> coord;
+  PnRDB::point coordP;
 
   for(unsigned int i=0;i<Caps.size();i++){
      Caps[i].access = 0;
@@ -1332,18 +1700,23 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
    for(unsigned int i=0;i<n_array.size();i++){
        auto& n = n_array[i];
 
+       // DAK: We should use points not these double pairs
       if(n.cap_index.size()==0){continue;}
       routed_trail += 1;
       pair<double,double> first_coord;
+      PnRDB::point first_coordP;
       pair<double,double> end_coord;
+      PnRDB::point end_coordP;
       int first_lock=0;
       int end_close=0;
       for(unsigned int l=0;l<n.line_v.size();l++){
+	  cout << "DAK: processing via " << l << endl;
           if(n.line_v[l]==1){
               trails[l] += 1;
               //connect to connection set and found the end point
 	      MinMaxBox mb(sign);
               int found = 0;
+	      PnRDB::point opt;
               for(unsigned int k=0;k<n.cap_index.size();k++){
 		  if ( Caps[n.cap_index[k]].access != 0) continue;
 
@@ -1352,33 +1725,94 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                   if(lr!=0 and lr!=1) continue;
 
 		  found = 1;
+		  PnRDB::point shifting (shifting_x, shifting_y);
+		  PnRDB::point half_cap_dim = unit_cap_dim / 2;
+		  PnRDB::point shift = half_cap_dim - shifting;
+		  PnRDB::point shift_final = shift.scale(sign, -sign);
+		  
+		  PnRDB::point pt = Caps[n.cap_index[k]].pos + shift_final;
 		  coord.first = Caps[n.cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
 		  coord.second = Caps[n.cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
-		  addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		  cout << "DAK: NEW " << pt << " " << coord.first << " " << coord.second << endl;
+		  cout << "DAK: NEWP " << Caps[n.cap_index[k]].pos << " " << Caps[n.cap_index[k]].x << " " << Caps[n.cap_index[k]].y << endl;
 
+		  assert (pt == PnRDB::point(coord.first, coord.second));
+		  coordP = pt;
+		  auto mc = pair< double,double>(pt.x, pt.y);
+		  assert (mc == coord);
+		  
+		  addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
+
+		  shift = half_cap_dim - shifting + min_dis;
+		  shift_final = shift.scale(sign, -sign);
+		  PnRDB::point pt2 = Caps[n.cap_index[k]].pos + shift_final;
+		  
 		  if( lr == 1) {
+		  
                       n.start_conection_coord.push_back(coord);
+		      n.start_connection_pos.push_back (coordP);
+     
                       coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y+min_dis_y);
+
+		      cout << "DAK: NEW11 " << pt2 << " " << coord.second << endl;
+		      assert (pt.x == coord.first);
+		      assert (pt2.y == coord.second);
+		      coordP.y = pt2.y;
+
+		      assert (coordP.x == coord.first);
+		      assert (coordP.y == coord.second);
+
+		      // DAK: HACK:  Looks like we reuse the pt.x from before which is +min_dis_y in the y dim
+		      //		      assert (pt.x == coord.first);
                       n.end_conection_coord.push_back(coord);
+		      n.end_connection_pos.push_back (coordP);
                       n.Is_pin.push_back(0);
                       n.metal.push_back(V_metal);
-                      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+                      addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
 		  }
-
+		  assert (pt.x == coord.first);
+		  cout << "DAK: NEW13: " << pt << " "  << opt << " "<< pt2 << " " << coord.second << " " << lr << endl;
+		  if (lr == 1)
+		      assert (pt2.y == coord.second);
+		  else 
+		      assert (pt.y == coord.second);
+		  assert (coordP.x == coord.first);
+		  assert (coordP.y == coord.second);
 
 		  n.start_conection_coord.push_back(coord);
-                  if( lr == 0){
+		  n.start_connection_pos.push_back (coordP);
+		  PnRDB::point span_dist (span_distance.first, span_distance.second);
+                  if( lr == 0){ 
+		      
+		      auto ppp = Caps[n.cap_index[k]].pos - half_cap_dim - (span_dist - min_dis * trails[l]);
                       coord.first = Caps[n.cap_index[k]].x- unit_cap_demension.first/2-(span_distance.first-min_dis_x*trails[l]);
+		      cout << "DAK: NEW2 " << ppp << " " << coord.first << endl;
+		      assert (ppp.x == coord.first);
+		      opt = ppp;
+		      coordP.x = ppp.x;
+		      // DAK: HACK: What is coord.second!
+		      assert (pt.y == coord.second);
 		  }else if( lr == 1) {
+		      auto ppp = Caps[n.cap_index[k]].pos + half_cap_dim + min_dis * trails[l];
 		      coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
+		      cout << "DAK: NEW3 " << ppp << " " << coord.first << endl;
+		      assert (ppp.x == coord.first);
+		      assert (pt2.y == coord.second);
+		      coordP.x = ppp.x;
+		      opt = ppp;
+		      // DAK: HACK: What is coord.second!
 		  }
 		  n.end_conection_coord.push_back(coord);
+		  n.end_connection_pos.push_back (coordP);
 
+		  assert (coordP.x == coord.first);
+		  assert (coordP.y == coord.second);
 
 		  n.Is_pin.push_back(0);
 		  n.metal.push_back(H_metal);
 
-		  addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);                     
+		  //		  addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		  addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
 		  mb.update( Caps[n.cap_index[k]].index_y, n.cap_index[k], lr);
 
 		  Caps[n.cap_index[k]].access = 1;
@@ -1388,26 +1822,70 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
                  for(unsigned int k=0;k<n.cap_index.size();k++){
 		     int lr = l-Caps[n.cap_index[k]].index_x;
 		     if(lr==1){
+			 PnRDB::point half_cap_dim = unit_cap_dim / 2;
+			 PnRDB::point shift = half_cap_dim - shifting;
+			 PnRDB::point shift_final = shift.scale(sign, -sign);
+		  
+			 opt = Caps[n.cap_index[k]].pos + shift_final;
+		  
 			 coord.first = Caps[n.cap_index[k]].x+ sign*(unit_cap_demension.first/2-shifting_x);
 			 coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y);
+			 cout << "DAK: NEW2 " << opt << " " << coord.first << " " << coord.second << endl;
+			 cout << "DAK: NEW2P " << Caps[n.cap_index[k]].pos << " " << Caps[n.cap_index[k]].x << " " << Caps[n.cap_index[k]].y << endl;
+
+			 assert (opt == PnRDB::point(coord.first, coord.second));
+			 coordP = opt;
+			 assert (coordP.x == coord.first);
+			 assert (coordP.y == coord.second);
                       
 			 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
 
 			 n.start_conection_coord.push_back(coord);
+			 n.start_connection_pos.push_back (PnRDB::point(coord.first, coord.second));
+
+			 shift = half_cap_dim - shifting + min_dis;
+			 shift_final = shift.scale(sign, -sign);
+			 PnRDB::point pt = Caps[n.cap_index[k]].pos + shift_final;
+
 			 coord.second = Caps[n.cap_index[k]].y- sign*(unit_cap_demension.second/2-shifting_y+min_dis_y);
+			 cout << "DAK: NEW3 " << pt << coord.second << endl;
+
+			 coordP.y = pt.y;
+			 assert (pt.y == coord.second);
+			 assert (opt.x == coord.first);
+			 
+			 assert (coordP.x == coord.first);
+			 assert (coordP.y == coord.second);
+
 			 n.end_conection_coord.push_back(coord);
+			 n.end_connection_pos.push_back (coordP);
 			 n.Is_pin.push_back(0);
 			 n.metal.push_back(V_metal);
                       
-			 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			 //			 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			 addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
 
 			 n.start_conection_coord.push_back(coord);
+			 n.start_connection_pos.push_back (coordP);
 			 coord.first = Caps[n.cap_index[k]].x+ unit_cap_demension.first/2+(min_dis_x*trails[l]);
+
+			 shift = half_cap_dim + min_dis * trails[1];
+			 PnRDB::point pt2 = Caps[n.cap_index[k]].pos + shift;
+			 cout << "DAK: NEW12" << pt << " " << coord.first << endl;
+			 opt = pt2;
+			 assert (pt2.x == coord.first);
+			 assert (pt.y == coord.second);
+			 coordP.x = pt2.x;
+			 assert (coordP.x == coord.first);
+			 assert (coordP.y == coord.second);
+			 
 			 n.end_conection_coord.push_back(coord);
+			 n.end_connection_pos.push_back (coordP);
 			 n.Is_pin.push_back(0);
 			 n.metal.push_back(H_metal);
 
-			 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			 //			 addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+			 addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
                       
 			 Caps[n.cap_index[k]].access = 1;
 
@@ -1422,39 +1900,104 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 	      } else {
 		  pos_neg_offset = Caps.back().y+unit_cap_demension.second/2;
 	      }
+	      PnRDB::point half_cap_dim = unit_cap_dim / 2;
+		  
+	      PnRDB::point shift = min_dis * (routed_trail +2) + PnRDB::point(grid_offset, grid_offset);
+	      PnRDB::point shift_final = shift.scale(sign, sign);
+		  
+	      PnRDB::point pt = Caps.back().pos + half_cap_dim;
+	      if (sign == 1)  pt = PnRDB::point(0,0);
+	      pt = pt - shift_final;
 
 	      coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
-	      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
+
+	      cout << "DAK: NEW4 " << pt << " " << coord.second << endl;
+	      assert (pt.y == coord.second);
+	      // What is x?
+	      cout << "DAK:NEW4p " << coord.first << " versus " << opt.x << endl;
+	      assert (opt.x == coord.first);
+	      coordP.y = pt.y;
+	      assert (coordP.x == coord.first);
+	      assert (coordP.y == coord.second);
+
+	      //	      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,1);
+	      addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,1);
                  
 	      n.start_conection_coord.push_back(coord);
+	      n.start_connection_pos.push_back (coordP);
 
 	      coord.second = pos_neg_offset - sign*(2*min_dis_y-shifting_y);
+	      shift = min_dis * 2 - shifting;
+	      shift_final = shift.scale (sign, -sign);
+	      
+	      PnRDB::point pt2 = Caps.back().pos + shift_final;
+
+	      cout << "DAK:NEW4n " << coord.second << " versus " << pt2.y << endl;
+	      assert (pt2.y = coord.second);
+	      assert (opt.x == coord.first);
+
+	      coordP.y = pt2.y;
+	      assert (coordP.x == coord.first);
+	      assert (coordP.y == coord.second);
+	      
 	      n.end_conection_coord.push_back(coord);
+	      n.end_connection_pos.push_back (coordP);
 	      n.Is_pin.push_back(0);
 	      n.metal.push_back(V_metal);
 
 	      n.start_conection_coord.push_back(coord);
+	      n.start_connection_pos.push_back (coordP);
 	      coord.second = Caps[mb.get_best_cap_index()].y- sign*(unit_cap_demension.second/2+mb.get_left_right()*min_dis_y-shifting_y);
+
+	      PnRDB::point lr (mb.get_left_right(), mb.get_left_right());
+	      PnRDB::point nsh = half_cap_dim + lr.scale (min_dis_x, min_dis_y) -shifting;
+	      PnRDB::point nsh_final = nsh.scale(sign, sign);
+	      
+	      PnRDB::point npt = Caps[mb.get_best_cap_index()].pos - nsh_final;
+
+	      cout << "DAK6: " << npt << " " << coord.second << endl;
+
+	      assert (npt.y == coord.second);
+	      assert (opt.x == coord.first);
+	      coordP.y = npt.y;
+	      assert (coordP.x == coord.first);
+	      assert (coordP.y == coord.second);
+	      
 	      n.end_conection_coord.push_back(coord);
+	      n.end_connection_pos.push_back (coordP);
 	      n.Is_pin.push_back(0);
 
 	      n.metal.push_back(V_metal);
 
+		  
 	      if(first_lock==0){
 		  first_coord.first = coord.first;
 		  first_coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
+		  cout << "DAK: NEW5 " << pt <<" "<< first_coord.second << endl;
+		  assert (opt.x == first_coord.first);
+		  assert (pt.y == first_coord.second);
+		  first_coordP.x = opt.x;
+		  first_coordP.y = pt.y;
 		  first_lock=1;
 	      }else{
 		  end_close=1;
 		  end_coord.first = coord.first;;
 		  end_coord.second = pos_neg_offset - sign*(min_dis_y*routed_trail+2*min_dis_y+grid_offset);
+		  cout << "DAK: NEW7 " << pt << " "<< end_coord.second << endl;
+		  assert (opt.x == end_coord.first);
+		  assert (pt.y == end_coord.second);
+		  end_coordP.x = opt.x;
+		  end_coordP.y = pt.y;
 	      }
 	  }
+	  cout << "DAK: DONE processing via " << l << endl;
       }
        //connect to each trail
       if(first_lock==1 and end_close==1){
 	  n.start_conection_coord.push_back(first_coord);
+	  n.start_connection_pos.push_back (first_coordP);
 	  n.end_conection_coord.push_back(end_coord);
+	  n.end_connection_pos.push_back (end_coordP);
 	  n.Is_pin.push_back(1);
 
 	  n.metal.push_back(H_metal);
@@ -1478,6 +2021,7 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
 				    int sign)
 {
   pair<double,double> coord;
+  PnRDB::point coordP;
 
   for(unsigned int i=0;i<n_array.size();i++){
       auto& n = n_array[i];
@@ -1496,14 +2040,35 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
 
 		      if( !((absy == 0 and absx == 1) or (absx == 0 and absy == 1))) continue;
 
+		      PnRDB::point half_cap_dim = unit_cap_dim / 2;
+		      PnRDB::point shift = half_cap_dim - shifting;
+		      PnRDB::point shift_final = shift.scale(sign, -sign);
+		      PnRDB::point pt = Caps[n.Set[j].cap_index[k]].pos + shift_final;
+
 		      coord.first = Caps[n.Set[j].cap_index[k]].x + sign*(unit_cap_demension.first/2-shifting_x);
-		      coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);  
-		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      coord.second = Caps[n.Set[j].cap_index[k]].y - sign*(unit_cap_demension.second/2-shifting_y);
+		      cout << "DAK NEW8: " << pt << " " << coord.first << " " << coord.second << endl;
+		      cout << "DAK NEW8sub: " << Caps[n.Set[j].cap_index[k]].pos << " " << shift_final << " " << shifting_x << " " << shift << " "<< shifting_y << endl;
+		      assert (pt.x == coord.first);
+		      assert (pt.y == coord.second);
+		      coordP = PnRDB::point(pt.x, pt.y);
+		      //		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
 
 		      n.start_conection_coord.push_back(coord);
+		      n.start_connection_pos.push_back (coordP);
+		      pt = Caps[n.Set[j].cap_index[index]].pos + shift_final;
 		      coord.first = Caps[n.Set[j].cap_index[index]].x + sign*(unit_cap_demension.first/2-shifting_x);
 		      coord.second = Caps[n.Set[j].cap_index[index]].y - sign*(unit_cap_demension.second/2-shifting_y);
+		      cout << "DAK NEW9: " << pt << " " << coord.first << " " << coord.second << endl;
+		      cout << "DAK NEW9sub: " << Caps[n.Set[j].cap_index[index]].pos << " " << shift_final << " " << shifting_x << " " << shift << " "<< shifting_y << endl;
+		      assert (pt.x == coord.first);
+		      assert (pt.y == coord.second);
+		      coordP = PnRDB::point(pt.x, pt.y);
+		      
 		      n.end_conection_coord.push_back(coord);
+		      n.end_connection_pos.push_back (coordP);
+		      
 		      n.Is_pin.push_back(0);
 
 		      if( absy==0 and absx==1) {
@@ -1511,7 +2076,8 @@ void Placer_Router_Cap::GetPhysicalInfo_common_net(
 		      }else if( absx == 0 and absy ==1) {
 			  n.metal.push_back(V_metal);
 		      }
-		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      //		      addVia(n,coord,drc_info,HV_via_metal,HV_via_metal_index,0);
+		      addVia(n,coordP,drc_info,HV_via_metal,HV_via_metal_index,0);
                    
 		      Caps[n.Set[j].cap_index[k]].access=1;
 		      index = 0;
@@ -1595,6 +2161,29 @@ void JSONExtractUit (string GDSData, double& unit);
 
 extern 
 void addOABoundaries (json& jsonElements, int width, int height);
+
+PnRDB::bbox
+Placer_Router_Cap::fillPathBBox (const PnRDB::point &start,
+				 const PnRDB::point &end,
+				 int half_width) {
+    cout << "DAKD: width=" << half_width << endl;
+    PnRDB::bbox box;
+    if (start.x == end.x) { // Vertical
+	int sy = start.y < end.y ? start.y : end.y;
+	int ey = start.y > end.y ? start.y : end.y;
+	cout << "DAK: Ver " << start.x << " " << sy << " " << end.x << " " << ey << endl;
+	box.LL = PnRDB::point (start.x - half_width, sy);
+	box.UR = PnRDB::point (end.x + half_width, ey);
+    } else {		    // Horizontal
+	int sx = start.x < end.x ? start.x : end.x;
+	int ex = start.x > end.x ? start.x : end.x;
+	cout << "DAK: Hor " << sx << " " << start.y << " " << ex << " " << end.y << endl;
+	box.LL = PnRDB::point (sx, start.y  - half_width);
+	box.UR = PnRDB::point (ex, end.y + half_width);
+    }
+    cout << "DAK about to shift " << box << " by " << offset << endl;
+    return box + offset;
+}
 
 void
 Placer_Router_Cap::fillPathBoundingBox (int *x, int* y,
@@ -1701,7 +2290,7 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	idx++;
     }
     //writing metals
-    int x[5], y[5];
+    //    int x[5], y[5];
 
     json jsonStr;
     jsonLib["time"] = JSON_TimeTime();
@@ -1715,27 +2304,34 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
     auto doit0 = [&](const auto& n_array) {
 	for(unsigned int i=0; i< n_array.size(); i++){//for each net
 	    const auto& n = n_array[i];
-	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
+	    for(unsigned int j=0; j< n.start_connection_pos.size();j++){ //for segment
 
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
-		fillPathBoundingBox (x, y, n.start_conection_coord[j],
-				     n.end_conection_coord[j], width);
+		// fillPathBoundingBox (x, y, n.start_conection_coord[j],
+		// 		     n.end_conection_coord[j], width);
 
-		for (int i = 0; i < 5; i++) {
-		    x[i] *= unitScale;
-		    y[i] *= unitScale;
-		}
+		auto box = fillPathBBox (n.start_connection_pos[j],
+					 n.end_connection_pos[j], width);
+		box = box * unitScale;
+
+		// for (int i = 0; i < 5; i++) {
+		//     x[i] *= unitScale;
+		//     y[i] *= unitScale;
+		// }
 
  		json bound;
 		bound["type"] = "boundary";
 		bound["datatype"] = 0;
-		json xy = json::array();
-		for (size_t i = 0; i < 5; i++) {
-		    xy.push_back (x[i]);
-		    xy.push_back (y[i]);
-		}
-		bound["xy"] = xy;
+		// json xy = json::array();
+		// for (size_t i = 0; i < 5; i++) {
+		//     xy.push_back (x[i]);
+		//     xy.push_back (y[i]);
+		// }
+		// cout << "DAK: JSON0" << endl;
+		json z = ToJsonAry(box);
+		bound["xy"] = z;
+		//		assert (xy == z);
 		bound["layer"] = getLayerMask (n.metal[j], drc_info);
 		jsonElements.push_back (bound);
 	    }   
@@ -1748,34 +2344,48 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	for (unsigned int i = 0; i < n_array.size(); i++) {
 	    const auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
-		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
-		int width = r.x;
-		x[0]=n.via[j].first - width+offset_x;
-		x[1]=n.via[j].first - width+offset_x;
-		x[2]=n.via[j].first + width+offset_x;
-		x[3]=n.via[j].first + width+offset_x;
-		x[4]=x[0];
-		width = r.y;
-		y[0]=n.via[j].second - width+offset_y;
-		y[1]=n.via[j].second + width+offset_y;
-		y[2]=n.via[j].second + width+offset_y;
-		y[3]=n.via[j].second - width+offset_y;
-		y[4]=y[0];
+		//		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
+		const auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect;
+		auto viaBox = PnRDB::bbox (viaRect[0], viaRect[1]);
+		auto viaPos = n.via_pos[j];
+
+		viaBox = viaBox + viaPos + offset;
+		    
+		// int width = r.x;
+		// x[0]=n.via[j].first - width+offset_x;
+		// x[1]=n.via[j].first - width+offset_x;
+		// x[2]=n.via[j].first + width+offset_x;
+		// x[3]=n.via[j].first + width+offset_x;
+		// x[4]=x[0];
+		// width = r.y;
+		// y[0]=n.via[j].second - width+offset_y;
+		// y[1]=n.via[j].second + width+offset_y;
+		// y[2]=n.via[j].second + width+offset_y;
+		// y[3]=n.via[j].second - width+offset_y;
+		// y[4]=y[0];
+
+		// cout << "DAK: JSON1 " << x << " " << y << " versus " << viaBox << endl;
+		// assert (viaBox.LL.x == x[0]);
+		// assert (viaBox.LL.y == y[0]);
+		// assert (viaBox.UR.x == x[2]);
+		// assert (viaBox.UR.y == y[2]);
         
-		for (int i = 0; i < 5; i++) {
-		    x[i] *= unitScale;
-		    y[i] *= unitScale;
-		}
+		// for (int i = 0; i < 5; i++) {
+		//     x[i] *= unitScale;
+		//     y[i] *= unitScale;
+		// }
     
 		json bound;
 		bound["type"] = "boundary";
 		bound["datatype"] = 0;
-		json xy = json::array();
-		for (size_t i = 0; i < 5; i++) {
-		    xy.push_back (x[i]);
-		    xy.push_back (y[i]);
-		}
-		bound["xy"] = xy;
+		// json xy = json::array();
+		// for (size_t i = 0; i < 5; i++) {
+		//     xy.push_back (x[i]);
+		//     xy.push_back (y[i]);
+		// }
+		json z = ToJsonAry (viaBox * unitScale);
+		bound["xy"] = z;
+		//		assert (xy == z);
 		bound["layer"] = getLayerViaMask (n.via_metal[j], drc_info);
 		jsonElements.push_back (bound);
 	    }
@@ -1795,12 +2405,23 @@ Placer_Router_Cap::WriteGDSJSON (const string& fpath, const string& unit_capacit
 	    cout << "ERROR: no block found to output from subcells" << endl;
 	sref["strans"] = 0;
 	sref["angle"] = 0.0;
-	x[0] = unitScale*(Caps[i].x-unit_cap_demension.first/2+offset_x);
-	y[0] = unitScale*(Caps[i].y-unit_cap_demension.second/2+offset_y);
-     
+	PnRDB::point half_cap_dim = unit_cap_dim / 2;
+	auto pt = Caps[i].pos;
+
+	pt = (pt - half_cap_dim + offset) * unitScale;
+	
+	// x[0] = unitScale*(Caps[i].x-unit_cap_demension.first/2+offset_x);
+	// y[0] = unitScale*(Caps[i].y-unit_cap_demension.second/2+offset_y);
+
+	// cout << "DAK: JSON3" << endl;
+	// assert (pt.x == x[0]);
+	// assert (pt.y == y[0]);
+	
 	json xy = json::array();
-	xy.push_back (x[0]);
-	xy.push_back (y[0]);
+	// xy.push_back (x[0]);
+	// xy.push_back (y[0]);
+	xy.push_back(pt.x);
+	xy.push_back(pt.y);
 	sref["xy"] = xy;
 	jsonElements.push_back (sref);
     }
@@ -1844,29 +2465,38 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     auto doit0 = [&](const auto& n_array) {
 	for(unsigned int i=0; i< n_array.size(); i++){//for each net
 	    const auto& n = n_array[i];
-	    for(unsigned int j=0; j< n.start_conection_coord.size();j++){ //for segment
+	    for(unsigned int j=0; j< n.start_connection_pos.size();j++){ //for segment
 
 		const auto& mi = drc_info.Metal_info.at(drc_info.Metalmap.at(n.metal[j]));
 		int width = mi.width/2;
-		fillPathBoundingBox (x, y, n.start_conection_coord[j],
-				     n.end_conection_coord[j], width);
+		// fillPathBoundingBox (x, y, n.start_conection_coord[j],
+		// 		     n.end_conection_coord[j], width);
 
-		for (int i = 0; i < 5; i++) {
-		    x[i] *= unitScale;
-		    y[i] *= unitScale;
-		}
+		auto box = fillPathBBox (n.start_connection_pos[j],
+					 n.end_connection_pos[j], width);
+
+		box = box * unitScale;
+
+		// for (int i = 0; i < 5; i++) {
+		//     x[i] *= unitScale;
+		//     y[i] *= unitScale;
+		// }
 
 		json term;
 		term["netName"] = n.name;
 		term["layer"] = n.metal[j];
- 
-		json xy = json::array();
-		xy.push_back( x[0]);
-		xy.push_back( y[0]);
-		xy.push_back( x[2]);
-		xy.push_back( y[2]);
 
-		term["rect"] = xy;
+		cout << "DAK: JSON5 " << x << " " << y << " versus " << box << endl;
+		//		json xy = json::array();
+		json z = ToJsonAry(box.LL, box.UR);
+		// xy.push_back( x[0]);
+		// xy.push_back( y[0]);
+		// xy.push_back( x[2]);
+		// xy.push_back( y[2]);
+
+		//		cout << "DAK: " << xy << " versus " << z << endl;
+		//		assert (z == xy);
+		term["rect"] = z;
 
 		terminals.push_back( term);
 	    }   
@@ -1879,38 +2509,52 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	for (unsigned int i = 0; i < n_array.size(); i++) {
 	    const auto& n = n_array[i];
 	    for (unsigned int j = 0; j < n.via.size(); j++) {//the size of via needs to be modified according to different PDK
-		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
-		int width = r.x;
-		x[0]=n.via[j].first - width+offset_x;
-		x[1]=n.via[j].first - width+offset_x;
-		x[2]=n.via[j].first + width+offset_x;
-		x[3]=n.via[j].first + width+offset_x;
-		x[4]=x[0];
-		width = r.y;
-		y[0]=n.via[j].second - width+offset_y;
-		y[1]=n.via[j].second + width+offset_y;
-		y[2]=n.via[j].second + width+offset_y;
-		y[3]=n.via[j].second - width+offset_y;
-		y[4]=y[0];
+		//		const auto& r = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect[1];
+		const auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect;
+		auto viaBox = PnRDB::bbox (viaRect[0], viaRect[1]);
+		auto viaPos = n.via_pos[j];
+
+		viaBox = viaBox + viaPos + offset;
+
+		// int width = r.x;
+		// x[0]=n.via[j].first - width+offset_x;
+		// x[1]=n.via[j].first - width+offset_x;
+		// x[2]=n.via[j].first + width+offset_x;
+		// x[3]=n.via[j].first + width+offset_x;
+		// x[4]=x[0];
+		// width = r.y;
+		// y[0]=n.via[j].second - width+offset_y;
+		// y[1]=n.via[j].second + width+offset_y;
+		// y[2]=n.via[j].second + width+offset_y;
+		// y[3]=n.via[j].second - width+offset_y;
+		// y[4]=y[0];
         
-		for (int i = 0; i < 5; i++) {
-		    x[i] *= unitScale;
-		    y[i] *= unitScale;
-		}
+		// cout << "DAK: JSON6 " << x << " " << y << " versus " << viaBox << endl;
+		// assert (viaBox.LL.x == x[0]);
+		// assert (viaBox.LL.y == y[0]);
+		// assert (viaBox.UR.x == x[2]);
+		// assert (viaBox.UR.y == y[2]);
+
+		// for (int i = 0; i < 5; i++) {
+		//     x[i] *= unitScale;
+		//     y[i] *= unitScale;
+		// }
     
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
-		//term["layer"] = n.via_metal[j];
-                //std::cout<<"net name and via name "<< n.name<<" "<<drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name<<std::endl;
-		json xy = json::array();
-		xy.push_back( x[0]);
-		xy.push_back( y[0]);
-		xy.push_back( x[2]);
-		xy.push_back( y[2]);
+		term["layer"] = n.via_metal[j];
 
-		term["rect"] = xy;
-		std::cout << "Printing via: " << i << "," << j << "," << term["netName"] << "," << term["layer"] << "," << term["rect"] << std::endl;
+		// json xy = json::array();
+		// xy.push_back( x[0]);
+		// xy.push_back( y[0]);
+		// xy.push_back( x[2]);
+		// xy.push_back( y[2]);
+
+		viaBox = viaBox * unitScale;
+		json z = ToJsonAry (viaBox.LL, viaBox.UR);
+		
+		//		assert (xy == z);
+		term["rect"] = z;
 
 		terminals.push_back( term);
 	    }
@@ -1923,9 +2567,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     json jsonUnit;
     {
 	std::ifstream jsonStream;
-	string fn = fpath+"/"+unit_capacitor+".json";
-	std::cout << "Reading JSON for unit_capacitor " << fn << std::endl;
-	jsonStream.open( fn);
+	jsonStream.open( fpath+"/"+unit_capacitor+".json");
 	jsonStream >> jsonUnit;
 	jsonStream.close();
     }
@@ -1934,11 +2576,21 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     std::cout << "Nets_neg.size(): " << Nets_neg.size() << std::endl;
 
     for (unsigned int i = 0; i < Caps.size(); i++) {
+	PnRDB::point half_cap_dim = unit_cap_dim / 2;
+	auto pt = Caps[i].pos;
+
+	pt = (pt - half_cap_dim + offset) * unitScale;
+	
 	int oX = unitScale*(Caps[i].x-unit_cap_demension.first/2+offset_x);
 	int oY = unitScale*(Caps[i].y-unit_cap_demension.second/2+offset_y);
 
+	cout << "DAK: JSON7" << endl;
+	assert (pt.x == oX);
+	assert (pt.y == oY);
+
 	int ni = Caps[i].net_index;
 
+	json unitTerminals = jsonUnit["terminals"];
 	for (unsigned int j = 0; j < jsonUnit["terminals"].size(); ++j) {
 	    const json& term0 = jsonUnit["terminals"][j];
 	    	
@@ -1980,11 +2632,22 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    term1["layer"] = term0["layer"];
 	    json r0 = term0["rect"];
 	    json r1 = json::array();
-	    r1.push_back(  r0[0].get<int>() + oX);
-	    r1.push_back(  r0[1].get<int>() + oY);
-	    r1.push_back(  r0[2].get<int>() + oX);
-	    r1.push_back(  r0[3].get<int>() + oY);
-	    term1["rect"] = r1;
+
+	    // DAK: Terminal position retrieved here -- confusing
+	    PnRDB::point p0 (r0[0].get<int>(), r0[1].get<int>());
+	    PnRDB::point p1 (r0[2].get<int>(), r0[3].get<int>());
+
+	    cout << "DAK: Before scale " << unit_cap_dim << endl;
+	    // PnRDB::point cap = unit_cap_dim; // Careful not to scale the unit_cap itself
+	    // cap.scale (unitScale, 0);
+	    json z = ToJsonAry (pt + p0, pt + p1);
+	    
+	    // r1.push_back( -r0[0].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    // r1.push_back(  r0[1].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    // r1.push_back( -r0[2].get<int>() + oX + 1*unitScale*unit_cap_demension.first);
+	    // r1.push_back(  r0[3].get<int>() + oY + 0*unitScale*unit_cap_demension.second);
+	    term1["rect"] = z;
+	    //	    assert (z == r1);
 	    terminals.push_back( term1);
 	}
     }
@@ -1994,7 +2657,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     {
 	std::ofstream jsonStream;
 	std::string fn = opath + top_name + ".json";
-	std::cout << "Writing JSON for cap array: " << fn << std::endl;
+	std::cout << "Writing JSON file: " << fn << std::endl;
 	jsonStream.open( fn);
 	jsonStream << std::setw(4) << jsonTop;
 	jsonStream.close();
@@ -2170,7 +2833,7 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
      fout<<" \'-\' with lines linestyle "<<i+2<<",";
   }
   fout<<endl<<endl;
-  
+
   for(unsigned int i=0;i<Caps.size();i++){
       fout<<"\t"<<Caps[i].x-unit_cap_demension.first/2<<"\t"<<Caps[i].y-unit_cap_demension.second/2<<endl;
       fout<<"\t"<<Caps[i].x-unit_cap_demension.first/2<<"\t"<<Caps[i].y+unit_cap_demension.second/2<<endl;
@@ -2186,10 +2849,10 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 // plot connection
 
   for(unsigned int i=0;i<Nets_pos.size();i++){
-     for(unsigned int j=0;j<Nets_pos[i].start_conection_coord.size();j++){
-     fout<<"\t"<<Nets_pos[i].start_conection_coord[j].first<<"\t"<<Nets_pos[i].start_conection_coord[j].second<<endl;
-fout<<"\t"<<Nets_pos[i].end_conection_coord[j].first<<"\t"<<Nets_pos[i].end_conection_coord[j].second<<endl;
-fout<<"\t"<<Nets_pos[i].start_conection_coord[j].first<<"\t"<<Nets_pos[i].start_conection_coord[j].second<<endl;
+     for(unsigned int j=0;j<Nets_pos[i].start_connection_pos.size();j++){
+     fout<<"\t"<<Nets_pos[i].start_connection_pos[j].x<<"\t"<<Nets_pos[i].start_connection_pos[j].y<<endl;
+fout<<"\t"<<Nets_pos[i].end_connection_pos[j].x<<"\t"<<Nets_pos[i].end_connection_pos[j].y<<endl;
+fout<<"\t"<<Nets_pos[i].start_connection_pos[j].x<<"\t"<<Nets_pos[i].start_connection_pos[j].y<<endl;
 fout<<endl; 
         }
      if(Nets_pos.size()>0){  
@@ -2199,10 +2862,10 @@ fout<<endl;
 
 
   for(unsigned int i=0;i<Nets_neg.size();i++){
-     for(unsigned int j=0;j<Nets_neg[i].start_conection_coord.size();j++){
-     fout<<"\t"<<Nets_neg[i].start_conection_coord[j].first<<"\t"<<Nets_neg[i].start_conection_coord[j].second<<endl;
-fout<<"\t"<<Nets_neg[i].end_conection_coord[j].first<<"\t"<<Nets_neg[i].end_conection_coord[j].second<<endl;
-fout<<"\t"<<Nets_neg[i].start_conection_coord[j].first<<"\t"<<Nets_neg[i].start_conection_coord[j].second<<endl;
+     for(unsigned int j=0;j<Nets_neg[i].start_connection_pos.size();j++){
+     fout<<"\t"<<Nets_neg[i].start_connection_pos[j].x<<"\t"<<Nets_neg[i].start_connection_pos[j].y<<endl;
+fout<<"\t"<<Nets_neg[i].end_connection_pos[j].x<<"\t"<<Nets_neg[i].end_connection_pos[j].y<<endl;
+fout<<"\t"<<Nets_neg[i].start_connection_pos[j].x<<"\t"<<Nets_neg[i].start_connection_pos[j].y<<endl;
 fout<<endl; 
         }
      if(Nets_neg.size()>0){  
@@ -2270,10 +2933,12 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
 	   const auto& b = p.originBox;
 	   if ( p.metal == "M1") {
 	       int c = (b.LL.x + b.UR.x)/2;
+	       assert (c == b.center().x);
 	       cout << "M1 LEF PIN " << c % 80 << endl;
 	   }
 	   if ( p.metal == "M2") {
 	       int c = (b.LL.y + b.UR.y)/2;
+	       assert (c == b.center().y);
 	       cout << "M2 LEF PIN " << c % 84 << endl;
 	       if ( c % 84 != 0) {
 		   cout << "WriteLef: M2 LEF PIN off grid: " << c << " " << c % 84 << endl;
