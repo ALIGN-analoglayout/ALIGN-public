@@ -342,15 +342,40 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         for(unsigned int p=0;p<tempsec.size();p++){ 
             temp_cccap.size.push_back(atoi(tempsec[p].c_str()));
            }
+
         if(temp.size()>9){
+            word=temp[8];
+            word=word.substr(1);
+            word=word.substr(0, word.length()-1);
+            if(word=="dummy"){
+              temp_cccap.dummy_flag=1;
+            }else{
+
+              temp_cccap.cap_ratio = 1;
+              tempsec=StringSplitbyChar(word, ',');
+              temp_cccap.cap_r = atoi(tempsec[0].c_str());
+              temp_cccap.cap_s = atoi(tempsec[1].c_str());
+
+            }
+            
+           }
+
+        if(temp.size()>11){
           temp_cccap.cap_ratio = 1;
-          word=temp[8];
+          word=temp[10];
           word=word.substr(1);
           word=word.substr(0, word.length()-1);
           //cout<<word<<endl;
-          tempsec=StringSplitbyChar(word, ',');
-          temp_cccap.cap_r = atoi(tempsec[0].c_str());
-          temp_cccap.cap_s = atoi(tempsec[1].c_str());
+          if(word=="dummy"){
+              temp_cccap.dummy_flag=1;
+            }else{
+
+              temp_cccap.cap_ratio = 1;
+              tempsec=StringSplitbyChar(word, ',');
+              temp_cccap.cap_r = atoi(tempsec[0].c_str());
+              temp_cccap.cap_s = atoi(tempsec[1].c_str());
+
+            }
           }
         //temp_cccap.size = temp[4]; //size?
         
