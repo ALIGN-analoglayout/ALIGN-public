@@ -136,6 +136,7 @@ class PnRdatabase
     void ReadDBJSON( PnRDB::hierNode& node, const string& filename) const;
     void WriteDBJSON( const PnRDB::hierNode& node, const string& filename) const;
     string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, const string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath);
+    void WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string& opath);
     void PrintHierNode(PnRDB::hierNode& node);
     void PrintContact(PnRDB::contact& cont);
     void PrintVia(PnRDB::Via& v);
