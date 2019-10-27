@@ -83,9 +83,6 @@ class Placer_Router_Cap
     struct cap{
       double index_x;
       double index_y;
-      //      double x;
-      //      double y;
-      // DAK: Replace x,y with this
       PnRDB::point pos;
       int net_index;
       int access;
@@ -95,21 +92,9 @@ class Placer_Router_Cap
     vector<int> metal_width;
     vector<int> metal_direct; // 1 is h, 0 is v
     vector<int> metal_distance_ss;
-    //    vector<int> via_width_x;
-    //    vector<int> via_width_y;
-    /* vector<int> via_cover_l; */
-    /* vector<int> via_cover_u; */
-    //    int shifting; // need modify this 
-    int shifting_x;
-    int shifting_y;
     PnRDB::point shifting;
-    //    int min_dis; //need modify this
-    int min_dis_x;
-    int min_dis_y;
     PnRDB::point min_dis;;
     vector<cap> Caps;
-    //    pair<int,int> unit_cap_demension;
-    ///    pair<int,int> span_distance;
     PnRDB::point unit_cap_dim;
     PnRDB::point span_dist;
     
@@ -123,13 +108,10 @@ class Placer_Router_Cap
     struct net{
       string name="";
       vector<int> cap_index;
-      //      vector<pair<double,double> > start_conection_coord;
-      //      vector<pair<double,double> > end_conection_coord;
       vector<PnRDB::point> start_connection_pos;
       vector<PnRDB::point> end_connection_pos;
       vector<int> Is_pin; //0 not pin, 1 pin
       vector<string> metal;
-      //      vector<pair<double,double> > via;
       vector<PnRDB::point> via_pos;
       vector<string> via_metal;
       vector<connection_set> Set;
