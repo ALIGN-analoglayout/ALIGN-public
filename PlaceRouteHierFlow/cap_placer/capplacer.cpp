@@ -351,8 +351,8 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 	}
     }
 
-    cout<<"step2.6"<<endl;  
-
+    cout<<"step2.6"<<endl;
+    
     if(dummy_flag){
 	auto not_on_border = [&]( const auto& c) {
 	    return c.index_x!=0 and c.index_x!=r-1 and c.index_y!=0 and c.index_y!=s-1;
@@ -360,7 +360,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
 
 	vector<pair<int,int> > temp_cap_pair_sequence;
 	for(unsigned int i=0;i<cap_pair_sequence.size();i++){
-	    int fi = cap_pair_sequence[i].first; 
+	    int fi = cap_pair_sequence[i].first;
 	    if( not_on_border(Caps[fi])) {
 		int si = cap_pair_sequence[i].second;
 		if(si==-1 or not_on_border( Caps[si])) {
@@ -419,8 +419,9 @@ fillContact (PnRDB::contact& con, const PnRDB::bbox& box) {
 class MinMax : public PnRDB::bbox {
 public:
     MinMax () : bbox (INT_MAX, INT_MAX, INT_MIN, INT_MIN){}
-    MinMax (const PnRDB::bbox &b) : bbox (b) {}
-    void update (const PnRDB::bbox& obox) { *this = unionBox(obox); }
+    explicit MinMax (const PnRDB::bbox &b) : bbox (b) {}
+    explicit MinMax (const MinMax &m) : bbox (m) {}
+    void update (const PnRDB::bbox& obox) { *this = MinMax(unionBox(obox)); }
 };
 
 void
@@ -524,25 +525,25 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     CheckOutBlock.orient = PnRDB::Omark(0); //need modify
     cout<<"Extract Data Step 5"<<endl;
 
-    std::set<std::string> internal_metal_layer;                       
-    std::vector<std::string> internal_metal;                          
-                                                                      
+    std::set<std::string> internal_metal_layer;
+    std::vector<std::string> internal_metal;
+    
     for (unsigned int i = 0; i < uc.interMetals.size(); i++)
-	internal_metal_layer.insert(uc.interMetals[i].metal);          
-                                                                      
+	internal_metal_layer.insert(uc.interMetals[i].metal);
+    
     for (auto it = internal_metal_layer.begin(); it != internal_metal_layer.end(); it++)
-	internal_metal.push_back(*it);                                               
-
+	internal_metal.push_back(*it);
+    
     for(unsigned int i=0;i < Caps.size(); i++){                                     
 	PnRDB::bbox cap_rect = PnRDB::bbox (unit_cap_dim) + (Caps[i].pos - unit_cap_dim / 2 + offset);
 	minmax.update (cap_rect);
                                                                                    
 	for(unsigned int j=0;j<internal_metal.size();j++){                           
-	    PnRDB::contact temp_contact;                                              
-	    temp_contact.metal = internal_metal[j];                                   
-	    //std::cout<<"Cap internal metal layer "<<temp_contact.metal<<std::endl;  
+	    PnRDB::contact temp_contact;
+	    temp_contact.metal = internal_metal[j];
+	    //std::cout<<"Cap internal metal layer "<<temp_contact.metal<<std::endl;
 	    fillContact (temp_contact, cap_rect);
-	    CheckOutBlock.interMetals.push_back(temp_contact);                        
+	    CheckOutBlock.interMetals.push_back(temp_contact);
 	}
     }
    
@@ -615,7 +616,7 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
 	minmax.update (PnRDB::bbox (unit_cap_dim) + (Caps[i].pos - (unit_cap_dim / 2)));
     }
 
-    const auto& vm = drc_info.Via_model[HV_via_index]; 
+    const auto& vm = drc_info.Via_model[HV_via_index];
     PnRDB::point covPnt = vm.ViaRect[0];;
 
     PnRDB::point cp2;
@@ -960,8 +961,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 	    for(int k=0;k<=r;k++){n_array[i].line_v.push_back(0);}
 	  
 	    const auto& rlv = n_array[i].routable_line_v;
-	    int sum=std::accumulate( rlv.begin(), rlv.end(), 0); 
-
+	    int sum=std::accumulate( rlv.begin(), rlv.end(), 0);
 	    if(sum>0){
 		//use the information of routable_line_v
 		int router_num=n_array.size();
@@ -1655,8 +1655,8 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 					 n.end_connection_pos[j], width) * unitScale;
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = n.name; //drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name; 
-		term["layer"] = mi.name; 
+		term["layer"] = n.name; //drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
+		term["layer"] = mi.name;
 		term["rect"] = ToJsonAry(box.LL, box.UR);
 
 		terminals.push_back( term);
@@ -1877,7 +1877,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			for(unsigned int k=0;k<va.blockPins.size();k++){
 			    for(unsigned int l=0;l<temp_block.blockPins.size();l++){
 				if(va.blockPins[k].name == temp_block.blockPins[l].name){    
-				    va.blockPins[k].pinContacts.clear();   
+				    va.blockPins[k].pinContacts.clear();
 				    for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
 					va.blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
 				    }
@@ -1955,8 +1955,8 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 	}
 	fout<<endl;
     }
-    if (Caps.size() > 0) fout<<"\nEOF"<<endl; 
-
+    if (Caps.size() > 0) fout<<"\nEOF"<<endl;
+    
     // plot connections
     auto plot_nets = [&] (auto& nets) {
 	for (unsigned int i = 0; i < nets.size(); i++) {
@@ -1966,7 +1966,7 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
 		fout << "\t" << spos.x << "\t" << spos.y << endl;
 		fout << "\t" << epos.x << "\t" << epos.y << endl;
 		fout << "\t" << spos.x << "\t" << spos.y << endl;
-		fout << endl; 
+		fout << endl;
 	    }
 	    if (nets.size() > 0) fout << "\nEOF" << endl;
 	}
@@ -2042,7 +2042,7 @@ void Placer_Router_Cap::WriteLef(const PnRDB::block &temp_block, const string& f
 	}
       
 	leffile<<"    END"<<std::endl;
-	leffile<<"  END "<<temp_block.blockPins[i].name<<std::endl;  
+	leffile<<"  END "<<temp_block.blockPins[i].name<<std::endl;
     }
 
     leffile<<"  OBS "<<std::endl;
