@@ -2015,8 +2015,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
   for(unsigned int i = 0;i<current_node.Blocks.size();i++){
 
-      //const auto& b = current_node.Blocks[i].instance.back();
-      PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
+      const auto& b = current_node.Blocks[i].instance.back();
+      //PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
       if(b.isLeaf == 1 and b.gdsFile ==""){
 	   //this block must be CC
