@@ -83,8 +83,8 @@ class Placer_Router_Cap
     struct cap{
       double index_x;
       double index_y;
-      double x;
-      double y;
+      //      double x;
+      //      double y;
       // DAK: Replace x,y with this
       PnRDB::point pos;
       int net_index;
@@ -95,10 +95,10 @@ class Placer_Router_Cap
     vector<int> metal_width;
     vector<int> metal_direct; // 1 is h, 0 is v
     vector<int> metal_distance_ss;
-    vector<int> via_width_x;
-    vector<int> via_width_y;
-    vector<int> via_cover_l;
-    vector<int> via_cover_u;
+    //    vector<int> via_width_x;
+    //    vector<int> via_width_y;
+    /* vector<int> via_cover_l; */
+    /* vector<int> via_cover_u; */
     //    int shifting; // need modify this 
     int shifting_x;
     int shifting_y;
@@ -108,8 +108,8 @@ class Placer_Router_Cap
     int min_dis_y;
     PnRDB::point min_dis;;
     vector<cap> Caps;
-    pair<int,int> unit_cap_demension;
-    pair<int,int> span_distance;
+    //    pair<int,int> unit_cap_demension;
+    ///    pair<int,int> span_distance;
     PnRDB::point unit_cap_dim;
     PnRDB::point span_dist;
     
@@ -123,13 +123,13 @@ class Placer_Router_Cap
     struct net{
       string name="";
       vector<int> cap_index;
-      vector<pair<double,double> > start_conection_coord;
-      vector<pair<double,double> > end_conection_coord;
+      //      vector<pair<double,double> > start_conection_coord;
+      //      vector<pair<double,double> > end_conection_coord;
       vector<PnRDB::point> start_connection_pos;
       vector<PnRDB::point> end_connection_pos;
       vector<int> Is_pin; //0 not pin, 1 pin
       vector<string> metal;
-      vector<pair<double,double> > via;
+      //      vector<pair<double,double> > via;
       vector<PnRDB::point> via_pos;
       vector<string> via_metal;
       vector<connection_set> Set;
@@ -179,14 +179,11 @@ class Placer_Router_Cap
     void PrintPlacer_Router_Cap(string outfile);
     void GetPhysicalInfo_router(const string& H_metal, int H_metal_index, const string& V_metal, int V_metal_index, const PnRDB::Drc_info &drc_info);
     void cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int V_metal, int HV_via_index);
-    PnRDB::bbox fillPathBBox (const PnRDB::point &start,
-							const PnRDB::point &end,
-							int width);
-    
-    void fillPathBoundingBox (int *x, int* y,
-			      const pair<double,double> &start,
-			      const pair<double,double> &end,
-			      double width);
+    PnRDB::bbox fillPathBBox (const PnRDB::point &start, const PnRDB::point &end, int width);
+    /* void fillPathBoundingBox (int *x, int* y, */
+    /* 			      const pair<double,double> &start, */
+    /* 			      const pair<double,double> &end, */
+    /* 			      double width); */
     void ExtractData (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::lefMacro &uc, const PnRDB::Drc_info & drc_info, int H_metal, int V_metal, int HV_via_metal_index, const string& opath);
     void WriteGDSJSON (const string& fpath, const string& unit_capacitor, const string& final_gds, const PnRDB::Drc_info & drc_info, const string& opath);
 
