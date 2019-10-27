@@ -62,19 +62,24 @@ struct point {
   point& operator -= (const point& other) { x -= other.x; y -= other.y; return *this; }
   
   bool operator == (const point& other) const { return x == other.x and y == other.y; }
-  point scale (const double scx, const double scy) const { return point (x * scx, y * scy); }
-  point& scale (const double scx, const double scy) { x *= scx; y *= scy; return *this; }
   point scale (const int scx, const int scy) const { return point (x * scx, y * scy); }
+  // DAK: We may want to remove these modifying operators:
+  //  Danger: they always gets invoked first (over const version) unless object is const
   point& scale (const int scx, const int scy) { x *= scx; y *= scy; return *this; }
   // Same as scale
   point int_scale_up (const int scx, const int scy) const { return point (x * scx, y * scy); }
   point& int_scale_up (const int scx, const int scy) { x *= scx; y *= scy; return *this; }
+  // Scale by a vector
+  point scale (const point& sc) const { return point (x * sc.x, y * sc.y); }
+  point& scale (const point& sc) { x *= sc.x; y *= sc.y; return *this; }
   // Divide versions
   point int_scale_down (const int scx, const int scy) const { return point (x / scx, y / scy); }
   point& int_scale_down (const int scx, const int scy) { x /= scx; y /= scy; return *this; }
   
-  point operator * (const double sc) const { return scale(sc, sc); }
-  point& operator *= (const double sc) { return scale(sc, sc); }
+  //  point operator * (const double sc) const { return scale(sc, sc); }
+  point operator * (const int sc) const { return scale(sc, sc); }
+  point& operator *= (const int sc) { return scale(sc, sc); }
+  //  point& operator *= (const double sc) { return scale(sc, sc); }
   point operator / (const double sc) const { return int_scale_down (sc, sc); }
   point& operator /= (const double sc) { return int_scale_down (sc, sc); }
 
@@ -98,10 +103,15 @@ struct bbox {
   bbox& shift (const PnRDB::point& p) { LL += p; UR += p; return *this; }
   bbox operator + (const PnRDB::point& p) const { return shift (p); }
   bbox& operator += (const PnRDB::point& p) { return shift (p); }
-  bbox scale (const double scx, const double scy) const { return bbox (LL * scx, UR * scy); }
-  bbox& scale (const double scx, const double scy) { LL *= scx; UR *= scy; return *this; }
-  bbox operator * (const double sc) const { return scale(sc, sc); }
+  bbox scale (const int scx, const int scy) const { return bbox (LL * scx, UR * scy); }
+  bbox& scale (const int scx, const int scy) { LL *= scx; UR *= scy; return *this; }
+  /* bbox scale (const double scx, const double scy) const { return bbox (LL * scx, UR * scy); } */
+  /* bbox& scale (const double scx, const double scy) { LL *= scx; UR *= scy; return *this; } */
+  //  bbox operator * (const double sc) const { return scale(sc, sc); }
+  //  bbox& operator *= (const int sc) { return scale(sc, sc); }
+  bbox operator * (const int sc) const { return scale(sc, sc); }
   bbox& operator *= (const double sc) { return scale(sc, sc); }
+  
   bbox int_scale_up (const int scx, const int scy) const { return bbox (LL * scx, UR * scy); }
   bbox& int_scale_up (const int scx, const int scy) { LL *= scx; UR *= scy; return *this; }
   bbox int_scale_dn (const int scx, const int scy) const { return bbox (LL / scx, UR / scy); }
