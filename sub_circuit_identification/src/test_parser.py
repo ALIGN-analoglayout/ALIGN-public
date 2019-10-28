@@ -55,7 +55,7 @@ def test_verilog_writer():
     SP_FP = open('ota_blocks.sp', 'w')
     available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS', 'CMC_PMOS_S', 'DCL_NMOS']
     for subckt in subckts:
-        for node, attr in subckt['lib_graph'].nodes(data=True):
+        for _, attr in subckt['lib_graph'].nodes(data=True):
             if 'values' in attr:
                 block_name = generate_lef(LEF_FP, attr['inst_type'], attr["values"],
                             available_cell_generator, unit_mos, unit_cap)

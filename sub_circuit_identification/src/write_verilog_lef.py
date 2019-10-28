@@ -211,7 +211,7 @@ def generate_lef(fp, name, values, available_block_lef,
         else: 
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        logging.info("Found cap with size: %s",size)                
+        logging.info("Found cap with size: %s %d",size,unit_size_cap )                
         block_name = name + '_' + size + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if not block_name in available_block_lef:
@@ -219,9 +219,9 @@ def generate_lef(fp, name, values, available_block_lef,
             fp.write("\n$PC fabric_" + name + ".py " +
                      " -b " + unit_block_name + 
                      " -n " + str(unit_size_cap))
-            fp.write("\n$PC fabric_" + name + ".py " +
-                     " -b " + block_name + 
-                     " -n " + str(size))
+            #fp.write("\n$PC fabric_" + name + ".py " +
+            #         " -b " + block_name + 
+            #         " -n " + str(size))
 
     elif name.lower().startswith('res_array_8'):
         if 'res' in values.keys():
