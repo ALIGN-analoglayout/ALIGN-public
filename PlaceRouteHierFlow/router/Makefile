@@ -11,7 +11,7 @@ all: depend unit_tests router.a
 	$(MAKE) -C FastSteinerUM
 
 depend:
-	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
+	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
 -include .depend
 
