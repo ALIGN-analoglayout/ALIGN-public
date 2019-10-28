@@ -82,7 +82,7 @@ class ParasiticExtraction():
             node1 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][0], x, y)
             node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
         elif self.canvas.pdk[layer]['Stack'][0] is None:
-            node1 = f'{terminal[0]}_{terminal[1]}'
+            node1 = f'{terminal[0].replace("/", "_")}_{terminal[1]}'
             node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
         else:
             raise NotImplementedError
@@ -170,3 +170,8 @@ class ParasiticExtraction():
                 fp.write( f"{nm} {t0} {t1} {v}f\n")
             else:
                 assert False
+
+        for inst, _ in self.canvas.rd.subinsts.items():
+            inst = inst.replace("/", "_")
+            fp.write( f"{inst}_0 {inst}_D {inst}_G {inst}_diff w={{width}} l={{length}} nfin={{nfin}}\n")
+            fp.write( f"{inst}_1 {inst}_diff {inst}_G {inst}_S w={{width}} l={{length}} nfin={{nfin}}\n")

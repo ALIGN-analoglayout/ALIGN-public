@@ -73,7 +73,7 @@ def test_fabric_pex(setup):
 
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens
-    assert len(c.rd.subinsts) == 2, c.rd.subinsts
+    assert len(c.rd.subinsts) == 8, c.rd.subinsts
 
     fn = 'tests/__dp_nmos.cir'
 
@@ -81,10 +81,6 @@ def test_fabric_pex(setup):
 
         fp.write("* Extracted network below *\n")
         c.pex.writePex(fp)
-
-        fp.write("\n* Stamping out all devices *\n")
-        for instance, v in c.rd.subinsts.items():
-            fp.write(f'{instance} NMOS ' + ' '.join( [f'{instance}_{pin}' for pin in v.keys()] ) + '\n' )
 
         toprint = ['GA_M3_1360_1212', 'GB_M3_1440_1296', 'S_M3_1120_960', 'DA_M3_1200_1044', 'DB_M3_1280_1128']
 
