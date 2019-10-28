@@ -9,17 +9,8 @@ import gen_gds_json
 import gen_lef
 import primitive
 
-def main( args):
-
-    logging.basicConfig(level=logging.getLevelName(args.logLevel))
-
-    fin = args.height
+def get_xcells_pattern( args):
     pattern = args.pattern
-    gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
-    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
-    gate = 2
-    y_cells = args.Ycells
-
     if any(args.primitive.startswith(f'{x}_') for x in ["Switch", "DCL"]):
         # Single transistor primitives
         x_cells = args.Xcells
@@ -32,6 +23,19 @@ def main( args):
         x_cells = 2*args.Xcells
         # TODO: Fix difficulties associated with CC patterns matching this condition
         pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
+    return x_cells, pattern
+
+def main( args):
+
+    logging.basicConfig(level=logging.getLevelName(args.logLevel))
+
+    fin = args.height
+    gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
+    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
+    gate = 2
+    y_cells = args.Ycells
+
+    x_cells, pattern = get_xcells_pattern(args)
 
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
