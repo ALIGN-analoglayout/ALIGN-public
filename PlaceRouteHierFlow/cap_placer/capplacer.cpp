@@ -1673,7 +1673,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		const auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect;
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = n.via_metal[j];
+		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 
 		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) * unitScale;
 		term["rect"] = ToJsonAry (viaBox.LL, viaBox.UR);
