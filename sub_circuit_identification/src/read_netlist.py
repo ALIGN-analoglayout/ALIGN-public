@@ -396,6 +396,7 @@ class SpiceParser:
                 flat_node = {
                     "inst": subckt_inst + node["inst"],
                     "inst_type": node["inst_type"],
+                    "real_inst_type": node["real_inst_type"],
                     "ports": modified_ports,
                     "values": values,
                     "edge_weight": node["edge_weight"]
@@ -424,6 +425,7 @@ class SpiceParser:
 
         logging.info("making hierarchical circuits: %s %s", subckt_name,inherited_param)
         for node in self.subckts[subckt_name]["nodes"]:
+            logging.info("node info: %s",node)
             values = node["values"].copy()
             if inherited_param:
                 self._resolve_param(inherited_param, node, values)   
@@ -433,6 +435,7 @@ class SpiceParser:
                 hier_node = {
                     "inst": node["inst"],
                     "inst_type": node["inst_type"],
+                    "real_inst_type": node["real_inst_type"],
                     "ports": node["ports"],
                     "values": values,
                     "edge_weight": node["edge_weight"],
@@ -463,6 +466,7 @@ class SpiceParser:
             logging.info("Reading node: %s", node)
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
+                                   real_inst_type=node["real_inst_type"],
                                    ports=node['ports'],
                                    edge_weight=node['edge_weight'],
                                    values=node['values'],
