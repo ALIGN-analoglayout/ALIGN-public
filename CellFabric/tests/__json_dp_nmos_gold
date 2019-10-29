@@ -2637,5 +2637,55 @@
         "D"
       ]
     }
-  ]
+  ],
+  "subinsts": {
+    "M1_X0_Y0": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M2_X1_Y0": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M2_X2_Y0": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M1_X3_Y0": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M2_X0_Y1": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M1_X1_Y1": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M1_X2_Y1": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    },
+    "M2_X3_Y1": {
+      "model": "NMOS",
+      "width": 0.0001,
+      "length": 0.001,
+      "nfin": 12
+    }
+  }
 }
