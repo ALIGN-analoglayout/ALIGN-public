@@ -1,5 +1,5 @@
 
-from collections import defaultdict, OrderedDict, namedtuple
+from collections import defaultdict, OrderedDict
 import pprint
 
 from .generators import *
