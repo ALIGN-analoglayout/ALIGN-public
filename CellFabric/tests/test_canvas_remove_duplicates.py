@@ -67,7 +67,7 @@ def test_metal_multi_terminal_open():
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 2, c.rd.opens
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
-    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']['pins']) == 2, c.rd.subinsts
 
 def test_metal_multi_terminal_connection():
     c = Canvas()
@@ -81,8 +81,8 @@ def test_metal_multi_terminal_connection():
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens
     assert len(c.rd.subinsts) == 2
-    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
-    assert len(c.rd.subinsts['M2']) == 1
+    assert len(c.rd.subinsts['M1']['pins']) == 2, c.rd.subinsts
+    assert len(c.rd.subinsts['M2']['pins']) == 1
 
 def test_via_connecta():
     c = Canvas()
@@ -219,7 +219,7 @@ def test_via_terminal_connection():
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
-    assert len(c.rd.subinsts['M1']) == 1
+    assert len(c.rd.subinsts['M1']['pins']) == 1
 
 def test_via_multi_terminal_connection():
     c = Canvas()
@@ -236,7 +236,7 @@ def test_via_multi_terminal_connection():
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
-    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']['pins']) == 2, c.rd.subinsts
 
 def test_via_multi_terminal_open():
     c = Canvas()
@@ -253,7 +253,7 @@ def test_via_multi_terminal_open():
     assert len(c.rd.shorts) == 0, c.rd.shorts
     assert len(c.rd.opens) == 2, c.rd.opens
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
-    assert len(c.rd.subinsts['M1']) == 2, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']['pins']) == 2, c.rd.subinsts
 
 def test_via_multi_terminal_short():
     c = Canvas()
@@ -267,6 +267,6 @@ def test_via_multi_terminal_short():
     c.layer_stack.append( ('via0', ('M1', None)))
     c.removeDuplicates()
     assert len(c.rd.subinsts) == 1, c.rd.subinsts
-    assert len(c.rd.subinsts['M1']) == 1, c.rd.subinsts
+    assert len(c.rd.subinsts['M1']['pins']) == 1, c.rd.subinsts
     assert len(c.rd.shorts) == 1, c.rd.shorts
     assert len(c.rd.opens) == 0, c.rd.opens

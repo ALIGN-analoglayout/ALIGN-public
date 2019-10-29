@@ -171,7 +171,7 @@ class ParasiticExtraction():
             else:
                 assert False
 
-        for inst, _ in self.canvas.rd.subinsts.items():
+        for inst in self.canvas.rd.subinsts:
             inst = inst.replace("/", "_")
             fp.write( f"{inst}_0 {inst}_D {inst}_G {inst}_diff w={{width}} l={{length}} nfin={{nfin}}\n")
             fp.write( f"{inst}_1 {inst}_diff {inst}_G {inst}_S w={{width}} l={{length}} nfin={{nfin}}\n")
