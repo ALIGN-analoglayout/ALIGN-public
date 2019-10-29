@@ -16,7 +16,7 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name
@@ -25,15 +25,9 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
     #       (Height may be okay since it defines UnitCellHeight)
     cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
 
-    d = {}
-
-    d["bbox"] = [0,0,hN.width,hN.height]
-
-    d["globalRoutes"] = []
-
-    d["globalRouteGrid"] = []
-
     terminals = []
+
+    subinsts = {}
 
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
               "M4": "m4", "M5": "m5", "M6": "m6"}
@@ -149,6 +143,9 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                     term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
                 if term['layer'] not in ["boundary"]:
                     terminals.append( term)
+
+            if 'subinsts' in d:
+                subinsts.update({f'{blk.name}/{nm}': v for nm, v in d['subinsts'].items()})
 
         if not checkOnly:
             for con in blk.interMetals:
@@ -266,6 +263,16 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
                 r = [ 0, y-2, hN.width, y+2]
                 terminals.append( { "netName": 'm2_bin', "layer": 'M2', "rect": r})
 
+    # Create viewer dictionary
+
+    d = {}
+
+    d["bbox"] = [0,0,hN.width,hN.height]
+
+    d["globalRoutes"] = []
+
+    d["globalRouteGrid"] = []
+
     d["terminals"] = terminals
 
     if checkOnly:
@@ -273,10 +280,9 @@ def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_g
         rational_scaling( d, div=2)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
-        cnv.gen_data(run_pex=False)
-
-#        with open('tmp.cir', 'wt') as fp:
-#            cnv.pex.writePex(fp)
+        for inst, parameters in subinsts.items():
+            cnv.subinsts[inst].parameters.update(parameters)
+        cnv.gen_data(run_pex=extract)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
