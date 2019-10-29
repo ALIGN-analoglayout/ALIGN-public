@@ -85,7 +85,7 @@ def fix_verilog(design_name):
                     for idx,cc_line in enumerate(lines):
                         seg = cc_line.strip().split()
                         inst_type = inst_type + '_' + seg[0].split('_')[1]
-                        pins = pins + " " + seg[3].replace('(',str(idx)+'(') + " " + seg[4].replace('(',str(idx)+'(')+"," 
+                        pins = pins + " " + seg[3].replace('(',str(idx+1)+'(') + " " + seg[4].replace('(',str(idx+1)+'(')+"," 
                     new_b = inst_type + " " + inst_name + " ("+ pins[0:-1] + " );\n"
                     new_verilog_fp.write(new_b)
             else:
