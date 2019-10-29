@@ -229,6 +229,9 @@ class Canvas:
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
 
+        if len(self.subinsts) > 0:
+            data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
+
         data['terminals'] = self.postprocessor.run(data['terminals'])
 
 
