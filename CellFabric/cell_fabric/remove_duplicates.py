@@ -1,11 +1,13 @@
 
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, OrderedDict, namedtuple
 import pprint
 
 from .generators import *
 
 import logging
 logger = logging.getLogger(__name__)
+
+LayoutDevice = namedtuple('LayoutDevice', ['parameters', 'pins'])
 
 class UnionFind:
     def __init__(self):
@@ -109,7 +111,7 @@ class RemoveDuplicates():
                     if nm is not None:
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
-                        self.subinsts[slr.terminal[0]]['pins'][slr.terminal[1]].add( None)
+                        self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
                         self.opens.append( slr.terminal)
 
         for (nm,s) in tbl.items():
@@ -133,7 +135,7 @@ class RemoveDuplicates():
         self.different_widths = []
         self.shorts = []
         self.opens = []
-        self.subinsts = defaultdict(lambda: {'pins': defaultdict(set)})
+        self.subinsts = defaultdict(lambda: LayoutDevice(defaultdict(None), defaultdict(set)))
 
         self.setup_layer_structures()
 
@@ -237,7 +239,7 @@ class RemoveDuplicates():
 
     def check_shorts_induced_by_terminals( self):
         for instance, v in self.subinsts.items():
-            for pin, slrs in v['pins'].items():
+            for pin, slrs in v.pins.items():
                 names = {x.root().netName for x in slrs}
                 if len(names) > 1:
                     self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
@@ -256,9 +258,9 @@ class RemoveDuplicates():
             return numshorts == len(self.shorts)
         else:
             if a.terminal is not None:
-                self.subinsts[a.terminal[0]]['pins'][a.terminal[1]].add( a)
+                self.subinsts[a.terminal[0]].pins[a.terminal[1]].add( a)
             if b.terminal is not None:
-                self.subinsts[b.terminal[0]]['pins'][b.terminal[1]].add( b)
+                self.subinsts[b.terminal[0]].pins[b.terminal[1]].add( b)
             return False
 
     def generate_rectangles( self):
