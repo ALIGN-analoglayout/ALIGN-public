@@ -173,5 +173,5 @@ class ParasiticExtraction():
 
         for inst, v in self.canvas.rd.subinsts.items():
             inst = inst.replace("/", "_")
-            fp.write( f"{inst}_0 net_{inst}_D net_{inst}_G net_{inst}_diff {v.parameters['model']} w={v.parameters['width']} l={v.parameters['length']} nfin={v.parameters['nfin']}\n")
-            fp.write( f"{inst}_1 net_{inst}_diff net_{inst}_G net_{inst}_S {v.parameters['model']} w={v.parameters['width']} l={v.parameters['length']} nfin={v.parameters['nfin']}\n")
+            fp.write( f"{inst}_0 net_{inst}_D net_{inst}_G net_{inst}_diff {'vdd!' if 'PMOS' in v.parameters['model'].upper() else 'gnd!'} {v.parameters['model']} w={v.parameters['width']} l={v.parameters['length']} nfin={v.parameters['nfin']}\n")
+            fp.write( f"{inst}_1 net_{inst}_diff net_{inst}_G net_{inst}_S {'vdd!' if 'PMOS' in v.parameters['model'].upper() else 'gnd!'} {v.parameters['model']} w={v.parameters['width']} l={v.parameters['length']} nfin={v.parameters['nfin']}\n")
