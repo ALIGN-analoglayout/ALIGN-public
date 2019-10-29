@@ -8,11 +8,13 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
     def _addMOS( self, x, y, name='M1', reflect=False):
 
-        def _connect_diffusion(i, name, pin):
+        fullname = f'{name}_X{x}_Y{y}'
+
+        def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
             self.addWire( self.LISD, None, None, i, (y, 1), (y+1, -1))
             for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
-                self.addVia( self.v0, f'{name}_X{x}_Y{y}:{pin}', None, i, (y, j))
+                self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
 
         # Draw FEOL Layers
@@ -32,15 +34,15 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
-        self.addVia( self.va, f'{name}_X{x}_Y{y}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
+        self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
         self._xpins[name]['G'].append(gate_x)
         # Connect Source & Drain
         if reflect:
-            _connect_diffusion(gate_x + 1, name, 'S') #S
-            _connect_diffusion(gate_x - 1, name, 'D') #D
+            _connect_diffusion(gate_x + 1, 'S') #S
+            _connect_diffusion(gate_x - 1, 'D') #D
         else:
-            _connect_diffusion(gate_x - 1, name, 'S') #S
-            _connect_diffusion(gate_x + 1, name, 'D') #D
+            _connect_diffusion(gate_x - 1, 'S') #S
+            _connect_diffusion(gate_x + 1, 'D') #D
 
     def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
