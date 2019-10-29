@@ -734,7 +734,7 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 	if(i<ki.size()){
 	    temp_net.name = cap_pin[i].second;
 	}else{
-	    temp_net.name = "dummy_gnd";
+	    temp_net.name = "dummy_gnd_PLUS";
 	}
 	Nets_pos.push_back(temp_net);
     }
@@ -950,7 +950,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
 	if(i!=Nets_pos.size()-1){
 	    Nets_neg[i].name = cap_pin[i].first;
 	}else{
-	    Nets_neg[i].name = "dummy_gnd";
+	    Nets_neg[i].name = "dummy_gnd_MINUS";
 	}
     }
   
@@ -1673,7 +1673,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		const auto& viaRect = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).ViaRect;
 		json term;
 		term["netName"] = n.name;
-		term["layer"] = n.via_metal[j];
+		term["layer"] = drc_info.Via_model.at(drc_info.Metalmap.at(n.via_metal[j])).name;
 
 		auto viaBox = (PnRDB::bbox (viaRect[0], viaRect[1]) + (n.via_pos[j] + offset)) * unitScale;
 		term["rect"] = ToJsonAry (viaBox.LL, viaBox.UR);
@@ -1718,7 +1718,13 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    json term1;
 
 	    if ( ni == -1) {
-		term1["netName"] = "dummy_gnd";
+		if ( term0["netName"] == "PLUS") {
+		    term1["netName"] = "dummy_gnd_PLUS";
+		} else if ( term0["netName"] == "MINUS") {
+		    term1["netName"] = "dummy_gnd_MINUS";
+		} else {
+		    continue;
+		}
 	    } else if ( Nets_pos.size() == 2) {
 		assert( Nets_neg.size() == 2);
 		assert( ni == 0);
