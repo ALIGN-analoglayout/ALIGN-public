@@ -27,7 +27,7 @@ def setup():
                'GA': [('M1', 'G')],
                'GB': [('M2', 'G')]}
 
-    uc.addNMOSArray( x_cells, y_cells, 1, Routing, width=1e-4, length=1e-3, nfin=fin)
+    uc.addNMOSArray( x_cells, y_cells, 1, Routing, model='NMOS', width=1e-4, length=1e-3, nfin=fin)
 
     return uc
 
