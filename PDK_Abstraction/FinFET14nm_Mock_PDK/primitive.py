@@ -6,9 +6,10 @@ logger = logging.getLogger(__name__)
 
 class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
-    def _addMOS( self, x, y, name='M1', reflect=False):
+    def _addMOS( self, x, y, name='M1', reflect=False, **parameters):
 
         fullname = f'{name}_X{x}_Y{y}'
+        self.subinsts[fullname].parameters.update(parameters)
 
         def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
@@ -91,7 +92,7 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
+    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
@@ -105,39 +106,39 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
-                    self._addMOS(x, y, names[0], False)
+                    self._addMOS(x, y, names[0], False, **parameters)
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
-                    self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2)
+                    self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2, **parameters)
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
-                    self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False)
+                    self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False, **parameters)
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
-                    self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
+                    self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, connections)
         self._connectNets(x_cells, y_cells)
 
-    def addNMOSArray( self, x_cells, y_cells, pattern, connections):
+    def addNMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
-        self._addMOSArray(x_cells, y_cells, pattern, connections)
+        self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
 
         #####   Nselect Placement   #####
         self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
 
-    def addPMOSArray( self, x_cells, y_cells, pattern, connections):
+    def addPMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
-        self._addMOSArray(x_cells, y_cells, pattern, connections)
+        self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
         self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)

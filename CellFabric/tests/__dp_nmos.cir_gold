@@ -2162,22 +2162,22 @@ r777 M1_X3_Y0_D DA_M1_2160_504 50
 r778 M2_X3_Y1_D DB_M1_2160_1092 50
 r779 M2_X3_Y1_D DB_M1_2160_1218 50
 r780 M2_X3_Y1_D DB_M1_2160_1344 50
-M1_X0_Y0_0 M1_X0_Y0_D M1_X0_Y0_G M1_X0_Y0_diff w={width} l={length} nfin={nfin}
-M1_X0_Y0_1 M1_X0_Y0_diff M1_X0_Y0_G M1_X0_Y0_S w={width} l={length} nfin={nfin}
-M2_X0_Y1_0 M2_X0_Y1_D M2_X0_Y1_G M2_X0_Y1_diff w={width} l={length} nfin={nfin}
-M2_X0_Y1_1 M2_X0_Y1_diff M2_X0_Y1_G M2_X0_Y1_S w={width} l={length} nfin={nfin}
-M2_X1_Y0_0 M2_X1_Y0_D M2_X1_Y0_G M2_X1_Y0_diff w={width} l={length} nfin={nfin}
-M2_X1_Y0_1 M2_X1_Y0_diff M2_X1_Y0_G M2_X1_Y0_S w={width} l={length} nfin={nfin}
-M1_X1_Y1_0 M1_X1_Y1_D M1_X1_Y1_G M1_X1_Y1_diff w={width} l={length} nfin={nfin}
-M1_X1_Y1_1 M1_X1_Y1_diff M1_X1_Y1_G M1_X1_Y1_S w={width} l={length} nfin={nfin}
-M2_X2_Y0_0 M2_X2_Y0_D M2_X2_Y0_G M2_X2_Y0_diff w={width} l={length} nfin={nfin}
-M2_X2_Y0_1 M2_X2_Y0_diff M2_X2_Y0_G M2_X2_Y0_S w={width} l={length} nfin={nfin}
-M1_X2_Y1_0 M1_X2_Y1_D M1_X2_Y1_G M1_X2_Y1_diff w={width} l={length} nfin={nfin}
-M1_X2_Y1_1 M1_X2_Y1_diff M1_X2_Y1_G M1_X2_Y1_S w={width} l={length} nfin={nfin}
-M1_X3_Y0_0 M1_X3_Y0_D M1_X3_Y0_G M1_X3_Y0_diff w={width} l={length} nfin={nfin}
-M1_X3_Y0_1 M1_X3_Y0_diff M1_X3_Y0_G M1_X3_Y0_S w={width} l={length} nfin={nfin}
-M2_X3_Y1_0 M2_X3_Y1_D M2_X3_Y1_G M2_X3_Y1_diff w={width} l={length} nfin={nfin}
-M2_X3_Y1_1 M2_X3_Y1_diff M2_X3_Y1_G M2_X3_Y1_S w={width} l={length} nfin={nfin}
+M1_X0_Y0_0 M1_X0_Y0_D M1_X0_Y0_G M1_X0_Y0_diff w=0.0001 l=0.001 nfin=24
+M1_X0_Y0_1 M1_X0_Y0_diff M1_X0_Y0_G M1_X0_Y0_S w=0.0001 l=0.001 nfin=24
+M2_X1_Y0_0 M2_X1_Y0_D M2_X1_Y0_G M2_X1_Y0_diff w=0.0001 l=0.001 nfin=24
+M2_X1_Y0_1 M2_X1_Y0_diff M2_X1_Y0_G M2_X1_Y0_S w=0.0001 l=0.001 nfin=24
+M2_X2_Y0_0 M2_X2_Y0_D M2_X2_Y0_G M2_X2_Y0_diff w=0.0001 l=0.001 nfin=24
+M2_X2_Y0_1 M2_X2_Y0_diff M2_X2_Y0_G M2_X2_Y0_S w=0.0001 l=0.001 nfin=24
+M1_X3_Y0_0 M1_X3_Y0_D M1_X3_Y0_G M1_X3_Y0_diff w=0.0001 l=0.001 nfin=24
+M1_X3_Y0_1 M1_X3_Y0_diff M1_X3_Y0_G M1_X3_Y0_S w=0.0001 l=0.001 nfin=24
+M2_X0_Y1_0 M2_X0_Y1_D M2_X0_Y1_G M2_X0_Y1_diff w=0.0001 l=0.001 nfin=24
+M2_X0_Y1_1 M2_X0_Y1_diff M2_X0_Y1_G M2_X0_Y1_S w=0.0001 l=0.001 nfin=24
+M1_X1_Y1_0 M1_X1_Y1_D M1_X1_Y1_G M1_X1_Y1_diff w=0.0001 l=0.001 nfin=24
+M1_X1_Y1_1 M1_X1_Y1_diff M1_X1_Y1_G M1_X1_Y1_S w=0.0001 l=0.001 nfin=24
+M1_X2_Y1_0 M1_X2_Y1_D M1_X2_Y1_G M1_X2_Y1_diff w=0.0001 l=0.001 nfin=24
+M1_X2_Y1_1 M1_X2_Y1_diff M1_X2_Y1_G M1_X2_Y1_S w=0.0001 l=0.001 nfin=24
+M2_X3_Y1_0 M2_X3_Y1_D M2_X3_Y1_G M2_X3_Y1_diff w=0.0001 l=0.001 nfin=24
+M2_X3_Y1_1 M2_X3_Y1_diff M2_X3_Y1_G M2_X3_Y1_S w=0.0001 l=0.001 nfin=24
 
 .op
 .print dc GA_M3_1360_1212 GB_M3_1440_1296 S_M3_1120_960 DA_M3_1200_1044 DB_M3_1280_1128

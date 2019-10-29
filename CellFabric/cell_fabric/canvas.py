@@ -20,6 +20,8 @@ import datetime
 import io
 import gdsconv.json2gds
 
+LayoutDevice = collections.namedtuple('LayoutDevice', ['parameters', 'pins'])
+
 class Canvas:
     def computeBbox( self):
         """Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly"""
@@ -188,6 +190,10 @@ class Canvas:
 
     def __init__( self, pdk=None, gds_layer_map=None):
         self.pdk = pdk
+        self.subinsts = collections.defaultdict(
+            lambda: LayoutDevice(
+                collections.defaultdict(None),
+                collections.defaultdict(set)))
         self.terminals = []
         self.postprocessor = PostProcessor()
         self.generators = collections.OrderedDict()

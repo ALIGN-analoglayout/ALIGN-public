@@ -7,8 +7,6 @@ from .generators import *
 import logging
 logger = logging.getLogger(__name__)
 
-LayoutDevice = namedtuple('LayoutDevice', ['parameters', 'pins'])
-
 class UnionFind:
     def __init__(self):
         self.dad = self
@@ -135,7 +133,7 @@ class RemoveDuplicates():
         self.different_widths = []
         self.shorts = []
         self.opens = []
-        self.subinsts = defaultdict(lambda: LayoutDevice(defaultdict(None), defaultdict(set)))
+        self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
 

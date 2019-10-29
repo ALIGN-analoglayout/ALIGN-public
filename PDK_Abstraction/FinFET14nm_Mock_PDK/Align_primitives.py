@@ -25,6 +25,17 @@ def get_xcells_pattern( args):
         pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
     return x_cells, pattern
 
+def get_parameters(args):
+    parameters = {}
+    if args.model is None:
+        parameters['model'] = 'NMOS' if 'NMOS' in args.primitive else 'PMOS'
+    else:
+        parameters['model'] = args.model
+    parameters['width'] = '{width}' if args.width is None else args.width
+    parameters['length'] = '{length}' if args.length is None else args.length
+    parameters['nfin'] = args.nfin
+    return parameters
+
 def main( args):
 
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
@@ -36,14 +47,15 @@ def main( args):
     y_cells = args.Ycells
 
     x_cells, pattern = get_xcells_pattern(args)
+    parameters = get_parameters(args)
 
     uc = primitive.PrimitiveGenerator( fin, finDummy, gate, gateDummy)
 
     def gen( pattern, routing):
         if 'NMOS' in args.primitive:
-            uc.addNMOSArray( x_cells, y_cells, pattern, routing)
+            uc.addNMOSArray( x_cells, y_cells, pattern, routing, **parameters)
         else:
-            uc.addPMOSArray( x_cells, y_cells, pattern, routing)
+            uc.addPMOSArray( x_cells, y_cells, pattern, routing, **parameters)
         return routing.keys()
 
     if args.primitive in ["Switch_NMOS", "Switch_PMOS"]:
@@ -114,6 +126,9 @@ def gen_parser():
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
+    parser.add_argument( "--model", type=str, required=False, default=None)
+    parser.add_argument( "--width", type=float, required=False, default=None)
+    parser.add_argument( "--length", type=float, required=False, default=None)
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 
