@@ -347,8 +347,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             word=temp[8];
             word=word.substr(1);
             word=word.substr(0, word.length()-1);
-            if(word=="dummy"){
-              temp_cccap.dummy_flag=1;
+            if(word=="nodummy"){
+              temp_cccap.dummy_flag=0;
             }else{
 
               temp_cccap.cap_ratio = 1;
@@ -366,8 +366,8 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
           word=word.substr(1);
           word=word.substr(0, word.length()-1);
           //cout<<word<<endl;
-          if(word=="dummy"){
-              temp_cccap.dummy_flag=1;
+          if(word=="nodummy"){
+              temp_cccap.dummy_flag=0;
             }else{
 
               temp_cccap.cap_ratio = 1;
