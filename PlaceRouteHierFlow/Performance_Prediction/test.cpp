@@ -40,7 +40,7 @@ int main()
     	cout << "Graph successfully read." << endl;
     }
 
-    string input_file = "../rc_OTA_asap7.csv";
+    string input_file = "../rc_OTA_asap7_norm.csv";
     ifstream inFile(input_file, ios::in);
     string lineStr;  
     float array[1000][60];
