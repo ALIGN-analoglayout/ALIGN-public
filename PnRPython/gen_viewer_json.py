@@ -15,6 +15,7 @@ def main():
     parser.add_argument( "-v", "--variant", type=str, default="0")
     parser.add_argument( "-c", "--check", action='store_true')
     parser.add_argument( "-m", "--markers", action='store_true')
+    parser.add_argument( "-e", "--extract", action='store_true')
     parser.add_argument( "-t", "--tag", type=str, default="")
     parser.add_argument( "-p", "--pdk", type=str, default="../PDK_Abstraction/FinFET14nm_Mock_PDK/")
     parser.add_argument( "-o", "--output_dir", type=str, default=".")
@@ -36,7 +37,7 @@ def main():
     with open(fn,"rt") as fp:
         hN = hierNode(json.load(fp))
 
-    res = gen_viewer_json( hN, pdk=args.pdk, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check, input_dir=args.input_dir, markers=args.markers)
+    res = gen_viewer_json( hN, pdk=args.pdk, draw_grid=args.draw_grid, global_route_json=args.global_route_json, json_dir=args.json_dir, checkOnly=args.check, extract=args.extract, input_dir=args.input_dir, markers=args.markers)
 
     if not args.check:
         d = res
@@ -49,6 +50,10 @@ def main():
         if args.markers:
             with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
                 json.dump( d, fp=fp, indent=2)
+        if args.extract:
+            print(args.output_dir + "/" + args.block + ".cir")
+            with open(args.output_dir + "/" + args.block + ".cir", 'wt') as fp:
+                cnv.pex.writePex(fp)
 
 if __name__ == "__main__":
     #cProfile.run("main()")

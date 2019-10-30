@@ -1,4 +1,4 @@
-from Align_primitives import main, gen_parser
+from Align_primitives import main, gen_parser, get_xcells_pattern
 
 def check_shorts( cmdlist):
     parser = gen_parser()
@@ -7,8 +7,8 @@ def check_shorts( cmdlist):
     assert len(uc.rd.shorts) == 0, uc.rd.shorts
     assert len(uc.rd.opens) == 0, uc.rd.opens
     assert len(uc.rd.different_widths) == 0, uc.rd.different_widths
-    assert 1 <= len(uc.rd.subinsts) <= 2, uc.rd.subinsts
-    assert all(len(x) == 3 for x in uc.rd.subinsts.values()), uc.rd.subinsts
+    assert len(uc.rd.subinsts) == get_xcells_pattern(args)[0] * args.Ycells, uc.rd.subinsts
+    assert all(len(x.pins) == 3 for x in uc.rd.subinsts.values()), uc.rd.subinsts
     assert len(uc.drc.errors) == 0, uc.drc.errors
 
 def build_test( p, *, n, X, Y):
