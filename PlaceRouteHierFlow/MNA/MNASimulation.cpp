@@ -1,4 +1,4 @@
-#include <MNASimulation.h>
+#include "MNASimulation.h"
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
 MNASimulation::MNASimulation(boost_matrix &out_R, boost_matrix &out_I){
@@ -38,15 +38,15 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           temp_point.index = -1;
           temp_point.x = temp_grid.metals[i].LinePoint[0].x;
           temp_point.y = temp_grid.metals[i].LinePoint[0].y;
-          auto frist_point = point_set.find(temp_point);
+          auto frist_point = temp_set.find(temp_point);
           int start_index = frist_point->index;
 
           temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
           temp_point.index = -1;
           temp_point.x = temp_grid.metals[i].LinePoint[1].x;
           temp_point.y = temp_grid.metals[i].LinePoint[1].y;
-          auto second_point = point_set.find(temp_point);
-          int end_index = end_point->index;
+          auto second_point = temp_set.find(temp_point);
+          int end_index = second_point->index;
 
           temp_device.device_type = MDB::R;
           temp_device.start_point_index = start_index;
@@ -83,14 +83,14 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
-       auto frist_point = point_set.find(temp_point);
+       auto frist_point = temp_set.find(temp_point);
        int start_index = frist_point->index;
        
        temp_point.metal_layer = drc_info.Via_model[model_index].UpperIdx;
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
-       auto second_point = point_set.find(temp_point);
+       auto second_point = temp_set.find(temp_point);
        int end_index = second_point->index;
 
        temp_device.device_type = MDB::R;
@@ -132,8 +132,8 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 
 }
 
-boost_matrix MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, std::vector<std::vector<double>> Vstore, std::vector<std::vector<double>> Rstore){
- int Rsize = 0;
+void MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, std::vector<std::vector<double>> Vstore, std::vector<std::vector<double>> Rstore){
+ int Rsize = 0, size;
  for (int i = 0; i < Rstore.size(); i++){
  if (Rsize < Rstore[i][0])
 	Rsize = Rstore[i][0];
@@ -141,24 +141,36 @@ boost_matrix MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, 
 	Rsize = Rstore[i][1];
 }
  size = Rsize + Vstore.size();
- boost_matrix I (size, 1);
- for (unsigned j = 0 ; j < I.size1 (); ++j)
- 	I (j, 1) = 0;
- 
+ boost_matrix II (size, 1);
+ for (unsigned j = 0 ; j < II.size1 (); ++j)
+ 	II (j, 0) = 0;
+
+
+if (Istore.size() > 0){
  for (int i = 0; i < Istore.size(); i++){
- int start = Istore[i][0];
- double value = Istore[i][2];
-	I (start, 1) = value;
+ 	 int start = Istore[i][0]-1;
+	 double value = Istore[i][2];
+		if (start >= 0 )
+		II (start, 0) = value;
+	}
 }
+
+ for (unsigned i = 0; i < II.size1 (); ++ i)
+        for (unsigned j = 0; j < II.size2 (); ++ j)
+            std::cout << "I(" << i <<"," << j <<")=" << II (i, j)  << std::endl;
+
 
  for (int i = 0; i < Vstore.size(); i++){
- int start = Vstore[i][0];
+ int start = Vstore[i][0] - 1;
  double value = Vstore[i][2];
- 	I (Rsize + start, 1) = value;
-}
+	if (start >= 0 )
+ 	II (Rsize + start, 0) = value;
 }
 
-boost_matrix MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Vstore){
+  I=II;
+}
+
+void MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Vstore){
  int size = 0, Rsize = 0;
  for (int i = 0; i < Rstore.size(); i++){
  if (size < Rstore[i][0])
@@ -166,45 +178,53 @@ boost_matrix MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, 
  else if (size < Rstore[i][1])
 	size = Rstore[i][1];
 }
+	//std::cout << "size=" << size << std::endl;
  Rsize = size;
  size += Vstore.size();
- boost_matrix R (size, size);
+ boost_matrix RR (size, size);
  // boost matrix start the index from 1
- for (unsigned i = 0; i < R.size1 (); ++ i)
-        for (unsigned j = 0; j < R.size2 (); ++ j)
-            R (i, j) = 0;
+ for (unsigned i = 0; i < RR.size1 (); ++ i)
+        for (unsigned j = 0; j < RR.size2 (); ++ j)
+            RR (i, j) = 0;
 
  for (int i = 0; i < Rstore.size(); i++){
  int col,row;
  double value;
- col = Rstore[i][0];
- row = Rstore[i][1];
+ col = Rstore[i][0]-1;
+ row = Rstore[i][1]-1;
  value = 1.0/Rstore[i][2];
- if (col > 0)
- R(col,col) += value;
- if (row > 0)
- R(row,row) += value;
- if (row > 0 && col > 0){
- 	R(col,row) -= value;
- 	R(row,col) -= value;
+ if (col >= 0)
+ RR(col,col) += value;
+ if (row >= 0)
+ RR(row,row) += value;
+ if (row >= 0 && col >= 0){
+ 	RR(col,row) -= value;
+ 	RR(row,col) -= value;
  	}
  }
  
+
+
  for (int i = 0; i <Vstore.size(); i++){
  int start,end;
- start = Vstore[i][0];
- end = Vstore[i][1];
- if (start > 0){
- R(start, Rsize + i + 1) = 1;
- R(Rsize + i + 1, start) = 1;
+ start = Vstore[i][0]-1;
+ end = Vstore[i][1]-1;
+ if (start >= 0){
+ RR(start, Rsize + i) = 1;
+ RR(Rsize + i, start) = 1;
  }
- if (end > 0){
- R(end, Rsize + i + 1) = -1;
- R(Rsize + i + 1, end) = -1;
+ if (end >= 0){
+ RR(end, Rsize + i) = -1;
+ RR(Rsize + i, end) = -1;
  }
- return R;
+ 
 }
 
+for (unsigned i = 0; i < RR.size1 (); ++ i)
+        for (unsigned j = 0; j < RR.size2 (); ++ j)
+            std::cout << "R(" << i <<"," << j <<")=" << RR (i, j)  << std::endl;
+
+ R = RR;
 }
 
 
@@ -212,7 +232,7 @@ int MNASimulation::SolveIR_drop(){
 
   R;
   I;
-
+	/*
 	boost_matrix R (3, 3);
     for (unsigned i = 0; i < R.size1 (); ++ i)
         for (unsigned j = 0; j < R.size2 (); ++ j)
@@ -227,22 +247,36 @@ int MNASimulation::SolveIR_drop(){
 	R(1,1)=(1,1);
 	R(2,2)=(1,1);
 
-	
-        boost_matrix V (3,3);
+
+	boost_matrix I (2, 1);
+	for (unsigned i = 0; i < I.size1(); ++i)
+		I (i, 0) = 0;
+	I (0, 0) = 2;
+/*
+	boost_matrix R (2, 2);
+	R(0,0) = 0.5;
+	R(0,1) = 1;
+	R(1,0) = 1;
+	R(1,1) = 0;*/
+	int width = R.size1();	
+        boost_matrix VV (width,1);
 	//V=prod(R,I);
 	bool flag = false;
-	boost_matrix inv (3,3);
+	boost_matrix inv (width,width);
+	std::cout << "R is " << R << std::endl;
 	inv = gjinverse(R,flag);
 	//std::cout<< inv << std::endl;
         //bool    init = true
    
 	//std::cout << R << std::endl;
-	V = prod (inv,I);
+	VV = prod (inv,I);
   //solve it;
   /*BOOST_UBLAS_INLINE M& axpy_prod (const matrix_expression< R > &out_R,
         const matrix_expression< I > &out_I,
         V &V,
         bool    init = true
     ) */
-	std::cout << V << std::endl;
+	V = VV;
+	std::cout << "V is " << V << std::endl;
+	return 0;
 }

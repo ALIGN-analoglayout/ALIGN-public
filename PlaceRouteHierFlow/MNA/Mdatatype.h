@@ -24,6 +24,7 @@ namespace MDB {
     int x;
     int y;
     int metal_layer;
+    mutable int index;
   };
 
   struct Compare_metal_point {
