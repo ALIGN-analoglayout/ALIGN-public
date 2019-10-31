@@ -1,6 +1,7 @@
 
 MAKE=make
 
+
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
@@ -32,7 +33,7 @@ LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_plac
 all: depend subsystem pnr_compiler unit_tests
 
 depend:
-	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
+	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
 
 -include .depend
 

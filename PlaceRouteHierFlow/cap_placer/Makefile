@@ -6,7 +6,7 @@ SRCS=$(OBJS:.o=.cpp)
 all: depend unit_tests cap_placer.a
 
 depend:
-	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
+	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
 
 -include .depend
 

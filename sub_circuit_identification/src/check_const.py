@@ -22,13 +22,13 @@ def check_const(sub_block_const):
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
         while line:
-            if line.startswith("CC") and len(line.strip().split(','))==5:
-                updated_cc = line.strip().split(',')
-                block1=updated_cc[0].strip().split('{')[-1]
-                block2=updated_cc[1].strip().split('}')[0]
-                cc_pair.update({block1: block2})
-                updated_cc[1] = updated_cc[0].strip()+'_'+updated_cc[1].strip()
-                line = line.replace(block1+','+block2,block1+'_'+block2)
+            if line.startswith("CC") and len(line.strip().split(','))>=5:
+                caps_in_line = line[line.find("{")+1:line.find("}")]
+                updated_cap = caps_in_line.replace(',','_')
+                cap_blocks = caps_in_line.strip().split(',')
+                for cap_block in cap_blocks:
+                    cc_pair.update({cap_block: updated_cap})
+                line = line.replace(caps_in_line,updated_cap)
             new_const_fp.write(line)
             line=const_fp.readline()
     
@@ -67,21 +67,27 @@ def fix_verilog(design_name):
                     while 'endmodule' not in line:
                         try:
                             block1= line.strip().split()[1]
-                            if block1 in cc_block.keys() or  block1 in cc_block.values():
-                                match_block.update({ block1: line})
+                            if block1 in cc_block.keys():
+                                if cc_block[block1] in match_block.keys():
+                                    match_block[cc_block[block1]].append(line)
+                                else:
+                                    match_block.update({cc_block[block1]: [line]})
+
                             else:
                                 new_verilog_fp.write(line)
                         except:
                             new_verilog_fp.write(line)
                         line = verilog_fp.readline()
-                for ele in cc_block.keys():
-                    assert ele in match_block, (ele, match_block)
-                    b1 = match_block[ele].strip().replace('(','1(').split()
-                    assert cc_block[ele] in match_block, (cc_block[ele], match_block)
-                    b2 = match_block[cc_block[ele]].strip().replace('(','2(').split()
-                    new_b = b1[0]+'_'+b2[0]+' '+ b1[1]+'_'+b2[1]+' ( '+' '.join(b1[3:-1])+', '+' '.join(b2[3:-1])+' );'
+                for new_block,lines in match_block.items():
+                    inst_type = "Cap"
+                    inst_name = new_block
+                    pins = ""
+                    for idx,cc_line in enumerate(lines):
+                        seg = cc_line.strip().split()
+                        inst_type = inst_type + '_' + seg[0].split('_')[1]
+                        pins = pins + " " + seg[3].replace('(',str(idx+1)+'(') + " " + seg[4].replace('(',str(idx+1)+'(')+"," 
+                    new_b = inst_type + " " + inst_name + " ("+ pins[0:-1] + " );\n"
                     new_verilog_fp.write(new_b)
-                    new_verilog_fp.write('\n')
             else:
                 new_verilog_fp.write(line)
                 line = verilog_fp.readline()

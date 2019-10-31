@@ -54,9 +54,9 @@ extern json JSON_TimeTime ();
 Placer_Router_Cap::Placer_Router_Cap(const string& opath, const string& fpath, PnRDB::hierNode & current_node,
 				     PnRDB::Drc_info &drc_info,
 				     const map<string, PnRDB::lefMacro> &lefData,
-				     bool aspect_ratio, int num_aspect){
+				     bool dummy_flag, bool aspect_ratio, int num_aspect){
     cout<<"Enter"<<endl;
-    Common_centroid_capacitor_aspect_ratio(opath, fpath, current_node, drc_info, lefData, aspect_ratio, num_aspect);
+    Common_centroid_capacitor_aspect_ratio(opath, fpath, current_node, drc_info, lefData, dummy_flag, aspect_ratio, num_aspect);
     cout<<"Out"<<endl;
 }
 
@@ -1778,13 +1778,13 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     }
 }
 
-void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool aspect_ratio, int num_aspect){ //if aspect_ratio 1, then do CC with different aspect_ratio; Else not.
+void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, bool aspect_ratio, int num_aspect){ //if aspect_ratio 1, then do CC with different aspect_ratio; Else not.
 
 
     for(unsigned int i = 0;i<current_node.Blocks.size();i++){
 
-	//const auto& b = current_node.Blocks[i].instance.back();
-	PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
+	const auto& b = current_node.Blocks[i].instance.back();
+	//PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
 	if(b.isLeaf == 1 and b.gdsFile ==""){
 	    //this block must be CC
@@ -1801,7 +1801,6 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		if(current_node.CC_Caps[j].CCCap_name == b.name){
 		    std::cout<<"core dump 0"<<std::endl;
 		    ki = current_node.CC_Caps[j].size;
-                    bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
