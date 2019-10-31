@@ -106,7 +106,8 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
 
 void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info){
 
-  std::vector<MDB::device> Power_Grid_devices;
+  std::vector<MDB::device> Power_Grid_devices_Vdd;
+  std::vector<MDB::device> Power_Grid_devices_Gnd;
   
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
 
@@ -123,11 +124,11 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
      }
 
 
-  ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices);
-  ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices);
+  ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices_Vdd);
+  ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices_Gnd);
 
-  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices);
-  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices);
+  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices_Vdd);
+  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices_Gnd);
 
 }
 
