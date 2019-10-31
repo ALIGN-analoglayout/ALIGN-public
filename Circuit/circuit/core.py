@@ -87,16 +87,21 @@ class Circuit(Graph):
 
     @property
     def elements(self):
-        return [x for x in self.nodes if isinstance(x, NTerminalDevice)]
+        return [v['instance'] for v in self.nodes.values() if 'instance' in v]
+
+    def element(self, name):
+        assert name in self.nodes and 'instance' in self.nodes[name]
+        return self.nodes[name]['instance']
 
     @property
     def nets(self):
-        return [x for x in self.nodes if isinstance(x, str)]
+        return [x for x, v in self.nodes.items() if 'instance' not in v]
 
     def add_element(self, element):
         assert isinstance(element, NTerminalDevice)
         for pin, net in element.pins.items():
-            self.add_edge(element, net, pin=pin)
+            self.add_edge(element.name, net, pin=pin)
+            self.nodes[element.name]['instance'] = element
         return element
 
 # WARNING: Do not add attributes/methods which may exist

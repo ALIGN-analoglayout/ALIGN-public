@@ -112,7 +112,7 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert 'DIFFAMP' in parser.library
     assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert type(parser.circuit.elements[0]).__name__ == 'DIFFAMP'
+    assert type(parser.circuit.element('X1')).__name__ == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')

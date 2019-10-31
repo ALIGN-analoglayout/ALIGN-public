@@ -51,6 +51,8 @@ def test_subckt_class():
     subckt.add_element(X1)
     subckt.add_element(X2)
     assert subckt.elements == [X1, X2]
+    assert subckt.element('X1') == X1
+    assert subckt.element('X2') == X2
     assert subckt.nets == ['net1', 'net2', 'net3']
     with pytest.raises(AssertionError):
         inst = subckt('X1')
@@ -62,6 +64,8 @@ def test_subckt_class():
     assert inst.pins == {'pin1': 'net10', 'pin2': 'net12'}
     assert inst.parameters == {'param1': 1, 'param2': 1e-3, 'param3': 1e-16, 'param4': 'hello'}
     assert inst.elements == [X1, X2]
+    assert inst.element('X1') == X1
+    assert inst.element('X2') == X2
     assert inst.nets == ['net1', 'net2', 'net3']
     with pytest.raises(AssertionError):
         inst.add_element(TwoTerminalDevice('X3', 'net1', 'net3'))
@@ -73,18 +77,20 @@ def test_circuit():
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'net1', 'net2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'net1', 'net2', 'net3'))
     assert ckt.elements == [X1, X2]
+    assert ckt.element('X1') == X1
+    assert ckt.element('X2') == X2
     assert ckt.nets == ['net1', 'net2', 'net3']
     # Advanced graphx functionality test
-    nodes = [X1, X2,
+    nodes = ['X1', 'X2',
              'net1', 'net2', 'net3']
     assert all(x in ckt.nodes for x in nodes)
     assert all(x in nodes for x in ckt.nodes)
     edges = [# X1, net, pin
-             (X1, 'net1', 'a'), (X1, 'net2', 'b'),
-             ('net1', X1, 'a'), ('net2', X1, 'b'),
+             ('X1', 'net1', 'a'), ('X1', 'net2', 'b'),
+             ('net1', 'X1', 'a'), ('net2', 'X1', 'b'),
              # X2, net, pin
-             (X2, 'net1', 'a'), (X2, 'net2', 'b'), (X2, 'net3', 'c'),
-             ('net1', X2, 'a'), ('net2', X2, 'b'), ('net3', X2, 'c')]
+             ('X2', 'net1', 'a'), ('X2', 'net2', 'b'), ('X2', 'net3', 'c'),
+             ('net1', 'X2', 'a'), ('net2', 'X2', 'b'), ('net3', 'X2', 'c')]
     assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
