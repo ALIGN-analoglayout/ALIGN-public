@@ -1,4 +1,4 @@
-from networkx import Graph
+import networkx
 
 class NTerminalDevice():
 
@@ -83,7 +83,7 @@ class NTerminalDevice():
                 return str
         return int if isinstance(val, int) or val.is_integer() else float
 
-class Circuit(Graph):
+class Circuit(networkx.Graph):
 
     @property
     def elements(self):
@@ -110,7 +110,7 @@ class Circuit(Graph):
 class _SubCircuitMetaClass(type):
 
     def __new__(cls, clsname, bases, attributedict):
-        if 'circuit' not in attributedict: attributedict.update({'_circuit': Circuit()})
+        if '_circuit' not in attributedict: attributedict.update({'_circuit': Circuit()})
         if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
         return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
 

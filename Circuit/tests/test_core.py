@@ -1,6 +1,6 @@
 import pytest
 
-from circuit.core import NTerminalDevice, Circuit, _SubCircuit, Model
+from circuit.core import NTerminalDevice, Circuit, SubCircuit, Model
 
 def test_n_terminal_device():
     inst = NTerminalDevice('X1')
@@ -8,8 +8,15 @@ def test_n_terminal_device():
     with pytest.raises(AssertionError):
         inst = NTerminalDevice('X2', 'net1')
 
-def test_2_terminal_device():
-    TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
+@pytest.fixture
+def TwoTerminalDevice():
+    return type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
+
+@pytest.fixture
+def ThreeTerminalDevice():
+    return type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
+
+def test_2_terminal_device(TwoTerminalDevice):
     with pytest.raises(AssertionError):
         inst = TwoTerminalDevice('X1')
     with pytest.raises(AssertionError):
@@ -23,29 +30,25 @@ def test_2_terminal_device():
     assert inst.pins == {'a': 'net1', 'b': 'net2'}
     assert inst.parameters == {}
 
-def test_3_terminal_device_w_parameter():
-    MyThreeTerminalDevice = type('MyThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
+def test_3_terminal_device_w_parameter(ThreeTerminalDevice):
     with pytest.raises(AssertionError):
-        inst = MyThreeTerminalDevice('X1')
+        inst = ThreeTerminalDevice('X1')
     with pytest.raises(AssertionError):
-        inst = MyThreeTerminalDevice('X1', 'net1')
+        inst = ThreeTerminalDevice('X1', 'net1')
     with pytest.raises(AssertionError):
-        inst = MyThreeTerminalDevice('X1', 'net1', 'net2')
+        inst = ThreeTerminalDevice('X1', 'net1', 'net2')
     with pytest.raises(AssertionError):
-        inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3', garbageparameter=2)
-    inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3')
+        inst = ThreeTerminalDevice('X1', 'net1', 'net2', 'net3', garbageparameter=2)
+    inst = ThreeTerminalDevice('X1', 'net1', 'net2', 'net3')
     assert inst.name == 'X1'
-    assert type(inst).__name__ == 'MyThreeTerminalDevice'
+    assert type(inst).__name__ == 'ThreeTerminalDevice'
     assert inst.pins == {'a': 'net1', 'b': 'net2', 'c': 'net3'}
     assert inst.parameters == {'myparameter': 1}
-    inst = MyThreeTerminalDevice('X1', 'net1', 'net2', 'net3', myparameter = 2)
+    inst = ThreeTerminalDevice('X1', 'net1', 'net2', 'net3', myparameter = 2)
     assert inst.parameters == {'myparameter': 2}
 
-def test_subckt_class():
-    TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
-    subckt = type('test_subckt', (_SubCircuit,), {'circuit': Circuit(),
-        '_pins': ['pin1', 'pin2'],
-        '_parameters': {'param1': (int, 1), 'param2': (float, 1e-3), 'param3': (float, 1e-16), 'param4': (str, "hello")}})
+def test_subckt_class(TwoTerminalDevice):
+    subckt = SubCircuit('test_subckt', 'pin1', 'pin2', param1=1, param2=1e-3, param3=1e-16, param4="hello")
     X1 = TwoTerminalDevice('X1', 'net1', 'net2')
     X2 = TwoTerminalDevice('X2', 'net2', 'net3')
     subckt.add_element(X1)
@@ -70,9 +73,7 @@ def test_subckt_class():
     with pytest.raises(AssertionError):
         inst.add_element(TwoTerminalDevice('X3', 'net1', 'net3'))
 
-def test_circuit():
-    TwoTerminalDevice = type('TwoTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b']})
-    ThreeTerminalDevice = type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c']})
+def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
     ckt = Circuit()
     X1 = ckt.add_element(TwoTerminalDevice('X1', 'net1', 'net2'))
     X2 = ckt.add_element(ThreeTerminalDevice('X2', 'net1', 'net2', 'net3'))
@@ -94,8 +95,7 @@ def test_circuit():
     assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
-def test_model():
-    ThreeTerminalDevice = type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
+def test_model(ThreeTerminalDevice):
     CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
     with pytest.raises(AssertionError):
         inst = CustomDevice('X1', 'net01', 'net02', 'net03', garbage=2)
