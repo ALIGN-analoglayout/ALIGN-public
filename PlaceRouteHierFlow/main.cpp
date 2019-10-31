@@ -177,7 +177,7 @@ int main(int argc, char** argv ){
     
     save_state( DB, current_node, -1, opath, ".pre_prc", "Placer_Router_Cap", skip_saving_state);
     DB.AddingPowerPins(current_node);
-    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
+    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
     save_state( DB, current_node, -1, opath, ".post_prc", "Placer_Router_Cap", skip_saving_state);
 
     std::cout<<"Checkpoint : before place"<<std::endl;

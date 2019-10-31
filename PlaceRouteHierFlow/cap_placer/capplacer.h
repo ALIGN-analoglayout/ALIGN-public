@@ -152,7 +152,7 @@ class Placer_Router_Cap
 
     void Placer_Router_Cap_clean();
     void Placer_Router_Cap_function(vector<int> & ki, vector<pair<string, string> > &cap_pin, const string& fpath, const string& unit_capacitor, const string& final_gds, bool cap_ratio, int cap_r, int cap_s, const PnRDB::Drc_info& drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, const string& opath);
-    Placer_Router_Cap(const string& opath, const string& fpath, PnRDB::hierNode & current_node, PnRDB::Drc_info &drc_info, const map<string, PnRDB::lefMacro> &lefData, bool dummy_flag, bool aspect_ratio, int num_aspect);
+    Placer_Router_Cap(const string& opath, const string& fpath, PnRDB::hierNode & current_node, PnRDB::Drc_info &drc_info, const map<string, PnRDB::lefMacro> &lefData, bool aspect_ratio, int num_aspect);
 
     void initial_net_pair_sequence(vector<int> & ki, vector<pair<string, string> > &cap_pin);
     void perturbation_pair_sequence();
@@ -173,7 +173,7 @@ class Placer_Router_Cap
 
     PnRDB::block CheckoutData(void){return CheckOutBlock;};
     void found_neighbor(int j, net& pos, connection_set& temp_set);
-    void Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool dummy_flag, bool aspect_ratio, int num_aspect);
+    void Common_centroid_capacitor_aspect_ratio(const string& opath, const string& fpath, PnRDB::hierNode& current_node, PnRDB::Drc_info & drc_info, const map<string, PnRDB::lefMacro>& lefData, bool aspect_ratio, int num_aspect);
     void addVia(net &temp_net, pair<double,double> &coord, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
     void addVia(net &temp_net, PnRDB::point &pt, const PnRDB::Drc_info &drc_info, const string& HV_via_metal, int HV_via_metal_index, int isPin);
     
