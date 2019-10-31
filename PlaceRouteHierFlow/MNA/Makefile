@@ -1,16 +1,17 @@
-BOOST_LP?=/usr/local
-CC=g++ -w -Wall -std=c++11 -g -O3 -pthread
-CC2=$(CC) -I$(BOOST_LP) 
-#CC=g++ -w -Wall -std=c++11 -g -DRFLAG
-SOURCE=./router
+# Need CXX and CXXFLAGS
 
-#all: MNASimulation.o
+OBJS=MNASimulation.o
+SRCS=$(OBJS:.o=.cpp)
 
-main: main.o MNASimulation.o 
-	$(CC2) main.o MNASimulation.o  -o main
-main.o: main.cpp MNASimulation.h
-	$(CC2) -c main.cpp
-MNASimulation.o: MNASimulation.cpp MNASimulation.h 
-	$(CC2) -c MNASimulation.cpp
+all: depend MNA.a
+
+depend:
+	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) > .depend
+
+-include .depend
+
+MNA.a: $(OBJS)
+	ar -r -o $@ $^
+
 clean:		
-		/bin/rm -f *.o 
+	/bin/rm -f *.o

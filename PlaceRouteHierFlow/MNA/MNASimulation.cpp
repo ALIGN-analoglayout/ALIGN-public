@@ -137,7 +137,7 @@ void MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, std::vec
  for (int i = 0; i < Rstore.size(); i++){
  if (Rsize < Rstore[i][0])
 	Rsize = Rstore[i][0];
- else if (Rsize < Rstore[i][1])
+ if (Rsize < Rstore[i][1])
 	Rsize = Rstore[i][1];
 }
  size = Rsize + Vstore.size();
@@ -164,7 +164,7 @@ if (Istore.size() > 0){
  int start = Vstore[i][0] - 1;
  double value = Vstore[i][2];
 	if (start >= 0 )
- 	II (Rsize + start, 0) = value;
+ 	II (Rsize + i, 0) = value;
 }
 
   I=II;
@@ -175,7 +175,7 @@ void MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, std::vec
  for (int i = 0; i < Rstore.size(); i++){
  if (size < Rstore[i][0])
 	size = Rstore[i][0];
- else if (size < Rstore[i][1])
+ if (size < Rstore[i][1])
 	size = Rstore[i][1];
 }
 	//std::cout << "size=" << size << std::endl;
