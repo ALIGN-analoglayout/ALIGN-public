@@ -8,6 +8,23 @@ this->R = out_R;
 this->I = out_I;
 ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
 
+std::cout<<"Vdd Devices"<<std::endl;
+Print_Devices(Power_Grid_devices_Vdd);
+std::cout<<"Gnd Devices"<<std::endl;
+Print_Devices(Power_Grid_devices_Gnd);
+
+//++
+
+};
+
+void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
+
+  for(int i=0;i<temp_devices.size();i++){
+
+     std::cout<<"devices type "<<temp_devices[i].device_type<<" point 1 "<<temp_devices[i].start_point_index<<" point 2 "<<temp_devices[i].end_point_index<<" value "<< temp_devices[i].value <<std::endl;
+
+  }
+
 };
 
 void MNASimulation::ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set){
