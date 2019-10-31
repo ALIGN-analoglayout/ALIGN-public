@@ -1,12 +1,14 @@
 #include "MNASimulation.h"
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
-MNASimulation::MNASimulation(boost_matrix &out_R, boost_matrix &out_I){
+MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info){
 
+boost_matrix out_R, out_I; 
 this->R = out_R;
 this->I = out_I;
+ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
 
-}
+};
 
 void MNASimulation::ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set){
 
@@ -104,10 +106,8 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
 
 };
 
-void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info){
+void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices_Vdd, std::vector<MDB::device> &Power_Grid_devices_Gnd){
 
-  std::vector<MDB::device> Power_Grid_devices_Vdd;
-  std::vector<MDB::device> Power_Grid_devices_Gnd;
   
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
 
@@ -129,6 +129,9 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 
   ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices_Vdd);
   ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices_Gnd);
+
+  std::cout<<"Vdd device number "<<Power_Grid_devices_Vdd.size()<<std::endl;
+  std::cout<<"Gnd device number "<<Power_Grid_devices_Gnd.size()<<std::endl;
 
 }
 
@@ -230,8 +233,6 @@ for (unsigned i = 0; i < RR.size1 (); ++ i)
 
 int MNASimulation::SolveIR_drop(){
 
-  R;
-  I;
 	/*
 	boost_matrix R (3, 3);
     for (unsigned i = 0; i < R.size1 (); ++ i)

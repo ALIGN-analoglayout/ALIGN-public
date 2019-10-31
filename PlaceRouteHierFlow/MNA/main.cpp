@@ -6,7 +6,7 @@ int main(){
   std::vector<std::vector<double>> Rstore,Istore,Vstore;
 
   Rstore.push_back(std::vector<double>{1,2,1});
-  Istore.push_back(std::vector<double>{1,0,0.5});
+  Istore.push_back(std::vector<double>{0,1,0.5});
   Vstore.push_back(std::vector<double>{2,0,1});
 
 

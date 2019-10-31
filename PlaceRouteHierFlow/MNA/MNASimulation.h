@@ -33,11 +33,14 @@ class MNASimulation {
 	boost_matrix I;
 	boost_matrix V;
 
+	std::vector<MDB::device> Power_Grid_devices_Vdd;
+	std::vector<MDB::device> Power_Grid_devices_Gnd;
+
 
 
   public:
       //MNASimulation(std::vector<std::vector<double>> &out_R, std::vector<double>& out_I);
-      MNASimulation(boost_matrix &out_R, boost_matrix &out_I);
+      MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info);
       void ExtractPowerGrid();
       void ConstructI(std::vector<std::vector<double>> Istore, std::vector<std::vector<double>> Vstore, std::vector<std::vector<double>> Rstore);
       void ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Vstore);
@@ -48,7 +51,7 @@ class MNASimulation {
       void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set);
       void ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices);
       void ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices);
-      void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info);
+      void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices_Vdd, std::vector<MDB::device> &Power_Grid_devices_Gnd);
 
 };
 

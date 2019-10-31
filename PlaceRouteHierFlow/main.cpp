@@ -5,6 +5,7 @@
 #include "./placer/Placer.h"
 #include "./router/Router.h"
 #include "./cap_placer/capplacer.h"
+#include "./MNA/MNASimulation.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
@@ -88,6 +89,11 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory);
+    
+    std::cout<<"Start MNA "<<std::endl;
+    MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
+    std::cout<<"End MNA "<<std::endl;
+
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
