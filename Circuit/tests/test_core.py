@@ -103,3 +103,31 @@ def test_model(ThreeTerminalDevice):
     assert type(inst).__name__ == 'CustomDevice'
     assert inst.pins == {'a': 'net01', 'b': 'net02', 'c': 'net03'}
     assert inst.parameters == {'myparameter': 2, 'newparam': 2, 'newparam2': 'hello'}
+
+def test_find_match(ThreeTerminalDevice, TwoTerminalDevice):
+    ckt = Circuit()
+    CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
+    ckt.add_element(CustomDevice('X1', 'net1', 'in1', 'net01'))
+    ckt.add_element(CustomDevice('X2', 'net2', 'in2', 'net02'))
+    ckt.add_element(CustomDevice('X3', 'net3', 'net1', 'net1'))
+    ckt.add_element(CustomDevice('X4', 'net3', 'net1', 'net2'))
+    ckt.add_element(TwoTerminalDevice('X5', 'net01', 'net00'))
+    ckt.add_element(TwoTerminalDevice('X6', 'net02', 'net00'))
+    ckt.add_element(TwoTerminalDevice('X7', 'net3', 'net03'))
+    # Validate true match
+    subckt = SubCircuit('test_subckt', 'pin1', 'pin2', 'pin3')
+    subckt.add_element(ThreeTerminalDevice('X1', 'pin3', 'pin1', 'pin1'))
+    subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2'))
+    assert len(ckt.find_matches(subckt)) == 1
+    assert ckt.find_matches(subckt)[0] == {'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}
+    # Validate false match
+    subckt2 = SubCircuit('test_subckt2', 'pin1', 'pin2', 'pin3', 'pin4', 'pin5')
+    subckt2.add_element(ThreeTerminalDevice('X1', 'pin1', 'pin3', 'pin4'))
+    subckt2.add_element(ThreeTerminalDevice('X2', 'pin2', 'pin3', 'pin5'))
+    assert len(ckt.find_matches(subckt2)) == 0
+    # Validate overtly aggressive match. 3 of 4 matches are probably useless from a circuit standpoint
+    subckt3 = SubCircuit('test_subckt3', 'pin1', 'pin2', 'pin3', 'pin4')
+    subckt3.add_element(TwoTerminalDevice('X1', 'pin1', 'pin2'))
+    subckt3.add_element(TwoTerminalDevice('X2', 'pin3', 'pin4'))
+    assert len(ckt.find_matches(subckt3)) == 4
+

@@ -104,6 +104,15 @@ class Circuit(networkx.Graph):
             self.nodes[element.name]['instance'] = element
         return element
 
+    def find_matches(self, subckt):
+        assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
+        matcher = networkx.algorithms.isomorphism.GraphMatcher(
+            self,
+            subckt._circuit,
+            node_match=lambda x, y: issubclass(type(x.get('instance')), type(y.get('instance'))),
+            edge_match=lambda x, y: x.get('pin') == y.get('pin'))
+        return list(matcher.subgraph_isomorphisms_iter())
+
 # WARNING: Do not add attributes/methods which may exist
 #          in Circuit to _SubCircuitMetaClass/_SubCircuit
 
