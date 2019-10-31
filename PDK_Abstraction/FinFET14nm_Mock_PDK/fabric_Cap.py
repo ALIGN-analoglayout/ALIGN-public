@@ -106,7 +106,8 @@ class UnitCell(CanvasCap):
             self.addVia( self.v2_nx, net, None, grid_x, grid_y)
 
         pin = 'PLUS'
-        self.addWire( self.m1, 'PLUS', pin, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        # Don't port m1 per Yaguang instructions
+        self.addWire( self.m1, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
         # don't port m3 (or port one or the other)
         self.addWire( self.m3, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
 
@@ -164,7 +165,7 @@ def main( args):
     print( "bbox", uc.bbox)
 
     with open(args.block_name + '.json', "wt") as fp:
-        uc.writeJSON( fp, draw_grid=True)
+        uc.writeJSON( fp, draw_grid=False)
 
     cell_pin = ["PLUS", "MINUS"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)

@@ -396,6 +396,7 @@ class SpiceParser:
                 flat_node = {
                     "inst": subckt_inst + node["inst"],
                     "inst_type": node["inst_type"],
+                    "real_inst_type": node["real_inst_type"],
                     "ports": modified_ports,
                     "values": values,
                     "edge_weight": node["edge_weight"]
@@ -424,6 +425,7 @@ class SpiceParser:
 
         logging.info("making hierarchical circuits: %s %s", subckt_name,inherited_param)
         for node in self.subckts[subckt_name]["nodes"]:
+            logging.info("node info: %s",node)
             values = node["values"].copy()
             if inherited_param:
                 self._resolve_param(inherited_param, node, values)   
@@ -433,6 +435,7 @@ class SpiceParser:
                 hier_node = {
                     "inst": node["inst"],
                     "inst_type": node["inst_type"],
+                    "real_inst_type": node["real_inst_type"],
                     "ports": node["ports"],
                     "values": values,
                     "edge_weight": node["edge_weight"],
@@ -463,6 +466,7 @@ class SpiceParser:
             logging.info("Reading node: %s", node)
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
+                                   real_inst_type=node["real_inst_type"],
                                    ports=node['ports'],
                                    edge_weight=node['edge_weight'],
                                    values=node['values'],
@@ -506,7 +510,7 @@ class SpiceParser:
         logging.info(
             "Created bipartitie graph with Total no of Nodes: %i edges: %i",
             len(circuit_graph), circuit_graph.number_of_edges())
-        #print(circuit_graph.node['xM03|MN0']["ports"])
+        #print(circuit_graph.nodes['xM03|MN0']["ports"])
         return circuit_graph
 
 
@@ -576,7 +580,7 @@ if __name__ == '__main__':
                 sp = SpiceParser(NETLIST_DIR + '/' + netlist)
 
             final_circuit_graph = sp.sp_parser()
-            #print(final_circuit_graph.node['xM03|MN0']["ports"])
+            #print(final_circuit_graph.nodes['xM03|MN0']["ports"])
             if final_circuit_graph:
                 ckt_name = netlist.split('.')[0]
                 logging.info("Saving graph: %s", ckt_name)

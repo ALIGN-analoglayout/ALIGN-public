@@ -109,7 +109,7 @@ class RemoveDuplicates():
                     if nm is not None:
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
-                        self.subinsts[slr.terminal[0]][slr.terminal[1]].add( None)
+                        self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
                         self.opens.append( slr.terminal)
 
         for (nm,s) in tbl.items():
@@ -133,7 +133,7 @@ class RemoveDuplicates():
         self.different_widths = []
         self.shorts = []
         self.opens = []
-        self.subinsts = defaultdict(lambda: defaultdict(set))
+        self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
 
@@ -141,6 +141,9 @@ class RemoveDuplicates():
         self.layers = OrderedDict()
         self.skip_layers = set()
         self.via_layers = set()
+
+        # Should use a region generator
+        self.skip_layers.add( 'boundary')
 
         for (nm, gen) in self.canvas.generators.items():
             if   isinstance( gen, Region):
@@ -234,7 +237,7 @@ class RemoveDuplicates():
 
     def check_shorts_induced_by_terminals( self):
         for instance, v in self.subinsts.items():
-            for pin, slrs in v.items():
+            for pin, slrs in v.pins.items():
                 names = {x.root().netName for x in slrs}
                 if len(names) > 1:
                     self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
@@ -253,9 +256,9 @@ class RemoveDuplicates():
             return numshorts == len(self.shorts)
         else:
             if a.terminal is not None:
-                self.subinsts[a.terminal[0]][a.terminal[1]].add( a)
+                self.subinsts[a.terminal[0]].pins[a.terminal[1]].add( a)
             if b.terminal is not None:
-                self.subinsts[b.terminal[0]][b.terminal[1]].add( b)
+                self.subinsts[b.terminal[0]].pins[b.terminal[1]].add( b)
             return False
 
     def generate_rectangles( self):

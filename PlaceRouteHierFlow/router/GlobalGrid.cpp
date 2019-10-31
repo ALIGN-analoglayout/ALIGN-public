@@ -4,304 +4,74 @@ GlobalGrid::GlobalGrid(){
 
 }
 
-void GlobalGrid::CreateGridDataCap(){
-
+void GlobalGrid::CreateGridDataCap(bool Cap_Ncap){
+  // if Cap_Ncap == 1, Ncap; else cap;
   std::ofstream matlabfile;
   matlabfile.open("GlobalGrid_Cap.txt");
 
+  auto write_out_matlab_file = [&](const auto&p, const auto&q){
+
+    matlabfile<<tiles_total[p].x;
+    matlabfile<<" ";
+    matlabfile<<tiles_total[p].y;
+    matlabfile<<" ";
+    matlabfile<<tiles_total[p].tileLayer;
+    matlabfile<<" ";
+
+    matlabfile<<tiles_total[q].x;
+    matlabfile<<" ";
+    matlabfile<<tiles_total[q].y;
+    matlabfile<<" ";
+    matlabfile<<tiles_total[q].tileLayer;
+    matlabfile<<" ";
+              
+    matlabfile<<std::endl;
+
+  };
+
   for(unsigned int i=0;i<tiles_total.size();i++){
 
       for(unsigned int j=0;j<tiles_total[i].north.size();j++){
 
-           if(tiles_total[i].north[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].north[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].north[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].south.size();j++){
 
-           if(tiles_total[i].south[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].south[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].south[j].next); 
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].east.size();j++){
 
-           if(tiles_total[i].east[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].east[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].east[j].next); 
              }
           }
 
 
       for(unsigned int j=0;j<tiles_total[i].west.size();j++){
 
-           if(tiles_total[i].west[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].west[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].west[j].next); 
              }
           }
 
 
       for(unsigned int j=0;j<tiles_total[i].down.size();j++){
 
-           if(tiles_total[i].down[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].down[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].down[j].next);  
              }
           }
 
       for(unsigned int j=0;j<tiles_total[i].up.size();j++){
 
-           if(tiles_total[i].up[j].capacity>0){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-       }
-
-
-  matlabfile.close();
-
-}
-
-void GlobalGrid::CreateGridDataNCap(){
-
-  std::ofstream matlabfile;
-  matlabfile.open("GlobalGrid_NCap.txt");
-
-  for(unsigned int i=0;i<tiles_total.size();i++){
-
-      for(unsigned int j=0;j<tiles_total[i].north.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].north[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-      for(unsigned int j=0;j<tiles_total[i].south.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].south[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-      for(unsigned int j=0;j<tiles_total[i].east.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].east[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-
-      for(unsigned int j=0;j<tiles_total[i].west.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].west[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-
-      for(unsigned int j=0;j<tiles_total[i].down.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].down[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
-             }
-          }
-
-      for(unsigned int j=0;j<tiles_total[i].up.size();j++){
-
-           if(1){    
-               
-              matlabfile<<tiles_total[i].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[i].tileLayer;
-              matlabfile<<" ";
-
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].x;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].y;
-              matlabfile<<" ";
-              matlabfile<<tiles_total[tiles_total[i].up[j].next].tileLayer;
-              matlabfile<<" ";
-              
-              matlabfile<<std::endl;
-
+           if(tiles_total[i].up[j].capacity>0 or Cap_Ncap){    
+              write_out_matlab_file(i,tiles_total[i].up[j].next);  
              }
           }
 

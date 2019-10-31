@@ -1,10 +1,13 @@
 #include <gtest/gtest.h>
 #include "PnRdatabase.h"
-#include "../router/Rdatatype.h"
+//#include "../router/Rdatatype.h"
 
 using namespace nlohmann;
 
 namespace RouterDB {
+};
+
+namespace PnRDB {
   void to_json(json& j, const tileEdge& v) {
     j["next"] = v.next;
     j["capacity"] = v.capacity;
@@ -50,9 +53,6 @@ namespace RouterDB {
     j["down"].get_to( v.down);
     j["up"].get_to( v.up);
   }
-};
-
-namespace PnRDB {
   
   void to_json(json& j, const point& v) {
     j["x"] = v.x;

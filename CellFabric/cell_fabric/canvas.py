@@ -20,6 +20,8 @@ import datetime
 import io
 import gdsconv.json2gds
 
+LayoutDevice = collections.namedtuple('LayoutDevice', ['parameters', 'pins'])
+
 class Canvas:
     def computeBbox( self):
         """Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly"""
@@ -188,6 +190,10 @@ class Canvas:
 
     def __init__( self, pdk=None, gds_layer_map=None):
         self.pdk = pdk
+        self.subinsts = collections.defaultdict(
+            lambda: LayoutDevice(
+                collections.defaultdict(None),
+                collections.defaultdict(set)))
         self.terminals = []
         self.postprocessor = PostProcessor()
         self.generators = collections.OrderedDict()
@@ -215,13 +221,16 @@ class Canvas:
         self.rd = RemoveDuplicates( self)
         return self.rd.remove_duplicates()
 
-    def gen_data( self, *, draw_grid=False):
+    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True):
         self.computeBbox()
 
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
                  'terminals' : self.removeDuplicates()}
+
+        if len(self.subinsts) > 0:
+            data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
 
         data['terminals'] = self.postprocessor.run(data['terminals'])
 
@@ -230,12 +239,12 @@ class Canvas:
             if draw_grid:
                 self.draw_grid(data)
 
-            self.drc = DesignRuleCheck( self)
-            self.drc.run()
-            self.pex = ParasiticExtraction( self)
-            self.pex.run()
-
-
+            if run_drc:
+                self.drc = DesignRuleCheck( self)
+                self.drc.run()
+            if run_pex:
+                self.pex = ParasiticExtraction( self)
+                self.pex.run()
 
         return data
 

@@ -98,6 +98,7 @@ class DetailRouter : public GlobalRouter {
     //void TerminalToNodeTerminal(PnRDB::hierNode& HierNode);
     void GetPhsical_Metal_Via(int i);
     void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
+    void UpdateVia(RouterDB::Via &temp_via);
     
 };
 
