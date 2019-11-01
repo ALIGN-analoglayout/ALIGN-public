@@ -130,7 +130,7 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open('tests/basic_template.sp') as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 16
+    assert len(parser.library) - libsize == 14
 
 def test_ota_blocks(parser):
     libsize = len(parser.library)
