@@ -125,7 +125,9 @@ class Circuit(networkx.Graph):
             # Create new instance of subckt
             name, counter = f'X_{subckt.__name__}_{counter}', counter + 1
             assert name not in self.elements
-            inst = subckt(name, *[{pin: net for net, pin in match.items() if pin in subckt._pins}[x] for x in subckt._pins])
+            pinmap = {pin: net for net, pin in match.items() if pin in subckt._pins}
+            assert all(x in pinmap for x in subckt._pins), (match, subckt)
+            inst = subckt(name, *[pinmap[x] for x in subckt._pins])
             # attach instance to current graph
             self.add_element(inst)
 
