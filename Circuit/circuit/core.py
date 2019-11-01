@@ -85,17 +85,21 @@ class NTerminalDevice():
 
 class Circuit(networkx.Graph):
 
+    @staticmethod
+    def _is_element(v):
+        return 'instance' in v
+
     @property
     def elements(self):
-        return [v['instance'] for v in self.nodes.values() if 'instance' in v]
+        return [v['instance'] for v in self.nodes.values() if self._is_element(v)]
 
     def element(self, name):
-        assert name in self.nodes and 'instance' in self.nodes[name]
+        assert name in self.nodes and self._is_element(self.nodes[name])
         return self.nodes[name]['instance']
 
     @property
     def nets(self):
-        return [x for x, v in self.nodes.items() if 'instance' not in v]
+        return [x for x, v in self.nodes.items() if not self._is_element(v)]
 
     def add_element(self, element):
         assert isinstance(element, NTerminalDevice)
