@@ -104,7 +104,8 @@ def test_model(ThreeTerminalDevice):
     assert inst.pins == {'a': 'net01', 'b': 'net02', 'c': 'net03'}
     assert inst.parameters == {'myparameter': 2, 'newparam': 2, 'newparam2': 'hello'}
 
-def test_find_matching_subgraphs(ThreeTerminalDevice, TwoTerminalDevice):
+@pytest.fixture
+def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
     ckt = Circuit()
     CustomDevice = Model('CustomDevice', ThreeTerminalDevice, newparam=1, newparam2='hello')
     ckt.add_element(CustomDevice('X1', 'net1', 'in1', 'net01'))
@@ -114,10 +115,18 @@ def test_find_matching_subgraphs(ThreeTerminalDevice, TwoTerminalDevice):
     ckt.add_element(TwoTerminalDevice('X5', 'net01', 'net00'))
     ckt.add_element(TwoTerminalDevice('X6', 'net02', 'net00'))
     ckt.add_element(TwoTerminalDevice('X7', 'net3', 'net03'))
-    # Validate true match
+    return ckt
+
+@pytest.fixture
+def matching_subckt(ThreeTerminalDevice):
     subckt = SubCircuit('test_subckt', 'pin1', 'pin2', 'pin3')
     subckt.add_element(ThreeTerminalDevice('X1', 'pin3', 'pin1', 'pin1'))
     subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2'))
+    return subckt
+
+def test_find_matching_subgraphs(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
+    ckt, subckt = simple_netlist, matching_subckt
+    # Validate true match
     assert len(ckt.find_matching_subgraphs(subckt)) == 1
     assert ckt.find_matching_subgraphs(subckt)[0] == {'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}
     # Validate false match
@@ -131,3 +140,11 @@ def test_find_matching_subgraphs(ThreeTerminalDevice, TwoTerminalDevice):
     subckt3.add_element(TwoTerminalDevice('X2', 'pin3', 'pin4'))
     assert len(ckt.find_matching_subgraphs(subckt3)) == 4
 
+def test_replace_matches_with_subckt(simple_netlist, matching_subckt):
+    ckt, subckt = simple_netlist, matching_subckt
+    matches = [{'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}]
+    ckt.replace_matches_with_subckt(matches, subckt)
+    assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
+    assert 'X_test_subckt_0' in ckt.nodes
+    new_edges = [('X_test_subckt_0', 'net3', 'pin3'), ('X_test_subckt_0', 'net1', 'pin1'), ('X_test_subckt_0', 'net2', 'pin2')]
+    assert all(x in ckt.edges.data('pin') for x in new_edges)
