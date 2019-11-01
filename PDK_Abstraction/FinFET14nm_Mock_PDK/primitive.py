@@ -9,21 +9,21 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
     def _addMOS( self, x, y, name='M1', reflect=False):
 
         def _connect_diffusion(x, name, pin):
-            self.addWire( self.m1, None, None, x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.LISD, None, None, x, (y, 1), (y+1, -1))
+            self.addWire( self.m1, None, None, 'Draw', x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.LISD, None, None, 'Draw', x, (y, 1), (y+1, -1))
             for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
-                self.addVia( self.v0, f'{name}:{pin}', None, x, (y, j))
+                self.addVia( self.v0, f'{name}:{pin}', None, 'Draw', x, (y, j))
             self._xpins[name][pin].append(x)
 
         # Draw FEOL Layers
 
-        self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.RVT,    None,    None, y, (x, 1), (x+1, -1))
-        self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.active, None, None, 'Draw', y, (x,1), (x+1,-1))
+        self.addWire( self.RVT,    None,    None, 'Draw', y, (x, 1), (x+1, -1))
+        self.addWire( self.pc, None, None, 'Draw', y, (x,1), (x+1,-1))
         for i in range(1,  self.finsPerUnitCell):
-            self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
+            self.addWire( self.fin, None, None, 'Draw', self.finsPerUnitCell*y+i, x, x+1)
         for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
+            self.addWire( self.pl, None, None, 'Draw', self.gatesPerUnitCell*x+i,   (y,0), (y,1))
 
         # Source, Drain, Gate Connections
 
@@ -31,8 +31,8 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
-        self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
-        self.addVia( self.va, f'{name}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
+        self.addWire( self.m1, None, None, 'Draw', gate_x , (grid_y0, -1), (grid_y1, 1))
+        self.addVia( self.va, f'{name}:G', None, 'Draw', gate_x, (y*self.m2PerUnitCell//2, 1))
         self._xpins[name]['G'].append(gate_x)
         # Connect Source & Drain
         if reflect:
@@ -50,12 +50,12 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                               for track in m1tracks if (inst, pin) in conn}
             for j in range(self.minvias):
                 current_track = y * self.m2PerUnitCell + len(connections) * j + track
-                self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
+                self.addWireAndViaSet(net, None, 'Draw', self.m2, self.v1, current_track, contacts)
                 self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 direction = 1 if current_track > center_track else -1
                 for i in contacts:
-                    self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
+                    self.addWire( self.m1, net, None, 'Draw', i, (center_track, -1 * direction), (current_track, direction))
 
 
     def _connectNets(self, x_cells, y_cells):
@@ -81,13 +81,13 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                 if len(contacts) == 1: # Create m2 terminal
                     i = next(iter(contacts))
                     minx, maxx = _get_wire_terminators(conn[i])
-                    self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
+                    self.addWire(self.m2, net, net, 'Draw', i, (minx, -1), (maxx, 1))
                 else: # create m3 terminal(s)
-                    self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    self.addWireAndViaSet(net, net, 'Draw', self.m3, self.v2, current_track, contacts)
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
-                        self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
+                        self.addWire(self.m2, net, None, 'Draw', i, (minx, -1), (maxx, 1))
 
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
@@ -131,12 +131,12 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.nselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
 
     def addPMOSArray( self, x_cells, y_cells, pattern, connections):
 
         self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
-        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.pselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.nwell, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)

@@ -1,57 +1,60 @@
 #!/usr/bin/env python
+import json
 import argparse
 from datetime import datetime
 from cell_fabric import gen_gds_json, pdk
 
 from pathlib import Path
 pdkfile = (Path(__file__).parent / 'layers.json').resolve()
-
+with open(pdkfile, "rt") as fp1:
+    j = json.load(fp1)
+ScaleFactor = j['ScaleFactor']
 def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
   if p is None:
     p = pdk.Pdk().load(pdkfile)
   gds_layer_map = p.get_gds_map()
 
   gds_layer_map.update( {
-          "nwell" : 1,
-          "fin" : 2,
-          "poly" : 3,
-          "GCUT" : 4,
-          "active" : 5,
-          "SDT" : 6,
-          "nselect" : 7,
-          "pselect" : 8,
-          "SLVT" : 9,
-          "LVT" : 10,
-          "LISD": 98,
-          "polycon" : 11,
-          "pc": 99,
+          "nwellDraw": [1, 0],
+          "finDraw": [2, 0],
+          "polyDraw": [3, 0],
+          "GCUTDraw": [4, 0],
+          "activeDraw": [5, 0],
+          "SDTDraw" : [6, 0],
+          "nselectDraw" : [7, 0],
+          "pselectDraw" : [8, 0],
+          "SLVTDraw" : [9, 0],
+          "LVTDraw" : [10, 0],
+          "LISDDraw": [98, 0],
+          "polyconDraw": [11, 0],
+          "pcDraw": [99, 0],
           "cellarea" : 100,
           "BOUNDARY" : 100,
-          "boundary" : 100,
-          "bbox" : 100,
+          "boundaryDraw" : [100, 0],
+          "bbox" : [100, 5],
           "diearea" : 100
       } )
 
   via_gen_tbl = {
-      "V2": (
+      "V2Draw": (
           "M3_M2_CDNS_543864435520",
           {
-          "V2": [-640,-640,640,640],
-          "M2": [-1440,-640,1440,640],
-          "M3": [-640,-1440,640,1440]
+          "V2Draw": [-640,-640,640,640],
+          "M2Draw": [-1440,-640,1440,640],
+          "M3Draw": [-640,-1440,640,1440]
           }
       ),
-      "V1": (
+      "V1Draw": (
           "M2_M1_CDNS_543864435521",
           {
-          "V1": [-640,-640,640,640],
-          "M1": [-640,-1440,640,1440],
-          "M2": [-1440,-640,1440,640]
+          "V1Draw": [-640,-640,640,640],
+          "M1Draw": [-640,-1440,640,1440],
+          "M2Draw": [-1440,-640,1440,640]
           }
       )
   }
 
-  return gen_gds_json.translate(macro_name, exclude_pattern, fp, ofile, gds_layer_map, via_gen_tbl, timestamp)
+  return gen_gds_json.translate(macro_name, exclude_pattern, ScaleFactor, fp, ofile, gds_layer_map, via_gen_tbl, timestamp)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import json
 import argparse
 from datetime import datetime
 import sys
@@ -90,11 +91,12 @@ def main( args):
 
     else:
         assert False, f"Unrecognized primitive {args.primitive}"
-
+    uc.computeBbox()
     with open(args.block_name + '.json', "wt") as fp:
-        uc.writeJSON( fp)
-
-    gen_lef.json_lef(args.block_name + '.json', args.block_name, cell_pin)
+        #uc.writeJSON( fp)
+        data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
+        fp.write( json.dumps( data, indent=2) + '\n')
+    #gen_lef.json_lef(args.block_name + '.json', args.block_name, cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
         gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
