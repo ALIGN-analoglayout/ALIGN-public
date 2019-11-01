@@ -130,11 +130,11 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open('tests/basic_template.sp') as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 22
+    assert len(parser.library) - libsize == 16
 
 def test_ota_blocks(parser):
     libsize = len(parser.library)
     with open('tests/ota_blocks.sp') as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 4
+    assert len(parser.library) - libsize == 6
     assert all(len(parser.library[ckt].elements) == 2 for ckt in parser.library if ckt.startswith('CMC') or ckt.startswith('DP'))
