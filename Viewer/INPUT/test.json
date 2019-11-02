@@ -1,0 +1,2284 @@
+{
+  "bbox": [
+    0,
+    0,
+    2560,
+    840
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "netName": null,
+      "layer": "active",
+      "layertype": "Draw",
+      "rect": [
+        200,
+        147,
+        440,
+        651
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "polycon",
+      "layertype": "Draw",
+      "rect": [
+        200,
+        105,
+        440,
+        693
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "pc",
+      "layertype": "Draw",
+      "rect": [
+        271,
+        68,
+        369,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        37,
+        640,
+        47
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        79,
+        640,
+        89
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        121,
+        640,
+        131
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        163,
+        640,
+        173
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        205,
+        640,
+        215
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        247,
+        640,
+        257
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        289,
+        640,
+        299
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        331,
+        640,
+        341
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        373,
+        640,
+        383
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        415,
+        640,
+        425
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        457,
+        640,
+        467
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        499,
+        640,
+        509
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        541,
+        640,
+        551
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        583,
+        640,
+        593
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        625,
+        640,
+        635
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        667,
+        640,
+        677
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        709,
+        640,
+        719
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        751,
+        640,
+        761
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        793,
+        640,
+        803
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        33,
+        0,
+        47,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        113,
+        0,
+        127,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        193,
+        0,
+        207,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        273,
+        0,
+        287,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        353,
+        0,
+        367,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        433,
+        0,
+        447,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        513,
+        0,
+        527,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        593,
+        0,
+        607,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        304,
+        48,
+        336,
+        708
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "M1:G",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        304,
+        68,
+        336,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        48,
+        256,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        220,
+        147,
+        260,
+        693
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        236,
+        256,
+        268
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        362,
+        256,
+        394
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        488,
+        256,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        48,
+        416,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        380,
+        147,
+        420,
+        693
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        236,
+        416,
+        268
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        362,
+        416,
+        394
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        488,
+        416,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "active",
+      "layertype": "Draw",
+      "rect": [
+        840,
+        147,
+        1080,
+        651
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "polycon",
+      "layertype": "Draw",
+      "rect": [
+        840,
+        105,
+        1080,
+        693
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "pc",
+      "layertype": "Draw",
+      "rect": [
+        911,
+        68,
+        1009,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        37,
+        1280,
+        47
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        79,
+        1280,
+        89
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        121,
+        1280,
+        131
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        163,
+        1280,
+        173
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        205,
+        1280,
+        215
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        247,
+        1280,
+        257
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        289,
+        1280,
+        299
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        331,
+        1280,
+        341
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        373,
+        1280,
+        383
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        415,
+        1280,
+        425
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        457,
+        1280,
+        467
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        499,
+        1280,
+        509
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        541,
+        1280,
+        551
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        583,
+        1280,
+        593
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        625,
+        1280,
+        635
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        667,
+        1280,
+        677
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        709,
+        1280,
+        719
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        751,
+        1280,
+        761
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        640,
+        793,
+        1280,
+        803
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        673,
+        0,
+        687,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        753,
+        0,
+        767,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        833,
+        0,
+        847,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        913,
+        0,
+        927,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        993,
+        0,
+        1007,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1073,
+        0,
+        1087,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1153,
+        0,
+        1167,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1233,
+        0,
+        1247,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        944,
+        48,
+        976,
+        708
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "M2:G",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        944,
+        68,
+        976,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        48,
+        896,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        860,
+        147,
+        900,
+        693
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        236,
+        896,
+        268
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        362,
+        896,
+        394
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        488,
+        896,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        48,
+        1056,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        1020,
+        147,
+        1060,
+        693
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        236,
+        1056,
+        268
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        362,
+        1056,
+        394
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        488,
+        1056,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "active",
+      "layertype": "Draw",
+      "rect": [
+        1480,
+        147,
+        1720,
+        651
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "polycon",
+      "layertype": "Draw",
+      "rect": [
+        1480,
+        105,
+        1720,
+        693
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "pc",
+      "layertype": "Draw",
+      "rect": [
+        1551,
+        68,
+        1649,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        37,
+        1920,
+        47
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        79,
+        1920,
+        89
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        121,
+        1920,
+        131
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        163,
+        1920,
+        173
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        205,
+        1920,
+        215
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        247,
+        1920,
+        257
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        289,
+        1920,
+        299
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        331,
+        1920,
+        341
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        373,
+        1920,
+        383
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        415,
+        1920,
+        425
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        457,
+        1920,
+        467
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        499,
+        1920,
+        509
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        541,
+        1920,
+        551
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        583,
+        1920,
+        593
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        625,
+        1920,
+        635
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        667,
+        1920,
+        677
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        709,
+        1920,
+        719
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        751,
+        1920,
+        761
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1280,
+        793,
+        1920,
+        803
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1313,
+        0,
+        1327,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1393,
+        0,
+        1407,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1473,
+        0,
+        1487,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1553,
+        0,
+        1567,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1633,
+        0,
+        1647,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1713,
+        0,
+        1727,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1793,
+        0,
+        1807,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1873,
+        0,
+        1887,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1584,
+        48,
+        1616,
+        708
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "M2:G",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1584,
+        68,
+        1616,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        48,
+        1696,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        1660,
+        147,
+        1700,
+        693
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        236,
+        1696,
+        268
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        362,
+        1696,
+        394
+      ]
+    },
+    {
+      "netName": "M2:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        488,
+        1696,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        48,
+        1536,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        1500,
+        147,
+        1540,
+        693
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        236,
+        1536,
+        268
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        362,
+        1536,
+        394
+      ]
+    },
+    {
+      "netName": "M2:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        488,
+        1536,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "active",
+      "layertype": "Draw",
+      "rect": [
+        2120,
+        147,
+        2360,
+        651
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "polycon",
+      "layertype": "Draw",
+      "rect": [
+        2120,
+        105,
+        2360,
+        693
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "pc",
+      "layertype": "Draw",
+      "rect": [
+        2191,
+        68,
+        2289,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        37,
+        2560,
+        47
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        79,
+        2560,
+        89
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        121,
+        2560,
+        131
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        163,
+        2560,
+        173
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        205,
+        2560,
+        215
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        247,
+        2560,
+        257
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        289,
+        2560,
+        299
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        331,
+        2560,
+        341
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        373,
+        2560,
+        383
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        415,
+        2560,
+        425
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        457,
+        2560,
+        467
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        499,
+        2560,
+        509
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        541,
+        2560,
+        551
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        583,
+        2560,
+        593
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        625,
+        2560,
+        635
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        667,
+        2560,
+        677
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        709,
+        2560,
+        719
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        751,
+        2560,
+        761
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "fin",
+      "layertype": "Draw",
+      "rect": [
+        1920,
+        793,
+        2560,
+        803
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        1953,
+        0,
+        1967,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2033,
+        0,
+        2047,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2113,
+        0,
+        2127,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2193,
+        0,
+        2207,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2273,
+        0,
+        2287,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2353,
+        0,
+        2367,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2433,
+        0,
+        2447,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "poly",
+      "layertype": "Draw",
+      "rect": [
+        2513,
+        0,
+        2527,
+        840
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2224,
+        48,
+        2256,
+        708
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "M1:G",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2224,
+        68,
+        2256,
+        100
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        48,
+        2336,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        2300,
+        147,
+        2340,
+        693
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        236,
+        2336,
+        268
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        362,
+        2336,
+        394
+      ]
+    },
+    {
+      "netName": "M1:S",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        488,
+        2336,
+        520
+      ]
+    },
+    {
+      "netName": null,
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        48,
+        2176,
+        708
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": null,
+      "layer": "LISD",
+      "layertype": "Draw",
+      "rect": [
+        2140,
+        147,
+        2180,
+        693
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        236,
+        2176,
+        268
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        362,
+        2176,
+        394
+      ]
+    },
+    {
+      "netName": "M1:D",
+      "layer": "V0",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        488,
+        2176,
+        520
+      ]
+    },
+    {
+      "netName": "S",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        68,
+        896,
+        100
+      ]
+    },
+    {
+      "netName": "S",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        68,
+        1696,
+        100
+      ]
+    },
+    {
+      "netName": "S",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        68,
+        256,
+        100
+      ]
+    },
+    {
+      "netName": "S",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        68,
+        2336,
+        100
+      ]
+    },
+    {
+      "netName": "S",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        204,
+        68,
+        2356,
+        100
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "S",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        864,
+        48,
+        896,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "S",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1664,
+        48,
+        1696,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "S",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        224,
+        48,
+        256,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "S",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2304,
+        48,
+        2336,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "DA",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        152,
+        2176,
+        184
+      ]
+    },
+    {
+      "netName": "DA",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        152,
+        416,
+        184
+      ]
+    },
+    {
+      "netName": "DA",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        364,
+        152,
+        2196,
+        184
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "DA",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2144,
+        132,
+        2176,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "DA",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        384,
+        132,
+        416,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "DB",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        236,
+        1536,
+        268
+      ]
+    },
+    {
+      "netName": "DB",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        236,
+        1056,
+        268
+      ]
+    },
+    {
+      "netName": "DB",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        1004,
+        236,
+        1556,
+        268
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "DB",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1504,
+        216,
+        1536,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "DB",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1024,
+        216,
+        1056,
+        456
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "GA",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        304,
+        320,
+        336,
+        352
+      ]
+    },
+    {
+      "netName": "GA",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        2224,
+        320,
+        2256,
+        352
+      ]
+    },
+    {
+      "netName": "GA",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        284,
+        320,
+        2276,
+        352
+      ],
+      "color": "c2"
+    },
+    {
+      "netName": "GA",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        304,
+        300,
+        336,
+        456
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "GA",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        2224,
+        300,
+        2256,
+        456
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "GB",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        944,
+        404,
+        976,
+        436
+      ]
+    },
+    {
+      "netName": "GB",
+      "layer": "V1",
+      "layertype": "Draw",
+      "rect": [
+        1584,
+        404,
+        1616,
+        436
+      ]
+    },
+    {
+      "netName": "GB",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        924,
+        404,
+        1636,
+        436
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "GB",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        944,
+        384,
+        976,
+        456
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "GB",
+      "layer": "M1",
+      "layertype": "Draw",
+      "rect": [
+        1584,
+        384,
+        1616,
+        456
+      ],
+      "color": "c1"
+    },
+    {
+      "netName": "S",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        204,
+        68,
+        2356,
+        100
+      ],
+      "pin": "S",
+      "color": "c1"
+    },
+    {
+      "netName": "DA",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        364,
+        152,
+        2196,
+        184
+      ],
+      "pin": "DA",
+      "color": "c2"
+    },
+    {
+      "netName": "DB",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        1004,
+        236,
+        1556,
+        268
+      ],
+      "pin": "DB",
+      "color": "c1"
+    },
+    {
+      "netName": "GA",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        284,
+        320,
+        2276,
+        352
+      ],
+      "pin": "GA",
+      "color": "c2"
+    },
+    {
+      "netName": "GB",
+      "layer": "M2",
+      "layertype": "Draw",
+      "rect": [
+        924,
+        404,
+        1636,
+        436
+      ],
+      "pin": "GB",
+      "color": "c1"
+    },
+    {
+      "netName": null,
+      "layer": "nselect",
+      "layertype": "Draw",
+      "rect": [
+        0,
+        0,
+        2560,
+        840
+      ]
+    }
+  ]
+}

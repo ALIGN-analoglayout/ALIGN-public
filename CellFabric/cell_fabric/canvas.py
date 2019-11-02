@@ -50,20 +50,20 @@ class Canvas:
         s['rect'] = self.trStack[-1].hitRect(r).canonical().toList()
         self.terminals.append( s)
 
-    def addWire( self, wire, netName, pinName, c, bIdx, eIdx, *, bS=None, eS=None):
-        self.transform_and_add( wire.segment( netName, pinName, c, bIdx, eIdx, bS=bS, eS=eS))
+    def addWire( self, wire, netName, pinName, layertype, c, bIdx, eIdx, *, bS=None, eS=None):
+        self.transform_and_add( wire.segment( netName, pinName, layertype, c, bIdx, eIdx, bS=bS, eS=eS))
 
-    def addRegion( self, region, netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1):
-        self.transform_and_add( region.segment( netName, pinName, grid_x0, grid_y0, grid_x1, grid_y1))
+    def addRegion( self, region, netName, pinName, layertype, grid_x0, grid_y0, grid_x1, grid_y1):
+        self.transform_and_add( region.segment( netName, pinName, layertype, grid_x0, grid_y0, grid_x1, grid_y1))
 
-    def addVia( self, via, netName, pinName, cx, cy):
-        self.transform_and_add( via.segment( netName, pinName, cx, cy))
+    def addVia( self, via, netName, pinName, layertype, cx, cy):
+        self.transform_and_add( via.segment( netName, pinName, layertype, cx, cy))
 
-    def addWireAndViaSet( self, netName, pinName, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
+    def addWireAndViaSet( self, netName, pinName, layertype, wire, via, c, listOfIndices, *, bIdx=None, eIdx=None):
         """March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire."""
-        self.addWireAndMultiViaSet( netName, pinName, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
+        self.addWireAndMultiViaSet( netName, pinName, layertype, wire, c, [ (via, listOfIndices)], bIdx=bIdx, eIdx=eIdx)
 
-    def addWireAndMultiViaSet( self, netName, pinName, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
+    def addWireAndMultiViaSet( self, netName, pinName, layertype, wire, c, listOfPairs, *, bIdx=None, eIdx=None):
         """March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire."""
 
         # Get minimum & maximum via centerpoints (in terms of physical coords)
@@ -87,11 +87,11 @@ class Canvas:
         for (via,listOfIndices) in listOfPairs:
             for q in listOfIndices:
                 if wire.direction == 'v':
-                    self.addVia( via, netName, None, c, q)
+                    self.addVia( via, netName, None, layertype, c, q)
                 else:
-                    self.addVia( via, netName, None, q, c)
+                    self.addVia( via, netName, None, layertype, q, c)
 
-        self.addWire( wire, netName, pinName, c, mn, mx)
+        self.addWire( wire, netName, pinName, layertype, c, mn, mx)
 
     def asciiStickDiagram( self, v1, m2, v2, m3, matrix, *, xpitch=4, ypitch=2):
         # clean up text input
@@ -125,7 +125,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, 'Draw', m2, y, [ (v1, via1s), (v2, via2s)]) 
                         started = False
                         nm = None
                         via1s = []
@@ -161,7 +161,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, 'Draw', m3, x, [ (v2, via2s)]) 
                         started = False
                         nm = None
                         via1s = []

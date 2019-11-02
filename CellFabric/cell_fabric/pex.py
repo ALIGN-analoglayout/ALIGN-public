@@ -44,9 +44,9 @@ class ParasiticExtraction():
                 dist = self.compute_dist( rect[0], rect[2]) \
                         if self.canvas.pdk[ly]['Direction'] == 'h' \
                         else self.compute_dist( rect[1], rect[3])
-                (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['UnitR']*dist, self.canvas.pdk[ly]['UnitC']*dist )
+                (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['UnitR']['Mean']*dist, self.canvas.pdk[ly]['UnitC']['Mean']*dist )
             elif ly.startswith('V'):
-                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['R']))
+                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['UnitR']['Mean']))
             else:
                assert False, ly
 

@@ -60,6 +60,7 @@ class Pdk(object):
     def addMetal(self, **kwargs):
         params = ['Layer',
                   'LayerNo',
+                  'Datatype',
                   'Direction',
                   'Color',
                   'Pitch',
@@ -69,20 +70,21 @@ class Pdk(object):
                   'EndToEnd',
                   'Offset',
                   'UnitC',
+                  'UnitCC',
                   'UnitR']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
         assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
             if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
-            for x in params[4:10] if kwargs[x] is not None), \
-            f"One or more of {params[4:10]} not an integer in {kwargs}"
+            for x in params[5:10] if kwargs[x] is not None), \
+            f"One or more of {params[5:10]} not an integer in {kwargs}"
         assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
-            for x in params[4:6] if kwargs[x] is not None), \
+            for x in params[5:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
         # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
-        list_params = params[4:]
+        list_params = params[5:]
         ll = set()
         for param in list_params:
             if isinstance(kwargs[param], list):
@@ -104,6 +106,7 @@ class Pdk(object):
     def addVia(self, **kwargs):
         params = ['Layer',
                   'LayerNo',
+                  'Datatype',
                   'Stack',
                   'SpaceX',
                   'SpaceY',
@@ -115,12 +118,12 @@ class Pdk(object):
                   'VencP_H',
                   'MinNo',
                   #'DesignRules',
-                  'R']
+                  'UnitR']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
-        assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
-        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
+        assert all(isinstance(kwargs[x], int) for x in params[4:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
+        assert all(kwargs[x] % 2 == 0 for x in params[4:7]), f"One or more of {params[4:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
         assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
         assert all(x is None or x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
@@ -143,4 +146,4 @@ class Pdk(object):
         return layer_stack
 
     def get_gds_map(self):
-        return {x: self.pdk[x]['LayerNo'] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x]}
+        return {x+y: [self.pdk[x]['LayerNo'], self.pdk[x]['Datatype'][y]] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x] for y in self.pdk[x]['Datatype']}

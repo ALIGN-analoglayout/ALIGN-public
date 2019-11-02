@@ -1,3 +1,4 @@
+import json
 import math
 import argparse
 import gen_gds_json
@@ -97,19 +98,19 @@ class UnitCell(CanvasCap):
         for i in range(self.x_number-1):
             grid_x = i
             net = 'PLUS' if i%2 == 1 else 'MINUS'
-            self.addWire( self.m1n, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.m3n, net, None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1n, net, None, 'Draw', grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m3n, net, None, 'Draw', grid_x, (grid_y0, -1), (grid_y1, 1))
 
             grid_y = ((i+1)%2)*grid_y1
 
-            self.addVia( self.v1_nx, net, None, grid_x, grid_y)
-            self.addVia( self.v2_nx, net, None, grid_x, grid_y)
+            self.addVia( self.v1_nx, net, None, 'Draw', grid_x, grid_y)
+            self.addVia( self.v2_nx, net, None, 'Draw', grid_x, grid_y)
 
         pin = 'PLUS'
         # Don't port m1 per Yaguang instructions
-        self.addWire( self.m1, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        self.addWire( self.m1, 'PLUS', None, 'Draw', self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
         # don't port m3 (or port one or the other)
-        self.addWire( self.m3, 'PLUS', None, self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
+        self.addWire( self.m3, 'PLUS', None, 'Draw', self.last_x1_track, (grid_y0, -1), (grid_y1, 1))
 
         grid_x0 = 0
         grid_x1 = grid_x0 + self.last_x1_track
@@ -117,16 +118,16 @@ class UnitCell(CanvasCap):
         for i in range(self.y_number-1):
             grid_x = ((i+1)%2)*grid_x1
             net = 'PLUS' if i%2 == 0 else 'MINUS'
-            self.addVia( self.v1_xn, net, None, grid_x, i)
-            self.addVia( self.v2_xn, net, None, grid_x, i)
+            self.addVia( self.v1_xn, net, None, 'Draw', grid_x, i)
+            self.addVia( self.v2_xn, net, None, 'Draw', grid_x, i)
             pin = 'PLUS' if i == 0 else None
-            self.addWire( self.m2n, net, pin, i, (grid_x0, -1), (grid_x1, 1))
+            self.addWire( self.m2n, net, pin, 'Draw', i, (grid_x0, -1), (grid_x1, 1))
 
         pin = 'MINUS'
-        self.addWire( self.m2, 'MINUS', pin, self.last_y1_track, (grid_x0, -1), (grid_x1, 1))
+        self.addWire( self.m2, 'MINUS', pin, 'Draw', self.last_y1_track, (grid_x0, -1), (grid_x1, 1))
 
 
-        self.addRegion( self.boundary, 'boundary', None,
+        self.addRegion( self.boundary, 'boundary', None, 'Draw',
                         0, 0,
                         self.last_x1_track,
                         self.last_y1_track)
@@ -165,7 +166,9 @@ def main( args):
     print( "bbox", uc.bbox)
 
     with open(args.block_name + '.json', "wt") as fp:
-        uc.writeJSON( fp, draw_grid=True)
+        #uc.writeJSON( fp, draw_grid=True)
+        data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
+        fp.write( json.dumps( data, indent=2) + '\n')
 
     cell_pin = ["PLUS", "MINUS"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)

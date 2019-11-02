@@ -71,10 +71,10 @@ class UnitCell(CanvasCap):
             (k, p) = (2*i, 1) if x_number==2 else (i, 0)
             grid_x = k + x*grid_cell_x_pitch
             
-            self.addWire( self.m1, 'M1', None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1, 'M1', None, 'Draw', grid_x, (grid_y0, -1), (grid_y1, 1))
             if i < x_number-1:
                 grid_yh = ((i+1)%2)*self.last_y1_track
-                self.addWire( self.m1h, 'M1', None, grid_yh, (i, -1), (i+p+1, 1))
+                self.addWire( self.m1h, 'M1', None, 'Draw', grid_yh, (i, -1), (i+p+1, 1))
             
            
 #
@@ -92,14 +92,14 @@ class UnitCell(CanvasCap):
         grid_y = (x_number%2)*self.last_y1_track
         
         pin = 'PLUS'
-        self.addWire( m2n, 'PLUS', pin, 0, (0, -1), (0, 1))
-        self.addVia( self.v1, 'V1', None, 0, 0)
+        self.addWire( m2n, 'PLUS', pin, 'Draw', 0, (0, -1), (0, 1))
+        self.addVia( self.v1, 'V1', None, 'Draw', 0, 0)
         pin = 'MINUS'
-        self.addWire( self.m2, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p, 1))
-        self.addVia( self.v1, 'V1', None, grid_x1+p, grid_y)
+        self.addWire( self.m2, 'MINUS', pin, 'Draw', grid_y, (grid_x1+p, -1), (grid_x1+p, 1))
+        self.addVia( self.v1, 'V1', None, 'Draw', grid_x1+p, grid_y)
 
         if x == x_cells-1 and y == y_cells-1:            
-            self.addRegion( self.boundary, 'boundary', None,
+            self.addRegion( self.boundary, 'boundary', None, 'Draw',
                             -1, -1,
                             self.last_x_track  + x*grid_cell_x_pitch + 1 + p,
                             self.last_y1_track + y*grid_cell_y_pitch + 1)

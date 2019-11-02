@@ -6,7 +6,7 @@ import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
+def translate_data( macro_name, exclude_pattern, ScaleFactor, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
 
   def flat_rect_to_boundary( r):
     ordering = [ (0,1), (0,3), (2,3), (2,1), (0,1)]
@@ -36,7 +36,7 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
     strct = {"time" : tme, "strname" : nm, "elements" : []}
 
     for layer, rect in layers.items():
-      strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[layer], "datatype" : 0,
+      strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[layer][0], "datatype" : gds_layer_tbl[layer][1],
                                  "xy" : flat_rect_to_boundary( rect)})
 
     return strct
@@ -49,7 +49,7 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
   def scale(x):
 
-    result = x*4
+    result = x*4//ScaleFactor
     if type(result) == float:
       logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
       intresult = int(round(result,0))
@@ -65,11 +65,11 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
   # non-vias
   for obj in data['terminals']:
-      if obj['layer'] in via_gen_tbl: continue
+      if obj['layer']+obj['layertype'] in via_gen_tbl: continue
       if pat and pat.match( obj['netName']): continue
 
-      strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[obj['layer']],
-                        "datatype" : 0,
+      strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl[obj['layer']+obj['layertype']][0],
+                        "datatype" : gds_layer_tbl[obj['layer']+obj['layertype']][1],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
 
   # vias 
@@ -81,16 +81,16 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
 
-      strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[obj['layer']][0], "xy" : [xc, yc]})
+      strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[obj['layer']+obj['layertype']][0], "xy" : [xc, yc]})
 
-  strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'], "datatype" : 5,
+  strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'][0], "datatype" : gds_layer_tbl['bbox'][0],
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
 
   return top
 
-def translate( macro_name, exclude_pattern, fp, ofile, gds_layer_tbl, via_gen_tbl=None, timestamp=None):
+def translate( macro_name, exclude_pattern, ScaleFactor, fp, ofile, gds_layer_tbl, via_gen_tbl=None, timestamp=None):
 
   if via_gen_tbl is None:
     via_gen_tbl = {}
 
-  json.dump(translate_data( macro_name, exclude_pattern, json.load(fp), gds_layer_tbl, via_gen_tbl, timestamp), ofile, indent=4)
+  json.dump(translate_data( macro_name, exclude_pattern, ScaleFactor, json.load(fp), gds_layer_tbl, via_gen_tbl, timestamp), ofile, indent=4)
