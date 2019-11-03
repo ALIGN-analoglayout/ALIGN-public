@@ -28,6 +28,7 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
           "LISDDraw": [98, 0],
           "polyconDraw": [11, 0],
           "pcDraw": [99, 0],
+          "pbDraw": [150, 0],
           "cellarea" : 100,
           "BOUNDARY" : 100,
           "boundaryDraw" : [100, 0],

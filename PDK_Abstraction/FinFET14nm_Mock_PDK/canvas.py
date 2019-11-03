@@ -18,6 +18,7 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         self.gatesPerUnitCell = gate + 2*gateDummy
         self.finsPerUnitCell = fin + 2*finDummy
         self.finDummy = finDummy
+        self.lFin = 16 ## need to be added in the PDK JSON
        # Should be a multiple of 4 for maximum utilization
         assert self.finsPerUnitCell % 4 == 0
         assert fin > 3, "number of fins in the transistor must be more than 2"
@@ -68,6 +69,20 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         self.nwell = self.addGen( Region( 'nwell', 'nwell',
                                             v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
+
+        stoppoint = unitCellLength//2-p['Feol']['activebWidth_H']//2
+        self.activeb = self.addGen( Wire( 'activeb', 'active', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Feol']['activebWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+
+        stoppoint = unitCellLength//2-p['Feol']['pbWidth_H']//2
+        self.pb = self.addGen( Wire( 'pb', 'pb', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Feol']['pbWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))     
+        
+        self.LISDb = self.addGen( Wire( 'LISDb', 'LISD', 'v',
+                                     clg=UncoloredCenterLineGrid( pitch=   p['M1']['Pitch'], width= p['Feol']['LISDWidth'], offset= p['M1']['Offset']),
+                                     spg=EnclosureGrid( pitch=p['M2']['Pitch'], offset=0, stoppoint= p['M2']['Width']//2+p['V1']['VencA_L'], check=True)))
 
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,

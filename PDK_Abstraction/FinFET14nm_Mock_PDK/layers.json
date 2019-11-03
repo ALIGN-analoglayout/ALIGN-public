@@ -553,6 +553,10 @@
 "LISDWidth": 40,
 "dcWidth": 200,
 "v_enclosure": 20,
+"activebWidth": 168,
+"activebWidth_H": 160,
+"pbWidth":180,
+"pbWidth_H": 160,
 "active_enclosure": 42,
 "plActive_s": 71
 },

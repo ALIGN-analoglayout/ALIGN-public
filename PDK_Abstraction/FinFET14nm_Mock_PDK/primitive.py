@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
-    def _addMOS( self, x, y, name='M1', reflect=False):
+    def _addMOS( self, x, y, x_cells, y_cells, name='M1', reflect=False):
 
         def _connect_diffusion(x, name, pin):
             self.addWire( self.m1, None, None, 'Draw', x, (grid_y0, -1), (grid_y1, 1))
@@ -20,10 +20,15 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self.addWire( self.active, None, None, 'Draw', y, (x,1), (x+1,-1))
         self.addWire( self.RVT,    None,    None, 'Draw', y, (x, 1), (x+1, -1))
         self.addWire( self.pc, None, None, 'Draw', y, (x,1), (x+1,-1))
-        for i in range(1,  self.finsPerUnitCell):
+
+        lFin = self.lFin if y == y_cells-1 else 0 ## extra fins are required to place body contact in the last row
+        for i in range(1,  self.finsPerUnitCell+lFin):
             self.addWire( self.fin, None, None, 'Draw', self.finsPerUnitCell*y+i, x, x+1)
         for i in range(self.gatesPerUnitCell):
             self.addWire( self.pl, None, None, 'Draw', self.gatesPerUnitCell*x+i,   (y,0), (y,1))
+        
+       
+            
 
         # Source, Drain, Gate Connections
 
@@ -33,6 +38,19 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, 'Draw', gate_x , (grid_y0, -1), (grid_y1, 1))
         self.addVia( self.va, f'{name}:G', None, 'Draw', gate_x, (y*self.m2PerUnitCell//2, 1))
+         # Body connection
+        h = self.m2PerUnitCell
+        gu = self.gatesPerUnitCell
+        if y ==y_cells-1:
+            self.addWire( self.activeb, None, None, 'Draw', y, (x,1), (x+1,-1))
+            self.addWire( self.pb, None, None, 'Draw', y, (x,1), (x+1,-1)) 
+            self.addWire( self.m1, None, None, 'Draw', gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
+            self.addVia( self.va, f'{name}:B', None, 'Draw', gate_x, ((y+1)*h//2, self.lFin//4))
+            self.addVia( self.v1, None, None, 'Draw', gate_x, ((y+1)*h//2, self.lFin//4))
+            self.addWire( self.LISDb, None, None, 'Draw', gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+            if x == x_cells-1:
+                self.addWire( self.m2, None, 'body', 'Draw', ((y+1)*h//2, self.lFin//4), (0, 1), (x_cells*gu, -1))  
+
         self._xpins[name]['G'].append(gate_x)
         # Connect Source & Drain
         if reflect:
@@ -44,6 +62,7 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
     def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
+        
         for track, (net, conn) in enumerate(connections.items(), start=1):
             contacts = {track for inst, pins in self._xpins.items()
                               for pin, m1tracks in pins.items()
@@ -103,24 +122,24 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
-                    self._addMOS(x, y, names[0], False)
+                    self._addMOS(x, y, x_cells, y_cells, names[0], False)
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
-                    self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2)
+                    self._addMOS(x, y, x_cells, y_cells, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2)
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
-                    self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False)
+                    self._addMOS(x, y, x_cells, y_cells, names[((x % 2) + (y % 2)) % 2], False)
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
-                    self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
+                    self._addMOS(x, y, x_cells, y_cells, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False)
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, connections)
@@ -131,12 +150,13 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.nselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
+        
 
     def addPMOSArray( self, x_cells, y_cells, pattern, connections):
 
         self._addMOSArray(x_cells, y_cells, pattern, connections)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
-        self.addRegion( self.nwell, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.pselect, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
+        self.addRegion( self.nwell, None, None, 'Draw', (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
