@@ -123,11 +123,15 @@ class Circuit(networkx.Graph):
         assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         counter = 0
         for match in matches:
-            # Some prior transformation has made the current one invalid
+            # Cannot replace as some prior transformation has made the current one invalid
             if any(x not in self.nodes for x in match):
                 continue
+            # Cannot replace as internal node is used elsewhere in circuit
+            internal_nodes = [x for x, y in match.items() if y not in subckt._pins]
+            if not all(x in match for node in internal_nodes for x in self.neighbors(node)):
+                continue
             # Remove nodes not on subckt boundary
-            self.remove_nodes_from([x for x, y in match.items() if y not in subckt._pins])
+            self.remove_nodes_from(internal_nodes)
             # Create new instance of subckt
             name, counter = f'X_{subckt.__name__}_{counter}', counter + 1
             assert name not in self.elements
