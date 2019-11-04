@@ -30,58 +30,58 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         activeWidth =  p['Fin']['Pitch']*fin
         activeOffset = activeWidth//2 + finDummy*p['Fin']['Pitch']-p['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
-        RVTWidth = activeWidth + 2*p['Feol']['active_enclosure']
+        RVTWidth = activeWidth + 2*p['Active']['active_enclosure']
 
-        self.pl = self.addGen( Wire( 'pl', 'poly', 'v',
+        self.pl = self.addGen( Wire( 'pl', 'Poly', 'v',
                                      clg=UncoloredCenterLineGrid( pitch= p['Poly']['Pitch'], width= p['Poly']['Width'], offset= p['Poly']['Offset']),
                                      spg=SingleGrid( offset= p['M2']['Offset'], pitch=self.unitCellHeight)))
 
 
-        self.fin = self.addGen( Wire( 'fin', 'fin', 'h',
+        self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= p['Fin']['Pitch'], width= p['Fin']['Width'], offset= p['Fin']['Offset']),
                                       spg=SingleGrid( offset=0, pitch=unitCellLength)))
 
         stoppoint = (gateDummy-1)* p['Poly']['Pitch'] +  p['Poly']['Offset']
-        self.active = self.addGen( Wire( 'active', 'active', 'h',
+        self.active = self.addGen( Wire( 'active', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
-        self.RVT = self.addGen( Wire( 'RVT', 'polycon', 'h',
+        self.RVT = self.addGen( Wire( 'RVT', 'Rvt', 'h',
                                       clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
                                       spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         stoppoint = activeOffset-activeWidth//2
-        self.LISD = self.addGen( Wire( 'LISD', 'LISD', 'v',
-                                         clg=UncoloredCenterLineGrid( pitch=p['M1']['Pitch'], width=p['Feol']['LISDWidth'], offset=p['M1']['Offset']),
+        self.LISD = self.addGen( Wire( 'LISD', 'Lisd', 'v',
+                                         clg=UncoloredCenterLineGrid( pitch=p['M1']['Pitch'], width=p['Lisd']['LisdWidth'], offset=p['M1']['Offset']),
                                          spg=EnclosureGrid( pitch=self.unitCellHeight, offset=0, stoppoint=stoppoint, check=True)))
 
-        stoppoint = gateDummy*p['Poly']['Pitch']+p['Poly']['Offset']-p['Feol']['PcExt']-p['Poly']['Width']//2
-        self.pc = self.addGen( Wire( 'pc', 'pc', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Feol']['PcWidth'], offset=p['M2']['Pitch']),
+        stoppoint = gateDummy*p['Poly']['Pitch']+p['Poly']['Offset']-p['Pc']['PcExt']-p['Poly']['Width']//2
+        self.pc = self.addGen( Wire( 'pc', 'Pc', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Pc']['PcWidth'], offset=p['M2']['Pitch']),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
-        self.nselect = self.addGen( Region( 'nselect', 'nselect',
+        self.nselect = self.addGen( Region( 'nselect', 'Nselect',
                                             v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
-        self.pselect = self.addGen( Region( 'pselect', 'pselect',
+        self.pselect = self.addGen( Region( 'pselect', 'Pselect',
                                             v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
-        self.nwell = self.addGen( Region( 'nwell', 'nwell',
+        self.nwell = self.addGen( Region( 'nwell', 'Nwell',
                                             v_grid=CenteredGrid( offset= p['Poly']['Pitch']//2, pitch= p['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
 
-        stoppoint = unitCellLength//2-p['Feol']['activebWidth_H']//2
-        self.activeb = self.addGen( Wire( 'activeb', 'active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Feol']['activebWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
+        stoppoint = unitCellLength//2-p['Active']['activebWidth_H']//2
+        self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Active']['activebWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
-        stoppoint = unitCellLength//2-p['Feol']['pbWidth_H']//2
-        self.pb = self.addGen( Wire( 'pb', 'pb', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Feol']['pbWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
+        stoppoint = unitCellLength//2-p['Pb']['pbWidth_H']//2
+        self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Pb']['pbWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))     
         
-        self.LISDb = self.addGen( Wire( 'LISDb', 'LISD', 'v',
-                                     clg=UncoloredCenterLineGrid( pitch=   p['M1']['Pitch'], width= p['Feol']['LISDWidth'], offset= p['M1']['Offset']),
+        self.LISDb = self.addGen( Wire( 'LISDb', 'Lisd', 'v',
+                                     clg=UncoloredCenterLineGrid( pitch=   p['M1']['Pitch'], width= p['Lisd']['LisdWidth'], offset= p['M1']['Offset']),
                                      spg=EnclosureGrid( pitch=p['M2']['Pitch'], offset=0, stoppoint= p['M2']['Width']//2+p['V1']['VencA_L'], check=True)))
 
         self.va = self.addGen( Via( 'va', 'V0',

@@ -59,8 +59,8 @@ class Pdk(object):
 
     def addMetal(self, **kwargs):
         params = ['Layer',
-                  'LayerNo',
-                  'Datatype',
+                  'GdsLayerNo',
+                  'GdsDatatype',
                   'Direction',
                   'Color',
                   'Pitch',
@@ -105,8 +105,8 @@ class Pdk(object):
 
     def addVia(self, **kwargs):
         params = ['Layer',
-                  'LayerNo',
-                  'Datatype',
+                  'GdsLayerNo',
+                  'GdsDatatype',
                   'Stack',
                   'SpaceX',
                   'SpaceY',
@@ -118,7 +118,7 @@ class Pdk(object):
                   'VencP_H',
                   'MinNo',
                   #'DesignRules',
-                  'UnitR']
+                  'R']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
@@ -146,4 +146,7 @@ class Pdk(object):
         return layer_stack
 
     def get_gds_map(self):
-        return {x+y: [self.pdk[x]['LayerNo'], self.pdk[x]['Datatype'][y]] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x] for y in self.pdk[x]['Datatype']}
+        return {x+y: [self.pdk[x]['GdsLayerNo'], self.pdk[x]['GdsDatatype'][y]] for x in self.pdk.keys() if 'GdsLayerNo' in self.pdk[x] for y in self.pdk[x]['GdsDatatype']}
+
+    def get_lef_exclude(self):
+        return {x for x in self.pdk.keys() if x.startswith('M') == False}

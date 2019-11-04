@@ -13,29 +13,7 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
   if p is None:
     p = pdk.Pdk().load(pdkfile)
   gds_layer_map = p.get_gds_map()
-
-  gds_layer_map.update( {
-          "nwellDraw": [1, 0],
-          "finDraw": [2, 0],
-          "polyDraw": [3, 0],
-          "GCUTDraw": [4, 0],
-          "activeDraw": [5, 0],
-          "SDTDraw" : [6, 0],
-          "nselectDraw" : [7, 0],
-          "pselectDraw" : [8, 0],
-          "SLVTDraw" : [9, 0],
-          "LVTDraw" : [10, 0],
-          "LISDDraw": [98, 0],
-          "polyconDraw": [11, 0],
-          "pcDraw": [99, 0],
-          "pbDraw": [150, 0],
-          "cellarea" : 100,
-          "BOUNDARY" : 100,
-          "boundaryDraw" : [100, 0],
-          "bbox" : [100, 5],
-          "diearea" : 100
-      } )
-
+  
   via_gen_tbl = {
       "V2Draw": (
           "M3_M2_CDNS_543864435520",

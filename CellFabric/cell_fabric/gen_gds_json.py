@@ -83,7 +83,7 @@ def translate_data( macro_name, exclude_pattern, ScaleFactor, data, gds_layer_tb
 
       strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[obj['layer']+obj['layertype']][0], "xy" : [xc, yc]})
 
-  strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['bbox'][0], "datatype" : gds_layer_tbl['bbox'][0],
+  strct["elements"].append ({"type": "boundary", "layer" : gds_layer_tbl['Bbox'][0], "datatype" : gds_layer_tbl['Bbox'][0],
                     "xy" : flat_rect_to_boundary( list(map(scale,data['bbox'])))})
 
   return top

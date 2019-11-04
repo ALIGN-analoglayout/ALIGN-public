@@ -46,7 +46,7 @@ class ParasiticExtraction():
                         else self.compute_dist( rect[1], rect[3])
                 (self.pi if mode == "Pi" else self.tee)( t0, t1, self.canvas.pdk[ly]['UnitR']['Mean']*dist, self.canvas.pdk[ly]['UnitC']['Mean']*dist )
             elif ly.startswith('V'):
-                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['UnitR']['Mean']))
+                self.components.append( (self.resistor(), t0, t1, self.canvas.pdk[ly]['R']['Mean']))
             else:
                assert False, ly
 
