@@ -118,16 +118,14 @@ class Circuit(networkx.Graph):
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, subckt._circuit, node_match=node_match, edge_match=edge_match)
         return list(matcher.subgraph_isomorphisms_iter())
-        # return [x for x in matcher.subgraph_isomorphisms_iter() if \
-        #     networkx.algorithms.isomorphism.GraphMatcher(subckt._circuit, self.subgraph(x.keys()), node_match, edge_match).is_isomorphic()]
 
     def replace_matches_with_subckt(self, matches, subckt):
         assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         counter = 0
-        print(subckt)
-        print(subckt.nodes)
-        print(matches)
         for match in matches:
+            # Some prior transformation has made the current one invalid
+            if any(x not in self.nodes for x in match):
+                continue
             # Remove nodes not on subckt boundary
             self.remove_nodes_from([x for x, y in match.items() if y not in subckt._pins])
             # Create new instance of subckt
