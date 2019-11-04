@@ -87,11 +87,33 @@ def test_circuit(TwoTerminalDevice, ThreeTerminalDevice):
     assert all(x in ckt.nodes for x in nodes)
     assert all(x in nodes for x in ckt.nodes)
     edges = [# X1, net, pin
-             ('X1', 'net1', 'a'), ('X1', 'net2', 'b'),
-             ('net1', 'X1', 'a'), ('net2', 'X1', 'b'),
+             ('X1', 'net1', {'a'}), ('X1', 'net2', {'b'}),
+             ('net1', 'X1', {'a'}), ('net2', 'X1', {'b'}),
              # X2, net, pin
-             ('X2', 'net1', 'a'), ('X2', 'net2', 'b'), ('X2', 'net3', 'c'),
-             ('net1', 'X2', 'a'), ('net2', 'X2', 'b'), ('net3', 'X2', 'c')]
+             ('X2', 'net1', {'a'}), ('X2', 'net2', {'b'}), ('X2', 'net3', {'c'}),
+             ('net1', 'X2', {'a'}), ('net2', 'X2', {'b'}), ('net3', 'X2', {'c'})]
+    assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
+    assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
+
+def test_circuit_shared_net(TwoTerminalDevice, ThreeTerminalDevice):
+    ckt = Circuit()
+    X1 = ckt.add_element(TwoTerminalDevice('X1', 'net1', 'net2'))
+    X2 = ckt.add_element(ThreeTerminalDevice('X2', 'net1', 'net1', 'net2'))
+    assert ckt.elements == [X1, X2]
+    assert ckt.element('X1') == X1
+    assert ckt.element('X2') == X2
+    assert ckt.nets == ['net1', 'net2']
+    # Advanced graphx functionality test
+    nodes = ['X1', 'X2',
+             'net1', 'net2']
+    assert all(x in ckt.nodes for x in nodes)
+    assert all(x in nodes for x in ckt.nodes)
+    edges = [# X1, net, pin
+             ('X1', 'net1', {'a'}), ('X1', 'net2', {'b'}),
+             ('net1', 'X1', {'a'}), ('net2', 'X1', {'b'}),
+             # X2, net, pin
+             ('X2', 'net1', {'a', 'b'}), ('X2', 'net2', {'c'}),
+             ('net1', 'X2', {'a', 'b'}), ('net2', 'X2', {'c'})]
     assert all(x in ckt.edges.data('pin') for x in edges), ckt.edges
     assert all(x in edges for x in ckt.edges.data('pin')), ckt.edges
 
@@ -146,5 +168,5 @@ def test_replace_matches_with_subckt(simple_netlist, matching_subckt):
     ckt.replace_matches_with_subckt(matches, subckt)
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
     assert 'X_test_subckt_0' in ckt.nodes
-    new_edges = [('X_test_subckt_0', 'net3', 'pin3'), ('X_test_subckt_0', 'net1', 'pin1'), ('X_test_subckt_0', 'net2', 'pin2')]
+    new_edges = [('X_test_subckt_0', 'net3', {'pin3'}), ('X_test_subckt_0', 'net1', {'pin1'}), ('X_test_subckt_0', 'net2', {'pin2'})]
     assert all(x in ckt.edges.data('pin') for x in new_edges)

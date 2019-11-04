@@ -104,8 +104,11 @@ class Circuit(networkx.Graph):
     def add_element(self, element):
         assert isinstance(element, NTerminalDevice)
         for pin, net in element.pins.items():
-            self.add_edge(element.name, net, pin=pin)
-            self.nodes[element.name]['instance'] = element
+            if self.has_edge(element.name, net):
+                self[element.name][net]['pin'].add(pin)
+            else:
+                self.add_edge(element.name, net, pin={pin})
+                self.nodes[element.name]['instance'] = element
         return element
 
     def find_matching_subgraphs(self, subckt,
@@ -115,10 +118,15 @@ class Circuit(networkx.Graph):
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, subckt._circuit, node_match=node_match, edge_match=edge_match)
         return list(matcher.subgraph_isomorphisms_iter())
+        # return [x for x in matcher.subgraph_isomorphisms_iter() if \
+        #     networkx.algorithms.isomorphism.GraphMatcher(subckt._circuit, self.subgraph(x.keys()), node_match, edge_match).is_isomorphic()]
 
     def replace_matches_with_subckt(self, matches, subckt):
         assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         counter = 0
+        print(subckt)
+        print(subckt.nodes)
+        print(matches)
         for match in matches:
             # Remove nodes not on subckt boundary
             self.remove_nodes_from([x for x, y in match.items() if y not in subckt._pins])
