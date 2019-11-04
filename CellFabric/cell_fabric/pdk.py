@@ -150,3 +150,24 @@ class Pdk(object):
 
     def get_lef_exclude(self):
         return {x for x in self.pdk.keys() if x.startswith('M') == False}
+
+    def get_via_table(self):
+        via_table = {}
+        i = 1
+        for x in self.pdk.keys():
+            if x.startswith('V') and x != 'V0':
+                lower = self.pdk[x]['Stack'][0]
+                upper = self.pdk[x]['Stack'][1]
+                (x0, y0) = (20*self.pdk[x]['WidthX'], 20*self.pdk[x]['WidthY'])
+                (elx, ely) = (40*self.pdk[x]['VencA_L'], 0*self.pdk[x]['VencP_L'])
+                (ehx, ehy) = (40*self.pdk[x]['VencA_H'], 0*self.pdk[x]['VencP_H'])
+                via_table1 = {x+'Draw':(x+'Draw', 
+                                {x+'Draw':[-x0,-y0, x0, y0], 
+                                 lower+'Draw':[-x0-ely,-y0-elx, x0+ely, y0+elx] if i%2 !=0 else [-y0-elx, -x0-ely, y0+elx, x0+ely], 
+                                 upper+'Draw':[-x0-ehx,-y0-ehy, x0+ehx, y0+ehy] if i%2 !=0 else [-y0-ehy, -x0-ehx, y0+ehy, x0+ehx]}
+                                 )
+                              }
+                i = i+1
+                via_table.update(via_table1)
+        return via_table
+

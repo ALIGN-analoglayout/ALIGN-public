@@ -13,26 +13,7 @@ def translate( macro_name, exclude_pattern, fp, ofile, timestamp=None, p=None):
   if p is None:
     p = pdk.Pdk().load(pdkfile)
   gds_layer_map = p.get_gds_map()
-  
-  via_gen_tbl = {
-      "V2Draw": (
-          "M3_M2_CDNS_543864435520",
-          {
-          "V2Draw": [-640,-640,640,640],
-          "M2Draw": [-1440,-640,1440,640],
-          "M3Draw": [-640,-1440,640,1440]
-          }
-      ),
-      "V1Draw": (
-          "M2_M1_CDNS_543864435521",
-          {
-          "V1Draw": [-640,-640,640,640],
-          "M1Draw": [-640,-1440,640,1440],
-          "M2Draw": [-1440,-640,1440,640]
-          }
-      )
-  }
-
+  via_gen_tbl = p.get_via_table()
   return gen_gds_json.translate(macro_name, exclude_pattern, ScaleFactor, fp, ofile, gds_layer_map, via_gen_tbl, timestamp)
 
 
