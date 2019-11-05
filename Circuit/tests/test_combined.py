@@ -29,7 +29,8 @@ def test_subckt_matching():
     # Perform subgraph matching & replacement
     ckt = parser.library['OTA']._circuit
     primitives = list(primitivelib.values())
-    primitives.sort(key=lambda x: len(x.elements)*1000 - len(x._pins) - len(x.nets), reverse=True)
+    # Sort primitives using hypothetical complexity cost
+    primitives.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x._pins) + len(x.nets), reverse=True)
     assert len(ckt.elements) == 10
     assert all(x.name.startswith('M') for x in ckt.elements)
     ckt.replace_matching_subgraphs(primitives)
