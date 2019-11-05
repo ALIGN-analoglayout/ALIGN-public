@@ -1,4 +1,5 @@
 import networkx
+from collections.abc import Iterable
 
 class NTerminalDevice():
 
@@ -119,7 +120,16 @@ class Circuit(networkx.Graph):
             self, subckt._circuit, node_match=node_match, edge_match=edge_match)
         return list(matcher.subgraph_isomorphisms_iter())
 
-    def replace_matches_with_subckt(self, matches, subckt):
+    def replace_matching_subgraphs(self, primitives,
+            node_match=lambda x, y: issubclass(type(x.get('instance')), type(y.get('instance'))),
+            edge_match=lambda x, y: x.get('pin') == y.get('pin')):
+        if not isinstance(primitives, Iterable):
+            primitives = [primitives]
+        for subckt in primitives:
+            matches = self.find_matching_subgraphs(subckt, node_match, edge_match)
+            self._replace_matches_with_subckt(matches, subckt)
+
+    def _replace_matches_with_subckt(self, matches, subckt):
         assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         counter = 0
         for match in matches:

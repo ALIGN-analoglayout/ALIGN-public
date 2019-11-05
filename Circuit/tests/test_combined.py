@@ -32,8 +32,6 @@ def test_subckt_matching():
     primitives.sort(key=lambda x: len(x.elements)*1000 - len(x._pins) - len(x.nets), reverse=True)
     assert len(ckt.elements) == 10
     assert all(x.name.startswith('M') for x in ckt.elements)
-    for subckt in primitives:
-        matches = ckt.find_matching_subgraphs(subckt)
-        ckt.replace_matches_with_subckt(matches, subckt)
+    ckt.replace_matching_subgraphs(primitives)
     assert len(ckt.elements) == 5
     assert all(x.name.startswith('X') for x in ckt.elements)

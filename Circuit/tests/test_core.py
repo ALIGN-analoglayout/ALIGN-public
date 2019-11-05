@@ -162,10 +162,10 @@ def test_find_matching_subgraphs(simple_netlist, matching_subckt, ThreeTerminalD
     subckt3.add_element(TwoTerminalDevice('X2', 'pin3', 'pin4'))
     assert len(ckt.find_matching_subgraphs(subckt3)) == 4
 
-def test_replace_matches_with_subckt(simple_netlist, matching_subckt):
+def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
     matches = [{'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}]
-    ckt.replace_matches_with_subckt(matches, subckt)
+    ckt.replace_matching_subgraphs(subckt)
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
     assert 'X_test_subckt_0' in ckt.nodes
     new_edges = [('X_test_subckt_0', 'net3', {'pin3'}), ('X_test_subckt_0', 'net1', {'pin1'}), ('X_test_subckt_0', 'net2', {'pin2'})]
