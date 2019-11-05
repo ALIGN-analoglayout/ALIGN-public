@@ -112,17 +112,25 @@ class Circuit(networkx.Graph):
                 self.nodes[element.name]['instance'] = element
         return element
 
-    def find_matching_subgraphs(self, subckt,
-            node_match=lambda x, y: issubclass(type(x.get('instance')), type(y.get('instance'))),
-            edge_match=lambda x, y: x.get('pin') == y.get('pin')):
+    @staticmethod
+    def default_node_match(x, y):
+        return issubclass(type(x.get('instance')), type(y.get('instance')))
+
+    @staticmethod
+    def default_edge_match(x, y):
+        return x.get('pin') == y.get('pin')
+
+    def find_matching_subgraphs(self, subckt, node_match=None, edge_match=None):
+        if node_match is None:
+            node_match = self.default_node_match
+        if edge_match is None:
+            edge_match = self.default_edge_match
         assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, subckt._circuit, node_match=node_match, edge_match=edge_match)
         return list(matcher.subgraph_isomorphisms_iter())
 
-    def replace_matching_subgraphs(self, primitives,
-            node_match=lambda x, y: issubclass(type(x.get('instance')), type(y.get('instance'))),
-            edge_match=lambda x, y: x.get('pin') == y.get('pin')):
+    def replace_matching_subgraphs(self, primitives, node_match=None, edge_match=None):
         if not isinstance(primitives, Iterable):
             primitives = [primitives]
         for subckt in primitives:
