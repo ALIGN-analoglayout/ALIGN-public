@@ -36,11 +36,9 @@ def parser():
     return parser
 
 def test_lexer_basic(setup_basic):
-    types = ['TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN']
-    tokens = list(SpiceParser._generate_tokens(setup_basic))
-    print(tokens)
-    assert len(tokens) == len(types), tokens
-    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
+    str_ = setup_basic
+    types = ['ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_lexer_with_comments1(setup_basic):
     str_ = '''* Some comment here
@@ -50,9 +48,7 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
     assert tokens.pop(0).type == 'NEWL'
-    print(tokens)
-    print(list(SpiceParser._generate_tokens(setup_basic)))
-    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
+    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
 def test_lexer_with_comments2(setup_basic):
     str_ = '''; Some comment here
@@ -62,19 +58,25 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
     assert tokens.pop(0).type == 'NEWL'
-    print(tokens)
-    print(list(SpiceParser._generate_tokens(setup_basic)))
-    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
+    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
 def test_lexer_multiline(setup_multiline):
     str_ = setup_multiline
     types = ['NEWL',
-             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL',
-             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL']
-    tokens = list(SpiceParser._generate_tokens(str_))
-    print(tokens)
-    assert len(tokens) == len(types), tokens
-    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
+def test_lexer_realistic(setup_realistic):
+    str_ = setup_realistic
+    types = ['NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):
     parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
