@@ -430,6 +430,7 @@ struct CCCap {
   bool cap_ratio = 0;
   int cap_r = -1;
   int cap_s = -1;
+  bool dummy_flag = 1;
 };
 
 struct R_const {

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <assert.h>
 
 bool PnRdatabase::ReadLEF(string leffile) {
   cout<<"PnRDB-Info: reading LEF file "<<leffile<<endl;
@@ -133,11 +134,13 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } 
       } else if (stage==3) { // within PORT
         if((found=def.find("LAYER"))!=string::npos) {
+          //Metal_Flag = true;
           temp=get_true_word(found,def,0,';',p);
           macroPins.back().pinContacts.resize( macroPins.back().pinContacts.size()+1 );
           macroPins.back().pinContacts.back().metal=temp[1];
           //cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
         } else if((found=def.find("RECT"))!=string::npos) {
+          //Metal_Flag = true;
           temp=get_true_word(found,def,0,';',p);
           int LLx=int(stod(temp[1])*unitScale);
           int LLy=int(stod(temp[2])*unitScale);
@@ -158,6 +161,10 @@ bool PnRdatabase::ReadLEF(string leffile) {
           //cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
         } else if((found=def.find(portEnd))!=string::npos) {
           //cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
+          if(macroPins.back().pinContacts.size()==0 or macroPins.back().pinContacts.back().metal==""){
+             std::cout<<"Error: LEF Physical Pin information Missing"<<std::endl;
+             assert(0);          
+          }
           stage=2;
         }
       }

@@ -323,7 +323,9 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -b " + block_name +
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +
-                     " -Y " + yval )
+                     " -Y " + yval +
+                     " --width " + str(values['w']) +
+                     " --length " + str(values['l']))
         else:
             logging.info("No proper marameters found for cell generation")
             block_name = name+"_"+size       
