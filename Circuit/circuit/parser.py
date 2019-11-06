@@ -6,7 +6,9 @@ from .elements import Library
 
 # Token specification
 numericval = r'[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?[A-Z]*'
-identifier = r'\.?[A-Z0-9_]+[!]?'
+identifier = r'[^\s{}()=;]+'
+operator = r'\s*[*+-/%]\s*'
+expr = fr'{{(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{identifier}))*}}'
 
 pats = []
 pats.append( r'(?P<NLCOMMENT>(^|[\n\r])+\*[^\n\r]*)')
@@ -14,7 +16,7 @@ pats.append( r'(?P<COMMENT>\s*;[^\n\r]*)')
 pats.append( r'(?P<CONTINUE>(^|[\n\r])+\+)')
 pats.append( r'(?P<NEWL>[\n\r]+)')
 pats.append( r'(?P<EQUALS>\s*=\s*)')
-pats.append( fr'(?P<ARG>{numericval}|{identifier})')
+pats.append( fr'(?P<ARG>{expr}|{numericval}|{identifier})')
 pats.append( r'(?P<WS>\s+)')
 
 # re.IGNORECASE is not required since everything is capitalized prior to tokenization
