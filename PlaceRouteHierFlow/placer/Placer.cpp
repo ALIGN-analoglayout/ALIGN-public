@@ -43,7 +43,7 @@ bool Placer::GenerateValidSolution(design& mydesign, SeqPair& curr_sp, ConstGrap
       //ConstGraph infea_sol(mydesign, curr_sp, mode);
       //infea_sol.AddLargePenalty(); // ensure this infeasible soluton has huge cost
       //curr_sol=infea_sol;
-      return false; 
+      return false;
     }
     //curr_sp.PrintSeqPair();
     // 2. Generate constraint graphs
@@ -365,6 +365,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   GenerateValidSolution(designData, curr_sp, curr_sol, mode);
   //curr_sol.PrintConstGraph();
   double curr_cost=curr_sol.CalculateCost(designData, curr_sp);
+  //double curr_cost=curr_sol.PerformanceDriven_CalculateCost(designData, curr_sp);
   cout<<"Placer-Info: initial cost = "<<curr_cost<<endl;
 
   cout<<"Placer-Info: status ";cout.flush();
@@ -443,6 +444,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       ConstGraph trial_sol;
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
         double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
+        //double trial_cost=trial_sol.PerformanceDrive_CalculateCost(designData, trial_sp);
         bool Smark=false;
         delta_cost=trial_cost-curr_cost;
         if(delta_cost<0) {Smark=true;
@@ -471,6 +473,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       if(update_index==updateThrd){
         curr_sol.Update_parameters(designData, curr_sp);
         curr_cost = curr_sol.CalculateCost(designData, curr_sp);
+        //curr_cost = curr_sol.PerformanceDriven_CalculateCost(designData, curr_sp);
         std::cout<<"updated cost: "<<curr_cost<<std::endl;
         oData[curr_cost]=curr_sp;
         ReshapeSeqPairMap(oData, nodeSize);
@@ -521,6 +524,7 @@ void Placer::PlacementRegularAspectRatio(std::vector<PnRDB::hierNode>& nodeVec, 
   curr_sp.PrintSeqPair();
   ConstGraph curr_sol;
   std::map<double, SeqPair> spVec=PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize, effort);
+  //std::map<double, SeqPair> spVec=PerformanceDriven_PlacementCoreAspectRatio(designData, curr_sp, curr_sol, mode, nodeSize, effort);
   curr_sol.updateTerminalCenter(designData, curr_sp);
   //curr_sol.PlotPlacement(designData, curr_sp, opath+nodeVec.back().name+"opt.plt");
   if((int)spVec.size()<nodeSize) {

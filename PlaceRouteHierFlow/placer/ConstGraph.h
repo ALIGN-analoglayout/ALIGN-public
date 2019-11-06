@@ -175,6 +175,10 @@ class ConstGraph
     void AddLargePenalty();
     void UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node);
     void UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+    double PerformanceDriven_CalculateCost(design& caseNL, SeqPair& caseSP);
+    void ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name);
+    double Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name);
+    
 };
 
 #endif

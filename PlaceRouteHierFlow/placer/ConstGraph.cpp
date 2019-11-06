@@ -2448,6 +2448,39 @@ double ConstGraph::CalculateArea() {
   return (double)(this->HGraph.at(sinkNode).position)*(this->VGraph.at(sinkNode).position);
 }
 
+
+//a function used to calculated the Deep learning model based performance
+double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& caseSP){
+
+  double cost = 0;
+  std::vector<double> feature_value;
+  std::vector<std::string> feature_name;
+  //step 1. extract the pin informance of each net used for the feature of deep learning model
+  ExtractFeatures(caseNL, caseSP, feature_value, feature_name);
+  //step 2. call the deep learning model in c++ 
+  double predicted_gain = Deep_learning_model_Prediction(feature_value,feature_name); //maybe gain a model, uf a model
+  //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
+  double gain_weight = 1.0; 
+  cost = cost + predicted_gain*gain_weight;
+  return cost;
+
+
+}
+
+void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name){
+
+
+
+
+
+}
+
+double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name){
+  //needs more modifacation
+
+
+}
+
 double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   double cost=0;
   CalculateLongestPath(sourceNode, this->HGraph, false);
