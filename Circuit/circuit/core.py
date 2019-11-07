@@ -178,7 +178,7 @@ class Circuit(networkx.Graph):
         for element in subcktinst._circuit.elements:
             newelement = element.__class__(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
-                **{key: eval(val[1:-1], subcktinst.parameters) if isinstance(val, str) and val.startswith('{') else val for key, val in element.parameters.items()})
+                **{key: eval(val[1:-1], {}, subcktinst.parameters) if isinstance(val, str) and val.startswith('{') else val for key, val in element.parameters.items()})
             self.add_element(newelement)
 
 # WARNING: Do not add attributes/methods which may exist
