@@ -44,7 +44,7 @@ class NTerminalDevice():
         assert isinstance(val, (str, int, float))
         assert issubclass(ty, (str, int, float))
         # Nothing to do. Return early
-        if isinstance(val, ty):
+        if isinstance(val, ty) or (isinstance(val, str) and val.startswith('{')):
             return val
         # Pretty print SPICE compatible numbers
         if issubclass(ty, str):
@@ -59,10 +59,11 @@ class NTerminalDevice():
             try:
                 val = NTerminalDevice.str2float(val)
             except ValueError:
-                return val # probably a parameter reference
+                assert False, f"Attempting to cast non-numeric value {val} to a number" + "\n" + \
+                    "If this is a parameter, please encapsulate in {} to be compliant with Xyce"
         # Check if it is safe to cast to int
         if issubclass(ty, int):
-            assert isinstance(val, int) or val.is_integer(), "Attempting to cast non-integral number to int"
+            assert isinstance(val, int) or val.is_integer(), f"Attempting to cast non-integral number {val} to int"
         # Final casting
         return ty(val)
 
@@ -95,7 +96,7 @@ class Circuit(networkx.Graph):
         return [v['instance'] for v in self.nodes.values() if self._is_element(v)]
 
     def element(self, name):
-        assert name in self.nodes and self._is_element(self.nodes[name])
+        assert name in self.nodes and self._is_element(self.nodes[name]), name
         return self.nodes[name]['instance']
 
     @property
@@ -158,6 +159,27 @@ class Circuit(networkx.Graph):
             inst = subckt(name, *[pinmap[x] for x in subckt._pins])
             # attach instance to current graph
             self.add_element(inst)
+
+    def flatten(self, depth=999):
+        ''' depth = 999 helps protect against recursive subckt definitions '''
+        depth = depth - 1
+        for subcktinst in (x for x in self.elements if hasattr(x, '_circuit')):
+            self._replace_subckt_with_components(subcktinst)
+        if any((hasattr(x, '_circuit') for x in self.elements)) and depth > 0:
+            self.flatten(depth)
+        for element in self.elements:
+            if not element.name.startswith(element._prefix):
+                element.name = f'{element._prefix}_{element.name}'
+
+    def _replace_subckt_with_components(self, subcktinst):
+        # Remove element from graph
+        self.remove_node(subcktinst.name)
+        # Add new elements
+        for element in subcktinst._circuit.elements:
+            newelement = element.__class__(f'{subcktinst.name}_{element.name}',
+                *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
+                **{key: eval(val[1:-1], subcktinst.parameters) if isinstance(val, str) and val.startswith('{') else val for key, val in element.parameters.items()})
+            self.add_element(newelement)
 
 # WARNING: Do not add attributes/methods which may exist
 #          in Circuit to _SubCircuitMetaClass/_SubCircuit

@@ -141,9 +141,9 @@ def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
 
 @pytest.fixture
 def matching_subckt(ThreeTerminalDevice):
-    subckt = SubCircuit('test_subckt', 'pin1', 'pin2', 'pin3')
-    subckt.add_element(ThreeTerminalDevice('X1', 'pin3', 'pin1', 'pin1'))
-    subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2'))
+    subckt = SubCircuit('test_subckt', 'pin1', 'pin2', 'pin3', myparameter=1)
+    subckt.add_element(ThreeTerminalDevice('X1', 'pin3', 'pin1', 'pin1', myparameter=1))
+    subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2', myparameter='{myparameter}'))
     return subckt
 
 def test_find_matching_subgraphs(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
@@ -170,3 +170,40 @@ def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     assert 'X_test_subckt_0' in ckt.nodes
     new_edges = [('X_test_subckt_0', 'net3', {'pin3'}), ('X_test_subckt_0', 'net1', {'pin1'}), ('X_test_subckt_0', 'net2', {'pin2'})]
     assert all(x in ckt.edges.data('pin') for x in new_edges)
+
+@pytest.fixture
+def heirarchical_ckt(matching_subckt, ThreeTerminalDevice):
+    ckt = Circuit()
+    subckt = SubCircuit('parent_subckt', 'pin1', 'pin2')
+    subckt.add_element(matching_subckt('X1', 'pin1', 'pin2', 'net1', myparameter=2))
+    subckt.add_element(ThreeTerminalDevice('X2', 'net1', 'pin1', 'pin2', myparameter=1))
+    ckt.add_element(subckt('XSUB1', 'net1', 'net2'))
+    ckt.add_element(matching_subckt('XSUB2', 'net1', 'net2', 'net3', myparameter=3))
+    return ckt
+
+def test_flatten(heirarchical_ckt):
+    ckt = heirarchical_ckt
+    ckt.flatten()
+    myparametermap = {
+        'XSUB1_X2': 1,
+        'XSUB1_X1_X1': 1,
+        'XSUB1_X1_X2': 2,
+        'XSUB2_X1': 1,
+        'XSUB2_X2': 3
+    }
+    assert {x.name for x in ckt.elements} == set(myparametermap.keys())
+    assert set(ckt.nets) == {'net1', 'net2', 'net3', 'XSUB1_net1'}
+    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items())
+
+def test_flatten_depth1(heirarchical_ckt):
+    ckt = heirarchical_ckt
+    ckt.flatten(1)
+    myparametermap = {
+        'XSUB1_X2': 1,
+        'XSUB1_X1': 2,
+        'XSUB2_X1': 1,
+        'XSUB2_X2': 3
+    }
+    assert {x.name for x in ckt.elements} == set(myparametermap.keys())
+    assert set(ckt.nets) == {'net1', 'net2', 'net3', 'XSUB1_net1'}
+    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items())
