@@ -14,14 +14,15 @@ COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
-TENSORFLOW_INCLUDE?=-isystem $(HOME)/tensorflow \
-            -isystem /home/lion/tensorflow/bazel-genfiles \
-            -isystem $(HOME)/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public \
-            -isystem $(HOME)/tensorflow/tensorflow/contrib/makefile/downloads/protobuf  \
-            -isystem $(HOME)/tensorflow/bazel-bin/tensorflow  \
-            -isystem /usr/local/include/eigen3 \
-            -isystem /home/lion/tensorflow/tensorflow/contrib/makefile/downloads/absl
-TENSORFLOW_LIB?=$(HOME)/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so
+TENSORFLOW_DEPENDENCY=$(abspath tensorflow_dependency)
+TENSORFLOW_INCLUDE?=-isystem $(TENSORFLOW_DEPENDENCY)/bazel-genfiles \
+            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/nsync/public \
+            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/protobuf  \
+            -isystem $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow  \
+            -isystem $(TENSORFLOW_DEPENDENCY)/eigen3 \
+            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/absl \
+            -isystem $(TENSORFLOW_DEPENDENCY)
+TENSORFLOW_LIB?=$(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow/libtensorflow_cc.so
 
 
 export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include $(TENSORFLOW_INCLUDE)

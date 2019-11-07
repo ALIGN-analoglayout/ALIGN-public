@@ -2458,13 +2458,14 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   //step 1. extract the pin informance of each net used for the feature of deep learning model
   ExtractFeatures(caseNL, caseSP, feature_value, feature_name);
   //step 2. call the deep learning model in c++ 
-  double predicted_gain = Deep_learning_model_Prediction(feature_value,feature_name); //maybe gain a model, uf a model
+  std::string model_path = "../Performance_Prediction/models/GCN_rc.pb";
+  std::string model_input_node_name = "Placeholder";
+  std::string model_output_node_name = "outputs/Relu";
+  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, model_path, model_input_node_name, model_output_node_name); //maybe gain a model, uf a model
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
   double gain_weight = 1.0; 
   cost = cost + predicted_gain*gain_weight;
   return cost;
-
-
 }
 
 void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name){
@@ -2475,16 +2476,57 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
 
 }
 
-double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name){
+double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name, \
+                                                  std::string model_path, std::string input_node_name, std::string output_node_name){
   //needs more modifacation
   Session* session;
   Status status = NewSession(SessionOptions(), &session); //create new session
+
   if (!status.ok()) {
     cout << status.ToString() << "\n";
     return -1;
   }else{
     cout << "Session successfully created.\n";
   }
+
+  GraphDef graphdef; //Graph Definition for current model
+  Status status_load = ReadBinaryProto(Env::Default(), model_path, &graphdef);
+  if (!status_load.ok()){ 
+    std::cout << "ERROR: Loading model failed..." << model_path << std::endl; 
+    std::cout << status_load.ToString() << std::endl;  
+    return -1;
+  }else{
+    cout << "Model successfully loaded." << endl;
+  }
+
+  Status status_create = session->Create(graphdef); //load the graph into session
+  if (!status_create.ok()){ 
+    std::cout << "ERROR: Creating graph in session failed..." << status_create.ToString() << std::endl; 
+    return -1;
+  }else{
+    cout << "Graph successfully read." << endl;
+  }
+
+  int feature_size = feature_value.size();
+  Tensor X(DT_DOUBLE, TensorShape({ 1, feature_size })); //define a Tensor X, by default is [1, feature_size]
+  auto plane_tensor = X.tensor<double,2>(); //pointer of X
+  for (int i = 0; i < feature_size; i++){
+      plane_tensor(0,i) = feature_value.at(i); //load data into X
+  }
+
+  std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X}}; //input feed_dict
+  std::vector<Tensor> outputs; //output tensor
+  Status status_run = session->Run(inputs, {output_node_name}, {}, &outputs); //run
+  if (!status_run.ok()) {
+      std::cout << "ERROR: RUN failed..."  << std::endl;
+      std::cout << status_run.ToString() << "\n";
+      return -1;
+  }else{
+      cout << "Prection successfully run." << endl;
+  }
+
+  auto out_tensor = outputs[0].tensor<double,2>(); // by default output is [1, 1]
+  return out_tensor(0, 0);
 
 }
 
