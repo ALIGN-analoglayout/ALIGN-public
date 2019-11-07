@@ -2477,10 +2477,12 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
   // for each net
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     // for each pin
+    int net_pin_number = 0;
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       pos.clear();
       if(ci->type==placerDB::Block) {
-        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + std::to_string(net_pin_number);
+        net_pin_number = net_pin_number + 1;
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
@@ -2513,10 +2515,12 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     // for each pin
     string net_name = ni->name;
+    int net_pin_number = 0;
     std::vector<std::vector<placerDB::point> > center_points;
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       if(ci->type==placerDB::Block) {
-        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name+"_"+std::to_string(net_pin_number);
+        net_pin_number = net_pin_number + 1;
         feature_name.push_back(pin_name);
         center_points.push_back(pin_maps[pin_name]);
         center_points_all.push_back(pin_maps[pin_name]);
