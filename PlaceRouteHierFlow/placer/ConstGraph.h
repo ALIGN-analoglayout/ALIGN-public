@@ -178,6 +178,7 @@ class ConstGraph
     double PerformanceDriven_CalculateCost(design& caseNL, SeqPair& caseSP);
     void ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name);
     double Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name);
+    std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
     
 };
 
