@@ -2477,7 +2477,14 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
 
 double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name){
   //needs more modifacation
-
+  Session* session;
+  Status status = NewSession(SessionOptions(), &session); //create new session
+  if (!status.ok()) {
+    cout << status.ToString() << "\n";
+    return -1;
+  }else{
+    cout << "Session successfully created.\n";
+  }
 
 }
 

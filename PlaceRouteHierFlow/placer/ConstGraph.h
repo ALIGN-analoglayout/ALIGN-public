@@ -18,6 +18,15 @@
 #include "Aplace.h"
 #include "../PnRDB/datatype.h"
 
+#include <tensorflow/core/platform/env.h>
+#include <tensorflow/core/public/session.h>
+#include <iostream>
+#include <string>  
+#include <vector>  
+#include <fstream>  
+#include <sstream> 
+#include <stdio.h>
+
 using std::vector;
 using std::string;
 using std::cout;
@@ -27,6 +36,7 @@ using std::stack;
 using std::pair;
 using std::make_pair;
 using std::min;
+using namespace tensorflow;
 //using namespace std;
 //using namespace placerDB;
 

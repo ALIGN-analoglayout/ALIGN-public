@@ -14,8 +14,17 @@ COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
+TENSORFLOW_INCLUDE?=-isystem $(HOME)/tensorflow \
+            -isystem /home/lion/tensorflow/bazel-genfiles \
+            -isystem $(HOME)/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public \
+            -isystem $(HOME)/tensorflow/tensorflow/contrib/makefile/downloads/protobuf  \
+            -isystem $(HOME)/tensorflow/bazel-bin/tensorflow  \
+            -isystem /usr/local/include/eigen3 \
+            -isystem /home/lion/tensorflow/tensorflow/contrib/makefile/downloads/absl
+TENSORFLOW_LIB?=$(HOME)/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so
 
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
+
+export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include $(TENSORFLOW_INCLUDE)
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)
@@ -28,7 +37,7 @@ router_path=router
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a 
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(TENSORFLOW_LIB)
 
 all: depend subsystem pnr_compiler unit_tests
 
