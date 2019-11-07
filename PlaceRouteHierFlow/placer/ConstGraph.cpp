@@ -2470,9 +2470,127 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
 
 void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name){
 
+  vector<placerDB::point> pos; placerDB::point p, bp;
+  vector<placerDB::point> pos_pin;
+  std::map<string, std::vector<placerDB::point> > pin_maps;
+  std::string pin_name;
+
+  // for each net
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each pin
+    int net_pin_number = 0;
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      pos.clear();
+      if(ci->type==placerDB::Block) {
+        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + std::to_string(net_pin_number);
+        net_pin_number = net_pin_number + 1;
+        bp.x=this->HGraph.at(ci->iter2).position;
+        bp.y=this->VGraph.at(ci->iter2).position;
+        pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+        for(unsigned int i=0;i<pos_pin.size();i++){
+          p = pos_pin[i];
+          pos.push_back(p);
+	}
+        pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
+      }
+    }
+  }
+
+  updateTerminalCenter(caseNL, caseSP);
+
+    // for each net
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each terminal
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      pos.clear();
+      if(ci->type==placerDB::Terminal) {
+        pin_name = ni->name;
+        pos.push_back(caseNL.Terminals[ci->iter].center);
+        pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
+      }
+    }
+  }
+
+  std::vector<std::vector<placerDB::point> > center_points_all;
+  //extract pin_name, feature_value
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each pin
+    string net_name = ni->name;
+    int net_pin_number = 0;
+    std::vector<std::vector<placerDB::point> > center_points;
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      if(ci->type==placerDB::Block) {
+        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name+"_"+std::to_string(net_pin_number);
+        net_pin_number = net_pin_number + 1;
+        feature_name.push_back(pin_name);
+        center_points.push_back(pin_maps[pin_name]);
+        center_points_all.push_back(pin_maps[pin_name]);
+      }else if(ci->type==placerDB::Terminal) {
+        feature_name.push_back(net_name);
+        center_points.push_back(pin_maps[net_name]);
+        center_points_all.push_back(pin_maps[net_name]);
+      }
+    }
+
+    std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
+    for(int i=0;i<temp_feature.size();i++){
+  
+       feature_value.push_back(temp_feature[i]);
+
+    }
+    
+  }
 
 
+}
 
+std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact){
+
+  std::vector<double> temp_x;
+  std::vector<double> temp_y;
+  double temp_value_x;
+  double temp_value_y;
+  std::vector<double> feature;
+  double sum_x;
+  double sum_y;
+
+  for(int i = 0;i < temp_contact.size();i++){
+
+     sum_x = 0;
+     sum_y = 0;
+
+     for(int j=0;j < temp_contact[i].size();j++){
+       sum_x = sum_x + (double) temp_contact[i][j].x;
+       sum_y = sum_y + (double) temp_contact[i][j].y;
+     }
+
+    sum_x = sum_x / (double) temp_contact[i].size();
+    sum_y = sum_y / (double) temp_contact[i].size();
+    temp_x.push_back(sum_x);
+    temp_y.push_back(sum_y);
+
+  }
+
+  sum_x=0;
+  sum_y=0;
+
+  for(int i=0; i< temp_x.size();i++){
+
+    sum_x = sum_x + temp_x[i];
+    sum_y = sum_y + temp_y[i];
+
+  }
+
+  double center_x = sum_x/ (double) temp_x.size();
+  double center_y = sum_y/ (double) temp_y.size();
+
+  for(int i=0;i<temp_x.size();i++){
+
+     feature.push_back( abs(center_x - (double) temp_x[i]) + abs(center_y - (double) temp_y[i]) );
+
+  }
+
+  return feature;
 
 }
 
@@ -2524,9 +2642,10 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
   }else{
       cout << "Prection successfully run." << endl;
   }
-
   auto out_tensor = outputs[0].tensor<double,2>(); // by default output is [1, 1]
-  return out_tensor(0, 0);
+  double performance = out_tensor(0, 0);
+
+  return performance;
 
 }
 

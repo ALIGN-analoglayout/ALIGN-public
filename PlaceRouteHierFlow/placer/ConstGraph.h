@@ -189,7 +189,7 @@ class ConstGraph
     void ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name);
     double Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name, \
                                                       std::string model_path, std::string input_node_name, std::string output_node_name);
-
+    std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
 };
 
 #endif
