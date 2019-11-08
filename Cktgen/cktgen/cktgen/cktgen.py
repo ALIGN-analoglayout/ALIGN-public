@@ -470,7 +470,7 @@ class Netlist:
             y = rlst[1]*(1.0-theta) + rlst[3]*theta
             return (x,y)
           else:
-            assert False
+            assert False, ly
 
         def dist( w, p, q):
           gx,gy = pnt( p, gr_r, gr.layer)
@@ -647,9 +647,10 @@ Option name=upper_layer                          value=metal4
           fp.write( str(w) + "\n")
 
 
+      #SMB Generalize this
       #metal1 obstruction
-      for x in range(1, (self.bbox.urx-160-1)//840):
-        xc = x*840
+      for x in range(1, (self.bbox.urx-160-1)//800):
+        xc = x*800
         y0 = self.bbox.lly+420
         y1 = self.bbox.ury-420
         fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")

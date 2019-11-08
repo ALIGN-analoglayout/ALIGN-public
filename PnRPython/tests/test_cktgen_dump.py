@@ -88,7 +88,8 @@ def test_A():
                       'layer': term['layer'],
                       'rect': term['rect']
             }
-            if term1['layer'] in ['M1','V1','M2','V2','M3']:
+            # don't want M1 and M2 on the interface
+            if term1['layer'] in ['M2','V2','M3']:
                 leaf['terminals'].append(term1)
 
         result['leaves'].append(leaf)
@@ -158,7 +159,52 @@ def test_A():
 #
 # Need to scale result by 5 to take it back to angstroms
 #
+    mul=5
+
+    result['bbox'] = [ mul*c for c in result['bbox']]
+    for leaf in result['leaves']:
+        rational_scaling( leaf, mul=mul)
+
+    for inst in result['instances']:
+        inst['transformation']['oX'] *= mul
+        inst['transformation']['oY'] *= mul
 
     with open( "tests/__json_telescopic_ota_dump", "wt") as fp:
         json.dump( result, fp, indent=2)
 
+#
+# Read in global routing file, modify and write out
+#
+    with ( rdir / "telescopic_ota_GcellGlobalRoute_0.json" ).open("rt") as fp:
+        grs = json.load( fp)
+
+
+    newWires = []
+
+    hWires = {"M2": "metal2", "M4": "metal4"}
+    vWires = {"M1": "metal1", "M3": "metal3", "M5": "metal5"}
+
+    layer_map = dict( list(hWires.items()) + list(vWires.items()))
+
+    for wire in grs['wires']:
+        newWire = { 'layer': layer_map[wire['layer']], 'net_name': wire['net_name'], 'width': 320, 'connected_pins': []}
+
+        if wire['layer'] in hWires:
+            bin = 10*84*2
+        elif wire['layer'] in vWires:
+            bin = 10*80*2
+        else:
+            assert False, wire['layer']
+        
+        newWire['rect'] = [ c//bin for c in wire['rect']]    
+
+        r = newWire['rect']
+
+        assert r[0] == r[2] or r[1] == r[3]
+
+        if r[0] != r[2] or r[1] != r[3]:
+            newWires.append(newWire)
+
+    newGRs = { 'wires': newWires}
+    with open( "tests/__json_telescopic_ota_gr", "wt") as fp:
+        json.dump( newGRs, fp=fp, indent=2)
