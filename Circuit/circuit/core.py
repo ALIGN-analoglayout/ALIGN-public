@@ -121,7 +121,7 @@ class Circuit(networkx.Graph):
     def default_edge_match(x, y):
         return x.get('pin') == y.get('pin')
 
-    def find_matching_subgraphs(self, graph, node_match=None, edge_match=None):
+    def find_subgraph_matches(self, graph, node_match=None, edge_match=None):
         if node_match is None:
             node_match = self.default_node_match
         if edge_match is None:
@@ -131,7 +131,7 @@ class Circuit(networkx.Graph):
         return list(matcher.subgraph_isomorphisms_iter())
 
     def find_repeated_subgraphs(self):
-        matches = []
+        graphs = []
         worklist = list(self.elements)
         while len(worklist) > 0:
             ckt = Circuit()
@@ -140,19 +140,19 @@ class Circuit(networkx.Graph):
             for net in self.neighbors(element.name):
                 for elem in self.neighbors(net):
                     ckt.add_element(self.nodes[elem]['instance'])
-                    if len(self.find_matching_subgraphs(ckt)) == 1:
+                    if len(self.find_subgraph_matches(ckt)) == 1:
                         ckt.remove_nodes_from([x for x in ckt.neighbors(elem) if ckt.degree(x) == 1])
                         ckt.remove_node(elem)
             if len(ckt.elements) > 1:
-                matches.append(ckt)
-                worklist = [elem for match in self.find_matching_subgraphs(ckt) for elem in match.values() if self._is_element(elem)]
-        return matches
+                graphs.append(ckt)
+                worklist = [elem for match in self.find_subgraph_matches(ckt) for elem in match.values() if self._is_element(elem)]
+        return graphs
 
     def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
         if not isinstance(subckts, Iterable):
             subckts = [subckts]
         for subckt in subckts:
-            matches = self.find_matching_subgraphs(subckt.circuit, node_match, edge_match)
+            matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
             self._replace_matches_with_subckt(matches, subckt)
 
     def _replace_matches_with_subckt(self, matches, subckt):
