@@ -121,25 +121,42 @@ class Circuit(networkx.Graph):
     def default_edge_match(x, y):
         return x.get('pin') == y.get('pin')
 
-    def find_matching_subgraphs(self, subckt, node_match=None, edge_match=None):
+    def find_matching_subgraphs(self, graph, node_match=None, edge_match=None):
         if node_match is None:
             node_match = self.default_node_match
         if edge_match is None:
             edge_match = self.default_edge_match
-        assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
-            self, subckt._circuit, node_match=node_match, edge_match=edge_match)
+            self, graph, node_match=node_match, edge_match=edge_match)
         return list(matcher.subgraph_isomorphisms_iter())
 
-    def replace_matching_subgraphs(self, primitives, node_match=None, edge_match=None):
-        if not isinstance(primitives, Iterable):
-            primitives = [primitives]
-        for subckt in primitives:
-            matches = self.find_matching_subgraphs(subckt, node_match, edge_match)
+    def find_repeated_subgraphs(self):
+        matches = []
+        worklist = list(self.elements)
+        while len(worklist) > 0:
+            ckt = Circuit()
+            element = worklist.pop(0)
+            ckt.add_element(element)
+            for net in self.neighbors(element.name):
+                for elem in self.neighbors(net):
+                    ckt.add_element(self.nodes[elem]['instance'])
+                    if len(self.find_matching_subgraphs(ckt)) == 1:
+                        ckt.remove_nodes_from([x for x in ckt.neighbors(elem) if ckt.degree(x) == 1])
+                        ckt.remove_node(elem)
+            if len(ckt.elements) > 1:
+                matches.append(ckt)
+                worklist = [elem for match in self.find_matching_subgraphs(ckt) for elem in match.values() if self._is_element(elem)]
+        return matches
+
+    def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
+        if not isinstance(subckts, Iterable):
+            subckts = [subckts]
+        for subckt in subckts:
+            matches = self.find_matching_subgraphs(subckt.circuit, node_match, edge_match)
             self._replace_matches_with_subckt(matches, subckt)
 
     def _replace_matches_with_subckt(self, matches, subckt):
-        assert hasattr(subckt, '_circuit') and isinstance(subckt._circuit, Circuit)
+        assert hasattr(subckt, 'circuit') and isinstance(subckt.circuit, Circuit)
         counter = 0
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
@@ -163,9 +180,9 @@ class Circuit(networkx.Graph):
     def flatten(self, depth=999):
         ''' depth = 999 helps protect against recursive subckt definitions '''
         depth = depth - 1
-        for subcktinst in (x for x in self.elements if hasattr(x, '_circuit')):
+        for subcktinst in (x for x in self.elements if hasattr(x, 'circuit')):
             self._replace_subckt_with_components(subcktinst)
-        if any((hasattr(x, '_circuit') for x in self.elements)) and depth > 0:
+        if any((hasattr(x, 'circuit') for x in self.elements)) and depth > 0:
             self.flatten(depth)
         for element in self.elements:
             if not element.name.startswith(element._prefix):
@@ -175,7 +192,7 @@ class Circuit(networkx.Graph):
         # Remove element from graph
         self.remove_node(subcktinst.name)
         # Add new elements
-        for element in subcktinst._circuit.elements:
+        for element in subcktinst.circuit.elements:
             newelement = element.__class__(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
                 **{key: eval(val[1:-1], {}, subcktinst.parameters) if isinstance(val, str) and val.startswith('{') else val for key, val in element.parameters.items()})
@@ -187,12 +204,12 @@ class Circuit(networkx.Graph):
 class _SubCircuitMetaClass(type):
 
     def __new__(cls, clsname, bases, attributedict):
-        if '_circuit' not in attributedict: attributedict.update({'_circuit': Circuit()})
+        if 'circuit' not in attributedict: attributedict.update({'circuit': Circuit()})
         if '_parameters' not in attributedict: attributedict.update({'_parameters': {}})
         return super(_SubCircuitMetaClass, cls).__new__(cls, clsname, bases, attributedict)
 
     def __getattr__(self, name):
-        return getattr(self._circuit, name)
+        return getattr(self.circuit, name)
 
 class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
     _prefix = 'X'
@@ -200,7 +217,7 @@ class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
     def __getattr__(self, name):
         if name == 'add_element':
             raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
-        return getattr(self._circuit, name)
+        return getattr(self.circuit, name)
 
 def SubCircuit(name, *pins, library=None, **parameters):
     assert len(pins) >= 1, "Subcircuit must have at least 1 pin"

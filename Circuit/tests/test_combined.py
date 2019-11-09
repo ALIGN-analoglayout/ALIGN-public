@@ -1,4 +1,6 @@
 import circuit
+# from pathlib import Path
+# import sys
 
 def test_combined():
     library = circuit.Library()
@@ -17,7 +19,7 @@ def test_combined():
     assert ckt.nets == ['net10', 'net12', 'net14']
 
 def test_subckt_matching():
-    # parse primitives
+    # parse subckts
     parser = circuit.SpiceParser()
     with open('tests/basic_template.sp') as fp:
         parser.parse(fp.read())
@@ -26,13 +28,34 @@ def test_subckt_matching():
     parser = circuit.SpiceParser()
     with open('tests/ota.sp') as fp:
         parser.parse(fp.read())
-    # Perform subgraph matching & replacement
-    ckt = parser.library['OTA']._circuit
-    primitives = list(primitivelib.values())
-    # Sort primitives using hypothetical complexity cost
-    primitives.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x._pins) + len(x.nets), reverse=True)
+    # Extract ckt
+    ckt = parser.library['OTA'].circuit
+    ckt.flatten()
+    # Sort subckts using hypothetical complexity cost
+    subckts = list(primitivelib.values())
+    subckts.sort(key=lambda x: len(x.elements)*10000 - 100 * len(x._pins) + len(x.nets), reverse=True)
     assert len(ckt.elements) == 10
     assert all(x.name.startswith('M') for x in ckt.elements)
-    ckt.replace_matching_subgraphs(primitives)
+    # Perform subgraph matching & replacement
+    ckt.replace_matching_subckts(subckts)
     assert len(ckt.elements) == 5
     assert all(x.name.startswith('X') for x in ckt.elements)
+    # # Generate primitive layouts
+    # sys.path.append( str(Path(__file__).parent.parent.parent / 'PDK_Abstraction' / 'FinFET14nm_Mock_PDK'))
+    # import primitive
+    # for element in ckt.elements:
+    #     uc = primitive.PrimitiveGenerator(12, 4, 2, 3)
+    #     with open(element.name + '.json', "wt") as fp:
+    #         uc.writeJSON(fp)
+    # Generate placer, router input
+
+def test_subckt_matching():
+    # parse netlist
+    parser = circuit.SpiceParser()
+    with open('tests/ota.sp') as fp:
+        parser.parse(fp.read())
+    # Extract ckt
+    ckt = parser.library['OTA'].circuit
+    ckt.flatten()
+    print([x.name for x in ckt.find_repeated_subgraphs()[0].elements])
+    assert False
