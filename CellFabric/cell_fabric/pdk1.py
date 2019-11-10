@@ -60,7 +60,6 @@ class Pdk(object):
     def addMetal(self, **kwargs):
         params = ['Layer',
                   'GdsLayerNo',
-                  'GdsDatatype',
                   'Direction',
                   'Color',
                   'Pitch',
@@ -70,21 +69,20 @@ class Pdk(object):
                   'EndToEnd',
                   'Offset',
                   'UnitC',
-                  'UnitCC',
                   'UnitR']
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
         assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
             if isinstance(kwargs[x], list) else isinstance(kwargs[x], int) \
-            for x in params[5:10] if kwargs[x] is not None), \
-            f"One or more of {params[5:10]} not an integer in {kwargs}"
+            for x in params[4:10] if kwargs[x] is not None), \
+            f"One or more of {params[4:10]} not an integer in {kwargs}"
         assert all(all(y is not None and y % 2 == 0 for y in kwargs[x]) \
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
-            for x in params[5:6] if kwargs[x] is not None), \
+            for x in params[4:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
         # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
-        list_params = params[5:]
+        list_params = params[4:]
         ll = set()
         for param in list_params:
             if isinstance(kwargs[param], list):
@@ -106,7 +104,6 @@ class Pdk(object):
     def addVia(self, **kwargs):
         params = ['Layer',
                   'GdsLayerNo',
-                  'GdsDatatype',
                   'Stack',
                   'SpaceX',
                   'SpaceY',
@@ -122,8 +119,8 @@ class Pdk(object):
         self._check(params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
-        assert all(isinstance(kwargs[x], int) for x in params[4:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
-        assert all(kwargs[x] % 2 == 0 for x in params[4:7]), f"One or more of {params[4:7]} in {kwargs} not a multiple of two"
+        assert all(isinstance(kwargs[x], int) for x in params[3:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
+        assert all(kwargs[x] % 2 == 0 for x in params[3:7]), f"One or more of {params[3:7]} in {kwargs} not a multiple of two"
         # 1. Metal Stack
         assert isinstance(kwargs['Stack'], list) and len(kwargs['Stack']) == 2, f"Parameter 'Stack': {kwargs['Stack']} must be a list of size 2"
         assert all(x is None or x in self.pdk for x in kwargs['Stack']), f"One or more of metals {kwargs['Stack']} not yet defined."
@@ -146,28 +143,4 @@ class Pdk(object):
         return layer_stack
 
     def get_gds_map(self):
-        return {x+y: [self.pdk[x]['GdsLayerNo'], self.pdk[x]['GdsDatatype'][y]] for x in self.pdk.keys() if 'GdsLayerNo' in self.pdk[x] for y in self.pdk[x]['GdsDatatype']}
-
-    def get_lef_exclude(self):
-        return {x for x in self.pdk.keys() if x.startswith('M') == False}
-
-    def get_via_table(self):
-        via_table = {}
-        i = 1
-        for x in self.pdk.keys():
-            if x.startswith('V') and x != 'V0':
-                lower = self.pdk[x]['Stack'][0]
-                upper = self.pdk[x]['Stack'][1]
-                (x0, y0) = (20*self.pdk[x]['WidthX'], 20*self.pdk[x]['WidthY'])
-                (elx, ely) = (40*self.pdk[x]['VencA_L'], 0*self.pdk[x]['VencP_L'])
-                (ehx, ehy) = (40*self.pdk[x]['VencA_H'], 0*self.pdk[x]['VencP_H'])
-                via_table1 = {x+'Draw':(x+'Draw', 
-                                {x+'Draw':[-x0,-y0, x0, y0], 
-                                 lower+'Draw':[-x0-ely,-y0-elx, x0+ely, y0+elx] if i%2 !=0 else [-y0-elx, -x0-ely, y0+elx, x0+ely], 
-                                 upper+'Draw':[-x0-ehx,-y0-ehy, x0+ehx, y0+ehy] if i%2 !=0 else [-y0-ehy, -x0-ehx, y0+ehy, x0+ehx]}
-                                 )
-                              }
-                i = i+1
-                via_table.update(via_table1)
-        return via_table
-
+        return {x: self.pdk[x]['GdsLayerNo'] for x in self.pdk.keys() if 'GdsLayerNo' in self.pdk[x]}
