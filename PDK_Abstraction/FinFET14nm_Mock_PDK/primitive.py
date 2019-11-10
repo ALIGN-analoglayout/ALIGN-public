@@ -91,17 +91,18 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
+
     def _bodyContact(self, x, y, x_cells):
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         gate_x = x*gu + gu // 2
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
-        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
-        self.addVia( self.va, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
         self.addVia( self.va, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
         self.addVia( self.v1, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
         if x == x_cells-1:
