@@ -102,6 +102,8 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self.addVia( self.va, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
         self.addVia( self.v1, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
+            self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
         if x == x_cells-1:
             self.addWire( self.m2, None, None, ((y+1)*h//2, self.lFin//4), (0, 1), (x_cells*gu, -1))
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):

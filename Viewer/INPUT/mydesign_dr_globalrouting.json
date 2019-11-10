@@ -914,6 +914,166 @@
       ]
     },
     {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        8350,
+        25600,
+        8450
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        8770,
+        25600,
+        8870
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        9190,
+        25600,
+        9290
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        9610,
+        25600,
+        9710
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        10030,
+        25600,
+        10130
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        10450,
+        25600,
+        10550
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        10870,
+        25600,
+        10970
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        11290,
+        25600,
+        11390
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        11710,
+        25600,
+        11810
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        12130,
+        25600,
+        12230
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        12550,
+        25600,
+        12650
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        12970,
+        25600,
+        13070
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        13390,
+        25600,
+        13490
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        13810,
+        25600,
+        13910
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        14230,
+        25600,
+        14330
+      ]
+    },
+    {
+      "layer": "Fin",
+      "netName": null,
+      "rect": [
+        0,
+        14650,
+        25600,
+        14750
+      ]
+    },
+    {
       "layer": "Active",
       "netName": null,
       "rect": [
