@@ -61,8 +61,8 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
 
-    def _connectNets(self, x_cells, y_cells):
-
+    def _connectNets(self, x_cells, y_cells): 
+        
         def _get_wire_terminators(intersecting_tracks):
             minx, maxx = min(intersecting_tracks), max(intersecting_tracks)
             # BEGIN: Quick & dirty MinL DRC error fix.
@@ -91,7 +91,19 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
-
+    def _bodyContact(self, x, y, x_cells):
+        h = self.m2PerUnitCell
+        gu = self.gatesPerUnitCell
+        gate_x = x*gu + gu // 2
+        self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
+        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
+        self.addVia( self.va, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addVia( self.va, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addVia( self.v1, None, None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        if x == x_cells-1:
+            self.addWire( self.m2, None, None, ((y+1)*h//2, self.lFin//4), (0, 1), (x_cells*gu, -1))
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
@@ -126,6 +138,9 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
                 else:
                     assert False, "Unknown pattern"
+                if y == y_cells-1:
+                    for x in range(x_cells):
+                        self._bodyContact(x, y, x_cells)
             self._connectDevicePins(y, connections)
         self._connectNets(x_cells, y_cells)
 
@@ -134,12 +149,12 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
 
         #####   Nselect Placement   #####
-        self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin) 
 
     def addPMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
-        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell)
+        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+slef.lFin)
+        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
