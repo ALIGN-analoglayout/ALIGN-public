@@ -18,7 +18,7 @@ def test_combined():
     assert ckt.elements == [X1, X2]
     assert ckt.nets == ['net10', 'net12', 'net14']
 
-def test_subckt_matching():
+def test_replace_matching_subckts():
     # parse subckts
     parser = circuit.SpiceParser()
     with open('tests/basic_template.sp') as fp:
@@ -49,7 +49,7 @@ def test_subckt_matching():
     #         uc.writeJSON(fp)
     # Generate placer, router input
 
-def test_subckt_matching():
+def test_replace_repeated_subckts():
     # parse netlist
     parser = circuit.SpiceParser()
     with open('tests/ota.sp') as fp:
