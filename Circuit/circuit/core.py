@@ -210,7 +210,7 @@ class Circuit(networkx.Graph):
         # Pick circuit elements that have some net-name based overlap with ckt subgraph
         matchlist = [element for element in worklist if element.name not in ckt and any(x in ckt for x in self.neighbors(element.name))]
         # Sort circuit elements to minimize the number of (net) nodes added to ckt subgraph
-        matchlist.sort(key=lambda element: len([x not in ckt for x in self.neighbors(element.name)]))
+        matchlist.sort(key=lambda element: sum([x not in ckt for x in self.neighbors(element.name)]))
         return matchlist
 
     # Algorithms to flatten netlist

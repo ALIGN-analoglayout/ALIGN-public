@@ -61,4 +61,4 @@ def test_subckt_matching():
     assert len(subckts) == 1
     assert len(subckts[0].elements) == 4
     elements = {x.name for x in subckts[0].elements}
-    assert elements == {'M10', 'M7', 'M9', 'M0'} or elements == {'M2', 'M6', 'M8', 'M1'}
+    assert elements == {'M10', 'M7', 'M9', 'M1'} or elements == {'M2', 'M6', 'M8', 'M0'}
