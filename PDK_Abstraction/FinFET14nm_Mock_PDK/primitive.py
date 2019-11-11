@@ -96,13 +96,14 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         gate_x = x*gu + gu // 2
+        self._xpins[name]['B'].append(gate_x)
         fullname = f'{name}_X{x}_Y{y}'
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
-        self.addVia( self.va, f'{name}_X{x}_Y{y}', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addVia( self.v1, f'{name}_X{x}_Y{y}', None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addVia( self.va, f'{fullname}:B', None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addVia( self.v1, f'{fullname}', None, gate_x, ((y+1)*h//2, self.lFin//4))
         
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
