@@ -114,8 +114,8 @@ class Circuit(networkx.Graph):
         return element
 
     def remove_element(self, element):
-        self.remove_nodes_from([x for x in self.neighbors(element) if self.degree(x) == 1])
-        self.remove_node(element)
+        self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
+        self.remove_node(element.name)
 
     @staticmethod
     def default_node_match(x, y):
@@ -147,14 +147,14 @@ class Circuit(networkx.Graph):
         worklist = list(self.elements)
         while len(worklist) > 0:
             ckt = Circuit()
-            element = worklist.pop(0)
-            ckt.add_element(element)
-            for net in self.neighbors(element.name):
-                for elem in self.neighbors(net):
-                    if elem in ckt.nodes: continue
-                    ckt.add_element(self.element(elem))
-                    if len(self.find_subgraph_matches(ckt)) <= 1:
-                        ckt.remove_element(elem)
+            root = worklist.pop(0)
+            ckt.add_element(root)
+            # TODO: Try to minimize # nets added instead of blindly matching elements
+            for element in worklist:
+                if all(x not in ckt for x in self.neighbors(element.name)): continue
+                ckt.add_element(element)
+                if len(self.find_subgraph_matches(ckt)) <= 1:
+                    ckt.remove_element(element)
             if len(ckt.elements) > 1:
                 pinmap = {y: f'pin{x}' for x, y in enumerate(
                     (net for net in ckt.nets \

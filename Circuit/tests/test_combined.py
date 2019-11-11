@@ -59,4 +59,6 @@ def test_subckt_matching():
     ckt.flatten()
     subckts = ckt.replace_repeated_subckts()
     assert len(subckts) == 1
-    assert len(subckts[0].elements) == 3
+    assert len(subckts[0].elements) == 4
+    print([x.name for x in subckts[0].elements])
+    print([x.name for x in ckt.elements])
