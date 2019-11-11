@@ -1,6 +1,16 @@
 .model nmos_rvt nmos
 .model pmos_rvt pmos
 
+*        m8|P   P|m9
+*           |   |
+*        m6|P   P|m7
+*           |   |
+*        m2|N   N|m10
+*           |   |
+*        m0|N   N|m1
+*   |         |
+* m4|N       N|m3
+
 .subckt ota vbiasn vbiasp1 vbiasp2 vinn vinp voutn voutp
 .param no_of_fin = 10
 
