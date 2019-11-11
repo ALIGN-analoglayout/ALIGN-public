@@ -57,6 +57,6 @@ def test_subckt_matching():
     # Extract ckt
     ckt = parser.library['OTA'].circuit
     ckt.flatten()
-    subgraphs = ckt.find_repeated_subgraphs()
-    assert len(subgraphs) == 1
-    assert len(subgraphs[0].elements) == 4
+    subckts = ckt.find_repeated_subckts(replace=True)
+    assert len(subckts) == 1
+    assert len(subckts[0].elements) == 3

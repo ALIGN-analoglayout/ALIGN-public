@@ -128,25 +128,46 @@ class Circuit(networkx.Graph):
             edge_match = self.default_edge_match
         matcher = networkx.algorithms.isomorphism.GraphMatcher(
             self, graph, node_match=node_match, edge_match=edge_match)
-        return list(matcher.subgraph_isomorphisms_iter())
+        ret = []
+        for match in matcher.subgraph_isomorphisms_iter():
+            if not any(self._is_element(self.nodes[node]) and any(node in x for x in ret) for node in match):
+                ret.append(match)
+        return ret
 
-    def find_repeated_subgraphs(self):
-        graphs = []
+    def find_repeated_subckts(self, replace=False):
+        index = 0
+        subckts = []
         worklist = list(self.elements)
         while len(worklist) > 0:
             ckt = Circuit()
             element = worklist.pop(0)
             ckt.add_element(element)
             for net in self.neighbors(element.name):
+                ckt.add_edge(element.name, net)
                 for elem in self.neighbors(net):
-                    ckt.add_element(self.nodes[elem]['instance'])
-                    if len(self.find_subgraph_matches(ckt)) == 1:
+                    if elem in ckt.nodes: continue
+                    ckt.add_element(self.element(elem))
+                    if len(self.find_subgraph_matches(ckt)) <= 1:
                         ckt.remove_nodes_from([x for x in ckt.neighbors(elem) if ckt.degree(x) == 1])
                         ckt.remove_node(elem)
+                if ckt.degree(net) == 1 and net not in element.pins.values():
+                    ckt.remove_node(net)
             if len(ckt.elements) > 1:
-                graphs.append(ckt)
-                worklist = [elem for match in self.find_subgraph_matches(ckt) for elem in match.values() if self._is_element(elem)]
-        return graphs
+                pinmap = {y: f'pin{x}' for x, y in enumerate(
+                    (net for net in ckt.nets \
+                        if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
+                subckt = SubCircuit(f'XREP{index}',
+                    *list(pinmap.values()))
+                for element in ckt.elements:
+                    subckt.add_element(element.__class__(element.name,
+                        *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
+                index = index + 1
+                subckts.append(subckt)
+                matches = self.find_subgraph_matches(subckt.circuit)
+                if replace:
+                    self._replace_matches_with_subckt(matches, subckt)
+                worklist = [elem for match in matches for elem in match.values() if self._is_element(elem)]
+        return subckts
 
     def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
         if not isinstance(subckts, Iterable):
@@ -160,8 +181,7 @@ class Circuit(networkx.Graph):
         counter = 0
         for match in matches:
             # Cannot replace as some prior transformation has made the current one invalid
-            if any(x not in self.nodes for x in match):
-                continue
+            assert all(x in self.nodes for x in match)
             # Cannot replace as internal node is used elsewhere in circuit
             internal_nodes = [x for x, y in match.items() if y not in subckt._pins]
             if not all(x in match for node in internal_nodes for x in self.neighbors(node)):

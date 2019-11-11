@@ -156,11 +156,11 @@ def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDev
     subckt2.add_element(ThreeTerminalDevice('X1', 'pin1', 'pin3', 'pin4'))
     subckt2.add_element(ThreeTerminalDevice('X2', 'pin2', 'pin3', 'pin5'))
     assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
-    # Validate overtly aggressive match. 3 of 4 matches are probably useless from a circuit standpoint
+    # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit('test_subckt3', 'pin1', 'pin2', 'pin3', 'pin4')
     subckt3.add_element(TwoTerminalDevice('X1', 'pin1', 'pin2'))
     subckt3.add_element(TwoTerminalDevice('X2', 'pin3', 'pin4'))
-    assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 4
+    assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
