@@ -2454,14 +2454,16 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
 
   double cost = 0;
   std::vector<double> feature_value;
+  std::vector<std::vector<double>> feature_A;
+  std::vector<std::vector<double>> feature_D;
   std::vector<std::string> feature_name;
   //step 1. extract the pin informance of each net used for the feature of deep learning model
   ExtractFeatures(caseNL, caseSP, feature_value, feature_name);
   //step 2. call the deep learning model in c++ 
-  std::string model_path = "../Performance_Prediction/models/GCN_rc.pb";
-  std::string model_input_node_name = "Placeholder";
-  std::string model_output_node_name = "outputs/Relu";
-  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, model_path, model_input_node_name, model_output_node_name); //maybe gain a model, uf a model
+  std::string model_path = "./Performance_Prediction/models/GCN_rc.pb";
+  std::string model_input_node_name = "feature";
+  std::string model_output_node_name = "lable/BiasAdd";
+  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
   double gain_weight = 1.0; 
   cost = cost + predicted_gain*gain_weight;
@@ -2595,7 +2597,8 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
 }
 
 double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name, \
-                                                  std::string model_path, std::string input_node_name, std::string output_node_name){
+                                                  std::string model_path, std::string input_node_name, std::string output_node_name, \
+                                                  std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D){
   //needs more modifacation
   Session* session;
   Status status = NewSession(SessionOptions(), &session); //create new session
@@ -2625,14 +2628,33 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
     cout << "Graph successfully read." << endl;
   }
 
-  int feature_size = feature_value.size();
+  int feature_size = 54;//feature_value.size();
+  std::cout << "feature_size: " << feature_size << std::endl;
   Tensor X(DT_DOUBLE, TensorShape({ 1, feature_size })); //define a Tensor X, by default is [1, feature_size]
-  auto plane_tensor = X.tensor<double,2>(); //pointer of X
+  Tensor A(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
+  Tensor D(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
+  auto plane_tensor_X = X.tensor<double,2>(); //pointer of X
+  auto plane_tensor_A = A.tensor<double,2>(); //pointer of A
+  auto plane_tensor_D = D.tensor<double,2>(); //pointer of A
+  //auto plane_tensor = X.tensor<double,2>(); //pointer of X
   for (int i = 0; i < feature_size; i++){
-      plane_tensor(0,i) = feature_value.at(i); //load data into X
+      plane_tensor_X(0,i) = 1;//feature_value.at(i); //load data into X
+  }
+  for (int i = 0; i < feature_size; i++){
+    for (int j = 0; j < feature_size; j++){
+        if(i==j) {
+          plane_tensor_A(i,j) = 1;
+          plane_tensor_D(i,j) = 1;
+        }else{
+          plane_tensor_A(i,j) = 0;//feature_A.at(i).at(j); //load data into A
+          plane_tensor_D(i,j) = 0;//feature_D.at(i).at(j); //load data into D
+        }
+        
+    }
   }
 
   std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X}}; //input feed_dict
+  //std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X},{"A", A}, {"D", D}}; //input feed_dict
   std::vector<Tensor> outputs; //output tensor
   Status status_run = session->Run(inputs, {output_node_name}, {}, &outputs); //run
   if (!status_run.ok()) {
