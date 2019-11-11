@@ -159,17 +159,15 @@ class Circuit(networkx.Graph):
                 pinmap = {y: f'pin{x}' for x, y in enumerate(
                     (net for net in ckt.nets \
                         if not all(neighbor in ckt.nodes for neighbor in self.neighbors(net))))}
-                subckt = SubCircuit(f'XREP{index}',
-                    *list(pinmap.values()))
+                subckt, index = SubCircuit(f'XREP{index}', *list(pinmap.values())), index + 1
                 for element in ckt.elements:
                     subckt.add_element(element.__class__(element.name,
                         *[pinmap[x] if x in pinmap else x for x in element.pins.values()]))
-                index = index + 1
                 subckts.append(subckt)
                 matches = self.find_subgraph_matches(subckt.circuit)
+                worklist = [element for element in worklist if not any(element.name in match for match in matches)]
                 if replace:
                     self._replace_matches_with_subckt(matches, subckt)
-                worklist = [elem for match in matches for elem in match.values() if self._is_element(elem)]
         return subckts
 
     def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
