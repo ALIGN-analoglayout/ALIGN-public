@@ -134,6 +134,9 @@ class Circuit(networkx.Graph):
                 ret.append(match)
         return ret
 
+    def replace_repeated_subckts(self):
+        return self.find_repeated_subckts(True)
+
     def find_repeated_subckts(self, replace=False):
         index = 0
         subckts = []
