@@ -141,20 +141,31 @@ class Circuit(networkx.Graph):
     def replace_repeated_subckts(self):
         return self.find_repeated_subckts(True)
 
+    def _get_match_candidates(self, worklist, ckt):
+        # Pick circuit elements that have some net-name based overlap with ckt subgraph
+        matchlist = [element for element in worklist if element.name not in ckt and any(x in ckt for x in self.neighbors(element.name))]
+        # Sort circuit elements to minimize the number of (net) nodes added to ckt subgraph
+        matchlist.sort(key=lambda element: len([x not in ckt for x in self.neighbors(element.name)]))
+        return matchlist
+
     def find_repeated_subckts(self, replace=False):
         index = 0
         subckts = []
         worklist = list(self.elements)
         while len(worklist) > 0:
+            # Create new graph with a single element
             ckt = Circuit()
-            root = worklist.pop(0)
-            ckt.add_element(root)
-            # TODO: Try to minimize # nets added instead of blindly matching elements
-            for element in worklist:
-                if all(x not in ckt for x in self.neighbors(element.name)): continue
+            ckt.add_element(worklist.pop(0))
+            # Grow graph iteratively & look for subgraph matches
+            matchlist = self._get_match_candidates(worklist, ckt)
+            while len(matchlist) > 0:
+                element = matchlist.pop(0)
                 ckt.add_element(element)
                 if len(self.find_subgraph_matches(ckt)) <= 1:
                     ckt.remove_element(element)
+                else:
+                    matchlist = self._get_match_candidates(worklist, ckt)
+            # Create subcircuit & update worklist if needed
             if len(ckt.elements) > 1:
                 pinmap = {y: f'pin{x}' for x, y in enumerate(
                     (net for net in ckt.nets \
