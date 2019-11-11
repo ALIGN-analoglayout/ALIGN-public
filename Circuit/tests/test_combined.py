@@ -60,5 +60,5 @@ def test_subckt_matching():
     subckts = ckt.replace_repeated_subckts()
     assert len(subckts) == 1
     assert len(subckts[0].elements) == 4
-    print([x.name for x in subckts[0].elements])
-    print([x.name for x in ckt.elements])
+    elements = {x.name for x in subckts[0].elements}
+    assert elements == {'M10', 'M7', 'M9', 'M0'} or elements == {'M2', 'M6', 'M8', 'M1'}

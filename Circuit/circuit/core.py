@@ -117,6 +117,8 @@ class Circuit(networkx.Graph):
         self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
         self.remove_node(element.name)
 
+    # Algorithms to find & replace subgraph / subckt matches
+
     @staticmethod
     def default_node_match(x, y):
         return issubclass(type(x.get('instance')), type(y.get('instance')))
@@ -138,15 +140,35 @@ class Circuit(networkx.Graph):
                 ret.append(match)
         return ret
 
-    def replace_repeated_subckts(self):
-        return self.find_repeated_subckts(True)
+    def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
+        if not isinstance(subckts, Iterable):
+            subckts = [subckts]
+        for subckt in subckts:
+            matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
+            self._replace_matches_with_subckt(matches, subckt)
 
-    def _get_match_candidates(self, worklist, ckt):
-        # Pick circuit elements that have some net-name based overlap with ckt subgraph
-        matchlist = [element for element in worklist if element.name not in ckt and any(x in ckt for x in self.neighbors(element.name))]
-        # Sort circuit elements to minimize the number of (net) nodes added to ckt subgraph
-        matchlist.sort(key=lambda element: len([x not in ckt for x in self.neighbors(element.name)]))
-        return matchlist
+    def _replace_matches_with_subckt(self, matches, subckt):
+        assert hasattr(subckt, 'circuit') and isinstance(subckt.circuit, Circuit)
+        counter = 0
+        for match in matches:
+            # Cannot replace as some prior transformation has made the current one invalid
+            assert all(x in self.nodes for x in match)
+            # Cannot replace as internal node is used elsewhere in circuit
+            internal_nodes = [x for x, y in match.items() if y not in subckt._pins]
+            if not all(x in match for node in internal_nodes for x in self.neighbors(node)):
+                continue
+            # Remove nodes not on subckt boundary
+            self.remove_nodes_from(internal_nodes)
+            # Create new instance of subckt
+            name, counter = f'X_{subckt.__name__}_{counter}', counter + 1
+            assert name not in self.elements
+            pinmap = {pin: net for net, pin in match.items() if pin in subckt._pins}
+            assert all(x in pinmap for x in subckt._pins), (match, subckt)
+            inst = subckt(name, *[pinmap[x] for x in subckt._pins])
+            # attach instance to current graph
+            self.add_element(inst)
+
+    # Algorithms to find & replace repeated subgraphs
 
     def find_repeated_subckts(self, replace=False):
         index = 0
@@ -181,33 +203,17 @@ class Circuit(networkx.Graph):
                     self._replace_matches_with_subckt(matches, subckt)
         return subckts
 
-    def replace_matching_subckts(self, subckts, node_match=None, edge_match=None):
-        if not isinstance(subckts, Iterable):
-            subckts = [subckts]
-        for subckt in subckts:
-            matches = self.find_subgraph_matches(subckt.circuit, node_match, edge_match)
-            self._replace_matches_with_subckt(matches, subckt)
+    def replace_repeated_subckts(self):
+        return self.find_repeated_subckts(True)
 
-    def _replace_matches_with_subckt(self, matches, subckt):
-        assert hasattr(subckt, 'circuit') and isinstance(subckt.circuit, Circuit)
-        counter = 0
-        for match in matches:
-            # Cannot replace as some prior transformation has made the current one invalid
-            assert all(x in self.nodes for x in match)
-            # Cannot replace as internal node is used elsewhere in circuit
-            internal_nodes = [x for x, y in match.items() if y not in subckt._pins]
-            if not all(x in match for node in internal_nodes for x in self.neighbors(node)):
-                continue
-            # Remove nodes not on subckt boundary
-            self.remove_nodes_from(internal_nodes)
-            # Create new instance of subckt
-            name, counter = f'X_{subckt.__name__}_{counter}', counter + 1
-            assert name not in self.elements
-            pinmap = {pin: net for net, pin in match.items() if pin in subckt._pins}
-            assert all(x in pinmap for x in subckt._pins), (match, subckt)
-            inst = subckt(name, *[pinmap[x] for x in subckt._pins])
-            # attach instance to current graph
-            self.add_element(inst)
+    def _get_match_candidates(self, worklist, ckt):
+        # Pick circuit elements that have some net-name based overlap with ckt subgraph
+        matchlist = [element for element in worklist if element.name not in ckt and any(x in ckt for x in self.neighbors(element.name))]
+        # Sort circuit elements to minimize the number of (net) nodes added to ckt subgraph
+        matchlist.sort(key=lambda element: len([x not in ckt for x in self.neighbors(element.name)]))
+        return matchlist
+
+    # Algorithms to flatten netlist
 
     def flatten(self, depth=999):
         ''' depth = 999 helps protect against recursive subckt definitions '''
