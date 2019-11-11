@@ -20,24 +20,8 @@ sudo make install
 ## 4.Install protobuf  
 cd tensorflow  
 ./tensorflow/contrib/makefile/compile_linux_protobuf.sh  
-## 5.Write a CMakeLists.txt
-cmake_minimum_required (VERSION 2.8.8)  
-project (example)  
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -std=c++14 -W")  
-link_directories(/home/lion/tensorflow/bazel-bin/tensorflow)  
-include_directories(  
-./include  
- {path_to_tensorflow}/tensorflow  
- {path_to_tensorflow}/tensorflow/bazel-genfiles  
- {path_to_tensorflow}/tensorflow/tensorflow/contrib/makefile/downloads/nsync/public  
- {path_to_tensorflow}/tensorflow/tensorflow/contrib/makefile/downloads/protobuf  
- {path_to_tensorflow}/tensorflow/bazel-bin/tensorflow  
- /usr/local/include/eigen3  
- {path_to_tensorflow}/tensorflow/tensorflow/contrib/makefile/downloads/absl  
-  )  
-add_executable(example  test.cpp)  
-target_link_libraries(example tensorflow_cc)  
-## 6.Build the file
-mkdir build && cd build  
-cmake ..  
-make  
+## 5.Modify Makefile
+assign TENSORFLOW_DEPENDENCY with your tensorflow dir (for example, /home/XXX/tensorflow)  
+## 6.export LD_LIBRARY_PATH
+run the following line in window ot add to ~/.bashrc and source  
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{path to tensorflow dir}  

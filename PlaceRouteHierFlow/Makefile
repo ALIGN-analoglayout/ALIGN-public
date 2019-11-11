@@ -14,16 +14,16 @@ COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
-TENSORFLOW_DEPENDENCY=$(abspath tensorflow_dependency)
-TENSORFLOW_INCLUDE?=-isystem $(TENSORFLOW_DEPENDENCY)/bazel-genfiles \
-            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/nsync/public \
-            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/protobuf  \
-            -isystem $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow  \
-            -isystem $(TENSORFLOW_DEPENDENCY)/eigen3 \
-            -isystem $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/absl \
-            -isystem $(TENSORFLOW_DEPENDENCY)
-TENSORFLOW_LIB?=$(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow/libtensorflow_cc.so
-
+#TENSORFLOW_DEPENDENCY=$(abspath tensorflow_dependency)
+TENSORFLOW_DEPENDENCY=/home/lion/tensorflow
+TENSORFLOW_INCLUDE?=-I $(TENSORFLOW_DEPENDENCY)/bazel-genfiles \
+            -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/nsync/public \
+            -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/protobuf  \
+            -I $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow  \
+            -I /usr/local/include/eigen3 \
+            -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/absl \
+            -I $(TENSORFLOW_DEPENDENCY)
+export TENSORFLOW_LIB_DIR = $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow
 
 export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include $(TENSORFLOW_INCLUDE)
 export CXX=g++
@@ -38,7 +38,7 @@ router_path=router
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(TENSORFLOW_LIB)
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a
 
 all: depend subsystem pnr_compiler unit_tests
 
@@ -54,10 +54,10 @@ subsystem:
 	$(MAKE) -C $(cap_placer_path)
 
 pnr_compiler: subsystem $(OBJS) 
-	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
+	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(TENSORFLOW_LIB_DIR) -ltensorflow_cc -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
 
 unit_tests: subsystem unit_tests.o
-	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS) 
+	$(CXX) -o $@ unit_tests.o $(LIBS) -L$(TENSORFLOW_LIB_DIR) -ltensorflow_cc -L$(GTEST_LIB_DIR) -lgtest_main -lgtest $(LDFLAGS) 
 
 clean:
 	rm -rf *.o pnr_compiler *.pl *.plt *gds all_* *.gc{da,no}
