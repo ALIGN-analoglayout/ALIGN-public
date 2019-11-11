@@ -31,9 +31,11 @@ class IND(_TwoTerminalDevice):
 
 class Library(dict):
 
-    def __init__(self):
-        self.update({ x[0]: x[1] for x in
+    def __init__(self, default=None):
+        if default is None:
+            default = { x[0]: x[1] for x in
             inspect.getmembers(sys.modules[__name__], lambda x: inspect.isclass(x) and
                                                                 issubclass(x, NTerminalDevice) and
-                                                                not x.__name__.startswith('_')) })
+                                                                not x.__name__.startswith('_')) }
+        self.update(default)
 
