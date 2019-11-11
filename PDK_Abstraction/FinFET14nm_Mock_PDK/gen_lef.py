@@ -45,7 +45,7 @@ def json_lef(input_json,out_lef,cell_pin):
 
     fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
     cell_pin = list(cell_pin)
-    cell_pin.append('B') ### add body contact to pin list
+    cell_pin.append('B') ### add body contact to the pin list
     for i in cell_pin:
       fp.write( "  PIN %s\n" % i)
         #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
