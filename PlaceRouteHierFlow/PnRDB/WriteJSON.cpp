@@ -641,7 +641,7 @@ void AddVias(std::vector<PnRDB::Via> &temp_via, json& temp_json_Contact, json& t
 }
 
 void
-PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string& opath) {
+PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string& opath, PnRDB::Drc_info& drc_info) {
 
     std::cout << "JSON WRITE Routability Analysis " << node.name << std::endl;
     std::ofstream jsonStream;
@@ -649,11 +649,33 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
     json jsonTop;
     jsonTop["Cell Name"] = node.name;
     jsonTop["Units"] = "0.5nm";
+    int unit = 1;
+
+    json temp_box;
+    temp_box["Physical Layer"]="null";
+    temp_box["LLx"]=0*unit;
+    temp_box["LLy"]=0*unit;
+    temp_box["URx"]=node.width*unit;
+    temp_box["URy"]=node.height*unit;
+    jsonTop["Cell box"] = temp_box;
+
+    if(drc_info.Metal_info[0].direct==1){//H
+
+       jsonTop["x pitches"] = drc_info.Metal_info[1].grid_unit_x*unit;
+       jsonTop["y pitches"] = drc_info.Metal_info[0].grid_unit_y*unit;
+
+    }else{//V
+
+       jsonTop["x pitches"] = drc_info.Metal_info[0].grid_unit_x*unit;
+       jsonTop["y pitches"] = drc_info.Metal_info[1].grid_unit_y*unit;
+
+    }
+
+    
+       
 
     //Node terminals
     json jsonTerminals = json::array();
-
-    int unit = 1;
     
     for(unsigned int i=0;i<node.Terminals.size();i++){
 

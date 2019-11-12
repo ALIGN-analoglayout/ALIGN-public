@@ -14,7 +14,7 @@ def setup_basic():
 def setup_multiline():
     return '''
     X1 a b  testdev x =1f y= 0.1
-    X2 a  b testdev x = 1f
+    X2 a  b testdev x = {capval*2}
     '''
 
 @pytest.fixture
@@ -36,11 +36,9 @@ def parser():
     return parser
 
 def test_lexer_basic(setup_basic):
-    types = ['TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN']
-    tokens = list(SpiceParser._generate_tokens(setup_basic))
-    print(tokens)
-    assert len(tokens) == len(types), tokens
-    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
+    str_ = setup_basic
+    types = ['ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_lexer_with_comments1(setup_basic):
     str_ = '''* Some comment here
@@ -50,9 +48,7 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
     assert tokens.pop(0).type == 'NEWL'
-    print(tokens)
-    print(list(SpiceParser._generate_tokens(setup_basic)))
-    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
+    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
 def test_lexer_with_comments2(setup_basic):
     str_ = '''; Some comment here
@@ -62,19 +58,25 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
     assert tokens.pop(0).type == 'NEWL'
-    print(tokens)
-    print(list(SpiceParser._generate_tokens(setup_basic)))
-    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic)))
+    assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
 def test_lexer_multiline(setup_multiline):
     str_ = setup_multiline
     types = ['NEWL',
-             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL',
-             'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'TOKEN', 'EQUALS', 'TOKEN', 'NEWL']
-    tokens = list(SpiceParser._generate_tokens(str_))
-    print(tokens)
-    assert len(tokens) == len(types), tokens
-    assert all(tok.type == type_ for tok, type_ in zip(tokens, types)), tokens
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
+
+def test_lexer_realistic(setup_realistic):
+    str_ = setup_realistic
+    types = ['NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
+             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL']
+    assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):
     parser.library['TESTDEV'] = SubCircuit('TESTDEV', '+', '-', X='1F', Y=0.1)
@@ -112,7 +114,7 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
     assert 'DIFFAMP' in parser.library
     assert len(parser.library['DIFFAMP'].elements) == 6
     assert len(parser.circuit.elements) == 1
-    assert type(parser.circuit.elements[0]).__name__ == 'DIFFAMP'
+    assert type(parser.circuit.element('X1')).__name__ == 'DIFFAMP'
 
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
@@ -130,11 +132,11 @@ def test_basic_template_parsing(parser):
     libsize = len(parser.library)
     with open('tests/basic_template.sp') as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 22
+    assert len(parser.library) - libsize == 31
 
 def test_ota_blocks(parser):
     libsize = len(parser.library)
     with open('tests/ota_blocks.sp') as fp:
         parser.parse(fp.read())
-    assert len(parser.library) - libsize == 4
+    assert len(parser.library) - libsize == 6
     assert all(len(parser.library[ckt].elements) == 2 for ckt in parser.library if ckt.startswith('CMC') or ckt.startswith('DP'))
