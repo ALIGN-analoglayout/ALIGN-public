@@ -36,17 +36,22 @@ def test_A():
    ]
 }
 """
+#    design = "switched_capacitor_filter"
+#    subdesign = "telescopic_ota"
+    design = "five_transistor_ota"
+    subdesign = design
+
     # Generate this above formatted file from PnRDB data
-    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / "switched_capacitor_filter/pnr_output/Results"
+    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/Results"
     assert rdir.is_dir()
 
-    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / "switched_capacitor_filter/pnr_output/inputs"
+    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/inputs"
     assert json_dir.is_dir()
 
-    with (rdir / "telescopic_ota_0.post_gr.db.json").open("rt") as fp:
+    with (rdir / f"{subdesign}_0.post_gr.db.json").open("rt") as fp:
         hN = hierNode(json.load(fp))
 
-    assert hN.name == "telescopic_ota"
+    assert hN.name == subdesign
 
 
     leaves = {}
@@ -122,10 +127,6 @@ def test_A():
                 terminal_name = term.name
                 assert terminal_name == n.name
 
-#    print(result['leaves'])
-
-    assert len(result['leaves']) == 5
-
     for cblk in hN.Blocks:
         inst = {}
 
@@ -169,13 +170,13 @@ def test_A():
         inst['transformation']['oX'] *= mul
         inst['transformation']['oY'] *= mul
 
-    with open( "tests/__json_telescopic_ota_dump", "wt") as fp:
+    with open( f"tests/__json_{subdesign}_dump", "wt") as fp:
         json.dump( result, fp, indent=2)
 
 #
 # Read in global routing file, modify and write out
 #
-    with ( rdir / "telescopic_ota_GcellGlobalRoute_0.json" ).open("rt") as fp:
+    with ( rdir / f"{subdesign}_GcellGlobalRoute_0.json" ).open("rt") as fp:
         grs = json.load( fp)
 
 
@@ -187,7 +188,7 @@ def test_A():
     layer_map = dict( list(hWires.items()) + list(vWires.items()))
 
     for wire in grs['wires']:
-        newWire = { 'layer': layer_map[wire['layer']], 'net_name': wire['net_name'], 'width': 320, 'connected_pins': []}
+        newWire = { 'layer': layer_map[wire['layer']], 'net_name': wire['net_name'], 'width': 3*320, 'connected_pins': []}
 
         if wire['layer'] in hWires:
             bin = 10*84*2
@@ -206,5 +207,5 @@ def test_A():
             newWires.append(newWire)
 
     newGRs = { 'wires': newWires}
-    with open( "tests/__json_telescopic_ota_gr", "wt") as fp:
+    with open( f"tests/__json_{subdesign}_gr", "wt") as fp:
         json.dump( newGRs, fp=fp, indent=2)

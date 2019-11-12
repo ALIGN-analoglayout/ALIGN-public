@@ -646,7 +646,6 @@ Option name=upper_layer                          value=metal4
         for w in v.wires:
           fp.write( str(w) + "\n")
 
-
       #SMB Generalize this
       #metal1 obstruction
       for x in range(1, (self.bbox.urx-160-1)//800):

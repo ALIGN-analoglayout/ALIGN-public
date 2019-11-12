@@ -13,6 +13,7 @@ docker build -t cktgen .
 ./flow.sh $* -sgr -p 8086 -iv equalizerInputVol -ov equalizerOutputVol -s "-m cktgen.cktgen_physical_from_json" -src telescopic_ota -td ../DetailedRouter/DR_COLLATERAL_Generator/hack84 --placer_json INPUT/__json_telescopic_ota_dump --no_interface
 
 docker run --mount source=equalizerInputVol,target=/INPUT --name sam ubuntu
+rm -rf INPUT-copy
 docker cp sam:INPUT INPUT-copy
 docker rm sam
 

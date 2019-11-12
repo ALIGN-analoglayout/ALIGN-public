@@ -47,8 +47,8 @@
                   },
                   {
                      "layer":"metal3", "name":"m3",
-                     "widths":[320,320],
-                     "spaces":[480],
+                     "widths":[400,400],
+                     "spaces":[400],
                       "colors":[],
 		       "stops":[840],
 		       "stop_offset":420
