@@ -146,26 +146,26 @@ def matching_subckt(ThreeTerminalDevice):
     subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2', myparameter='{myparameter}'))
     return subckt
 
-def test_find_matching_subgraphs(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
+def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
     ckt, subckt = simple_netlist, matching_subckt
     # Validate true match
-    assert len(ckt.find_matching_subgraphs(subckt)) == 1
-    assert ckt.find_matching_subgraphs(subckt)[0] == {'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}
+    assert len(ckt.find_subgraph_matches(subckt.circuit)) == 1
+    assert ckt.find_subgraph_matches(subckt.circuit)[0] == {'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}
     # Validate false match
     subckt2 = SubCircuit('test_subckt2', 'pin1', 'pin2', 'pin3', 'pin4', 'pin5')
     subckt2.add_element(ThreeTerminalDevice('X1', 'pin1', 'pin3', 'pin4'))
     subckt2.add_element(ThreeTerminalDevice('X2', 'pin2', 'pin3', 'pin5'))
-    assert len(ckt.find_matching_subgraphs(subckt2)) == 0
-    # Validate overtly aggressive match. 3 of 4 matches are probably useless from a circuit standpoint
+    assert len(ckt.find_subgraph_matches(subckt2.circuit)) == 0
+    # Validate filtering of redundant subgraphs (There are 4 matches. Only 1 should be returned)
     subckt3 = SubCircuit('test_subckt3', 'pin1', 'pin2', 'pin3', 'pin4')
     subckt3.add_element(TwoTerminalDevice('X1', 'pin1', 'pin2'))
     subckt3.add_element(TwoTerminalDevice('X2', 'pin3', 'pin4'))
-    assert len(ckt.find_matching_subgraphs(subckt3)) == 4
+    assert len(ckt.find_subgraph_matches(subckt3.circuit)) == 1
 
 def test_replace_matching_subgraphs(simple_netlist, matching_subckt):
     ckt, subckt = simple_netlist, matching_subckt
     matches = [{'X3': 'X1', 'net3': 'pin3', 'net1': 'pin1', 'X4': 'X2', 'net2': 'pin2'}]
-    ckt.replace_matching_subgraphs(subckt)
+    ckt.replace_matching_subckts(subckt)
     assert all(x not in ckt.nodes for x in matches[0].keys() if x.startswith('X'))
     assert 'X_test_subckt_0' in ckt.nodes
     new_edges = [('X_test_subckt_0', 'net3', {'pin3'}), ('X_test_subckt_0', 'net1', {'pin1'}), ('X_test_subckt_0', 'net2', {'pin2'})]
