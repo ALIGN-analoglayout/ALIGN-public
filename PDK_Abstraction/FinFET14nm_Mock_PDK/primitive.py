@@ -81,11 +81,12 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
             for j in range(self.minvias):
                 current_track = m3start + len(self._nets) * j + track
                 contacts = conn.keys()
-                if len(contacts) == 1: # Create m2 terminal
-                    i = next(iter(contacts))
-                    minx, maxx = _get_wire_terminators(conn[i])
-                    self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
-                else: # create m3 terminal(s)
+                #if len(contacts) == 1: # Create m2 terminal
+                i = next(iter(contacts))
+                minx, maxx = _get_wire_terminators(conn[i])
+                self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
+                #else: # create m3 terminal(s)
+                if len(contacts) > 1:
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
