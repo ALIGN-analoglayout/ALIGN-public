@@ -49,6 +49,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   Router curr_route;
 
   bool NEW_GLOBAL_ROUTER = 1;
+  double rate = 0.1;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
@@ -57,7 +58,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     if ( adr_mode) {
       global_router_mode = 6;
     }
-    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
@@ -65,12 +66,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
-    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
   } else {
     // Global Routing (old version)
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
-    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
@@ -79,7 +80,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     // Detail Routing
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
-    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
@@ -88,11 +89,16 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
-    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory);
+
+
+    
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
     
     std::cout<<"Start MNA "<<std::endl;
     MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
     std::cout<<"End MNA "<<std::endl;
+
+
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 
@@ -100,7 +106,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
         
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
     DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
