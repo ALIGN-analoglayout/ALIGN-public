@@ -6,9 +6,14 @@ from .elements import Library
 
 # Token specification
 numericval = r'[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?[A-Z]*'
-identifier = r'[^\s{}()=;]+'
+identifier = r'[^\s{}()=;*]+'
 operator = r'\s*[*+-/%]\s*'
-expr = fr'{{(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{identifier}))*}}'
+exprcontent = fr'(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{identifier}))*'
+exprtypes = {
+    'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
+    'NUMBER': numericval,
+    'IDENTIFIER': identifier}
+expr_pat = re.compile('|'.join(f'(?P<{x}>{y})' for x, y in exprtypes.items()))
 
 pats = []
 pats.append( r'(?P<NLCOMMENT>(^|[\n\r])+\*[^\n\r]*)')
@@ -16,7 +21,7 @@ pats.append( r'(?P<COMMENT>\s*;[^\n\r]*)')
 pats.append( r'(?P<CONTINUE>(^|[\n\r])+\+)')
 pats.append( r'(?P<NEWL>[\n\r]+)')
 pats.append( r'(?P<EQUALS>\s*=\s*)')
-pats.append( fr'(?P<ARG>{expr}|{numericval}|{identifier})')
+pats.append( r'(?P<ARG>' + "|".join(exprtypes.values()) + ')')
 pats.append( r'(?P<WS>\s+)')
 
 # re.IGNORECASE is not required since everything is capitalized prior to tokenization
@@ -29,7 +34,9 @@ class SpiceParser:
 
     _context = []
 
-    def __init__(self):
+    def __init__(self, mode='Xyce'):
+        self.mode = mode.lower()
+        assert self.mode in ('xyce', 'hspice')
         self.library = Library()
         self.circuit = Circuit()
         self._scope = [self.circuit]
