@@ -1689,9 +1689,9 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
     json jsonUnit;
     {
 	std::ifstream jsonStream;
-	jsonStream.open( fpath+"/"+unit_capacitor+".json");
+	jsonStream.open( fpath+"/"+unit_capacitor+".gds.json");
 	// DAKSwap this out for below when we merge with latest
-	string fn = fpath + "/" + unit_capacitor + ".json";
+	string fn = fpath + "/" + unit_capacitor + ".gds.json";
 	std:: cout << "Reading JSON for unit capacitor " << fn << std::endl;
 	jsonStream.open(fn);
 	jsonStream >> jsonUnit;
