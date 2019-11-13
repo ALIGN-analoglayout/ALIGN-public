@@ -128,7 +128,6 @@ def test_ota_cir_parsing(parser):
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
-    libsize = len(parser.library)
     with open('tests/ota.sp') as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
