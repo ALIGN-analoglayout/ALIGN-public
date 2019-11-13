@@ -48,8 +48,6 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 '''
     tokens = list(SpiceParser._generate_tokens(str_))
     assert tokens.pop(0).type == 'NEWL'
-    print(tokens)
-    print(list(SpiceParser._generate_tokens(setup_basic)))
     assert all(tok1.type == tok2.type and tok1.value == tok2.value for tok1, tok2 in zip(tokens, SpiceParser._generate_tokens(setup_basic))), tokens
 
 def test_lexer_with_comments2(setup_basic):
@@ -121,7 +119,6 @@ X1 vcc outplus outminus inplus src 0 inminus diffamp res=200
 def test_model(parser):
     parser.parse('.MODEL nmos_rvt nmos KP=0.5M VT0=2')
     assert 'NMOS_RVT' in parser.library
-    print(parser.library['NMOS_RVT']._parameters)
     assert list(parser.library['NMOS_RVT']._parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
