@@ -127,7 +127,7 @@ def gen_parser():
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
     parser.add_argument( "--model", type=str, required=False, default=None)
-    parser.add_argument( "--params", type=json.loads, required=False, default=None)
+    parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 
