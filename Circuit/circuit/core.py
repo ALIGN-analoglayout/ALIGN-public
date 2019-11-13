@@ -25,6 +25,12 @@ class NTerminalDevice():
         assert all(x in self._parameters for x in parameters.keys())
         self.parameters.update(parameters)
 
+    def __str__(self):
+        return f'{self.name} ' + \
+            ' '.join(self.pins.values()) + \
+            f' {self.__class__.__name__} ' + \
+            ' '.join(f'{x}='+ (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items())
+
 class Circuit(networkx.Graph):
 
     @staticmethod
@@ -56,6 +62,9 @@ class Circuit(networkx.Graph):
     def remove_element(self, element):
         self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
         self.remove_node(element.name)
+
+    def __str__(self):
+        return '\n'.join(f'{x}' for x in self.elements)
 
     # Algorithms to find & replace subgraph / subckt matches
 
@@ -189,12 +198,22 @@ class _SubCircuitMetaClass(type):
     def __getattr__(self, name):
         return getattr(self.circuit, name)
 
+    def __str__(self):
+        ret = []
+        ret.append(f'.SUBCKT {self.__name__} ' + ' '.join(f'{x}' for x in self._pins))
+        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self._parameters.items()])
+        ret.append(str(self.circuit))
+        ret.append(f'.ENDS {self.__name__}')
+        return '\n'.join(ret)
+
 class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
     _prefix = 'X'
 
     def __getattr__(self, name):
         if name == 'add_element':
             raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
+        elif name == '__str__':
+            return NTerminalDevice.__str__(self)
         return getattr(self.circuit, name)
 
 def SubCircuit(name, *pins, library=None, **parameters):
