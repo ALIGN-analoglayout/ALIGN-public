@@ -37,7 +37,7 @@ def parser():
 
 def test_lexer_basic(setup_basic):
     str_ = setup_basic
-    types = ['ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG']
+    types = ['NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_lexer_with_comments1(setup_basic):
@@ -63,19 +63,19 @@ X1 a b testdev; COMMENT ABOUT M1 pins
 def test_lexer_multiline(setup_multiline):
     str_ = setup_multiline
     types = ['NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL']
+             'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NAME', 'NAME', 'EQUALS', 'EXPR', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_lexer_realistic(setup_realistic):
     str_ = setup_realistic
     types = ['NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'ARG', 'EQUALS', 'ARG', 'ARG', 'EQUALS', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL',
-             'ARG', 'ARG', 'ARG', 'ARG', 'NEWL']
+             'NAME', 'NAME', 'NAME', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NAME', 'NAME', 'NUMBER', 'NAME', 'NAME', 'EQUALS', 'NUMBER', 'NAME', 'EQUALS', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NUMBER', 'NUMBER', 'NEWL',
+             'NAME', 'NAME', 'NUMBER', 'NUMBER', 'NEWL']
     assert [tok.type for tok in SpiceParser._generate_tokens(str_)] == types
 
 def test_parser_basic(setup_basic, parser):

@@ -12,20 +12,22 @@ exprcontent = fr'(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{iden
 exprtypes = {
     'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
     'NUMBER': numericval,
-    'IDENTIFIER': identifier}
+    'NAME': identifier}
 expr_pat = re.compile('|'.join(f'(?P<{x}>{y})' for x, y in exprtypes.items()))
 
-pats = []
-pats.append( r'(?P<NLCOMMENT>(^|[\n\r])+\*[^\n\r]*)')
-pats.append( r'(?P<COMMENT>\s*;[^\n\r]*)')
-pats.append( r'(?P<CONTINUE>(^|[\n\r])+\+)')
-pats.append( r'(?P<NEWL>[\n\r]+)')
-pats.append( r'(?P<EQUALS>\s*=\s*)')
-pats.append( r'(?P<ARG>' + "|".join(exprtypes.values()) + ')')
-pats.append( r'(?P<WS>\s+)')
-
+token_re_map = {
+    'NLCOMMENT': r'(^|[\n\r])+\*[^\n\r]*',
+    'COMMENT': r'\s*;[^\n\r]*',
+    'CONTINUE': r'(^|[\n\r])+\+',
+    'NEWL': r'[\n\r]+',
+    'EQUALS': r'\s*=\s*',
+    'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
+    'NUMBER': numericval,
+    'DECL': r'\.[A-Z]+',
+    'NAME': identifier,
+    'WS': r'\s+'}
 # re.IGNORECASE is not required since everything is capitalized prior to tokenization
-spice_pat = re.compile('|'.join(pats))
+spice_pat = re.compile('|'.join(fr'(?P<{x}>{y})' for x, y in token_re_map.items()))
 
 # Tokenizer
 Token = collections.namedtuple('Token', ['type','value'])
@@ -46,7 +48,7 @@ class SpiceParser:
         scanner = spice_pat.scanner(text.upper())
         for m in iter(scanner.match, None):
             tok = Token(m.lastgroup, m.group())
-            if tok.type in ['ARG', 'NEWL', 'EQUALS']:
+            if tok.type in ['EXPR', 'NUMBER', 'DECL', 'NAME', 'NEWL', 'EQUALS']:
                 yield tok
 
     def parse(self, text):
@@ -63,18 +65,19 @@ class SpiceParser:
         if len(cache) == 0:
             return
         token = cache.pop(0)
-        assert token.type == 'ARG', token
         args, kwargs = self._decompose(cache)
-        if token.value.startswith('.'):
+        if token.type == 'DECL':
             self._process_declaration(token.value, args, kwargs)
-        else:
+        elif token.type == 'NAME':
             self._process_instance(token.value, args, kwargs)
+        else:
+            assert False
 
     @staticmethod
     def _decompose(cache):
-        assert all(x.type in ('ARG', 'EQUALS') for x in cache)
+        assert all(x.type in ('NAME', 'NUMBER', 'EXPR', 'EQUALS') for x in cache)
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
-        assert all(cache[i-1].type == 'ARG' for i in assignments)
+        assert all(cache[i-1].type == 'NAME' for i in assignments)
         args = [x.value for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
         kwargs = {cache[i-1].value: cache[i+1].value for i in assignments}
         return args, kwargs
