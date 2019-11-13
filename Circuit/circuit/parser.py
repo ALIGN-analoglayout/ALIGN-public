@@ -4,26 +4,41 @@ import re
 from .core import Circuit, SubCircuit, Model
 from .elements import Library
 
+unit_multipliers = {
+    'T': 1e12,
+    'G': 1e9,
+    'X': 1e6,
+    'MEG': 1e6,
+    'K': 1e3,
+    'M': 1e-3,
+    'U': 1e-6,
+    'N': 1e-9,
+    'P': 1e-12,
+    'F': 1e-15
+}
+
+def str2float(val):
+    unit = next((x for x in unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
+    numstr = val if unit is None else val[:-1*len(unit)]
+    return float(numstr) * unit_multipliers[unit] if unit is not None else float(numstr)
+
 # Token specification
-numericval = r'[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?[A-Z]*'
+modifiers = '|'.join(unit_multipliers.keys())
+numericval = fr'[+-]?(?:0|[1-9]\d*)(?:[.]\d+)?(?:E[+\-]?\d+)?(?:{modifiers})?'
 identifier = r'[^\s{}()=;*]+'
 operator = r'\s*[*+-/%]\s*'
 exprcontent = fr'(?:{numericval}|{identifier})(?:{operator}(?:{numericval}|{identifier}))*'
-exprtypes = {
-    'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
-    'NUMBER': numericval,
-    'NAME': identifier}
-expr_pat = re.compile('|'.join(f'(?P<{x}>{y})' for x, y in exprtypes.items()))
+commentchars = r'(?:[;$]|//)'
 
 token_re_map = {
     'NLCOMMENT': r'(^|[\n\r])+\*[^\n\r]*',
-    'COMMENT': r'\s*;[^\n\r]*',
+    'COMMENT': fr'(^|\s)*{commentchars}[^\n\r]*',
     'CONTINUE': r'(^|[\n\r])+\+',
     'NEWL': r'[\n\r]+',
     'EQUALS': r'\s*=\s*',
     'EXPR': fr"""(?P<quote>['"]){exprcontent}(?P=quote)|({{){exprcontent}(}})""",
-    'NUMBER': numericval,
-    'DECL': r'\.[A-Z]+',
+    'NUMBER': numericval + fr'(?=\s|\Z|{commentchars})',
+    'DECL': fr'\.{identifier}',
     'NAME': identifier,
     'WS': r'\s+'}
 # re.IGNORECASE is not required since everything is capitalized prior to tokenization
@@ -78,9 +93,24 @@ class SpiceParser:
         assert all(x.type in ('NAME', 'NUMBER', 'EXPR', 'EQUALS') for x in cache)
         assignments = {i for i, x in enumerate(cache) if x.type == 'EQUALS'}
         assert all(cache[i-1].type == 'NAME' for i in assignments)
-        args = [x.value for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
-        kwargs = {cache[i-1].value: cache[i+1].value for i in assignments}
+        args = [SpiceParser._cast(x.value, x.type) for i, x in enumerate(cache) if len(assignments.intersection({i-1, i, i+1})) == 0]
+        kwargs = {cache[i-1].value: SpiceParser._cast(cache[i+1].value, cache[i+1].type) for i in assignments}
         return args, kwargs
+
+    @staticmethod
+    def _cast(val, ty='NUMBER'):
+        if ty == 'EXPR':
+            # TODO: This needs to be handled better
+            return val[1:-1]
+        elif ty == 'NAME':
+            return val
+        # Attempt to cast number to float
+        try:
+            val = str2float(val)
+        except ValueError:
+            return val
+        # Cast to int if possible
+        return int(val) if val.is_integer() else val
 
     def _process_instance(self, name, args, kwargs):
         defaults = {'C': 'CAP', 'R': 'RES', 'L': 'IND'}
@@ -92,8 +122,9 @@ class SpiceParser:
         else:
             raise NotImplementedError(name, args, kwargs, "is not yet recognized by parser")
 
+        pins = [str(x) for x in args]
         assert model in self.library, (model, name, args, kwargs)
-        self._scope[-1].add_element(self.library[model](name, *args, **kwargs))
+        self._scope[-1].add_element(self.library[model](name, *pins, **kwargs))
 
     def _process_declaration(self, decl, args, kwargs):
         if decl == '.SUBCKT':
