@@ -9,6 +9,7 @@ import os
 import logging
 import argparse
 import sys
+import json
 from math import sqrt, ceil
 from read_lef import read_lef
 from util import convert_to_unit
@@ -324,8 +325,7 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +
                      " -Y " + yval +
-                     " --width " + str(values['w']) +
-                     " --length " + str(values['l']))
+                     " --params " + "'" + json.dumps(values) + "'")
         else:
             logging.info("No proper marameters found for cell generation")
             block_name = name+"_"+size       

@@ -8,7 +8,7 @@ from .core import NTerminalDevice
 class _MosFET(NTerminalDevice):
     _prefix = 'M'
     _pins = ('D', 'G', 'S', 'B')
-    _parameters = {'W' : (float, 0), 'L' : (float, 0), 'NFIN' : (int, 1)}
+    _parameters = {'W' : 0, 'L' : 0, 'NFIN' : 1}
 
 class NMOS(_MosFET):
     pass
@@ -18,7 +18,7 @@ class PMOS(_MosFET):
 
 class _TwoTerminalDevice(NTerminalDevice):
     _pins = ('+', '-')
-    _parameters = {'VALUE': (float, 0)}
+    _parameters = {'VALUE': 0}
 
 class CAP(_TwoTerminalDevice):
     _prefix = 'C'
