@@ -76,8 +76,9 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           int metal_index = temp_grid.metals[i].MetalIdx;
           int metal_width = temp_grid.metals[i].width;
           int single_width = drc_info.Metal_info[metal_index].width;
-          int unit_R = drc_info.Metal_info[metal_index].unit_R;
+          double unit_R = drc_info.Metal_info[metal_index].unit_R;
           double times = (double) metal_width / (double) single_width;
+          std::cout<<"unit_R "<<unit_R<<" "<<drc_info.Metal_info[metal_index].unit_R<<std::endl;
           temp_device.value = ((double) abs(frist_point->x-second_point->x) + (double) abs(frist_point->y-second_point->y))*unit_R/times;
           
           Power_Grid_devices.push_back(temp_device);
