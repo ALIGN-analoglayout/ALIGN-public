@@ -126,26 +126,40 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
 void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices_Vdd, std::vector<MDB::device> &Power_Grid_devices_Gnd){
 
   
-  std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
+  std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
+  std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
 
-  ExtractPowerGridPoint(vdd, point_set);
-  ExtractPowerGridPoint(gnd, point_set);
+  ExtractPowerGridPoint(vdd, vdd_point_set);
+  ExtractPowerGridPoint(gnd, gnd_point_set);
 
   int refresh_index = 0;
 
-  for(auto it = point_set.begin(); it != point_set.end(); ++it){
+  std::cout<<"Vdd Point Set"<<std::endl;
+  for(auto it = vdd_point_set.begin(); it != vdd_point_set.end(); ++it){
+       
+       it->index = refresh_index;
+       std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
+       refresh_index = refresh_index + 1;
+     
+     }
+
+  refresh_index = 0;
+
+  std::cout<<"Gnd Point Set"<<std::endl;
+  for(auto it = gnd_point_set.begin(); it != gnd_point_set.end(); ++it){
      
        it->index = refresh_index;
+       std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
        refresh_index = refresh_index + 1;
      
      }
 
 
-  ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices_Vdd);
-  ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices_Gnd);
+  ExtractPowerGridWireR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
+  ExtractPowerGridWireR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
 
-  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices_Vdd);
-  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices_Gnd);
+  ExtractPowerGridViaR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
+  ExtractPowerGridViaR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
 
   std::cout<<"Vdd device number "<<Power_Grid_devices_Vdd.size()<<std::endl;
   std::cout<<"Gnd device number "<<Power_Grid_devices_Gnd.size()<<std::endl;
