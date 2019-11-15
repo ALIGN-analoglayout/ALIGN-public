@@ -6,15 +6,16 @@ from cell_fabric import gen_gds_json, pdk
 
 from pathlib import Path
 pdkfile = (Path(__file__).parent / 'layers.json').resolve()
-with open(pdkfile, "rt") as fp1:
-    j = json.load(fp1)
-ScaleFactor = j['ScaleFactor']
+#with open(pdkfile, "rt") as fp1:
+#    j = json.load(fp1)
+#ScaleFactor = j['ScaleFactor']
 def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None):
   if p is None:
     p = pdk.Pdk().load(pdkfile)
-  gds_layer_map = p.get_gds_map()
+  #gds_layer_map = p.get_gds_map()
   via_gen_tbl = p.get_via_table()
-  return gen_gds_json.translate(macro_name, exclude_pattern, pinSwitch, ScaleFactor, fp, ofile, gds_layer_map, via_gen_tbl, timestamp)
+  #print(via_gen_tbl)
+  return gen_gds_json.translate(macro_name, exclude_pattern, pdkfile, pinSwitch, fp, ofile, via_gen_tbl, timestamp)
 
 
 if __name__ == "__main__":

@@ -616,7 +616,7 @@
 {
 "Layer": "Bbox",
 "GdsLayerNo": 100,
-"GdsDatatype": {"":5}
+"GdsDatatype": {"Draw":5}
 },
 
 {
