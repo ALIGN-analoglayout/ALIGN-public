@@ -28,7 +28,7 @@ class ParasiticExtraction():
 
         # Create OrderedDict with NodeName -> layer, rect mappings
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
-            if layer.startswith('V' or 'M') == False or layer not in self.canvas.pdk:
+            if not (layer.startswith('V') or layer.startswith('M')) or layer not in self.canvas.pdk:
                 continue
             if self.canvas.rd.layers[layer] == '*':
                 self._extract_via_parasitics(layer, vv)

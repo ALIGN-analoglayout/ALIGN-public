@@ -92,6 +92,8 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
+        self.addWire( self.m2, 'B', 'B', ((y_cells)* self.m2PerUnitCell//2, self.lFin//4), (0, 1), (x_cells*self.gatesPerUnitCell, -1))
+
     def _bodyContact(self, x, y, x_cells, name='M1'):
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
@@ -103,12 +105,11 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
         self.addVia( self.va, f'{fullname}:B', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addVia( self.v1, f'{fullname}', None, gate_x, ((y+1)*h//2, self.lFin//4))
+        self.addVia( self.v1, 'B', None, gate_x, ((y+1)*h//2, self.lFin//4))
         
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
-        if x == x_cells-1:
-            self.addWire( self.m2, 'B', 'B', ((y+1)*h//2, self.lFin//4), (0, 1), (x_cells*gu, -1))
+
     def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
@@ -143,11 +144,10 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
                 else:
                     assert False, "Unknown pattern"
-                if y == y_cells-1:
-                    for x in range(x_cells):
-                        self._bodyContact(x, y, x_cells, names[0 if pattern == 0 else x_cells%2])
             self._connectDevicePins(y, connections)
         self._connectNets(x_cells, y_cells)
+        for x in range(x_cells):
+            self._bodyContact(x, y_cells-1, x_cells, names[0 if pattern == 0 else x_cells%2])
 
     def addNMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
