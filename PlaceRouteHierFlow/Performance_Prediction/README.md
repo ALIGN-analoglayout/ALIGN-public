@@ -1,6 +1,6 @@
 # How to setup environment for TensorFlow in C++
 Here follows some steps to setup Tensorflow environment in C++.  
-These works in Ubuntu 16.04.
+These works in Ubuntu 16.04 4.13.0-36-generic x86_64.     
 ## 1.install bazel
 Open your browser and download https://github.com/bazelbuild/bazel/releases/download/0.26.1/bazel_0.26.1-linux-x86_64.deb  
 Install the package using command sudo dpkg -i {path to the download bazel package}
@@ -23,5 +23,5 @@ cd tensorflow
 ## 5.Modify Makefile
 assign TENSORFLOW_DEPENDENCY with your tensorflow dir (for example, /home/XXX/tensorflow)  
 ## 6.export LD_LIBRARY_PATH
-run the following line in window ot add to ~/.bashrc and source  
+run the following line in window or add to ~/.bashrc and source  
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:{path to tensorflow dir}  
