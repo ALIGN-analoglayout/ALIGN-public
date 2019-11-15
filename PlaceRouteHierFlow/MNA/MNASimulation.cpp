@@ -51,7 +51,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
        MDB::device temp_device;
        MDB::metal_point temp_point; 
        
-       if(temp_grid.metals[i].LinePoint[0].x != temp_grid.metals[i].LinePoint[1].x and temp_grid.metals[i].LinePoint[0].y != temp_grid.metals[i].LinePoint[1].y){
+       if(temp_grid.metals[i].LinePoint[0].x != temp_grid.metals[i].LinePoint[1].x or temp_grid.metals[i].LinePoint[0].y != temp_grid.metals[i].LinePoint[1].y){
 
           temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
           temp_point.index = -1;
@@ -59,6 +59,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           temp_point.y = temp_grid.metals[i].LinePoint[0].y;
           auto frist_point = temp_set.find(temp_point);
           int start_index = frist_point->index;
+          std::cout<<"First Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<start_index<<" "<<temp_point.metal_layer<<std::endl;
 
           temp_point.metal_layer = temp_grid.metals[i].MetalIdx;
           temp_point.index = -1;
@@ -66,6 +67,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
           temp_point.y = temp_grid.metals[i].LinePoint[1].y;
           auto second_point = temp_set.find(temp_point);
           int end_index = second_point->index;
+          std::cout<<"Second Point (x,y) index metal "<<temp_point.x<<" "<<temp_point.y<<" "<<end_index<<" "<<temp_point.metal_layer<<std::endl;
 
           temp_device.device_type = MDB::R;
           temp_device.start_point_index = start_index;
