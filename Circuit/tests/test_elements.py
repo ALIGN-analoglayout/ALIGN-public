@@ -49,8 +49,6 @@ def test_NMOS(library):
     assert inst.parameters['NFIN'] == 1
     inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', NFIN = 2)
     assert inst.parameters['NFIN'] == 2
-    with pytest.raises(AssertionError):
-        inst = elements.NMOS('M1', 'net10', 'net12', 'net13', 'vss', NFIN = 1.5)
 
 def test_PMOS(library):
     assert 'PMOS' in library
@@ -69,8 +67,6 @@ def test_PMOS(library):
     assert inst.parameters['NFIN'] == 1
     inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', NFIN = 2)
     assert inst.parameters['NFIN'] == 2
-    with pytest.raises(AssertionError):
-        inst = elements.PMOS('M1', 'net10', 'net12', 'net13', 'vss', NFIN = 1.5)
 
 def test_res(library):
     assert elements.RES.__name__ in library
