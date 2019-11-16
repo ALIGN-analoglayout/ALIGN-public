@@ -52,8 +52,10 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                 ports[ele] = G[node][ele]["weight"]
 
         #G.add_edge(new_node,ele,weight=wt)
-    max_value['model'] = G.nodes[node]["real_inst_type"]
-    assert all(G.nodes[node]["real_inst_type"] == max_value["model"] for node in argv), [G.nodes[node]["real_inst_type"] for node in argv]
+    models = {G.nodes[node]["real_inst_type"] for node in argv}
+    models.remove('')
+    assert len(models) == 1, models
+    max_value['model'] = models.pop()
     new_node = new_node[1:]
     G.add_node(new_node,
                inst_type=hier_type,
