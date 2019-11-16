@@ -2162,22 +2162,22 @@ r777 net_M1_X3_Y0_D DA_M1_2160_504 50
 r778 net_M2_X3_Y1_D DB_M1_2160_1092 50
 r779 net_M2_X3_Y1_D DB_M1_2160_1218 50
 r780 net_M2_X3_Y1_D DB_M1_2160_1344 50
-M1_X0_Y0_0 net_M1_X0_Y0_D net_M1_X0_Y0_G net_M1_X0_Y0_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X0_Y0_1 net_M1_X0_Y0_diff net_M1_X0_Y0_G net_M1_X0_Y0_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X1_Y0_0 net_M2_X1_Y0_D net_M2_X1_Y0_G net_M2_X1_Y0_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X1_Y0_1 net_M2_X1_Y0_diff net_M2_X1_Y0_G net_M2_X1_Y0_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X2_Y0_0 net_M2_X2_Y0_D net_M2_X2_Y0_G net_M2_X2_Y0_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X2_Y0_1 net_M2_X2_Y0_diff net_M2_X2_Y0_G net_M2_X2_Y0_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X3_Y0_0 net_M1_X3_Y0_D net_M1_X3_Y0_G net_M1_X3_Y0_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X3_Y0_1 net_M1_X3_Y0_diff net_M1_X3_Y0_G net_M1_X3_Y0_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X0_Y1_0 net_M2_X0_Y1_D net_M2_X0_Y1_G net_M2_X0_Y1_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X0_Y1_1 net_M2_X0_Y1_diff net_M2_X0_Y1_G net_M2_X0_Y1_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X1_Y1_0 net_M1_X1_Y1_D net_M1_X1_Y1_G net_M1_X1_Y1_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X1_Y1_1 net_M1_X1_Y1_diff net_M1_X1_Y1_G net_M1_X1_Y1_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X2_Y1_0 net_M1_X2_Y1_D net_M1_X2_Y1_G net_M1_X2_Y1_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M1_X2_Y1_1 net_M1_X2_Y1_diff net_M1_X2_Y1_G net_M1_X2_Y1_S gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X3_Y1_0 net_M2_X3_Y1_D net_M2_X3_Y1_G net_M2_X3_Y1_diff gnd! NMOS w=0.0001 l=0.001 nfin=12
-M2_X3_Y1_1 net_M2_X3_Y1_diff net_M2_X3_Y1_G net_M2_X3_Y1_S gnd! NMOS w=0.0001 l=0.001 nfin=12
+M1_X0_Y0_0 net_M1_X0_Y0_D net_M1_X0_Y0_G net_M1_X0_Y0_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X0_Y0_1 net_M1_X0_Y0_diff net_M1_X0_Y0_G net_M1_X0_Y0_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X1_Y0_0 net_M2_X1_Y0_D net_M2_X1_Y0_G net_M2_X1_Y0_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X1_Y0_1 net_M2_X1_Y0_diff net_M2_X1_Y0_G net_M2_X1_Y0_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X2_Y0_0 net_M2_X2_Y0_D net_M2_X2_Y0_G net_M2_X2_Y0_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X2_Y0_1 net_M2_X2_Y0_diff net_M2_X2_Y0_G net_M2_X2_Y0_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X3_Y0_0 net_M1_X3_Y0_D net_M1_X3_Y0_G net_M1_X3_Y0_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X3_Y0_1 net_M1_X3_Y0_diff net_M1_X3_Y0_G net_M1_X3_Y0_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X0_Y1_0 net_M2_X0_Y1_D net_M2_X0_Y1_G net_M2_X0_Y1_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X0_Y1_1 net_M2_X0_Y1_diff net_M2_X0_Y1_G net_M2_X0_Y1_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X1_Y1_0 net_M1_X1_Y1_D net_M1_X1_Y1_G net_M1_X1_Y1_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X1_Y1_1 net_M1_X1_Y1_diff net_M1_X1_Y1_G net_M1_X1_Y1_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X2_Y1_0 net_M1_X2_Y1_D net_M1_X2_Y1_G net_M1_X2_Y1_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M1_X2_Y1_1 net_M1_X2_Y1_diff net_M1_X2_Y1_G net_M1_X2_Y1_S gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X3_Y1_0 net_M2_X3_Y1_D net_M2_X3_Y1_G net_M2_X3_Y1_diff gnd! NMOS width=0.0001 length=0.001 nfin=12
+M2_X3_Y1_1 net_M2_X3_Y1_diff net_M2_X3_Y1_G net_M2_X3_Y1_S gnd! NMOS width=0.0001 length=0.001 nfin=12
 
 .op
 .print dc GA_M3_1360_1212 GB_M3_1440_1296 S_M3_1120_960 DA_M3_1200_1044 DB_M3_1280_1128
