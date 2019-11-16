@@ -15,15 +15,16 @@ OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
 #TENSORFLOW_DEPENDENCY=$(abspath tensorflow_dependency)
-TENSORFLOW_DEPENDENCY=/home/lion/tensorflow
+TENSORFLOW_DEPENDENCY=/home/yaguang/Desktop/opt/tensorflow
 TENSORFLOW_INCLUDE?=-I $(TENSORFLOW_DEPENDENCY)/bazel-genfiles \
             -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/nsync/public \
-            -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/protobuf  \
+            -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/protobuf/src  \
             -I $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow  \
             -I /usr/local/include/eigen3 \
             -I $(TENSORFLOW_DEPENDENCY)/tensorflow/contrib/makefile/downloads/absl \
             -I $(TENSORFLOW_DEPENDENCY)
-export TENSORFLOW_LIB_DIR = $(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow
+ 
+export TENSORFLOW_LIB_DIR=$(TENSORFLOW_DEPENDENCY)/bazel-bin/tensorflow
 
 export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include $(TENSORFLOW_INCLUDE)
 export CXX=g++
