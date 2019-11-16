@@ -5,13 +5,13 @@ These works in Ubuntu 16.04 4.13.0-36-generic x86_64.
 Open your browser and download https://github.com/bazelbuild/bazel/releases/download/0.26.1/bazel_0.26.1-linux-x86_64.deb  
 Install the package using command sudo dpkg -i {path to the download bazel package}
 ## 2.Install protobuf
-download https://github.com/protocolbuffers/protobuf/archive/v3.8.0.tar.gz
-tar zxvf protobuf-all-3.8.0.tar.gz
-cd protobuf-3.8.0/
-./autogen.sh
-./configure
-make
-sudo make install
+Download https://github.com/protocolbuffers/protobuf/archive/v3.8.0.tar.gz  
+tar zxvf protobuf-all-3.8.0.tar.gz  
+cd protobuf-3.8.0/  
+./autogen.sh  
+./configure  
+make  
+sudo make install  
 ## 3.Install TensorFlow
 git clone https://github.com/tensorflow/tensorflow.git  
 cd tensorflow  
