@@ -27,12 +27,9 @@ def get_xcells_pattern( args):
     return x_cells, pattern
 
 def get_parameters(args):
-    parameters = {}
-    if args.model is None:
-        parameters['model'] = 'NMOS' if 'NMOS' in args.primitive else 'PMOS'
-    else:
-        parameters['model'] = args.model
     parameters = args.params
+    if 'model' not in parameters:
+        parameters['model'] = 'NMOS' if 'NMOS' in args.primitive else 'PMOS'
     parameters['nfin'] = args.nfin
     return parameters
 
