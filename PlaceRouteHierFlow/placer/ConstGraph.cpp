@@ -2459,13 +2459,31 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::vector<std::string> feature_name;
   //step 1. extract the pin informance of each net used for the feature of deep learning model
   ExtractFeatures(caseNL, caseSP, feature_value, feature_name);
+  std::cout<<"feature size"<<feature_value.size()<<std::endl;
+  std::cout<<"feature name size"<<feature_name.size()<<std::endl;
   //step 2. call the deep learning model in c++ 
-  std::string model_path = "./Performance_Prediction/models/GCN_rc.pb";
+
   std::string model_input_node_name = "feature";
   std::string model_output_node_name = "lable/BiasAdd";
-  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+
+  std::string gain_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_gain.pb";
+  std::string ugf_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_ugf.pb";
+  std::string pm_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_pm.pb";
+  std::string threedb_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_threedb.pb";
+
+  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, gain_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+  double predicted_ugf = Deep_learning_model_Prediction(feature_value, feature_name, ugf_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+  double predicted_pm = Deep_learning_model_Prediction(feature_value, feature_name, pm_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+  double predicted_threedb = Deep_learning_model_Prediction(feature_value, feature_name, threedb_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+
+  std::cout<<"model prediction "<<"gain "<<predicted_gain<<" ugf "<<predicted_ugf<<" pm "<<predicted_pm<<" threedb "<<predicted_threedb<<std::endl;
+
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
-  double gain_weight = 1.0; 
+  double gain_weight = 1.0;
+  double ugf_weight = 1.0;
+  double pm_weight = 1.0;
+  double threedb_weight = 1.0;
+ 
   cost = cost + predicted_gain*gain_weight;
   return cost;
 }
@@ -2628,7 +2646,7 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
     cout << "Graph successfully read." << endl;
   }
 
-  int feature_size = 54;//feature_value.size();
+  int feature_size = 40;//feature_value.size();
   std::cout << "feature_size: " << feature_size << std::endl;
   Tensor X(DT_DOUBLE, TensorShape({ 1, feature_size })); //define a Tensor X, by default is [1, feature_size]
   Tensor A(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
