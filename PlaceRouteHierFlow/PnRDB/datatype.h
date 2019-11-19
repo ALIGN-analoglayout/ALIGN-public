@@ -481,6 +481,14 @@ struct ViaModel {
   double R;
 };
 
+struct GdsDatatype
+{
+  int Draw;
+  int Pin;
+  int Label;
+  int Blockage;    
+};
+
 struct metal_info {
   string name;
   int layerNo;
@@ -495,6 +503,7 @@ struct metal_info {
   double unit_R;
   double unit_C;
   double unit_CC;
+  GdsDatatype gds_datatype;
 };
 
 struct via_info {
@@ -511,6 +520,7 @@ struct via_info {
   int dist_ss; //via spacing, X direction spacing
   int dist_ss_y; // Y direction spacing
   double R;
+  GdsDatatype gds_datatype;
 };
 
 struct Drc_info {

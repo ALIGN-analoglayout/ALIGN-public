@@ -214,14 +214,15 @@ assignBoxPoints (int* x, int*y, struct PnRDB::bbox b, double unit) {
 }
 
 void
-addTextElements (json& jsonElements, int cenX, int cenY, int layer, const string& text) {
+addTextElements (json& jsonElements, int cenX, int cenY, int layer, const PnRDB::Drc_info& drc_info, int layer_index, const string& text) {
     int test_font=1,test_vp=1,test_hp=1;
-    const int test_texttype=251; //draw 0, label 2, pin 251, blockage 4
+    const int test_texttype=3; //draw 0, label 2, pin 3, blockage 4
     double test_mag=0.03; 
     json element;
     element["type"] = "text";
     element["layer"] = layer;
-    element["texttype"] = test_texttype;
+    element["texttype"] = drc_info.Metal_info.at(layer_index).gds_datatype.Pin;
+    //reminder, layer_index is not metal layer number. It is the index of metal in drc_info.Metal_info
     element["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
 
     element["strans"] = 0;
@@ -424,8 +425,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		assignBoxPoints (x, y, con.placedBox, unitScale);
 		if (write == 0) {
 		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
-				     metal2int( drc_info, con.metal),
-				     node.blockPins[i].name);
+				     metal2int( drc_info, con.metal), 
+                     drc_info, drc_info.Metalmap.at(con.metal),
+                     node.blockPins[i].name);
 		    write = 1;	// added by yg 
 		}
 	    }
@@ -444,6 +446,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 			assignBoxPoints (x, y, metal.MetalRect.placedBox, unitScale);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 metal2int( drc_info, metal.MetalRect.metal),
+                     drc_info, drc_info.Metalmap.at(metal.MetalRect.metal),
 					 node.Nets[i].name);
 			write = 1; // added by yg 
 		    }
@@ -469,6 +472,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 			assignBoxPoints (x, y, metal.MetalRect.placedBox, unitScale);
 			addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 					 metal2int( drc_info, metal.MetalRect.metal),
+                     drc_info, drc_info.Metalmap.at(metal.MetalRect.metal),
 					 node.PowerNets[i].name);
 			write = 1; //added by yg 
 		    }
