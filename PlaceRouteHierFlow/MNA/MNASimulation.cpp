@@ -2,10 +2,13 @@
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info){
+//MNASimulation::MNASimulation(boost_matrix &out_R, boost_matrix &out_I){
 
 boost_matrix out_R, out_I; 
+std::vector<std::vector<double> > Istore,Vstore,Rstore;
 this->R = out_R;
 this->I = out_I;
+
 ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
 
 std::cout<<"Vdd Devices"<<std::endl;
@@ -13,8 +16,34 @@ Print_Devices(Power_Grid_devices_Vdd);
 std::cout<<"Gnd Devices"<<std::endl;
 Print_Devices(Power_Grid_devices_Gnd);
 
+
+Transfer(Power_Grid_devices_Gnd, Power_Grid_devices_Vdd, Rstore);
+for (int i = 0; i < Rstore.size(); i++){
+std::cout << "start "<< Rstore[i][0] <<" end " << Rstore[i][1]<< " value " << Rstore[i][2] << std::endl;
+}
+
+int node_num1 = nodenum(Power_Grid_devices_Gnd);
+int node_num2 = nodenum(Power_Grid_devices_Vdd);
+
+Vstore.push_back(std::vector<double>{node_num1+1,1,1});
+Istore.push_back(std::vector<double>{2,node_num1+2,0.01});
+
+ConstructI(Istore,Vstore,Rstore);
+ConstructR(Rstore,Vstore);
+
+int Rsize = 0;
+ for (int i = 0; i < Rstore.size(); i++){
+ if (Rsize < Rstore[i][0])
+	Rsize = Rstore[i][0];
+ if (Rsize < Rstore[i][1])
+	Rsize = Rstore[i][1];
+}
+
+result = SolveIR_drop(Rsize);
+//how to output result
 //++
 
+//result = 0.9;
 };
 
 void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
@@ -26,6 +55,74 @@ void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
   }
 
 };
+
+int MNASimulation::nodenum(std::vector<MDB::device> &temp_devices){
+	int num = 0;
+	for(int i=0;i<temp_devices.size();i++){
+		//if (temp_devices[i].device_type == 0){
+		int start = temp_devices[i].start_point_index;
+		int end = temp_devices[i].end_point_index;
+		if (num < start) num = start;
+		if (num < end) num = end;
+		//}
+	}
+	return num;
+}
+
+void MNASimulation::Transfer(std::vector<MDB::device> &temp_devices, std::vector<MDB::device> &temp2_devices, std::vector<std::vector<double> > &Rstore){
+	int start,end,flag;
+	flag = 0;
+	double value;
+	std::vector<std::vector<double> > store;
+	// std::vector<double> temp;
+	for(int i=0;i<temp_devices.size();i++){
+		//if (temp_devices[i].device_type == 0){
+		start = temp_devices[i].start_point_index;
+		end = temp_devices[i].end_point_index;
+		value = temp_devices[i].value;
+		store.push_back(std::vector<double>{start,end,value});
+		if (flag < start) flag = start;
+		if (flag < end) flag = end;
+		//}
+	}
+	flag++;
+//	int size = temp_devices.size();
+	for(int i=0;i<temp2_devices.size();i++){
+		//if (temp2_devices[i].device_type == 0){
+		start = flag + temp2_devices[i].start_point_index;
+		end = flag + temp2_devices[i].end_point_index;
+		value = temp2_devices[i].value;
+		store.push_back(std::vector<double>{start,end,value});
+		
+		//}
+	}
+	
+	Rstore = store;
+	store.clear();
+	/*
+	for(int i=0;i<temp_devices.size();i++){
+		if (temp_devices[i].device_type == 1){
+		start = temp_devices[i].start_point_index;
+		end = temp_devices[i].end_point_index;
+		value = temp_devices[i].value;
+		store.push_back({start,end,value});
+		
+		}
+	}
+	Istore = store;
+	store.clear();
+	for(int i=0;i<temp_devices.size();i++){
+		if (temp_devices[i].device_type == 2){
+		start = temp_devices[i].start_point_index;
+		end = temp_devices[i].end_point_index;
+		value = temp_devices[i].value;
+		store.push_back({start,end,value});
+		
+		}
+	}
+	Vstore = store;
+	store.clear();*/
+}
 
 void MNASimulation::ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set){
 
@@ -105,7 +202,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
-       if(temp_set.find(temp_point)==temp_set.end()){continue;}
+	if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto frist_point = temp_set.find(temp_point);
        int start_index = frist_point->index;
        
@@ -113,7 +210,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
-       if(temp_set.find(temp_point)==temp_set.end()){continue;}
+	if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto second_point = temp_set.find(temp_point);
        int end_index = second_point->index;
 
@@ -188,15 +285,16 @@ void MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, std::vec
 if (Istore.size() > 0){
  for (int i = 0; i < Istore.size(); i++){
  	 int start = Istore[i][0]-1;
+	 int end = Istore[i][1]-1;
 	 double value = Istore[i][2];
+	//std::cout << "start I" << start <<", end I" << end << std::endl;
 		if (start >= 0 )
 		II (start, 0) = value;
+		if (end >= 0 )
+		II (end, 0) = -value;
 	}
 }
 
- for (unsigned i = 0; i < II.size1 (); ++ i)
-        for (unsigned j = 0; j < II.size2 (); ++ j)
-            std::cout << "I(" << i <<"," << j <<")=" << II (i, j)  << std::endl;
 
 
  for (int i = 0; i < Vstore.size(); i++){
@@ -205,6 +303,11 @@ if (Istore.size() > 0){
 	if (start >= 0 )
  	II (Rsize + i, 0) = value;
 }
+
+ for (unsigned i = 0; i < II.size1 (); ++ i)
+        for (unsigned j = 0; j < II.size2 (); ++ j)
+            std::cout << "I(" << i <<"," << j <<")=" << II (i, j)  << std::endl;
+
 
   I=II;
 }
@@ -232,6 +335,7 @@ void MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, std::vec
  col = Rstore[i][0]-1;
  row = Rstore[i][1]-1;
  value = 1.0/Rstore[i][2];
+ std::cout << "R is " << Rstore[i][2] << " 1/R value is "<< value << std::endl;
  if (col >= 0)
  RR(col,col) += value;
  if (row >= 0)
@@ -267,7 +371,7 @@ for (unsigned i = 0; i < RR.size1 (); ++ i)
 }
 
 
-int MNASimulation::SolveIR_drop(){
+double MNASimulation::SolveIR_drop(int Rsize){
 
 	/*
 	boost_matrix R (3, 3);
@@ -307,13 +411,15 @@ int MNASimulation::SolveIR_drop(){
    
 	//std::cout << R << std::endl;
 	VV = prod (inv,I);
-  //solve it;
-  /*BOOST_UBLAS_INLINE M& axpy_prod (const matrix_expression< R > &out_R,
-        const matrix_expression< I > &out_I,
-        V &V,
-        bool    init = true
-    ) */
+
 	V = VV;
 	std::cout << "V is " << V << std::endl;
-	return 0;
+	double max = 1.0;
+	for (unsigned i = 0; i < Rsize; ++i){
+	if (max > V(i, 0))
+	max = V(i, 0);
+	}
+		
+
+	return max;
 }
