@@ -2450,6 +2450,7 @@ double ConstGraph::CalculateArea() {
 
 void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_value,std::vector<std::string> &feature_name,std::vector<std::string> &dp_feature_name){
 
+  std::cout<<"feature name size "<<feature_name.size()<<" dp feature name size "<<dp_feature_name.size()<<std::endl;
   if(feature_name.size()!=dp_feature_name.size()){
       std::cout<<"Error: deep learning model inputs feature size is not correct";
       return;
@@ -2464,7 +2465,8 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
 
         if(dp_feature_name[i]==feature_name[j]){
 
-            new_feature_value.push_back(feature_value[j]);
+            new_feature_value.push_back(feature_value[j]/250);
+            //new_feature_value.push_back(feature_value[j]);
             break;
 
           }
@@ -2485,7 +2487,7 @@ void ConstGraph::Deep_learning_model_readin_feature_name(std::vector<std::string
   fin.open(feature_name_path.c_str());
   while(fin.peek()!=EOF){
     getline(fin, def);
-    temp=split_by_spaces(def);
+    temp=split_by_spaces_yg(def);
     dp_feature_name = temp;
   }
   
@@ -2539,8 +2541,13 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   double ugf_weight = 1.0;
   double pm_weight = 1.0;
   double threedb_weight = 1.0;
- 
-  cost = cost + predicted_gain*gain_weight;
+  double expected_gain = 32;
+  double expected_ugf = 920000000;
+  double expected_pm = 89;
+  double expected_threedb = 23000000;
+
+  cost = cost + (expected_gain-predicted_gain)/expected_gain + (expected_ugf-predicted_ugf)/expected_ugf + (expected_pm-predicted_pm)/expected_pm + (expected_threedb-predicted_threedb)/expected_threedb;
+  //cost = cost + predicted_gain*gain_weight;
   return cost;
 }
 
@@ -2558,13 +2565,16 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       pos.clear();
       if(ci->type==placerDB::Block) {
-        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + std::to_string(net_pin_number);
+        //pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + std::to_string(net_pin_number);
+        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name;
         net_pin_number = net_pin_number + 1;
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
         pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+        //std::cout<<"Print Pin Contact Info"<<std::endl;
         for(unsigned int i=0;i<pos_pin.size();i++){
           p = pos_pin[i];
+          std::cout<<"Pin Center (x, y)"<<p.x<<" "<<p.y<<std::endl;
           pos.push_back(p);
 	}
         pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
@@ -2581,6 +2591,7 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
       pos.clear();
       if(ci->type==placerDB::Terminal) {
         pin_name = ni->name;
+        std::cout<<"Terminal center (x,y) "<<caseNL.Terminals[ci->iter].center.x<<" "<<caseNL.Terminals[ci->iter].center.y<<std::endl;
         pos.push_back(caseNL.Terminals[ci->iter].center);
         pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
       }
@@ -2600,10 +2611,12 @@ void ConstGraph::ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<do
         pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
         net_pin_number = net_pin_number + 1;
         feature_name.push_back(pin_name);
+        std::cout<<"Sorted Pin name "<<pin_name<<" pin contact size "<<pin_maps[pin_name].size()<<std::endl;
         center_points.push_back(pin_maps[pin_name]);
         center_points_all.push_back(pin_maps[pin_name]);
       }else if(ci->type==placerDB::Terminal) {
         feature_name.push_back(net_name);
+        std::cout<<"Sorted terminal name "<<net_name<<" terminal contact size "<<pin_maps[net_name].size()<<std::endl;
         center_points.push_back(pin_maps[net_name]);
         center_points_all.push_back(pin_maps[net_name]);
       }
@@ -2703,7 +2716,7 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
     cout << "Graph successfully read." << endl;
   }
 
-  int feature_size = 40;//feature_value.size();
+  int feature_size = feature_value.size();//feature_value.size();
   std::cout << "feature_size: " << feature_size << std::endl;
   Tensor X(DT_DOUBLE, TensorShape({ 1, feature_size })); //define a Tensor X, by default is [1, feature_size]
   Tensor A(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
@@ -2713,7 +2726,7 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
   auto plane_tensor_D = D.tensor<double,2>(); //pointer of A
   //auto plane_tensor = X.tensor<double,2>(); //pointer of X
   for (int i = 0; i < feature_size; i++){
-      plane_tensor_X(0,i) = 1;//feature_value.at(i); //load data into X
+      plane_tensor_X(0,i) = feature_value.at(i);//1; //load data into X
   }
   for (int i = 0; i < feature_size; i++){
     for (int j = 0; j < feature_size; j++){
