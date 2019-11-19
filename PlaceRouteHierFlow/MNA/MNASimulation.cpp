@@ -105,6 +105,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
+       if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto frist_point = temp_set.find(temp_point);
        int start_index = frist_point->index;
        
@@ -112,6 +113,7 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_point.index = -1;
        temp_point.x = x;
        temp_point.y = y;
+       if(temp_set.find(temp_point)==temp_set.end()){continue;}
        auto second_point = temp_set.find(temp_point);
        int end_index = second_point->index;
 
