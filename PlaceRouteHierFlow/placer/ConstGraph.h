@@ -17,6 +17,7 @@
 #include "SeqPair.h"
 #include "Aplace.h"
 #include "../PnRDB/datatype.h"
+#include "../PnRDB/readfile.h"
 
 #include <tensorflow/core/platform/env.h>
 #include <tensorflow/core/public/session.h>
@@ -191,6 +192,9 @@ class ConstGraph
                                                       std::string model_path, std::string input_node_name, std::string output_node_name,  \
                                                       std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D);
     std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
+    void Deep_learning_model_readin_feature_name(std::vector<std::string> &dp_feature_name, std::string feature_name_path);
+    void Deep_learning_transform_feature(std::vector<double> &feature_value,std::vector<std::string> &feature_name,std::vector<std::string> &dp_feature_name);
+    
 };
 
 #endif

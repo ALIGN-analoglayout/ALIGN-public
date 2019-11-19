@@ -2448,6 +2448,50 @@ double ConstGraph::CalculateArea() {
   return (double)(this->HGraph.at(sinkNode).position)*(this->VGraph.at(sinkNode).position);
 }
 
+void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_value,std::vector<std::string> &feature_name,std::vector<std::string> &dp_feature_name){
+
+  if(feature_name.size()!=dp_feature_name.size()){
+      std::cout<<"Error: deep learning model inputs feature size is not correct";
+      return;
+    }
+
+  std::vector<double> new_feature_value;
+
+
+  for(int i = 0;i <dp_feature_name.size(); i++){
+
+     for(int j=0;j<feature_name.size();j++){
+
+        if(dp_feature_name[i]==feature_name[j]){
+
+            new_feature_value.push_back(feature_value[j]);
+            break;
+
+          }
+
+     }
+
+   }
+
+  feature_value = new_feature_value;
+
+}
+
+void ConstGraph::Deep_learning_model_readin_feature_name(std::vector<std::string> &dp_feature_name, std::string feature_name_path){
+
+  ifstream fin;
+  string def;
+  std::vector<string> temp;
+  fin.open(feature_name_path.c_str());
+  while(fin.peek()!=EOF){
+    getline(fin, def);
+    temp=split_by_spaces(def);
+    dp_feature_name = temp;
+  }
+  
+}
+
+
 
 //a function used to calculated the Deep learning model based performance
 double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& caseSP){
@@ -2457,6 +2501,7 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::vector<std::vector<double>> feature_A;
   std::vector<std::vector<double>> feature_D;
   std::vector<std::string> feature_name;
+  std::vector<std::string> dp_feature_name;
   //step 1. extract the pin informance of each net used for the feature of deep learning model
   ExtractFeatures(caseNL, caseSP, feature_value, feature_name);
   std::cout<<"feature size"<<feature_value.size()<<std::endl;
@@ -2470,6 +2515,17 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::string ugf_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_ugf.pb";
   std::string pm_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_pm.pb";
   std::string threedb_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_threedb.pb";
+  std::string feature_name_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/Feature_name";
+  
+  Deep_learning_model_readin_feature_name(dp_feature_name,feature_name_path);
+  Deep_learning_transform_feature(feature_value,feature_name,dp_feature_name);
+
+  std::cout<<"Feature info"<<std::endl;
+  for(int i=0;i<feature_value.size();i++){
+
+     std::cout<<"Feature value "<<feature_value[i]<<" name "<<feature_name[i]<<" dp name "<<dp_feature_name[i]<<std::endl;
+
+  }
 
   double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, gain_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
   double predicted_ugf = Deep_learning_model_Prediction(feature_value, feature_name, ugf_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
