@@ -61,7 +61,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     #if [val for val in max_value.values() if isinstance(val, str)]
     #    print("wrong value type",new_node)
     for pins in list(ports):
-        if set(G.neighbors(pins)) <= set(argv):
+        if set(G.neighbors(pins)) <= set(argv) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
             #print("deleting node",pins)
             G.remove_node(pins)
