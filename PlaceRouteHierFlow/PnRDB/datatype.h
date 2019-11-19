@@ -494,6 +494,7 @@ struct metal_info {
   int dist_ee;
   double unit_R;
   double unit_C;
+  double unit_CC;
 };
 
 struct via_info {
