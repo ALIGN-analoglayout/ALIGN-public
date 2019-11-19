@@ -96,6 +96,9 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     
     std::cout<<"Start MNA "<<std::endl;
     MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
+    double worst;
+    worst = Test_MNA.Return_Worst_Voltage();
+    std::cout<<"worst voltage is "<< worst << std::endl;
     std::cout<<"End MNA "<<std::endl;
 
 
