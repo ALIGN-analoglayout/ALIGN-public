@@ -14,7 +14,7 @@ def TwoTerminalDevice():
 
 @pytest.fixture
 def ThreeTerminalDevice():
-    return type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': (int, 1)}})
+    return type('ThreeTerminalDevice', (NTerminalDevice,), {'_pins': ['a', 'b', 'c'], '_parameters': {'myparameter': 1}})
 
 def test_2_terminal_device(TwoTerminalDevice):
     with pytest.raises(AssertionError):
@@ -143,7 +143,7 @@ def simple_netlist(TwoTerminalDevice, ThreeTerminalDevice):
 def matching_subckt(ThreeTerminalDevice):
     subckt = SubCircuit('test_subckt', 'pin1', 'pin2', 'pin3', myparameter=1)
     subckt.add_element(ThreeTerminalDevice('X1', 'pin3', 'pin1', 'pin1', myparameter=1))
-    subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2', myparameter='{myparameter}'))
+    subckt.add_element(ThreeTerminalDevice('X2', 'pin3', 'pin1', 'pin2', myparameter='myparameter'))
     return subckt
 
 def test_find_subgraph_matches(simple_netlist, matching_subckt, ThreeTerminalDevice, TwoTerminalDevice):
@@ -193,7 +193,7 @@ def test_flatten(heirarchical_ckt):
     }
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
     assert set(ckt.nets) == {'net1', 'net2', 'net3', 'XSUB1_net1'}
-    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items())
+    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items()), [ckt.element(elem).parameters['myparameter'] for elem in myparametermap.keys()]
 
 def test_flatten_depth1(heirarchical_ckt):
     ckt = heirarchical_ckt
@@ -206,4 +206,4 @@ def test_flatten_depth1(heirarchical_ckt):
     }
     assert {x.name for x in ckt.elements} == set(myparametermap.keys())
     assert set(ckt.nets) == {'net1', 'net2', 'net3', 'XSUB1_net1'}
-    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items())
+    assert all(ckt.element(elem).parameters['myparameter'] == param for elem, param in myparametermap.items()), [ckt.element(elem).parameters['myparameter'] for elem in myparametermap.keys()]
