@@ -87,21 +87,32 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
   //DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
 
+  double worst=0;
+  double th = 0.1;
+  bool Power_mesh_optimize = 0;
+  rate = 0.1;
+
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
 
 
+    while(Power_mesh_optimize and worst < th and rate<1){
+
+      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
     
+      std::cout<<"Start MNA "<<std::endl;
+      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
+   
+      worst = Test_MNA.Return_Worst_Voltage();
+      std::cout<<"worst voltage is "<< worst << std::endl;
+      std::cout<<"End MNA "<<std::endl;
+      Test_MNA.Clear_Power_Grid(current_node.Vdd);
+      Test_MNA.Clear_Power_Grid(current_node.Gnd);      
+      rate = rate + 0.1;
+       
+    }
+
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
-    
-    std::cout<<"Start MNA "<<std::endl;
-    MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
-    double worst;
-    worst = Test_MNA.Return_Worst_Voltage();
-    std::cout<<"worst voltage is "<< worst << std::endl;
-    std::cout<<"End MNA "<<std::endl;
-
-
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 

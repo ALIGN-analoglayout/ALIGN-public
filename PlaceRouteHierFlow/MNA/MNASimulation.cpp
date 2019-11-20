@@ -56,6 +56,15 @@ void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
 
 };
 
+void MNASimulation::Clear_Power_Grid(PnRDB::PowerGrid &temp_grid){
+
+  temp_grid.metals.clear();
+  temp_grid.vias.clear();
+  temp_grid.power=1;
+
+
+};
+
 int MNASimulation::nodenum(std::vector<MDB::device> &temp_devices){
 	int num = 0;
 	for(int i=0;i<temp_devices.size();i++){
