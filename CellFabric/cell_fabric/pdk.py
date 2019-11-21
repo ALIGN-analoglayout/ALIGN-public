@@ -145,12 +145,8 @@ class Pdk(object):
                 layer_stack.append( (l, tuple(info['Stack'])) )
         return layer_stack
 
-    #def get_gds_map(self):
-        #return {x+y: [self.pdk[x]['GdsLayerNo'], self.pdk[x]['GdsDatatype'][y]] for x in self.pdk.keys() if 'GdsLayerNo' in self.pdk[x] for y in self.pdk[x]['GdsDatatype']}
-    #    return {x: self.pdk[x]['GdsLayerNo'] for x in self.pdk.keys() if 'GdsLayerNo' in self.pdk[x]}
-
     def get_lef_exclude(self):
-        return {x for x in self.pdk.keys() if x.startswith('M') == False}
+        return {x for x in self.pdk.keys() if x.startswith('M') is False}
 
     def get_via_table(self):
         via_table = {}
