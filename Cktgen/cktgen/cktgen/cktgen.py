@@ -342,7 +342,8 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3"], l
+      assert l in ["metal1","metal2","metal3","via1","via2"], l
+      if l == "via2": continue
       netl.newWire( '!kor', r, l)
       
     for p in self.ports:
@@ -627,6 +628,10 @@ Option name=nets_not_to_route value=!kor
 
 #Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
 
+#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
+
+#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,vbiasn,vbiasnd,vinn,vinp,vdd,vss,voutp,vbiasp
+
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
 Option name=create_fake_connected_entities       value=0
@@ -644,6 +649,8 @@ Option name=upper_layer                          value=metal4
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
       for (_,v) in self.nets.items():
         for w in v.wires:
+          #SMB Hack because of via2 sizing error
+          if w.layer == "via2": continue
           fp.write( str(w) + "\n")
 
       #SMB Generalize this

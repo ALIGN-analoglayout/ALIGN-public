@@ -4,42 +4,28 @@ import json
 import pathlib
 import os
 from pnrdb import *
+import copy
 
-def test_A():
-    """
-{
-   "nm": "telescopic_ota",
-   "bbox": [ llx, lly, urx, ury],
-   "leaves": [
-       {
-           "template_name": "",
-           "bbox": [ llx, lly, urx, ury],
-           "terminals": [
-              {
-                  "net_name": "",
-                  "layer": "",
-                  "rect": [llx, lly, urx, ury]
-              }
-           ]
-       }
-   ],
-   "instances": [
-       {
-           "template_name": "",
-           "instance_name": "",
-           "transformation": { "oX": 0, "oY": 0, "sX": 1, "sY": 1},
-           "formal_actual_map": {
-               "formal1": "",
-               "formal2": "",
-           }  
-       }
-   ]
-}
-"""
-#    design = "switched_capacitor_filter"
-#    subdesign = "telescopic_ota"
-    design = "five_transistor_ota"
-    subdesign = design
+def check_wire_widths( terminals, sc):
+    for term in terminals:
+        assert 'net_name' in term or 'netName' in term
+        assert 'layer' in term
+        assert 'rect' in term
+        # don't want M1 and M2 on the interface
+        if term['layer'] in ['M2','V2','M3']:
+            if term['layer'] == 'M3':
+                r = term['rect']
+                width = r[2]-r[0]
+                assert width == sc*40, width
+            if term['layer'] == 'M2':
+                r = term['rect']
+                width = r[3]-r[1]
+                assert width == sc*32, width
+
+
+def aux(design, subdesign=None):
+    if subdesign is None:
+        subdesign = design
 
     # Generate this above formatted file from PnRDB data
     rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/Results"
@@ -79,6 +65,10 @@ def test_A():
     result['bbox'] = [0,0,hN.width,hN.height]
     result['leaves'] = []
     result['instances'] = []
+
+# Everything is in Angstroms
+    for k,leaf in leaves.items():
+        check_wire_widths( leaf['terminals'], 10)
 
     for k,src in sorted(leaves.items()):
         leaf = {}
@@ -127,15 +117,30 @@ def test_A():
                 terminal_name = term.name
                 assert terminal_name == n.name
 
+
+    for k,leaf in leaves.items():
+        check_wire_widths( leaf['terminals'], 10)
+
+#
+# Only scale once
+#
+    for (k,v) in leaves.items():
+        # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
+        rational_scaling( v, div=5)
+
+    for k,leaf in leaves.items():
+        check_wire_widths( leaf['terminals'], 2)
+
+#
+# Now in 2x nanometers
+#
+
     for cblk in hN.Blocks:
         inst = {}
 
         blk = cblk.instance[cblk.selectedInstance]
 
-        d = leaves[blk.master]
-
-        # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-        rational_scaling( d, div=5)
+        print( "working on", blk.master)
 
         tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
 
@@ -166,6 +171,9 @@ def test_A():
     for leaf in result['leaves']:
         rational_scaling( leaf, mul=mul)
 
+    for leaf in result['leaves']:
+        check_wire_widths( leaf['terminals'], 10)
+
     for inst in result['instances']:
         inst['transformation']['oX'] *= mul
         inst['transformation']['oY'] *= mul
@@ -179,16 +187,20 @@ def test_A():
     with ( rdir / f"{subdesign}_GcellGlobalRoute_0.json" ).open("rt") as fp:
         grs = json.load( fp)
 
-
     newWires = []
 
-    hWires = {"M2": "metal2", "M4": "metal4"}
-    vWires = {"M1": "metal1", "M3": "metal3", "M5": "metal5"}
+    hWires = {"M2": "metal2", "M4": "metal4", "M6": "metal4"}
+# map M7 to metal5
+    vWires = {"M1": "metal1", "M3": "metal3", "M5": "metal5", "M7": "metal5"}
+
+    wire_widths = { "metal1": 320, "metal2": 320, "metal3": 400, "metal4": 320, "metal5": 640}
 
     layer_map = dict( list(hWires.items()) + list(vWires.items()))
 
     for wire in grs['wires']:
-        newWire = { 'layer': layer_map[wire['layer']], 'net_name': wire['net_name'], 'width': 3*320, 'connected_pins': []}
+        newLayer = layer_map[wire['layer']]                     
+        width = wire_widths[newLayer]            
+        newWire = { 'layer': newLayer, 'net_name': wire['net_name'], 'width': width, 'connected_pins': []}
 
         if wire['layer'] in hWires:
             bin = 10*84*2
@@ -209,3 +221,13 @@ def test_A():
     newGRs = { 'wires': newWires}
     with open( f"tests/__json_{subdesign}_gr", "wt") as fp:
         json.dump( newGRs, fp=fp, indent=2)
+
+def test_A():
+    aux( "five_transistor_ota", "five_transistor_ota")
+
+def test_B():
+    aux( "switched_capacitor_filter", "telescopic_ota")
+
+def test_C():
+    aux( "cascode_current_mirror_ota", "cascode_current_mirror_ota")
+

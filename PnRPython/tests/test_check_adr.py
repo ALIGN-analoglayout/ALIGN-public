@@ -10,9 +10,8 @@ import os
 
 import re
 
-def test_remove_duplicates():
-#    fn = "telescopic_ota"
-    fn = "five_transistor_ota"
+
+def aux(fn):
     fpath = pathlib.Path( f"tests/{fn}_adr_dr_globalrouting.json")
     with fpath.open( "rt") as fp:
         d = json.load( fp)
@@ -32,10 +31,14 @@ def test_remove_duplicates():
         'metal3': 'M3',
         'metal4': 'M4',
         'metal5': 'M5',
+        'metal6': 'M6',
+        'metal7': 'M7',
         'via1': 'V1',
         'via2': 'V2',
         'via3': 'V3',
-        'via4': 'V4'
+        'via4': 'V4',
+        'via5': 'V5',
+        'via6': 'V6',
     }
 
     p_exclude = re.compile( '^((.*_gr)|(!kor))$')
@@ -70,3 +73,13 @@ def test_remove_duplicates():
     assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
     assert len(cnv.rd.opens) == 0, pformat(cnv.rd.opens)
     assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
+
+def test_remove_duplicates_telescopic_ota():
+    aux("telescopic_ota")
+
+def test_remove_duplicates_five_transistor_ota():
+    aux("five_transistor_ota")
+
+def test_remove_duplicates_cascode_current_mirror_ota():
+    aux("cascode_current_mirror_ota")
+
