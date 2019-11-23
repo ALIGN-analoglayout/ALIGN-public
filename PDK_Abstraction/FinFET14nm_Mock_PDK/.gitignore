@@ -1,0 +1,5 @@
+*~
+*.json
+*.lef
+*.gds.json
+*_lef.sh

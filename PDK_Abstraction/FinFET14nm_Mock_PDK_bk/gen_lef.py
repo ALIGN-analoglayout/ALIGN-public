@@ -5,23 +5,20 @@ def json_lef(input_json,out_lef,cell_pin):
   macro_name = out_lef + '.lef'
 
   def s( x):
-    return "%.3f" % (x/2000.0)
+    return "%.4f" % (x/10000.0)
   #### Start: This part converting all negative coordinates into positive 
   with open( input_json, "rt") as fp:
     j = json.load(fp, object_pairs_hook=OrderedDict)
   
-  x0 = j['bbox'][0]
-  y0 = j['bbox'][1]
-  j['bbox'][0] = 0
-  j['bbox'][1] = 0
-  j['bbox'][2] = j['bbox'][2] - x0
-  j['bbox'][3] = j['bbox'][3] - y0
+    for i in range(4):
+      j['bbox'][i] *= 10
 
-  for obj in j['terminals']:
-    obj['rect'][0] = obj['rect'][0] - x0
-    obj['rect'][1] = obj['rect'][1] - y0
-    obj['rect'][2] = obj['rect'][2] - x0
-    obj['rect'][3] = obj['rect'][3] - y0
+    assert (j['bbox'][3]-j['bbox'][1]) % 840 == 0, f"Cell height not a multiple of the grid {j['bbox']}"
+    assert (j['bbox'][2]-j['bbox'][0]) % 800 == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+
+    for obj in j['terminals']:
+      for i in range(4):
+        obj['rect'][i] *= 10
 
   with open(input_json, "wt") as fp:
     fp.write( json.dumps( j, indent=2) + '\n')
@@ -40,7 +37,7 @@ def json_lef(input_json,out_lef,cell_pin):
     fp.write( "  FOREIGN %s 0 0 ;\n" % out_lef)
 
     fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
-    exclude_layers ={"V0","V1","V2","poly", "lisd","sdt","fin","pc","gcut","active","nselect","pselect","nwell"}
+    exclude_layers ={"V0","V1","V2","poly","LISD","SDT","fin","polycon","GCUT","active","nselect","pselect","nwell"}
     #for i in ["S","D","G"]:
     for i in cell_pin:
       fp.write( "  PIN %s\n" % i)
@@ -54,11 +51,12 @@ def json_lef(input_json,out_lef,cell_pin):
           fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
           ### Check Pins are on grid or not
           if obj['layer'] == 'M2':
-              assert (obj['rect'][1] + 18)%108 == 0, "M2 pin is not on grid"
-              assert (j['bbox'][3] - obj['rect'][1] - 18)%108 == 0, "M2 pin is not on grid from top cell boundary; can't flip it"
+            cy = (obj['rect'][1]+obj['rect'][3])//2
+            assert cy%840 == 0, (f"M2 pin is not on grid {cy} {cy%84}")
           if obj['layer'] == 'M1' or obj['layer'] == 'M3':
-              assert (obj['rect'][0] + 18)%108 == 0, "M1 pin is not on grid"
-              assert (j['bbox'][2] - obj['rect'][0] - 18)%108 == 0, "M1 pin is not on grid from right side; can't mirror it"         
+            cx = (obj['rect'][0]+obj['rect'][2])//2
+            assert cx%800 == 0, (f"M1 pin is not on grid {cx} {cx%80}")
+
       fp.write( "    END\n")
       fp.write( "  END %s\n" % i)
     fp.write( "  OBS\n")

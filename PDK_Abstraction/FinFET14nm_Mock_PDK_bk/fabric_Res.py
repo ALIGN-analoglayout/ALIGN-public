@@ -64,11 +64,6 @@ class UnitCell(CanvasCap):
         grid_cell_x_pitch = m1factor + self.last_x_track
         grid_cell_y_pitch = m2factor + self.last_y1_track
 
-        #print( "last_x_track (m1Pitches)", last_x_track, "last_y1_track (m2Pitch_standards)", last_y1_track)
-
-        #gcd = math.gcd( self.m2Pitch_narrow, self.m2Pitch_standard)
-        #print( "GCD,LCM,(LCM in m2Pitch_narrowes),(LCM in m2Pitch_standards) of m2Pitch_narrow (minimum) and m2Pitch_standard (devices)", gcd, self.m2Pitch_narrow, self.m2Pitch_standard, (self.m2Pitch_narrow*self.m2Pitch_standard)//gcd, self.m2Pitch_standard//gcd, self.m2Pitch_narrow//gcd)
-
         grid_y0 = y*grid_cell_y_pitch
         grid_y1 = grid_y0 + self.last_y1_track
 

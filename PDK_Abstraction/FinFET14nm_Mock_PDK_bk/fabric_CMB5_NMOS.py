@@ -2,7 +2,7 @@ import json
 import argparse
 import gen_gds_json
 import gen_lef
-import fabric_NMOS
+import primitive
 from datetime import datetime
                                                            
 if __name__ == "__main__":
@@ -13,6 +13,8 @@ if __name__ == "__main__":
     parser.add_argument( "-M1", "--M1", type=int, required=True)
     parser.add_argument( "-M2", "--M2", type=int, required=True)
     parser.add_argument( "-M3", "--M3", type=int, required=True)
+    parser.add_argument( "-M4", "--M4", type=int, required=True)
+    parser.add_argument( "-M5", "--M5", type=int, required=True)
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     args = parser.parse_args()
@@ -20,7 +22,7 @@ if __name__ == "__main__":
     x_cells = args.Xcells
     y_cells = args.Ycells
     assert x_cells%2==0, f"total number of transistor must be even in a row"
-    assert (args.M1+args.M2+args.M3) == x_cells*y_cells, f"aspect ratio is not matching with total number of cells"    
+    assert (args.M1+args.M2+args.M3+args.M4+args.M5) == x_cells*y_cells, f"aspect ratio is not matching with total number of cells"    
     gate = 2
     fin = 2*((fin_u+1)//2)
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
@@ -44,11 +46,11 @@ if __name__ == "__main__":
     (S, D, G) = (SA+SB, DA+DB, GA+GB)
     CcM3 = (min(S)+max(S))//2
     
-
-    uc = fabric_NMOS.UnitCell( fin_u, fin, finDummy, gate, gateDummy)
+    uc = primitive.NMOSGenerator( fin_u, fin, finDummy, gate, gateDummy)
    
     for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
-        Routing = [('S', S, 1, CcM3), ('D0', DA+G if y%2==0 else DB+G, 2, CcM3-1), ('D1', DB if y%2==0 else DA, 3, CcM3+1), ('D2', DB if y%2==0 else DA, 4, CcM3+2)]
+        Routing = [('S', S, 1, CcM3), ('D0', DA+G if y%2==0 else DB+G, 2, CcM3-1), ('D1', DB if y%2==0 else DA, 3, CcM3+1), ('D2', DB if y%2==0 else DA, 4, CcM3+2), ('D3', DA if y%2==0 else DB, 5, CcM3+2), ('D4', DA if y%2==0 else DB, 6, CcM3+3)]
+
         uc.unit( x, y, x_cells, y_cells, fin_u, fin, finDummy, gate, gateDummy, SDG, Routing)
 
     uc.computeBbox()
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    cell_pin = ["S", "D0", "D1", "D2"]
+    cell_pin = ["S", "D0", "D1", "D2", "D3", "D4"]
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
