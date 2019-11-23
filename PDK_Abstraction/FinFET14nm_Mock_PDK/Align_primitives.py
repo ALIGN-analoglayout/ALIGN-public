@@ -136,7 +136,6 @@ def main( args):
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
         gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
-s
 
     return uc
 
