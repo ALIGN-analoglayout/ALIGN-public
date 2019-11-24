@@ -1,6 +1,6 @@
 .subckt ota_asap7 VDD VOUT VSS Input1 Input2 Ids
-m5 Ids Ids net5s VSS nmos_rvt w=270e-9 l=20e-9 nfin=20
-m5s net5s Ids VSS VSS nmos_rvt w=270e-9 l=20e-9 nfin=20
+m5 Ids Ids net5s VSS nmos_rvt w=270e-9 l=20e-9 nfin=10
+m5s net5s Ids VSS VSS nmos_rvt w=270e-9 l=20e-9 nfin=10
 m4 net10 Ids net4s VSS nmos_rvt w=270e-9 l=20e-9 nfin=40
 m4s net4s Ids VSS VSS nmos_rvt w=270e-9 l=20e-9 nfin=40
 m3 VOUT Input1 net3s VSS nmos_rvt w=270e-9 l=20e-9 nfin=160

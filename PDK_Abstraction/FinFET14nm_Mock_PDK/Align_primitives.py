@@ -10,9 +10,7 @@ import fabric_PMOS
 import pattern_generator
                                                            
 def main( args):
-    #uu=args.params["nfin"]
     fin_u = 2*((args.nfin+1)//2)
-    #fin_u = 2*((uu+1)//2)
     fin = args.height
     pattern = args.pattern
     gateDummy = 1 ### Total Dummy gates per unit cell: 2*gateDummy
@@ -25,7 +23,7 @@ def main( args):
     pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
 
     if args.primitive in ["Switch_NMOS", "Switch_PMOS", "DCL_NMOS", "DCL_PMOS"]:
-        x_cells = args.Xcells
+        x_cells = 2*args.Xcells
     elif args.primitive in ["CM_NMOS", "CM_PMOS", "CMFB_NMOS", "CMFB_PMOS"]:
         x_cells = x_cells + 2
     else:
@@ -148,8 +146,10 @@ def gen_parser():
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
-    parser.add_argument( "--params", type=json.loads, required=False, default='{}')  
     parser.add_argument( "-w", "--parallelwire", type=int, required=False, default=1)
+    parser.add_argument( "--model", type=str, required=False, default=None)
+    parser.add_argument( "--params", type=json.loads, required=False, default='{}')
+    parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 
 if __name__ == "__main__":
