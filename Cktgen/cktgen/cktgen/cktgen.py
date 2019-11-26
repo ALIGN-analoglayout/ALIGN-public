@@ -622,15 +622,11 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=net3
-#Option name=nets_to_route value=net3,net4,net4p,net5,net5p,net6,net6p,s0,s1,s2,vga_out1,vga_out2,vin1,vin2,vmirror,vps
+#Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
+
 Option name=nets_not_to_route value=!kor
 
-#Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
-
 #Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
-
-#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,vbiasn,vbiasnd,vinn,vinp,vdd,vss,voutp,vbiasp
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
@@ -638,9 +634,9 @@ Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
 Option name=create_fake_metal_template_instances value={1 if show_metal_templates else 0}
 Option name=create_fake_line_end_grids           value=1
-Option name=auto_fix_global_routing              value=1
+Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal4
+Option name=upper_layer                          value=metal5
 """)
 
 
