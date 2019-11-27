@@ -2,7 +2,6 @@ This is a high speed comparator circuit based on modified StrongARM latch:
 
 ![alt text](high_speed_comparator.png "Title")
 
-
 The circuit goes thru the flow w/o errors. However, subcircuits have not been identified as expected except the input differential pair.  
 
 Generated Verilog view:
