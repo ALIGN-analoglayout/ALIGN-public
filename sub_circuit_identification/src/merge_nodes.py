@@ -193,22 +193,22 @@ def convert_unit(value):
     elif 'k' in value:
         value = float(value.replace('k', ""))
         value = value * 1000
-    elif 'K' in value:
+    elif 'K' in value and value[value.index('K')-1].isdigit():
         value = float(value.replace('K', ""))
         value = value * 1000
-    elif 'm' in value.lower():
+    elif 'm' in value:
         value = float(value.replace('m', ""))
         value = value * 1E6
-    elif 'p' in value.lower():
+    elif 'p' in value:
         value = float(value.replace('p', ""))
         value = value * 1E-12
-    elif 'n' in value.lower():
+    elif 'n' in value:
         value = float(value.replace('n', ""))
         value = value * 1E-9
-    elif 'u' in value.lower():
+    elif 'u' in value:
         value = float(value.replace('u', ""))
         value = value * 1E-6
-    elif 'f' in value.lower():
+    elif 'f' in value:
         #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
         value = float(value.replace('f', ""))
         value = value * 1e-15

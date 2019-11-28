@@ -350,7 +350,7 @@ if __name__ == '__main__':
         delta =1
         while delta > 0:
             logging.info("CHECKING stacked transistors")
-            preprocess_stack(G1)
+            #preprocess_stack(G1)
             delta = initial_size - len(G1)
             initial_size = len(G1)
 

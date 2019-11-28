@@ -64,11 +64,15 @@ class WriteVerilog:
                         ports.append(key)
                         nets.append(value)
                 elif "connection" in attr:
-                    logging.info("connection to ports: %s",attr["connection"])
-                    for key, value in attr["connection"].items():
-                        if self.check_ports_match(key,attr['inst_type']):
-                            ports.append(key)
-                            nets.append(value)                    
+                    try:
+                        logging.info("connection to ports: %s",attr["connection"])
+                        for key, value in attr["connection"].items():
+                            if self.check_ports_match(key,attr['inst_type']):
+                                ports.append(key)
+                                nets.append(value)                    
+                    except:
+                        logging.error("ERROR: Subckt %s defination not found",attr['inst_type'])
+
                 else:
                     logging.info("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
@@ -162,7 +166,7 @@ class WriteSpice:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) +' '+ attr['real_inst_type'] + ' '+ concat_values(attr['values']) )
+                fp.write(' '.join(nets) +' '+ attr['inst_type'] + ' '+ concat_values(attr['values']) )
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
         
@@ -213,7 +217,7 @@ def generate_lef(fp, name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         logging.info("Found cap with size: %s %d",size,unit_size_cap )                
-        block_name = name + '_' + size + 'f'
+        block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if not block_name in available_block_lef:
             logging.info('Generating lef for: %s %s', name, size)
@@ -236,7 +240,7 @@ def generate_lef(fp, name, values, available_block_lef,
             #size = float(size)
             res_unit_size = 30 * unit_size_cap
             height = ceil(sqrt(float(size) / res_unit_size))
-            block_name = name + '_' + size
+            block_name = name + '_' + size.replace('.','p')
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', block_name, size)
@@ -256,11 +260,11 @@ def generate_lef(fp, name, values, available_block_lef,
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
+        block_name = name + '_' + size.replace('.','p')
+        res_unit_size = 300 
         try:
             #size = float(size)
-            res_unit_size = 30 * unit_size_cap
             height = ceil(sqrt(float(size) / res_unit_size))
-            block_name = name + '_' + size
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', block_name, size)
@@ -269,7 +273,11 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -n " + str(height) +
                      " -r " + size)
         except:
-            block_name = name + '_' + size
+            fp.write("\n$PC fabric_" + name + ".py " +
+                     " -b " + block_name +
+                     " -n " + '1'  +
+                     " -r " + str(res_unit_size))
+
     elif name.lower().startswith('inductor') or \
         name.lower().startswith('spiral'):
         try:
@@ -388,7 +396,7 @@ def check_common_centroid(graph,input_dir,name,ports):
     const_path=input_dir + name + '.const'
     new_const_path = input_dir + name + '.const_temp'
     if os.path.isfile(const_path): 
-        print('Reading const file', const_path)
+        print('Reading const file for common centroid', const_path)
         const_fp = open(const_path, "r")
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
@@ -417,6 +425,50 @@ def check_common_centroid(graph,input_dir,name,ports):
         print("Couldn't find constraint file",const_path," (might be okay)")
 
     return(cc_pair)
+
+def WriteCap(graph,input_dir,name,unit_size_cap):
+    const_path = input_dir + name + '.const'
+    new_const_path = input_dir + name + '.const_temp'
+    logging.info("writing cap constraints:"+input_dir + name + '.const')
+    available_cap_const = []
+    if os.path.isfile(const_path): 
+        print('Reading const file for cap', const_path)
+        const_fp = open(const_path, "r")
+        new_const_fp = open(new_const_path, "w")
+        line = const_fp.readline()
+        while line:
+            if line.startswith("CC"):
+                caps_in_line = line[line.find("{")+1:line.find("}")]
+                cap_blocks = caps_in_line.strip().split(',')
+                available_cap_const = available_cap_const+cap_blocks
+            new_const_fp.write(line)
+            logging.info("cap const %s",line)
+        const_fp.close()
+    else:
+        new_const_fp = open(new_const_path, "w")
+        logging.info("Creating new const file"+new_const_path)
+
+
+    for node, attr in graph.nodes(data=True):
+        if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
+            if 'cap' in attr['values'].keys():
+                size = attr['values']["cap"]*1E15
+            elif 'c' in attr['values'].keys():
+                size = attr['values']["c"]*1E15
+            else: 
+                size = unit_size_cap
+            n_cap = str(ceil(size/unit_size_cap))
+            unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
+            cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
+            logging.info("Cap constraint"+cap_line)
+            new_const_fp.write(cap_line)
+            available_cap_const.append(node)
+    new_const_fp.close()
+    if os.stat(new_const_path).st_size ==0:
+        os.remove(new_const_path)
+    else:
+        os.rename(new_const_path, const_path)
+
 
 def WriteConst(graph,input_dir,name,ports):
     check_common_centroid(graph,input_dir,name,ports)
@@ -559,7 +611,8 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph)
-            wc = WriteConst(graph, './input_circuit/', name, inoutpin)
+            #wc = WriteConst(graph, './input_circuit/', name, inoutpin)
+            wc = WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 
