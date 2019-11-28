@@ -443,6 +443,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
                 available_cap_const = available_cap_const+cap_blocks
             new_const_fp.write(line)
             logging.info("cap const %s",line)
+            line=const_fp.readline()
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")

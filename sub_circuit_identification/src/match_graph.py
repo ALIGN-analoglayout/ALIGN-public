@@ -120,12 +120,19 @@ def _mapped_graph_list(G1, liblist):
         #print("Matching:",sub_block_name)
         logging.info("G: %s : %s", sub_block_name,
                      str(' '.join(G2.nodes())))
-        GM = isomorphism.GraphMatcher(
-            G1,
-            G2,
-            node_match=isomorphism.categorical_node_match(['inst_type'],
-                                                          ['nmos']),
-            edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+        if 'DP' in sub_block_name or 'CMC' in sub_block_name:
+            GM = isomorphism.GraphMatcher(
+                G1, G2,
+                node_match=isomorphism.categorical_node_match(['inst_type','values'],
+                                                              ['nmos',1]),
+                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+        else:
+            GM = isomorphism.GraphMatcher(
+                G1, G2,
+                node_match=isomorphism.categorical_node_match(['inst_type'],
+                                                              ['nmos']),
+                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+
         if GM.subgraph_is_isomorphic():
             logging.info("ISOMORPHIC : %s", sub_block_name)
             map_list = []
