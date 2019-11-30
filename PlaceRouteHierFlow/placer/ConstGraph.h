@@ -190,10 +190,12 @@ class ConstGraph
     void ExtractFeatures(design& caseNL, SeqPair& caseSP, std::vector<double> &feature_value, std::vector<std::string> &feature_name);
     double Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name, \
                                                       std::string model_path, std::string input_node_name, std::string output_node_name,  \
-                                                      std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D);
+                                                      std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D, std::vector<double> device_feature_value);
     std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact);
-    void Deep_learning_model_readin_feature_name(std::vector<std::string> &dp_feature_name, std::string feature_name_path);
+    void Deep_learning_model_readin_feature_name(std::vector<std::vector<double> > &feature_A, std::vector<std::vector<double> > &feature_D,std::vector<std::string> &dp_feature_name, std::string feature_name_path);
     void Deep_learning_transform_feature(std::vector<double> &feature_value,std::vector<std::string> &feature_name,std::vector<std::string> &dp_feature_name);
+    void Deep_learning_model_readin_device_feature(std::vector<double> &feature_value, std::string feature_name_path);
+    
     
 };
 

@@ -2465,7 +2465,7 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
 
         if(dp_feature_name[i]==feature_name[j]){
 
-            new_feature_value.push_back(feature_value[j]/250);
+            new_feature_value.push_back(feature_value[j]/40);
             //new_feature_value.push_back(feature_value[j]);
             break;
 
@@ -2479,7 +2479,7 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
 
 }
 
-void ConstGraph::Deep_learning_model_readin_feature_name(std::vector<std::string> &dp_feature_name, std::string feature_name_path){
+void ConstGraph::Deep_learning_model_readin_feature_name(std::vector<std::vector<double>> &feature_A, std::vector<std::vector<double>> &feature_D,std::vector<std::string> &dp_feature_name, std::string feature_name_path){
 
   ifstream fin;
   string def;
@@ -2489,6 +2489,82 @@ void ConstGraph::Deep_learning_model_readin_feature_name(std::vector<std::string
     getline(fin, def);
     temp=split_by_spaces_yg(def);
     dp_feature_name = temp;
+  }
+
+  for(int i=0;i<dp_feature_name.size();i++){
+
+    std::vector<double> temp_vector;
+    
+    for(int j=0;j<dp_feature_name.size();j++){
+
+       if(i==j){temp_vector.push_back(0.0);continue;}
+
+       std::vector<std::string> temp_string1=StringSplitbyChar(dp_feature_name[i],'_');
+       std::vector<std::string> temp_string2=StringSplitbyChar(dp_feature_name[j],'_');
+       
+       if(temp_string1[0]==temp_string2[0]){
+         temp_vector.push_back(1.0);
+       }else{
+         temp_vector.push_back(0.0);
+       }
+
+    }
+
+    feature_A.push_back(temp_vector);
+
+  }
+
+  std::cout<<"Print feature A"<<std::endl;
+  for(int i =0;i<feature_A.size();i++){
+
+     for(int j=0;j<feature_A[i].size();j++){
+
+        std::cout<<feature_A[i][j]<<" ";
+
+     }
+
+     std::cout<<std::endl;
+
+  }
+
+
+  for(int i=0;i<dp_feature_name.size();i++){
+
+    std::vector<double> temp_vector;
+    
+    for(int j=0;j<dp_feature_name.size();j++){
+
+       if(i==j){temp_vector.push_back(0.0);continue;}
+
+       std::vector<std::string> temp_string1=StringSplitbyChar(dp_feature_name[i],'_');
+       std::vector<std::string> temp_string2=StringSplitbyChar(dp_feature_name[j],'_');
+       
+       if(temp_string1[0]==temp_string2[0]){
+         temp_vector.push_back(-1.0);
+       }else{
+         temp_vector.push_back(0.0);
+       }
+
+    }
+
+    feature_D.push_back(temp_vector);
+
+  }
+  
+}
+
+void ConstGraph::Deep_learning_model_readin_device_feature(std::vector<double> &feature_value, std::string feature_name_path){
+
+  ifstream fin;
+  string def;
+  std::vector<string> temp;
+  fin.open(feature_name_path.c_str());
+  while(fin.peek()!=EOF){
+    getline(fin, def);
+    temp=split_by_spaces_yg(def);
+    for(int i=0;i<temp.size();i++){
+      feature_value.push_back((double) std::stoi(temp[i]));
+    }
   }
   
 }
@@ -2502,6 +2578,7 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::vector<double> feature_value;
   std::vector<std::vector<double>> feature_A;
   std::vector<std::vector<double>> feature_D;
+  std::vector<double> device_feature;
   std::vector<std::string> feature_name;
   std::vector<std::string> dp_feature_name;
   //step 1. extract the pin informance of each net used for the feature of deep learning model
@@ -2513,14 +2590,25 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::string model_input_node_name = "feature";
   std::string model_output_node_name = "lable/BiasAdd";
 
-  std::string gain_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_gain.pb";
-  std::string ugf_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_ugf.pb";
-  std::string pm_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_pm.pb";
-  std::string threedb_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rc_threedb.pb";
+  std::string gain_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rcAC_gain.pb";
+  std::string ugf_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rcAC_ugf.pb";
+  std::string pm_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rcAC_pm.pb";
+  std::string threedb_model_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/GCN_rcAC_threedb.pb";
   std::string feature_name_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/Feature_name";
+  std::string device_feature_path = "/home/yaguang/Desktop/src/ALIGN-public/PlaceRouteHierFlow/Performance_Prediction/models/Device_feature";
   
-  Deep_learning_model_readin_feature_name(dp_feature_name,feature_name_path);
+  Deep_learning_model_readin_feature_name(feature_A,feature_D,dp_feature_name,feature_name_path);
   Deep_learning_transform_feature(feature_value,feature_name,dp_feature_name);
+  Deep_learning_model_readin_device_feature(device_feature,device_feature_path);
+
+  std::cout<<"device feature"<<std::endl;
+
+  for(int i=0;i<device_feature.size();i++){
+
+     std::cout<<device_feature[i]<<" ";
+
+  }
+  std::cout<<std::endl;
 
   std::cout<<"Feature info"<<std::endl;
   for(int i=0;i<feature_value.size();i++){
@@ -2529,22 +2617,22 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
 
   }
 
-  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, gain_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
-  double predicted_ugf = Deep_learning_model_Prediction(feature_value, feature_name, ugf_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
-  double predicted_pm = Deep_learning_model_Prediction(feature_value, feature_name, pm_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
-  double predicted_threedb = Deep_learning_model_Prediction(feature_value, feature_name, threedb_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D); //maybe gain a model, uf a model
+  double predicted_gain = Deep_learning_model_Prediction(feature_value, feature_name, gain_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D, device_feature); //maybe gain a model, uf a model
+  double predicted_ugf = Deep_learning_model_Prediction(feature_value, feature_name, ugf_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D, device_feature); //maybe gain a model, uf a model
+  double predicted_pm = Deep_learning_model_Prediction(feature_value, feature_name, pm_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D, device_feature); //maybe gain a model, uf a model
+  double predicted_threedb = Deep_learning_model_Prediction(feature_value, feature_name, threedb_model_path, model_input_node_name, model_output_node_name, feature_A, feature_D, device_feature); //maybe gain a model, uf a model
 
   std::cout<<"model prediction "<<"gain "<<predicted_gain<<" ugf "<<predicted_ugf<<" pm "<<predicted_pm<<" threedb "<<predicted_threedb<<std::endl;
 
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
-  double gain_weight = 1.0;
+  double gain_weight = 100;
   double ugf_weight = 1.0;
   double pm_weight = 1.0;
   double threedb_weight = 1.0;
-  double expected_gain = 32;
-  double expected_ugf = 920000000;
-  double expected_pm = 89;
-  double expected_threedb = 23000000;
+  double expected_gain = 26;
+  double expected_ugf = 1180000000;
+  double expected_pm = 91;
+  double expected_threedb = 57000000;
 
   cost = cost + (expected_gain-predicted_gain)/expected_gain + (expected_ugf-predicted_ugf)/expected_ugf + (expected_pm-predicted_pm)/expected_pm + (expected_threedb-predicted_threedb)/expected_threedb;
   //cost = cost + predicted_gain*gain_weight;
@@ -2686,7 +2774,7 @@ std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::
 
 double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_value, std::vector<std::string> feature_name, \
                                                   std::string model_path, std::string input_node_name, std::string output_node_name, \
-                                                  std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D){
+                                                  std::vector<std::vector<double>> feature_A, std::vector<std::vector<double>> feature_D, std::vector<double> device_feature_value){
   //needs more modifacation
   Session* session;
   Status status = NewSession(SessionOptions(), &session); //create new session
@@ -2717,32 +2805,50 @@ double ConstGraph::Deep_learning_model_Prediction(std::vector<double> feature_va
   }
 
   int feature_size = feature_value.size();//feature_value.size();
+  int device_feature_size = device_feature_value.size();//
   std::cout << "feature_size: " << feature_size << std::endl;
   Tensor X(DT_DOUBLE, TensorShape({ 1, feature_size })); //define a Tensor X, by default is [1, feature_size]
   Tensor A(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
   Tensor D(DT_DOUBLE, TensorShape({ feature_size, feature_size })); //define a Tensor X, by default is [1, feature_size]
+  Tensor C(DT_DOUBLE, TensorShape({ 1, device_feature_size })); //define a Tensor c, by default is [1, device_feature_size]
   auto plane_tensor_X = X.tensor<double,2>(); //pointer of X
   auto plane_tensor_A = A.tensor<double,2>(); //pointer of A
   auto plane_tensor_D = D.tensor<double,2>(); //pointer of A
-  //auto plane_tensor = X.tensor<double,2>(); //pointer of X
+  auto plane_tensor_C = C.tensor<double,2>(); //pointer of X
+  std::cout<<"test flag 1"<<std::endl;
   for (int i = 0; i < feature_size; i++){
       plane_tensor_X(0,i) = feature_value.at(i);//1; //load data into X
   }
+
+  std::cout<<"A size "<<feature_A.size()<<std::endl;
+  std::cout<<"A size "<<feature_A.size()<<std::endl;
+
+  std::cout<<"D size "<<feature_D.size()<<std::endl;
+  std::cout<<"D size "<<feature_D.size()<<std::endl;
+
+  std::cout<<"test flag 2"<<std::endl;
   for (int i = 0; i < feature_size; i++){
     for (int j = 0; j < feature_size; j++){
         if(i==j) {
           plane_tensor_A(i,j) = 1;
           plane_tensor_D(i,j) = 1;
         }else{
-          plane_tensor_A(i,j) = 0;//feature_A.at(i).at(j); //load data into A
-          plane_tensor_D(i,j) = 0;//feature_D.at(i).at(j); //load data into D
+          //plane_tensor_A(i,j) = 0;//feature_A.at(i).at(j); //load data into A
+          //plane_tensor_D(i,j) = 0;//feature_D.at(i).at(j); //load data into D
+          plane_tensor_A(i,j) = feature_A.at(i).at(j); //load data into A
+          plane_tensor_D(i,j) = feature_D.at(i).at(j); //load data into D
         }
         
     }
   }
 
-  std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X}}; //input feed_dict
-  //std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X},{"A", A}, {"D", D}}; //input feed_dict
+  std::cout<<"test flag 1"<<std::endl;
+  for (int i = 0; i < device_feature_size; i++){
+      plane_tensor_C(0,i) = device_feature_value.at(i);//1; //load data into X
+  }
+
+  //std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X}}; //input feed_dict
+  std::vector<std::pair<std::string,Tensor>> inputs = {{input_node_name,X},{"A", A}, {"D", D}, {"feature2",C}}; //input feed_dict
   std::vector<Tensor> outputs; //output tensor
   Status status_run = session->Run(inputs, {output_node_name}, {}, &outputs); //run
   if (!status_run.ok()) {
