@@ -369,7 +369,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}   
     std::cout<<"unitScale "<<unitScale<<std::endl;
     uniGDSset.clear();
-  
+
+    //unitScale=unitScale/2;
+    
     std::ofstream jsonStream;
     jsonStream.open (node.gdsFile + ".json");
     json jsonTop;
@@ -457,7 +459,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json j;
     JSONLabelTerminals(node, drc_info, j, unitScale);
     for (json::iterator elm = j.begin(); elm != j.end(); ++elm) jsonElements.push_back (*elm);
-
+    includePowerNet = false;
     if (includePowerNet) {
 	for (unsigned int i = 0; i < node.PowerNets.size(); i++) {
 	    //path_metal
@@ -479,7 +481,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 		addViaBoundaries(jsonElements, node.PowerNets[i].path_via[j], drc_info, unitScale);
 	}
     }
-
+    includePowerGrid = false;
     if (includePowerGrid) {
 	const int vdd = 1; const int gnd = 1;
 	if (vdd == 1) {

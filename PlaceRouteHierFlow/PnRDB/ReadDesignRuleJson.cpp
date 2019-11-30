@@ -9,7 +9,7 @@ using namespace nlohmann;
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
-    int times=2;
+    int times=1;
     json jsonStrAry;
     ifstream jsonFile (drfile);
     if (jsonFile.is_open()) {
