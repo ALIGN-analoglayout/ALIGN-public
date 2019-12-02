@@ -37,7 +37,7 @@ class Canvas:
     def setBboxFromBoundary( self):
         res = []
         for term in self.terminals:
-            if term['layer'] == 'boundary':
+            if term['layer'] == 'Boundary':
                 res.append(term)
         assert len(res) == 1
         self.bbox = transformation.Rect( *res[0]['rect'])

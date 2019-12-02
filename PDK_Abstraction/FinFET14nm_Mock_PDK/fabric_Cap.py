@@ -76,7 +76,7 @@ class CanvasCap(Canvas):
                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m3Pitch'], width=p['Cap']['m3Width']),
                                      spg=EnclosureGrid(pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] + p['M2']['Width']//2, check=False)))
 
-        self.boundary = self.addGen( Region( 'boundary', 'boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
+        self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
 
 #        self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg, v_clg=self.m1.clg))
 #        self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg, v_clg=self.m3.clg))
@@ -126,7 +126,7 @@ class UnitCell(CanvasCap):
         self.addWire( self.m2, 'MINUS', pin, self.last_y1_track, (grid_x0, -1), (grid_x1, 1))
 
 
-        self.addRegion( self.boundary, 'boundary', None,
+        self.addRegion( self.boundary, 'Boundary', None,
                         0, 0,
                         self.last_x1_track,
                         self.last_y1_track)
@@ -140,6 +140,7 @@ def gen_parser():
     parser.add_argument( "-n", "--unit_cap", type=float, default=None)
     parser.add_argument( "--x_length", type=int, default=None)
     parser.add_argument( "--y_length", type=int, default=None)
+    parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
     return parser
 
 
@@ -171,7 +172,8 @@ def main( args):
     gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
-        gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
+        #gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
+        gen_gds_json.translate(args.block_name, '', args.pinSwitch, fp0, fp1, datetime.now()) 
 
     return uc
 
