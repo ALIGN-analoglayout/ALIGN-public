@@ -120,26 +120,28 @@ def _mapped_graph_list(G1, liblist):
         #print("Matching:",sub_block_name)
         logging.info("G: %s : %s", sub_block_name,
                      str(' '.join(G2.nodes())))
-        if 'DP' in sub_block_name or 'CMC' in sub_block_name:
-            GM = isomorphism.GraphMatcher(
-                G1, G2,
-                node_match=isomorphism.categorical_node_match(['inst_type','values'],
-                                                              ['nmos',1]),
-                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
-        else:
-            GM = isomorphism.GraphMatcher(
-                G1, G2,
-                node_match=isomorphism.categorical_node_match(['inst_type'],
-                                                              ['nmos']),
-                edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+        GM = isomorphism.GraphMatcher(
+            G1, G2,
+            node_match=isomorphism.categorical_node_match(['inst_type'],
+                                                          ['nmos']),
+            edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
 
         if GM.subgraph_is_isomorphic():
             logging.info("ISOMORPHIC : %s", sub_block_name)
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
-                map_list.append(Gsub)
-                logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                if 'DP' in sub_block_name or 'CMC' in sub_block_name:
+                    all_nd_val = [
+                    G1.nodes[key]['values'] for key in Gsub
+                    if 'net' not in G1.nodes[key]["inst_type"]]
+                    if all_nd_val[0]== all_nd_val[1]:
+                        map_list.append(Gsub)
+                        logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                        logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                else:
+                    map_list.append(Gsub)
+                    logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                    logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
             mapped_graph_list[sub_block_name] = map_list
 
     return mapped_graph_list
