@@ -312,6 +312,7 @@ def preprocess_stack(G):
 def check_values(values):
     for param,value in values.items():
         logging.debug("param,value:%s,%s", param,value)
+        if param == 'model': continue
         try:
             assert(isinstance(value, int) or isinstance(value, float))
         except AssertionError:

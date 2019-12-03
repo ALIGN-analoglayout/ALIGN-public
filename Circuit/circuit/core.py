@@ -5,7 +5,7 @@ class NTerminalDevice():
 
     _prefix = ''
     _pins = ()
-    _parameters = {} # name : (type, defaultval)
+    _parameters = {} # name : defaultval
 
     name = ''
     pins = {} # name: net
@@ -13,7 +13,7 @@ class NTerminalDevice():
 
     @classmethod
     def add_parameters(self, parameters):
-        self._parameters.update({x: (str if issubclass(NTerminalDevice.get_param_type(y), str) else float, y)  for x, y in parameters.items()})
+        self._parameters.update(parameters)
 
     def __init__(self, name, *pins, **parameters):
         self.name = name
@@ -21,69 +21,15 @@ class NTerminalDevice():
             '. Did you try overwriting an inbuilt element with subckt?' if self._prefix == 'X' else ''
         assert len(pins) == len(self._pins), f"One or more positional arguments has not been specified. Need name and pins {self._pins}"
         self.pins = {pin: net for pin, net in zip(self._pins, pins)}
-        self.parameters = {param: self._cast(val, ty) for param, (ty, val) in self._parameters.items()}
+        self.parameters = self._parameters.copy()
         assert all(x in self._parameters for x in parameters.keys())
-        self.parameters.update({param: self._cast(val, self._parameters[param][0]) for param, val in parameters.items()})
+        self.parameters.update(parameters)
 
-    unit_multipliers = {
-        'T': 1e12,
-        'G': 1e9,
-        'X': 1e6,
-        'MEG': 1e6,
-        'K': 1e3,
-        'M': 1e-3,
-        'U': 1e-6,
-        'N': 1e-9,
-        'P': 1e-12,
-        'F': 1e-15
-    }
-
-    @staticmethod
-    def _cast(val, ty):
-        # Check for valid types
-        assert isinstance(val, (str, int, float))
-        assert issubclass(ty, (str, int, float))
-        # Nothing to do. Return early
-        if isinstance(val, ty) or (isinstance(val, str) and val.startswith('{')):
-            return val
-        # Pretty print SPICE compatible numbers
-        if issubclass(ty, str):
-            if isinstance(val, int):
-                return str(val)
-            else:
-                # TODO: Make this nicer by using units
-                return str(val)
-        # ty is numeric from this point on
-        # Attempt to cast string to float
-        if isinstance(val, str):
-            try:
-                val = NTerminalDevice.str2float(val)
-            except ValueError:
-                assert False, f"Attempting to cast non-numeric value {val} to a number" + "\n" + \
-                    "If this is a parameter, please encapsulate in {} to be compliant with Xyce"
-        # Check if it is safe to cast to int
-        if issubclass(ty, int):
-            assert isinstance(val, int) or val.is_integer(), f"Attempting to cast non-integral number {val} to int"
-        # Final casting
-        return ty(val)
-
-    @staticmethod
-    def str2float(val):
-        unit = next((x for x in NTerminalDevice.unit_multipliers if val.endswith(x.upper()) or val.endswith(x.lower())), None)
-        numstr = val if unit is None else val[:-1*len(unit)]
-        return float(numstr) * NTerminalDevice.unit_multipliers[unit] if unit is not None else float(numstr)
-
-    @staticmethod
-    def get_param_type(val):
-        # Check for valid types
-        assert isinstance(val, (str, int, float))
-        # Attempt to cast string to float
-        if isinstance(val, str):
-            try:
-                val = NTerminalDevice.str2float(val)
-            except ValueError:
-                return str
-        return int if isinstance(val, int) or val.is_integer() else float
+    def __str__(self):
+        return f'{self.name} ' + \
+            ' '.join(self.pins.values()) + \
+            f' {self.__class__.__name__} ' + \
+            ' '.join(f'{x}='+ (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self.parameters.items())
 
 class Circuit(networkx.Graph):
 
@@ -116,6 +62,9 @@ class Circuit(networkx.Graph):
     def remove_element(self, element):
         self.remove_nodes_from([x for x in self.neighbors(element.name) if self.degree(x) == 1])
         self.remove_node(element.name)
+
+    def __str__(self):
+        return '\n'.join(f'{x}' for x in self.elements)
 
     # Algorithms to find & replace subgraph / subckt matches
 
@@ -233,7 +182,7 @@ class Circuit(networkx.Graph):
         for element in subcktinst.circuit.elements:
             newelement = element.__class__(f'{subcktinst.name}_{element.name}',
                 *[subcktinst.pins[x] if x in subcktinst.pins else f'{subcktinst. name}_{x}' for x in element.pins.values()],
-                **{key: eval(val[1:-1], {}, subcktinst.parameters) if isinstance(val, str) and val.startswith('{') else val for key, val in element.parameters.items()})
+                **{key: eval(val, {}, subcktinst.parameters) if isinstance(val, str) else val for key, val in element.parameters.items()})
             self.add_element(newelement)
 
 # WARNING: Do not add attributes/methods which may exist
@@ -249,12 +198,22 @@ class _SubCircuitMetaClass(type):
     def __getattr__(self, name):
         return getattr(self.circuit, name)
 
+    def __str__(self):
+        ret = []
+        ret.append(f'.SUBCKT {self.__name__} ' + ' '.join(f'{x}' for x in self._pins))
+        ret.extend([f'.PARAM {x}=' + (f'{{{y}}}' if isinstance(y, str) else f'{y}') for x, y in self._parameters.items()])
+        ret.append(str(self.circuit))
+        ret.append(f'.ENDS {self.__name__}')
+        return '\n'.join(ret)
+
 class _SubCircuit(NTerminalDevice, metaclass=_SubCircuitMetaClass):
     _prefix = 'X'
 
     def __getattr__(self, name):
         if name == 'add_element':
             raise AssertionError("Add elements directly to subcircuit definition (not to instance)")
+        elif name == '__str__':
+            return NTerminalDevice.__str__(self)
         return getattr(self.circuit, name)
 
 def SubCircuit(name, *pins, library=None, **parameters):
