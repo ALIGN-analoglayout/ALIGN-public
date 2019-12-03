@@ -29,10 +29,10 @@ def test_parser3():
 def test_match():
     g,lib_list =test_parser3()
     mapped_graph_list = _mapped_graph_list(g, lib_list)
-    assert 'CMC_NMOS' in mapped_graph_list.keys()
-    assert 'CMC_PMOS_S' in mapped_graph_list.keys()
-    assert 'CMC_NMOS' in mapped_graph_list.keys()
-    assert 'DP_NMOS' in mapped_graph_list.keys()
+    assert 'CMC_NMOS' in mapped_graph_list.values()
+    assert 'CMC_PMOS_S' in mapped_graph_list.values()
+    assert 'CMC_NMOS' in mapped_graph_list.values()
+    assert 'DP_NMOS' in mapped_graph_list.values()
     subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list)
     assert len(reduced_graph.nodes()) == 16
     subckts_created.append({
