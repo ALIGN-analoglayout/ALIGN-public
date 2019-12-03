@@ -107,8 +107,14 @@ def main( args):
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
                                  'DB': [('M2', 'D')]})
  
-    elif args.primitive in ["CCP_NMOS", "CCP_PMOS"]:
+    elif args.primitive in ["CCP_NMOS_S", "CCP_PMOS_S"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D'),('M2', 'G')],
+                                 'DB': [('M2', 'D'), ('M1', 'G')]})
+
+    elif args.primitive in ["CCP_NMOS", "CCP_PMOS"]:
+        cell_pin = gen(pattern, {'SA': [('M1', 'S')],
+                                 'SB': [('M2','S')],
                                  'DA': [('M1', 'D'),('M2', 'G')],
                                  'DB': [('M2', 'D'), ('M1', 'G')]}) 
 
