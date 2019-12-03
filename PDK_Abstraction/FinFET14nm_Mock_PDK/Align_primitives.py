@@ -8,6 +8,7 @@ sys.path.append(pathlib.Path(__file__).parent.resolve())
 import gen_gds_json
 import gen_lef
 import primitive
+import json
 
 def get_xcells_pattern( args):
     pattern = args.pattern
@@ -18,7 +19,7 @@ def get_xcells_pattern( args):
         # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*args.Xcells + 2
-    elif any(args.primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP"]):
+    elif any(args.primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
         x_cells = 2*args.Xcells
         # TODO: Fix difficulties associated with CC patterns matching this condition
@@ -26,13 +27,9 @@ def get_xcells_pattern( args):
     return x_cells, pattern
 
 def get_parameters(args):
-    parameters = {}
-    if args.model is None:
+    parameters = args.params
+    if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in args.primitive else 'PMOS'
-    else:
-        parameters['model'] = args.model
-    parameters['width'] = '{width}' if args.width is None else args.width
-    parameters['length'] = '{length}' if args.length is None else args.length
     parameters['nfin'] = args.nfin
     return parameters
 
@@ -104,6 +101,17 @@ def main( args):
                                  'GA': [('M1', 'G')],
                                  'GB': [('M2', 'G')]})
 
+    elif args.primitive in ["LS_NMOS", "LS_PMOS"]:
+        cell_pin = gen(pattern, {'SA':  [('M1', 'S')],
+                                 'SB': [('M2', 'S')],
+                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
+                                 'DB': [('M2', 'D')]})
+ 
+    elif args.primitive in ["CCP_NMOS", "CCP_PMOS"]:
+        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D'),('M2', 'G')],
+                                 'DB': [('M2', 'D'), ('M1', 'G')]}) 
+
     else:
         assert False, f"Unrecognized primitive {args.primitive}"
 
@@ -127,8 +135,7 @@ def gen_parser():
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
     parser.add_argument( "--model", type=str, required=False, default=None)
-    parser.add_argument( "--width", type=float, required=False, default=None)
-    parser.add_argument( "--length", type=float, required=False, default=None)
+    parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 

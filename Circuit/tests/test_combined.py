@@ -26,7 +26,7 @@ def test_replace_matching_subckts():
     primitivelib = circuit.Library({x: y for x, y in parser.library.items() if issubclass(y, circuit.core._SubCircuit)})
     # parse netlist
     parser = circuit.SpiceParser()
-    with open('tests/ota.sp') as fp:
+    with open('tests/ota.cir') as fp:
         parser.parse(fp.read())
     # Extract ckt
     ckt = parser.library['OTA'].circuit
@@ -52,7 +52,7 @@ def test_replace_matching_subckts():
 def test_replace_repeated_subckts():
     # parse netlist
     parser = circuit.SpiceParser()
-    with open('tests/ota.sp') as fp:
+    with open('tests/ota.cir') as fp:
         parser.parse(fp.read())
     # Extract ckt
     ckt = parser.library['OTA'].circuit
