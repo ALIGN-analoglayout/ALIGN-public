@@ -2457,6 +2457,7 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
     }
 
   std::vector<double> new_feature_value;
+  std::vector<std::string> new_feature_name;
 
 
   for(int i = 0;i <dp_feature_name.size(); i++){
@@ -2465,7 +2466,8 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
 
         if(dp_feature_name[i]==feature_name[j]){
 
-            new_feature_value.push_back(feature_value[j]/40);
+            new_feature_value.push_back(feature_value[j]/40+50);
+            new_feature_name.push_back(feature_name[j]);
             //new_feature_value.push_back(feature_value[j]);
             break;
 
@@ -2476,6 +2478,7 @@ void ConstGraph::Deep_learning_transform_feature(std::vector<double> &feature_va
    }
 
   feature_value = new_feature_value;
+  feature_name = new_feature_name;
 
 }
 
@@ -2625,17 +2628,19 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::cout<<"model prediction "<<"gain "<<predicted_gain<<" ugf "<<predicted_ugf<<" pm "<<predicted_pm<<" threedb "<<predicted_threedb<<std::endl;
 
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
-  double gain_weight = 100;
+  double gain_weight = 10.0;
   double ugf_weight = 1.0;
-  double pm_weight = 1.0;
-  double threedb_weight = 1.0;
+  double pm_weight = 1;
+  double threedb_weight = 1;
   double expected_gain = 26;
   double expected_ugf = 1180000000;
   double expected_pm = 91;
   double expected_threedb = 57000000;
 
-  cost = cost + (expected_gain-predicted_gain)/expected_gain + (expected_ugf-predicted_ugf)/expected_ugf + (expected_pm-predicted_pm)/expected_pm + (expected_threedb-predicted_threedb)/expected_threedb;
+  cost = cost + gain_weight*abs(expected_gain-predicted_gain)/expected_gain + ugf_weight*abs(expected_ugf-predicted_ugf)/expected_ugf + pm_weight*abs(expected_pm-predicted_pm)/expected_pm + threedb_weight*abs(expected_threedb-predicted_threedb)/expected_threedb;
   //cost = cost + predicted_gain*gain_weight;
+
+  std::cout<<"deep learning cost "<<cost<<std::endl;
   return cost;
 }
 

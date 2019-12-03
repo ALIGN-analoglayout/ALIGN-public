@@ -514,6 +514,8 @@ void GcellDetailRouter::create_detailrouter(){
 */
 
 ///////// A_star
+
+          //multi_number = 1;
           A_star a_star(grid, Nets[i].shielding);
           int left_path_number = multi_number;
 

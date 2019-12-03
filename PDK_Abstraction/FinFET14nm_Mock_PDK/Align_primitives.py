@@ -14,12 +14,13 @@ def main( args):
     fin = args.height
     pattern = args.pattern
     gateDummy = 1 ### Total Dummy gates per unit cell: 2*gateDummy
-    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
+    #finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
     gate = 2
     gu = gate + 2*gateDummy
     y_cells = args.Ycells
     x_cells = 2*args.Xcells
     wireno = args.parallelwire
+    finDummy = max(4, 2*(((8+wireno)-fin//2)//2))
     pattern = 2 if x_cells%4 != 0 else args.pattern ### CC is not possible; default is interdigitated
 
     if args.primitive in ["Switch_NMOS", "Switch_PMOS", "DCL_NMOS", "DCL_PMOS"]:

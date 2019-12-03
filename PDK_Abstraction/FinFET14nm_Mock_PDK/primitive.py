@@ -113,8 +113,10 @@ class AbstractMOS(FinFETCanvas):
             self.addWire( self.pl, None, None, gu*x+i,   (y,0), (y,1))                
                 
         if x_cells-1==x:
-            grid_y0 = y*h + finDummy//2-1
-            grid_y1 = grid_y0+(fin+2)//2
+            #grid_y0 = y*h + finDummy//2-3
+            grid_y0 = y*h + 1
+            grid_y1 = y*h + self.finsPerUnitCell//2-1
+            #grid_y1 = grid_y0+finDummy+fin//2-2
             for i in G:
                 self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
                 self.addVia( self.v0, None, None, i, (y, 2))
