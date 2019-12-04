@@ -1171,7 +1171,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   // 6. Solve with lp
   set_minim(lp);
-  set_solutionlimit(lp, 10); 
+  set_timeout(lp,60);
+  //set_solutionlimit(lp, 10); 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   print_lp(lp);
 
