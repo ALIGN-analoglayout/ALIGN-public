@@ -476,7 +476,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
 def WriteConst(graph,input_dir,name,ports):
     check_common_centroid(graph,input_dir,name,ports)
     const_fp = open(input_dir + name + '.const', 'a+')
-    logging.info("writing constraints:",input_dir + name + '.const')
+    logging.info("writing constraints: %s",input_dir + name + '.const')
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
