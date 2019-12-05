@@ -154,7 +154,7 @@ class WriteSpice:
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
                     elif 'DCL_PMOS' in attr['inst_type']:
-                        nets[1:1]=[nets[2]]
+                        nets[1:1]=[nets[1]]
                     # add body ports to transistor
                     if 'PMOS' in attr['inst_type']:
                         nets.append('vdd')
