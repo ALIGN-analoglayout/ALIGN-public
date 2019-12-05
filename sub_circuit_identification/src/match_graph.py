@@ -130,7 +130,7 @@ def _mapped_graph_list(G1, liblist):
             logging.info("ISOMORPHIC : %s", sub_block_name)
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
-                if 'DP' in sub_block_name or 'CMC' in sub_block_name:
+                if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
                     all_nd_val = [
                     G1.nodes[key]['values'] for key in Gsub
                     if 'net' not in G1.nodes[key]["inst_type"]]
