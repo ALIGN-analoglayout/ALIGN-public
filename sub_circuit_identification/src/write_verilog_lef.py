@@ -476,7 +476,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
 def WriteConst(graph,input_dir,name,ports):
     check_common_centroid(graph,input_dir,name,ports)
     const_fp = open(input_dir + name + '.const', 'a+')
-    print("writing constraints:",input_dir + name + '.const')
+    logging.info("writing constraints:",input_dir + name + '.const')
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
@@ -484,7 +484,7 @@ def WriteConst(graph,input_dir,name,ports):
     for port in ports:
         if port in graph.nodes():
             #while len(list(graph.neighbors(port)-set(traverced)))==1:
-            nbr = list(graph.neighbors(port))
+            #nbr = list(graph.neighbors(port))
             pair ={}
             traverced.append(port)
             compare_nodes(graph, pair, traverced, port, port)
@@ -614,8 +614,8 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph)
-            #wc = WriteConst(graph, './input_circuit/', name, inoutpin)
-            wc = WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP)
+            #WriteConst(graph, './input_circuit/', name, inoutpin)
+            WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 
