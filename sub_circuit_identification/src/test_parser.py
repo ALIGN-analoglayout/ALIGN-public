@@ -23,7 +23,7 @@ def test_parser3():
     lib_sp = LibSpiceParser("../basic_library/basic_template.sp")
     lib_list = lib_sp.sp_parser()
     shutil.rmtree("library_graphs")
-    assert len(lib_list) == 24 ## 24 subckt in basic template
+    assert len(lib_list) == 25 ## 25 subckt in basic template
     return(g, lib_list)
 
 def test_match():

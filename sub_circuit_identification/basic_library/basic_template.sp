@@ -55,6 +55,11 @@ M0 (DA GA S 0) NMOS w=w l=90n
 M1 (DB GB S 0) NMOS w=w l=90n
 .ends DP_NMOS
 
+.subckt DP_PMOS  DA DB GA GB S
+M0 (DA GA S 0) PMOS w=w l=90n
+M1 (DB GB S 0) PMOS w=w l=90n
+.ends DP_PMOS
+
 .subckt CMC_PMOS DA DB SA SB G
 M0 (DA G SA 0) PMOS w=w l=90n
 M1 (DB G SB 0) PMOS w=w l=90n
