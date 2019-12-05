@@ -74,10 +74,10 @@ xm0 zn i vss vss lvtnfet w=w0 l=l0
 xm1 zn i vdd vdd lvtpfet w=w1 l=l0
 .ends INV_LVT
 
-.subckt INV_3T i1 i2 zn vdd vss
-xm0 zn i1 vss vss lvtnfet w=w0 l=l0
-xm1 zn i2 vdd vdd lvtpfet w=w1 l=l0
-.ends INV_3T
+**.subckt INV_3T i1 i2 zn vdd vss
+**xm0 zn i1 vss vss lvtnfet w=w0 l=l0
+**xm1 zn i2 vdd vdd lvtpfet w=w1 l=l0
+**.ends INV_3T
 
 .subckt switched_capacitor_combination Vin agnd Vin_ota Voutn phi1 phi2
 m0 Voutn phi1 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
