@@ -108,6 +108,23 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      GGgraph.clearPath();
      std::cout<<"Net index "<<i<<std::endl;
      std::cout<<"Net terminals size "<<Nets[i].terminals.size()<<std::endl;
+
+     for(int j=0;j<Nets[i].connectedTile.size();j++){
+        if(Nets[i].connectedTile[j].size()==0){
+           //std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
+           std::cout<<"Format Issue "<<std::endl;
+           std::cout<<"Please check the net "<<Nets[i].netName<<" in module "<<node.name<<std::endl;
+           int iter = Nets[i].connected[j].iter;
+           int iter2 = Nets[i].connected[j].iter2;
+           if(Nets[i].connected[j].type==RouterDB::BLOCK){
+             std::cout<<"Especial the pin "<< Blocks[iter2].pins[iter].pinName<<" in subblock "<<Blocks[iter2].blockName<<std::endl;
+           }else{
+             std::cout<<"Especial the terminal "<<Terminals[iter].name<<std::endl;
+           }
+           assert(0);}
+     }
+
+
      GGgraph.setterminals(Nets[i].terminals);
      GGgraph.setTerminals(Nets[i].connectedTile);
      
@@ -1179,7 +1196,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
               temp_row.push_back(1);
               }
           }
-       temp_index.push_back(NumberOfSTs);
+       temp_index.push_back(NumberOfSTs+1);
        temp_row.push_back(-Capacities[i]);
        std::cout<<"Constraint Capacity "<<Capacities[i]<<std::endl;
 
@@ -1224,7 +1241,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   set_minim(lp);
   //set_timeout(lp,60);
   std::cout<<"LP test flag 8"<<std::endl;
-  set_solutionlimit(lp, 10);
+  //set_solutionlimit(lp, 10);
   std::cout<<"LP test flag 9"<<std::endl; 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   std::cout<<"LP test flag 10"<<std::endl;
@@ -1258,7 +1275,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   // Q5?
   double Vars[NumOfVar];
   get_variables(lp, Vars);
-
+  std::cout<<"LP test flag 14"<<std::endl;
   //std::cout<<"testcase 6"<<std::endl;
   for(int i=0;i<NumOfVar;++i){
       if(Vars[i]==1){
@@ -1267,7 +1284,11 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
      }
   //std::cout<<"testcase 7"<<std::endl;
   //set_add_rowmode(lp, FALSE);
+  //free(row);
+  //free(col);
+  std::cout<<"LP test flag 15"<<std::endl;
   delete_lp(lp);
+  std::cout<<"LP test flag 16"<<std::endl;
   return ret;
 }
 
