@@ -16,8 +16,8 @@ using std::endl;
 //#define MAX_TIMEOUT 4300000 //4.3 seconds = 4300000 us
 #define T_INT 1e6
 #define T_MIN 1e-6
-#define ALPHA 0.95
-#define COUNT_LIMIT 200
+#define ALPHA 0.99
+#define COUNT_LIMIT 2000
 
 //#define MTMODE 1 // flag to turn on multi-threading
 

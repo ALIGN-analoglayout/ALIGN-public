@@ -2628,14 +2628,14 @@ double ConstGraph::PerformanceDriven_CalculateCost(design& caseNL, SeqPair& case
   std::cout<<"model prediction "<<"gain "<<predicted_gain<<" ugf "<<predicted_ugf<<" pm "<<predicted_pm<<" threedb "<<predicted_threedb<<std::endl;
 
   //step 3. weighted sum up the performances (gain, uf, PM) and return as cost //needs modifacation
-  double gain_weight = 10.0;
+  double gain_weight = 1.0;
   double ugf_weight = 1.0;
-  double pm_weight = 1;
-  double threedb_weight = 1;
+  double pm_weight = 1.0;
+  double threedb_weight = 10.0;
   double expected_gain = 26;
   double expected_ugf = 1180000000;
   double expected_pm = 91;
-  double expected_threedb = 57000000;
+  double expected_threedb = 50000000;
 
   cost = cost + gain_weight*abs(expected_gain-predicted_gain)/expected_gain + ugf_weight*abs(expected_ugf-predicted_ugf)/expected_ugf + pm_weight*abs(expected_pm-predicted_pm)/expected_pm + threedb_weight*abs(expected_threedb-predicted_threedb)/expected_threedb;
   //cost = cost + predicted_gain*gain_weight;
