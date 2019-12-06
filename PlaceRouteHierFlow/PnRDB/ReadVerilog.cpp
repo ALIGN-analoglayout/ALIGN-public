@@ -64,7 +64,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
     }
 
 
-    //update hiear tree here for the class Nodes.
+    //update hier tree here for the class Nodes.
     //inistial 
     for(unsigned int i=0;i<db.hierTree.size();i++){
         for(unsigned int j=0;j<db.hierTree[i].Blocks.size();j++){
@@ -72,7 +72,7 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 	}
     }
 		
-    //update hiear tree here for the class Nodes.
+    //update hier tree here for the class Nodes.
     for(unsigned int i=0;i<db.hierTree.size();i++){
         for(unsigned int j=0;j<db.hierTree.size();j++){
             for(unsigned int k=0;k<db.hierTree[j].Blocks.size();k++)

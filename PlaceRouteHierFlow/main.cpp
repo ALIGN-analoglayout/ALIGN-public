@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <cstdlib>
 #include <sstream>
+#include <thread>
 
 using std::string;
 using std::cout;
@@ -169,6 +170,19 @@ int main(int argc, char** argv ){
 
   while (!Q.empty())
   {
+    for(unsigned int i=0;i<Q.size();i++){
+      std::cout << Q.front() << " " << DB.hierTree[Q.front()].name << " #blocks:" << DB.hierTree[Q.front()].Blocks.size() << std::endl;
+      int temp=Q.front();
+      Q.pop();
+      Q.push(temp);
+    }
+    std::cout << Q.front() << " " << DB.hierTree[Q.front()].name << " #blocks:" << DB.hierTree[Q.front()].Blocks.size() << std::endl;
+    /**for(vector<PnRDB::blockComplex>::iterator it=DB.hierTree[Q.front()].Blocks.begin();it!=DB.hierTree[Q.front()].Blocks.end();++it) {
+      std::cout << it->child << " ";
+    }
+    std::cout << std::endl;**/
+    std::cout << "#node: " << Q.size() << std::endl;
+
     int idx=Q.front();
     cout<<"Main-Info: start to work on node "<<idx<<endl;
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
@@ -195,16 +209,19 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      //std::thread t(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
+        //            std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
+      //t.join();
       route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
     }
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
-
+    
     Q.pop();
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
-
+  
   return 0;
 }
