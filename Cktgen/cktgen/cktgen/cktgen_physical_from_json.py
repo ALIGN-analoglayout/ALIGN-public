@@ -256,9 +256,8 @@ def hack_gr( results, bbox):
   results['wires'] = new_wires
 
 
-if __name__ == "__main__":
-
-  args,tech = parse_args()
+def main(args, tech):
+  
   assert args.source != ''
   src = args.source
 
@@ -398,3 +397,9 @@ if __name__ == "__main__":
 
   tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)
+  
+
+if __name__ == "__main__":
+
+  args,tech = parse_args()
+  main( args, tech)

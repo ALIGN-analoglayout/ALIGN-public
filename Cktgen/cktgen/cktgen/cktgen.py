@@ -1175,7 +1175,7 @@ def consume_results(args,tech):
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
 
-def parse_args():
+def parse_args( command_line_args=None):
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
   parser.add_argument( "-n", "--block_name", type=str, required=True)
@@ -1189,7 +1189,7 @@ def parse_args():
   parser.add_argument( "-s", "--source", type=str, default='')
   parser.add_argument( "--small", action='store_true')
 
-  args = parser.parse_args()
+  args = parser.parse_args( args=command_line_args)
 
   with open( args.technology_file) as fp:
     tech = techfile.TechFile( fp)
