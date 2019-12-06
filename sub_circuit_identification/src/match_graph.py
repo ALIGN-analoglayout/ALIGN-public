@@ -172,10 +172,16 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                 for g1_n, g2_n in Gsub.items():
                     if 'net' not in G1.nodes[g1_n]["inst_type"]:
                         G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
+                        if 'MOS' in sub_block_name:
+                            find_body = G1.nodes[g1_n]['real_inst_type'].split('_')
+                            G1.nodes[g1_n]['real_inst_type']=find_body[0]
+                            matched_ports['B'] = find_body[-1]
+                            logging.info('Adding body pin:%s',find_body[-1])
                         #check_values(G2.nodes[g2_node]['values'])
                         continue
                     if 'external' in G2.nodes[g2_n]["net_type"]:
                         matched_ports[g2_n] = g1_n
+                    
                 logging.info("match: %s",str(' '.join(Gsub)))
                 logging.info("Matched ports: %s", str(' '.join(matched_ports)))
                 logging.info("Matched nets : %s",
