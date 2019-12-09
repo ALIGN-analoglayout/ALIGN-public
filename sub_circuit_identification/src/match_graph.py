@@ -183,8 +183,8 @@ def compare_balanced_tree(G, node1, node2):
         tree1 = set(tree1) ^ set(traversed1)
         tree2 = set(tree2) ^ set(traversed2)
         logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
-        type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
-        type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
+        #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
+        #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
         if tree1.intersection(tree2):
             logging.info("matched subgraph")
             return True
