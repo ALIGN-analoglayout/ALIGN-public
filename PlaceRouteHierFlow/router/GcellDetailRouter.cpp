@@ -313,6 +313,7 @@ void GcellDetailRouter::create_detailrouter(){
        //added for teminals
 
        if(Nets[i].path_metal.size()>0){continue;}
+       if(Nets[i].connected.size()<=1){continue;}
 
 
        std::vector<std::vector<RouterDB::SinkData> > temp_pins;

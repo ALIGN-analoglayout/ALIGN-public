@@ -609,7 +609,8 @@ long int GcellGlobalRouter::get_number(string str)
 void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   std::cout<<"Router-Info: begin to import data"<<std::endl;
-  this->isTop = node.isTop;
+  //this->isTop = node.isTop;
+  this->isTop = 0;
   this->topName=node.name;
   this->width=node.width;
   this->height=node.height;
