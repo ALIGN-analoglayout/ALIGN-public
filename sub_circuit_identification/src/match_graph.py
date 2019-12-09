@@ -106,6 +106,7 @@ def read_lib(lib_dir_path):
 
 
 #%%
+
 def _mapped_graph_list(G1, liblist):
     """
     find all matches of library element in the graph
@@ -131,13 +132,20 @@ def _mapped_graph_list(G1, liblist):
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
-                    all_nd_val = [
-                    G1.nodes[key]['values'] for key in Gsub
+                    all_nd = [
+                    key for key in Gsub
                     if 'net' not in G1.nodes[key]["inst_type"]]
-                    if all_nd_val[0]== all_nd_val[1]:
-                        map_list.append(Gsub)
-                        logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                        logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                    if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
+                        compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB')) :
+                        if 'SA' in Gsub.values() and \
+                        compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB')) :
+                            map_list.append(Gsub)
+                            logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                            logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                        else:
+                            map_list.append(Gsub)
+                            logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                            logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
                 else:
                     map_list.append(Gsub)
                     logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
@@ -145,6 +153,48 @@ def _mapped_graph_list(G1, liblist):
             mapped_graph_list[sub_block_name] = map_list
 
     return mapped_graph_list
+#%% 
+def get_key(Gsub, value):
+    return list(Gsub.keys())[list(Gsub.values()).index(value)]
+
+def get_next_level(G, tree_l1):
+    tree_next=[]
+    for node in list(tree_l1):
+        tree_next+=list(G.neighbors(node))
+    #print(tree_next)
+    return tree_next
+             
+#%% 
+def compare_balanced_tree(G, node1, node2):
+    """
+    used to remove some false matches for DP and CMC
+    """
+    logging.info("checking symmtrical connections for nodes: %s, %s",node1, node2)
+    tree1 = set(G.neighbors(node1))
+    tree2 = set(G.neighbors(node2))
+    #logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
+    traversed1 = [] 
+    traversed2 = [] 
+    if tree1==tree2:
+        logging.info("common net or device")
+        return True
+    while(len(list(tree1))== len(list(tree2))):
+        logging.info("tree1 %s tree2 %s",list(tree1),list(tree2))
+        tree1 = set(tree1) ^ set(traversed1)
+        tree2 = set(tree2) ^ set(traversed2)
+        logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
+        type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
+        type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
+        if tree1.intersection(tree2):
+            logging.info("matched subgraph")
+            return True
+        else:
+            traversed1+=list(tree1)
+            traversed2+=list(tree2)
+            logging.info("traversing:tree1 %s tree2: %s",tree1,tree2)
+            tree1=get_next_level(G,tree1)
+            tree2=get_next_level(G,tree2)
+    return False
 
 #%%
 def reduce_graph(circuit_graph, mapped_graph_list, liblist):
