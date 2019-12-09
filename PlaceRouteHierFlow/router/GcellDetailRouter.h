@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <assert.h>
 #include <sstream>
 #include <set>
 #include <cmath>
@@ -135,6 +136,8 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void UpdateMetalContact(RouterDB::Metal &temp_metal);
     void UpdateVia(RouterDB::Via &temp_via);
     void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts);
+    void CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::vector<RouterDB::SinkData > &temp_src, std::vector<RouterDB::SinkData > &temp_dest);
+    void SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact);
 };
 
 #endif

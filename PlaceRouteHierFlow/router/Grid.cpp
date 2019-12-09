@@ -248,6 +248,7 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
     RouterDB::point p; p.x=it->x; p.y=it->y;
     if(plist.at(mm).find(p)!=plist.at(mm).end()) {
        it->active=false;
+/*
       int via_integ = 2;
       int next_index = it->index+1;
       int history_index = it->index-1;
@@ -268,7 +269,7 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
             vertices_total[history_index].active=false;
            }
         }
-
+*/
       }
   }
 }
@@ -2606,10 +2607,12 @@ Grid::Grid(GlobalGrid& GG, std::vector<std::pair<int,int> >& ST, PnRDB::Drc_info
     this->routeDirect.at(i)=drc_info.Metal_info.at(i).direct;
     if(drc_info.Metal_info.at(i).direct==0) { //vertical
       this->x_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x*grid_scale;
-      this->y_min.at(i)=drc_info.Metal_info.at(i).minL;
+      //this->y_min.at(i)=drc_info.Metal_info.at(i).minL;
+      this->y_min.at(i)=1;
     } else if (drc_info.Metal_info.at(i).direct==1) { // horizontal
       this->y_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y*grid_scale;
-      this->x_min.at(i)=drc_info.Metal_info.at(i).minL;
+      //this->x_min.at(i)=drc_info.Metal_info.at(i).minL;
+      this->x_min.at(i)=1;
     } else {
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }
