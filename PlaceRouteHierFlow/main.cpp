@@ -201,12 +201,12 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
 #ifdef MULTITHREAD
-    std::thread t[numLayout];
-    for(unsigned int lidx=0; lidx<numLayout; ++lidx) {
+    std::thread t[nodeVec.size()];
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
                             std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
     }
-    for(unsigned int lidx=0; lidx<numLayout; ++lidx) {
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       t[lidx].join();
     }
 #else
