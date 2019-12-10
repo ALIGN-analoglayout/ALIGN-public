@@ -107,7 +107,14 @@ def gr_hints(parser_results):
 def hack_gr( results, bbox):
   wires = results['wires']
 
-  layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+  print("SMB")
+
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,4) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+
+  print(layer_map)
+  
 # change metal2 grs to metal4 (big runtime issue otherwise)
 #  layer_map['M2'] = 'metal4'
 
@@ -269,7 +276,14 @@ if __name__ == "__main__":
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
-  layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
+  print("SMB")
+
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,5) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+
+  print(layer_map)
+
   for leaf in placer_results['leaves']:
     for term in leaf['terminals']:
       term['layer'] = layer_map[term['layer']]
@@ -378,7 +392,7 @@ if __name__ == "__main__":
 
     netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
 
-  netl.semantic()
+#  netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

@@ -342,7 +342,8 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3"], l
+      assert l in ["metal1","metal2","metal3","via1","via2"], l
+      if l == "via2": continue
       netl.newWire( '!kor', r, l)
       
     for p in self.ports:
@@ -470,7 +471,7 @@ class Netlist:
             y = rlst[1]*(1.0-theta) + rlst[3]*theta
             return (x,y)
           else:
-            assert False
+            assert False, ly
 
         def dist( w, p, q):
           gx,gy = pnt( p, gr_r, gr.layer)
@@ -621,11 +622,11 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=net3
-#Option name=nets_to_route value=net3,net4,net4p,net5,net5p,net6,net6p,s0,s1,s2,vga_out1,vga_out2,vin1,vin2,vmirror,vps
+#Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
+
 Option name=nets_not_to_route value=!kor
 
-#Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
+#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
@@ -633,9 +634,9 @@ Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
 Option name=create_fake_metal_template_instances value={1 if show_metal_templates else 0}
 Option name=create_fake_line_end_grids           value=1
-Option name=auto_fix_global_routing              value=1
+Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal4
+Option name=upper_layer                          value=metal5
 """)
 
 
@@ -644,12 +645,14 @@ Option name=upper_layer                          value=metal4
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
       for (_,v) in self.nets.items():
         for w in v.wires:
+          #SMB Hack because of via2 sizing error
+          if w.layer == "via2": continue
           fp.write( str(w) + "\n")
 
-
+      #SMB Generalize this
       #metal1 obstruction
-      for x in range(1, (self.bbox.urx-160-1)//840):
-        xc = x*840
+      for x in range(1, (self.bbox.urx-160-1)//800):
+        xc = x*800
         y0 = self.bbox.lly+420
         y1 = self.bbox.ury-420
         fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")

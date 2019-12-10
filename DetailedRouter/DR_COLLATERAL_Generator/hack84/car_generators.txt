@@ -1,7 +1,7 @@
 Generator name=via1_320_320 {
   Layer1 value=metal1 {
     x_coverage value=0.000
-    y_coverage value=0.026
+    y_coverage value=0.024
     widths value=0.032
   }
   Layer2 value=metal2 {
@@ -21,29 +21,44 @@ Generator name=via2_320_320 {
   }
   Layer2 value=metal3 {
     x_coverage value=0.000
-    y_coverage value=0.026
-    widths value=0.032
+    y_coverage value=0.020
+    widths value=0.040
   }
   CutWidth value=0.032
   CutHeight value=0.032
   cutlayer value=via2
 }
-Generator name=via3_320_320 {
+Generator name=via2_320_400 {
+  Layer1 value=metal2 {
+    x_coverage value=0.026
+    y_coverage value=0.000
+    widths value=0.032
+  }
+  Layer2 value=metal3 {
+    x_coverage value=0.000
+    y_coverage value=0.020
+    widths value=0.040
+  }
+  CutWidth value=0.040
+  CutHeight value=0.032
+  cutlayer value=via2
+}
+Generator name=via3_400_320 {
   Layer1 value=metal3 {
     x_coverage value=0.000
-    y_coverage value=0.026
-    widths value=0.032
+    y_coverage value=0.020
+    widths value=0.040
   }
   Layer2 value=metal4 {
     x_coverage value=0.026
     y_coverage value=0.000
     widths value=0.032
   }
-  CutWidth value=0.032
+  CutWidth value=0.040
   CutHeight value=0.032
   cutlayer value=via3
 }
-Generator name=via4_320_320 {
+Generator name=via4_320_640 {
   Layer1 value=metal4 {
     x_coverage value=0.026
     y_coverage value=0.000
@@ -51,10 +66,10 @@ Generator name=via4_320_320 {
   }
   Layer2 value=metal5 {
     x_coverage value=0.000
-    y_coverage value=0.026
-    widths value=0.032
+    y_coverage value=0.040
+    widths value=0.064
   }
-  CutWidth value=0.032
+  CutWidth value=0.064
   CutHeight value=0.032
   cutlayer value=via4
 }
