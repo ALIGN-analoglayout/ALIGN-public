@@ -10,6 +10,8 @@
 #include <cstdlib>
 #include <sstream>
 #include <thread>
+//#define MULTITHREAD
+//#define NO_IO
 
 using std::string;
 using std::cout;
@@ -172,6 +174,9 @@ int main(int argc, char** argv ){
   {
     int idx=Q.front();
     cout<<"Main-Info: start to work on node "<<idx<<endl;
+#ifdef NO_IO
+    std::cout.setstate(std::ios_base::failbit);
+#endif
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
@@ -195,20 +200,31 @@ int main(int argc, char** argv ){
     }
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      std::thread t(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
-                    std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
-      t.join();
-      //route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+#ifdef MULTITHREAD
+    std::thread t[numLayout];
+    for(unsigned int lidx=0; lidx<numLayout; ++lidx) {
+      t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
+                            std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
     }
-
+    for(unsigned int lidx=0; lidx<numLayout; ++lidx) {
+      t[lidx].join();
+    }
+#else
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+    }
+#endif
+    
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
-    
+
     Q.pop();
+#ifdef NO_IO
+    std::cout.clear();
+#endif
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
-  
+
   return 0;
 }
