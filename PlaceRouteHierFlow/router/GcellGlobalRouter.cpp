@@ -1239,7 +1239,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   std::cout<<"LP test flag 7"<<std::endl;
   // 6. Solve with lp
   set_minim(lp);
-  //set_timeout(lp,60);
+  set_timeout(lp,60);
   std::cout<<"LP test flag 8"<<std::endl;
   //set_solutionlimit(lp, 10);
   std::cout<<"LP test flag 9"<<std::endl; 
