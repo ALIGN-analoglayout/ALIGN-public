@@ -27,7 +27,7 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
 
      std::vector<std::pair<int,int> > temp_path;
      //std::cout<<"Start iterate steiner"<<std::endl;
-     //Iterated_Steiner(grid,stiner_node); 
+     Iterated_Steiner(grid,stiner_node); 
      //std::cout<<"End iterate steiner"<<std::endl;
      int weight;    
 
