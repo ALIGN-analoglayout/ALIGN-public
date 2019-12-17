@@ -19,7 +19,7 @@ def get_xcells_pattern( args):
         # Dual transistor (current mirror) primitives
         # TODO: Generalize this (pattern is ignored)
         x_cells = 2*args.Xcells + 2
-    elif any(args.primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP"]):
+    elif any(args.primitive.startswith(f'{x}_') for x in ["SCM", "CMC", "DP", "CCP", "LS"]):
         # Dual transistor primitives
         x_cells = 2*args.Xcells
         # TODO: Fix difficulties associated with CC patterns matching this condition
@@ -100,6 +100,23 @@ def main( args):
                                  'DB': [('M2', 'D')],
                                  'GA': [('M1', 'G')],
                                  'GB': [('M2', 'G')]})
+
+    elif args.primitive in ["LS_NMOS", "LS_PMOS"]:
+        cell_pin = gen(pattern, {'SA':  [('M1', 'S')],
+                                 'SB': [('M2', 'S')],
+                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
+                                 'DB': [('M2', 'D')]})
+ 
+    elif args.primitive in ["CCP_NMOS_S", "CCP_PMOS_S"]:
+        cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D'),('M2', 'G')],
+                                 'DB': [('M2', 'D'), ('M1', 'G')]})
+
+    elif args.primitive in ["CCP_NMOS", "CCP_PMOS"]:
+        cell_pin = gen(pattern, {'SA': [('M1', 'S')],
+                                 'SB': [('M2','S')],
+                                 'DA': [('M1', 'D'),('M2', 'G')],
+                                 'DB': [('M2', 'D'), ('M1', 'G')]}) 
 
     else:
         assert False, f"Unrecognized primitive {args.primitive}"
