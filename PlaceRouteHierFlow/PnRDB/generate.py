@@ -19,7 +19,8 @@ class Read_Write_File:
           fout.write(word)
           fout.write(' ')
         else:
-          L = random.uniform(10,500)
+          #L = random.uniform(10,500) # a random number if need recover this line
+          L = 50
           fout.write('nfin='+str(L))
           fout.write(' ')
       fout.write('\n')
