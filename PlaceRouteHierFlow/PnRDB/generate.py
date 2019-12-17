@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import random
-import os
+#import os
 import sys
 
 class Read_Write_File:
