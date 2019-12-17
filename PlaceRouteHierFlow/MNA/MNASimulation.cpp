@@ -25,7 +25,7 @@ std::cout << "start "<< Rstore[i][0] <<" end " << Rstore[i][1]<< " value " << Rs
 }*/
 
 int node_num1 = nodenum(Power_Grid_devices_Gnd);
-int node_num2 = nodenum(Power_Grid_devices_Vdd);
+//int node_num2 = nodenum(Power_Grid_devices_Vdd);
 
 Vstore.push_back(std::vector<double>{node_num1+1,1,1});
 Vstore.push_back(std::vector<double>{node_num1+5,5,1});

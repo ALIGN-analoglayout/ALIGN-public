@@ -95,7 +95,6 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
 
-/*  DC power grid simulation
     while(Power_mesh_optimize and worst < th and rate<1){
 
       curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
@@ -111,7 +110,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
       rate = rate + 0.1;
        
     }
-*/
+
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
