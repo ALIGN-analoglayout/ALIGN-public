@@ -79,7 +79,7 @@ void GcellDetailRouter::printNetsInfo(){
 
 };
 
-std::vector<RouterDB::Metal> GcellDetailRouter::CpSymPath(std::vector<RouterDB::Metal> temp_path, int H, int center){
+std::vector<RouterDB::Metal> GcellDetailRouter::CpSymPath(std::vector<RouterDB::Metal> &temp_path, int H, int center){
 
 
   std::vector<RouterDB::Metal> sym_path;
@@ -1310,7 +1310,7 @@ void GcellDetailRouter::SortPins(std::vector<std::vector<RouterDB::SinkData> > &
 
 
 
-std::vector<RouterDB::Metal> GcellDetailRouter::findGlobalPath(RouterDB::Net temp_net){
+std::vector<RouterDB::Metal> GcellDetailRouter::findGlobalPath(RouterDB::Net &temp_net){
 
   std::vector<RouterDB::Metal> temp_metal;
   
@@ -1330,7 +1330,7 @@ std::vector<RouterDB::Metal> GcellDetailRouter::findGlobalPath(RouterDB::Net tem
 
 };
 
-void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net){
+void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net){
 
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metalIdx = temp_path[0][0].MetalIdx;
@@ -1395,7 +1395,7 @@ void GcellDetailRouter::splitPath(std::vector<std::vector<RouterDB::Metal> > tem
 };
 
 
-void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source){
+void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source){
 
   RouterDB::point temp_point = temp_path[0][0].LinePoint[0];
   int temp_metal_metalidx = temp_path[0][0].MetalIdx;
@@ -1509,7 +1509,7 @@ void GcellDetailRouter::lastmile_source_new(std::vector<std::vector<RouterDB::Me
 };
 
 
-void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source){
+void GcellDetailRouter::lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source){
 
   int last_index = temp_path[0].size()-1;
   RouterDB::point temp_point = temp_path[0][last_index].LinePoint[1];
@@ -1663,7 +1663,7 @@ void GcellDetailRouter::UpdateVia(RouterDB::Via &temp_via){
 
 };
 
-void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > temp_path, std::vector<RouterDB::SinkData>& temp_source){
+void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData>& temp_source){
 
   RouterDB::SinkData temp_sink;
   int width = 1;
@@ -1728,7 +1728,7 @@ void GcellDetailRouter::updateSource(std::vector<std::vector<RouterDB::Metal> > 
 
 };
 
-void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net){
+void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net){
 
   for(unsigned int i=0;i<temp_path.size();i++){
        
@@ -2101,7 +2101,7 @@ void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::poin
 
 
 
-void GcellDetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::terminal> Terminals){
+void GcellDetailRouter::CreatePlistTerminals(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::terminal> &Terminals){
   
   //RouterDB::point tmpP;
   //int mIdx, LLx, LLy, URx, URy;
@@ -2150,7 +2150,7 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
 
 };
 
-void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact){
+void GcellDetailRouter::GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >&physical_path, std::vector<RouterDB::contact> &temp_via_contact){
 
 
   RouterDB::Via temp_via;

@@ -12,6 +12,7 @@
 #include <bitset>
 #include <cstdlib> // system
 #include <iterator>
+#include <assert.h>
 #include <cctype>
 #include <unistd.h> // getcwd
 #include <map>

@@ -108,6 +108,23 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      GGgraph.clearPath();
      std::cout<<"Net index "<<i<<std::endl;
      std::cout<<"Net terminals size "<<Nets[i].terminals.size()<<std::endl;
+
+     for(int j=0;j<Nets[i].connectedTile.size();j++){
+        if(Nets[i].connectedTile[j].size()==0){
+           //std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
+           std::cout<<"Format Issue "<<std::endl;
+           std::cout<<"Please check the net "<<Nets[i].netName<<" in module "<<node.name<<std::endl;
+           int iter = Nets[i].connected[j].iter;
+           int iter2 = Nets[i].connected[j].iter2;
+           if(Nets[i].connected[j].type==RouterDB::BLOCK){
+             std::cout<<"Especial the pin "<< Blocks[iter2].pins[iter].pinName<<" in subblock "<<Blocks[iter2].blockName<<std::endl;
+           }else{
+             std::cout<<"Especial the terminal "<<Terminals[iter].name<<std::endl;
+           }
+           assert(0);}
+     }
+
+
      GGgraph.setterminals(Nets[i].terminals);
      GGgraph.setTerminals(Nets[i].connectedTile);
      
@@ -939,7 +956,343 @@ int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std
 
 };
 
+int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
+  std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
+  # if defined ERROR
+  #  undef ERROR
+  # endif
+  //# define ERROR() { fprintf(stderr, "Error\n"); return(1); }
+  # define ERROR() { fprintf(stderr, "Error\n"); }
+  std::cout<<"LP test flag 1"<<std::endl;
+  // start of lp_solve
+  int majorversion, minorversion, release, build;
+  char buf[1024];
+  hlpsolve lpsolve;
+  # if defined WIN32
+  #   define lpsolvelib "lpsolve55.dll"
+  # else
+  #   define lpsolvelib "liblpsolve55.so"
+  # endif
+  lpsolve = open_lpsolve_lib(const_cast<char*>(lpsolvelib));
+  if (lpsolve == NULL) {
+    fprintf(stderr, "Unable to load lpsolve shared library (%s).\nIt is probably not in the correct path.\n", lpsolvelib);
+    //ERROR();
+  }
 
+  if (!init_lpsolve(lpsolve)) {
+    fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
+    //ERROR();
+  }
+
+
+  // 1. collect number of STs
+  int NumberOfSTs = 0;
+  int NumberOfNets = 0;
+  valInfo vi;
+
+  std::cout<<"LP test flag 2"<<std::endl;
+  for(unsigned int h=0;h<this->Nets.size();++h) { //  for each net
+    vi.netIter=h;
+    for(unsigned int i=0;i<this->Nets[h].STs.size();++i) {// for each segment
+      vi.STIter=i;
+      vi.candIter=-1;
+      vi.segIter=-1;
+      vi.valIter=NumberOfSTs;
+      this->Nets[h].STs[i].valIdx = NumberOfSTs;
+      NumberOfSTs++;
+      ValArray.push_back(vi);
+    }
+   NumberOfNets++;
+  }
+  std::cout<<"TotNumberOfNest "<<NumberOfNets<<" TotNumberOfSTs "<<NumberOfSTs<<std::endl;
+  this->NumOfVar=NumberOfSTs;//#Variable initialization
+
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
+  lp_solve_version(&majorversion, &minorversion, &release, &build);
+  sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
+  print_str(lp, buf);
+  put_logfunc(lp, NULL, 0);
+  set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
+  //set_add_rowmode(lp, TRUE);
+  // 2. Initialize matrix without constraints  Q1? A 0 is inserted to the temp_row, so the valInfo maybe not correct
+
+  //std::cout<<"testcase 1"<<std::endl;
+
+  //int CurNet = 0;
+  std::cout<<"LP test flag 3"<<std::endl;
+  for(int i=0;i<NumberOfNets;++i){
+      std::cout<<"Nets index "<<i<<std::endl;
+      int CurNet = i;
+      //std::vector<double> temp_row;
+      //temp_row.push_back(0);//0th column "0" Q2?
+      std::vector<double> temp_row;
+      std::vector<int> temp_index;
+
+      for(unsigned int j=0;j<this->Nets.size();++j){
+
+          for(unsigned int k=0;k<this->Nets.at(j).STs.size();++k){
+/*
+	    if((int)j==CurNet) {
+                temp_row.push_back(1);
+               } else {
+                temp_row.push_back(0);
+               }
+*/
+
+	    if((int)j==CurNet) {
+                temp_index.push_back(this->Nets.at(j).STs[k].valIdx+1);
+                temp_row.push_back(1);
+                std::cout<<"temp index "<<this->Nets.at(j).STs[k].valIdx<<" temp_row "<<1<<std::endl;
+               }   
+             }
+         }
+
+       //temp_row.push_back(0);
+       double* row = &temp_row[0];
+       int* col =&temp_index[0];
+       int size_element = temp_row.size();
+       //if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+     
+     }
+
+  //symmetry problem
+  std::cout<<"LP test flag 4"<<std::endl;
+  for(unsigned int i=0;i<this->Nets.size();++i){
+
+    if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
+          std::cout<<"net index "<<i<<" global_sym "<< this->Nets.at(i).global_sym<<std::endl;
+          int global_sym = this->Nets.at(i).global_sym;   
+          for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
+
+               //std::vector<double> temp_row;
+               //temp_row.push_back(0);//0th column "0" Q2?
+               std::vector<double> temp_row;
+               std::vector<int> temp_index;   
+/*
+               for(int val_number = 0; val_number < NumberOfSTs ; ++val_number){
+                      if(val_number == this->Nets.at(global_sym).STs[j].valIdx){
+                           temp_row.push_back(1);
+                        }else if(val_number == this->Nets.at(i).STs[j].valIdx){
+                           temp_row.push_back(-1);
+                        }else{
+                           temp_row.push_back(0);
+                        }
+                                               
+                    }
+*/
+
+               for(int val_number = 0; val_number < NumberOfSTs ; ++val_number){
+                      if(val_number == this->Nets.at(global_sym).STs[j].valIdx){
+                           temp_index.push_back(this->Nets.at(global_sym).STs[j].valIdx+1);
+                           temp_row.push_back(1);
+                        }else if(val_number == this->Nets.at(i).STs[j].valIdx){
+                           temp_index.push_back(this->Nets.at(i).STs[j].valIdx+1);
+                           temp_row.push_back(-1);
+                        }
+                                               
+                    }
+                
+                //temp_row.push_back(0);
+                double* row = &temp_row[0];
+                int* col=&temp_index[0];
+                int size_element = temp_row.size();
+                std::cout<<"Adding SYM constraints"<<std::endl;
+                //if (!add_constraint(lp, row, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       
+             }
+        
+        }
+     
+     }
+
+  //CalCulated_Sym_Ax(this->Nets[i].terminals,this->Nets[j].terminals, center_x, center_y, H_or_V); //H_or_V is H if 1, else V (0);
+  // 1. Based on real pin determine the center terminal position or the coordinate of ;
+  // 2. Based on the STs calclated the co
+
+  //capacity edge constraint
+  //Q4?
+
+  //std::cout<<"testcase 2"<<std::endl;
+
+  std::vector<std::pair<int,int> > Edges;
+  std::vector<int> Capacities;
+  std::vector<std::vector<int> > Edges_To_Var;
+
+  NumberOfSTs = 0;
+  std::cout<<"LP test flag 5"<<std::endl;
+  for(unsigned int i=0;i<this->Nets.size();++i){
+      for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
+          NumberOfSTs++;
+          for(unsigned int k=0;k<this->Nets.at(i).STs[j].path.size();++k){
+               
+               int found = 0;
+               int index = -1;
+               for(unsigned int l=0;l<Edges.size();++l){
+                      
+                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first and this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second and this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
+                      found = 1;
+                      index = l;
+                      break;
+                      }
+                     
+                  }
+
+               if(found ==1){
+                  //std::cout<<"Break down"<<std::endl;
+                  Edges_To_Var[index].push_back(NumberOfSTs); //push_back the var number??        
+                    
+                 }else{
+
+                  for(unsigned int p = 0;p<graph.graph[this->Nets.at(i).STs[j].path[k].first].list.size();++p){
+                       if(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].dest == this->Nets.at(i).STs[j].path[k].second){
+                           Capacities.push_back(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity);
+                           std::cout<<"Edge capacity "<<graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity<<std::endl;
+                           Edges.push_back(this->Nets.at(i).STs[j].path[k]);
+                           std::vector<int> temp_var;
+                           Edges_To_Var.push_back(temp_var);
+
+                           break;
+                         }
+                     }
+                 }
+             }
+
+        }
+     }
+
+  //std::cout<<"testcase 3"<<std::endl;
+
+  std::cout<<"LP test flag 6"<<std::endl;
+  for(unsigned int i=0;i<Edges_To_Var.size();++i){
+
+      //std::vector<double> temp_row;
+      //temp_row.push_back(0);//0th column "0" Q2?
+
+      std::vector<double> temp_row;
+      std::vector<int> temp_index;   
+/*
+       for(int j=0;j<NumberOfSTs;++j){
+            int found_flag = 0;
+            for(unsigned int k=0;k<Edges_To_Var[i].size();++k){
+                if(Edges_To_Var[i][k]==j){found_flag=1;}
+               }
+            if(found_flag==1){
+              temp_row.push_back(1);
+              }else{
+              temp_row.push_back(0);
+              }
+          }
+*/
+
+       for(int j=0;j<NumberOfSTs;++j){
+            int found_flag = 0;
+            for(unsigned int k=0;k<Edges_To_Var[i].size();++k){
+                if(Edges_To_Var[i][k]==j){found_flag=1;}
+               }
+            if(found_flag==1){
+              temp_index.push_back(j+1);
+              temp_row.push_back(1);
+              }
+          }
+       temp_index.push_back(NumberOfSTs+1);
+       temp_row.push_back(-Capacities[i]);
+       std::cout<<"Constraint Capacity "<<Capacities[i]<<std::endl;
+
+       double* row = &temp_row[0];
+       int* col = &temp_index[0];
+       int size_element=temp_row.size();
+       //if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+     }
+
+  //std::cout<<"testcase 4"<<std::endl;
+
+  print_lp(lp);
+  // 4. Set binary variables (candidates + slacks)
+  for(int i=1;i<=this->NumOfVar;++i){
+    set_binary(lp, i, TRUE);//"TRUE": set variable to be a binary. upper bound=1, lower bound=0
+  }
+  
+  set_bounds(lp, this->NumOfVar+1, 0.0, 1.0);
+
+  printf("Set the objective function\n");
+  printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
+
+  // 5. Set objective function
+  vector<double> temp_row;
+  vector<int> temp_index;
+  //temp_row.push_back(NumOfVar+1);
+/*
+  for(int i=0;i<this->NumOfVar;++i){
+     temp_row.push_back(0);
+  }
+*/
+  temp_row.push_back(1);
+  temp_index.push_back(NumOfVar+1);
+  double *row = &temp_row[0];
+  int* col=&temp_index[0];
+  if (!set_obj_fnex(lp, 1,row,col)){std::cout <<"Router-Error: Objective insertion Error"<<std::endl;}
+
+  //std::cout<<"testcase 5"<<std::endl;
+  std::cout<<"LP test flag 7"<<std::endl;
+  // 6. Solve with lp
+  set_minim(lp);
+  set_timeout(lp,60);
+  std::cout<<"LP test flag 8"<<std::endl;
+  //set_solutionlimit(lp, 10);
+  std::cout<<"LP test flag 9"<<std::endl; 
+  set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
+  std::cout<<"LP test flag 10"<<std::endl;
+  print_lp(lp);
+  
+  int ret = solve(lp);
+  std::cout<<"LP test flag 11"<<std::endl;
+  if(ret== 0){
+          std::cout << "Status Log: Optimal Solution Found Success"<<std::endl;
+  }
+  else if(ret==2){
+          std::cout <<"Status Log: Model is Infeasible"<<std::endl;
+  }
+  else if(ret==1){
+          std::cout <<"Status Log: Suboptimal Solution Found"<<std::endl;
+  }
+  else if(ret==-2){
+          std::cout <<"Status Log: Out of memory"<<std::endl;
+  }
+  else if(ret==7){
+          std::cout <<"Status Log: Timeout(set via set_timeout)"<<std::endl;
+  }
+  else{
+          std::cout <<"Status Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)"<<std::endl;
+  }
+  std::cout<<"LP test flag 12"<<std::endl;
+  printf("#Constraints: lp row:  %d \n", lp->rows);
+  printf("#Variables: lp col:  %d \n", lp->columns);
+  std::cout<<"LP test flag 13"<<std::endl;
+  // 7. Get results and store back to data structure
+  // Q5?
+  double Vars[NumOfVar];
+  get_variables(lp, Vars);
+  std::cout<<"LP test flag 14"<<std::endl;
+  //std::cout<<"testcase 6"<<std::endl;
+  for(int i=0;i<NumOfVar;++i){
+      if(Vars[i]==1){
+         this->Nets.at(ValArray[i].netIter).STindex=ValArray[i].STIter;
+        }
+     }
+  //std::cout<<"testcase 7"<<std::endl;
+  //set_add_rowmode(lp, FALSE);
+  //free(row);
+  //free(col);
+  std::cout<<"LP test flag 15"<<std::endl;
+  delete_lp(lp);
+  std::cout<<"LP test flag 16"<<std::endl;
+  return ret;
+}
+
+/*
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
   std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
   # if defined ERROR
@@ -1171,7 +1524,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   // 6. Solve with lp
   set_minim(lp);
-  set_solutionlimit(lp, 10); 
+  set_timeout(lp,60);
+  //set_solutionlimit(lp, 10); 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   print_lp(lp);
 
@@ -1213,6 +1567,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   delete_lp(lp);
   return ret;
 }
+*/
 
 void
 CopyTileEdge (const RouterDB::tileEdge& it, PnRDB::tileEdge& ot) {
