@@ -359,8 +359,6 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
-  vector<R_const> R_Constraints;
-  vector<C_const> C_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
