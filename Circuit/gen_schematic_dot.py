@@ -100,8 +100,8 @@ if __name__ == "__main__":
             for k,v in e.pins.items():
                 if k in m:
                     vv = f"{v}{tbl[v][e.name]}" if v in tbl and e.name in tbl[v] else v
-                    if k == "S" and e.__class__.__name__ == "PMOS" or \
-                       k == "D" and e.__class__.__name__ == "NMOS":
+                    if k in ["S"]     and e.__class__.__name__ == "PMOS" or \
+                       k in ["D","G"] and e.__class__.__name__ == "NMOS":
                         print( f"\t{vv} -- {e.name}:{m[k]}", file=fp)
                     else:
                         print( f"\t{e.name}:{m[k]} -- {vv}", file=fp)
