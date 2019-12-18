@@ -1,6 +1,7 @@
 
 MAKE=make
 
+
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
 LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
@@ -24,15 +25,16 @@ PnRDB_path=PnRDB
 cap_placer_path=cap_placer
 placer_path=placer
 router_path=router
+MNA_path=MNA
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a 
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a
 
 all: depend subsystem pnr_compiler unit_tests
 
 depend:
-	$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
+	@$(CXX) $(CXXFLAGS) -E -MM $(SRCS) unit_tests.cpp > .depend
 
 -include .depend
 
@@ -41,6 +43,7 @@ subsystem:
 	$(MAKE) -C $(placer_path)
 	$(MAKE) -C $(router_path)
 	$(MAKE) -C $(cap_placer_path)
+	$(MAKE) -C $(MNA_path)
 
 pnr_compiler: subsystem $(OBJS) 
 	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
@@ -54,3 +57,4 @@ clean:
 	make -C $(placer_path) clean
 	make -C $(router_path) clean
 	make -C $(cap_placer_path) clean
+	$(MAKE) -C $(MNA_path) clean

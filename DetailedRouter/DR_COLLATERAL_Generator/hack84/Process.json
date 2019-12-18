@@ -30,8 +30,8 @@
     "metalTemplates" : [
                    {
                      "layer":"metal5", "name":"m5",
-                     "widths":[320,320],
-                     "spaces":[520],
+                     "widths":[640,640],
+                     "spaces":[800],
                        "colors":[],
 		       "stops":[840],
 		       "stop_offset":420
@@ -41,14 +41,14 @@
                      "widths":[320,320],
                      "spaces":[520],
                        "colors":[],
-		       "stops":[840],
-		       "stop_offset":420
+		       "stops":[800],
+		       "stop_offset":400
 
                   },
                   {
                      "layer":"metal3", "name":"m3",
-                     "widths":[320,320],
-                     "spaces":[520],
+                     "widths":[400,400],
+                     "spaces":[400],
                       "colors":[],
 		       "stops":[840],
 		       "stop_offset":420
@@ -59,14 +59,14 @@
                      "widths":[320,320],
                      "spaces":[520],
                       "colors":[],
-		       "stops":[840],
-		       "stop_offset":420
+		       "stops":[800],
+		       "stop_offset":400
 
                   },
                   {
                      "layer":"metal1", "name":"m1",
                      "widths":[320,320],
-                     "spaces":[520],
+                     "spaces":[480],
                       "colors":[],
 		       "stops":[840],
 		       "stop_offset":420

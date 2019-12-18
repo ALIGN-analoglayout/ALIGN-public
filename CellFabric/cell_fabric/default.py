@@ -2,6 +2,9 @@ from .canvas import Canvas
 from .generators import *
 from .grid import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 class DefaultCanvas(Canvas):
 
     def __init__( self, pdk):
@@ -14,11 +17,6 @@ class DefaultCanvas(Canvas):
                 self._create_metal(layer, info)
             elif layer.startswith('V'):
                 self._create_via(layer, info)
-
-    def _initialize_layer_stack(self):
-        """layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))"""
-        self.layer_stack = [(l, (pl, nl)) if self.pdk[nl]['Direction'] == 'h' else (l, (nl, pl)) \
-            for l, (pl, nl) in self.pdk.get_via_stack() if l.startswith('V')]
 
     def _get_metal_width( self, layer):
         return self.pdk[layer]['Width'][0] if isinstance(self.pdk[layer]['Width'], list) else self.pdk[layer]['Width']
@@ -45,24 +43,24 @@ class DefaultCanvas(Canvas):
             base_layer = layer.split('_')[0]
             (pm, pv, nv, nm) = self._find_adjoining_layers(base_layer)
             if nm is None:
-                print(f'spg for {base_layer} aligned to {pm}')
+                logger.info(f'spg for {base_layer} aligned to {pm}')
                 spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(pm),
                                                    self._get_via_ext(base_layer, pv),
                                                    self._get_metal_offset(pm))
             elif pm is None:
-                print(f'spg for {base_layer} aligned to {nm}')
+                logger.info(f'spg for {base_layer} aligned to {nm}')
                 spg_pitch, spg_stop, spg_offset = (self._get_metal_pitch(nm),
                                                    self._get_via_ext(base_layer, nv),
                                                    self._get_metal_offset(nm))
             else:
                 pm_pitch, nm_pitch = self._get_metal_pitch(pm), self._get_metal_pitch(nm)
                 if pm_pitch <= nm_pitch:
-                    print(f'spg for {base_layer} aligned to {pm}')
+                    logger.info(f'spg for {base_layer} aligned to {pm}')
                     spg_pitch, spg_stop, spg_offset = (pm_pitch,
                                                        self._get_via_ext(base_layer, pv),
                                                        self._get_metal_offset(pm))
                 else:
-                    print(f'spg for {base_layer} aligned to {nm}')
+                    logger.info(f'spg for {base_layer} aligned to {nm}')
                     spg_pitch, spg_stop, spg_offset = (nm_pitch,
                                                        self._get_via_ext(base_layer, nv),
                                                        self._get_metal_offset(nm))
@@ -84,7 +82,7 @@ class DefaultCanvas(Canvas):
 
     def _create_via( self, layer, info):
         if any(x is None for x in info['Stack']):
-            print(f"WARNING: Cannot create {layer} via automatically. One or more metal layers are None.")
+            logger.info(f"Cannot create {layer} via automatically. One or more metal layers are None.")
             return
 
         if self.pdk[info['Stack'][0]]['Direction'] == 'h':

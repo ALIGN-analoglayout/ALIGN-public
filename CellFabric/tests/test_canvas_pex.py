@@ -7,7 +7,7 @@ from cell_fabric import DefaultCanvas, Pdk
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/FinFET_Mock_PDK_Abstraction.json')
+    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
     c = DefaultCanvas(p)
     return c
 
@@ -46,7 +46,6 @@ def test_via_pex(setup):
 
 def test_via_pex2(setup):
     c = setup
-    print(c.pdk)
     for (i,nm) in itertools.product( [5,7,9], ['a']):
         c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [1,3,5,7,9], ['a']):
@@ -95,7 +94,6 @@ V1 {source} 0 {hack1}
 
 def test_via_pex_current(setup):
     c = setup
-    print(c.pdk)
     for (i,nm) in itertools.product( [5,7,9], ['a']):
         c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [1,3,5,7,9], ['a']):
@@ -142,7 +140,6 @@ V2 {sink2} 0 0
 
 def test_via_pex_current2(setup):
     c = setup
-    print(c.pdk)
     for (i,nm) in itertools.product( [5,7,9], ['a']):
         c.addWire( c.m1, nm, None, i, (0,-1), (0,1))
     for (i,nm) in itertools.product( [5,7,9], ['a']):

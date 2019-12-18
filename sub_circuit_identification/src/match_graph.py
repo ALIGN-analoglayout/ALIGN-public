@@ -28,13 +28,14 @@ def traverse_hier_in_graph(G, hier_graph_dict):
     """
     for node, attr in G.nodes(data=True):
         if "sub_graph" in attr and attr["sub_graph"]:
-            logging.info("Traversing sub graph:%s %s", node, attr["inst_type"])
+            logging.info("Traversing sub graph:%s %s %s", node, attr["inst_type"],attr["ports"] )
             sub_ports = []
             for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
-
+             
+            logging.info("external ports:%s,%s",sub_ports,attr["connection"])
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
@@ -63,7 +64,8 @@ def read_inputs(file_name):
     logging.info("READING top circuit graph: ")
     hier_graph_dict[file_name.split('/')[-1].split('.')[0]] = {
         "graph": hier_graph,
-        "ports": top_ports
+        "ports": top_ports,
+        "connection": None
     }
     traverse_hier_in_graph(hier_graph, hier_graph_dict)
     return hier_graph_dict
@@ -92,7 +94,6 @@ def read_lib(lib_dir_path):
             for node, attr in graph.nodes(data=True):
                 if 'net' in attr['inst_type']:
                     if 'external' in attr['net_type']:
-                        #print("external nets",node)
                         subgraph_ports.append(node)
             library.append({
                 "name": sub_block_name[:-5],
@@ -220,6 +221,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     updated_circuit.append({
                         "name": sub_block_name,
                         "lib_graph": Grest,
+                        "ports": list(matched_ports.keys()),
                         "ports_match": matched_ports,
                         "size": len(subgraph.nodes())
                     })
@@ -245,8 +247,8 @@ def preprocess_stack(G):
                 if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
                         logging.info(" checking nodes: %s , %s",node,next_node)
-                        if not next_node == node and G.node[next_node][
-                                "inst_type"] == G.node[node][
+                        if not next_node == node and G.nodes[next_node][
+                                "inst_type"] == G.nodes[node][
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set(
@@ -264,13 +266,13 @@ def preprocess_stack(G):
                                         ['weight'] >= 2:
 
                                     lequivalent = 0
-                                    for param, value in G.node[next_node][
+                                    for param, value in G.nodes[next_node][
                                             "values"].items():
                                         if param == 'l':
                                             #print("param1",node,param,value)
                                             lequivalent = float(
                                                 convert_unit(value))
-                                    for param, value in G.node[node][
+                                    for param, value in G.nodes[node][
                                             "values"].items():
                                         if param == 'l':
                                             lequivalent += float(
@@ -288,7 +290,7 @@ def preprocess_stack(G):
         G.add_edge(node, attr[0], weight=attr[1])
 
     for node, attr in modified_nodes.items():
-        G.node[node]["values"]['l'] = attr
+        G.nodes[node]["values"]['l'] = attr
 
     for node in remove_nodes:
         G.remove_node(node)
@@ -301,6 +303,7 @@ def preprocess_stack(G):
 def check_values(values):
     for param,value in values.items():
         logging.debug("param,value:%s,%s", param,value)
+        if param == 'model': continue
         try:
             assert(isinstance(value, int) or isinstance(value, float))
         except AssertionError:
@@ -363,9 +366,12 @@ if __name__ == '__main__':
         UPDATED_CIRCUIT_LIST.append({
             "name": circuit_name,
             "lib_graph": Grest,
-            "ports": circuit["ports"],
+            "ports":circuit["ports"],
+            "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
         })
+        logging.info("checking connection:%s",circuit["connection"])
+    
 
     #plt_graph(Grest, "Final reduced graph")
 

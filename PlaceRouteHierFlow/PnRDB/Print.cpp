@@ -26,7 +26,7 @@ void PnRdatabase::PrintLEFData() {
       cout<<endl;
     }
     cout<<"Internal metals"<<endl;
-    for(vector<PnRDB::contact>::iterator it4=it->second.at(w).interMetals.begin(); it4!= it->second.at(w).interMetals.end();it4++) {
+    for(vector<PnRDB::contact>::iterator it4=it->second.at(w).interMetals.begin(); it4!= it->second.at(w).interMetals.end();++it4) {
       cout<<"\tmetal: "<<it4->metal<<"; orginBox: ";
       cout<<" LL-{"<<it4->originBox.LL.x<<","<<it4->originBox.LL.y<<"}";
       cout<<" UR-{"<<it4->originBox.UR.x<<","<<it4->originBox.UR.y<<"}";
@@ -62,7 +62,7 @@ void PnRdatabase::PrintDesignRuleData() {
 void PnRdatabase::PrintHierNode(PnRDB::hierNode& node) {
   std::cout<<"Hier Node Printing"<<std::endl;
   std::cout<<"Name: "<<node.name<<" ; isTop: "<<node.isTop<<" ; isCompeted: "<<node.isCompleted<<" ; width: "<<node.width<<" ; height: "<<node.height<<" ; gdsFile: "<<node.gdsFile<<" ; parent: ";
-  for(vector<int>::iterator it=node.parent.begin(); it!=node.parent.end(); it++) {
+  for(vector<int>::iterator it=node.parent.begin(); it!=node.parent.end(); ++it) {
     std::cout<<*it;
   }
   std::cout<<std::endl<<"Blocks"<<std::endl;
@@ -154,7 +154,7 @@ void PnRdatabase::PrintBlock(PnRDB::blockComplex& bc) {
       }
     }
     std::cout<<"Internal Metals"<<std::endl;
-    for(vector<PnRDB::contact>::iterator it2=it->instance.at(w).interMetals.begin(); it2!=it->instance.at(w).interMetals.end(); it2++) {
+    for(vector<PnRDB::contact>::iterator it2=it->instance.at(w).interMetals.begin(); it2!=it->instance.at(w).interMetals.end(); ++it2) {
       PrintContact(*it2);
     }
     std::cout<<"Internal Vias"<<std::endl;

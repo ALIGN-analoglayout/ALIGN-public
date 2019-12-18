@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
 #include "PnRdatabase.h"
-#include "../router/Rdatatype.h"
+//#include "../router/Rdatatype.h"
 
 using namespace nlohmann;
 
-#define ADDED_FIELDS
-
-#ifdef ADDED_FIELDS
 namespace RouterDB {
+};
+
+namespace PnRDB {
   void to_json(json& j, const tileEdge& v) {
     j["next"] = v.next;
     j["capacity"] = v.capacity;
@@ -53,10 +53,6 @@ namespace RouterDB {
     j["down"].get_to( v.down);
     j["up"].get_to( v.up);
   }
-};
-#endif
-
-namespace PnRDB {
   
   void to_json(json& j, const point& v) {
     j["x"] = v.x;
@@ -288,16 +284,12 @@ namespace PnRDB {
     j["segments"] = json(v.segments);
     j["interVias"] = json(v.interVias);
     j["path_metal"] = json(v.path_metal);
-#ifdef ADDED_FIELDS
     j["GcellGlobalRouterPath"] = json(v.GcellGlobalRouterPath);
-#endif
     j["path_via"] = json(v.path_via);
     j["connectedContact"] = json(v.connectedContact);
     j["axis_dir"] = json(v.axis_dir);
     j["axis_coor"] = json(v.axis_coor);
-#ifdef ADDED_FIELDS
     j["connectedTile"] = json(v.connectedTile);
-#endif
   }
 
   void from_json(const json& j, net& v) {
@@ -312,16 +304,12 @@ namespace PnRDB {
     j["segments"].get_to( v.segments);
     j["interVias"].get_to( v.interVias);
     j["path_metal"].get_to( v.path_metal);
-#ifdef ADDED_FIELDS
     j["GcellGlobalRouterPath"].get_to( v.GcellGlobalRouterPath);
-#endif
     j["path_via"].get_to( v.path_via);
     j["connectedContact"].get_to( v.connectedContact);
     j["axis_dir"].get_to( v.axis_dir);
     j["axis_coor"].get_to( v.axis_coor);
-#ifdef ADDED_FIELDS
     j["connectedTile"].get_to( v.connectedTile);
-#endif
   }
 
   void to_json(json& j, const pin& v) {
@@ -576,21 +564,45 @@ namespace PnRDB {
     j["cap_s"] .get_to( v.cap_s);
   }
 
+  void to_json(json& j, const R_const& v) {
+    j["net_name"] = v.net_name;
+    j["start_pin"] = json(v.start_pin);
+    j["end_pin"] = json(v.end_pin);
+    j["R"] = json(v.R);
+  }
+
+  void from_json(const json& j, R_const& v) {
+    j["net_name"].get_to( v.net_name);
+    j["start_pin"].get_to( v.start_pin);
+    j["end_pin"].get_to( v.end_pin);
+    j["R"].get_to( v.R);
+  }
+
+  void to_json(json& j, const C_const& v) {
+    j["net_name"] = v.net_name;
+    j["start_pin"] = json(v.start_pin);
+    j["end_pin"] = json(v.end_pin);
+    j["C"] = json(v.C);
+  }
+
+  void from_json(const json& j, C_const& v) {
+    j["net_name"].get_to( v.net_name);
+    j["start_pin"].get_to( v.start_pin);
+    j["end_pin"].get_to( v.end_pin);
+    j["C"].get_to( v.C);
+  }
+
   void to_json(json& j, const hierNode& v) {
     j["isCompleted"] = v.isCompleted;
     j["isTop"] = v.isTop;
-#ifdef ADDED_FIELDS
     j["isIntelGcellGlobalRouter"] = v.isIntelGcellGlobalRouter;
-#endif
     j["width"] = v.width;
     j["height"] = v.height;
     j["name"] = v.name;
     j["gdsFile"] = v.gdsFile;
     j["parent"] = json(v.parent);
     j["Blocks"] = json(v.Blocks);
-#ifdef ADDED_FIELDS
     j["tiles_total"] = json(v.tiles_total);
-#endif
     j["Nets"] = json(v.Nets);
     j["Terminals"] = json(v.Terminals);
     j["Vdd"] = json(v.Vdd);
@@ -611,6 +623,8 @@ namespace PnRDB {
     j["Match_blocks"] = json(v.Match_blocks);
     j["CC_Caps"] = json(v.CC_Caps);
     j["Port_Location"] = json(v.Port_Location);
+    j["R_Constraints"] = json(v.R_Constraints);
+    j["C_Constraints"] = json(v.C_Constraints);
     j["bias_Hgraph"] = json(v.bias_Hgraph);
     j["bias_Vgraph"] = json(v.bias_Vgraph);
   }
@@ -618,18 +632,14 @@ namespace PnRDB {
   void from_json(const json& j, hierNode& v) {
     j["isCompleted"].get_to( v.isCompleted);
     j["isTop"].get_to( v.isTop);
-#ifdef ADDED_FIELDS
     j["isIntelGcellGlobalRouter"].get_to( v.isIntelGcellGlobalRouter);
-#endif
     j["width"].get_to( v.width);
     j["height"].get_to( v.height);
     j["name"].get_to( v.name);
     j["gdsFile"].get_to( v.gdsFile);
     j["parent"].get_to( v.parent);
     j["Blocks"].get_to( v.Blocks);
-#ifdef ADDED_FIELDS
     j["tiles_total"].get_to( v.tiles_total);
-#endif
     j["Nets"].get_to( v.Nets);
     j["Terminals"].get_to( v.Terminals);
     j["Vdd"].get_to( v.Vdd);
@@ -650,6 +660,10 @@ namespace PnRDB {
     j["Match_blocks"].get_to( v.Match_blocks);
     j["CC_Caps"].get_to( v.CC_Caps);
     j["Port_Location"].get_to( v.Port_Location);
+
+    j["R_Constraints"].get_to(v.R_Constraints);
+    j["C_Constraints"].get_to(v.C_Constraints);
+
     j["bias_Hgraph"].get_to( v.bias_Hgraph);
     j["bias_Vgraph"].get_to( v.bias_Vgraph);
   }

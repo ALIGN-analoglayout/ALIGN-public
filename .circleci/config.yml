@@ -38,7 +38,7 @@ jobs:
           make build_docker
 
           python3 -m venv general
-          source general/bin/activate	  
+          source general/bin/activate
 
           pip install --upgrade pip
           pip install wheel pytest coverage pytest-cov networkx pyyaml python-gdsii
@@ -324,10 +324,14 @@ jobs:
           at: /work/workspace
 
       - run: |
-          cd PDK_Abstraction
-          docker build -t pdk_image .
+          cd CellFabric
+          docker build -t cellfabric_image:1.0 -f ./Dockerfile ..
 
-          docker run --name pdk_container pdk_image bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
+      - run: |
+          cd PDK_Abstraction
+          docker build -t pdk_image:1.0 .
+
+          docker run --name pdk_container pdk_image:1.0 bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
           cd -
 
           docker cp pdk_container:test-reports .
@@ -447,10 +451,6 @@ jobs:
           at: /work/workspace
 
       - run: |
-          cd Build
-          docker build -f Dockerfile.build -t with_protobuf .
-
-      - run: |
           cd PlaceRouteHierFlow
           docker build -t placeroute_coverage_image -f Dockerfile-coverage .
           docker volume create placerInputVol
@@ -462,7 +462,6 @@ jobs:
           mkdir -p coverage-reports
           docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
           mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-          docker cp PnR:/PlaceRouteHierFlow/junit.xml test-reports/PlaceRouteHierFlow
           docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
           docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
@@ -473,6 +472,13 @@ jobs:
           paths:
             - test-reports/PlaceRouteHierFlow
             - coverage-reports/PlaceRouteHierFlow
+            
+      - store_artifacts:
+          path: test-reports
+          
+      - store_artifacts:
+          path: coverage-reports
+
 
   build-GDSConv:
     executor: docker-executor
@@ -669,7 +675,7 @@ workflows:
 #            - start 
       - build-pdk:
           requires:
-            - start 
+            - build-cellfabric 
       - finish:
           requires:
 #            - build-tally 

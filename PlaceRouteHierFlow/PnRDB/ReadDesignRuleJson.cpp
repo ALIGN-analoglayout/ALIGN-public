@@ -45,10 +45,12 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
             int le2e=layer["EndToEnd"];
-            //cout<<"read RC"<<endl;
-            double unit_C = layer["UnitC"];
-            double unit_R = layer["UnitR"];
-            //cout<<"end read RC"<<endl;
+
+            double unit_C = 0;
+            if(layer["UnitC"].is_number()){unit_C=layer["UnitC"];}
+            double unit_R = 0;
+            if(layer["UnitR"].is_number()){unit_R=layer["UnitR"];}
+
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
@@ -87,9 +89,10 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lvencah= layer["VencA_H"];
             int lvencpl= layer["VencP_L"];
             int lvencph= layer["VencP_H"];
-            //cout<<"read R"<<endl;
-            double R = layer["R"];
-            //cout<<"end read R"<<endl;
+
+            double R = 0;
+            if(layer["R"].is_number()){R=layer["R"];}
+            
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
@@ -102,7 +105,6 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_via.dist_ss=times*lspacex;
             tmp_via.dist_ss_y=times*lspacey;
             tmp_via.R = R;
-
 	    {
 	      assert( stackAry.size() == 2);
 

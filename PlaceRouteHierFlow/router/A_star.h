@@ -18,13 +18,13 @@ class A_star {
   private:
 
     vector<int> source, dest;
-    int shielding=-1;
+    bool shielding=-1;
     std::vector<std::vector<int> > Path;
     int path_number;
     PnRDB::Drc_info drc_info;
 
   public:
-    A_star(Grid& grid);
+    A_star(Grid& grid, bool shielding);
     bool FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down);
     int Manhattan_distan(int sindex, Grid& grid);
     void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, const std::set<int> &S_or_D, int left_up, int right_down);
@@ -52,6 +52,9 @@ class A_star {
     void right_path_SD(int end_index, int number, Grid& grid, std::vector<int>& path);
     void CovertToShieldingNet(Grid& grid, std::vector<int> &real_path, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
+    bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
+    void CheckExtendable(std::vector<int> &candidate_node, int current_node, Grid& grid);
+    int trace_back(int current_node, Grid& grid);
 };
 
 #endif

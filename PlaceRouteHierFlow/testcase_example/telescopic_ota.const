@@ -5,6 +5,7 @@ SymmNet ( {net014,m9_m8/SB,m3_m0/DA} , {net8,m9_m8/SA,m3_m0/DB} )
 MatchBlock ( m5_m4 , m3_m0 )
 MatchBlock ( m3_m0 , m9_m8 )
 MatchBlock ( m9_m8 , m6_m7 )
-MatchBlock ( m6_m7 , m2_m1 )
+MatchBlock ( m6_m7, m2_m1 )
 SymmBlock ( {m2_m1} , {m6_m7} , {m9_m8} , {m3_m0} , {m5_m4} )
 R_Const ( {net10} , {m3_m0/S,m5_m4/DB,10} )
+

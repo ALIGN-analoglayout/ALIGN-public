@@ -12,6 +12,7 @@
 #include <bitset>
 #include <cstdlib> // system
 #include <iterator>
+#include <assert.h>
 #include <cctype>
 #include <unistd.h> // getcwd
 #include <map>
@@ -123,6 +124,7 @@ class GcellGlobalRouter : public RawRouter {
     void SymNet(GlobalGrid &grid, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set);
     int SymNetTerminal_PrimeSet(GlobalGrid &grid, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set, RouterDB::Net &temp_net, RouterDB::Net &sym_net, bool H, int center);
     int CopyPath(std::vector<std::pair<int,int> > &path, std::map<int,int> &temp_map, std::vector<std::pair<int,int> > &sy_path);
+    void AssignContact(RouterDB::contact &RouterDB_contact, PnRDB::contact &PnRDB_contact);
 
 //    void getPhsical_metal_via(int i, int j);
 

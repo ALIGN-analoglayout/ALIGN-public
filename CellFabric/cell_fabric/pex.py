@@ -23,8 +23,10 @@ class ParasiticExtraction():
             if self.canvas.rd.layers[layer] == '*':
                 self._compute_via_intersections(layer, vv)
 
-        # Topological sort is not needed since coordinates are already sorted
-        # [ x.sort() for vv in self._terms.values() for x in vv.values() ]
+        # Topological sort of stoppoints
+        for vv in self._terms.values():
+            for x in vv.values():
+                x.sort()
 
         # Create OrderedDict with NodeName -> layer, rect mappings
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
@@ -78,11 +80,13 @@ class ParasiticExtraction():
     def _create_via_netcells(self, net, terminal, layer, rect):
         x = ( rect[0] + rect[2] ) // 2
         y = ( rect[1] + rect[3] ) // 2
+        assert x*2 in self._terms[layer], (x, y, self._terms[layer])
+        assert y in self._terms[layer][x*2], (x, y, self._terms[layer])
         if terminal is None:
             node1 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][0], x, y)
             node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
         elif self.canvas.pdk[layer]['Stack'][0] is None:
-            node1 = f'{terminal[0]}_{terminal[1]}'
+            node1 = f'net_{terminal[0].replace("/", "_")}_{terminal[1]}'
             node2 = self._gen_netcell_node_name(net, self.canvas.pdk[layer]['Stack'][1], x, y)
         else:
             raise NotImplementedError
@@ -170,3 +174,10 @@ class ParasiticExtraction():
                 fp.write( f"{nm} {t0} {t1} {v}f\n")
             else:
                 assert False
+
+        for inst, v in self.canvas.rd.subinsts.items():
+            inst = inst.replace("/", "_")
+            model = v.parameters.pop('model')
+            paramstring = ' '.join(f'{x}={y}' for x, y in v.parameters.items())
+            fp.write( f"{inst}_0 net_{inst}_D net_{inst}_G net_{inst}_diff {'vdd!' if 'PMOS' in model.upper() else 'gnd!'} {model} {paramstring}\n")
+            fp.write( f"{inst}_1 net_{inst}_diff net_{inst}_G net_{inst}_S {'vdd!' if 'PMOS' in model.upper() else 'gnd!'} {model} {paramstring}\n")

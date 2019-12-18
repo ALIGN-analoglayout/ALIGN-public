@@ -38,6 +38,8 @@ x-service: &default-service
   command: /bin/bash -c "ln -sf /general /dataVolume/ ; /usr/bin/tail -f /dev/null"
 #  user: "1000:1000"
   working_dir: /dataVolume
+  security_opt:
+    -  seccomp:unconfined
   volumes:
     - redirectVolume:/dataVolume
     - /etc/apt/apt.conf:/etc/apt/apt.conf
@@ -118,15 +120,6 @@ services:
       context: ${ALIGN_HOME}/
       dockerfile: CellFabric/Dockerfile
     container_name: cellfabric_cont
-
-  protobuf-service:
-    <<: *default-service
-    image: with_protobuf
-    build:
-      <<: *default-build
-      context: ${ALIGN_HOME}/Build
-      dockerfile: Dockerfile.build
-    container_name: protobuf_cont
 
   placeroute-service:
     <<: *default-service

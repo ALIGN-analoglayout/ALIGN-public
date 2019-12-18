@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <assert.h>
 
 bool PnRdatabase::ReadLEF(string leffile) {
   cout<<"PnRDB-Info: reading LEF file "<<leffile<<endl;
@@ -25,11 +26,13 @@ bool PnRdatabase::ReadLEF(string leffile) {
   try {
     fin.open(leffile.c_str());
     int stage=0;
+    bool skip_the_rest_of_stage_4 = false;
     while(fin.peek()!=EOF) {
       getline(fin, def);
       //cout<<def<<endl;
       // [wbxu] This function needs to be updated to support internal metals, currently we're lack of data
       if(stage==0) { // idle mode
+	cout << "stage0.def: " << def << std::endl;
         if((found=def.find("MACRO"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
           macroName=temp[1];
@@ -76,16 +79,21 @@ bool PnRdatabase::ReadLEF(string leffile) {
             //lefData.insert( std::pair<string,PnRDB::lefMacro>(macroName,macroIns) );
           } else {
             lefData[macroIns.master].push_back(macroIns);
-          }
+         }
           //cout<<"Stage "<<stage<<" @ insert macro data"<<endl;
           stage=0;
         } 
       } else if (stage==4) { // within OBS
+	std::cout << "stage4.Def: " << def << std::endl;
         if((found=def.find("LAYER"))!=string::npos) {
+	  skip_the_rest_of_stage_4 = false;
           temp=get_true_word(found,def,0,';',p);
-          if(temp[1].front()!='M') {continue;} // work around for obs on Via layer - wbxu 20190707
-          interMetals.resize(interMetals.size()+1);
-          interMetals.back().metal=temp[1];
+          if (temp[1].front() == 'M') {
+	    interMetals.resize(interMetals.size()+1);
+	    interMetals.back().metal=temp[1];
+	  } else {
+	    skip_the_rest_of_stage_4 = true;
+	  }
         } else if((found=def.find("RECT"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
           int LLx=int(stod(temp[1])*unitScale);
@@ -97,9 +105,12 @@ bool PnRdatabase::ReadLEF(string leffile) {
           oBox.LL=tp;
           tp.x=URx; tp.y=URy;
           oBox.UR=tp;
-          interMetals.back().originBox=oBox;
-          interMetals.back().originCenter.x=(LLx+URx)/2;
-          interMetals.back().originCenter.y=(LLy+URy)/2;
+	  if ( !skip_the_rest_of_stage_4) {
+	    assert( interMetals.size() > 0);
+	    interMetals.back().originBox=oBox;
+	    interMetals.back().originCenter.x=(LLx+URx)/2;
+	    interMetals.back().originCenter.y=(LLy+URy)/2;
+	  }
         } else if((found=def.find(obsEnd))!=string::npos) {
           //cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
           stage=1;
@@ -123,11 +134,13 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } 
       } else if (stage==3) { // within PORT
         if((found=def.find("LAYER"))!=string::npos) {
+          //Metal_Flag = true;
           temp=get_true_word(found,def,0,';',p);
           macroPins.back().pinContacts.resize( macroPins.back().pinContacts.size()+1 );
           macroPins.back().pinContacts.back().metal=temp[1];
           //cout<<"Stage "<<stage<<" @ contact layer "<<macroPins.back().pinContacts.back().metal<<endl;
         } else if((found=def.find("RECT"))!=string::npos) {
+          //Metal_Flag = true;
           temp=get_true_word(found,def,0,';',p);
           int LLx=int(stod(temp[1])*unitScale);
           int LLy=int(stod(temp[2])*unitScale);
@@ -148,13 +161,17 @@ bool PnRdatabase::ReadLEF(string leffile) {
           //cout<<endl<<"Stage "<<stage<<" @ center "<<macroPins.back().pinContacts.back().originCenter.x<<","<<macroPins.back().pinContacts.back().originCenter.y<<endl;
         } else if((found=def.find(portEnd))!=string::npos) {
           //cout<<"Stage "<<stage<<" @ port end "<<portEnd<<endl;
+          if(macroPins.back().pinContacts.size()==0 or macroPins.back().pinContacts.back().metal==""){
+             std::cout<<"Error: LEF Physical Pin information Missing"<<std::endl;
+             assert(0);          
+          }
           stage=2;
         }
       }
     }
     fin.close();
     return true;
-  } catch(ifstream::failure e) {
+  } catch(ifstream::failure& e) {
     cerr<<"PnRDB-Error: fail to read LEF file "<<endl;
   }
   return false;

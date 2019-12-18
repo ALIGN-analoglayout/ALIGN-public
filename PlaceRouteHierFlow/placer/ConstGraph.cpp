@@ -4147,7 +4147,7 @@ void ConstGraph::UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqP
   }
 }
 
-void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel) {
+void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo) {
   vector<vector<placerDB::point> > boundary;
   vector<placerDB::point> center;
   vector<placerDB::point> bbox;
@@ -4155,54 +4155,91 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
 
     int x=HGraph.at(i).position;
     int y=VGraph.at(i).position;
+
+
+    //SMB Hack
+    auto roundup = []( int& v, int pitch) {
+      v = pitch*((v+pitch-1)/pitch);
+    };
+
+    int v_metal_index = -1;
+    int h_metal_index = -1;
+    
+    for(unsigned int i=0;i<drcInfo.Metal_info.size();++i){
+        if(drcInfo.Metal_info[i].direct==0){
+          v_metal_index = i;
+          break;
+        }
+    }
+
+    for(unsigned int i=0;i<drcInfo.Metal_info.size();++i){
+        if(drcInfo.Metal_info[i].direct==1){
+          h_metal_index = i;
+          break;
+        }
+    }
+
+
+    int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+    int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+
+    roundup( x, x_pitch);
+    roundup( y, y_pitch);
+
     placerDB::point LL={x,y};
+
     //placerDB::Omark ort=caseSP.GetBlockOrient(i);
     bbox=caseNL.GetPlacedBlockAbsBoundary(i, ort, LL, sel);
     bpoint=caseNL.GetBlockAbsCenter(i, ort, LL, sel);
     //int sel=node.Blocks.at(i).selectedInstance;
-    node.Blocks.at(i).instance.at(sel).orient=PnRDB::Omark(ort);
-    node.Blocks.at(i).instance.at(sel).placedBox=ConvertBoundaryData(bbox);
-    node.Blocks.at(i).instance.at(sel).placedCenter=ConvertPointData(bpoint);
+    auto& nd = node.Blocks.at(i).instance.at(sel);
+
+    nd.orient=PnRDB::Omark(ort);
+    nd.placedBox=ConvertBoundaryData(bbox);
+    nd.placedCenter=ConvertPointData(bpoint);
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
       //cout<<"  Pin "<<j<<endl;
       boundary=caseNL.GetPlacedBlockPinAbsBoundary(i, j, ort, LL, sel);
       center=caseNL.GetPlacedBlockPinAbsPosition(i, j, ort, LL, sel);
       // [wbxu] Following two lines have be updated for multiple contacts
       // update pin contacts
-      for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.size();k++) {
+      for(unsigned int k=0;k<nd.blockPins.at(j).pinContacts.size();k++) {
         //cout<<"    Pin contact "<<k<<endl;
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.at(k).placedBox=ConvertBoundaryData(boundary.at(k));
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinContacts.at(k).placedCenter=ConvertPointData(center.at(k));
+        nd.blockPins.at(j).pinContacts.at(k).placedBox=ConvertBoundaryData(boundary.at(k));
+        nd.blockPins.at(j).pinContacts.at(k).placedCenter=ConvertPointData(center.at(k));
       }
       // update pin vias
       for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size();k++) {
         //cout<<"    Pin via "<<k<<endl;
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).placedpos=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).originpos, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.originBox, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).LowerMetalRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).LowerMetalRect.originBox, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).ViaRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).ViaRect.originBox, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).UpperMetalRect.originCenter, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).LowerMetalRect.originCenter, LL, sel);
-        node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).ViaRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.at(k).ViaRect.originCenter, LL, sel);
+	auto& pv = nd.blockPins.at(j).pinVias.at(k);
+	pv.placedpos=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.originpos, LL, sel);
+        pv.UpperMetalRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, pv.UpperMetalRect.originBox, LL, sel);
+        pv.LowerMetalRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, pv.LowerMetalRect.originBox, LL, sel);
+        pv.ViaRect.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, pv.ViaRect.originBox, LL, sel);
+        pv.UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.UpperMetalRect.originCenter, LL, sel);
+        pv.LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.LowerMetalRect.originCenter, LL, sel);
+        pv.ViaRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.ViaRect.originCenter, LL, sel);
       }
     }
   // [wbxu] Complete programing: to update internal metals
     // update internal metals
     for(unsigned int j=0;j<node.Blocks.at(i).instance.at(sel).interMetals.size();j++) {
       //cout<<"  IM "<<j<<endl;
-      node.Blocks.at(i).instance.at(sel).interMetals.at(j).placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interMetals.at(j).originBox, LL, sel);
-      node.Blocks.at(i).instance.at(sel).interMetals.at(j).placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interMetals.at(j).originCenter, LL, sel);
+      auto& im = nd.interMetals.at(j);
+      im.placedBox=caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, im.originBox, LL, sel);
+      im.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, im.originCenter, LL, sel);
     }
     // update internal vias
     for(unsigned int j=0;j<node.Blocks.at(i).instance.at(sel).interVias.size();j++) {
       //cout<<"  Internal via "<<j<<endl;
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).placedpos                  =caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).originpos,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.placedBox   =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.originBox,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).LowerMetalRect.placedBox   =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).LowerMetalRect.originBox,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).ViaRect.placedBox          =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).ViaRect.originBox,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).UpperMetalRect.originCenter,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).LowerMetalRect.originCenter,LL,sel);
-      node.Blocks.at(i).instance.at(sel).interVias.at(j).ViaRect.placedCenter       =caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, node.Blocks.at(i).instance.at(sel).interVias.at(j).ViaRect.originCenter,LL,sel);
+      auto& iv = nd.interVias.at(j);
+      iv.placedpos                  =caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.originpos,LL,sel);
+      iv.UpperMetalRect.placedBox   =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, iv.UpperMetalRect.originBox,LL,sel);
+      iv.LowerMetalRect.placedBox   =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, iv.LowerMetalRect.originBox,LL,sel);
+      iv.ViaRect.placedBox          =caseNL.GetPlacedBlockInterMetalAbsBox(i, ort, iv.ViaRect.originBox,LL,sel);
+      iv.UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.UpperMetalRect.originCenter,LL,sel);
+      iv.LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.LowerMetalRect.originCenter,LL,sel);
+      iv.ViaRect.placedCenter       =caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter,LL,sel);
     }
 }
 
@@ -4255,7 +4292,7 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
   }
 }
 
-void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node) {
+void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   //vector<vector<placerDB::point> > boundary;
   //vector<placerDB::point> center;
   //vector<placerDB::point> bbox;
@@ -4268,7 +4305,7 @@ void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNod
     node.Blocks.at(i).selectedInstance=caseAP.GetSelectedInstance(i);
     //placerDB::Omark ort=caseSP.GetBlockOrient(i);
     //cout<<"Blocks "<<i<<endl;
-    UpdateBlockinHierNode(caseNL, caseAP.GetBlockOrient(i), node, i, caseAP.GetSelectedInstance(i));
+    UpdateBlockinHierNode(caseNL, caseAP.GetBlockOrient(i), node, i, caseAP.GetSelectedInstance(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);
@@ -4299,7 +4336,7 @@ void ConstGraph::UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, in
   }
 }
 
-void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node) {
+void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
   //vector<vector<placerDB::point> > boundary;
   //vector<placerDB::point> center;
   //vector<placerDB::point> bbox;
@@ -4312,7 +4349,7 @@ void ConstGraph::UpdateHierNode(design& caseNL, SeqPair& caseSP, PnRDB::hierNode
     node.Blocks.at(i).selectedInstance=caseSP.GetBlockSelected(i);
     //placerDB::Omark ort=caseSP.GetBlockOrient(i);
     //cout<<"Blocks "<<i<<endl;
-    UpdateBlockinHierNode(caseNL, caseSP.GetBlockOrient(i), node, i, caseSP.GetBlockSelected(i));
+    UpdateBlockinHierNode(caseNL, caseSP.GetBlockOrient(i), node, i, caseSP.GetBlockSelected(i), drcInfo);
   }
   // [wbxu] Complete programing: to update terminal for top-level
   UpdateTerminalinHierNode(caseNL, node);

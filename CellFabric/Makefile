@@ -2,8 +2,8 @@
 
 INPUT=/dataVolume/topology_output/Results
 
-LOC_GENERATOR=Cell_Fabric_FinFET__Mock
-CELL_GENERATOR=/CellFabric/$(LOC_GENERATOR)
+LOC_GENERATOR=FinFET14nm_Mock_PDK
+CELL_GENERATOR=/PDK_Abstraction/$(LOC_GENERATOR)
 # Run the generator script
 
 ${DESIGN}.map:	${DESIGN}.lef
@@ -13,7 +13,7 @@ ${DESIGN}.lef:	${INPUT}/${DESIGN}_lef.sh  ../PDK_Abstraction $(LOC_GENERATOR)
 	chmod u+x $<
 	(cd ${LOC_GENERATOR}; rm -f *.lef; $< python3; cat *.lef > ${DESIGN}.lef)
 	mv ${LOC_GENERATOR}/${DESIGN}.lef .
-	mv ${LOC_GENERATOR}/*gds.json .
+	mv ${LOC_GENERATOR}/*.json .
 
 ../PDK_Abstraction:	$(TOP)/PDK_Abstraction
 	ln -s $< $@

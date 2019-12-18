@@ -27,6 +27,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
         new_node += '_' + node
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
+                          real_inst_type=G.nodes[node]["real_inst_type"],
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=merged_value({},G.nodes[node]['values']))
@@ -51,6 +52,11 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                 ports[ele] = G[node][ele]["weight"]
 
         #G.add_edge(new_node,ele,weight=wt)
+    models = {G.nodes[node]["real_inst_type"] for node in argv}
+    if '' in models:
+        models.remove('')
+    if len(models) == 1:
+        max_value['model'] = models.pop()
     new_node = new_node[1:]
     G.add_node(new_node,
                inst_type=hier_type,

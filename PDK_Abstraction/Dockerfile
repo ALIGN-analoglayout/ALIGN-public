@@ -1,4 +1,4 @@
-FROM stevenmburns/pysat_image:2019mar14 as pdk_image
+FROM cellfabric_image:1.0 as pdk_image
 
 COPY . /src/
 

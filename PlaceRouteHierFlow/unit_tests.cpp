@@ -42,8 +42,10 @@ static void generic_router_test( const string& topcell, const string& tag, int m
 
   EXPECT_EQ( current_node.name, topcell);
 
+  double rate = 0.1;
+
   Router curr_route;
-  curr_route.RouteWork( mode0, current_node, const_cast<PnRDB::Drc_info&>(drc_info), mode1, mode2, binary_directory);
+  curr_route.RouteWork( mode0, current_node, const_cast<PnRDB::Drc_info&>(drc_info), mode1, mode2, binary_directory, rate);
 
   PnRDB::hierNode post_current_node;
   DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_" + tag + ".db.json");
@@ -64,14 +66,14 @@ static void generic_placer_test( const string& topcell)
   string opath = "cand/";
 
   PnRdatabase DB("gold", topcell, "", "", "", dfile);
-
+  PnRDB::Drc_info drc_info=DB.getDrc_info();
   PnRDB::hierNode current_node;
   DB.ReadDBJSON( current_node, "gold/" + topcell + ".pre_pl.db.json");
 
   EXPECT_EQ( current_node.name, topcell);
 
   std::vector<PnRDB::hierNode> nodeVec(1, current_node);
-  Placer curr_plc( nodeVec, opath, 0);
+  Placer curr_plc( nodeVec, opath, 0, drc_info);
 
   PnRDB::hierNode post_current_node;
   DB.ReadDBJSON( post_current_node, "gold/" + topcell + "_0.post_pl.db.json");
@@ -99,7 +101,7 @@ static void generic_placer_router_cap_test( const string& topcell)
   EXPECT_EQ( current_node.name, topcell);
 
   DB.AddingPowerPins(current_node);
-  Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 1, 6); //dummy, aspect ratio, number of aspect retio
+  Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
 
   DB.WriteDBJSON( current_node, "cand/" + topcell + ".post_prc" + ".db.json");
 

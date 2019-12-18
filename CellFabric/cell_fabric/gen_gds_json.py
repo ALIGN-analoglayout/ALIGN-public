@@ -3,6 +3,9 @@ import re
 import json
 import datetime
 
+import logging
+logger = logging.getLogger(__name__)
+
 def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tbl, timestamp=None):
 
   def flat_rect_to_boundary( r):
@@ -48,7 +51,7 @@ def translate_data( macro_name, exclude_pattern, data, gds_layer_tbl, via_gen_tb
 
     result = x*4
     if type(result) == float:
-      print(f"-W- gen_gds_json:translate_data:scale: Coord {x} ({result}) not integral")
+      logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
       intresult = int(round(result,0))
       assert abs(intresult-result) < 0.001
       return intresult

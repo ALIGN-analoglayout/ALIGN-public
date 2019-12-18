@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include <utility>
-#include "../router/Rdatatype.h"
+//#include "../router/Rdatatype.h"
 using std::vector;
 using std::string;
 using std::map;
@@ -52,10 +52,105 @@ enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 struct point {
   int x=0;
   int y=0;
+  
+  point () : x(0), y(0) {}
+  point (int ix, int iy) : x(ix), y(iy) {}
+
+  point operator + (const point& other) const { return point (x + other.x, y + other.y); }
+  point operator - (const point& other) const { return point (x - other.x, y - other.y); }
+  point& operator += (const point& other) { x += other.x; y += other.y; return *this; }
+  point& operator -= (const point& other) { x -= other.x; y -= other.y; return *this; }
+  
+  bool operator == (const point& other) const { return x == other.x and y == other.y; }
+  point scale (const int scx, const int scy) const { return point (x * scx, y * scy); }
+  // DAK: We may want to remove these modifying operators:
+  //  Danger: they always gets invoked first (over const version) unless object is const
+  point& scale (const int scx, const int scy) { x *= scx; y *= scy; return *this; }
+  // Same as scale
+  point int_scale_up (const int scx, const int scy) const { return point (x * scx, y * scy); }
+  point& int_scale_up (const int scx, const int scy) { x *= scx; y *= scy; return *this; }
+  // Scale by a vector
+  point scale (const point& sc) const { return point (x * sc.x, y * sc.y); }
+  point& scale (const point& sc) { x *= sc.x; y *= sc.y; return *this; }
+  // Divide versions
+  point int_scale_down (const int scx, const int scy) const { return point (x / scx, y / scy); }
+  point& int_scale_down (const int scx, const int scy) { x /= scx; y /= scy; return *this; }
+  
+  //  point operator * (const double sc) const { return scale(sc, sc); }
+  point operator * (const int sc) const { return scale(sc, sc); }
+  point& operator *= (const int sc) { return scale(sc, sc); }
+  //  point& operator *= (const double sc) { return scale(sc, sc); }
+  point operator / (const double sc) const { return int_scale_down (sc, sc); }
+  point& operator /= (const double sc) { return int_scale_down (sc, sc); }
+
 }; // structure of integer coordinate
 
 struct bbox {
   point LL,UR;
+  
+  bbox () : LL(), UR() {}
+  bbox (int llx, int lly, int urx, int ury) : LL(llx, lly), UR(urx, ury) {}
+  bbox (const PnRDB::bbox& other) : LL(other.LL), UR(other.UR) {}
+  bbox (const PnRDB::point& ill, const PnRDB::point& iur) : LL(ill), UR(iur) {}
+
+  // Construct a box representing a dimension
+  bbox (const PnRDB::point& dim) : LL(0,0), UR(dim) {}
+  
+  int width () const { return UR.x - LL.x; }
+  int height () const { return UR.y - LL.y; }
+  point center () const { return point ((LL.x + UR.x)/2, (LL.y + UR.y)/2); }
+  bbox shift (const PnRDB::point& p) const { return bbox (LL + p, UR + p); }
+  bbox& shift (const PnRDB::point& p) { LL += p; UR += p; return *this; }
+  bbox operator + (const PnRDB::point& p) const { return shift (p); }
+  bbox& operator += (const PnRDB::point& p) { return shift (p); }
+  bbox scale (const int scx, const int scy) const { return bbox (LL * scx, UR * scy); }
+  bbox& scale (const int scx, const int scy) { LL *= scx; UR *= scy; return *this; }
+  /* bbox scale (const double scx, const double scy) const { return bbox (LL * scx, UR * scy); } */
+  /* bbox& scale (const double scx, const double scy) { LL *= scx; UR *= scy; return *this; } */
+  //  bbox operator * (const double sc) const { return scale(sc, sc); }
+  //  bbox& operator *= (const int sc) { return scale(sc, sc); }
+  bbox operator * (const int sc) const { return scale(sc, sc); }
+  bbox& operator *= (const double sc) { return scale(sc, sc); }
+  
+  bbox int_scale_up (const int scx, const int scy) const { return bbox (LL * scx, UR * scy); }
+  bbox& int_scale_up (const int scx, const int scy) { LL *= scx; UR *= scy; return *this; }
+  bbox int_scale_dn (const int scx, const int scy) const { return bbox (LL / scx, UR / scy); }
+  bbox& int_scale_dn (const int scx, const int scy) { LL /= scx; UR /= scy; return *this; }
+  bbox operator / (const int sc) const { return int_scale_dn(sc, sc); }
+  bbox& operator / (const int sc) { return int_scale_dn(sc, sc); }
+
+  bbox bloat (int bx, int by) const { return bbox (LL.x - bx, LL.y - by, UR.x + bx, UR.y + by); }
+
+  bool intersectP (const PnRDB::bbox& other) const {
+    return ((LL.x <= other.UR.x) && (other.LL.x <= UR.x) &&
+	    (LL.y <= other.UR.y) && (other.LL.y <= UR.y));
+   }
+  bbox intersectBox (const PnRDB::bbox& other) const {
+    bbox out;
+    out.LL.x = (LL.x > other.LL.x) ? LL.x : other.LL.x;
+    if ((LL.x > other.UR.x) || (other.LL.x > UR.x)) out.LL.x = -1;
+    out.LL.y = (LL.y > other.LL.y) ? LL.y : other.LL.y;
+    if ((LL.y > other.UR.y) || (other.LL.y > UR.y)) out.LL.y = -1;
+    //
+    out.UR.x = (UR.x < other.UR.x) ? UR.x : other.UR.x;
+    if ((LL.x > other.UR.x) || (other.LL.x > UR.x)) out.UR.x = -1;
+    out.UR.y = (UR.y < other.UR.y) ? UR.y : other.UR.y;
+    if ((LL.y > other.UR.y) || (other.LL.y > UR.y)) out.UR.y = -1;
+    return out;
+  }
+  bool containsP (const PnRDB::bbox& other) const {
+    return ((LL.x <= other.LL.x) && (other.UR.x <= UR.x) &&
+	    (LL.y <= other.LL.y) && (other.UR.y <= UR.y));
+   }
+  bbox unionBox (const PnRDB::bbox& other) const {
+    bbox rt;
+    rt.LL.x = (LL.x < other.LL.x ? LL.x : other.LL.x);
+    rt.LL.y = (LL.y < other.LL.y ? LL.y : other.LL.y);
+    rt.UR.x = (UR.x > other.UR.x ? UR.x : other.UR.x);
+    rt.UR.y = (UR.y > other.UR.y ? UR.y : other.UR.y);
+    return rt;
+  }
+
 }; // structure of boundary box, assum rectangle
 
 struct contact {
@@ -64,7 +159,33 @@ struct contact {
   bbox placedBox;
   point originCenter;
   point placedCenter;
+  contact () : metal(""), originBox(), placedBox(), originCenter(), placedCenter() {}
+  contact (const PnRDB::contact& other) :  metal (other.metal),
+    originBox (other.originBox),
+    placedBox (other.placedBox),
+    originCenter (other.originCenter),
+    placedCenter (other.placedCenter) {}
+
 }; // structure of contact
+
+struct tileEdge{
+  int next;
+  int capacity;
+};
+
+struct tile{
+  int x=-1;
+  int y=-1;
+  int width;
+  int height;
+  std::vector<int> metal;
+  int tileLayer=-1;
+  int index=-1;
+  int Yidx=-1;
+  int Xidx=-1;
+  std::vector<tileEdge> north,south,east,west,down,up;
+  //int power; // i is vdd, 0 is gnd;
+};
 
 struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
@@ -208,7 +329,7 @@ struct hierNode {
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
-  vector<RouterDB::tile> tiles_total;
+  vector<tile> tiles_total;
   vector<net> Nets;
   vector<terminal> Terminals;
 
@@ -238,6 +359,8 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
+  vector<R_const> R_Constraints;
+  vector<C_const> C_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
 
@@ -309,6 +432,29 @@ struct CCCap {
   bool cap_ratio = 0;
   int cap_r = -1;
   int cap_s = -1;
+  bool dummy_flag = 1;
+};
+
+struct R_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> R;
+
+};
+
+struct C_const {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
+  std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
+  vector<double> C;
+
 };
 
 struct R_const {

@@ -1,0 +1,522 @@
+{
+"_comment":"The rules defined in this file are discussed in FinFET_MOCK_PDK.ppt",
+
+"Abstraction": [
+{
+"Layer": "Poly",
+"LayerNo": 1,
+"Direction": "V",
+"Pitch": 80,
+"Width": 14,
+"MinL": 60,
+"MaxL": null,
+"EndToEnd": null,
+"Offset": 40,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "Fin",
+"LayerNo": 3,
+"Direction": "H",
+"Pitch": 42,
+"Width": 10,
+"MinL": 100,
+"MaxL": null,
+"EndToEnd": null,
+"Offset": 0
+},
+
+{
+"Layer": "M1",
+"LayerNo": 13,
+"Direction": "V",
+"Color": ["c1", "c2"],
+"Pitch": 80,
+"Width": 32,
+"MinL": 180,
+"MaxL": null,
+"EndToEnd": 48,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+
+{
+    "Layer": "V0",
+    "LayerNo": 12,
+    "Stack": [null, "M1"],
+    "SpaceX": 76,
+    "SpaceY": 76,
+    "WidthX": 32,
+    "WidthY": 32,
+    "VencA_L": 20,
+    "VencA_H": 20,
+    "VencP_L": 0,
+    "VencP_H": 0,
+    "MinNo":1,
+    "R": 50
+    },
+
+{
+"Layer": "M2",
+"LayerNo": 15,
+"Direction": "H",
+"Color": ["c2", "c1"],
+"Pitch": 84,
+"Width": 32,
+"MinL": 200,
+"MaxL": null,
+"EndToEnd": 48,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 60
+},
+
+{
+"Layer": "V1",
+"LayerNo": 14,
+"Stack": ["M1", "M2"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 32,
+"WidthY": 32,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo":1,
+"R": 50
+},
+
+{
+"Layer": "M3",
+"LayerNo": 19,
+"Direction": "V",
+"Color": ["c1", "c2"],
+"Pitch": 80,
+"Width": 40,
+"MinL": 210,
+"MaxL": null,
+"EndToEnd": 48,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 40
+},
+
+{
+"Layer": "V2",
+"LayerNo": 16,
+"Stack": ["M2", "M3"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 32,
+"WidthY": 32,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 4,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M4",
+"LayerNo": 21,
+"Direction": "H",
+"Color": [],
+"Pitch": 84,
+"Width": 40,
+"MinL": 140,
+"MaxL": null,
+"EndToEnd": 65,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 30
+},
+
+{
+"Layer": "V3",
+"LayerNo": 17,
+"Stack": ["M3", "M4"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 40,
+"WidthY": 40,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M5",
+"LayerNo": 23,
+"Direction": "V",
+"Color": [],
+"Pitch": 144,
+"Width": 64,
+"MinL": 100,
+"MaxL": null,
+"EndToEnd": 65,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 20
+},
+
+{
+"Layer": "V4",
+"LayerNo": 22,
+"Stack": ["M4", "M5"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 40,
+"WidthY": 40,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 12,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M6",
+"LayerNo": 25,
+"Direction": "H",
+"Color": [],
+"Pitch": 144,
+"Width": 64,
+"MinL": 360,
+"MaxL": null,
+"EndToEnd": 70,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 20
+},
+
+{
+"Layer": "V5",
+"LayerNo": 24,
+"Stack": ["M5", "M6"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 64,
+"WidthY": 64,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M7",
+"LayerNo": 27,
+"Direction": "V",
+"Color": [],
+"Pitch": 144,
+"Width": 64,
+"MinL": 360,
+"MaxL": null,
+"EndToEnd": 70,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V6",
+"LayerNo": 26,
+"Stack": ["M6", "M7"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 64,
+"WidthY": 64,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M8",
+"LayerNo": 29,
+"Direction": "H",
+"Color": [],
+"Pitch": 144,
+"Width": 64,
+"MinL": 360,
+"MaxL": null,
+"EndToEnd": 70,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 20
+},
+
+{
+"Layer": "V7",
+"LayerNo": 28,
+"Stack": ["M7", "M8"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 64,
+"WidthY": 64,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M9",
+"LayerNo": 31,
+"Direction": "V",
+"Color": [],
+"Pitch": 256,
+"Width": 128,
+"MinL": 200,
+"MaxL": null,
+"EndToEnd": 70,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 20
+},
+
+{
+"Layer": "V8",
+"LayerNo": 30,
+"Stack": ["M8", "M9"],
+"SpaceX": 76,
+"SpaceY": 76,
+"WidthX": 64,
+"WidthY": 64,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 32,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M10",
+"LayerNo": 55,
+"Direction": "H",
+"Color": [],
+"Pitch": 256,
+"Width": 128,
+"MinL": 500,
+"MaxL": null,
+"EndToEnd": 128,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V9",
+"LayerNo": 32,
+"Stack": ["M9", "M10"],
+"SpaceX": 200,
+"SpaceY": 200,
+"WidthX": 128,
+"WidthY": 128,
+"VencA_L": 40,
+"VencA_H": 40,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M11",
+"LayerNo": 60,
+"Direction": "V",
+"Color": [],
+"Pitch": 512,
+"Width": 256,
+"MinL": 260,
+"MaxL": null,
+"EndToEnd": 128,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V10",
+"LayerNo": 62,
+"Stack": ["M10", "M11"],
+"SpaceX": 200,
+"SpaceY": 200,
+"WidthX": 128,
+"WidthY": 128,
+"VencA_L": 40,
+"VencA_H": 40,
+"VencP_L": 0,
+"VencP_H": 64,
+"MinNo":1,
+"R": 50
+},
+
+{
+"Layer": "M12",
+"LayerNo": 65,
+"Direction": "H",
+"Color": [],
+"Pitch": 512,
+"Width": 256,
+"MinL": 1200,
+"MaxL": null,
+"EndToEnd":280,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V11",
+"LayerNo": 68,
+"Stack": ["M11", "M12"],
+"SpaceX": 360,
+"SpaceY": 360,
+"WidthX": 256,
+"WidthY": 256,
+"VencA_L": 60,
+"VencA_H": 60,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M13",
+"LayerNo": 70,
+"Direction": "V",
+"Color": [],
+"Pitch": 2400,
+"Width": 1200,
+"MinL": 400,
+"MaxL": null,
+"EndToEnd": 280,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V12",
+"LayerNo": 72,
+"Stack": ["M12", "M13"],
+"SpaceX": 360,
+"SpaceY": 360,
+"WidthX": 256,
+"WidthY": 256,
+"VencA_L": 60,
+"VencA_H": 60,
+"VencP_L": 0,
+"VencP_H": 472,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M14",
+"LayerNo": 75,
+"Direction": "H",
+"Color": [],
+"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
+"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
+"MinL": 1400,
+"MaxL": null,
+"EndToEnd": 1200,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V13",
+"LayerNo": 80,
+"Stack": ["M13", "M14"],
+"SpaceX": 1200,
+"SpaceY": 1200,
+"WidthX": 1200,
+"WidthY": 1200,
+"VencA_L": 100,
+"VencA_H": 100,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M15",
+"LayerNo": 78,
+"Direction": "V",
+"Color": [],
+"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
+"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
+"MinL": 1400,
+"MaxL": null,
+"EndToEnd": 1200,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "V14",
+"LayerNo": 85,
+"Stack": ["M14", "M15"],
+"SpaceX": 1200,
+"SpaceY": 1200,
+"WidthX": 1200,
+"WidthY": 1200,
+"VencA_L": 100,
+"VencA_H": 100,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "Feol",
+"m0Pitch": 80,
+"m0Width": 34,
+"PcWidth": 32,
+"PcExt": 2,
+"LISDWidth": 40,
+"dcWidth": 200,
+"v_enclosure": 20,
+"active_enclosure": 42,
+"plActive_s": 71
+},
+
+{
+"Layer": "Cap",
+"m1Pitch": 64,
+"m2Pitch": 64,
+"m3Pitch": 64,
+"m1Width": 32,
+"m2Width": 32,
+"m3Width": 32
+}
+
+
+]
+}

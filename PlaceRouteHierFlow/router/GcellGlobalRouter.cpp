@@ -11,6 +11,7 @@ extern "C"
 
 
 
+
 GcellGlobalRouter::GcellGlobalRouter(){
 
 };
@@ -22,7 +23,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
   if(node.isIntelGcellGlobalRouter == false){
-     placeTerminals();
+    placeTerminals();
   }
   std::cout<<"Test 2"<<std::endl;
 
@@ -43,9 +44,12 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
 
 
+
   int tileLayerNo = Hmetal-Lmetal + 1;
   if(node.isIntelGcellGlobalRouter == true){
+    //SMB Override for Intel router
      tileLayerNo = 1;
+     tile_size = 10;
   }
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   std::cout<<"Test 3"<<std::endl;
@@ -68,7 +72,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout<<"Test 10"<<std::endl;
   Gcell.SetNetSink(Blocks, Nets, Terminals);
   //Gcell.CreateGridDataNCap();
-  //Gcell.CreateGridDataCap();
+  //Gcell.CreateGridDataCap(true);
 
   for(unsigned int i=0;i<Nets.size();++i){
      //for(int j=0;j<Nets[i].connectedTile.size();++j){
@@ -104,6 +108,23 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      GGgraph.clearPath();
      std::cout<<"Net index "<<i<<std::endl;
      std::cout<<"Net terminals size "<<Nets[i].terminals.size()<<std::endl;
+
+     for(int j=0;j<Nets[i].connectedTile.size();j++){
+        if(Nets[i].connectedTile[j].size()==0){
+           //std::cout<<"Nets[i].connectedTile[j] "<<i<<" "<<j<<" size is 0"<<std::endl;
+           std::cout<<"Format Issue "<<std::endl;
+           std::cout<<"Please check the net "<<Nets[i].netName<<" in module "<<node.name<<std::endl;
+           int iter = Nets[i].connected[j].iter;
+           int iter2 = Nets[i].connected[j].iter2;
+           if(Nets[i].connected[j].type==RouterDB::BLOCK){
+             std::cout<<"Especial the pin "<< Blocks[iter2].pins[iter].pinName<<" in subblock "<<Blocks[iter2].blockName<<std::endl;
+           }else{
+             std::cout<<"Especial the terminal "<<Terminals[iter].name<<std::endl;
+           }
+           assert(0);}
+     }
+
+
      GGgraph.setterminals(Nets[i].terminals);
      GGgraph.setTerminals(Nets[i].connectedTile);
      
@@ -585,7 +606,6 @@ long int GcellGlobalRouter::get_number(string str)
 };
 
 
-
 void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   std::cout<<"Router-Info: begin to import data"<<std::endl;
@@ -604,8 +624,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   highest_metal = Hmetal;
 
 
-  //grid_alpha should be adjusted according to the size of node
-  //more adjust is necessry for detail router?
+
   if(max_height*max_width<=100000000){
      grid_scale = 1;
     }else{
@@ -619,21 +638,11 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       if(isTop) {
       for(unsigned int j=0;j<node.Terminals[i].termContacts.size();++j){
           RouterDB::contact temp_contact;
-          //cout<<node.Terminals[i].termContacts[j].metal<<endl;
-          //if(drc_info.Metalmap.find(node.Terminals[i].termContacts[j].metal)!=drc_info.Metalmap.end()){
-          //  temp_contact.metal = drc_info.Metalmap[node.Terminals[i].termContacts[j].metal];
-            // wbxu: Terminals in hierNode only has placedCenter field
-            //temp_contact.placedLL.x =node.Terminals[i].termContacts[j].placedBox.LL.x; 
-            //temp_contact.placedLL.y =node.Terminals[i].termContacts[j].placedBox.LL.y;           
-            //temp_contact.placedUR.x =node.Terminals[i].termContacts[j].placedBox.UR.x; 
-            //temp_contact.placedUR.y =node.Terminals[i].termContacts[j].placedBox.UR.y; 
+ 
             temp_contact.placedCenter.x =node.Terminals[i].termContacts[j].placedCenter.x;
             temp_contact.placedCenter.y =node.Terminals[i].termContacts[j].placedCenter.y;
             temp_contact.metal = -1;
-            temp_terminal.termContacts.push_back(temp_contact);
-          //}else{
-          //  std::cout<<"Router-Error: incorrect metal for contact - from node to router"<<std::endl;
-          //}			
+            temp_terminal.termContacts.push_back(temp_contact);			
       }
       }
       temp_terminal.name=node.Terminals[i].name;
@@ -641,13 +650,9 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   }
 
   int temp_type; 
-  //For nets	
-  //need modify with power router.... here the method is just remove the single terminal, but not vdd/gnd
-  //wbxu: pay attention to dangling nets and power nets
   for(unsigned int i=0;i<node.Nets.size();++i){	
       RouterDB::Net temp_net;		
-      //if(node.Nets[i].connected.size()!=1){
-         //temp_net.isTerminal=0;	
+	
          temp_net.degree=node.Nets[i].degree;
          temp_net.netName=node.Nets[i].name;
          temp_net.shielding=node.Nets[i].shielding;
@@ -662,15 +667,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
              temp_net.sym_H = 0;
             }        
          temp_net.center = node.Nets[i].axis_coor;
-         /*
-         if(temp_net.symCounterpart!=-1){
-            if(i < temp_net.symCounterpart){
-               symnet_idx.push_back(temp_net.symCounterpart);
-              }else{
-               symnet_idx.push_back(i);
-              }
-           }  // wbxu? symnet_idx undefined
-          */
+
 
           for(unsigned int j=0;j<node.Nets[i].connected.size();++j){
               RouterDB::connectNode temp_connectNode;
@@ -689,11 +686,35 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                temp_net.connected.push_back(temp_connectNode);
               }
           Nets.push_back(temp_net);		
-       //}else{
-       // cout<<"Remove one connection terminal"<<endl;
-       //}	
-     }
 	
+     }
+
+  //For RC const
+  for(unsigned int i=0;i<node.R_Constraints.size();++i){
+     for(unsigned int j=0;j<Nets.size();++j){
+        if(node.R_Constraints[i].net_name==Nets[j].netName){
+           RouterDB::R_const temp_const;
+           temp_const.start_pin = node.R_Constraints[i].start_pin;
+           temp_const.end_pin = node.R_Constraints[i].end_pin;
+           temp_const.R = node.R_Constraints[i].R;
+           Nets[j].R_constraints.push_back(temp_const);
+          }
+     }
+  }
+
+  for(unsigned int i=0;i<node.C_Constraints.size();++i){
+     for(unsigned int j=0;j<Nets.size();++j){
+        if(node.C_Constraints[i].net_name==Nets[j].netName){
+           RouterDB::C_const temp_const;
+           temp_const.start_pin = node.C_Constraints[i].start_pin;
+           temp_const.end_pin = node.C_Constraints[i].end_pin;
+           temp_const.C = node.C_Constraints[i].C;
+           Nets[j].C_constraints.push_back(temp_const);
+          }
+     }
+  }
+  
+
   //For blocks	
   for(unsigned int i=0;i<node.Blocks.size();++i){
       RouterDB::Block temp_block;
@@ -711,10 +732,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       temp_block.placedLL.y=node.Blocks[i].instance[slcNumber].placedBox.LL.y;
       temp_block.placedUR.x=node.Blocks[i].instance[slcNumber].placedBox.UR.x;
       temp_block.placedUR.y=node.Blocks[i].instance[slcNumber].placedBox.UR.y;
-      //temp_block.originLL.x=node.Blocks[i].instance.originBox.LL.x;
-      //temp_block.originLL.y=node.Blocks[i].instance.originBox.LL.y;
-      //temp_block.originUR.x=node.Blocks[i].instance.originBox.UR.x;
-      //temp_block.originUR.y=node.Blocks[i].instance.originBox.UR.y;
+
 
       for(unsigned int j=0;j<node.Blocks[i].instance[slcNumber].blockPins.size();++j){
           RouterDB::Pin temp_pin;
@@ -727,12 +745,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                }else{
                  std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
                }
-             temp_contact.placedLL.x=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedBox.LL.x;
-             temp_contact.placedLL.y=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedBox.LL.y;
-             temp_contact.placedUR.x=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedBox.UR.x;
-             temp_contact.placedUR.y=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedBox.UR.y;
-             temp_contact.placedCenter.x=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedCenter.x;
-             temp_contact.placedCenter.y=node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k].placedCenter.y;
+             AssignContact(temp_contact, node.Blocks[i].instance[slcNumber].blockPins[j].pinContacts[k]);
              temp_pin.pinContacts.push_back(temp_contact);
              }
           
@@ -749,37 +762,21 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                  }else{
                    std::cout<<"Router-Error: - Viamap Error"<<std::endl;
                  }
-               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedBox.LL.x;
-               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedBox.LL.y;
-               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedBox.UR.x;
-               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedBox.UR.y;
-               temp_via.ViaRect.placedCenter.x=node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedCenter.x;
-               temp_via.ViaRect.placedCenter.y=node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect.placedCenter.y;
+               AssignContact(temp_via.ViaRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].ViaRect);
                //LowerRect //LowerMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.x;
-               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedBox.LL.y;
-               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.x;
-               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedBox.UR.y;
-               temp_via.LowerMetalRect.placedCenter.x=node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedCenter.x;
-               temp_via.LowerMetalRect.placedCenter.y=node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect.placedCenter.y;
+               AssignContact(temp_via.LowerMetalRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].LowerMetalRect);
                //UpperRect //UpperMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.x;
-               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedBox.LL.y;
-               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.x;
-               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedBox.UR.y;
-               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedCenter.x;
-               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect.placedCenter.y;
-
+               AssignContact(temp_via.UpperMetalRect, node.Blocks[i].instance[slcNumber].blockPins[j].pinVias[k].UpperMetalRect);
                temp_pin.pinVias.push_back(temp_via);
              }
 
@@ -816,292 +813,42 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                  }else{
                    std::cout<<"Router-Error: - Viamap Error"<<std::endl;
                  }
-               temp_via.ViaRect.placedLL.x = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedBox.LL.x;
-               temp_via.ViaRect.placedLL.y = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedBox.LL.y;
-               temp_via.ViaRect.placedUR.x = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedBox.UR.x;
-               temp_via.ViaRect.placedUR.y = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedBox.UR.y;
-               temp_via.ViaRect.placedCenter.x = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedCenter.x;
-               temp_via.ViaRect.placedCenter.y = node.Blocks[i].instance[slcNumber].interVias[j].ViaRect.placedCenter.y;
+               AssignContact(temp_via.ViaRect, node.Blocks[i].instance[slcNumber].interVias[j].ViaRect);
                //LowerRect //LowerMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.LowerMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.LowerMetalRect.placedLL.x = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedBox.LL.x;
-               temp_via.LowerMetalRect.placedLL.y = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedBox.LL.y;
-               temp_via.LowerMetalRect.placedUR.x = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedBox.UR.x;
-               temp_via.LowerMetalRect.placedUR.y = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedBox.UR.y;
-               temp_via.LowerMetalRect.placedCenter.x = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedCenter.x;
-               temp_via.LowerMetalRect.placedCenter.y = node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect.placedCenter.y;
+               AssignContact(temp_via.LowerMetalRect, node.Blocks[i].instance[slcNumber].interVias[j].LowerMetalRect);
                //UpperRect //UpperMetalRect
                if(drc_info.Metalmap.find(node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
                   temp_via.UpperMetalRect.metal = drc_info.Metalmap[node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.metal];
                }else{
                   std::cout<<"Router-Error: Metal map error"<<std::endl;
                }
-               temp_via.UpperMetalRect.placedLL.x = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedBox.LL.x;
-               temp_via.UpperMetalRect.placedLL.y = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedBox.LL.y;
-               temp_via.UpperMetalRect.placedUR.x = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedBox.UR.x;
-               temp_via.UpperMetalRect.placedUR.y = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedBox.UR.y;       
-               temp_via.UpperMetalRect.placedCenter.x = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedCenter.x;
-               temp_via.UpperMetalRect.placedCenter.y = node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect.placedCenter.y;
+               AssignContact(temp_via.UpperMetalRect, node.Blocks[i].instance[slcNumber].interVias[j].UpperMetalRect);
 
        temp_block.InternalVia.push_back(temp_via);
       }
    Blocks.push_back(temp_block);
   }
 
-  //getPowerGridData(node);
-  //getPowerNetData(node);
-
   std::cout<<"Router-Info: complete importing data"<<std::endl;
 };
 
-/*
-void GlobelRouter::getPowerNetData(PnRDB::hierNode& node){
-	
-  //For power net
 
-  for(int i=0;i<node.PowerNets.size();++i){
-      RouterDB::PowerNet temp_net;
-      temp_net.netName = node.PowerNets[i].name;
-      //temp_net.shielding = node.Nets[i].shielding;
-      temp_net.power = node.PowerNets[i].power;
-      //path_metal
-      for(int j=0;j<node.PowerNets[i].path_metal.size();++j){
-          RouterDB::Metal temp_metal;
-          ConvertMetal(temp_metal, node.PowerNets[i].path_metal[j]);
-          temp_net.path_metal.push_back(temp_metal);          
-         }
-      
-      //path via
-      for(int j=0;j<node.PowerNets[i].path_via.size();++j){
-          RouterDB::Via temp_via;
-          ConvertVia(temp_via,node.PowerNets[i].path_via[j]);
-          temp_net.path_via.push_back(temp_via);          
+void GcellGlobalRouter::AssignContact(RouterDB::contact &RouterDB_contact, PnRDB::contact &PnRDB_contact){
 
-         }
-
-      //pins
-
-      for(int j=0;j<node.PowerNets[i].Pins.size();++j){
-          RouterDB::Pin temp_pin;
-          ConvertPin(temp_pim, node.PowerNets[i].Pins[j]);
-          temp_net.pins.push_back(temp_pin);
-      }
-      
-
-      PowerNets.push_back(temp_net);
-     
-     }
-};
-
-void GlobalRouter::ConverContact(RouterDB::contact& temp_metal, PnRDB::contact& pnr_metal){
-
-  //RouterDB::contact temp_metal;
-  if(drc_info.Metalmap.find(pnr_metal.metal)!=drc_info.Metalmap.end()){
-      temp_metal.metal=drc_info.Metalmap[pnr_metal.metal];
-      //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
-    }else{
-      std::cout<<"Router-Error: interMetal info missing metal"<<std::endl;
-    }
-   RouterDB::point temp_point;
-   temp_metal.placedLL.x = pnr_metal.placedBox.LL.x;     
-   temp_metal.placedLL.y = pnr_metal.placedBox.LL.y;
-   temp_metal.placedUR.x = pnr_metal.placedBox.UR.x;      
-   temp_metal.placedUR.y = pnr_metal.placedBox.UR.y;  
-   temp_metal.placedCenter.x = (temp_metal.placedLL.x + temp_metal.placedUR.x)/2;
-   temp_metal.placedCenter.y = (temp_metal.placedLL.y + temp_metal.placedUR.y)/2;
-   //temp_block.InternalMetal.push_back(temp_metal);
+  RouterDB_contact.placedLL.x = PnRDB_contact.placedBox.LL.x;
+  RouterDB_contact.placedLL.y = PnRDB_contact.placedBox.LL.y;
+  RouterDB_contact.placedUR.x = PnRDB_contact.placedBox.UR.x;
+  RouterDB_contact.placedUR.y = PnRDB_contact.placedBox.UR.y;       
+  RouterDB_contact.placedCenter.x = PnRDB_contact.placedCenter.x;
+  RouterDB_contact.placedCenter.y = PnRDB_contact.placedCenter.y;
 
 };
 
-void GlobalRouter::ConvertMetal(RouterDB::Metal& temp_metal,PnRDB::Metal& pnr_metal){
-
-  //RouterDB::Metal temp_metal;
-  temp_metal.MetalIdx = pnr_metal.MetalIdx;
-  temp_metal.LinePoint[0].x = pnr_metal.LinePoint[0].x;
-  temp_metal.LinePoint[0].y = pnr_metal.LinePoint[0].y;
-  temp_metal.LinePoint[1].x = pnr_metal.LinePoint[1].x;
-  temp_metal.LinePoint[1].y = pnr_metal.LinePoint[1].y;
-  temp_metal.width = pnr_metal.width;
-  //contact
-  RouterDB::contact temp_contact;
-
-  if(drc_info.Metalmap.find(pnr_metal.MetalRect.metal)!=drc_info.Metalmap.end()){
-    temp_contact.metal=drc_info.Metalmap[pnr_metal.MetalRect.metal];
-  }else{
-    std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
-  }
-
-  //temp_contact.metal = drc_info.Metalmap[node.Nets[i].path_metal[j].MetalRect.metal];
-
-  temp_contact.placedLL.x = pnr_metal.MetalRect.placedBox.LL.x;
-  temp_contact.placedLL.y = pnr_metal.MetalRect.placedBox.LL.y;
-  temp_contact.placedUR.x = pnr_metal.MetalRect.placedBox.UR.x;
-  temp_contact.placedUR.y = pnr_metal.MetalRect.placedBox.UR.y;
-  temp_contact.placedCenter.x = pnr_metal.MetalRect.placedCenter.x;
-  temp_contact.placedCenter.y = pnr_metal.MetalRect.placedCenter.y;
-  temp_metal.MetalRect = temp_contact;
-
-};
-
-
-void GlobalRouter::getPowerGridData(PnRDB::hierNode & node){
-
-
-  //Vdd_grid
-  Vdd_grid.power = node.Vdd.power;
-
-  for(int i =0;i<node.Vdd.metals.size();++i){
-       RouterDB::Metal temp_metal;
-       ConvertMetal(temp_metal, node.Vdd.metals[i]);
-       Vdd_grid.metals.push_back(temp_metal);
-     }
-
-  for(int i =0;i<node.Vdd.vias.size();++i){
-       RouterDB::Via temp_via;
-       ConvertVia(temp_via, node.Vdd.vias[i]);
-       Vdd_grid.vias.push_back(temp_via);
-     }
-
-  //Gnd_grid
-  Gnd_grid.power = node.Gnd.power;
-
-  for(int i =0;i<node.Gnd.metals.size();++i){
-       RouterDB::Metal temp_metal;
-       ConvertMetal(temp_metal, node.Gnd.metals[i]);
-       Gnd_grid.metals.push_back(temp_metal);
-     }
-
-  for(int i =0;i<node.Gnd.vias.size();++i){
-       RouterDB::Via temp_via;
-       ConvertVia(temp_via, node.Gnd.vias[i]);
-       Gnd_grid.vias.push_back(temp_via);
-     }
-
-};
-
-void GlobelRouter::ConvertVia(RouterDB::Via &temp_via,PnRDB::Via& pnr_via){
-
-  //RouterDB::Via temp_via;
-
-  temp_via.model_index = pnr_via.model_index;
-  temp_via.position.x = pnr_via.placedpos.x;
-  temp_via.position.y = pnr_via.placedpos.y;
-  //ViaRect
-
-  if(drc_info.Viamap.find(pnr_via.ViaRect.metal)!=drc_info.Viamap.end()){
-      temp_via.ViaRect.metal = drc_info.Viamap[pnr_via.ViaRect.metal];
-     }else{
-      std::cout<<"Router-Error: - Viamap Error"<<std::endl;
-     }
-
-  temp_via.ViaRect.placedLL.x = pnr_via.ViaRect.placedBox.LL.x;
-  temp_via.ViaRect.placedLL.y = pnr_via.ViaRect.placedBox.LL.y;
-  temp_via.ViaRect.placedUR.x = pnr_via.ViaRect.placedBox.UR.x;
-  temp_via.ViaRect.placedUR.y = pnr_via.ViaRect.placedBox.UR.y;
-  temp_via.ViaRect.placedCenter.x= pnr_via.ViaRect.placedCenter.x;
-  temp_via.ViaRect.placedCenter.y= pnr_via.ViaRect.placedCenter.y;
-  //LowerRect //LowerMetalRect
-  if(drc_info.Metalmap.find(pnr_via.LowerMetalRect.metal)!=drc_info.Metalmap.end()){
-      temp_via.LowerMetalRect.metal = drc_info.Metalmap[pnr_via.LowerMetalRect.metal];
-     }else{
-      std::cout<<"Router-Error: Metal map error"<<std::endl;
-     }
-  temp_via.LowerMetalRect.placedLL.x = pnr_via.LowerMetalRect.placedBox.LL.x;
-  temp_via.LowerMetalRect.placedLL.y = pnr_via.LowerMetalRect.placedBox.LL.y;
-  temp_via.LowerMetalRect.placedUR.x = pnr_via.LowerMetalRect.placedBox.UR.x;
-  temp_via.LowerMetalRect.placedUR.y = pnr_via.LowerMetalRect.placedBox.UR.y;
-  temp_via.LowerMetalRect.placedCenter.x= pnr_via.LowerMetalRect.placedCenter.x;
-  temp_via.LowerMetalRect.placedCenter.y= pnr_via.LowerMetalRect.placedCenter.y;
-  //UpperRect //UpperMetalRect
-  if(drc_info.Metalmap.find(pnr_via.UpperMetalRect.metal)!=drc_info.Metalmap.end()){
-       temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_via.UpperMetalRect.metal];
-     }else{
-       std::cout<<"Router-Error: Metal map error"<<std::endl;
-     }
-  temp_via.UpperMetalRect.placedLL.x = pnr_via.UpperMetalRect.placedBox.LL.x;
-  temp_via.UpperMetalRect.placedLL.y = pnr_via.UpperMetalRect.placedBox.LL.y;
-  temp_via.UpperMetalRect.placedUR.x = pnr_via.UpperMetalRect.placedBox.UR.x;
-  temp_via.UpperMetalRect.placedUR.y = pnr_via.UpperMetalRect.placedBox.UR.y;
-  temp_via.UpperMetalRect.placedCenter.x = pnr_via.UpperMetalRect.placedCenter.x;
-  temp_via.UpperMetalRect.placedCenter.y = pnr_via.UpperMetalRect.placedCenter.y;
-
-};
-
-void GlobalRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
-
-  //RouterDB::Pin temp_pin;
-  temp_pin.pinName=pnr_pin.name;
-  temp_pin.netIter=pnr_pin.netIter;
-  for(int k=0;k<pnr_pin.pinContacts.size();++k){
-       RouterDB::contact temp_contact;
-       if(drc_info.Metalmap.find(pnr_pin.pinContacts[k].metal)!=drc_info.Metalmap.end()){
-           temp_contact.metal=drc_info.Metalmap[pnr_pin.pinContacts[k].metal];
-        }else{
-           std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
-        }
-       temp_contact.placedLL.x=pnr_pin.pinContacts[k].placedBox.LL.x;
-       temp_contact.placedLL.y=pnr_pin.pinContacts[k].placedBox.LL.y;
-       temp_contact.placedUR.x=pnr_pin.pinContacts[k].placedBox.UR.x;
-       temp_contact.placedUR.y=pnr_pin.pinContacts[k].placedBox.UR.y;
-       temp_contact.placedCenter.x=pnr_pin.pinContacts[k].placedCenter.x;
-       temp_contact.placedCenter.y=pnr_pin.pinContacts[k].placedCenter.y;
-       temp_pin.pinContacts.push_back(temp_contact);
-      }
-          
-
-  for(int k=0;k<pnr_pin.pinVias.size();++k){
-        RouterDB::Via temp_via;
-        temp_via.model_index = pnr_pin.pinVias[k].model_index;
-        temp_via.position.x = pnr_pin.pinVias[k].placedpos.x;
-        temp_via.position.y = pnr_pin.pinVias[k].placedpos.y;
-        //ViaRect
-
-        if(drc_info.Viamap.find(pnr_pin.pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
-             temp_via.ViaRect.metal = drc_info.Viamap[pnr_pin.pinVias[k].ViaRect.metal];
-          }else{
-             std::cout<<"Router-Error: - Viamap Error"<<std::endl;
-          }
-        temp_via.ViaRect.placedLL.x = pnr_pin.pinVias[k].ViaRect.placedBox.LL.x;
-        temp_via.ViaRect.placedLL.y = pnr_pin.pinVias[k].ViaRect.placedBox.LL.y;
-        temp_via.ViaRect.placedUR.x = pnr_pin.pinVias[k].ViaRect.placedBox.UR.x;
-        temp_via.ViaRect.placedUR.y = pnr_pin.pinVias[k].ViaRect.placedBox.UR.y;
-        temp_via.ViaRect.placedCenter.x= pnr_pin.pinVias[k].ViaRect.placedCenter.x;
-        temp_via.ViaRect.placedCenter.y= pnr_pin.pinVias[k].ViaRect.placedCenter.y;
-        //LowerRect //LowerMetalRect
-        if(drc_info.Metalmap.find(pnr_pin.pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
-             temp_via.LowerMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].LowerMetalRect.metal];
-           }else{
-             std::cout<<"Router-Error: Metal map error"<<std::endl;
-           }
-         temp_via.LowerMetalRect.placedLL.x = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.x;
-         temp_via.LowerMetalRect.placedLL.y = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.y;
-         temp_via.LowerMetalRect.placedUR.x = pnr_pin.pinVias[k].LowerMetalRect.placedBox.UR.x;
-         temp_via.LowerMetalRect.placedUR.y = pnr_pin.pinVias[k].LowerMetalRect.placedBox.UR.y;
-         temp_via.LowerMetalRect.placedCenter.x= pnr_pin.pinVias[k].LowerMetalRect.placedCenter.x;
-         temp_via.LowerMetalRect.placedCenter.y= pnr_pin.pinVias[k].LowerMetalRect.placedCenter.y;
-         //UpperRect //UpperMetalRect
-         if(drc_info.Metalmap.find(pnr_pin.pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
-              temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].UpperMetalRect.metal];
-            }else{
-              std::cout<<"Router-Error: Metal map error"<<std::endl;
-            }
-         temp_via.UpperMetalRect.placedLL.x = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.x;
-         temp_via.UpperMetalRect.placedLL.y = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.y;
-         temp_via.UpperMetalRect.placedUR.x = pnr_pin.pinVias[k].UpperMetalRect.placedBox.UR.x;
-         temp_via.UpperMetalRect.placedUR.y = pnr_pin.pinVias[k].UpperMetalRect.placedBox.UR.y;
-         temp_via.UpperMetalRect.placedCenter.x = pnr_pin.pinVias[k].UpperMetalRect.placedCenter.x;
-         temp_via.UpperMetalRect.placedCenter.y = pnr_pin.pinVias[k].UpperMetalRect.placedCenter.y;
-
-         temp_pin.pinVias.push_back(temp_via);
-      }
-
-
-};
-*/
 
 void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info& drcData){
 
@@ -1109,16 +856,6 @@ void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info& drcData){
 
 };
 
-
-
-//return some to hierNode for detailed router
-/*
-void GcellGlobalRouter::returnGlobalPath(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index){
-
-  
- 
-};
-*/
 
 int GcellGlobalRouter::CopyPath(std::vector<std::pair<int,int> > &path, std::map<int,int> &temp_map, std::vector<std::pair<int,int> > &sy_path){
 
@@ -1219,7 +956,343 @@ int  GcellGlobalRouter::JudgeSymmetry(std::vector<std::pair<int,int> > &path,std
 
 };
 
+int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
+  std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
+  # if defined ERROR
+  #  undef ERROR
+  # endif
+  //# define ERROR() { fprintf(stderr, "Error\n"); return(1); }
+  # define ERROR() { fprintf(stderr, "Error\n"); }
+  std::cout<<"LP test flag 1"<<std::endl;
+  // start of lp_solve
+  int majorversion, minorversion, release, build;
+  char buf[1024];
+  hlpsolve lpsolve;
+  # if defined WIN32
+  #   define lpsolvelib "lpsolve55.dll"
+  # else
+  #   define lpsolvelib "liblpsolve55.so"
+  # endif
+  lpsolve = open_lpsolve_lib(const_cast<char*>(lpsolvelib));
+  if (lpsolve == NULL) {
+    fprintf(stderr, "Unable to load lpsolve shared library (%s).\nIt is probably not in the correct path.\n", lpsolvelib);
+    //ERROR();
+  }
 
+  if (!init_lpsolve(lpsolve)) {
+    fprintf(stderr, "Unable to initialize lpsolve shared library (%s)\n      ", lpsolvelib);
+    //ERROR();
+  }
+
+
+  // 1. collect number of STs
+  int NumberOfSTs = 0;
+  int NumberOfNets = 0;
+  valInfo vi;
+
+  std::cout<<"LP test flag 2"<<std::endl;
+  for(unsigned int h=0;h<this->Nets.size();++h) { //  for each net
+    vi.netIter=h;
+    for(unsigned int i=0;i<this->Nets[h].STs.size();++i) {// for each segment
+      vi.STIter=i;
+      vi.candIter=-1;
+      vi.segIter=-1;
+      vi.valIter=NumberOfSTs;
+      this->Nets[h].STs[i].valIdx = NumberOfSTs;
+      NumberOfSTs++;
+      ValArray.push_back(vi);
+    }
+   NumberOfNets++;
+  }
+  std::cout<<"TotNumberOfNest "<<NumberOfNets<<" TotNumberOfSTs "<<NumberOfSTs<<std::endl;
+  this->NumOfVar=NumberOfSTs;//#Variable initialization
+
+  if ((lp = make_lp(0,NumOfVar+1)) == NULL) {fprintf(stderr, "Error\n");} //ERROR();}
+  lp_solve_version(&majorversion, &minorversion, &release, &build);
+  sprintf(buf, "lp_solve %d.%d.%d.%d demo\n\n", majorversion, minorversion, release, build);//lp_solve 5.5.2.0 
+  print_str(lp, buf);
+  put_logfunc(lp, NULL, 0);
+  set_outputfile(lp, const_cast<char*>("./Debug/lp_solve_result.txt"));
+  //set_add_rowmode(lp, TRUE);
+  // 2. Initialize matrix without constraints  Q1? A 0 is inserted to the temp_row, so the valInfo maybe not correct
+
+  //std::cout<<"testcase 1"<<std::endl;
+
+  //int CurNet = 0;
+  std::cout<<"LP test flag 3"<<std::endl;
+  for(int i=0;i<NumberOfNets;++i){
+      std::cout<<"Nets index "<<i<<std::endl;
+      int CurNet = i;
+      //std::vector<double> temp_row;
+      //temp_row.push_back(0);//0th column "0" Q2?
+      std::vector<double> temp_row;
+      std::vector<int> temp_index;
+
+      for(unsigned int j=0;j<this->Nets.size();++j){
+
+          for(unsigned int k=0;k<this->Nets.at(j).STs.size();++k){
+/*
+	    if((int)j==CurNet) {
+                temp_row.push_back(1);
+               } else {
+                temp_row.push_back(0);
+               }
+*/
+
+	    if((int)j==CurNet) {
+                temp_index.push_back(this->Nets.at(j).STs[k].valIdx+1);
+                temp_row.push_back(1);
+                std::cout<<"temp index "<<this->Nets.at(j).STs[k].valIdx<<" temp_row "<<1<<std::endl;
+               }   
+             }
+         }
+
+       //temp_row.push_back(0);
+       double* row = &temp_row[0];
+       int* col =&temp_index[0];
+       int size_element = temp_row.size();
+       //if (!add_constraint(lp, row, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraintex(lp,size_element,row,col, EQ, 1)) {fprintf(stderr, "Error\n");} //ERROR();}
+     
+     }
+
+  //symmetry problem
+  std::cout<<"LP test flag 4"<<std::endl;
+  for(unsigned int i=0;i<this->Nets.size();++i){
+
+    if(this->Nets.at(i).global_sym!=-1 and this->Nets.at(i).global_sym < (int)this->Nets.size()-1){
+          std::cout<<"net index "<<i<<" global_sym "<< this->Nets.at(i).global_sym<<std::endl;
+          int global_sym = this->Nets.at(i).global_sym;   
+          for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
+
+               //std::vector<double> temp_row;
+               //temp_row.push_back(0);//0th column "0" Q2?
+               std::vector<double> temp_row;
+               std::vector<int> temp_index;   
+/*
+               for(int val_number = 0; val_number < NumberOfSTs ; ++val_number){
+                      if(val_number == this->Nets.at(global_sym).STs[j].valIdx){
+                           temp_row.push_back(1);
+                        }else if(val_number == this->Nets.at(i).STs[j].valIdx){
+                           temp_row.push_back(-1);
+                        }else{
+                           temp_row.push_back(0);
+                        }
+                                               
+                    }
+*/
+
+               for(int val_number = 0; val_number < NumberOfSTs ; ++val_number){
+                      if(val_number == this->Nets.at(global_sym).STs[j].valIdx){
+                           temp_index.push_back(this->Nets.at(global_sym).STs[j].valIdx+1);
+                           temp_row.push_back(1);
+                        }else if(val_number == this->Nets.at(i).STs[j].valIdx){
+                           temp_index.push_back(this->Nets.at(i).STs[j].valIdx+1);
+                           temp_row.push_back(-1);
+                        }
+                                               
+                    }
+                
+                //temp_row.push_back(0);
+                double* row = &temp_row[0];
+                int* col=&temp_index[0];
+                int size_element = temp_row.size();
+                std::cout<<"Adding SYM constraints"<<std::endl;
+                //if (!add_constraint(lp, row, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+                if (!add_constraintex(lp, size_element, row, col, EQ, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       
+             }
+        
+        }
+     
+     }
+
+  //CalCulated_Sym_Ax(this->Nets[i].terminals,this->Nets[j].terminals, center_x, center_y, H_or_V); //H_or_V is H if 1, else V (0);
+  // 1. Based on real pin determine the center terminal position or the coordinate of ;
+  // 2. Based on the STs calclated the co
+
+  //capacity edge constraint
+  //Q4?
+
+  //std::cout<<"testcase 2"<<std::endl;
+
+  std::vector<std::pair<int,int> > Edges;
+  std::vector<int> Capacities;
+  std::vector<std::vector<int> > Edges_To_Var;
+
+  NumberOfSTs = 0;
+  std::cout<<"LP test flag 5"<<std::endl;
+  for(unsigned int i=0;i<this->Nets.size();++i){
+      for(unsigned int j=0;j<this->Nets.at(i).STs.size();++j){
+          NumberOfSTs++;
+          for(unsigned int k=0;k<this->Nets.at(i).STs[j].path.size();++k){
+               
+               int found = 0;
+               int index = -1;
+               for(unsigned int l=0;l<Edges.size();++l){
+                      
+                    if((this->Nets.at(i).STs[j].path[k].first == Edges[l].first and this->Nets.at(i).STs[j].path[k].second == Edges[l].second) or (this->Nets.at(i).STs[j].path[k].first == Edges[l].second and this->Nets.at(i).STs[j].path[k].second == Edges[l].first ) ){
+                      found = 1;
+                      index = l;
+                      break;
+                      }
+                     
+                  }
+
+               if(found ==1){
+                  //std::cout<<"Break down"<<std::endl;
+                  Edges_To_Var[index].push_back(NumberOfSTs); //push_back the var number??        
+                    
+                 }else{
+
+                  for(unsigned int p = 0;p<graph.graph[this->Nets.at(i).STs[j].path[k].first].list.size();++p){
+                       if(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].dest == this->Nets.at(i).STs[j].path[k].second){
+                           Capacities.push_back(graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity);
+                           std::cout<<"Edge capacity "<<graph.graph[this->Nets.at(i).STs[j].path[k].first].list[p].capacity<<std::endl;
+                           Edges.push_back(this->Nets.at(i).STs[j].path[k]);
+                           std::vector<int> temp_var;
+                           Edges_To_Var.push_back(temp_var);
+
+                           break;
+                         }
+                     }
+                 }
+             }
+
+        }
+     }
+
+  //std::cout<<"testcase 3"<<std::endl;
+
+  std::cout<<"LP test flag 6"<<std::endl;
+  for(unsigned int i=0;i<Edges_To_Var.size();++i){
+
+      //std::vector<double> temp_row;
+      //temp_row.push_back(0);//0th column "0" Q2?
+
+      std::vector<double> temp_row;
+      std::vector<int> temp_index;   
+/*
+       for(int j=0;j<NumberOfSTs;++j){
+            int found_flag = 0;
+            for(unsigned int k=0;k<Edges_To_Var[i].size();++k){
+                if(Edges_To_Var[i][k]==j){found_flag=1;}
+               }
+            if(found_flag==1){
+              temp_row.push_back(1);
+              }else{
+              temp_row.push_back(0);
+              }
+          }
+*/
+
+       for(int j=0;j<NumberOfSTs;++j){
+            int found_flag = 0;
+            for(unsigned int k=0;k<Edges_To_Var[i].size();++k){
+                if(Edges_To_Var[i][k]==j){found_flag=1;}
+               }
+            if(found_flag==1){
+              temp_index.push_back(j+1);
+              temp_row.push_back(1);
+              }
+          }
+       temp_index.push_back(NumberOfSTs+1);
+       temp_row.push_back(-Capacities[i]);
+       std::cout<<"Constraint Capacity "<<Capacities[i]<<std::endl;
+
+       double* row = &temp_row[0];
+       int* col = &temp_index[0];
+       int size_element=temp_row.size();
+       //if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+       if (!add_constraintex(lp, size_element, row, col, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
+     }
+
+  //std::cout<<"testcase 4"<<std::endl;
+
+  print_lp(lp);
+  // 4. Set binary variables (candidates + slacks)
+  for(int i=1;i<=this->NumOfVar;++i){
+    set_binary(lp, i, TRUE);//"TRUE": set variable to be a binary. upper bound=1, lower bound=0
+  }
+  
+  set_bounds(lp, this->NumOfVar+1, 0.0, 1.0);
+
+  printf("Set the objective function\n");
+  printf("set_obj_fn(lp, {nets[h].seg[i].candis[j].TotMetalWeightByLength})\n");
+
+  // 5. Set objective function
+  vector<double> temp_row;
+  vector<int> temp_index;
+  //temp_row.push_back(NumOfVar+1);
+/*
+  for(int i=0;i<this->NumOfVar;++i){
+     temp_row.push_back(0);
+  }
+*/
+  temp_row.push_back(1);
+  temp_index.push_back(NumOfVar+1);
+  double *row = &temp_row[0];
+  int* col=&temp_index[0];
+  if (!set_obj_fnex(lp, 1,row,col)){std::cout <<"Router-Error: Objective insertion Error"<<std::endl;}
+
+  //std::cout<<"testcase 5"<<std::endl;
+  std::cout<<"LP test flag 7"<<std::endl;
+  // 6. Solve with lp
+  set_minim(lp);
+  set_timeout(lp,60);
+  std::cout<<"LP test flag 8"<<std::endl;
+  //set_solutionlimit(lp, 10);
+  std::cout<<"LP test flag 9"<<std::endl; 
+  set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
+  std::cout<<"LP test flag 10"<<std::endl;
+  print_lp(lp);
+  
+  int ret = solve(lp);
+  std::cout<<"LP test flag 11"<<std::endl;
+  if(ret== 0){
+          std::cout << "Status Log: Optimal Solution Found Success"<<std::endl;
+  }
+  else if(ret==2){
+          std::cout <<"Status Log: Model is Infeasible"<<std::endl;
+  }
+  else if(ret==1){
+          std::cout <<"Status Log: Suboptimal Solution Found"<<std::endl;
+  }
+  else if(ret==-2){
+          std::cout <<"Status Log: Out of memory"<<std::endl;
+  }
+  else if(ret==7){
+          std::cout <<"Status Log: Timeout(set via set_timeout)"<<std::endl;
+  }
+  else{
+          std::cout <<"Status Log: Refer Function solve in lp_solve(http://lpsolve.sourceforge.net/5.5/)"<<std::endl;
+  }
+  std::cout<<"LP test flag 12"<<std::endl;
+  printf("#Constraints: lp row:  %d \n", lp->rows);
+  printf("#Variables: lp col:  %d \n", lp->columns);
+  std::cout<<"LP test flag 13"<<std::endl;
+  // 7. Get results and store back to data structure
+  // Q5?
+  double Vars[NumOfVar];
+  get_variables(lp, Vars);
+  std::cout<<"LP test flag 14"<<std::endl;
+  //std::cout<<"testcase 6"<<std::endl;
+  for(int i=0;i<NumOfVar;++i){
+      if(Vars[i]==1){
+         this->Nets.at(ValArray[i].netIter).STindex=ValArray[i].STIter;
+        }
+     }
+  //std::cout<<"testcase 7"<<std::endl;
+  //set_add_rowmode(lp, FALSE);
+  //free(row);
+  //free(col);
+  std::cout<<"LP test flag 15"<<std::endl;
+  delete_lp(lp);
+  std::cout<<"LP test flag 16"<<std::endl;
+  return ret;
+}
+
+/*
 int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set) {
   std::cout<< "Status Log: ILP Solving Starts"<<std::endl;
   # if defined ERROR
@@ -1248,11 +1321,6 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
     //ERROR();
   }
 
-  //std::ofstream output_Final_Selected_Candidates;
-  //output_Final_Selected_Candidates.open("./Debug/Final_Selected_Candidates.txt",std::ofstream::app);
-  //std::ofstream lp_solve_matrix;
-  //lp_solve_matrix.open("./Debug/lp_solve_matrix.txt", std::ofstream::app);
-  //lp_solve_matrix.close();
 
   // 1. collect number of STs
   int NumberOfSTs = 0;
@@ -1346,215 +1414,6 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
      
      }
 
-/*
-  std::cout<<"start sy flag"<<std::endl;
-  for(int i=0;i<this->Nets.size();++i){
-      
-      if(this->Nets.at(i).symCounterpart!=-1 and this->Nets.at(i).symCounterpart<this->Nets.size()-1){
-
-          int symCounterpart = this->Nets.at(i).symCounterpart;
-          if(this->Nets.at(i).connectedTile.size() == this->Nets.at(symCounterpart).connectedTile.size()){
-
-             //calculate center if all the same then do sym judging
-             std::vector<std::pair<double,double> > center;
-             
-             for(int k=0;k<this->Nets.at(i).connectedTile.size();++k){
-                  
-                  int distance = INT_MAX;
-                  std::pair<double, double> temp_center;
-
-                  for(int p = 0;p<this->Nets.at(i).connectedTile[k].size();++p){
-                       for(int q = 0; q<this->Nets.at(symCounterpart).connectedTile[k].size();++q){
-                            int tile_index = this->Nets.at(i).connectedTile[k][p];
-                            int tile_index_sym = this->Nets.at(symCounterpart).connectedTile[k][q];
-                            if(abs(grid.tiles_total[tile_index].x-grid.tiles_total[tile_index_sym].x)+abs(grid.tiles_total[tile_index].y-grid.tiles_total[tile_index_sym].y)<distance){
-                                temp_center.first = (double) (grid.tiles_total[tile_index].x+grid.tiles_total[tile_index_sym].x)/2;
-                                temp_center.second = (double) (grid.tiles_total[tile_index].y+grid.tiles_total[tile_index_sym].y)/2;
-                                distance = abs(grid.tiles_total[tile_index].x-grid.tiles_total[tile_index_sym].x)+abs(grid.tiles_total[tile_index].y-grid.tiles_total[tile_index_sym].y);
-                              }
-                           }
-                      }
-
-                  center.push_back(temp_center);
-                  
-
-                }
-
-                std::cout<<"start sy flag 1"<<std::endl;
-                //end calculate center
-                int sy_flag_x = 1;
-                int sy_flag_y = 1;
-                int sy_direction = -1; // 1 is V, x; 0 is H, y; 
-                double center_axis = -1;
-                 
-                for(int k=0;k<center.size()-1;++k){
-
-                     if(center[k].first != center[k+1].first){
-                         sy_flag_x = 0; 
-                       }
-                     
-                     if(center[k].second != center[k+1].second){
-                         sy_flag_y = 0; 
-                       }
-
-                   }
-
-                if(sy_flag_x==1){
-                    sy_direction = 1;
-                    center_axis = center.back().first;
-                   }else if(sy_flag_y==1){
-                    sy_direction = 0;
-                    center_axis = center.back().second;
-                  }
-
-                if(sy_direction != -1){
-                    //map sym sts, then compare it
-                    std::set<int> tiles_set_sy;                    
-                    std::set<int>::iterator it, it_low, it_up;
-                    for(int st_number = 0; st_number < this->Nets.at(symCounterpart).STs.size(); ++st_number){
-                          for(int path_number_st = 0; path_number_st< this->Nets.at(symCounterpart).STs[st_number].path.size();path_number_st++){
-                                tiles_set_sy.insert(this->Nets.at(symCounterpart).STs[st_number].path[path_number_st].first);
-                                tiles_set_sy.insert(this->Nets.at(symCounterpart).STs[st_number].path[path_number_st].second);
-                              }
-                       }
-                    
-                    it_low = tiles_set_sy.begin();
-                    it_up = tiles_set_sy.end();
-                    std::vector<int> unique_tiles;
-
-                    for(it=it_low;it!=it_up;++it){
-                         unique_tiles.push_back(*it);
-                       }
-
-                    std::map<int,int> sy_map;
-                    
-                    for(int q=0;q<unique_tiles.size();++q){
-
-                         RouterDB::tile temp_tile;
-                         temp_tile = grid.tiles_total[unique_tiles[q]];
-                         if(sy_direction==1){temp_tile.x = 2*center_axis - temp_tile.x ;}
-                         if(sy_direction==0){temp_tile.y = 2*center_axis - temp_tile.y ;}
-                         std::set<RouterDB::tile, RouterDB::tileComp>::iterator temp_it;
-                         temp_it = Tile_Set.find(temp_tile);
-                         if(temp_it==Tile_Set.end()){
-                            sy_map.insert(map<int,int>::value_type(unique_tiles[q],-1));
-                           }else{
-                            sy_map.insert(map<int,int>::value_type(unique_tiles[q],temp_it->index));
-                           }
-
-                       }
-
-                     std::cout<<"start sy flag 2"<<std::endl;
-
-                     //based on this map, transform to sy part;
-                       for(int p =0;p<this->Nets.at(symCounterpart).STs.size();++p){
-                           for(int q=0;q<this->Nets.at(i).STs.size();++q){
-                                std::cout<<"start sy flag 3"<<std::endl;
-                                int symmetry = JudgeSymmetry(Nets.at(symCounterpart).STs[p].path,Nets.at(i).STs[q].path,sy_map);
-                                std::cout<<"start sy flag 4"<<std::endl;
-                                if(symmetry){
-                                   //add sy constraint
-
-                                    std::vector<double> temp_row;
-                                    temp_row.push_back(0);//0th column "0" Q2?   
-
-      
-                                    for(int val_number = 0; val_number < NumberOfSTs+1 ; ++val_number){
-                                        if(val_number == this->Nets.at(symCounterpart).STs[p].valIdx){
-                                          temp_row.push_back(1);
-                                          }else if(val_number == this->Nets.at(i).STs[q].valIdx){
-                                          temp_row.push_back(-1);
-                                          }else{
-                                          temp_row.push_back(0);
-                                          }
-                                               
-                                      }
-
-                                    double* row = &temp_row[0];
-                                    if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
-                                    std::cout<<"start sy flag 5"<<std::endl;
-                                   
-                                  }
-                              }
-
-                          }
-
-                  }
-
-             
-
-
-            }
-        }
-     
-     }
-
-  std::cout<<"End sy flag"<<std::endl;
-*/
-
-  //QQQ remove the duplicated constraints
-
-  //symmetry constraint
-  //Q3? how to judge whether the final layout is symmetry is difficult.
-
-/*
-  for(int i=0;i<this->Nets.size();++i){
-     
-      if(this->Nets.at(i).symCounterpart!=-1){
-        
-         if(this->Nets.at(i).terminals.size() == this->Nets.at(this->Nets.at(i).symCounterpart).terminals.size()){
-
-             double center_xl = 0;
-             double center_yl = 0;
-             double center_xr = 0;
-             double center_yr = 0;
-             double center_x = -1;
-             double center_y = -1;
-
-             for(int k = 0; k <this->Nets.at(i).terminals.size();++k){
-
-                   center_xl = center_xl + (double) grid.tiles_total[this->Nets.at(i).terminals[k]].x;
-                   center_yl = center_yl + (double) grid.tiles_total[this->Nets.at(i).terminals[k]].y;
-                
-                }
-
-
-             for(int k = 0; k <this->Nets.at(this->Nets.at(i).symCounterpart).terminals.size();++k){
-
-                   center_xr = center_xr + (double) grid.tiles_total[this->Nets.at(this->Nets.at(i).symCounterpart).terminals[k]].x;
-                   center_yr = center_yr + (double) grid.tiles_total[this->Nets.at(this->Nets.at(i).symCounterpart).terminals[k]].y;
-                
-                }
-
-             if(center_xl == center_xr and center_yl != center_yr){
-                 center_y = (center_yl + center_yr)/(2*this->Nets.at(i).terminals.size());
-               }else if(center_yl == center_yr and center_xl != center_xr){
-                 center_x = (center_xl + center_xr)/(2*this->Nets.at(i).terminals.size());
-               }else if(center_xl == center_xr and center_yl == center_yr){
-                 center_x = (center_xl + center_xr)/(2*this->Nets.at(i).terminals.size());
-               }
-
-              //then judge whether that is symmetry or not for each ST
-              if(center_x!=-1){
-                //add symmetry flag
-
-                judge_symmety(this->Nets.at(i),this->Nets.at(this->Nets.at(i).symCounterpart),  center_x, 0);
-
-                }else if(center_y!=-1){
-                //add symmetry flag
-
-                judge_symmety(this->Nets.at(i),this->Nets.at(this->Nets.at(i).symCounterpart), center_y, 1);
-
-                }
-           
-           }
-        
-        }
-      
-     }
-*/
-
-
   //CalCulated_Sym_Ax(this->Nets[i].terminals,this->Nets[j].terminals, center_x, center_y, H_or_V); //H_or_V is H if 1, else V (0);
   // 1. Based on real pin determine the center terminal position or the coordinate of ;
   // 2. Based on the STs calclated the co
@@ -1612,26 +1471,6 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   //std::cout<<"testcase 3"<<std::endl;
 
-/*
-
-  for(int i=0;i<Edges_To_Var.size();++i){
-
-      std::vector<double> temp_row;
-      temp_row.push_back(0);//0th column "0" Q2?   
-
-       for(int j=0;j<NumberOfSTs;++j){
-           temp_row.push_back(0);
-          }
-       temp_row.push_back(-Capacities[i]);
-       for(int j=0;j<Edges_To_Var[i].size();++j){
-          temp_row[Edges_To_Var[i][j]]=1;
-          }
-
-       double* row = &temp_row[0];
-       if (!add_constraint(lp, row, LE, 0)) {fprintf(stderr, "Error\n");} //ERROR();}
-     
-     }
-*/
 
   for(unsigned int i=0;i<Edges_To_Var.size();++i){
 
@@ -1685,7 +1524,8 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   // 6. Solve with lp
   set_minim(lp);
-  set_solutionlimit(lp, 10); 
+  set_timeout(lp,60);
+  //set_solutionlimit(lp, 10); 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   print_lp(lp);
 
@@ -1727,35 +1567,58 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   delete_lp(lp);
   return ret;
 }
-
-
-/*
-void GlobalRouter::judge_symmety(RouterDB::Net &temp_net1, RouterDB::Net &temp_net2, int center, int H){
-
-//H is 0 is x, else y
-
-   for(int i=0;i<temp_net1.STs.size();++i){
-
-       for(int j=0;j<temp_net2.STs.size();++j){
-
-            if(temp_net1.STs[i].path.size() == temp_net2.STs[j].path.size()){
-
-                if(H){ // heriotal symmetry
-                     //std::vector<std::pair<int,int> > 
-                     
-                  }else{
-                  
-                  }
-                 
-              }
-          }
-      
-      }
-}
 */
 
+void
+CopyTileEdge (const RouterDB::tileEdge& it, PnRDB::tileEdge& ot) {
+  ot.next = it.next;
+  ot.capacity = it.capacity;
+}
+
+void
+CopyTile (const RouterDB::tile& it, PnRDB::tile& ot) {
+  ot.x = it.x;
+  ot.y = it.y;
+  ot.width = it.width;
+  ot.height = it.height;
+  ot.metal = it.metal;
+  ot.tileLayer = it.tileLayer;
+  ot.index = it.index;
+  ot.Yidx = it.Yidx;
+  ot.Xidx = it.Xidx;
+  ot.north.resize (it.north.size());
+  for (unsigned i = 0; i < it.north.size(); i++) 
+    CopyTileEdge(it.north[i], ot.north[i]);
+  ot.south.resize (it.south.size());
+  for (unsigned i = 0; i < it.south.size(); i++) 
+    CopyTileEdge(it.south[i], ot.south[i]);
+  ot.west.resize (it.west.size());
+  for (unsigned i = 0; i < it.west.size(); i++) 
+    CopyTileEdge(it.west[i], ot.west[i]);
+  ot.east.resize (it.east.size());
+  for (unsigned i = 0; i < it.east.size(); i++) 
+    CopyTileEdge(it.east[i], ot.east[i]);
+  ot.down.resize (it.down.size());
+  for (unsigned i = 0; i < it.down.size(); i++) 
+    CopyTileEdge(it.down[i], ot.down[i]);
+  ot.up.resize (it.up.size());
+  for (unsigned i = 0; i < it.up.size(); i++) 
+    CopyTileEdge(it.up[i], ot.up[i]);
+}
+
 void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
-    HierNode.tiles_total = Gcell.tiles_total;
+
+    for(unsigned int i=0;i<Nets.size();++i){
+
+       Nets[i].global_path = Nets[i].STs[Nets[i].STindex].path;
+
+    }
+
+    //    HierNode.tiles_total = Gcell.tiles_total;
+    HierNode.tiles_total.resize(Gcell.tiles_total.size());
+    for (unsigned i = 0; i < Gcell.tiles_total.size(); i++) 
+      CopyTile (Gcell.tiles_total[i], HierNode.tiles_total[i]);
+
     for(vector<PnRDB::net>::iterator H_NET_it=HierNode.Nets.begin();H_NET_it!=HierNode.Nets.end();++H_NET_it){
         for(vector<RouterDB::Net>::const_iterator NET_it=Nets.begin(); NET_it!=Nets.end(); ++NET_it){
             if(H_NET_it->name!=NET_it->netName){

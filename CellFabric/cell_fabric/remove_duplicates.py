@@ -1,7 +1,11 @@
 
 from collections import defaultdict, OrderedDict
+import pprint
 
 from .generators import *
+
+import logging
+logger = logging.getLogger(__name__)
 
 class UnionFind:
     def __init__(self):
@@ -62,6 +66,7 @@ class Scanline:
 
     def merge_slr(self, base_slr, new_slr):
         base_slr.rect[self.dIndex+2] = max(base_slr.rect[self.dIndex+2], new_slr.rect[self.dIndex+2])        
+        base_slr.isPorted = base_slr.isPorted or new_slr.isPorted
 
     def __repr__( self):
         return 'Scanline( rects=' + str(self.rects) + ')'
@@ -90,7 +95,7 @@ class RemoveDuplicates():
                     tbl[id(slr.root())].append( (slr,root.netName,layer))
 
         for (i,s) in tbl.items():
-            print( "Equivalence classes:", i, s)
+            logger.info( pprint.pformat(["Equivalence classes:", i, s]))
 
     def check_opens(self):
 
@@ -104,7 +109,7 @@ class RemoveDuplicates():
                     if nm is not None:
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
-                        self.subinsts[slr.terminal[0]][slr.terminal[1]].add( None)
+                        self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
                         self.opens.append( slr.terminal)
 
         for (nm,s) in tbl.items():
@@ -128,7 +133,7 @@ class RemoveDuplicates():
         self.different_widths = []
         self.shorts = []
         self.opens = []
-        self.subinsts = defaultdict(lambda: defaultdict(set))
+        self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
 
@@ -136,6 +141,9 @@ class RemoveDuplicates():
         self.layers = OrderedDict()
         self.skip_layers = set()
         self.via_layers = set()
+
+        # Should use a region generator
+        self.skip_layers.add( 'boundary')
 
         for (nm, gen) in self.canvas.generators.items():
             if   isinstance( gen, Region):
@@ -166,7 +174,7 @@ class RemoveDuplicates():
 
             if layer in self.skip_layers: continue
 
-            assert layer in self.layers, layer
+            assert layer in self.layers, (self.layers, layer)
             twice_center = sum(rect[index]
                                for index in self.indicesTbl[self.layers[layer]][0])
 
@@ -213,7 +221,7 @@ class RemoveDuplicates():
                 for (twice_center, via_scan_line) in self.store_scan_lines[via].items():
                     assert mv is not None, "PLEASE IMPLEMENT ME !"
                     if twice_center not in self.store_scan_lines[mv]:
-                        print( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
+                        logger.warning( f"{twice_center} not in self.store_scan_lines[{mv}]. Skipping...")
                         continue
                     metal_scan_line_vertical = self.store_scan_lines[mv][twice_center]
                     for via_rect in via_scan_line.rects:
@@ -229,7 +237,7 @@ class RemoveDuplicates():
 
     def check_shorts_induced_by_terminals( self):
         for instance, v in self.subinsts.items():
-            for pin, slrs in v.items():
+            for pin, slrs in v.pins.items():
                 names = {x.root().netName for x in slrs}
                 if len(names) > 1:
                     self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
@@ -248,9 +256,9 @@ class RemoveDuplicates():
             return numshorts == len(self.shorts)
         else:
             if a.terminal is not None:
-                self.subinsts[a.terminal[0]][a.terminal[1]].add( a)
+                self.subinsts[a.terminal[0]].pins[a.terminal[1]].add( a)
             if b.terminal is not None:
-                self.subinsts[b.terminal[0]][b.terminal[1]].add( b)
+                self.subinsts[b.terminal[0]].pins[b.terminal[1]].add( b)
             return False
 
     def generate_rectangles( self):
@@ -262,20 +270,19 @@ class RemoveDuplicates():
         for d in self.canvas.terminals:
             if d['layer'] in self.skip_layers:
                 terminals.append( d)
-
 #
 # Write out the rectangles stored in the scan line data structure
 #
-        for (layer,vv) in self.store_scan_lines.items():
-            for (twice_center, v) in vv.items():
+        for layer, vv in self.store_scan_lines.items():
+            for _, v in vv.items():
                 for slr in v.rects:
                     root = slr.root()
                     terminals.append( {'layer': layer, 'netName': root.netName, 'rect': slr.rect})
                     if slr.isPorted:
                         terminals[-1]['pin'] = root.netName
-
+                    if slr.terminal is not None:
+                        terminals[-1]['terminal'] = slr.terminal
         return terminals
-
 
     def remove_duplicates( self):
 
@@ -286,13 +293,13 @@ class RemoveDuplicates():
         self.check_opens()
 
         for short in self.shorts:
-            print( "SHORT", *short)
+            logger.warning("SHORT" + pprint.pformat(short))
         for opn in self.opens:
-            print( "OPEN", *opn)
+            logger.warning( "OPEN" + pprint.pformat(opn))
         for dif in self.different_widths:
-            print( "DIFFERENT WIDTH", *dif)
+            logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
         for subinst in self.subinsts:
-            print("SUBINST", *subinst)
+            logger.info("SUBINST" + pprint.pformat(subinst))
 
         return self.generate_rectangles()
 

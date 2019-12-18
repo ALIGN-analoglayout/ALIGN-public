@@ -342,15 +342,40 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         for(unsigned int p=0;p<tempsec.size();p++){ 
             temp_cccap.size.push_back(atoi(tempsec[p].c_str()));
            }
+
         if(temp.size()>9){
+            word=temp[8];
+            word=word.substr(1);
+            word=word.substr(0, word.length()-1);
+            if(word=="nodummy"){
+              temp_cccap.dummy_flag=0;
+            }else{
+
+              temp_cccap.cap_ratio = 1;
+              tempsec=StringSplitbyChar(word, ',');
+              temp_cccap.cap_r = atoi(tempsec[0].c_str());
+              temp_cccap.cap_s = atoi(tempsec[1].c_str());
+
+            }
+            
+           }
+
+        if(temp.size()>11){
           temp_cccap.cap_ratio = 1;
-          word=temp[8];
+          word=temp[10];
           word=word.substr(1);
           word=word.substr(0, word.length()-1);
           //cout<<word<<endl;
-          tempsec=StringSplitbyChar(word, ',');
-          temp_cccap.cap_r = atoi(tempsec[0].c_str());
-          temp_cccap.cap_s = atoi(tempsec[1].c_str());
+          if(word=="nodummy"){
+              temp_cccap.dummy_flag=0;
+            }else{
+
+              temp_cccap.cap_ratio = 1;
+              tempsec=StringSplitbyChar(word, ',');
+              temp_cccap.cap_r = atoi(tempsec[0].c_str());
+              temp_cccap.cap_s = atoi(tempsec[1].c_str());
+
+            }
           }
         //temp_cccap.size = temp[4]; //size?
         
@@ -429,41 +454,158 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
-      }else if (temp[0].compare("R_const")==0){
+      } else if (temp[0].compare("R_Const")==0){
         PnRDB::R_const temp_r_const;
         string word=temp[2];
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_r_const.net_name=word;
-        for(int i=4;i<temp.size()-1;i=i+2){
+
+        for(unsigned int i=4;i<temp.size()-1;i+=2){
+
            word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
            //cout<<word<<endl;
            tempsec=StringSplitbyChar(word, ',');
-           temp_r_const.start_pin.push_back(tempsec[0]);
-           temp_r_const.end_pin.push_back(tempsec[1]);
+           std::cout<<"Test R "<<std::endl;
+           for(unsigned int j=0;j<tempsec.size();j++){std::cout<<tempsec[j]<<std::endl;}
+           std::cout<<"End Test R "<<std::endl;
+           std::pair<int,int> temp_start_pin;
+           std::pair<int,int> temp_end_pin;
+           vector<string> pins;
+
+           pins = StringSplitbyChar(tempsec[0], '/');
+           if(pins.size()>1){
+              for(unsigned int j=0;j<node.Blocks.size();j++){
+                 if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                    for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                       if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                         temp_start_pin.first = j;
+                         temp_start_pin.second = k;
+                         temp_r_const.start_pin.push_back(temp_start_pin);
+                         std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                         break; 
+                       }
+                    }
+                 }
+              }
+           }else if(pins.size()==1){
+              for(unsigned int j=0;j<node.Terminals.size();j++){
+                 if(node.Terminals.at(j).name.compare(pins[0])==0){
+                    temp_start_pin.first = -1;
+                    temp_start_pin.second = j;
+                    temp_r_const.start_pin.push_back(temp_start_pin);
+                    std::cout<<"Test R start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                    break; 
+                 }
+              }
+           }
+
+           pins = StringSplitbyChar(tempsec[1], '/');
+           if(pins.size()>1){
+              for(unsigned int j=0;j<node.Blocks.size();j++){
+                 if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                    for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                       if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                         temp_end_pin.first = j;
+                         temp_end_pin.second = k;
+                         temp_r_const.end_pin.push_back(temp_end_pin);
+                         std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                         break; 
+                       }
+                    }
+                 }
+              }
+           }else if(pins.size()==1){
+              for(unsigned int j=0;j<node.Terminals.size();j++){
+                 if(node.Terminals.at(j).name.compare(pins[0])==0){
+                    temp_end_pin.first = -1;
+                    temp_end_pin.second = j;
+                    temp_r_const.end_pin.push_back(temp_end_pin);
+                    std::cout<<"Test R end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                    break; 
+                 }
+              }
+           }
+
            temp_r_const.R.push_back(atoi(tempsec[2].c_str()));
         }
         node.R_Constraints.push_back(temp_r_const);
-      }else if (temp[0].compare("C_const")==0){
+      }else if (temp[0].compare("C_Const")==0){
         PnRDB::C_const temp_c_const;
         string word=temp[2];
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_c_const.net_name=word;
-        for(int i=4;i<temp.size()-1;i=i+2){
+
+        for(unsigned int i=4;i<temp.size()-1;i+=2){
+
            word=temp[i];
            word=word.substr(1);
            word=word.substr(0, word.length()-1);
            //cout<<word<<endl;
            tempsec=StringSplitbyChar(word, ',');
-           temp_c_const.start_pin.push_back(tempsec[0]);
-           temp_c_const.end_pin.push_back(tempsec[1]);
+           std::pair<int,int> temp_start_pin;
+           std::pair<int,int> temp_end_pin;
+           vector<string> pins;
+
+           pins = StringSplitbyChar(tempsec[0], '/');
+           if(pins.size()>1){
+              for(unsigned int j=0;j<node.Blocks.size();j++){
+                 if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                    for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                       if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                         temp_start_pin.first = j;
+                         temp_start_pin.second = k;
+                         temp_c_const.start_pin.push_back(temp_start_pin);
+                         std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                         break; 
+                       }
+                    }
+                 }
+              }
+           }else if(pins.size()==1){
+              for(unsigned int j=0;j<node.Terminals.size();j++){
+                 if(node.Terminals.at(j).name.compare(pins[0])==0){
+                    temp_start_pin.first = -1;
+                    temp_start_pin.second = j;
+                    temp_c_const.start_pin.push_back(temp_start_pin);
+                    std::cout<<"Test C start pin "<<temp_start_pin.first<<" "<<temp_start_pin.second<<std::endl;
+                    break; 
+                 }
+              }
+           }
+
+           pins = StringSplitbyChar(tempsec[1], '/');
+           if(pins.size()>1){
+              for(unsigned int j=0;j<node.Blocks.size();j++){
+                 if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                    for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                       if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                         temp_end_pin.first = j;
+                         temp_end_pin.second = k;
+                         temp_c_const.end_pin.push_back(temp_end_pin);
+                         std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                         break; 
+                       }
+                    }
+                 }
+              }
+           }else if(pins.size()==1){
+              for(unsigned int j=0;j<node.Terminals.size();j++){
+                 if(node.Terminals.at(j).name.compare(pins[0])==0){
+                    temp_end_pin.first = -1;
+                    temp_end_pin.second = j;
+                    temp_c_const.end_pin.push_back(temp_end_pin);
+                    std::cout<<"Test C end pin "<<temp_end_pin.first<<" "<<temp_end_pin.second<<std::endl;
+                    break; 
+                 }
+              }
+           }
            temp_c_const.C.push_back(atoi(tempsec[2].c_str()));
         }
         node.C_Constraints.push_back(temp_c_const);
-
       }
     }
     fin.close();
