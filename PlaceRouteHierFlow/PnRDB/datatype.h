@@ -455,24 +455,6 @@ struct C_const {
 
 };
 
-struct R_const {
-
-  string net_name;
-  vector<string> start_pin;
-  vector<string> end_pin;
-  vector<double> R;
-
-};
-
-struct C_const {
-
-  string net_name;
-  vector<string> start_pin;
-  vector<string> end_pin;
-  vector<double> C;
-
-};
-
 /// Part 4: declaration of structures for LEF data
 struct lefMacro {
   int width=0, height=0;
