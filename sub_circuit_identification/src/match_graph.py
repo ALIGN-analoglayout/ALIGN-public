@@ -121,18 +121,27 @@ def _mapped_graph_list(G1, liblist):
         logging.info("G: %s : %s", sub_block_name,
                      str(' '.join(G2.nodes())))
         GM = isomorphism.GraphMatcher(
-            G1,
-            G2,
+            G1, G2,
             node_match=isomorphism.categorical_node_match(['inst_type'],
                                                           ['nmos']),
             edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
+
         if GM.subgraph_is_isomorphic():
             logging.info("ISOMORPHIC : %s", sub_block_name)
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
-                map_list.append(Gsub)
-                logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
+                    all_nd_val = [
+                    G1.nodes[key]['values'] for key in Gsub
+                    if 'net' not in G1.nodes[key]["inst_type"]]
+                    if all_nd_val[0]== all_nd_val[1]:
+                        map_list.append(Gsub)
+                        logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                        logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                else:
+                    map_list.append(Gsub)
+                    logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
+                    logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
             mapped_graph_list[sub_block_name] = map_list
 
     return mapped_graph_list
@@ -351,7 +360,7 @@ if __name__ == '__main__':
         delta =1
         while delta > 0:
             logging.info("CHECKING stacked transistors")
-            preprocess_stack(G1)
+            #preprocess_stack(G1)
             delta = initial_size - len(G1)
             initial_size = len(G1)
 

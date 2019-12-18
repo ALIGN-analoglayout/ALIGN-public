@@ -74,6 +74,11 @@ xm0 zn i vss vss lvtnfet w=w0 l=l0
 xm1 zn i vdd vdd lvtpfet w=w1 l=l0
 .ends INV_LVT
 
+**.subckt INV_3T i1 i2 zn vdd vss
+**xm0 zn i1 vss vss lvtnfet w=w0 l=l0
+**xm1 zn i2 vdd vdd lvtpfet w=w1 l=l0
+**.ends INV_3T
+
 .subckt switched_capacitor_combination Vin agnd Vin_ota Voutn phi1 phi2
 m0 Voutn phi1 net67 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
 m7 Vin_ota phi1 net63 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
@@ -86,13 +91,13 @@ c1 net63 net67 30e-15
 c0 net72 net63 60e-15
 .ends switched_capacitor_combination
 
-.subckt res_array_8 MINUS0 PLUS0 PLUS1 PLUS2 PLUS3 PLUS4 PLUS5 PLUS6 PLUS7
-r0 PLUS0 MINUS0 500
-r1 PLUS1 PLUS0 1e3
-r2 PLUS2 PLUS1 1e3
-r3 PLUS3 PLUS2 1e3
-r4 PLUS4 PLUS3 1e3
-r5 PLUS5 PLUS4 1e3
-r6 PLUS6 PLUS5 1e3
-r7 PLUS7 PLUS6 500
-.ends res_array_8
+**.subckt res_array_8 MINUS0 PLUS0 PLUS1 PLUS2 PLUS3 PLUS4 PLUS5 PLUS6 PLUS7
+**r0 PLUS0 MINUS0 500
+**r1 PLUS1 PLUS0 1e3
+**r2 PLUS2 PLUS1 1e3
+**r3 PLUS3 PLUS2 1e3
+**r4 PLUS4 PLUS3 1e3
+**r5 PLUS5 PLUS4 1e3
+**r6 PLUS6 PLUS5 1e3
+**r7 PLUS7 PLUS6 500
+**.ends res_array_8
