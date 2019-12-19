@@ -99,7 +99,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
   int h_index = this->width/(h_minL+h_ee);
   int v_index = this->height/(v_minL+v_ee);
-
+  std::cout<<"width "<<this->width<<" height "<<this->height<<std::endl;
   std::vector<int> v_L;
   std::vector<int> v_U;
   std::vector<int> h_L;
