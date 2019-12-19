@@ -21,6 +21,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
   RouterDB::point temp_point;
   temp_point.x=temp_Terminal.termContacts[0].placedCenter.x;
   temp_point.y=temp_Terminal.termContacts[0].placedCenter.y;
+  std::cout<<"terminal center "<<temp_point.x<<" "<<temp_point.y<<std::endl;
 
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
   int h_width = drc_info.Metal_info[horizontal_index].width;
@@ -190,7 +191,10 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
       }
 
   }
+
   std::cout<<"Finish Determine terminal"<<std::endl;
+
+  return;
 
 };
 
