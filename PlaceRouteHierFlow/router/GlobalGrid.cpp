@@ -590,7 +590,8 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
       } else { // terminal
 
         for( std::vector<RouterDB::contact>::iterator cit=Terminals.at(iter).termContacts.begin(); cit!=Terminals.at(iter).termContacts.end(); ++cit) {
-          ConverNetTerminal(tSet, nit->connectedTile.at(i), this->lowest_metal, cit->placedCenter.x, cit->placedCenter.y);
+          //ConverNetTerminal(tSet, nit->connectedTile.at(i), this->lowest_metal, cit->placedCenter.x, cit->placedCenter.y);
+          ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
           std::cout<<"Terminal Contact Center ( "<<cit->placedCenter.x<<" "<<cit->placedCenter.y<<" )"<<std::endl;
         }
 /*

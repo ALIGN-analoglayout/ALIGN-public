@@ -187,7 +187,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   }
 
   //update terminals information when the node is top level
-    if(updatedNode.isTop==1){	 
+    //if(updatedNode.isTop==1)
+    if(1){	 
        for(unsigned int i=0;i<hierTree[nodeID].Terminals.size();i++){
             hierTree[nodeID].Terminals[i].termContacts.clear();
            for(unsigned int j=0;j<updatedNode.Terminals[i].termContacts.size();j++){ //this line $$$$yaguang$$$$$

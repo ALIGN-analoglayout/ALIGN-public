@@ -1051,7 +1051,8 @@ int GcellDetailRouter::findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterD
 
 };
 
-std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Grid& grid, RouterDB::Net &temp_net){
+
+std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new_old(Grid& grid, RouterDB::Net &temp_net){
 
 
    std::cout<<"Check point 1"<<std::endl;
@@ -1156,6 +1157,71 @@ std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Gr
                terminals_temp_contact.metalIdx = Terminals[temp_net.connected[i].iter].termContacts[0].metal;
                temp_contacts.push_back(terminals_temp_contact);         
            
+        }
+
+        temp_Pin.push_back(temp_contacts);
+        sum++;
+
+      }
+
+  //std::cout<<
+  std::cout<<"Check point 2"<<std::endl;
+
+  return temp_Pin;
+
+
+};
+
+
+std::vector<std::vector<RouterDB::SinkData> > GcellDetailRouter::findPins_new(Grid& grid, RouterDB::Net &temp_net){
+
+
+   std::cout<<"Check point 1"<<std::endl;
+
+   std::vector<std::vector<RouterDB::SinkData> > temp_Pin;
+
+   std::cout<<"connected number "<<temp_net.connected.size()<<std::endl;
+
+   int sum = 0;
+
+   for(unsigned int i=0;i<temp_net.connected.size();i++){
+
+      std::vector<RouterDB::SinkData> temp_contacts;
+
+      if(temp_net.connected[i].type == RouterDB::BLOCK){
+         
+         unsigned int contact_number = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts.size();
+
+         for(unsigned int j=0;j<contact_number;j++){
+            RouterDB::SinkData temp_contact;
+            RouterDB::point temp_point;
+            temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].placedLL.x;
+            temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].placedLL.y;
+            temp_contact.coord.push_back(temp_point);
+            temp_point.x = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].placedUR.x;
+            temp_point.y = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].placedUR.y;
+            temp_contact.coord.push_back(temp_point);
+            temp_contact.metalIdx = this->Blocks.at(temp_net.connected[i].iter2).pins.at(temp_net.connected[i].iter).pinContacts[j].metal;
+            temp_contacts.push_back(temp_contact);
+            } 
+
+        }else if(temp_net.connected[i].type == RouterDB::TERMINAL and this->Terminals.at(temp_net.connected[i].iter).termContacts[0].metal!=-1){
+
+
+         unsigned int contact_number = this->Terminals.at(temp_net.connected[i].iter).termContacts.size();
+
+         for(unsigned int j=0;j<contact_number;j++){
+            RouterDB::SinkData temp_contact;
+            RouterDB::point temp_point;
+            temp_point.x = this->Terminals.at(temp_net.connected[i].iter).termContacts[j].placedLL.x;
+            temp_point.y = this->Terminals.at(temp_net.connected[i].iter).termContacts[j].placedLL.y;
+            temp_contact.coord.push_back(temp_point);
+            temp_point.x = this->Terminals.at(temp_net.connected[i].iter).termContacts[j].placedUR.x;
+            temp_point.y = this->Terminals.at(temp_net.connected[i].iter).termContacts[j].placedUR.y;
+            temp_contact.coord.push_back(temp_point);
+            temp_contact.metalIdx = this->Terminals.at(temp_net.connected[i].iter).termContacts[j].metal;
+            temp_contacts.push_back(temp_contact);
+            }       
         }
 
         temp_Pin.push_back(temp_contacts);
@@ -2624,7 +2690,8 @@ void GcellDetailRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::
   if(net.terminal_idx==-1) {std::cout<<"Router-Warning: cannot found terminal conntecting to net"<<std::endl; return;}
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
-  if(this->isTop){
+  //if(this->isTop)
+  if(1){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).termContacts[0]);
@@ -2632,6 +2699,7 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).
 
     }
 
+/*
   //blockspin to intermetal
   for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
@@ -2666,7 +2734,7 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
       ConvertToViaPnRDB_Placed_Origin(temp_via, net.path_via[i]);  
       temp_pin.pinVias.push_back(temp_via);
      }
-          
+*/          
 
   HierNode.blockPins.push_back(temp_pin);    
   std::cout<<"END NetToNodeBlockPins"<<std::endl;
@@ -2721,7 +2789,8 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
           }
      }
   
-  if(isTop==1){
+  //if(isTop==1)
+  if(1){
     //return terminal to node terminal
     std::cout<<"test terminal to termina: start"<<std::endl;
     TerminalToNodeTerminal(HierNode);

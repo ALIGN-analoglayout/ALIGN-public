@@ -100,6 +100,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     std::vector<RouterDB::SinkData> FindCommon_Contact(std::vector<RouterDB::SinkData> &temp_contact, std::vector<RouterDB::SinkData> &sym_temp_contact, bool H, int center);
     int findPins_Sym(Grid& grid, RouterDB::Net &temp_net, RouterDB::Net &sym_temp_net, bool H, int center, std::vector<std::vector<RouterDB::SinkData> > &temp_pins, std::vector<std::vector<RouterDB::SinkData> > &sym_temp_pins ,std::vector<std::vector<RouterDB::SinkData> > &Common_contacts);
     std::vector<std::vector<RouterDB::SinkData> > findPins_new(Grid& grid, RouterDB::Net &temp_net);
+    std::vector<std::vector<RouterDB::SinkData> > findPins_new_old(Grid& grid, RouterDB::Net &temp_net);
     void SortPins(std::vector<std::vector<RouterDB::SinkData> > & temp_Pin);
     void CreatePlistSymBlocks(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &set_plist, RouterDB::point gridll, RouterDB::point gridur, int H, int center, RouterDB::point symgridll, RouterDB::point symgridur);
     void CreatePlistContact(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::contact>& Contacts);
