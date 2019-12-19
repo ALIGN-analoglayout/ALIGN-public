@@ -237,7 +237,7 @@ void GcellGlobalRouter::PlaceTerminal(){
   }
 
   std::cout<<"terminal test 1"<<std::endl;
-  int times = 3;
+  int times = 4;
   Determine_Terminal_Center(horizontal_index, vertical_index, times);
   std::cout<<"terminal test 1.1"<<std::endl;
   std::cout<<"terminal test 2"<<std::endl;
@@ -263,13 +263,13 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout<<"End Terminal Placement"<<std::endl;
 
   //remove this part
-
+  /*
   if(node.isIntelGcellGlobalRouter == false){
     std::cout<<"Begin Terminal"<<std::endl;
     placeTerminals();
     std::cout<<"End Terminal"<<std::endl;
   }
-
+  */
   std::cout<<"Test 2"<<std::endl;
   //remove this part
 
