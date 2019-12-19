@@ -85,13 +85,13 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
 
 void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vertical_index){
 
-  int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
+  //int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
   //int h_width = drc_info.Metal_info[horizontal_index].width;
   int h_minL = drc_info.Metal_info[horizontal_index].minL;
   int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
   //int h_metal = horizontal_index;
   
-  int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
+  //int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
   //int v_width = drc_info.Metal_info[vertical_index].width;
   int v_minL = drc_info.Metal_info[vertical_index].minL;
   int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
