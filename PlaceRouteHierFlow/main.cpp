@@ -165,8 +165,10 @@ int main(int argc, char** argv ){
   // And generates 69MB in files
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
   bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
-  bool disable_io = false; //turn off window outputs
-  bool multi_thread = false;  // run multi layouts in multi threads
+  bool disable_io = getenv( "PNRDB_disable_io") != NULL;; //turn off window outputs
+  bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
+  //bool disable_io = false; //turn off window outputs
+  //bool multi_thread = false;  // run multi layouts in multi threads
 
   string opath="./Results/";
   string fpath=argv[1];
