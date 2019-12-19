@@ -4244,7 +4244,7 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
 }
 
 void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node) {
-  if(node.isTop) {
+  if(1) {
     for(int i=0;i<(int)caseNL.GetSizeofTerminals();i++) {
       //cout<<"Terminal "<<i<<endl;
       node.Terminals.at(i).termContacts.clear();

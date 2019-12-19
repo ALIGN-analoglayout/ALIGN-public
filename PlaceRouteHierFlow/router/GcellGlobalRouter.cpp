@@ -16,14 +16,235 @@ GcellGlobalRouter::GcellGlobalRouter(){
 
 };
 
+void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horizontal_index, int vertical_index){
+
+  RouterDB::point temp_point;
+  temp_point.x=temp_Terminal.termContacts[0].placedCenter.x;
+  temp_point.y=temp_Terminal.termContacts[0].placedCenter.y;
+
+  int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
+  int h_width = drc_info.Metal_info[horizontal_index].width;
+  int h_minL = drc_info.Metal_info[horizontal_index].minL;
+  int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
+  int h_metal = horizontal_index;
+  
+  int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
+  int v_width = drc_info.Metal_info[vertical_index].width;
+  int v_minL = drc_info.Metal_info[vertical_index].minL;
+  int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
+  int v_metal = vertical_index;
+
+  if(temp_point.y%h_pitches==0){
+    //assgin this terminal to horizontal metal, currently M2
+    
+    RouterDB::contact temp_contact;
+    temp_contact.placedCenter = temp_point;
+    temp_contact.originCenter = temp_point;
+    RouterDB::point temp_LL = temp_point;
+    RouterDB::point temp_UR = temp_point;
+    temp_LL.x = temp_LL.x - h_minL/2;
+    temp_UR.x = temp_UR.x + h_minL/2;
+    temp_LL.y = temp_LL.y - h_width/2;
+    temp_UR.y = temp_UR.y + h_width/2;
+    temp_contact.originLL = temp_LL;
+    temp_contact.originUR = temp_UR;
+    temp_contact.placedLL = temp_LL;
+    temp_contact.placedUR = temp_UR;
+    temp_contact.metal = h_metal;
+    temp_Terminal.termContacts.clear();
+    temp_Terminal.termContacts.push_back(temp_contact);
+    return;
+  }
+
+  if(temp_point.x%v_pitches==0){
+   //assgin this terminal to verital, currenly M1
+
+    RouterDB::contact temp_contact;
+    temp_contact.placedCenter = temp_point;
+    temp_contact.originCenter = temp_point;
+    RouterDB::point temp_LL = temp_point;
+    RouterDB::point temp_UR = temp_point;
+    temp_LL.x = temp_LL.x - v_minL/2;
+    temp_UR.x = temp_UR.x + v_minL/2;
+    temp_LL.y = temp_LL.y - v_width/2;
+    temp_UR.y = temp_UR.y + v_width/2;
+    temp_contact.originLL = temp_LL;
+    temp_contact.originUR = temp_UR;
+    temp_contact.placedLL = temp_LL;
+    temp_contact.placedUR = temp_UR;
+    temp_contact.metal = v_metal;
+    temp_Terminal.termContacts.clear();
+    temp_Terminal.termContacts.push_back(temp_contact);
+    return;
+  }
+
+};
+
+void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vertical_index){
+
+  int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
+  int h_width = drc_info.Metal_info[horizontal_index].width;
+  int h_minL = drc_info.Metal_info[horizontal_index].minL;
+  int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
+  int h_metal = horizontal_index;
+  
+  int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
+  int v_width = drc_info.Metal_info[vertical_index].width;
+  int v_minL = drc_info.Metal_info[vertical_index].minL;
+  int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
+  int v_metal = vertical_index;
+
+  int h_index = this->width/(h_minL+h_ee);
+  int v_index = this->height/(v_minL+v_ee);
+
+  std::vector<int> v_L;
+  std::vector<int> v_U;
+  std::vector<int> h_L;
+  std::vector<int> h_U;
+
+  for(int i=0;i<h_index;i++){
+     h_L.push_back(0);
+     h_U.push_back(0);
+  }
+
+  for(int i=0;i<v_index;i++){
+     v_L.push_back(0);
+     v_U.push_back(0);
+  }
+
+  std::cout<<"Determine terminal center 1"<<std::endl;
+  for(int i=0;i<Terminals.size();i++){
+
+     RouterDB::point temp_point;
+     std::cout<<"Terminal "<<i<<" terminal name "<<Terminals[i].name<<" termContacts size "<<Terminals[i].termContacts.size()<<std::endl;
+     temp_point.x=Terminals[i].termContacts[0].placedCenter.x;
+     temp_point.y=Terminals[i].termContacts[0].placedCenter.y;
+     int min_dist = INT_MAX;
+     int min_index = -1;
+     int dis = 0;
+     std::cout<<"Determine terminal center 2"<<std::endl;
+     if(temp_point.y%h_pitches==0){
+        //h, m2
+        if(temp_point.y ==0){
+
+          for(int j=1;j<v_L.size();j++){
+
+             dis = abs(temp_point.x -j*(v_minL+v_ee));
+             if(dis<min_dist and v_L[j]==0){
+                min_dist = dis;
+                min_index = j;
+                }
+             }
+             v_L[min_index]=1;
+
+        }else{
+
+          for(int j=1;j<v_U.size();j++){
+
+             dis = abs(temp_point.x -j*(v_minL+v_ee));
+             if(dis<min_dist and v_U[j]==0){
+                min_dist = dis;
+                min_index = j;
+                }
+             }
+             v_U[min_index]=1;
+
+        }
+          temp_point.x = min_index*(v_minL+v_ee);
+          std::cout<<"Determine terminal center 2.5"<<std::endl;
+          Terminals[i].termContacts[0].placedCenter = temp_point;
+          std::cout<<"Determine terminal center 3"<<std::endl;
+      }else{
+        //v m1
+        if(temp_point.x ==0){
+
+          for(int j=1;j<h_L.size();j++){
+
+             dis = abs(temp_point.x -j*(h_minL+h_ee));
+             if(dis<min_dist and h_L[j]==0){
+                min_dist = dis;
+                min_index = j;
+                }
+             }
+             h_L[min_index]=1;
+
+        }else{
+
+          for(int j=1;j<h_U.size();j++){
+
+             dis = abs(temp_point.x -j*(h_minL+h_ee));
+             if(dis<min_dist and h_U[j]==0){
+                min_dist = dis;
+                min_index = j;
+                }
+             }
+             h_U[min_index]=1;
+
+        }
+          temp_point.x = min_index*(h_minL+h_ee);
+          std::cout<<"Determine terminal center 3.5"<<std::endl;
+          Terminals[i].termContacts[0].placedCenter = temp_point;
+          std::cout<<"Determine terminal center 4"<<std::endl;
+      }
+
+  }
+};
+
+void GcellGlobalRouter::PlaceTerminal(){
+
+  int horizontal_index = 0;  
+  int vertical_index = 0;
+
+  for(int i=0;i<this->drc_info.Metal_info.size();i++){
+
+     if(drc_info.Metal_info[i].direct==1){
+        //H
+        horizontal_index = i;
+        break;
+       }
+
+  }
+
+  for(int i=0;i<this->drc_info.Metal_info.size();i++){
+
+     if(drc_info.Metal_info[i].direct==0){
+        //V
+        vertical_index = i;
+        break;
+       }
+
+  }
+
+  std::cout<<"terminal test 1"<<std::endl;
+
+  Determine_Terminal_Center(horizontal_index, vertical_index);
+
+  std::cout<<"terminal test 2"<<std::endl;
+
+  for(int i=0;i<Terminals.size();i++){
+     AssignMetal(Terminals[i], horizontal_index, vertical_index);
+  }
+
+  std::cout<<"terminal test 3"<<std::endl;
+
+
+};
+
 GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
   
   //1. Initial Drcdata and design data
   std::cout<<"Test 1"<<std::endl;
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
+
+  std::cout<<"Begin Terminal Placement"<<std::endl;
+  PlaceTerminal();
+  std::cout<<"End Terminal Placement"<<std::endl;
+
   if(node.isIntelGcellGlobalRouter == false){
+    std::cout<<"Begin Terminal"<<std::endl;
     placeTerminals();
+    std::cout<<"End Terminal"<<std::endl;
   }
   std::cout<<"Test 2"<<std::endl;
 
@@ -636,7 +857,8 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   for(unsigned int i=0;i<node.Terminals.size();++i){	
       RouterDB::terminal temp_terminal;
       temp_terminal.netIter = node.Terminals[i].netIter;
-      if(isTop) {
+      if(1) {
+      std::cout<<"Node Terminal "<<node.Terminals[i].name<<" termContacts size "<<node.Terminals[i].termContacts.size()<<std::endl;
       for(unsigned int j=0;j<node.Terminals[i].termContacts.size();++j){
           RouterDB::contact temp_contact;
  
