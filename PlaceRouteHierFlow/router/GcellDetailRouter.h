@@ -65,7 +65,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     //bool CheckConnection_Dest(RouterDB::Segment& temp_seg);
     void CreatePlistBlocks(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Block>& Blocks);
     //void CreatePlistNets(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
-    void CreatePlistTerminals(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::terminal> Terminals);
+    void CreatePlistTerminals(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::terminal> &Terminals);
     //void CreatePlistNets_DetailRouter(std::vector<std::vector<RouterDB::point> >& plist, std::vector<RouterDB::Net>& Nets);
     void UpdatePlistNets(std::vector<std::vector<RouterDB::Metal> > &physical_path, std::vector<std::vector<RouterDB::point> > & plist);
     void GetPhsical_Metal(std::vector<std::vector<RouterDB::Metal> > &physical_path);
@@ -80,19 +80,19 @@ class GcellDetailRouter : public GcellGlobalRouter{
 
     void create_detailrouter();
     //std::vector<std::vector<RouterDB::SinkData> > findPins(RouterDB::Net temp_net);
-    std::vector<RouterDB::Metal> findGlobalPath(RouterDB::Net temp_net);
-    void splitPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net);
-    void lastmile_source(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source);
-    void lastmile_dest(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source);
-    void lastmile_source_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source);
-    void lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> temp_source);
-    void updateSource(std::vector<std::vector<RouterDB::Metal> > temp_path, std::vector<RouterDB::SinkData>& temp_source);
+    std::vector<RouterDB::Metal> findGlobalPath(RouterDB::Net &temp_net);
+    void splitPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net);
+    void lastmile_source(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source);
+    void lastmile_dest(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source);
+    void lastmile_source_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source);
+    void lastmile_dest_new(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData> &temp_source);
+    void updateSource(std::vector<std::vector<RouterDB::Metal> > &temp_path, std::vector<RouterDB::SinkData>& temp_source);
 
     void NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
     void NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net);
     void NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::Net& net);
-    void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::Net& temp_net);
-    std::vector<RouterDB::Metal> CpSymPath(std::vector<RouterDB::Metal> temp_path, int H, int center);
+    void returnPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net);
+    std::vector<RouterDB::Metal> CpSymPath(std::vector<RouterDB::Metal> &temp_path, int H, int center);
     RouterDB::contact SymContact(RouterDB::contact &temp_contact, bool H, int center);
     RouterDB::SinkData Sym_contact(RouterDB::SinkData &temp_contact, bool H, int center);
     int Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB::SinkData &sym_temp_contact, RouterDB::SinkData &cover_contact);
@@ -124,7 +124,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void JudgeTileCoverage(std::vector<std::pair<int,int> > &tile_index, std::vector<std::vector<RouterDB::SinkData> > &temp_pins, GlobalGrid &Gcell);
     int Tile_Cover_Contact(RouterDB::SinkData &temp_contact, RouterDB::SinkData &sym_temp_contact);
     void CheckTile(RouterDB::Net &temp_net, GlobalGrid &Gcell);
-    void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >physical_path, std::vector<RouterDB::contact> &temp_via_contact);
+    void GetPhsical_Via_contacts(std::vector<std::vector<RouterDB::Metal> >&physical_path, std::vector<RouterDB::contact> &temp_via_contact);
     std::vector<std::pair<int,int> > MappingToConnected(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
     void GatherSourceDest(std::vector<std::pair<int,int> > & global_path, std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> & Tile_Source, std::vector<int> & Tile_Dest);
     std::vector<int> EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);

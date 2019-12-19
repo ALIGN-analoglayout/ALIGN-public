@@ -319,7 +319,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
                        if(updatedNode.PowerNets[k].name == parent_node.PowerNets[l].name){
                             found = 1;
 
-                            parent_node.PowerNets[l].dummy_connected.clear();
+                            //parent_node.PowerNets[l].dummy_connected.clear();
 
                             for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
                                   PnRDB::connectNode temp_connectNode;
@@ -339,6 +339,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
                       PnRDB::PowerNet temp_PowerNet;
                       temp_PowerNet = updatedNode.PowerNets[k];
                       temp_PowerNet.connected.clear();
+                      temp_PowerNet.dummy_connected.clear();
                       temp_PowerNet.Pins.clear();
                       
                       for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){

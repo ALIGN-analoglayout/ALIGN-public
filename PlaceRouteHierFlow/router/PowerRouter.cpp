@@ -14,13 +14,13 @@
 
 //detail router for the rest
 
-PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid){
+PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate){
   
   //power_grid 1 create power_grid, 0 power net routing
 
   if(power_grid == 1){
      std::cout<<"CheckPoint 1"<<std::endl;
-     CreatePowerGrid(node, drc_info, Lmetal, Hmetal);
+     CreatePowerGrid(node, drc_info, Lmetal, Hmetal, rate);
      std::cout<<"CheckPoint 2"<<std::endl;
      Physical_metal_via_power_grid(Vdd_grid);
      std::cout<<"CheckPoint 3"<<std::endl;
@@ -30,7 +30,7 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      std::cout<<"CheckPoint 5"<<std::endl;  
     }else{
      std::cout<<"CheckPoint 6"<<std::endl;
-     PowerNetRouter(node, drc_info, Lmetal, Hmetal);
+     PowerNetRouter(node, drc_info, Lmetal, Hmetal, rate);
      std::cout<<"CheckPoint 7"<<std::endl;
      Physical_metal_via(); 
      std::cout<<"CheckPoint 8"<<std::endl;
@@ -43,9 +43,9 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
 //write PowerGrid in top level
 //write PowerNet in each level or top level???
 
-void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
+void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
 
-  GetData(node, drc_info, Lmetal, Hmetal);
+  GetData(node, drc_info, Lmetal, Hmetal, rate);
   
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
@@ -116,10 +116,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
 };
 
-void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
+void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
 
   std::cout<<"checkpoint1.1"<<std::endl;
-  GetData(node, drc_info, Lmetal, Hmetal);
+  GetData(node, drc_info, Lmetal, Hmetal, rate);
   std::cout<<"checkpoint1.2"<<std::endl;
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
@@ -494,7 +494,7 @@ void PowerRouter::CreatePowerGridDrc_info(){
 
 };
 
-void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
+void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
   std::cout<<"Checkpoint get Data 1"<<std::endl;
   getDRCdata(drc_info);
   std::cout<<"Checkpoint get Data 2"<<std::endl;
@@ -510,7 +510,7 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   std::cout<<"Checkpoint get Data 7"<<std::endl;
 
   for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
-      utilization.push_back(0.1); 
+      utilization.push_back(rate); 
      }
   std::cout<<"Checkpoint get Data 8"<<std::endl;
 };
