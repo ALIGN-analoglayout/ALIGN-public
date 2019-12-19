@@ -125,6 +125,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      int min_dist = INT_MAX;
      int min_index = -1;
      int dis = 0;
+     int found = 0;
      std::cout<<"Determine terminal center 2"<<std::endl;
      if(temp_point.y%h_pitches==0){
         //h, m2
@@ -136,11 +137,29 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
              if(dis<min_dist and v_L[j]==0){
                 min_dist = dis;
                 min_index = j;
+                found = 1;
                 }
              }
              std::cout<<"v L size "<<v_L.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
-             v_L[min_index]=1;
+             if(found){
+               v_L[min_index]=1;
+             }else{
+
+                for(int j=1;j<v_U.size()-1;j++){
+
+                dis = abs(temp_point.x -j*(v_minL+v_ee));
+                if(dis<min_dist and v_U[j]==0){
+                  min_dist = dis;
+                  min_index = j;
+                  found = 1;
+                  }
+                }
+                if(found){
+                    v_U[min_index]=1;
+                    temp_point.y = height;
+                  }
+             }
 
         }else{
 
@@ -150,11 +169,29 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
              if(dis<min_dist and v_U[j]==0){
                 min_dist = dis;
                 min_index = j;
+                found = 1;
                 }
              }
              std::cout<<"v U size "<<v_U.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
-             v_U[min_index]=1;
+             if(found){
+               v_U[min_index]=1;
+             }else{
+                for(int j=1;j<v_L.size()-1;j++){
+
+                dis = abs(temp_point.x -j*(v_minL+v_ee));
+                if(dis<min_dist and v_L[j]==0){
+                  min_dist = dis;
+                  min_index = j;
+                  found = 1;
+                  }
+                }
+                if(found){
+                    v_L[min_index]=1;
+                    temp_point.y = 0;
+                  }
+ 
+             }
 
         }
           temp_point.x = min_index*(v_minL+v_ee);
@@ -171,11 +208,28 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
              if(dis<min_dist and h_L[j]==0){
                 min_dist = dis;
                 min_index = j;
+                found = 1;
                 }
              }
              std::cout<<"h L size "<<h_L.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
-             h_L[min_index]=1;
+             if(found){
+                h_L[min_index]=1;
+               }else{
+                for(int j=1;j<h_U.size()-1;j++){
+                dis = abs(temp_point.x -j*(h_minL+h_ee));
+                if(dis<min_dist and h_U[j]==0){
+                  min_dist = dis;
+                  min_index = j;
+                  found = 1;
+                  }
+                }
+                if(found){
+                    h_U[min_index]=1;
+                    temp_point.x = width;
+                  }
+
+               }
 
         }else{
 
@@ -185,11 +239,28 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
              if(dis<min_dist and h_U[j]==0){
                 min_dist = dis;
                 min_index = j;
+                found = 1; 
                 }
              }
              std::cout<<"h U size "<<h_U.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
-             h_U[min_index]=1;
+             if(found){
+               h_U[min_index]=1;
+             }else{
+                for(int j=1;j<h_L.size()-1;j++){
+                dis = abs(temp_point.x -j*(h_minL+h_ee));
+                if(dis<min_dist and h_L[j]==0){
+                  min_dist = dis;
+                  min_index = j;
+                  found = 1;
+                  }
+                }
+                if(found){
+                    h_L[min_index]=1;
+                    temp_point.x = 0;
+                  }
+          
+             }
 
         }
           temp_point.x = min_index*(h_minL+h_ee);
