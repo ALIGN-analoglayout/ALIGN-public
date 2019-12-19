@@ -17,7 +17,7 @@ GcellGlobalRouter::GcellGlobalRouter(){
 };
 
 void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horizontal_index, int vertical_index){
-
+  std::cout<<"start assign metal"<<std::endl;
   RouterDB::point temp_point;
   temp_point.x=temp_Terminal.termContacts[0].placedCenter.x;
   temp_point.y=temp_Terminal.termContacts[0].placedCenter.y;
@@ -53,6 +53,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     temp_contact.metal = h_metal;
     temp_Terminal.termContacts.clear();
     temp_Terminal.termContacts.push_back(temp_contact);
+    std::cout<<"end assign metal"<<std::endl;
     return;
   }
 
@@ -75,6 +76,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     temp_contact.metal = v_metal;
     temp_Terminal.termContacts.clear();
     temp_Terminal.termContacts.push_back(temp_contact);
+    std::cout<<"end assign metal"<<std::endl;
     return;
   }
 
