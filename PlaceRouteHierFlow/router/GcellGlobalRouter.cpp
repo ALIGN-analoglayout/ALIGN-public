@@ -25,13 +25,13 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
   int h_width = drc_info.Metal_info[horizontal_index].width;
   int h_minL = drc_info.Metal_info[horizontal_index].minL;
-  int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
+  //int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
   int h_metal = horizontal_index;
   
   int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
   int v_width = drc_info.Metal_info[vertical_index].width;
   int v_minL = drc_info.Metal_info[vertical_index].minL;
-  int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
+  //int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
   int v_metal = vertical_index;
 
   if(temp_point.y%h_pitches==0){
@@ -83,16 +83,16 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
 void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vertical_index){
 
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
-  int h_width = drc_info.Metal_info[horizontal_index].width;
+  //int h_width = drc_info.Metal_info[horizontal_index].width;
   int h_minL = drc_info.Metal_info[horizontal_index].minL;
   int h_ee = drc_info.Metal_info[horizontal_index].dist_ee;
-  int h_metal = horizontal_index;
+  //int h_metal = horizontal_index;
   
   int v_pitches = drc_info.Metal_info[vertical_index].grid_unit_x;
-  int v_width = drc_info.Metal_info[vertical_index].width;
+  //int v_width = drc_info.Metal_info[vertical_index].width;
   int v_minL = drc_info.Metal_info[vertical_index].minL;
   int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
-  int v_metal = vertical_index;
+  //int v_metal = vertical_index;
 
   int h_index = this->width/(h_minL+h_ee);
   int v_index = this->height/(v_minL+v_ee);
@@ -154,7 +154,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           std::cout<<"Determine terminal center 2.5"<<std::endl;
           Terminals[i].termContacts[0].placedCenter = temp_point;
           std::cout<<"Determine terminal center 3"<<std::endl;
-      }else{
+      }else if(temp_point.x%v_pitches==0){
         //v m1
         if(temp_point.x ==0){
 
