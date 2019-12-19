@@ -263,13 +263,13 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout<<"End Terminal Placement"<<std::endl;
 
   //remove this part
-/*
+
   if(node.isIntelGcellGlobalRouter == false){
     std::cout<<"Begin Terminal"<<std::endl;
     placeTerminals();
     std::cout<<"End Terminal"<<std::endl;
   }
-*/
+
   std::cout<<"Test 2"<<std::endl;
   //remove this part
 
