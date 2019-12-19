@@ -119,155 +119,89 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
   for(int i=0;i<Terminals.size();i++){
 
      RouterDB::point temp_point;
+     RouterDB::point new_temp_point;
      std::cout<<"Terminal "<<i<<" terminal name "<<Terminals[i].name<<" termContacts size "<<Terminals[i].termContacts.size()<<std::endl;
      temp_point.x=Terminals[i].termContacts[0].placedCenter.x;
      temp_point.y=Terminals[i].termContacts[0].placedCenter.y;
      int min_dist = INT_MAX;
      int min_index = -1;
      int dis = 0;
-     int found = 0;
+     int found_v_L = 0;
+     int found_v_U = 0;
+     int found_h_L = 0;
+     int found_h_U = 0;
      std::cout<<"Determine terminal center 2"<<std::endl;
-     if(temp_point.y%h_pitches==0){
-        //h, m2
-        if(temp_point.y ==0){
-
-          for(int j=1;j<v_L.size()-1;j++){
-
-             dis = abs(temp_point.x -j*(v_minL+v_ee));
-             if(dis<min_dist and v_L[j]==0){
-                min_dist = dis;
-                min_index = j;
-                found = 1;
-                }
-             }
-             std::cout<<"v L size "<<v_L.size()<<std::endl;
-             std::cout<<"min_index "<<min_index<<std::endl;
-             if(found){
-               v_L[min_index]=1;
-             }else{
-
-                for(int j=1;j<v_U.size()-1;j++){
-
-                dis = abs(temp_point.x -j*(v_minL+v_ee));
-                if(dis<min_dist and v_U[j]==0){
-                  min_dist = dis;
-                  min_index = j;
-                  found = 1;
-                  }
-                }
-                if(found){
-                    v_U[min_index]=1;
-                    temp_point.y = height;
-                  }
-             }
-
-        }else{
-
-          for(int j=1;j<v_U.size()-1;j++){
-
-             dis = abs(temp_point.x -j*(v_minL+v_ee));
-             if(dis<min_dist and v_U[j]==0){
-                min_dist = dis;
-                min_index = j;
-                found = 1;
-                }
-             }
-             std::cout<<"v U size "<<v_U.size()<<std::endl;
-             std::cout<<"min_index "<<min_index<<std::endl;
-             if(found){
-               v_U[min_index]=1;
-             }else{
-                for(int j=1;j<v_L.size()-1;j++){
-
-                dis = abs(temp_point.x -j*(v_minL+v_ee));
-                if(dis<min_dist and v_L[j]==0){
-                  min_dist = dis;
-                  min_index = j;
-                  found = 1;
-                  }
-                }
-                if(found){
-                    v_L[min_index]=1;
-                    temp_point.y = 0;
-                  }
- 
-             }
-
+     
+     for(int j=1;j<v_L.size()-1;j++){
+        dis = abs(temp_point.x -j*(v_minL+v_ee))+abs(temp_point.y -0);
+        if(dis<min_dist and v_L[j]==0){
+          min_dist = dis;
+          min_index = j;
+          found_v_L = 1;
+          found_v_U = 0;
+          found_h_L = 0;
+          found_h_U = 0;
+          new_temp_point.x = j*(v_minL+v_ee);
+          new_temp_point.y = 0;
         }
-          temp_point.x = min_index*(v_minL+v_ee);
-          std::cout<<"Determine terminal center 2.5"<<std::endl;
-          Terminals[i].termContacts[0].placedCenter = temp_point;
-          std::cout<<"Determine terminal center 3"<<std::endl;
-      }else if(temp_point.x%v_pitches==0){
-        //v m1
-        if(temp_point.x ==0){
+     }
 
-          for(int j=1;j<h_L.size()-1;j++){
-
-             dis = abs(temp_point.x -j*(h_minL+h_ee));
-             if(dis<min_dist and h_L[j]==0){
-                min_dist = dis;
-                min_index = j;
-                found = 1;
-                }
-             }
-             std::cout<<"h L size "<<h_L.size()<<std::endl;
-             std::cout<<"min_index "<<min_index<<std::endl;
-             if(found){
-                h_L[min_index]=1;
-               }else{
-                for(int j=1;j<h_U.size()-1;j++){
-                dis = abs(temp_point.x -j*(h_minL+h_ee));
-                if(dis<min_dist and h_U[j]==0){
-                  min_dist = dis;
-                  min_index = j;
-                  found = 1;
-                  }
-                }
-                if(found){
-                    h_U[min_index]=1;
-                    temp_point.x = width;
-                  }
-
-               }
-
-        }else{
-
-          for(int j=1;j<h_U.size()-1;j++){
-
-             dis = abs(temp_point.x -j*(h_minL+h_ee));
-             if(dis<min_dist and h_U[j]==0){
-                min_dist = dis;
-                min_index = j;
-                found = 1; 
-                }
-             }
-             std::cout<<"h U size "<<h_U.size()<<std::endl;
-             std::cout<<"min_index "<<min_index<<std::endl;
-             if(found){
-               h_U[min_index]=1;
-             }else{
-                for(int j=1;j<h_L.size()-1;j++){
-                dis = abs(temp_point.x -j*(h_minL+h_ee));
-                if(dis<min_dist and h_L[j]==0){
-                  min_dist = dis;
-                  min_index = j;
-                  found = 1;
-                  }
-                }
-                if(found){
-                    h_L[min_index]=1;
-                    temp_point.x = 0;
-                  }
-          
-             }
-
+     for(int j=1;j<v_U.size()-1;j++){
+        dis = abs(temp_point.x -j*(v_minL+v_ee))+abs(temp_point.y -height);
+        if(dis<min_dist and v_L[j]==0){
+          min_dist = dis;
+          min_index = j;
+          found_v_L = 0;
+          found_v_U = 1;
+          found_h_L = 0;
+          found_h_U = 0;
+          new_temp_point.x = j*(v_minL+v_ee);
+          new_temp_point.y = height;
         }
-          temp_point.x = min_index*(h_minL+h_ee);
-          std::cout<<"Determine terminal center 3.5"<<std::endl;
-          Terminals[i].termContacts[0].placedCenter = temp_point;
-          std::cout<<"Determine terminal center 4"<<std::endl;
-      }
+     }
+
+     for(int j=1;j<h_L.size()-1;j++){
+        dis = abs(temp_point.y -j*(h_minL+h_ee))+abs(temp_point.x -0);
+        if(dis<min_dist and h_L[j]==0){
+          min_dist = dis;
+          min_index = j;
+          found_v_L = 0;
+          found_v_U = 0;
+          found_h_L = 1;
+          found_h_U = 0;
+          new_temp_point.y = j*(h_minL+h_ee);
+          new_temp_point.x = 0;
+        }
+     }
+
+     for(int j=1;j<h_U.size()-1;j++){
+        dis = abs(temp_point.y -j*(h_minL+h_ee))+abs(temp_point.x -width);
+        if(dis<min_dist and h_U[j]==0){
+          min_dist = dis;
+          min_index = j;
+          found_v_L = 0;
+          found_v_U = 0;
+          found_h_L = 0;
+          found_h_U = 1;
+          new_temp_point.y = j*(h_minL+h_ee);
+          new_temp_point.x = width;
+        }
+     }
+
+     if(found_v_L==0 and found_v_U==0 and found_h_L==0 and found_h_U==0){
+
+       std::cout<<"Fail to determine a terminal"<<std::endl;
+     }else{
+
+       Terminals[i].termContacts[0].placedCenter = new_temp_point;
+       if(found_v_L){v_L[min_index]=1;}
+       if(found_v_U){v_U[min_index]=1;}
+       if(found_h_L){h_L[min_index]=1;}
+       if(found_h_U){h_U[min_index]=1;}
+
+     }
+
+     
 
   }
 
