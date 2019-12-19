@@ -127,7 +127,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         //h, m2
         if(temp_point.y ==0){
 
-          for(int j=1;j<v_L.size();j++){
+          for(int j=1;j<v_L.size()-1;j++){
 
              dis = abs(temp_point.x -j*(v_minL+v_ee));
              if(dis<min_dist and v_L[j]==0){
@@ -139,7 +139,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
         }else{
 
-          for(int j=1;j<v_U.size();j++){
+          for(int j=1;j<v_U.size()-1;j++){
 
              dis = abs(temp_point.x -j*(v_minL+v_ee));
              if(dis<min_dist and v_U[j]==0){
@@ -158,7 +158,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
         //v m1
         if(temp_point.x ==0){
 
-          for(int j=1;j<h_L.size();j++){
+          for(int j=1;j<h_L.size()-1;j++){
 
              dis = abs(temp_point.x -j*(h_minL+h_ee));
              if(dis<min_dist and h_L[j]==0){
@@ -170,7 +170,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
 
         }else{
 
-          for(int j=1;j<h_U.size();j++){
+          for(int j=1;j<h_U.size()-1;j++){
 
              dis = abs(temp_point.x -j*(h_minL+h_ee));
              if(dis<min_dist and h_U[j]==0){
@@ -220,7 +220,7 @@ void GcellGlobalRouter::PlaceTerminal(){
   std::cout<<"terminal test 1"<<std::endl;
 
   Determine_Terminal_Center(horizontal_index, vertical_index);
-
+  std::cout<<"terminal test 1.1"<<std::endl;
   std::cout<<"terminal test 2"<<std::endl;
 
   for(int i=0;i<Terminals.size();i++){
