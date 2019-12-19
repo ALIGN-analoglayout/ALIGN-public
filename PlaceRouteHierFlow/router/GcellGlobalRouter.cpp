@@ -138,7 +138,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
                 min_index = j;
                 }
              }
-             std::cout<<"v size "<<v_L.size()<<std::endl;
+             std::cout<<"v L size "<<v_L.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
              v_L[min_index]=1;
 
@@ -152,7 +152,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
                 min_index = j;
                 }
              }
-             std::cout<<"v size "<<v_U.size()<<std::endl;
+             std::cout<<"v U size "<<v_U.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
              v_U[min_index]=1;
 
@@ -173,7 +173,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
                 min_index = j;
                 }
              }
-             std::cout<<"h size "<<h_L.size()<<std::endl;
+             std::cout<<"h L size "<<h_L.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
              h_L[min_index]=1;
 
@@ -187,7 +187,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
                 min_index = j;
                 }
              }
-             std::cout<<"h size "<<h_U.size()<<std::endl;
+             std::cout<<"h U size "<<h_U.size()<<std::endl;
              std::cout<<"min_index "<<min_index<<std::endl;
              h_U[min_index]=1;
 
