@@ -188,6 +188,8 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
       }
 
   }
+  std::cout<<"Finish Determine terminal"<<std::endl;
+
 };
 
 void GcellGlobalRouter::PlaceTerminal(){
