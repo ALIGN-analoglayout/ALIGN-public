@@ -21,6 +21,7 @@
 #include <utility>//std::pair, make_pair
 #include "Grid.h"
 #include "Graph.h"
+#include "math.h"
 #include "A_star.h"
 #include "GlobalGrid.h"
 #include "GlobalGraph.h"
