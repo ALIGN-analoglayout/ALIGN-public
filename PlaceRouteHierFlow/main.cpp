@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <cstdlib>
 #include <sstream>
+#include <thread>
 
 using std::string;
 using std::cout;
@@ -164,6 +165,10 @@ int main(int argc, char** argv ){
   // And generates 69MB in files
   bool skip_saving_state = getenv( "PNRDB_SAVE_STATE") == NULL;
   bool adr_mode = getenv( "PNRDB_ADR_MODE") != NULL;
+  bool disable_io = getenv( "PNRDB_disable_io") != NULL;; //turn off window outputs
+  bool multi_thread = getenv( "PNRDB_multi_thread") != NULL;;  // run multi layouts in multi threads
+  //bool disable_io = false; //turn off window outputs
+  //bool multi_thread = false;  // run multi layouts in multi threads
 
   string opath="./Results/";
   string fpath=argv[1];
@@ -197,6 +202,7 @@ int main(int argc, char** argv ){
   {
     int idx=Q.front();
     cout<<"Main-Info: start to work on node "<<idx<<endl;
+    if(disable_io)std::cout.setstate(std::ios_base::failbit);
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
@@ -220,15 +226,27 @@ int main(int argc, char** argv ){
     }
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+    if(multi_thread){
+      std::thread t[nodeVec.size()];
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
+                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
+      }
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        t[lidx].join();
+      }
+    }else{
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+      }
     }
-
+        
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
 
     Q.pop();
+    if(disable_io)std::cout.clear();
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
 
