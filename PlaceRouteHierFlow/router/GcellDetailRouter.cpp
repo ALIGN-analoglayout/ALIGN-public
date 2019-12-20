@@ -541,7 +541,7 @@ void GcellDetailRouter::create_detailrouter(){
            std::cout<<"Detail Router check point 5"<<std::endl;
            std::vector<std::vector<RouterDB::Metal> > physical_path;
            std::cout<<Nets[i].netName<<std::endl;
-           //assert(pathMark);
+           assert(pathMark);
            if(pathMark) {
 ///////////dijstra
           //physical_path=graph.ConvertPathintoPhysical(grid);
