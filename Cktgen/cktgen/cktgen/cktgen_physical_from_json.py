@@ -256,19 +256,22 @@ def hack_gr( results, bbox):
   results['wires'] = new_wires
 
 
-if __name__ == "__main__":
-
-  args,tech = parse_args()
+def main(args, tech):
+  
   assert args.source != ''
   src = args.source
-
 
   assert args.placer_json != ''
 
   with open( args.placer_json, "rt") as fp:
     placer_results = json.load( fp)
 
-  with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
+  if args.gr_json != '':
+    gr_fn = args.gr_json
+  else:
+    gr_fn = f"INPUT/{src}_global_router_out.json"
+
+  with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
 #  hack_gr( global_router_results, placer_results['bbox'])
@@ -398,3 +401,9 @@ if __name__ == "__main__":
 
   tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)
+  
+
+if __name__ == "__main__":
+
+  args,tech = parse_args()
+  main( args, tech)

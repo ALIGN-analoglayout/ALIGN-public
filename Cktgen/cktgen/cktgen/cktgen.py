@@ -623,10 +623,14 @@ Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
+#Option name=nets_to_route value=vxx,vyy,vssx
 
 Option name=nets_not_to_route value=!kor
 
 #Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
+
+#Option name=opt_maximize_ties_between_trunks_and_terminals value=0
+#Option name=opt_minimize_preroute_extensions value=0
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
@@ -636,7 +640,7 @@ Option name=create_fake_metal_template_instances value={1 if show_metal_template
 Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal5
+Option name=upper_layer                          value=metal3
 """)
 
 
@@ -651,7 +655,8 @@ Option name=upper_layer                          value=metal5
 
       #SMB Generalize this
       #metal1 obstruction
-      for x in range(1, (self.bbox.urx-160-1)//800):
+      if False:
+       for x in range(1, (self.bbox.urx-160-1)//800):
         xc = x*800
         y0 = self.bbox.lly+420
         y1 = self.bbox.ury-420
@@ -1175,7 +1180,7 @@ def consume_results(args,tech):
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
 
-def parse_args():
+def parse_args( command_line_args=None):
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
   parser.add_argument( "-n", "--block_name", type=str, required=True)
@@ -1185,11 +1190,12 @@ def parse_args():
   parser.add_argument( "--consume_results", action='store_true')
   parser.add_argument( "--no_interface", action='store_true')
   parser.add_argument( "--placer_json", type=str, default='')
+  parser.add_argument( "--gr_json", type=str, default='')
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
   parser.add_argument( "-s", "--source", type=str, default='')
   parser.add_argument( "--small", action='store_true')
 
-  args = parser.parse_args()
+  args = parser.parse_args( args=command_line_args)
 
   with open( args.technology_file) as fp:
     tech = techfile.TechFile( fp)
