@@ -261,13 +261,17 @@ def main(args, tech):
   assert args.source != ''
   src = args.source
 
-
   assert args.placer_json != ''
 
   with open( args.placer_json, "rt") as fp:
     placer_results = json.load( fp)
 
-  with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
+  if args.gr_json != '':
+    gr_fn = args.gr_json
+  else:
+    gr_fn = f"INPUT/{src}_global_router_out.json"
+
+  with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
 #  hack_gr( global_router_results, placer_results['bbox'])
