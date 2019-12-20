@@ -15,8 +15,8 @@
 #
 # WSL:
 #   Create a shared windows directory
-#   Copy $ALIGN_HOME/compose to the shared directory and export ALIGN_WORK_DIR=<shared_dir>/compose
-#   Run make inside compose:  it shoud bring up containers and run make
+#   Copy $ALIGN_HOME/build to the shared directory and export ALIGN_WORK_DIR=<shared_dir>/build
+#   Run make inside build:  it shoud bring up containers and run make
 #   File system access is delayed, so let things settle before running again (otherwise make can't check dependencies)
 
 version: '3.4'
@@ -70,7 +70,7 @@ services:
     build:
       <<: *default-build
       context: ${ALIGN_HOME}
-      dockerfile: compose/Dockerfile
+      dockerfile: build/Dockerfile
     container_name: make_docker_cont
     volumes:
       - redirectVolume:/dataVolume
@@ -91,7 +91,7 @@ services:
     build:
       <<: *default-build
       context: ${ALIGN_HOME}
-      dockerfile: compose/Dockerfile.native
+      dockerfile: build/Dockerfile.native
     container_name: fullbuild_cont
     volumes:
       - redirectVolume:/dataVolume
@@ -134,7 +134,7 @@ services:
     image: klayoutconvert_image
     build:
       <<: *default-build
-      context: ${ALIGN_HOME}/Build/ThirdParty/Klayout
+      context: ${ALIGN_HOME}/build/ThirdParty/Klayout
       dockerfile: Dockerfile.convert
     container_name: klayoutconvert_cont
 

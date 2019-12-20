@@ -38,18 +38,18 @@ this directory must be the full path to a Windows shared directory):
 
 Now invoke the flow:
 
-		% cd $ALIGN_HOME/compose
+		% cd $ALIGN_HOME/build
 		% make docker DESIGN=<design>
 
 To rebuild an image (analogous to reinstalling a component), you can
 use docker-compose to update the container:
 
-		% cd $ALIGN_HOME/compose
+		% cd $ALIGN_HOME/build
 		% docker-compose up -d --build <service-name>
 
 You can work inside the container to modify or debug its behavior:
 
-		% cd $ALIGN_HOME/compose
+		% cd $ALIGN_HOME/build
 		% docker-compose exec <service-name> bash
 		 $ <start your commands here>
 		 $
@@ -88,11 +88,11 @@ environment.
 	
 		% export ALIGN_WORK_DIR=<your Linux working area>
 		% cd $ALIGN_WORK_DIR
-		% ln -s $ALIGN_HOME/compose/Makefile .
+		% ln -s $ALIGN_HOME/build/Makefile .
 		% make DESIGN=<design>
 		
 ### A Monolithic Docker Container for the ALIGN flow
-We have provided a Dockerfile in compose/Dockerfile.native that builds
+We have provided a Dockerfile in build/Dockerfile.native that builds
 up a monolithic Linux environment to help test the functionality of
 operating in a native environment.It is hard to keep it centrally up
 to date, so as components add more dependencies, this file may be out
@@ -101,11 +101,11 @@ The container can be built as a service called fullbuild-service.  You
 can then run the above commands in the container as if it were your
 native environment as shown below:
 	
-		% cd $ALIGN_HOME/compose
+		% cd $ALIGN_HOME/build
 		% docker-compose up -d fullbuild-service
 		% docker-compose exec fullbuild-service bash
 		 $ cd <a_work_area_inside_container>
-		 $ ln -s $ALIGN_HOME/compose/Makefile .
+		 $ ln -s $ALIGN_HOME/build/Makefile .
 		 $ make DESIGN=<design>
 		
 ## Useful docker-compose commands
