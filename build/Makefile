@@ -7,7 +7,7 @@
 
 # To run natively:
 #   % cd $ALIGN_WORK_DIR
-#   % ln -sf $ALIGN_HOME/compose/Makefile $ALIGN_WORK_DIR
+#   % ln -sf $ALIGN_HOME/build/Makefile $ALIGN_WORK_DIR
 #   % make DESIGN=<design in $ALIGN_HOME/examples"
 
 EXAMPLES=${ALIGN_HOME}/examples
@@ -24,8 +24,8 @@ GEN_OUTPUT=${DESIGN}/generator_output
 TPO_OUTPUT=${DESIGN}/topology_output/Results
 
 ifeq ($(BUILD),docker)
-	execute = docker-compose -p compose exec $(1) $(2)
-	start = docker-compose -p compose up -d $(1)
+	execute = docker-compose -p build exec $(1) $(2)
+	start = docker-compose -p build up -d $(1)
 	export TOP = /
 else
 	execute = $(2)
@@ -35,7 +35,7 @@ endif
 
 # Convert output to PNG
 ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
-	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/Build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
+	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
@@ -89,47 +89,47 @@ vol-type:
 	rm -f dir-type make-docker-service
 endif
 
-docker-vol-type.yml:	${ALIGN_HOME}/compose/docker-vol-type.yml
+docker-vol-type.yml:	${ALIGN_HOME}/build/docker-vol-type.yml
 	cp $< .
 
-docker-dir-type.yml:	${ALIGN_HOME}/compose/docker-dir-type.yml
+docker-dir-type.yml:	${ALIGN_HOME}/build/docker-dir-type.yml
 	cp $< .
 
-docker-core.yml:	${ALIGN_HOME}/compose/docker-core.yml
+docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 	cp $< .
 
 docker:	volume services make-docker-service
-	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/compose/Makefile DESIGN=${DESIGN}"
+	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
 
 services:	transfer-service cellfabric-service placeroute-service \
 		topology-service klayoutconvert-service
 
 transfer-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 protobuf-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 cellfabric-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 placeroute-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 topology-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 klayoutconvert-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 fullbuild-service:	docker-compose.yml
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	touch $@
 
 docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml volume
@@ -138,7 +138,7 @@ docker-compose.yml:	$(VOL) docker-core.yml docker-$(VOL).yml volume
 # Only respin the container
 make-docker-service:	docker-compose.yml 
 	echo "Here newer $?"
-	docker-compose -p compose up -d $@
+	docker-compose -p build up -d $@
 	docker cp volume make_docker_cont:/dataVolume/
 	docker cp docker-compose.yml make_docker_cont:/dataVolume/
 	touch $@
@@ -160,7 +160,7 @@ endif
 	echo $(ALIGN_WORK_DIR) > volume
 endif
 
-# Use this if compose/ area changes
+# Use this if build/ area changes
 force-make-docker-service:
 	rm -f docker-compose.yml
 	make docker-compose.yml
@@ -182,7 +182,7 @@ docker-down: docker-filesdown docker-compose.yml
 	rm -f docker-compose.yml
 
 docker-fulldown: docker-filesdown docker-compose.yml
-	docker-compose -p compose down --rmi all --remove-orphans
+	docker-compose -p build down --rmi all --remove-orphans
 	docker volume rm -f compose_redirectVolume
 	rm -f docker-compose.yml
 
