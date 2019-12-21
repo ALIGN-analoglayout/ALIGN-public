@@ -94,19 +94,19 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
 
         self.addWire( self.m2, 'B', 'B', ((y_cells)* self.m2PerUnitCell//2, self.lFin//4), (0, 1), (x_cells*self.gatesPerUnitCell, -1))
 
-    def _bodyContact(self, x, y, x_cells, name='M1'):
+    def _bodyContact(self, x, y, y_cells, x_cells, name='M1'):
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
         fullname = f'{name}_X{x}_Y{y}'
+        y = y_cells-1
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
         self.addVia( self.va, f'{fullname}:B', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addVia( self.v1, 'B', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        
+        self.addVia( self.v1, 'B', None, gate_x, ((y+1)*h//2, self.lFin//4))        
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
 
@@ -125,29 +125,31 @@ class PrimitiveGenerator(FinFET14nm_Mock_PDK_Canvas):
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, names[0], False, **parameters)
+                    self._bodyContact(x, y, y_cells, x_cells, names[0])
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2, **parameters)
+                    self._bodyContact(x, y, y_cells, x_cells, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
+                    self._bodyContact(x, y, y_cells, x_cells, names[((x % 2) + (y % 2)) % 2])
                     self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False, **parameters)
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
+                    self._bodyContact(x, y, y_cells, x_cells, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, connections)
-        self._connectNets(x_cells, y_cells)
-        for x in range(x_cells):
-            self._bodyContact(x, y_cells-1, x_cells, names[0 if pattern == 0 else x_cells%2])
+        self._connectNets(x_cells, y_cells) 
 
     def addNMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
