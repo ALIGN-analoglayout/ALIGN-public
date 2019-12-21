@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
-setup(name='Circuit',
+setup(name='align',
       version='0.1',
-      description='Netlist management infrastructure',
+      description='Analog Layout Synthesis Package',
       url='ALIGN-analoglayout/ALIGN-public.git',
       author='Parijat Mukherjee',
       author_email='parijat.mukherjee@intel.com',
