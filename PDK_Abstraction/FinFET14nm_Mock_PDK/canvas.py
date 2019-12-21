@@ -71,15 +71,14 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
                                             h_grid=self.fin.clg))
 
         stoppoint = unitCellLength//2-p['Active']['activebWidth_H']//2
+        offset_active_body = (self.lFin//2)*p['Fin']['Pitch']+self.unitCellHeight-p['Fin']['Pitch']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Active']['activebWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']\
-+self.unitCellHeight-p['Fin']['Pitch']//2),
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Active']['activebWidth'], offset= offset_active_body),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         stoppoint = unitCellLength//2-p['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Pb']['pbWidth'], offset= (self.lFin//2)*p['Fin']['Pitch']\
-+self.unitCellHeight-p['Fin']['Pitch']//2),
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Pb']['pbWidth'], offset= offset_active_body),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))     
         
         self.LISDb = self.addGen( Wire( 'LISDb', 'Lisd', 'v',
