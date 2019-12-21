@@ -99,8 +99,8 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
   int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
   //int v_metal = vertical_index;
   //int times = 2;
-  int h_dist = times*h_minL+times*h_ee+2*h_pitches;
-  int v_dist = times*v_minL+times*v_ee+2*v_pitches;
+  int h_dist = times*h_minL+times*h_ee+3*h_pitches;
+  int v_dist = times*v_minL+times*v_ee+3*v_pitches;
   std::cout<<"h_dist "<<h_dist<<std::endl;
   std::cout<<"v_dist "<<v_dist<<std::endl;
   std::cout<<"hminL "<<times*h_minL<<std::endl;
