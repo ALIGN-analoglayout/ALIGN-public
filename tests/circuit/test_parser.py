@@ -1,7 +1,8 @@
 import pytest
+import pathlib
 
-from circuit.core import SubCircuit
-from circuit.parser import SpiceParser
+from align.circuit.core import SubCircuit
+from align.circuit.parser import SpiceParser
 
 # WARNING: Parser capitalizes everything internally as SPICE is case-insensitive
 #          Please formulate tests accordingly
@@ -122,19 +123,19 @@ def test_model(parser):
     assert list(parser.library['NMOS_RVT']._parameters.keys()) == ['W', 'L', 'NFIN', 'KP', 'VT0']
 
 def test_ota_cir_parsing(parser):
-    with open('tests/ota.cir') as fp:
+    with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_ota_sp_parsing(parser):
-    with open('tests/ota.sp') as fp:
+    with open((pathlib.Path(__file__).parent / 'ota.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert 'OTA' in parser.library
     assert len(parser.library['OTA'].elements) == 10
 
 def test_basic_template_parsing(parser):
     libsize = len(parser.library)
-    with open('tests/basic_template.sp') as fp:
+    with open((pathlib.Path(__file__).parent / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
     assert len(parser.library) - libsize == 31

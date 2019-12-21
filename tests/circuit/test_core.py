@@ -1,6 +1,6 @@
 import pytest
 
-from circuit.core import NTerminalDevice, Circuit, SubCircuit, Model
+from align.circuit.core import NTerminalDevice, Circuit, SubCircuit, Model
 
 def test_n_terminal_device():
     inst = NTerminalDevice('X1')

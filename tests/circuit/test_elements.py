@@ -1,6 +1,6 @@
 import pytest
 
-from circuit import elements, core
+from align.circuit import elements, core
 
 @pytest.fixture
 def library():

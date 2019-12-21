@@ -1,6 +1,7 @@
-import circuit
-# from pathlib import Path
+import pathlib
 # import sys
+
+from align import circuit
 
 def test_combined():
     library = circuit.Library()
@@ -21,12 +22,12 @@ def test_combined():
 def test_replace_matching_subckts():
     # parse subckts
     parser = circuit.SpiceParser()
-    with open('tests/basic_template.sp') as fp:
+    with open((pathlib.Path(__file__).parent / 'basic_template.sp').resolve()) as fp:
         parser.parse(fp.read())
     primitivelib = circuit.Library({x: y for x, y in parser.library.items() if issubclass(y, circuit.core._SubCircuit)})
     # parse netlist
     parser = circuit.SpiceParser()
-    with open('tests/ota.cir') as fp:
+    with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     # Extract ckt
     ckt = parser.library['OTA'].circuit
@@ -41,7 +42,7 @@ def test_replace_matching_subckts():
     assert len(ckt.elements) == 5
     assert all(x.name.startswith('X') for x in ckt.elements)
     # # Generate primitive layouts
-    # sys.path.append( str(Path(__file__).parent.parent.parent / 'PDK_Abstraction' / 'FinFET14nm_Mock_PDK'))
+    # sys.path.append( str(pathlib.Path(__file__).parent.parent.parent / 'PDK_Abstraction' / 'FinFET14nm_Mock_PDK'))
     # import primitive
     # for element in ckt.elements:
     #     uc = primitive.PrimitiveGenerator(12, 4, 2, 3)
@@ -52,7 +53,7 @@ def test_replace_matching_subckts():
 def test_replace_repeated_subckts():
     # parse netlist
     parser = circuit.SpiceParser()
-    with open('tests/ota.cir') as fp:
+    with open((pathlib.Path(__file__).parent / 'ota.cir').resolve()) as fp:
         parser.parse(fp.read())
     # Extract ckt
     ckt = parser.library['OTA'].circuit
