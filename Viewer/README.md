@@ -2,7 +2,7 @@
 
 Currently reads a JSON file named /public/INPUT/mydesign_dr_globalrouting.json (need to change this.)
 
-To build in docker, build upon "with_python" (see the Build/ subdirectory):
+To build in docker, build upon "with_python" (see the build/ subdirectory):
 
 ````bash
 docker build -t viewer_image .

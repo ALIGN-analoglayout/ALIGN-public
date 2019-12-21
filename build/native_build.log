@@ -55,6 +55,6 @@ export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 # Run our flow
 export ALIGN_HOME=~/src/ALIGN-public
 cd work
-ln -s ~/src/ALIGN-public/compose/Makefile  .
+ln -s ~/src/ALIGN-public/build/Makefile  .
 ln -s ~/src/general/ .
 make DESIGN=switched_capacitor_filter
