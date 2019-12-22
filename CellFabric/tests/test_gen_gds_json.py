@@ -1,14 +1,15 @@
 import argparse
 import datetime
-from cell_fabric import gen_gds_json, pdk
+from cell_fabric import gen_gds_json, Pdk, pdk
 import json
 import gdsconv.json2gds
 import filecmp
 import io
 import pytest
-from pathlib import Path
+#from pathlib import Path
 
-pdkfile = (Path(__file__).parent / 'layers.json').resolve()
+#pdkfile = (Path(__file__).parent / 'layers.json').resolve()
+pdkfile = '../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json'
 p = pdk.Pdk().load(pdkfile)
 via_gen_tbl = p.get_via_table()
 
