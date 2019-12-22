@@ -119,3 +119,4 @@ class DefaultCanvas(Canvas):
                 pm = m0
         assert nm is not None or pm is not None, f"Could not trace any connections for {layer}"
         return (pm, pv, nv, nm)
+
