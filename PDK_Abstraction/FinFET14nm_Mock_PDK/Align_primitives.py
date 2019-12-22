@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+import datetime
 import sys
 import pathlib
 import logging
@@ -113,7 +113,7 @@ def main( args):
     gen_lef.json_lef(args.block_name + '.json', args.block_name, cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
-        gen_gds_json.translate(args.block_name, '', args.pinSwitch, fp0, fp1, datetime.now())
+        gen_gds_json.translate(args.block_name, '', args.pinSwitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
 
     return uc
 

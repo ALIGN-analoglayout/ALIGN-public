@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from datetime import datetime
+import datetime
 from cell_fabric import gen_gds_json, pdk
 
 from pathlib import Path
@@ -25,7 +25,7 @@ if __name__ == "__main__":
   ofile = open (args.block_name + ".gds.json", 'wt')
 
   with open( args.json_file_name, "rt") as fp:
-    translate( args.block_name, args.exclude_pattern, pinSwitch, fp, ofile, timestamp=datetime.now())
+    translate( args.block_name, args.exclude_pattern, pinSwitch, fp, ofile, timestamp=datetime.datetime( 2019, 1, 1, 0, 0, 0))
 
 
 
