@@ -46,23 +46,23 @@ def gen_dot_file(nm, ifn, ofn):
             else:
                 assert False, e.__class__.__name__
 
-        lst = []
-        for e in elements_no_dummys:
-            if e.__class__.__name__ == "NMOS":
-                lst.append( e.name)
+        # lst = []
+        # for e in elements_no_dummys:
+        #     if e.__class__.__name__ == "NMOS":
+        #         lst.append( e.name)
 
-        if lst:
-            s = ','.join(lst)
-            #print( f"\t{{ rank=same; {s} }}", file=fp)
+        # if lst:
+        #     s = ','.join(lst)
+        #     print( f"\t{{ rank=same; {s} }}", file=fp)
 
-        lst = []
-        for e in elements_no_dummys:
-            if e.__class__.__name__ == "PMOS":
-                lst.append( e.name)
+        # lst = []
+        # for e in elements_no_dummys:
+        #     if e.__class__.__name__ == "PMOS":
+        #         lst.append( e.name)
 
-        if lst:
-            s = ','.join(lst)
-            #print( f"\t{{ rank=same; {s} }}", file=fp)
+        # if lst:
+        #     s = ','.join(lst)
+        #     print( f"\t{{ rank=same; {s} }}", file=fp)
 
         nets = { v for e in elements_no_dummys for v in e.pins.values() }
 
