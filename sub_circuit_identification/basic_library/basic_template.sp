@@ -79,9 +79,9 @@ RR1 PLUS MINUS res res=10k
 L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
 .ends spiral_ind
 
-.subckt 2_stage_inv b0_inv b0_buf B<0>
+.subckt stage2_inv b0_inv b0_buf B<0>
 MM7 b0_buf b0_inv VSS VSS NMOS l=60n w=1u m=1
 MM4 b0_inv B<0> VSS VSS NMOS l=60n w=1u m=1
 MM6 b0_buf b0_inv VDD VDD PMOS l=60n w=1u m=1
 MM5 b0_inv B<0> VDD VDD PMOS l=60n w=1u m=1
-.ends 2_stage_inv
+.ends stage2_inv
