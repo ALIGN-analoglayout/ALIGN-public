@@ -237,7 +237,7 @@ struct Net{
   std::vector<std::vector<int> > connectedTile;
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
-  int STindex = -1;
+  int STindex = 0;
   //void display();
 };
 

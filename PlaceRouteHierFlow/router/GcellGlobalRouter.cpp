@@ -21,6 +21,11 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
   RouterDB::point temp_point;
   temp_point.x=temp_Terminal.termContacts[0].placedCenter.x;
   temp_point.y=temp_Terminal.termContacts[0].placedCenter.y;
+  if(temp_point.x<0 or temp_point.x> UR.x or temp_point.y<0 or temp_point.y> UR.y){
+    std::cout<<"Error Box "<< temp_point.x <<" "<<temp_point.y<<std::endl;
+    assert(0);
+  }
+
   std::cout<<"terminal center "<<temp_point.x<<" "<<temp_point.y<<std::endl;
 
   int h_pitches = drc_info.Metal_info[horizontal_index].grid_unit_y;
@@ -105,9 +110,10 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
   std::cout<<"v_dist "<<v_dist<<std::endl;
   std::cout<<"hminL "<<times*h_minL<<std::endl;
   std::cout<<"vminL "<<times*v_minL<<std::endl;
-  int h_index = this->width/(h_dist);
-  int v_index = this->height/(v_dist);
+  int h_index = UR.x/(h_dist);
+  int v_index = UR.y/(v_dist);
   std::cout<<"width "<<this->width<<" height "<<this->height<<std::endl;
+  std::cout<<UR.x<<" "<<UR.y<<std::endl;
   std::vector<int> v_L;
   std::vector<int> v_U;
   std::vector<int> h_L;
@@ -141,7 +147,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      std::cout<<"Determine terminal center 2"<<std::endl;
      
      for(int j=1;j<v_L.size();j++){
-        dis = abs(temp_point.x -j*v_dist)+abs(temp_point.y -0);
+        dis = abs(temp_point.y -j*v_dist)+abs(temp_point.x -0);
         if(dis<min_dist and v_L[j]==0){
           min_dist = dis;
           min_index = j;
@@ -149,13 +155,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 0;
           found_h_U = 0;
-          new_temp_point.x = j*v_dist;
-          new_temp_point.y = 0;
+          new_temp_point.y = j*v_dist;
+          new_temp_point.x = 0;
         }
      }
 
      for(int j=1;j<v_U.size();j++){
-        dis = abs(temp_point.x -j*v_dist)+abs(temp_point.y -height);
+        dis = abs(temp_point.y -j*v_dist)+abs(temp_point.x -width);
         if(dis<min_dist and v_U[j]==0){
           min_dist = dis;
           min_index = j;
@@ -163,13 +169,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 1;
           found_h_L = 0;
           found_h_U = 0;
-          new_temp_point.x = j*v_dist;
-          new_temp_point.y = height;
+          new_temp_point.y = j*v_dist;
+          new_temp_point.x = width;
         }
      }
 
      for(int j=1;j<h_L.size();j++){
-        dis = abs(temp_point.y -j*h_dist)+abs(temp_point.x -0);
+        dis = abs(temp_point.x -j*h_dist)+abs(temp_point.y -height);
         if(dis<min_dist and h_L[j]==0){
           min_dist = dis;
           min_index = j;
@@ -177,13 +183,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 1;
           found_h_U = 0;
-          new_temp_point.y = j*h_dist;
-          new_temp_point.x = 0;
+          new_temp_point.x = j*h_dist;
+          new_temp_point.y = 0;
         }
      }
 
      for(int j=1;j<h_U.size();j++){
-        dis = abs(temp_point.y -j*h_dist)+abs(temp_point.x -width);
+        dis = abs(temp_point.x -j*h_dist)+abs(temp_point.y -height);
         if(dis<min_dist and h_U[j]==0){
           min_dist = dis;
           min_index = j;
@@ -191,8 +197,8 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 0;
           found_h_U = 1;
-          new_temp_point.y = j*h_dist;
-          new_temp_point.x = width;
+          new_temp_point.x = j*h_dist;
+          new_temp_point.y = height;
         }
      }
 
@@ -306,6 +312,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      tileLayerNo = 1;
      tile_size = 10;
   }
+  std::cout<<"Before Grid Box "<<UR.x<<" "<<UR.y<<std::endl;
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   std::cout<<"Test 3"<<std::endl;
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
@@ -375,6 +382,8 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
              std::cout<<"Especial the pin "<< Blocks[iter2].pins[iter].pinName<<" in subblock "<<Blocks[iter2].blockName<<std::endl;
            }else{
              std::cout<<"Especial the terminal "<<Terminals[iter].name<<std::endl;
+             std::cout<<"Current Box "<<UR.x<<" "<<UR.y<<std::endl;
+             std::cout<<"terminal box "<<Terminals[iter].termContacts[0].placedLL.x<<" "<<Terminals[iter].termContacts[0].placedLL.y<<" "<<Terminals[iter].termContacts[0].placedUR.x<<" "<<Terminals[iter].termContacts[0].placedUR.y<<std::endl;
            }
            assert(0);}
      }
