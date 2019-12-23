@@ -291,67 +291,71 @@ def main(args, tech):
     for term in leaf['terminals']:
       term['layer'] = layer_map[term['layer']]
 
-  m1_pitch = 800
+  if False:
+    #
+    # SMB: Generalize this
+    #
+    m1_pitch = 800
 
-  global_xcs2 = set()
-  global_ycs2 = set()
-  for leaf in placer_results['leaves']:
+    global_xcs2 = set()
+    global_ycs2 = set()
+    for leaf in placer_results['leaves']:
 
-    ycs = set()
+      ycs = set()
+      ycs2 = set()
+      ycs.add( leaf['bbox'][1])
+      ycs.add( leaf['bbox'][3])
+      ycs2.add( leaf['bbox'][1]%840)
+      ycs2.add( leaf['bbox'][3]%840)
+
+      xcs = set()
+      xcs2 = set()
+      xcs.add( leaf['bbox'][0])
+      xcs.add( leaf['bbox'][2])
+      xcs2.add( leaf['bbox'][0]%m1_pitch)
+      xcs2.add( leaf['bbox'][2]%m1_pitch)
+      print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
+
+      for term in leaf['terminals']:
+        if term['layer'] in ["metal2"]:
+          if term['net_name'] in ["!kor"]: continue
+          yc = (term['rect'][1]+term['rect'][3])//2
+          ycs.add(yc)
+          cand = yc%840
+          ycs2.add(cand)
+          if cand != 0:
+            print("YYY", leaf['template_name'], term)
+
+          global_ycs2.add(cand)
+
+        if term['layer'] in ["metal1","metal3"]:
+          xc = (term['rect'][0]+term['rect'][2])//2
+          xcs.add(xc)
+          cand = xc%m1_pitch
+          xcs2.add(cand)
+          if cand != 0:
+            print("YYY", leaf['template_name'], term)
+
+          global_xcs2.add(cand)
+
+      print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
+      print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
+
+    print('XXX global_ycs2', global_ycs2)
+    print('XXX global_xcs2', global_xcs2)
+
+
     ycs2 = set()
-    ycs.add( leaf['bbox'][1])
-    ycs.add( leaf['bbox'][3])
-    ycs2.add( leaf['bbox'][1]%840)
-    ycs2.add( leaf['bbox'][3]%840)
-
-    xcs = set()
     xcs2 = set()
-    xcs.add( leaf['bbox'][0])
-    xcs.add( leaf['bbox'][2])
-    xcs2.add( leaf['bbox'][0]%m1_pitch)
-    xcs2.add( leaf['bbox'][2]%m1_pitch)
-    print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
-
-    for term in leaf['terminals']:
-      if term['layer'] in ["metal2"]:
-        if term['net_name'] in ["!kor"]: continue
-        yc = (term['rect'][1]+term['rect'][3])//2
-        ycs.add(yc)
-        cand = yc%840
-        ycs2.add(cand)
-        if cand != 0:
-          print("YYY", leaf['template_name'], term)
-
-        global_ycs2.add(cand)
-
-      if term['layer'] in ["metal1","metal3"]:
-        xc = (term['rect'][0]+term['rect'][2])//2
-        xcs.add(xc)
-        cand = xc%m1_pitch
-        xcs2.add(cand)
-        if cand != 0:
-          print("YYY", leaf['template_name'], term)
-
-        global_xcs2.add(cand)
-
-    print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
-    print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
-
-  print('XXX global_ycs2', global_ycs2)
-  print('XXX global_xcs2', global_xcs2)
+    for inst in placer_results['instances']:
 
 
-  ycs2 = set()
-  xcs2 = set()
-  for inst in placer_results['instances']:
-    
-
-    m840 = inst['transformation']['oY']%840
-    m800 = inst['transformation']['oX']%800
-    print(inst['instance_name'], m840, m800, inst['transformation'])
-    ycs2.add(m840)
-    xcs2.add(m800)
-  print('Transform ycs2 xcs2', ycs2, xcs2)
+      m840 = inst['transformation']['oY']%840
+      m800 = inst['transformation']['oX']%800
+      print(inst['instance_name'], m840, m800, inst['transformation'])
+      ycs2.add(m840)
+      xcs2.add(m800)
+    print('Transform ycs2 xcs2', ycs2, xcs2)
 
   adts = {}
 
@@ -361,7 +365,7 @@ def main(args, tech):
     adts[nm] = adt
 
     for term in leaf['terminals']:
-      if False or term['net_name'] != '!kor':
+      if term['net_name'] != '!kor':
         adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
 
   bbox = placer_results['bbox']
@@ -385,6 +389,12 @@ def main(args, tech):
     ports = placer_results['ports']
     for p in ports:
       adnetl.addPort( p)
+
+  if 'preroutes' in placer_results:
+    print("SMB: Found some preroutes")
+    preroutes = placer_results['preroutes']
+    for preroute in preroutes:
+      adnetl.addPreroute( preroute)
 
   adnetl.genNetlist( netl)
 
