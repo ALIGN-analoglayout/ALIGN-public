@@ -1,6 +1,5 @@
 import sys
 import pathlib
-import json
 import argparse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))

@@ -1,6 +1,3 @@
-import pytest
-import pathlib
-
 import pathlib
 
 from align.circuit.gen_dot import gen_dot_file
