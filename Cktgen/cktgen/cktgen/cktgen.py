@@ -623,14 +623,19 @@ Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
-#Option name=nets_to_route value=vxx,vyy,vssx
+#Option name=nets_to_route value=vin_o,vip_o
+#Option name=nets_to_route value=clk
+#Option name=nets_to_route value=von,vop
+#Option name=nets_to_route value=vssx
+#Option name=nets_to_route value=vcc_0p9
 
-Option name=nets_not_to_route value=!kor
+Option name=nets_not_to_route value=!kor,vssx,vcc_0p9
 
 #Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
 
 #Option name=opt_maximize_ties_between_trunks_and_terminals value=0
 #Option name=opt_minimize_preroute_extensions value=0
+#Option name=disable_optimization value=1
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
