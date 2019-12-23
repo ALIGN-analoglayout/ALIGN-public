@@ -1,6 +1,5 @@
-import argparse
 import datetime
-from cell_fabric import gen_gds_json, Pdk, pdk
+from cell_fabric import gen_gds_json, pdk
 import json
 import gdsconv.json2gds
 import filecmp
