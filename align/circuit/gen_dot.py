@@ -1,25 +1,9 @@
-import circuit
-import json
+from .parser import SpiceParser
 
-import argparse
+def gen_dot_file(nm, ifn, ofn):
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser( description="Visualize Netlist using Graphviz")
-
-    parser.add_argument( "-o", "--output_file", type=str, default=None)
-    parser.add_argument( "-n", "--block_name", type=str, default="BUFFER_VCM_FINAL3")
-    parser.add_argument( "-i", "--input_file", type=str, default=None)
-
-    args = parser.parse_args()
- 
-    assert args.block_name is not None
-    nm = args.block_name
-    ofn = f"./{nm}.dot" if args.output_file is None else args.output_file
-    ifn = f"./{nm}.sp" if args.input_file is None else args.input_file
-
-
-    parser = circuit.SpiceParser()
-# Patch library to use different model name
+    parser = SpiceParser()
+    # Patch library to use different model name
     parser.library['P'] = parser.library['PMOS']
     parser.library['N'] = parser.library['NMOS']
     parser.library['PFET'] = parser.library['PMOS']
@@ -62,25 +46,23 @@ if __name__ == "__main__":
             else:
                 assert False, e.__class__.__name__
 
-        lst = []
-        for e in elements_no_dummys:
-            if e.__class__.__name__ == "NMOS":
-                lst.append( e.name)
+        # lst = []
+        # for e in elements_no_dummys:
+        #     if e.__class__.__name__ == "NMOS":
+        #         lst.append( e.name)
 
-        if lst:
-            s = ','.join(lst)
-            #print( f"\t{{ rank=same; {s} }}", file=fp)
+        # if lst:
+        #     s = ','.join(lst)
+        #     print( f"\t{{ rank=same; {s} }}", file=fp)
 
-        lst = []
-        for e in elements_no_dummys:
-            if e.__class__.__name__ == "PMOS":
-                lst.append( e.name)
+        # lst = []
+        # for e in elements_no_dummys:
+        #     if e.__class__.__name__ == "PMOS":
+        #         lst.append( e.name)
 
-        if lst:
-            s = ','.join(lst)
-            #print( f"\t{{ rank=same; {s} }}", file=fp)
-
-
+        # if lst:
+        #     s = ','.join(lst)
+        #     print( f"\t{{ rank=same; {s} }}", file=fp)
 
         nets = { v for e in elements_no_dummys for v in e.pins.values() }
 
@@ -108,8 +90,5 @@ if __name__ == "__main__":
                 if k in m_cap:
                     vv = f"{v}{tbl[v][e.name]}" if v in tbl and e.name in tbl[v] else v
                     print( f"\t{e.name}:{m_cap[k]} -- {vv}", file=fp)
-                    
-
 
         print( "}", file=fp)
-
