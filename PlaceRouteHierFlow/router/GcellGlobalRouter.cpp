@@ -88,6 +88,11 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     return;
   }
 
+  if(temp_point.x%v_pitches!=0 and temp_point.y%h_pitches!=0){
+    std::cout<<"Terminal off grid, please check the width/height of module"<<std::endl;
+    assert(0);
+  }
+
 };
 
 void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vertical_index, int times){
@@ -1475,7 +1480,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
 
   //std::cout<<"testcase 4"<<std::endl;
 
-  print_lp(lp);
+  //print_lp(lp);
   // 4. Set binary variables (candidates + slacks)
   for(int i=1;i<=this->NumOfVar;++i){
     set_binary(lp, i, TRUE);//"TRUE": set variable to be a binary. upper bound=1, lower bound=0
@@ -1511,7 +1516,7 @@ int GcellGlobalRouter::ILPSolveRouting(GlobalGrid &grid, GlobalGraph &graph, std
   std::cout<<"LP test flag 9"<<std::endl; 
   set_presolve(lp, PRESOLVE_PROBEFIX | PRESOLVE_ROWDOMINATE, get_presolveloops(lp));
   std::cout<<"LP test flag 10"<<std::endl;
-  print_lp(lp);
+  //print_lp(lp);
   
   int ret = solve(lp);
   std::cout<<"LP test flag 11"<<std::endl;
