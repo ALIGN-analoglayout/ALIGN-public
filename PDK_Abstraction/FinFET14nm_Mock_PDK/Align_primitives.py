@@ -12,7 +12,7 @@ import json
 
 def get_xcells_pattern( args):
     pattern = args.pattern
-    if any(args.primitive.startswith(f'{x}_') for x in ["Switch", "DCL"]):
+    if any(args.primitive.startswith(f'{x}_') for x in ["Switch", "DCL", "Dummy", "Dcap", "Dcap1"]):
         # Single transistor primitives
         x_cells = args.Xcells
     elif any(args.primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
@@ -65,6 +65,17 @@ def main( args):
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'G'), ('M1', 'D')]})
 
+    elif args.primitive in ["Dummy_NMOS", "Dummy_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'G')],
+                            'D': [('M1', 'D')]})
+
+    elif args.primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'D')],
+                            'G': [('M1', 'G')]})
+ 
+    elif args.primitive in ["Dcap1_NMOS", "Dcap1_PMOS"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'G'), ('M1', 'D')]}) 
+ 
     elif args.primitive in ["CM_NMOS", "CM_PMOS"]:
         cell_pin = gen( 3,      {'S':  [('M1', 'S'), ('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
