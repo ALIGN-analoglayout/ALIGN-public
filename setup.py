@@ -23,4 +23,14 @@ setup(name='align',
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
       python_requires='~=3.6',
+      classifiers=[
+          'Development Status :: 2 - Pre-Alpha',
+          'Environment :: Console',
+          'Intended Audience :: Science/Research',
+          'License :: OSI Approved :: BSD License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: C++',
+          'Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)'
+      ],
       zip_safe=False)
