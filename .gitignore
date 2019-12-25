@@ -1,10 +1,13 @@
 *~
-build/
 .coverage
 htmlcov/
 .eggs/
 *.egg-info/
 junit.xml
-tests/__json*_cand
-
 testcase_latest/
+__pycache__/
+*.gds.json
+*.json
+*.lef
+*_cand
+*.pyc

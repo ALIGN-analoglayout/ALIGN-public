@@ -21,7 +21,7 @@ bool PnRdatabase::ReadLEF(string leffile) {
   string macroEnd;
   int width=-1, height=-1;
   vector<PnRDB::pin> macroPins;
-  vector<PnRDB::contact> interMetals;
+  vector<PnRDB::contact> interMetals; //metal within each MACRO
   fin.exceptions(ifstream::failbit | ifstream::badbit);
   try {
     fin.open(leffile.c_str());

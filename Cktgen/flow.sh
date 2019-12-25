@@ -13,6 +13,7 @@ SHOWGLOBALROUTES=""
 SHOWMETALTEMPLATES=""
 ROUTE=" --route"
 PLACERJSON=""
+GRJSON=""
 SOURCE=""
 SMALL=""
 NO_INTERFACE=""
@@ -87,6 +88,11 @@ case $key in
     shift
     shift
     ;;
+    -gj|--gr_json)
+    GRJSON=" --gr_json $2"
+    shift
+    shift
+    ;;
     -src|--source)
     SOURCE=" --source $2"
     shift
@@ -119,6 +125,7 @@ echo SKIPROUTER = "${SKIPROUTER}"
 echo SKIPGENERATE = "${SKIPGENERATE}"
 echo STARTVIEWER = "${STARTVIEWER}"
 echo PLACERJSON = "${PLACERJSON}"
+echo GRJSON = "${GRJSON}"
 echo SOURCE = "${SOURCE}"
 echo SMALL = "${SMALL}"
 
@@ -137,7 +144,7 @@ fi
 
 if [ ${SKIPGENERATE} = "NO" ]; then
     docker volume rm -f ${OUTPUTVOL}
-    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${SMALL}"
+    docker run --rm ${M_INPUT} ${M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python ${SCRIPT} -n mydesign ${ROUTE}${SHOWGLOBALROUTES}${SHOWMETALTEMPLATES}${SOURCE}${PLACERJSON}${GRJSON}${SMALL}"
     if [ $? -ne 0 ]; then
 	echo "ERROR: Failed to run Cktgen"
 	exit $?
@@ -145,7 +152,7 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 fi
 
 #ROUTER_IMAGE=darpaalign/detailed_router
-ROUTER_IMAGE=intel_detailed_router
+ROUTER_IMAGE=stevenmburns/intel_detailed_router
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} ${ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"

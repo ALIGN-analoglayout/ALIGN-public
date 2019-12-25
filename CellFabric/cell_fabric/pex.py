@@ -181,4 +181,3 @@ class ParasiticExtraction():
             paramstring = ' '.join(f'{x}={y}' for x, y in v.parameters.items())
             fp.write( f"{inst}_0 net_{inst}_D net_{inst}_G net_{inst}_diff {'vdd!' if 'PMOS' in model.upper() else 'gnd!'} {model} {paramstring}\n")
             fp.write( f"{inst}_1 net_{inst}_diff net_{inst}_G net_{inst}_S {'vdd!' if 'PMOS' in model.upper() else 'gnd!'} {model} {paramstring}\n")
-

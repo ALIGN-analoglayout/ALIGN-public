@@ -654,6 +654,7 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
     json jsonTop;
     jsonTop["Cell Name"] = node.name;
     jsonTop["Units"] = "0.5nm";
+    jsonTop["Istop"] =node.isTop;
     int unit = 1;
 
     json temp_box;

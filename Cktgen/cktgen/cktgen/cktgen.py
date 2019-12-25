@@ -304,12 +304,16 @@ class ADNetlist:
     self.instances = OrderedDict()
     self.nets = OrderedDict()
     self.ports = []
+    self.preroutes = []
 
   def addInstance( self, i):
     self.instances[i.instanceName] = i
 
   def addPort( self, p):
     self.ports.append( p)
+
+  def addPreroute( self, p):
+    self.preroutes.append( p)
 
   def connect( self, instanceName, f, a):
     if a not in self.nets:
@@ -342,7 +346,8 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3"], l
+      assert l in ["metal1","metal2","metal3","via1","via2"], l
+      if l == "via2": continue
       netl.newWire( '!kor', r, l)
       
     for p in self.ports:
@@ -353,6 +358,10 @@ class ADNetlist:
         netl.newWire( p['net_name'], Rect( r[0]*720-200, r[1]*720-360, r[2]*720+200, r[3]*720+360), ly)
       if ly in ["metal2","metal4","metal6"]:
         netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
+
+    for p in self.preroutes:
+      print( "Preroute", p)
+      netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
 class Rect:
   def __init__( self, llx, lly, urx=None, ury=None):
@@ -470,7 +479,7 @@ class Netlist:
             y = rlst[1]*(1.0-theta) + rlst[3]*theta
             return (x,y)
           else:
-            assert False
+            assert False, ly
 
         def dist( w, p, q):
           gx,gy = pnt( p, gr_r, gr.layer)
@@ -621,11 +630,21 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=net3
-#Option name=nets_to_route value=net3,net4,net4p,net5,net5p,net6,net6p,s0,s1,s2,vga_out1,vga_out2,vin1,vin2,vmirror,vps
-Option name=nets_not_to_route value=!kor
+#Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
+#Option name=nets_to_route value=vin_o,vip_o
+#Option name=nets_to_route value=clk
+#Option name=nets_to_route value=von,vop
+#Option name=nets_to_route value=vssx
+#Option name=nets_to_route value=vcc_0p9
 
-#Option name=nets_not_to_route value=!kor,net3,net4,net4p,net5,net5p,net6,s0,s1,s2,vga_out1,vga_out2,vgnd,vin1,vin2,vmirror,vps
+Option name=nets_not_to_route value=!kor,vssx,vcc_0p9
+#Option name=nets_not_to_route value=!kor
+
+#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
+
+#Option name=opt_maximize_ties_between_trunks_and_terminals value=0
+#Option name=opt_minimize_preroute_extensions value=0
+#Option name=disable_optimization value=1
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}
@@ -633,9 +652,9 @@ Option name=create_fake_connected_entities       value=0
 Option name=create_fake_ties                     value=0
 Option name=create_fake_metal_template_instances value={1 if show_metal_templates else 0}
 Option name=create_fake_line_end_grids           value=1
-Option name=auto_fix_global_routing              value=1
+Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal4
+Option name=upper_layer                          value=metal3
 """)
 
 
@@ -644,12 +663,15 @@ Option name=upper_layer                          value=metal4
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
       for (_,v) in self.nets.items():
         for w in v.wires:
+          #SMB Hack because of via2 sizing error
+          if w.layer == "via2": continue
           fp.write( str(w) + "\n")
 
-
+      #SMB Generalize this
       #metal1 obstruction
-      for x in range(1, (self.bbox.urx-160-1)//840):
-        xc = x*840
+      if False:
+       for x in range(1, (self.bbox.urx-160-1)//800):
+        xc = x*800
         y0 = self.bbox.lly+420
         y1 = self.bbox.ury-420
         fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")
@@ -1172,7 +1194,7 @@ def consume_results(args,tech):
       fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
 
 
-def parse_args():
+def parse_args( command_line_args=None):
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
 
   parser.add_argument( "-n", "--block_name", type=str, required=True)
@@ -1182,11 +1204,12 @@ def parse_args():
   parser.add_argument( "--consume_results", action='store_true')
   parser.add_argument( "--no_interface", action='store_true')
   parser.add_argument( "--placer_json", type=str, default='')
+  parser.add_argument( "--gr_json", type=str, default='')
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
   parser.add_argument( "-s", "--source", type=str, default='')
   parser.add_argument( "--small", action='store_true')
 
-  args = parser.parse_args()
+  args = parser.parse_args( args=command_line_args)
 
   with open( args.technology_file) as fp:
     tech = techfile.TechFile( fp)

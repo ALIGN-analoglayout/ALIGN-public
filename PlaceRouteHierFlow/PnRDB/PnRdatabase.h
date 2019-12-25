@@ -79,8 +79,8 @@ class PnRdatabase
   private:
     int maxNode;
     int unitScale;
-    map<string, vector<PnRDB::lefMacro> > lefData;
-    map<string, string> gdsData;
+    map<string, vector<PnRDB::lefMacro> > lefData;  //map from Macro name to Macro Instance
+    map<string, string> gdsData; //map from gds name to gds file
     PnRDB::designRule drData;
 
     void UpdateHierNodeParent(int nodeID); // update parent node of current node
@@ -95,7 +95,7 @@ class PnRdatabase
   public:
     int topidx;
     PnRDB::Drc_info DRC_info;
-    vector<PnRDB::hierNode> hierTree;
+    vector<PnRDB::hierNode> hierTree;  //each module in verilog file is a node
 
     // default constructor
     inline PnRdatabase() {unitScale=2000;maxNode=0;};

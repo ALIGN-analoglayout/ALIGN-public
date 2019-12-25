@@ -24,7 +24,7 @@ Outputs: all the results will be saved under 'Results' folder by default
 ## B. Setup & Kickoff
 
 ### Build the image 
-1.  Build prerequisite image with_protobuf under [Build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/Build)
+1.  Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
 ``` Shell
 docker build -f Dockerfile.build -t with_protobuf .
 ```

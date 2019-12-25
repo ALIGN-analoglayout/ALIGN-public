@@ -1,0 +1,5 @@
+FROM darpaalign/klayout:latest as layout_convert
+
+RUN apt-get update && apt-get install -yq xvfb && apt-get clean
+
+COPY . /build/ThirdParty/Klayout/

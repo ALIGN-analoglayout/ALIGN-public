@@ -149,7 +149,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	      for (unsigned int i=0; i<2; ++i) {
 		auto& s = stackAry[i];
 		if(s.is_string()) {
-		  metal_stack_indices[i] = DRC_info.Metalmap[s];
+		  metal_stack_indices[i] = DRC_info.Metalmap[s]; //get via's upper and lower metal name by via's Stack
 		} else {
 		  cout << "Null metal for via " << tmp_via.name << " pos " << i << endl;
 		}
@@ -254,7 +254,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 	     {
 	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
 	       //LL LowerRect
-	       if(mi.direct==0){
+	       if(mi.direct==0){ //Vertical metal
 		 temp_point.x = 0-vi.width/2-vi.cover_l_P;
 		 temp_point.y = 0-vi.width_y/2-vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
@@ -262,7 +262,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		 temp_point.x = 0+vi.width/2+vi.cover_l_P;
 		 temp_point.y = 0+vi.width_y/2+vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
-	       }else{
+	       }else{  //Horizontal metal
 		 temp_point.y = 0-vi.width_y/2-vi.cover_l_P;
 		 temp_point.x = 0-vi.width/2-vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);

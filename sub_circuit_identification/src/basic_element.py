@@ -23,7 +23,8 @@ class BasicElement:
 
     def get_elements(self, num_pins=2):
         """ Extract pins and values"""
-        self.inst =  self.line.strip().split()[0]
+        ## UW circuits have - sign which is not handled by placer now"
+        self.inst =  self.line.strip().split()[0].replace('-','_')
         if '(' in  self.line.strip().split()[1]:
             self.pins = self.line.strip().split('(')[1].split(')')[0].split()
             self.num_pins = len(self.pins)
@@ -166,7 +167,7 @@ class BasicElement:
 
         if self.pins[0] == self.pins[2]:
             inst_type = "dummy"
-            
+        self.pin_weight[0] = self.pin_weight[2]     
         return {
             "inst": self.inst,
             "inst_type": inst_type,
@@ -204,10 +205,12 @@ def _parse_inst(line):
     device = None
     if not line.strip():
         return device
+    ##USC CKT SAR_ADC: I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=2
     elif line.strip().lower().startswith('m') \
             or line.strip().lower().startswith('n') \
             or line.strip().lower().startswith('p') \
             or line.strip().lower().startswith('xm') \
+            or (line.strip().startswith('I') and 'mos' in line) \
             or line.strip().lower().startswith('t'):
         logging.debug('FOUND transistor : %s', line.strip())
         device = element.transistor()
@@ -220,13 +223,15 @@ def _parse_inst(line):
     elif line.strip().startswith('i'):
         logging.debug('FOUND i_source: %s', line.strip())
         device = element.i_source()
-    elif line.strip().lower().startswith('c') or line.strip().lower().startswith('xc'):
+    elif line.strip().lower().startswith('c') \
+            or ( line.strip().lower().startswith('xc') \
+            and 'cap' in  line.strip().split()[3].lower()):
         logging.debug('FOUND cap: %s', line.strip())
         device = element.capacitor()
     elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):
         logging.debug('FOUND resistor: %s', line.strip())
         device = element.resistor()
-    elif line.strip().lower().startswith('l') or line.strip().lower().startswith('xl'):
+    elif line.strip().lower().startswith('l'):
         logging.debug("inductance: %s", line.strip())
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
@@ -235,6 +240,9 @@ def _parse_inst(line):
 
         if ' / ' in line:
             line = line.replace(' / ', ' ')
+        if '(' in line:
+            line = line.replace('(', '').replace(')', '')
+
 
         if line:
             all_nodes = line.strip().split()

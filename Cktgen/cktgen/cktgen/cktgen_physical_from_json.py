@@ -107,7 +107,14 @@ def gr_hints(parser_results):
 def hack_gr( results, bbox):
   wires = results['wires']
 
-  layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+  print("SMB")
+
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(2,5) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,4) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+
+  print(layer_map)
+  
 # change metal2 grs to metal4 (big runtime issue otherwise)
 #  layer_map['M2'] = 'metal4'
 
@@ -249,19 +256,22 @@ def hack_gr( results, bbox):
   results['wires'] = new_wires
 
 
-if __name__ == "__main__":
-
-  args,tech = parse_args()
+def main(args, tech):
+  
   assert args.source != ''
   src = args.source
-
 
   assert args.placer_json != ''
 
   with open( args.placer_json, "rt") as fp:
     placer_results = json.load( fp)
 
-  with open( f"INPUT/{src}_global_router_out.json", "rt") as fp:
+  if args.gr_json != '':
+    gr_fn = args.gr_json
+  else:
+    gr_fn = f"INPUT/{src}_global_router_out.json"
+
+  with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
 #  hack_gr( global_router_results, placer_results['bbox'])
@@ -269,72 +279,83 @@ if __name__ == "__main__":
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
-  layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
+  print("SMB")
+
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,5) }
+  layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+
+  print(layer_map)
+
   for leaf in placer_results['leaves']:
     for term in leaf['terminals']:
       term['layer'] = layer_map[term['layer']]
 
-  m1_pitch = 800
+  if False:
+    #
+    # SMB: Generalize this
+    #
+    m1_pitch = 800
 
-  global_xcs2 = set()
-  global_ycs2 = set()
-  for leaf in placer_results['leaves']:
+    global_xcs2 = set()
+    global_ycs2 = set()
+    for leaf in placer_results['leaves']:
 
-    ycs = set()
+      ycs = set()
+      ycs2 = set()
+      ycs.add( leaf['bbox'][1])
+      ycs.add( leaf['bbox'][3])
+      ycs2.add( leaf['bbox'][1]%840)
+      ycs2.add( leaf['bbox'][3]%840)
+
+      xcs = set()
+      xcs2 = set()
+      xcs.add( leaf['bbox'][0])
+      xcs.add( leaf['bbox'][2])
+      xcs2.add( leaf['bbox'][0]%m1_pitch)
+      xcs2.add( leaf['bbox'][2]%m1_pitch)
+      print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
+
+      for term in leaf['terminals']:
+        if term['layer'] in ["metal2"]:
+          if term['net_name'] in ["!kor"]: continue
+          yc = (term['rect'][1]+term['rect'][3])//2
+          ycs.add(yc)
+          cand = yc%840
+          ycs2.add(cand)
+          if cand != 0:
+            print("YYY", leaf['template_name'], term)
+
+          global_ycs2.add(cand)
+
+        if term['layer'] in ["metal1","metal3"]:
+          xc = (term['rect'][0]+term['rect'][2])//2
+          xcs.add(xc)
+          cand = xc%m1_pitch
+          xcs2.add(cand)
+          if cand != 0:
+            print("YYY", leaf['template_name'], term)
+
+          global_xcs2.add(cand)
+
+      print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
+      print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
+
+    print('XXX global_ycs2', global_ycs2)
+    print('XXX global_xcs2', global_xcs2)
+
+
     ycs2 = set()
-    ycs.add( leaf['bbox'][1])
-    ycs.add( leaf['bbox'][3])
-    ycs2.add( leaf['bbox'][1]%840)
-    ycs2.add( leaf['bbox'][3]%840)
-
-    xcs = set()
     xcs2 = set()
-    xcs.add( leaf['bbox'][0])
-    xcs.add( leaf['bbox'][2])
-    xcs2.add( leaf['bbox'][0]%m1_pitch)
-    xcs2.add( leaf['bbox'][2]%m1_pitch)
-    print( "bbox", leaf['template_name'], ycs, ycs2, xcs, xcs2)
-
-    for term in leaf['terminals']:
-      if term['layer'] in ["metal2"]:
-        if term['net_name'] in ["!kor"]: continue
-        yc = (term['rect'][1]+term['rect'][3])//2
-        ycs.add(yc)
-        cand = yc%840
-        ycs2.add(cand)
-        if cand != 0:
-          print("YYY", leaf['template_name'], term)
-
-        global_ycs2.add(cand)
-
-      if term['layer'] in ["metal1","metal3"]:
-        xc = (term['rect'][0]+term['rect'][2])//2
-        xcs.add(xc)
-        cand = xc%m1_pitch
-        xcs2.add(cand)
-        if cand != 0:
-          print("YYY", leaf['template_name'], term)
-
-        global_xcs2.add(cand)
-
-    print('XXX template_name ycs',leaf['template_name'], ycs, ycs2)    
-    print('XXX template_name xcs',leaf['template_name'], xcs, xcs2)    
-
-  print('XXX global_ycs2', global_ycs2)
-  print('XXX global_xcs2', global_xcs2)
+    for inst in placer_results['instances']:
 
 
-  ycs2 = set()
-  xcs2 = set()
-  for inst in placer_results['instances']:
-    
-
-    m840 = inst['transformation']['oY']%840
-    m800 = inst['transformation']['oX']%800
-    print(inst['instance_name'], m840, m800, inst['transformation'])
-    ycs2.add(m840)
-    xcs2.add(m800)
-  print('Transform ycs2 xcs2', ycs2, xcs2)
+      m840 = inst['transformation']['oY']%840
+      m800 = inst['transformation']['oX']%800
+      print(inst['instance_name'], m840, m800, inst['transformation'])
+      ycs2.add(m840)
+      xcs2.add(m800)
+    print('Transform ycs2 xcs2', ycs2, xcs2)
 
   adts = {}
 
@@ -344,7 +365,7 @@ if __name__ == "__main__":
     adts[nm] = adt
 
     for term in leaf['terminals']:
-      if False or term['net_name'] != '!kor':
+      if term['net_name'] != '!kor':
         adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
 
   bbox = placer_results['bbox']
@@ -369,6 +390,12 @@ if __name__ == "__main__":
     for p in ports:
       adnetl.addPort( p)
 
+  if 'preroutes' in placer_results:
+    print("SMB: Found some preroutes")
+    preroutes = placer_results['preroutes']
+    for preroute in preroutes:
+      adnetl.addPreroute( preroute)
+
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
@@ -378,9 +405,15 @@ if __name__ == "__main__":
 
     netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
 
-  netl.semantic()
+#  netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 
   tech.write_files( "INPUT", netl.nm, netl.bbox.toList())
   netl.write_files( tech, "INPUT", args)
+  
+
+if __name__ == "__main__":
+
+  args,tech = parse_args()
+  main( args, tech)

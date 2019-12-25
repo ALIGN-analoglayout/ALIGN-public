@@ -52,6 +52,11 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                 ports[ele] = G[node][ele]["weight"]
 
         #G.add_edge(new_node,ele,weight=wt)
+    models = {G.nodes[node]["real_inst_type"] for node in argv}
+    if '' in models:
+        models.remove('')
+    if len(models) == 1:
+        max_value['model'] = models.pop()
     new_node = new_node[1:]
     G.add_node(new_node,
                inst_type=hier_type,
@@ -61,7 +66,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     #if [val for val in max_value.values() if isinstance(val, str)]
     #    print("wrong value type",new_node)
     for pins in list(ports):
-        if set(G.neighbors(pins)) <= set(argv):
+        if set(G.neighbors(pins)) <= set(argv) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
             #print("deleting node",pins)
             G.remove_node(pins)
@@ -193,22 +198,22 @@ def convert_unit(value):
     elif 'k' in value:
         value = float(value.replace('k', ""))
         value = value * 1000
-    elif 'K' in value:
+    elif 'K' in value and value[value.index('K')-1].isdigit():
         value = float(value.replace('K', ""))
         value = value * 1000
-    elif 'm' in value.lower():
+    elif 'm' in value:
         value = float(value.replace('m', ""))
         value = value * 1E6
-    elif 'p' in value.lower():
+    elif 'p' in value:
         value = float(value.replace('p', ""))
         value = value * 1E-12
-    elif 'n' in value.lower():
+    elif 'n' in value:
         value = float(value.replace('n', ""))
         value = value * 1E-9
-    elif 'u' in value.lower():
+    elif 'u' in value:
         value = float(value.replace('u', ""))
         value = value * 1E-6
-    elif 'f' in value.lower():
+    elif 'f' in value:
         #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
         value = float(value.replace('f', ""))
         value = value * 1e-15

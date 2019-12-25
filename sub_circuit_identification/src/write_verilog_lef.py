@@ -9,9 +9,11 @@ import os
 import logging
 import argparse
 import sys
+import json
 from math import sqrt, ceil
 from read_lef import read_lef
 from util import convert_to_unit
+from merge_nodes import merge_nodes
 
 if not os.path.exists("./LOG"):
     os.mkdir("./LOG")
@@ -63,11 +65,15 @@ class WriteVerilog:
                         ports.append(key)
                         nets.append(value)
                 elif "connection" in attr:
-                    logging.info("connection to ports: %s",attr["connection"])
-                    for key, value in attr["connection"].items():
-                        if self.check_ports_match(key,attr['inst_type']):
-                            ports.append(key)
-                            nets.append(value)                    
+                    try:
+                        logging.info("connection to ports: %s",attr["connection"])
+                        for key, value in attr["connection"].items():
+                            if self.check_ports_match(key,attr['inst_type']):
+                                ports.append(key)
+                                nets.append(value)                    
+                    except:
+                        logging.error("ERROR: Subckt %s defination not found",attr['inst_type'])
+
                 else:
                     logging.info("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
@@ -148,7 +154,7 @@ class WriteSpice:
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
                     elif 'DCL_PMOS' in attr['inst_type']:
-                        nets[1:1]=[nets[2]]
+                        nets[1:1]=[nets[1]]
                     # add body ports to transistor
                     if 'PMOS' in attr['inst_type']:
                         nets.append('vdd')
@@ -161,7 +167,7 @@ class WriteSpice:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) +' '+ attr['real_inst_type'] + ' '+ concat_values(attr['values']) )
+                fp.write(' '.join(nets) +' '+ attr['inst_type'] + ' '+ concat_values(attr['values']) )
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
         
@@ -212,7 +218,7 @@ def generate_lef(fp, name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         logging.info("Found cap with size: %s %d",size,unit_size_cap )                
-        block_name = name + '_' + size + 'f'
+        block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if not block_name in available_block_lef:
             logging.info('Generating lef for: %s %s', name, size)
@@ -235,7 +241,7 @@ def generate_lef(fp, name, values, available_block_lef,
             #size = float(size)
             res_unit_size = 30 * unit_size_cap
             height = ceil(sqrt(float(size) / res_unit_size))
-            block_name = name + '_' + size
+            block_name = name + '_' + size.replace('.','p')
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', block_name, size)
@@ -255,11 +261,11 @@ def generate_lef(fp, name, values, available_block_lef,
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
+        block_name = name + '_' + size.replace('.','p')
+        res_unit_size = 300 
         try:
             #size = float(size)
-            res_unit_size = 30 * unit_size_cap
             height = ceil(sqrt(float(size) / res_unit_size))
-            block_name = name + '_' + size
             if block_name in available_block_lef:
                 return block_name
             logging.info('Generating lef for: %s %s', block_name, size)
@@ -268,7 +274,11 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -n " + str(height) +
                      " -r " + size)
         except:
-            block_name = name + '_' + size
+            fp.write("\n$PC fabric_" + name + ".py " +
+                     " -b " + block_name +
+                     " -n " + '1'  +
+                     " -r " + str(res_unit_size))
+
     elif name.lower().startswith('inductor') or \
         name.lower().startswith('spiral'):
         try:
@@ -324,15 +334,180 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +
                      " -Y " + yval +
-                     " --width " + str(values['w']) +
-                     " --length " + str(values['l']))
+                     " --params " + "'" + json.dumps(values) + "'")
         else:
             logging.info("No proper marameters found for cell generation")
             block_name = name+"_"+size       
 
     return block_name
 
+def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
+    #print(G.node[node1],G.node[node2])
+    #match_pair={}
+    if len(list(G.neighbors(nodes1))) <=2 and \
+            set(G.neighbors(nodes1)) == set(G.neighbors(nodes2)):
+        for node1 in list(G.neighbors(nodes1)):
+            if node1 not in traverced:
+                #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
+                match_pair[node1]=node1
+                compare_nodes(G,match_pair,traverced,node1,node1)
+    for node1 in list(G.neighbors(nodes1)):
+        if node1 not in traverced and \
+                node1 not in match_pair.keys():
+            for node2 in list(G.neighbors(nodes2)):
+                if node1 != node2 and node2 not in traverced:
+                    if compare_node(G,node1,node2):
+                        if G.get_edge_data(nodes1,node1)['weight'] == G.get_edge_data(nodes2,node2)['weight']:
+                            #match_pair[nodes1][1].append(node1)
+                            #match_pair[nodes2][2].append(node2)
+                            match_pair[node1]=node2
+                            #print(node1,node2)
+                            traverced.append(node1)
+                            traverced.append(node2)
+                            compare_nodes(G,match_pair,traverced,node1,node2)                    
+    return match_pair
+def compare_node(G,node1,node2):
+    if G.node[node1]["inst_type"]=="net" and \
+            G.node[node2]["inst_type"]=="net" and \
+            len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
+            G.node[node1]["net_type"] == G.node[node2]["net_type"]:
+        return True
+    elif (G.node[node1]["inst_type"]==G.node[node2]["inst_type"] and
+        'values' in G.node[node1].keys() and 
+         G.node[node1]["values"]==G.node[node2]["values"] and
+        len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
+        return True
+    else:
+        return False
+def connection(G,net):
+    conn =[]
+    for nbr in list(G.neighbors(net)):
+        #print(graph.node[nbr]["ports_match"].items())
+        if "ports_match" in graph.node[nbr]:
+            idx=list(graph.node[nbr]["ports_match"].values()).index(net)
+            conn.append(nbr+'/'+list(graph.node[nbr]["ports_match"].keys())[idx])
+    if graph.node[net]["net_type"]=="external":
+        conn.append(net)
+    return conn
 
+def check_common_centroid(graph,input_dir,name,ports):
+    """ Reads available const in input dir
+        Fix cc cap in const and netlist
+    """
+    cc_pair={}
+    const_path=input_dir + name + '.const'
+    new_const_path = input_dir + name + '.const_temp'
+    if os.path.isfile(const_path): 
+        print('Reading const file for common centroid', const_path)
+        const_fp = open(const_path, "r")
+        new_const_fp = open(new_const_path, "w")
+        line = const_fp.readline()
+        while line:
+            if line.startswith("CC") and len(line.strip().split(','))>=5:
+                caps_in_line = line[line.find("{")+1:line.find("}")]
+                updated_cap = caps_in_line.replace(',','_')
+                cap_blocks = caps_in_line.strip().split(',')
+                matched_ports ={}
+                for idx,cap_block in enumerate(cap_blocks):
+                    cc_pair.update({cap_block: updated_cap})
+                    conn = list(graph.neighbors(cap_block))
+                    matched_ports['MINUS'+str(idx)] = conn[0]
+                    matched_ports['PLUS'+str(idx)]= conn[1]
+                print("matched_ports",cc_pair,matched_ports)
+                line = line.replace(caps_in_line,updated_cap)
+                graph, _ = merge_nodes(
+                        graph, 'Cap_cc',cap_blocks , matched_ports)
+            new_const_fp.write(line)
+            line=const_fp.readline()
+    
+        const_fp.close()
+        new_const_fp.close()
+        os.rename(new_const_path, const_path)
+    else:
+        print("Couldn't find constraint file",const_path," (might be okay)")
+
+    return(cc_pair)
+
+def WriteCap(graph,input_dir,name,unit_size_cap):
+    const_path = input_dir + name + '.const'
+    new_const_path = input_dir + name + '.const_temp'
+    logging.info("writing cap constraints:"+input_dir + name + '.const')
+    available_cap_const = []
+    if os.path.isfile(const_path): 
+        print('Reading const file for cap', const_path)
+        const_fp = open(const_path, "r")
+        new_const_fp = open(new_const_path, "w")
+        line = const_fp.readline()
+        while line:
+            if line.startswith("CC"):
+                caps_in_line = line[line.find("{")+1:line.find("}")]
+                cap_blocks = caps_in_line.strip().split(',')
+                available_cap_const = available_cap_const+cap_blocks
+            new_const_fp.write(line)
+            logging.info("cap const %s",line)
+            line=const_fp.readline()
+        const_fp.close()
+    else:
+        new_const_fp = open(new_const_path, "w")
+        logging.info("Creating new const file"+new_const_path)
+
+
+    for node, attr in graph.nodes(data=True):
+        if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
+            if 'cap' in attr['values'].keys():
+                size = attr['values']["cap"]*1E15
+            elif 'c' in attr['values'].keys():
+                size = attr['values']["c"]*1E15
+            else: 
+                size = unit_size_cap
+            n_cap = str(ceil(size/unit_size_cap))
+            unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
+            cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
+            logging.info("Cap constraint"+cap_line)
+            new_const_fp.write(cap_line)
+            available_cap_const.append(node)
+    new_const_fp.close()
+    if os.stat(new_const_path).st_size ==0:
+        os.remove(new_const_path)
+    else:
+        os.rename(new_const_path, const_path)
+
+
+def WriteConst(graph,input_dir,name,ports):
+    check_common_centroid(graph,input_dir,name,ports)
+    const_fp = open(input_dir + name + '.const', 'a+')
+    logging.info("writing constraints: %s",input_dir + name + '.const')
+    #const_fp.write(str(ports))
+    #const_fp.write(str(graph.nodes()))
+    traverced =[]
+    all_match_pairs={}
+    for port in ports:
+        if port in graph.nodes():
+            #while len(list(graph.neighbors(port)-set(traverced)))==1:
+            #nbr = list(graph.neighbors(port))
+            pair ={}
+            traverced.append(port)
+            compare_nodes(graph, pair, traverced, port, port)
+            if pair:
+                #const_fp.write(port)
+                all_match_pairs.update(pair)
+    symmBlock = "SymmBlock ("
+    for key, value in all_match_pairs.items():
+        if graph.node[key]["inst_type"]!="net":
+            if key ==value:
+                symmBlock = symmBlock+' {'+key+ '} ,'
+            else:
+                symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
+        else:
+            if len(list(graph.neighbors(key)))<3:
+                symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
+                        '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
+                const_fp.write(symmNet)
+
+
+    symmBlock = symmBlock[:-1]+')'
+    const_fp.write(symmBlock)
+    const_fp.close()
 #%%
 if __name__ == '__main__':
     if not os.path.exists("./Results/"):
@@ -439,6 +614,8 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph)
+            #WriteConst(graph, './input_circuit/', name, inoutpin)
+            WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 

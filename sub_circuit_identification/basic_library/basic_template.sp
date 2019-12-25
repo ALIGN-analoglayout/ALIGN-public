@@ -11,10 +11,20 @@ M0 (DA DA S 0) NMOS w=w l=90n
 M1 (DB DA S 0) NMOS w=w l=90n
 .ends SCM_NMOS
 
+.subckt SCM_PMOS DA DB S
+M0 (DA DA S 0) PMOS w=w l=90n
+M1 (DB DA S 0) PMOS w=w l=90n
+.ends SCM_PMOS
+
 .subckt CMFB_NMOS DA DB GB S
 M0 (DA DA S 0) NMOS w=w l=90n
 M1 (DB GB S 0) NMOS w=w l=90n
 .ends CMFB_NMOS
+
+.subckt CMFB_PMOS DA DB GB S
+M0 (DA DA S 0) PMOS w=w l=90n
+M1 (DB GB S 0) PMOS w=w l=90n
+.ends CMFB_PMOS
 
 .subckt CASCODED_CMC_PMOS DA GA DB S
 M0 DA GA SA vdd PMOS w=27e-9 l=20e-9 nfin=120
@@ -45,10 +55,35 @@ M0 (DA GA S 0) NMOS w=w l=90n
 M1 (DB GB S 0) NMOS w=w l=90n
 .ends DP_NMOS
 
+.subckt DP_PMOS  DA DB GA GB S
+M0 (DA GA S 0) PMOS w=w l=90n
+M1 (DB GB S 0) PMOS w=w l=90n
+.ends DP_PMOS
+
 .subckt CMC_PMOS DA DB SA SB G
 M0 (DA G SA 0) PMOS w=w l=90n
 M1 (DB G SB 0) PMOS w=w l=90n
 .ends CMC_PMOS
+
+.subckt CCP_NMOS DA DB S
+M0 (DA DB S 0) NMOS w=w l=90n
+M1 (DB DA S 0) NMOS w=w l=90n
+.ends CCP_NMOS
+
+.subckt CCP_PMOS DA DB S
+M0 (DA DB S 0) PMOS w=w l=90n
+M1 (DB DA S 0) PMOS w=w l=90n
+.ends CCP_PMOS
+
+.subckt LS_NMOS DA DB SA SB
+M0 (DA DA SA 0) NMOS w=w l=90n
+M1 (DB DA SB 0) NMOS w=w l=90n
+.ends LS_NMOS
+
+.subckt LS_PMOS DA DB SA SB
+M0 (DA DA SA 0) PMOS w=w l=90n
+M1 (DB DA SB 0) PMOS w=w l=90n
+.ends LS_PMOS
 
 .subckt CMC_NMOS DA DB SA SB G
 M0 (DA G SA 0) NMOS w=w l=90n
@@ -74,6 +109,7 @@ M0 (D D S 0) PMOS w=w l=90n
 .subckt Res PLUS MINUS
 RR1 PLUS MINUS res res=10k
 .ends Res
+
 
 .subckt spiral_ind PLUS MINUS BULK CTAP
 L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
