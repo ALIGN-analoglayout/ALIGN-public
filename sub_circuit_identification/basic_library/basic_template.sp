@@ -106,30 +106,6 @@ M0 (D D S B) NMOS w=w l=90n
 M0 (D D S B) PMOS w=w l=90n
 .ends DCL_PMOS
 
-.subckt Dummy_NMOS D S
-M0 (D S S B) NMOS w=w l=90n
-.ends Dummy_NMOS
-
-.subckt Dummy_PMOS D S
-M0 (D S S B) PMOS w=w l=90n
-.ends Dummy_PMOS
-
-.subckt Dcap_NMOS G S
-M0 (S G S B) NMOS w=w l=90n
-.ends Dcap_NMOS
-
-.subckt Dcap_PMOS G S
-M0 (S G S B) PMOS w=w l=90n
-.ends Dcap_PMOS
-
-.subckt Dcap1_NMOS S
-M0 (S S S B) NMOS w=w l=90n
-.ends Dcap1_NMOS
-
-.subckt Dcap1_PMOS S
-M0 (S S S B) PMOS w=w l=90n
-.ends Dcap1_PMOS
-
 .subckt Res PLUS MINUS
 RR1 PLUS MINUS res res=10k
 .ends Res
