@@ -563,10 +563,19 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     PnRDB::point delta = gp - mw / 2 - cp;
 
     PnRDB::bbox bl = minmax.bloat(delta.x, delta.y);
+
+    bl.LL.x = floor((double) bl.LL.x/drc_info.Metal_info.at(V_metal).grid_unit_x)*drc_info.Metal_info.at(V_metal).grid_unit_x;
+    bl.LL.y = floor((double) bl.LL.y/drc_info.Metal_info.at(H_metal).grid_unit_y)*drc_info.Metal_info.at(H_metal).grid_unit_y;
+
+    bl.UR.x = ceil((double) bl.UR.x/drc_info.Metal_info.at(V_metal).grid_unit_x)*drc_info.Metal_info.at(V_metal).grid_unit_x;
+    bl.UR.y = ceil((double) bl.UR.y/drc_info.Metal_info.at(H_metal).grid_unit_y)*drc_info.Metal_info.at(H_metal).grid_unit_y;
+
     CheckOutBlock.gdsFile = topGDS_loc;
     PnRDB::point temp_point;
     CheckOutBlock.originBox.LL = bl.LL;
+    std::cout<<"cap LL "<<bl.LL.x<<" "<<bl.LL.y<<std::endl;
     CheckOutBlock.originBox.UR = bl.UR;
+    std::cout<<"cap UR "<<bl.UR.x<<" "<<bl.UR.y<<std::endl;
     CheckOutBlock.width = CheckOutBlock.originBox.width();
     CheckOutBlock.height = CheckOutBlock.originBox.height();
     CheckOutBlock.originCenter = CheckOutBlock.originBox.center();
@@ -1783,8 +1792,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
     for(unsigned int i = 0;i<current_node.Blocks.size();i++){
 
-	const auto& b = current_node.Blocks[i].instance.back();
-	//PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
+	//const auto& b = current_node.Blocks[i].instance.back();
+	PnRDB::block b = current_node.Blocks[i].instance[current_node.Blocks[i].instance.size()-1];
 
 	if(b.isLeaf == 1 and b.gdsFile ==""){
 	    //this block must be CC
@@ -1922,8 +1931,8 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
     fout<<"set output \"result.jpg\""<<endl<<endl;
 
     //set range
-    fout<<"\nset xrange ["<<CheckOutBlock.originBox.LL.x-500<<":"<<CheckOutBlock.originBox.UR.x+500<<"]"<<endl;
-    fout<<"\nset yrange ["<<CheckOutBlock.originBox.LL.y-500<<":"<<CheckOutBlock.originBox.UR.y+500<<"]"<<endl;
+    fout<<"\nset xrange ["<<CheckOutBlock.originBox.LL.x-5000<<":"<<CheckOutBlock.originBox.UR.x+5000<<"]"<<endl;
+    fout<<"\nset yrange ["<<CheckOutBlock.originBox.LL.y-5000<<":"<<CheckOutBlock.originBox.UR.y+5000<<"]"<<endl;
 
   
     //set label for capacitors
