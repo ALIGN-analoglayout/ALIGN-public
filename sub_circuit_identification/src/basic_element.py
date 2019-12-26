@@ -171,7 +171,7 @@ class BasicElement:
         return {
             "inst": self.inst,
             "inst_type": inst_type,
-            "real_inst_type": self.real_inst_type,
+            "real_inst_type": self.real_inst_type+'_'+self.pins[3],
             "ports": self.pins[0:3],
             "edge_weight": self.pin_weight[0:3],
             "values": parse_value(self.value)

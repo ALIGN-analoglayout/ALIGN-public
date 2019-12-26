@@ -20,7 +20,7 @@ class DesignRuleCheck():
         '''
 
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
-            if layer not in self.canvas.pdk:
+            if not (layer.startswith('V') or layer.startswith('M')) or layer not in self.canvas.pdk:
                 continue
             if self.canvas.rd.layers[layer] == '*':
                 self._check_via_rules(layer, vv)
