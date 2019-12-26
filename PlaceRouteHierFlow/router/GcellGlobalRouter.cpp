@@ -40,7 +40,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
   //int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
   int v_metal = vertical_index;
   std::cout<<"vminL "<<times*v_minL<<std::endl;
-  if(temp_point.y%h_pitches==0){
+  if(temp_point.y == 0 or temp_point.y==height){
     //assgin this terminal to horizontal metal, currently M2
     
     RouterDB::contact temp_contact;
@@ -64,7 +64,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     return;
   }
 
-  if(temp_point.x%v_pitches==0){
+  if(temp_point.x==0 or temp_point.x==width){
    //assgin this terminal to verital, currenly M1
 
     RouterDB::contact temp_contact;

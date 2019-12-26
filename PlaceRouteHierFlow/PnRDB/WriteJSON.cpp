@@ -175,7 +175,7 @@ JSONLabelTerminals(PnRDB::hierNode& node, const PnRDB::Drc_info& drc_info, json&
 		    if (write == 0) {
 		      center_x[0] = unit * con.placedCenter.x;
 		      center_y[0] = unit * con.placedCenter.y;
-
+                      std::cout<<"Terminal name "<<node.Terminals[i].name<<" center "<<center_x[0]<<" "<<center_y[0]<<std::endl;
 		      json elm;
 		      elm["type"] = "text";
 		      elm["layer"] = metal2int( drc_info, con.metal);
@@ -257,7 +257,7 @@ addMetalBoundaries (json& jsonElements, struct PnRDB::Metal& metal, const PnRDB:
     return false;
 }
 
-/*
+
 static void
 addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, const PnRDB::Drc_info& drc_info, int unit) {
 
@@ -275,7 +275,7 @@ addContactBoundaries (json& jsonElements, struct PnRDB::contact& Contact, const 
     bound0["xy"] = xy; 
     jsonElements.push_back (bound0);
 }
-*/
+
 
 void
 addOABoundaries (json& jsonElements, int width, int height) {
@@ -415,13 +415,18 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     json jsonElements = json::array();
 
     int x[5], y[5];
-    int write_blockPins_name = 0;
-    if (write_blockPins_name){
+    int write_blockPins_name = 1;
+    if (write_blockPins_name and node.isTop == 1){
 	for (unsigned int i = 0; i < node.blockPins.size(); i++) {
 	    int write = 0;
+            std::cout<<"Write blockPins info "<<node.blockPins[i].name<<std::endl;
+            std::cout<<"blockPins contact size "<<node.blockPins[i].pinContacts.size()<<std::endl;
 	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
 		PnRDB::contact con = node.blockPins[i].pinContacts[j];
-		assignBoxPoints (x, y, con.placedBox, unitScale);
+                std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
+                con.placedBox = con.originBox;
+                addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		assignBoxPoints (x, y, con.originBox, unitScale);
 		if (write == 0) {
 		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 				     metal2int( drc_info, con.metal),
@@ -455,7 +460,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 	}
     }
     json j;
-    JSONLabelTerminals(node, drc_info, j, unitScale);
+    //JSONLabelTerminals(node, drc_info, j, unitScale);
     for (json::iterator elm = j.begin(); elm != j.end(); ++elm) jsonElements.push_back (*elm);
 
     if (includePowerNet) {
