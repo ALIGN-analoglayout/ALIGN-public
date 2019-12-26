@@ -1,6 +1,6 @@
 import json
 from collections import OrderedDict
-from cell_fabric import pdk
+from align.cell_fabric import pdk
 from pathlib import Path
 
 pdkfile = (Path(__file__).parent / 'layers.json').resolve()

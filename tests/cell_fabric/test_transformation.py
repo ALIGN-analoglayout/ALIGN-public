@@ -1,4 +1,4 @@
-from cell_fabric.transformation import Transformation, Rect
+from align.cell_fabric.transformation import Transformation, Rect
 
 def test_transformation_hit0():
     t = Transformation( 0, 10)

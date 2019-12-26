@@ -18,7 +18,7 @@ from . import routing_collateral
 import datetime
 
 import io
-import gdsconv.json2gds
+from ..gdsconv import json2gds
 
 LayoutDevice = collections.namedtuple('LayoutDevice', ['parameters', 'pins'])
 
@@ -295,7 +295,7 @@ class Canvas:
             contents2 = fp_tmp.getvalue()
 
         with io.StringIO( contents2) as fp0:
-            gdsconv.json2gds.convert_GDSjson_GDS_fps( fp0, fp1)
+            json2gds.convert_GDSjson_GDS_fps( fp0, fp1)
 
     def loadPDK(self, filename):
         assert self.pdk is None, "PDK already loaded. Cannot re-load"

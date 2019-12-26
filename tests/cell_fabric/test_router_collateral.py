@@ -1,14 +1,19 @@
 
-from cell_fabric import DefaultCanvas, Pdk
-from cell_fabric.routing_collateral import MetalTemplate
+import pathlib
+
+from align.cell_fabric import DefaultCanvas, Pdk
+from align.cell_fabric.routing_collateral import MetalTemplate
+
+mydir = pathlib.Path(__file__).resolve().parent
+pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
 
 def test_one():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
+    p = Pdk().load(pdkfile)
     c = DefaultCanvas(p)
-    assert c.generate_routing_collateral( "tests/routing_collateral_cand")
+    assert c.generate_routing_collateral( mydir / "routing_collateral_cand")
 
 def test_m3():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
+    p = Pdk().load(pdkfile)
     c = DefaultCanvas(p)
 
     m = c.generators['m3'] 

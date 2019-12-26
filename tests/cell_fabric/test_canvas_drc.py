@@ -1,10 +1,14 @@
 import pytest
+import pathlib
 
-from cell_fabric import Canvas, Pdk, Wire, Via
+from align.cell_fabric import Canvas, Pdk, Wire, Via
+
+mydir = pathlib.Path(__file__).resolve().parent
+pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
+    p = Pdk().load(pdkfile)
     c = Canvas(p)
     c.addGen( Wire( nm='m1', layer='M1', direction='v', clg=None, spg=None))
     c.addGen( Wire( nm='m2', layer='M2', direction='h', clg=None, spg=None))

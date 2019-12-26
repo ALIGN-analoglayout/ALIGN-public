@@ -2,9 +2,9 @@ import json
 import argparse
 #import gen_gds_json
 #import gen_lef
-from cell_fabric import Via, Region, DefaultCanvas, Wire, Pdk
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
-from cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
+from align.cell_fabric import Via, Region, DefaultCanvas, Wire, Pdk
+from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from align.cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 
 class CanvasNMOS(DefaultCanvas):

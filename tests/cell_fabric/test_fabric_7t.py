@@ -1,8 +1,11 @@
 
 import json
+import pathlib
 
 import fabric_7t
-from cell_fabric.transformation import Transformation
+from align.cell_fabric.transformation import Transformation
+
+mydir = pathlib.Path(__file__).resolve().parent
 
 def test_nunit_no_duplicates():
     c = fabric_7t.Canvas()
@@ -16,18 +19,18 @@ def test_nunit_no_duplicates():
 
         if y % 2 != 0:
             c.hitTopTr( Transformation(0*c.unitCellWidth, 1*c.unitCellHeight, 1, -1))
-            
+
         c.nunit()
         c.popTr()
 
-    fn = "tests/__json_7t_nunit"
-    with open( fn + "_cand", "wt") as fp:
+    fn = "__json_7t_nunit"
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         data = c.writeJSON( fp)
 
 #    assert len(c.rd.opens) == 0
     assert len(c.rd.shorts) == 0
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -44,18 +47,18 @@ def test_nunit_1x1():
 
         if y % 2 != 0:
             c.hitTopTr( Transformation(0*c.unitCellWidth, 1*c.unitCellHeight, 1, -1))
-            
+
         c.nunit()
         c.popTr()
 
-    fn = "tests/__json_7t_nunit_1x1"
-    with open( fn + "_cand", "wt") as fp:
+    fn = "__json_7t_nunit_1x1"
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         data = c.writeJSON( fp)
 
 #    assert len(c.rd.opens) == 0
     assert len(c.rd.shorts) == 0
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2

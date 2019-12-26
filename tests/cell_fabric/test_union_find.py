@@ -1,5 +1,5 @@
 
-from cell_fabric.remove_duplicates import UnionFind
+from align.cell_fabric.remove_duplicates import UnionFind
 
 def test_three():
     x = UnionFind()

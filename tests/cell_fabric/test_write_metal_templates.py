@@ -1,7 +1,7 @@
-from cell_fabric.routing_collateral import MetalTemplate
+from align.cell_fabric.routing_collateral import MetalTemplate
 
-from cell_fabric.grid import *
-from cell_fabric.canvas import *
+from align.cell_fabric.grid import *
+from align.cell_fabric.canvas import *
 
 def test_one_third():
     m = Wire( 'm1', 'M1', 'v', clg=None, spg=None)

@@ -2,7 +2,7 @@
 import re
 import json
 import datetime
-from cell_fabric import pdk
+from . import pdk
 import logging
 logger = logging.getLogger(__name__)
 

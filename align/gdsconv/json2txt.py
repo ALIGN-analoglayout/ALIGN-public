@@ -26,7 +26,7 @@ def convert_GDSjson_GDStxt (name, oname):
             print (arg, file=ofile, end='')
             if i < len(args) - 1: print (' ', file=ofile, end='')
         print('', file=ofile)
-               
+
     with open (name, 'rt') as a_file:
         data = json.load (a_file)
         oprint ("HEADER:", bracket(data['header']))

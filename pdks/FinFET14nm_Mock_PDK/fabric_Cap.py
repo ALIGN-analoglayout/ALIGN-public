@@ -3,9 +3,9 @@ import argparse
 import gen_gds_json
 import gen_lef
 from datetime import datetime
-from cell_fabric import Canvas, Pdk, Wire, Region, Via
-from cell_fabric import EnclosureGrid
-from cell_fabric import ColoredCenterLineGrid
+from align.cell_fabric import Canvas, Pdk, Wire, Region, Via
+from align.cell_fabric import EnclosureGrid
+from align.cell_fabric import ColoredCenterLineGrid
 
 from pathlib import Path
 pdkfile = (Path(__file__).parent / 'layers.json').resolve()

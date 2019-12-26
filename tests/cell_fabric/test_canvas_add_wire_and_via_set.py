@@ -1,6 +1,10 @@
 
 import json
-from cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+import pathlib
+
+from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+
+mydir = pathlib.Path(__file__).resolve().parent
 
 def test_one():
     c = Canvas()
@@ -28,17 +32,17 @@ def test_one():
 
     c.computeBbox()
 
-    fn = "tests/__json_via_set"
+    fn = "__json_via_set"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
              'terminals' : c.removeDuplicates()}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -69,17 +73,17 @@ def test_two():
 
     c.computeBbox()
 
-    fn = "tests/__json_via_set2"
+    fn = "__json_via_set2"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
              'terminals' : c.removeDuplicates()}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -119,7 +123,7 @@ def test_m2_and_m3():
 
     c.computeBbox()
 
-    fn = "tests/__json_via_set_m2_m3"
+    fn = "__json_via_set_m2_m3"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
@@ -127,10 +131,10 @@ def test_m2_and_m3():
 #             'terminals' : c.terminals}
              'terminals' : c.removeDuplicates()}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2

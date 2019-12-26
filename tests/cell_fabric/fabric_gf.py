@@ -1,9 +1,9 @@
 
 import json
 
-from cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
-from cell_fabric import Canvas, Wire
+from align.cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
+from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from align.cell_fabric import Canvas, Wire
 
 class CanvasNMOS(Canvas):
 

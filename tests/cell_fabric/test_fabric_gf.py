@@ -1,7 +1,10 @@
 
 import json
+import pathlib
 
 import fabric_gf
+
+mydir = pathlib.Path(__file__).resolve().parent
 
 def test_nunit():
     c = fabric_gf.CanvasNMOS()
@@ -11,17 +14,17 @@ def test_nunit():
 
     c.computeBbox()
 
-    fn = "tests/__json_nunit"
+    fn = "__json_nunit"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
              'terminals' : c.terminals}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -34,17 +37,17 @@ def test_nunit_no_duplicates():
 
     c.computeBbox()
 
-    fn = "tests/__json_nunit_no_duplicates"
+    fn = "__json_nunit_no_duplicates"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
              'terminals' : c.removeDuplicates()}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -57,17 +60,17 @@ def test_cunit():
 
     c.computeBbox()
 
-    fn = "tests/__json_cunit"
+    fn = "__json_cunit"
 
     data = { 'bbox' : c.bbox.toList(),
              'globalRoutes' : [],
              'globalRouteGrid' : [],
              'terminals' : c.terminals}
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
 

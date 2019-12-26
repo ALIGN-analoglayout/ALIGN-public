@@ -5,8 +5,7 @@ import argparse
 import logging
 #import cProfile
 
-from pnrdb import hierNode, gen_viewer_json
-
+from align.pnr import hierNode, gen_viewer_json
 
 def main():
     parser = argparse.ArgumentParser( description="Visualize PnR database")

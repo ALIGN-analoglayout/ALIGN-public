@@ -1,5 +1,5 @@
 
-from cell_fabric.remove_duplicates import RemoveDuplicates
+from align.cell_fabric.remove_duplicates import RemoveDuplicates
 
 def test_touching():
     rA = [0,0,1,1]

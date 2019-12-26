@@ -2,12 +2,16 @@ import pytest
 import itertools
 import math
 import filecmp
+import pathlib
 
-from cell_fabric import DefaultCanvas, Pdk
+from align.cell_fabric import DefaultCanvas, Pdk
+
+mydir = pathlib.Path(__file__).resolve().parent
+pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
 
 @pytest.fixture
 def setup():
-    p = Pdk().load('../PDK_Abstraction/FinFET14nm_Mock_PDK/layers.json')
+    p = Pdk().load(pdkfile)
     c = DefaultCanvas(p)
     return c
 
@@ -37,12 +41,12 @@ def test_via_pex(setup):
 
     c.gen_data()
 
-    fn = "tests/__sp_via_set_m2_m3_sticks"
+    fn = "__sp_via_set_m2_m3_sticks"
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         c.pex.writePex(fp)
 
-    assert filecmp.cmp(fn + "_cand", fn + "_gold")
+    assert filecmp.cmp(mydir / (fn + "_cand"), mydir / (fn + "_gold"))
 
 def test_via_pex2(setup):
     c = setup
@@ -64,7 +68,7 @@ def test_via_pex2(setup):
 
     c.gen_data()
 
-    fn = "tests/Foo.cir"
+    fn = "Foo.cir"
 
     source = f"a_M1_{80*1}_{84*4}"
     sink1  = f"a_M1_{80*9}_{84*4}"
@@ -73,7 +77,7 @@ def test_via_pex2(setup):
     hack0 = "{2*period-slew}"
     hack1 = "PULSE(0 {vcc_value} 0ps {slew} {slew} {data_on} {period*4})"
 
-    with open( fn, "wt") as fp:
+    with open( mydir / fn, "wt") as fp:
         fp.write(f"""* PEX
 .param vcc_value=1
 .param slew=1fs
@@ -90,7 +94,7 @@ V1 {source} 0 {hack1}
 .end
 """)
 
-    assert filecmp.cmp(fn, fn + "-gold")
+    assert filecmp.cmp(mydir / fn, mydir / (fn + "-gold"))
 
 def test_via_pex_current(setup):
     c = setup
@@ -112,7 +116,7 @@ def test_via_pex_current(setup):
 
     c.gen_data()
 
-    fn = "tests/Foo2.cir"
+    fn = "Foo2.cir"
 
     source = f"a_M1_{80*1}_{84*4}"
     sink1  = f"a_M1_{80*9}_{84*4}"
@@ -121,7 +125,7 @@ def test_via_pex_current(setup):
     internal1 = f"a_M1_{80*5}_{84*4}"
     internal2 = f"a_M1_{80*5}_{84*0}"
 
-    with open( fn, "wt") as fp:
+    with open( mydir / fn, "wt") as fp:
         fp.write(f"""* PEX
 
 I0 {source} 0 10u
@@ -136,7 +140,7 @@ V2 {sink2} 0 0
 .end
 """)
 
-    assert filecmp.cmp(fn, fn + "-gold")
+    assert filecmp.cmp(mydir / fn, mydir / (fn + "-gold"))
 
 def test_via_pex_current2(setup):
     c = setup
@@ -160,7 +164,7 @@ def test_via_pex_current2(setup):
 
     c.gen_data()
 
-    fn = "tests/Foo3.cir"
+    fn = "Foo3.cir"
 
     source = f"a_M1_{80*1}_{84*2}"
     sink1  = f"a_M1_{80*9}_{84*4}"
@@ -169,7 +173,7 @@ def test_via_pex_current2(setup):
     internal1 = f"a_M1_{80*5}_{84*4}"
     internal2 = f"a_M1_{80*5}_{84*0}"
 
-    with open( fn, "wt") as fp:
+    with open( mydir / fn, "wt") as fp:
         fp.write(f"""* PEX
 
 I0 {source} 0 10u
@@ -184,4 +188,4 @@ V2 {sink2} 0 0
 .end
 """)
 
-    assert filecmp.cmp(fn, fn + "-gold")
+    assert filecmp.cmp(mydir / fn, mydir / (fn + "-gold"))

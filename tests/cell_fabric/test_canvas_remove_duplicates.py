@@ -1,5 +1,4 @@
-import pytest
-from cell_fabric import Canvas, Wire, Via
+from align.cell_fabric import Canvas, Wire, Via
 
 def test_vertical():
     c = Canvas()

@@ -1,8 +1,11 @@
 
 import pytest
 import json
-from cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
+import pathlib
+from align.cell_fabric import Canvas, Wire, Via, UncoloredCenterLineGrid, EnclosureGrid
 from itertools import chain, product
+
+mydir = pathlib.Path(__file__).resolve().parent
 
 def finish_test( c, fn):
 
@@ -18,10 +21,10 @@ def finish_test( c, fn):
     assert len(c.rd.opens) == 0
     assert len(c.rd.shorts) == 0
 
-    with open( fn + "_cand", "wt") as fp:
+    with open( mydir / (fn + "_cand"), "wt") as fp:
         fp.write( json.dumps( data, indent=2) + '\n')
 
-    with open( fn + "_gold", "rt") as fp:
+    with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
         assert data == data2
@@ -64,7 +67,7 @@ def test_m2_and_m3(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
+    finish_test( c, "__json_via_set_m2_m3_sticks")
 
 def test_m2_and_m3_infer(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -82,7 +85,7 @@ def test_m2_and_m3_infer(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
+    finish_test( c, "__json_via_set_m2_m3_sticks")
 
 def test_m2_and_m3_twochar(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -100,7 +103,7 @@ def test_m2_and_m3_twochar(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks_twochar")
+    finish_test( c, "__json_via_set_m2_m3_sticks_twochar")
 
 def test_m2_and_m3_unicode(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -118,7 +121,7 @@ def test_m2_and_m3_unicode(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
+    finish_test( c, "__json_via_set_m2_m3_sticks")
 
 def test_m2_and_m3_unicode2(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -136,7 +139,7 @@ def test_m2_and_m3_unicode2(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks2")
+    finish_test( c, "__json_via_set_m2_m3_sticks2")
 
 def test_m2_and_m3_resolve_names(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -154,7 +157,7 @@ def test_m2_and_m3_resolve_names(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks2")
+    finish_test( c, "__json_via_set_m2_m3_sticks2")
 
 def test_m2_and_m3_resolve_names_small(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -172,7 +175,7 @@ def test_m2_and_m3_resolve_names_small(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks3")
+    finish_test( c, "__json_via_set_m2_m3_sticks3")
 
 def test_m2_and_m3_multicharskip(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -191,7 +194,7 @@ def test_m2_and_m3_multicharskip(setup):
 
 """)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks_twochar")
+    finish_test( c, "__json_via_set_m2_m3_sticks_twochar")
 
 def test_m2_and_m3_badchars(setup):
     (c, m1, v1, m2, v2, m3) = setup
@@ -242,6 +245,6 @@ def test_m2_and_m3_different_pitch(setup):
 
 """, ypitch=3, xpitch=3)
 
-    finish_test( c, "tests/__json_via_set_m2_m3_sticks")
+    finish_test( c, "__json_via_set_m2_m3_sticks")
 
     

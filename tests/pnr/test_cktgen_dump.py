@@ -1,10 +1,13 @@
 
-import pnrdb
 import json
 import pathlib
 import os
-from pnrdb import *
+import pytest
 import copy
+
+from align.pnr import *
+
+mydir = pathlib.Path(__file__).resolve().parent
 
 def check_wire_widths( terminals, sc):
     for term in terminals:
@@ -178,7 +181,7 @@ def aux(design, subdesign=None):
         inst['transformation']['oX'] *= mul
         inst['transformation']['oY'] *= mul
 
-    with open( f"tests/__json_{subdesign}_dump", "wt") as fp:
+    with open( mydir / f"__json_{subdesign}_dump", "wt") as fp:
         json.dump( result, fp, indent=2)
 
 #
@@ -219,15 +222,21 @@ def aux(design, subdesign=None):
             newWires.append(newWire)
 
     newGRs = { 'wires': newWires}
-    with open( f"tests/__json_{subdesign}_gr", "wt") as fp:
+    with open( mydir / f"__json_{subdesign}_gr", "wt") as fp:
         json.dump( newGRs, fp=fp, indent=2)
 
+@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+                    reason='Necessary test collateral has not been built')
 def test_A():
     aux( "five_transistor_ota", "five_transistor_ota")
 
+@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+                    reason='Necessary test collateral has not been built')
 def test_B():
     aux( "switched_capacitor_filter", "telescopic_ota")
 
+@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+                    reason='Necessary test collateral has not been built')
 def test_C():
     aux( "cascode_current_mirror_ota", "cascode_current_mirror_ota")
 

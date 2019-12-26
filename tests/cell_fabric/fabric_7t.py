@@ -1,10 +1,10 @@
 
 import json
 
-from cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
-from cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
-from cell_fabric import Canvas as AbstractCanvas
-from cell_fabric import Wire, Via, Region
+from align.cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
+from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from align.cell_fabric import Canvas as AbstractCanvas
+from align.cell_fabric import Wire, Via, Region
 
 class Canvas(AbstractCanvas):
 

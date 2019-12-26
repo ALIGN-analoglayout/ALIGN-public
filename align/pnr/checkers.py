@@ -1,4 +1,4 @@
-from cell_fabric import transformation
+from ..cell_fabric import transformation
 import json
 import importlib
 import sys
@@ -16,7 +16,7 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk="../PDK_Abstraction/FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name

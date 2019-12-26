@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import datetime
-from cell_fabric import gen_gds_json, pdk
+from align.cell_fabric import gen_gds_json, pdk
 
 from pathlib import Path
 pdkfile = (Path(__file__).parent / 'layers.json').resolve()

@@ -1,8 +1,8 @@
 import pathlib
 import json
 
-from pnrdb import *
-from cell_fabric import DefaultCanvas, transformation
+from align.pnr import *
+from align.cell_fabric import DefaultCanvas, transformation
 from pprint import pformat
 
 import pytest
@@ -10,13 +10,17 @@ import os
 
 import re
 
+mydir =  pathlib.Path(__file__).resolve().parent
+
+def get_fpath(fn):
+    return mydir / f"{fn}_adr_dr_globalrouting.json"
 
 def aux(fn):
-    fpath = pathlib.Path( f"tests/{fn}_adr_dr_globalrouting.json")
+    fpath = get_fpath(fn)
     with fpath.open( "rt") as fp:
         d = json.load( fp)
         
-    pdk = "../PDK_Abstraction/FinFET14nm_Mock_PDK"
+    pdk = mydir.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name
     canvas = importlib.import_module(f'{pdkpkg}.canvas')
@@ -74,12 +78,18 @@ def aux(fn):
     assert len(cnv.rd.opens) == 0, pformat(cnv.rd.opens)
     assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
 
+@pytest.mark.skipif(not get_fpath("telescopic_ota").is_file(),
+                    reason='Necessary test collateral not found')
 def test_remove_duplicates_telescopic_ota():
     aux("telescopic_ota")
 
+@pytest.mark.skipif(not get_fpath("five_transistor_ota").is_file(),
+                    reason='Necessary test collateral not found')
 def test_remove_duplicates_five_transistor_ota():
     aux("five_transistor_ota")
 
+@pytest.mark.skipif(not get_fpath("cascode_current_mirror_ota").is_file(),
+                    reason='Necessary test collateral not found')
 def test_remove_duplicates_cascode_current_mirror_ota():
     aux("cascode_current_mirror_ota")
 

@@ -1,11 +1,15 @@
 import json
-from pnrdb import hierNode, PnRDBEncoder
+import pathlib
+
+from align.pnr import hierNode, PnRDBEncoder
 
 import io
 import copy
 
+mydir = pathlib.Path(__file__).resolve().parent
+
 def test_A():
-    with open("tests/telescopic_ota-freeze.json","rt") as fp:
+    with open(mydir / "telescopic_ota-freeze.json","rt") as fp:
         j = json.load(fp)
         hN = hierNode(j)
 
@@ -19,7 +23,7 @@ def test_A():
     assert j == jj
 
 def test_write():
-    with open("tests/telescopic_ota-freeze.json","rt") as fp:
+    with open(mydir / "telescopic_ota-freeze.json","rt") as fp:
         j = json.load(fp)
         j_copy = copy.deepcopy(j)
         hN = hierNode(j)

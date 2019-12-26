@@ -1,4 +1,4 @@
-from cell_fabric.transformation import Rect
+from align.cell_fabric.transformation import Rect
 
 def test_toList():
     r = Rect( 0, 0, 1, 1)
