@@ -42,7 +42,7 @@ def test_replace_matching_subckts():
     assert len(ckt.elements) == 5
     assert all(x.name.startswith('X') for x in ckt.elements)
     # # Generate primitive layouts
-    # sys.path.append( str(pathlib.Path(__file__).parent.parent.parent / 'PDK_Abstraction' / 'FinFET14nm_Mock_PDK'))
+    # sys.path.append( str(pathlib.Path(__file__).parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK'))
     # import primitive
     # for element in ckt.elements:
     #     uc = primitive.PrimitiveGenerator(12, 4, 2, 3)

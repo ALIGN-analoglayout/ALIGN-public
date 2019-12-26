@@ -23,7 +23,7 @@ def test_remove_duplicates(fn):
     with (rdir / fn).open( "rt") as fp:
         d = json.load( fp)
 
-    pdk = "../PDK_Abstraction/FinFET14nm_Mock_PDK"
+    pdk = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
     sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
     pdkpkg = pathlib.Path(pdk).name
     canvas = importlib.import_module(f'{pdkpkg}.canvas')
