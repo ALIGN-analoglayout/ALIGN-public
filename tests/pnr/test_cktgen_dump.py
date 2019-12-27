@@ -201,13 +201,13 @@ def aux(design, subdesign=None):
         newWire = { 'layer': newLayer, 'net_name': wire['net_name'], 'width': width, 'connected_pins': []}
 
         if wire['layer'] in hWires:
-            bin = 10*84*2
+            bin_ = 10*84*2
         elif wire['layer'] in vWires:
-            bin = 10*80*2
+            bin_ = 10*80*2
         else:
             assert False, wire['layer']
         
-        newWire['rect'] = [ c//bin for c in wire['rect']]    
+        newWire['rect'] = [ c//bin_ for c in wire['rect']]    
 
         r = newWire['rect']
 

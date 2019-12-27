@@ -37,21 +37,21 @@ def test_gen_viewer_json3():
 
 def test_remove_duplicates():
     hN = get_hN(mydir / "telescopic_ota-freeze.json")
-    (cnv, d) = gen_viewer_json( hN, checkOnly=True)
+    cnv, _ = gen_viewer_json( hN, checkOnly=True)
     assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
     assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
     # assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
 
 def test_remove_duplicates2():
     hN = get_hN(mydir / "switched_capacitor_filter-freeze.json")
-    (cnv, d) = gen_viewer_json( hN, checkOnly=True)
+    cnv, _ = gen_viewer_json( hN, checkOnly=True)
     assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
     assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
     # assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
 
 def test_remove_duplicates3():
     hN = get_hN(mydir / "switched_capacitor_combination-freeze.json")
-    (cnv, d) = gen_viewer_json( hN, checkOnly=True)
+    cnv, _ = gen_viewer_json( hN, checkOnly=True)
     assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
     assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
     # assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
