@@ -285,9 +285,9 @@ class Canvas:
 
         with io.StringIO( contents) as fp0, \
              io.StringIO() as fp_tmp:
-            assert False, "TEST ME & FIX ME"
-            # ( translate API has changed )
-            # translate( 'foo', '', fp0, fp_tmp, self.gds_layer_map, timestamp=timestamp)
+            # TODO: Update this
+            raise NotImplementedError("Translate api has changed but canvas hasn't been updated")
+            translate( 'foo', '', fp0, fp_tmp, self.gds_layer_map, timestamp=timestamp)
             contents2 = fp_tmp.getvalue()
 
         with io.StringIO( contents2) as fp0:

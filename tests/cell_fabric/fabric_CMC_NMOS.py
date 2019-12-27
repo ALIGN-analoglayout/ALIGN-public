@@ -1,6 +1,3 @@
-import json
-import argparse
-
 import itertools
 
 from align.cell_fabric import Via, Region, Canvas, Wire

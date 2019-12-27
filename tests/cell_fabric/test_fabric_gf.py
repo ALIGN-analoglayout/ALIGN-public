@@ -49,7 +49,7 @@ def test_nunit_no_duplicates():
     with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
-        assert data == data2
+    assert data == data2
 
 def test_cunit():
     c = fabric_gf.CanvasNMOS()
@@ -71,5 +71,7 @@ def test_cunit():
 
     with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
+
+    assert data == data2
 
 
