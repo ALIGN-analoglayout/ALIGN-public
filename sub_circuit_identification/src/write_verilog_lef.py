@@ -362,10 +362,10 @@ def generate_lef(fp, name, values, available_block_lef,
     return block_name
 
 def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
-    logging.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
+    #logging.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
     #logging.info("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
     #match_pair={}
-    logging.info("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
+    #logging.info("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
     if 'net' in G.nodes[nodes1]['inst_type'] and \
         G.nodes[nodes1]['net_type'] == 'external':
             port=True
@@ -641,11 +641,15 @@ def WriteConst(graph,input_dir,name,ports):
             if pair:
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
-    existing =False
+    existing_SymmBlock =False
     if os.path.exists(input_dir + name + '.const'):
         with open(input_dir + name + '.const') as f:
-            if 'SymmBlock' in f.readlines():
-                existing = True
+            content = f.readlines()
+            if 'SymmBlock' in content:
+                existing_SymmBlock = True
+            elif 'SymmNet' in content:
+                existing_SymmNet += content.strip()
+
     const_fp = open(input_dir + name + '.const', 'a+')
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
@@ -655,15 +659,15 @@ def WriteConst(graph,input_dir,name,ports):
                     symmBlock = symmBlock+' {'+key+ '} ,'
                 else:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            else:
+            elif: 
                 if len(list(graph.neighbors(key)))<3:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
                     const_fp.write(symmNet)
 
 
-        symmBlock = symmBlock[:-1]+')'
-        if not existing:
+        symmBlock = symmBlock[:-1]+')\n'
+        if not existing_SymmBlock:
             const_fp.write(symmBlock)
         const_fp.close()
 #%%
@@ -780,7 +784,7 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph, POWER_PINS)
-            #WriteConst(graph, './input_circuit/', name, inoutpin)
+            WriteConst(graph, './input_circuit/', name, inoutpin)
             all_array=FindArray(graph, './input_circuit/', name )
             WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP,all_array)
             wv.print_module(VERILOG_FP)

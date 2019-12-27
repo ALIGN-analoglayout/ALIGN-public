@@ -20,6 +20,7 @@ Results/${DESIGN}_lef.sh:
 #
 Results/${DESIGN}_lef.sh:	input_circuit/${DESIGN}.sp
 	python3 $(SRC)/compiler.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat $(FLAT)
+	-cp -p ./input_circuit/*.const ./Results/
 
 input_circuit/${DESIGN}.sp:	${INPUT}/${DESIGN}.sp
 	mkdir -p ./input_circuit

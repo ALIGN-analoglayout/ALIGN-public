@@ -2,11 +2,19 @@ import os
 import argparse
 import logging
 import pathlib
+
+if not os.path.exists("./LOG"):
+    os.mkdir("./LOG")
+elif os.path.exists("./LOG/compiler.log"):
+    os.rename("./LOG/compiler.log", "./LOG/compiler.log1")
+
+logging.basicConfig(filename='./LOG/compiler.log', level=logging.DEBUG)
 from util import _write_circuit_graph
 from read_netlist import SpiceParser
 from match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
 from write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
 from read_lef import read_lef
+
 
 def compiler(input_ckt,design_name,flat=0,Debug=False):
     input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
@@ -137,10 +145,13 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
 
         #print("inout pins:",inoutpin)
         if name not in  generated_module:
-            logging.info("writing verilog for block: %s", name)
+            logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
+            logging.info("call constraint generator writer for block: %s", name)
             WriteConst(graph, input_dir, name, inoutpin)
+            logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
+            logging.info("cap constraint gen for block: %s", name)
             WriteCap(graph, input_dir, name, unit_size_cap,all_array)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
