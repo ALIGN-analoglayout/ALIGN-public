@@ -15,9 +15,13 @@ def max_connectivity(G):
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
     for (u, v, wt) in G.edges.data('weight'):
         if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1:
+            if 'mos' in G.nodes[v]['inst_type'] and wt >3:
+                conn_value-=2
             conn_value +=wt
             #print (u,conn_value)         
         elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1:
+            if 'mos' in G.nodes[u]['inst_type'] and wt >3:
+                conn_value-=2
             conn_value +=wt
             #print (v,conn_value)         
     return conn_value

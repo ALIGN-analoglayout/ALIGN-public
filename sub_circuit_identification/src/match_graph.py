@@ -45,12 +45,11 @@ def traverse_hier_in_graph(G, hier_graph_dict):
 
 
 #%%
-def read_inputs(file_name):
+def read_inputs(name,hier_graph):
     """
     read circuit graphs
     """
     hier_graph_dict = {}
-    hier_graph = nx.read_yaml(file_name)
     top_ports = []
     for node, attr in hier_graph.nodes(data=True):
         if 'source' in attr['inst_type']:
@@ -62,7 +61,7 @@ def read_inputs(file_name):
     top_ports = list(set(top_ports))
 
     logging.info("READING top circuit graph: ")
-    hier_graph_dict[file_name.split('/')[-1].split('.')[0]] = {
+    hier_graph_dict[name] = {
         "graph": hier_graph,
         "ports": top_ports,
         "connection": None
@@ -97,17 +96,17 @@ def read_lib(lib_dir_path):
                         subgraph_ports.append(node)
             library.append({
                 "name": sub_block_name[:-5],
-                "lib_graph": graph,
+                "graph": graph,
                 "ports": subgraph_ports,
                 "conn": max_connectivity(graph)
             })
+            logging.info("Read lib:%s%s",sub_block_name,subgraph_ports)
 
     return sorted(library, key=lambda k: k['conn'], reverse=True)
 
 
 #%%
-
-def _mapped_graph_list(G1, liblist):
+def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
@@ -116,10 +115,16 @@ def _mapped_graph_list(G1, liblist):
     mapped_graph_list = {}
 
     for lib_ele in liblist:
-        G2 = lib_ele['lib_graph']
+        G2 = lib_ele['graph']
+        # DIgital blocks only transistors:
+        nd = [node for node in G2.nodes()
+                if 'net' not in G2.nodes[node]["inst_type"]]
+        if DIGITAL and len(nd)>1:
+            continue
+
         sub_block_name = lib_ele['name']
         #print("Matching:",sub_block_name)
-        logging.info("G: %s : %s", sub_block_name,
+        logging.info("Matching: %s : %s", sub_block_name,
                      str(' '.join(G2.nodes())))
         GM = isomorphism.GraphMatcher(
             G1, G2,
@@ -131,10 +136,12 @@ def _mapped_graph_list(G1, liblist):
             logging.info("ISOMORPHIC : %s", sub_block_name)
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
+                all_nd = [
+                key for key in Gsub
+                if 'net' not in G1.nodes[key]["inst_type"]]
+                if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
+                    continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
-                    all_nd = [
-                    key for key in Gsub
-                    if 'net' not in G1.nodes[key]["inst_type"]]
                     if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
                         compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB')) :
                         if 'SA' in Gsub.values() and \
@@ -146,6 +153,7 @@ def _mapped_graph_list(G1, liblist):
                             map_list.append(Gsub)
                             logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
                             logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+
                 else:
                     map_list.append(Gsub)
                     logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
@@ -153,7 +161,45 @@ def _mapped_graph_list(G1, liblist):
             mapped_graph_list[sub_block_name] = map_list
 
     return mapped_graph_list
-#%% 
+#%%
+def dont_touch_clk(Gsub,CLOCK):
+    if CLOCK:
+        for clk in CLOCK:
+            if clk in Gsub:
+                return True
+    return False
+def read_setup(setup_path):
+    design_setup = {
+            "POWER":['vdd'],
+            "GND":[],
+            "CLOCK":[],
+            "DIGITAL":[]
+            }
+    if os.path.isfile(setup_path):
+        print('Reading setup file:', setup_path)
+        fp = open(setup_path, "r")
+        line = fp.readline()
+        while line:
+            if line.strip().startswith("POWER"):
+                power = line.strip().split('=')[1].split()
+                design_setup['POWER']=power
+            elif line.strip().startswith("GND"):
+                GND = line.strip().split('=')[1].split()
+                design_setup['GND']=GND
+            elif line.strip().startswith("CLOCK"):
+                CLOCK = line.strip().split('=')[1].split()
+                design_setup['CLOCK']=CLOCK
+            elif line.strip().startswith("DIGITAL"):
+                DIGITAL = line.strip().split('=')[1].split()
+                design_setup['DIGITAL']=DIGITAL
+            else:
+                print("Non identified values found",line)
+            line=fp.readline()
+        logging.info("SETUP:%s",design_setup)
+    else:
+        print("no setup file found:",setup_path)
+    return design_setup
+            
 def get_key(Gsub, value):
     return list(Gsub.keys())[list(Gsub.values()).index(value)]
 
@@ -205,7 +251,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
     G1 =circuit_graph.copy()
     updated_circuit = []
     for lib_ele in liblist:
-        G2 = lib_ele['lib_graph']
+        G2 = lib_ele['graph']
         sub_block_name = lib_ele['name']
 
         if sub_block_name in mapped_graph_list:
@@ -242,7 +288,6 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                         continue
                     if 'external' in G2.nodes[g2_n]["net_type"]:
                         matched_ports[g2_n] = g1_n
-                    
                 logging.info("match: %s",str(' '.join(Gsub)))
                 logging.info("Matched ports: %s", str(' '.join(matched_ports)))
                 logging.info("Matched nets : %s",
@@ -287,7 +332,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     
                     updated_circuit.append({
                         "name": sub_block_name,
-                        "lib_graph": Grest,
+                        "graph": Grest,
                         "ports": list(matched_ports.keys()),
                         "ports_match": matched_ports,
                         "size": len(subgraph.nodes())
@@ -296,8 +341,50 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
     logging.info("Finished one branch:%s", sub_block_name)
 
     return updated_circuit, G1
+def change_SD(G,node):
+    nbr = list(G.neighbors(node))
+    #No gate change
+    nbr = [nr for nr in nbr if G.get_edge_data(node, nr)['weight']!=2]
+    #Swapping D and S
+    w1 = G.get_edge_data(node, nbr[0])['weight']
+    w2 = G.get_edge_data(node, nbr[1])['weight']
+    G.get_edge_data(node, nbr[0])['weight'] = w2
+    G.get_edge_data(node, nbr[1])['weight'] = w1
 
-
+def define_SD(G,power,gnd,clk):
+    logging.info("START checking source and drain in graph: ")
+    traversed = []
+    if power[0] in G.nodes():
+        while power:
+            try:
+                nxt = power[0]
+                power = power[1:]
+                high=get_next_level(G,[nxt]) 
+                #logging.info("next,power: %s %s %s %s",nxt,power,high,traversed)
+                for node in high:
+                    if G.get_edge_data(node,nxt)==2:
+                        continue
+                    if set(G.neighbors(node)) & set(clk):
+                        continue
+                    #logging.info("checking node: %s %s", node, power)
+                    if 'pmos' == G.nodes[node]["inst_type"] and \
+                        node not in traversed: 
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 1 or weight==3 :
+                            logging.info("changing source drain:%s",node)
+                            change_SD(G,node)
+                    elif 'nmos' == G.nodes[node]["inst_type"] and \
+                    node not in traversed:
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 4 or weight==6 :
+                            logging.info("changing source drain:%s",node)
+                            change_SD(G,node)
+                    if node not in traversed and node not in  gnd:
+                        power.append(node)
+                    traversed.append(node)
+            except:
+                logging.info("All source drain checked:%s",power)
+                
 def preprocess_stack(G):
     logging.info("START reducing  stacks in graph: ")
     logging.debug("initial size of graph:%s", len(G))
@@ -306,7 +393,7 @@ def preprocess_stack(G):
     modified_edges = {}
     modified_nodes = {}
     for node, attr in G.nodes(data=True):
-        if 'mos' in attr["inst_type"]:
+        if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
                 edge_wt = G.get_edge_data(node, net)['weight']
                 #print(" checking node: %s , %s",node,edge_wt)
@@ -323,7 +410,7 @@ def preprocess_stack(G):
                             logging.info("stacking two transistors: %s , %s,%s",node,next_node,common_nets)
                             source_net = list(
                                 set(G.neighbors(next_node)) - common_nets)[0]
-                            if len(common_nets) == 2:
+                            if len(common_nets) == 2 and G.nodes[net]["net_type"]!="external":
                                 #source_net = source_net[0]
                                 common_nets.remove(net)
                                 gate_net = list(common_nets)[0]
@@ -339,6 +426,7 @@ def preprocess_stack(G):
                                             #print("param1",node,param,value)
                                             lequivalent = float(
                                                 convert_unit(value))
+                                            logging.info("converted unit of 1st: %s",node)
                                     for param, value in G.nodes[node][
                                             "values"].items():
                                         if param == 'l':
@@ -346,6 +434,7 @@ def preprocess_stack(G):
                                                 convert_unit(value))
                                             modified_nodes[node] = str(
                                                 lequivalent)
+                                            logging.info("converted unit of incr: %s",node)
                                     remove_nodes.append(net)
                                     modified_edges[node] = [
                                         source_net,
@@ -380,7 +469,7 @@ def check_values(values):
 def check_nodes(graph_list):
     logging.debug("Checking all values")
     for local_subckt in graph_list:
-        for node, attr in local_subckt["lib_graph"].nodes(data=True):
+        for node, attr in local_subckt["graph"].nodes(data=True):
             logging.debug(":%s,%s", node,attr)
             if  not attr["inst_type"] == "net":
                 check_values(attr["values"])                 
@@ -399,31 +488,38 @@ if __name__ == '__main__':
     CIRCUIT_GRAPH = CIRCUIT_GRAPH[0]
     INPUT_CKT_FILE = CIRCUIT_GRAPH_DIR + CIRCUIT_GRAPH
     logging.info("READING input circuit graph: %s", INPUT_CKT_FILE)
-    INPUT_GRAPH_DICT = read_inputs(INPUT_CKT_FILE)
+    hier_graph = nx.read_yaml(INPUT_CKT_FILE)
+    name=INPUT_CKT_FILE.split('/')[-1].split('.')[0]
+    INPUT_GRAPH_DICT = read_inputs(name,hier_graph)
     logging.info("READING successful")
+    setup_path = './input_circuit' +'/'+ name + '.setup'
+    design_setup=read_setup(setup_path)
 
     LIBRARY_DIR_PATH = "library_graphs/"
     logging.info("READING input library graph: %s", LIBRARY_DIR_PATH)
     LIB_LIST = read_lib(LIBRARY_DIR_PATH)
-    logging.info("READING successful")
+    logging.info("READING successful: %s ",LIB_LIST)
 
     UPDATED_CIRCUIT_LIST = []
     for circuit_name, circuit in INPUT_GRAPH_DICT.items():
         logging.info("START MATCHING in circuit: %s", circuit_name)
         G1 = circuit["graph"]
+        if circuit_name in design_setup['DIGITAL']:
+            mapped_graph_list = _mapped_graph_list(G1, LIB_LIST, design_setup['CLOCK'], True )
+        else:
+            define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+            logging.info("no of nodes: %i", len(G1))
+            preprocess_stack(G1)
+            initial_size=len(G1)
+            delta =1
+            while delta > 0:
+                logging.info("CHECKING stacked transistors")
+                preprocess_stack(G1)
+                delta = initial_size - len(G1)
+                initial_size = len(G1)
 
-        logging.info("no of nodes: %i", len(G1))
-        #preprocess_stack(G1)
-        initial_size=len(G1)
-        delta =1
-        while delta > 0:
-            logging.info("CHECKING stacked transistors")
-            #preprocess_stack(G1)
-            delta = initial_size - len(G1)
-            initial_size = len(G1)
-
-
-        mapped_graph_list = _mapped_graph_list(G1, LIB_LIST)
+            
+            mapped_graph_list = _mapped_graph_list(G1, LIB_LIST, design_setup['CLOCK'], False )
         updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, LIB_LIST)
 
         # Create top ports by removing sources from top
@@ -432,7 +528,7 @@ if __name__ == '__main__':
 
         UPDATED_CIRCUIT_LIST.append({
             "name": circuit_name,
-            "lib_graph": Grest,
+            "graph": Grest,
             "ports":circuit["ports"],
             "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
