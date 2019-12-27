@@ -9,7 +9,7 @@ def get_version(pkg_path):
                 return line.split('"' if '"' in line else "'")[1]
 
 def get_readme_text():
-    with open("README.md", "r") as fp:
+    with open("README.md", "r", encoding="utf8") as fp:
         long_description = fp.read()
     return long_description
 
@@ -27,7 +27,10 @@ setup(name='align',
       license='BSD-3-Clause',
       packages=find_packages(include=['align', 'align.*']),
       install_requires=[
-          'networkx>=2.4'
+          'networkx>=2.4',
+          'python-gdsii',
+          'matplotlib',
+          'pyyaml'
           ],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],

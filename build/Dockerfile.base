@@ -1,0 +1,85 @@
+#
+# Import container dependencies
+#
+FROM stevenmburns/xyce as xyce
+
+#
+# Base container starts here
+#
+FROM ubuntu:18.04 as align_base
+
+#
+# Set required environment variables
+#
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+
+# Update packages
+RUN apt-get update && apt-get install -yq \
+    # Python dependencies
+    python3 \
+    python3-pip \
+    python3-venv \
+    # C++ Dependencies
+    g++\
+    cmake \
+    libboost-container-dev \
+    # Other Dependencies
+    git \
+    vim \
+    graphviz \
+    gnuplot \
+    # libgraphviz-dev \
+    # protobuf-compiler \
+    # curl \
+    # lcov \
+    # xvfb \
+&& rm -rf /var/lib/apt/lists/*
+
+# Create Virtual Env
+ENV venv=/opt/venv
+ENV python=$venv/bin/python
+ENV pip=$venv/bin/pip
+
+RUN python3 -m venv $venv
+
+# Install python dependendencies in venv
+RUN $pip install --upgrade pip
+RUN $pip install \
+    # Currently unused
+    # wheel \
+    # Actual package dependencies
+    networkx \
+    python-gdsii \
+    matplotlib \
+    pyyaml \
+    # Testing dependencies
+    pytest \
+    pytest-cov \
+    coverage-badge
+
+# Xyce
+COPY --from=xyce /usr/local/bin/Xyce /usr/local/bin/
+COPY --from=xyce /usr/lib/x86_64-linux-gnu/libfftw3.so.3 /usr/lib/x86_64-linux-gnu/libamd.so.2 /usr/lib/x86_64-linux-gnu/liblapack.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3 /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so.5 /usr/lib/x86_64-linux-gnu/libgfortran.so.4 /usr/lib/x86_64-linux-gnu/libquadmath.so.0 /usr/lib/x86_64-linux-gnu/
+
+# Lpsolve
+RUN \
+    git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  /usr/local/lib/lpsolve
+ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
+
+# Googletest
+RUN cd /opt && \
+    git clone https://github.com/google/googletest.git && \
+    cd googletest && \
+    git checkout c9ccac7cb7345901884aabf5d1a786cfa6e2f397 && \
+    cd googletest && \
+    mkdir mybuild && \
+    cd mybuild && \
+    cmake .. && \
+    make
+
+# JSON
+RUN cd opt && \
+    git clone https://github.com/nlohmann/json.git
+
+COPY . /ALIGN
