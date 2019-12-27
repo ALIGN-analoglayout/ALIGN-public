@@ -193,27 +193,32 @@ def convert_unit(value):
                 mult = mult*int(val)
             except:
                 value = val
+    try:
+        float(value[0:-1])
+        is_val =True
+    except (ValueError, TypeError):
+        is_val =False
     if isinstance(value, float) or isinstance(value, int):
         value = value
-    elif 'k' in value:
+    elif value.endswith('k') and is_val: 
         value = float(value.replace('k', ""))
         value = value * 1000
-    elif 'K' in value and value[value.index('K')-1].isdigit():
+    elif 'K' in value and is_val:
         value = float(value.replace('K', ""))
         value = value * 1000
-    elif 'm' in value:
+    elif 'm' in value and is_val:
         value = float(value.replace('m', ""))
         value = value * 1E6
-    elif 'p' in value:
+    elif 'p' in value and is_val:
         value = float(value.replace('p', ""))
         value = value * 1E-12
-    elif 'n' in value:
+    elif 'n' in value and is_val:
         value = float(value.replace('n', ""))
         value = value * 1E-9
-    elif 'u' in value:
+    elif 'u' in value and is_val:
         value = float(value.replace('u', ""))
         value = value * 1E-6
-    elif 'f' in value:
+    elif 'f' in value and is_val:
         #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
         value = float(value.replace('f', ""))
         value = value * 1e-15

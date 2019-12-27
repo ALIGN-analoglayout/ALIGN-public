@@ -74,7 +74,14 @@ def main( args):
                                  'DA': [('M1', 'D'), ('M1', 'G')],
                                  'DB': [('M2', 'D')],
                                  'GB': [('M2', 'G')]})
-
+    elif args.primitive in ["Dummy_NMOS", "Dummy_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'G')],
+                                 'D': [('M1', 'D')]})
+    elif args.primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D')],
+                                'G': [('M1', 'G')]})
+    elif args.primitive in ["Dcap1_NMOS", "Dcap1_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')]})
     elif args.primitive in ["SCM_NMOS", "SCM_PMOS"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
