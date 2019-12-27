@@ -98,7 +98,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             Graph graph(grid);
             bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
             std::vector<std::vector<RouterDB::Metal> > physical_path;
-
+            std::cout<<"power routing pathMark "<<pathMark<<std::endl;
             if(pathMark) {
                  physical_path=graph.ConvertPathintoPhysical(grid);
                  lastmile_source_new(physical_path,temp_source);
