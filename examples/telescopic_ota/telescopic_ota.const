@@ -1,0 +1,4 @@
+SymmNet ( {net012,m2_m1/DA,m7_m6/SA} , {net06,m2_m1/DB,m7_m6/B} )
+SymmNet ( {net8,m3_m0/DB,m9_m8/SA} , {net014,m3_m0/DA,m9_m8/SB} )
+SymmNet ( {vinn,m3_m0/GA,vinn} , {vinp,m3_m0/GB,vinp} )
+SymmBlock ( {m5_m4} , {m2_m1} , {m7_m6} , {m9_m8} , {m3_m0} )

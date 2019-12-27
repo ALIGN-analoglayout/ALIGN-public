@@ -19,7 +19,7 @@ def read_lef(lef_dir="./LEF/"):
             print("READING_LEF", lef_path)
             with open(lef_path, "r") as lef_fp:
                 line = lef_fp.readline()
-                while "END LIBRARY" not in line:
+                while line:
                     if line.startswith("MACRO"):
                         lef_blocks.append(line.strip().split()[1])
                     line = lef_fp.readline()

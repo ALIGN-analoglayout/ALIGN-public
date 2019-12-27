@@ -134,8 +134,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
                 ALL_LEF.append(block_name)
                 graph.nodes[node]['inst_type'] = block_name
             else:
-                logging.warning("No physical information found for: %s",
-                             name)
+                logging.warning("No physical information found for: %s", name)
 
         if name in ALL_LEF or name in generated_module[:-1]:
             logging.info("writing spice for block: %s", name)
