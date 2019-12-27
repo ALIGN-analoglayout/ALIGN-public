@@ -6,7 +6,6 @@ Created on Wed Nov 21 13:12:15 2018
 """
 import pickle
 import os
-import logging
 import argparse
 import sys
 import json
@@ -96,9 +95,9 @@ class WriteVerilog:
     def map_pins(self, a, b):
         if len(a) == len(b):
             mapped_pins = []
-            for i in range(len(a)):
-                if a[i] not in self.power_pins:
-                    mapped_pins.append("." + a[i] + "(" + b[i] + ")")
+            for ai, bi in zip(a, b):
+                if ai not in self.power_pins:
+                    mapped_pins.append("." + ai + "(" + bi + ")")
 
             return mapped_pins
         elif len(set(a)) == len(set(b)):

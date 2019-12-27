@@ -1,6 +1,4 @@
 import pathlib
-from os.path import dirname, abspath, join
-import sys
 
 from align.compiler.read_netlist import SpiceParser
 from align.compiler.match_graph import reduce_graph, _mapped_graph_list
@@ -59,5 +57,3 @@ def find_ports(graph):
             if attr['net_type'] == "external":
                 ports.append(node)
     return ports
-#if __name__ == '__main__':
-#    test_parser3()

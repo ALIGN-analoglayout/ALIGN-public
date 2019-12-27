@@ -1,6 +1,4 @@
-import os
 import pathlib
-from os.path import dirname, abspath, join , isfile
 
 from align.compiler.compiler import compiler, compiler_output
 

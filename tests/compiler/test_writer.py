@@ -1,7 +1,3 @@
-import os
-from os.path import dirname, abspath, join, isfile
-import sys
-
 from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteConst,FindArray,WriteCap
 from test_current_parser import test_match
 
