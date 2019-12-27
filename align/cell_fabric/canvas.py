@@ -1,6 +1,6 @@
-import copy
 import collections
 import json
+import io
 
 from . import transformation
 from .remove_duplicates import RemoveDuplicates
@@ -10,14 +10,8 @@ from .postprocess import PostProcessor
 from .pdk import Pdk
 from .generators import *
 from .grid import *
-
 from .gen_gds_json import translate
-
 from . import routing_collateral
-
-import datetime
-
-import io
 from ..gdsconv import json2gds
 
 LayoutDevice = collections.namedtuple('LayoutDevice', ['parameters', 'pins'])
@@ -291,7 +285,9 @@ class Canvas:
 
         with io.StringIO( contents) as fp0, \
              io.StringIO() as fp_tmp:
-            translate( 'foo', '', fp0, fp_tmp, self.gds_layer_map, timestamp=timestamp)
+            assert False, "TEST ME & FIX ME"
+            # ( translate API has changed )
+            # translate( 'foo', '', fp0, fp_tmp, self.gds_layer_map, timestamp=timestamp)
             contents2 = fp_tmp.getvalue()
 
         with io.StringIO( contents2) as fp0:

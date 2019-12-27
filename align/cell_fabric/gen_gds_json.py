@@ -53,7 +53,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   def scale(x):
 
     result = x*4//j1['ScaleFactor']
-    if type(result) == float:
+    if isinstance(result, float):
       logger.warning(f"translate_data:scale: Coord {x} ({result}) not integral")
       intresult = int(round(result,0))
       assert abs(intresult-result) < 0.001

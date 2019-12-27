@@ -1,9 +1,6 @@
-import json
 import align.cell_fabric.gen_lef as gen_lef
-import datetime
 
 import filecmp
-import io
 import pathlib
 
 mydir = pathlib.Path(__file__).resolve().parent

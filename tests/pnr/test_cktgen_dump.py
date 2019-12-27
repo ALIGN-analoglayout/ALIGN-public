@@ -1,9 +1,7 @@
-
 import json
 import pathlib
 import os
 import pytest
-import copy
 
 from align.pnr import *
 
@@ -107,10 +105,7 @@ def aux(design, subdesign=None):
             if c.type == 'Block':
                 cblk = hN.Blocks[c.iter2]
                 blk = cblk.instance[cblk.selectedInstance]
-                block_name = blk.name
-                master_name = blk.master
                 pin = blk.blockPins[c.iter]
-                formal_name = f"{blk.name}/{pin.name}"
                 if blk.name not in fa_map: fa_map[blk.name] = {}
                 assert pin.name not in fa_map[blk.name]
                 fa_map[blk.name][pin.name] = n.name

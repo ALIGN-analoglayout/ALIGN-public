@@ -1,14 +1,11 @@
 import pathlib
 import json
-
-from align.pnr import *
-from align.cell_fabric import DefaultCanvas, transformation
+import pytest
+import re
 from pprint import pformat
 
-import pytest
-import os
-
-import re
+from align.pnr import *
+from align.cell_fabric import transformation
 
 mydir =  pathlib.Path(__file__).resolve().parent
 

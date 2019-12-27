@@ -1,7 +1,4 @@
-
-import json
-
-from align.cell_fabric import Grid, SingleGrid, EnclosureGrid, CenteredGrid
+from align.cell_fabric import Grid, SingleGrid, EnclosureGrid
 from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from align.cell_fabric import Canvas as AbstractCanvas
 from align.cell_fabric import Wire, Via, Region
@@ -24,7 +21,6 @@ class Canvas(AbstractCanvas):
 
         pcPitch  = self.unitCellHeight//2
         m1Pitch  = 864
-        m1hPitch  = m2Pitch
         m3Pitch  = 720 
         self.unitCellWidth = 2*m1Pitch
 

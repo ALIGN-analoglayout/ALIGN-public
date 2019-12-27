@@ -1,4 +1,3 @@
-
 import json
 import pathlib
 
@@ -27,7 +26,7 @@ def test_nunit():
     with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
 
-        assert data == data2
+    assert data == data2
 
 def test_nunit_no_duplicates():
     c = fabric_gf.CanvasNMOS()

@@ -2,7 +2,7 @@ import pathlib
 import json
 
 from align.pnr import *
-from align.cell_fabric import DefaultCanvas, transformation
+from align.cell_fabric import transformation
 from pprint import pformat
 
 import pytest

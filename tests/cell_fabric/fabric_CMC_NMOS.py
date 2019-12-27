@@ -1,13 +1,11 @@
-import sys
 import json
 import argparse
-from os import system
 
 import itertools
 
 from align.cell_fabric import Via, Region, Canvas, Wire
-from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid, ColoredCenterLineGrid
-from align.cell_fabric import Grid, EnclosureGrid, SingleGrid, CenteredGrid
+from align.cell_fabric import UncoloredCenterLineGrid, ColoredCenterLineGrid
+from align.cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 class CanvasNMOS(Canvas):
     def __init__( self, gate_u, fin_u, fin_u1):
@@ -242,39 +240,3 @@ class UnitCell(CanvasNMOS):
             for (net,i,y_offset) in itertools.chain( *[[(net,p,q) for p in P] for (net,P,q) in triples]):
                 yy = y*(m2_tracks //y_cells) + self.finDummy//2 + y_offset - 1
                 self.addVia( self.v1, net, None, i, yy)
-      
-                        
-                                   
-if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser( description="Inputs for Cell Generation")
-    parser.add_argument( "-b", "--block_name", type=str, required=True)
-    parser.add_argument( "-n", "--nfin", type=int, required=True)
-    parser.add_argument( "-X", "--Xcells", type=int, required=True)
-    parser.add_argument( "-Y", "--Ycells", type=int, required=True)
-    args = parser.parse_args()
-    fin_u1 = args.nfin
-    x_cells = 2*args.Xcells
-    y_cells = args.Ycells
-    #gate_u = int(sys.argv[4])
-    gate_u = 2
-    if fin_u1%2 != 0:
-        fin_u = fin_u1 + 1
-    else:
-        fin_u = fin_u1 
-
-    uc = UnitCell( gate_u, fin_u, fin_u1)
-
-    for (x,y) in ( (x,y) for x in range(x_cells) for y in range(y_cells)):
-        uc.unit( x, y, x_cells, y_cells,fin_u, gate_u)
-
-    uc.computeBbox()
-
-    with open( "./Viewer/INPUT/mydesign_dr_globalrouting.json", "wt") as fp:
-        data = { 'bbox' : uc.bbox.toList(), 'globalRoutes' : [], 'globalRouteGrid' : [], 'terminals' : uc.terminals}
-        fp.write( json.dumps( data, indent=2) + '\n')
-#    gen_json_gds.json_gds("./Viewer/INPUT/mydesign_dr_globalrouting.json",args.block_name)
-#    cell_pin = ["G", "SA", "SB", "DA", "DB"]
-#    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-#    system('python3 setup.py build_ext --inplace')
-#    system('python3 gen_gds.py -j %s.json -n %s -e MTI' % (args.block_name,args.block_name))

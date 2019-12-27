@@ -2,7 +2,6 @@ import json
 import pathlib
 
 from align.pnr import *
-from align.cell_fabric import DefaultCanvas, Pdk, transformation
 from pprint import pformat
 
 mydir = pathlib.Path(__file__).resolve().parent
