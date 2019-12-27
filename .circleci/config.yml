@@ -287,33 +287,6 @@ jobs:
             - test-reports/sgi
             - coverage-reports/sgi
 
-
-  build-sci:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd sub_circuit_identification
-          docker build -t topology .
-
-          docker run --name sci_container topology bash -c "source general/bin/activate && cd sub_circuit_identification/ && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /sub_circuit_identification/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /sub_circuit_identification/coverage.xml /sub_circuit_identification/htmlcov /coverage-reports/sci"
-          cd -
-
-          docker cp sci_container:coverage-reports .
-          docker cp sci_container:test-reports .
-          docker rm sci_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/sci
-            - coverage-reports/sci
-
-
   build-pdks:
     executor: docker-executor
     steps:
@@ -621,9 +594,6 @@ workflows:
       - build-PlaceRouteHierFlow:
           requires:
             - start 
-      - build-sci:
-          requires:
-            - start 
       - build-cktgen:
           requires:
             - start 
@@ -641,7 +611,6 @@ workflows:
 #            - build-tally 
 #            - build-sgi 
 #            - build-PlacementEditor 
-            - build-sci 
             - build-align
             - build-cktgen 
             - build-pdks 
