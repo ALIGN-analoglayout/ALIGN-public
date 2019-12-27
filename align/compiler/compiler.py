@@ -9,20 +9,21 @@ from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_s
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
 from .read_lef import read_lef
 
-
 def compiler(input_ckt,design_name,flat=0,Debug=False):
     input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
     logging.info("Reading subckt %s", input_ckt)
     sp = SpiceParser(input_ckt,design_name,flat)
     circuit = sp.sp_parser()[0]
+
     logging.info("template parent path: %s",pathlib.Path(__file__).parent)
-    lib_path=pathlib.Path(__file__).resolve().parent / 'basic_library' / 'basic_template.sp'
+    lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
     logging.info("template library path: %s",lib_path)
     basic_lib = SpiceParser(lib_path)
     library = basic_lib.sp_parser()
-    lib_path=pathlib.Path(__file__).resolve().parent / 'basic_library' / 'user_template.sp'
+    lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
+
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
                                      "./circuit_graphs/")
@@ -49,8 +50,6 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
                 preprocess_stack(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
-
-            
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['CLOCK'], False )
         updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, library)
         check_nodes(updated_circuit)
@@ -84,7 +83,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
     design_setup=read_setup(input_dir+design_name+'.setup')
     POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
     #read lef to not write those modules as macros
-    lef_path = pathlib.Path(__file__).resolve().parent / 'basic_library'
+    lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     ALL_LEF = read_lef(lef_path)
     logging.info("Available library cells: %s", ", ".join(ALL_LEF))
     # local hack for deisgn vco_dtype, 
@@ -156,72 +155,4 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
     print("OUTPUT LEF generator:", result_dir + design_name + "_lef.sh")
     print("OUTPUT verilog netlist at:", result_dir + design_name + ".v")
     print("OUTPUT spice netlist at:", result_dir + design_name + "_blocks.sp")
-if __name__ == '__main__':
-# %%
-    PARSER = argparse.ArgumentParser(
-        description="directory path for input circuits")
-    PARSER.add_argument("-d",
-                        "--dir",
-                        type=str,
-                        default='../training_set_netlist',
-                        help='relative directory path')
-    PARSER.add_argument("-f",
-                        "--file",
-                        type=str,
-                        default=None,
-                        help='Name of file in the directory. \
-                If not provided it reads all files in given dir.')
-    PARSER.add_argument("-s",
-                        "--subckt",
-                        type=str,
-                        default=None,
-                        help='Top subckt defination in file.\
-                        \nIf no name given it takes file name as subckt name. \
-                        \nIf there are instances at top level,\
-                        a new subckt is created of name filename')
-    PARSER.add_argument(
-                        "-flat",
-                        "--flat",
-                        type=int,
-                        default=0,
-                        help='1 = flatten the netlist, 0= read as hierahical netlist')
-    PARSER.add_argument("-U_mos",
-                        "--unit_size_mos",
-                        type=int,
-                        default=10,
-                        help='no of fins in unit size')
-    PARSER.add_argument("-U_cap",
-                        "--unit_size_cap",
-                        type=int,
-                        default=10,
-                        help='no of fins in unit size')
-    ARGS = PARSER.parse_args()
-    NETLIST_DIR = ARGS.dir
-# %%
-    if not os.path.isdir(NETLIST_DIR):
-        logging.info("Input dir doesn't exist. Please enter a valid dir path")
-        print("Input dir doesn't exist. Please enter a valid dir path")
-
-    NETLIST_FILES = os.listdir(NETLIST_DIR)
-    if not NETLIST_FILES:
-        print("No spice files found in input_circuit directory. exiting")
-        logging.info(
-            "No spice files found in input_circuit directory. exiting")
-        exit(0)
-    elif ARGS.file:
-        logging.info("Input file: %s", ARGS.file)
-        NETLIST_FILES = [ARGS.file]
-    for netlist in NETLIST_FILES:
-        print("Reading netlist file:", netlist)
-        #name = "switched_cap_filter"
-        if netlist.endswith('sp') or netlist.endswith('cdl') or ARGS.file:
-            logging.info("READING files in dir: %s", NETLIST_DIR)
-            logging.info("READ file: %s/%s flat=%i", NETLIST_DIR, netlist,
-                         ARGS.flat)
-            updated_ckt = compiler(NETLIST_DIR + '/' + netlist, ARGS.subckt,ARGS.flat )
-            compiler_output(NETLIST_DIR + '/' + netlist,updated_ckt, ARGS.subckt,ARGS.unit_size_mos , ARGS.unit_size_cap )
-        else:
-            print("Not a valid file type (.sp).Skipping this file")
-
-
 
