@@ -327,8 +327,8 @@ jobs:
 
           docker run --name pdks_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN && pip install . && cd pdks && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdks && cp junit.xml /test-reports/pdks"
 
-          docker cp pdk_container:test-reports .
-          docker rm pdk_container
+          docker cp pdks_container:test-reports .
+          docker rm pdks_container
 
       - persist_to_workspace:
           root: /work/workspace
