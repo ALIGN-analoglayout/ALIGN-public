@@ -382,7 +382,7 @@ def define_SD(G,power,gnd,clk):
                     if node not in traversed and node not in  gnd:
                         power.append(node)
                     traversed.append(node)
-            except:
+            except (TypeError, ValueError):
                 logging.info("All source drain checked:%s",power)
                 
 def preprocess_stack(G):

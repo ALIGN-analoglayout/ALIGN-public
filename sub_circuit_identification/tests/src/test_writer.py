@@ -1,6 +1,4 @@
 import os
-import shutil
-import pathlib
 from os.path import dirname, abspath, join, isfile
 import sys
 # Find code directory relative to our directory

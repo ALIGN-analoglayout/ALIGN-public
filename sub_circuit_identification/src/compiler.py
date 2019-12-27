@@ -8,7 +8,7 @@ from match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_st
 from write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
 from read_lef import read_lef
 
-def compiler(input_ckt,design_name,flat=0):
+def compiler(input_ckt,design_name,flat=0,Debug=False):
     input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
     logging.info("Reading subckt %s", input_ckt)
     sp = SpiceParser(input_ckt,design_name,flat)
@@ -21,11 +21,12 @@ def compiler(input_ckt,design_name,flat=0):
     lib_path=(pathlib.Path(__file__).parent / '../basic_library/user_template.sp').resolve()
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
-    #_write_circuit_graph(circuit["name"], circuit["graph"],
-    #                                 "./circuit_graphs/")
-    #for lib_circuit in library:
-    #    _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
-    #                                 "./circuit_graphs/")
+    if Debug==True:
+        _write_circuit_graph(circuit["name"], circuit["graph"],
+                                     "./circuit_graphs/")
+        for lib_circuit in library:
+            _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
+                                         "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
     design_setup=read_setup(input_dir+design_name+'.setup')
 
@@ -97,7 +98,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
         logging.info("found ports match: %s",members["ports_match"])
         floating_ports=[]
         if members["ports_match"]:
-            for key, value in members["ports_match"].items():
+            for key in members["ports_match"].keys():
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if members["ports"]:
@@ -138,7 +139,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            #WriteConst(graph, input_dir, name, inoutpin)
+            WriteConst(graph, input_dir, name, inoutpin)
             all_array=FindArray(graph, input_dir, name )
             WriteCap(graph, input_dir, name, unit_size_cap,all_array)
             wv.print_module(VERILOG_FP)

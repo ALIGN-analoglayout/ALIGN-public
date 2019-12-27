@@ -586,7 +586,7 @@ def match_branches(graph,nodes_dict):
                 super_list.append(graph.nodes[nbr]['net_type'])
             else:
                 super_list.append(graph.nodes[nbr]['inst_type'])
-                for k,v in graph.nodes[nbr]['values'].items():
+                for v in graph.nodes[nbr]['values'].values():
                     #super_dict.setdefault(k,[]).append(v)
                     #print("value",k,v)
                     super_list.append(v)
@@ -708,7 +708,7 @@ if __name__ == '__main__':
     print_cell_gen_header(LEF_FP)
     LEF_FP.write('# file to generate lef')
     print_header(VERILOG_FP, INPUT_PICKLE)
-    design_setup=read_setup('./input_circuit',INPUT_PICKLE)
+    design_setup=read_setup('./input_circuit/'+INPUT_PICKLE+'.setup')
     POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
     #read lef to not write those modules as macros
     ALL_LEF = read_lef()
