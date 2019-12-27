@@ -11,19 +11,13 @@ import argparse
 import sys
 import json
 from math import sqrt, ceil
-from read_lef import read_lef
-from util import convert_to_unit
-from merge_nodes import merge_nodes
-from match_graph import read_setup
+
+from .read_lef import read_lef
+from .util import convert_to_unit, logging
+from .merge_nodes import merge_nodes
+from .match_graph import read_setup
 
 from collections import Counter
-if not os.path.exists("./LOG"):
-    os.mkdir("./LOG")
-elif os.path.exists("./LOG/writer.log"):
-    os.rename("./LOG/writer.log", "./LOG/writer.log1")    
-logging.basicConfig(filename='./LOG/writer.log', level=logging.DEBUG)
-
-
 
 class WriteVerilog:
     """ write hierarchical verilog file """

@@ -11,14 +11,8 @@ import pickle
 import networkx as nx
 from networkx.algorithms import isomorphism
 
-from merge_nodes import merge_nodes, merged_value,convert_unit
-from util import max_connectivity
-
-if not os.path.exists("./LOG"):
-    os.mkdir("./LOG")
-elif os.path.exists("./LOG/match.log"):
-    os.rename("./LOG/match.log", "./LOG/match.log1")
-logging.basicConfig(filename='./LOG/match.log', level=logging.DEBUG)
+from .merge_nodes import merge_nodes, merged_value,convert_unit
+from .util import max_connectivity, logging
 
 
 #%%

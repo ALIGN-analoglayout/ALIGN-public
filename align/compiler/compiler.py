@@ -3,17 +3,11 @@ import argparse
 import logging
 import pathlib
 
-if not os.path.exists("./LOG"):
-    os.mkdir("./LOG")
-elif os.path.exists("./LOG/compiler.log"):
-    os.rename("./LOG/compiler.log", "./LOG/compiler.log1")
-
-logging.basicConfig(filename='./LOG/compiler.log', level=logging.DEBUG)
-from util import _write_circuit_graph
-from read_netlist import SpiceParser
-from match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
-from write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
-from read_lef import read_lef
+from .util import _write_circuit_graph, logging
+from .read_netlist import SpiceParser
+from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
+from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
+from .read_lef import read_lef
 
 
 def compiler(input_ckt,design_name,flat=0,Debug=False):
@@ -22,11 +16,11 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
     sp = SpiceParser(input_ckt,design_name,flat)
     circuit = sp.sp_parser()[0]
     logging.info("template parent path: %s",pathlib.Path(__file__).parent)
-    lib_path=(pathlib.Path(__file__).parent / '../basic_library/basic_template.sp').resolve()
+    lib_path=pathlib.Path(__file__).resolve().parent / 'basic_library' / 'basic_template.sp'
     logging.info("template library path: %s",lib_path)
     basic_lib = SpiceParser(lib_path)
     library = basic_lib.sp_parser()
-    lib_path=(pathlib.Path(__file__).parent / '../basic_library/user_template.sp').resolve()
+    lib_path=pathlib.Path(__file__).resolve().parent / 'basic_library' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
     if Debug==True:
@@ -90,7 +84,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
     design_setup=read_setup(input_dir+design_name+'.setup')
     POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
     #read lef to not write those modules as macros
-    lef_path=(pathlib.Path(__file__).parent / '../LEF').resolve()
+    lef_path = pathlib.Path(__file__).resolve().parent / 'basic_library'
     ALL_LEF = read_lef(lef_path)
     logging.info("Available library cells: %s", ", ".join(ALL_LEF))
     # local hack for deisgn vco_dtype, 

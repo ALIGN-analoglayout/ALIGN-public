@@ -5,9 +5,7 @@ Created on Wed Oct 10 13:18:49 2018
 @author: kunal
 """
 #%% creating basic element
-import logging
-
-
+from .util import logging
 
 class BasicElement:
     """

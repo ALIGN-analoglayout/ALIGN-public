@@ -5,9 +5,18 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 import os
+import pathlib
+import logging
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
+
+logdir = pathlib.Path.cwd() / "LOG"
+if not os.path.exists(logdir):
+    os.mkdir(logdir)
+elif os.path.exists(logdir / "compiler.log"):
+    os.rename(logdir / "compiler.log", logdir / "compiler.log1")
+logging.basicConfig(filename=logdir / "compiler.log", level=logging.ERROR)
 
 #library_graphs = glob.glob("L1*.yaml")
 def max_connectivity(G):

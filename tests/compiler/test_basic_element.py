@@ -6,7 +6,7 @@ THIS_DIR = dirname(__file__)
 CODE_DIR = abspath(join(THIS_DIR, '../../', 'src'))
 sys.path.append(CODE_DIR)
 print(sys.path)
-from basic_element import _parse_inst
+from align.compiler.basic_element import _parse_inst
 
 def test_blank():
     be = _parse_inst("")

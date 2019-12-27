@@ -12,16 +12,8 @@ import argparse
 import logging
 import networkx as nx
 
-from util import _write_circuit_graph, _show_circuit_graph
-from basic_element import _parse_inst
-
-if not os.path.exists("./LOG"):
-    os.mkdir("./LOG")
-elif os.path.exists("./LOG/read_netlist.log"):
-    os.rename("./LOG/read_netlist.log", "./LOG/read_netlist.log1")
-
-logging.basicConfig(filename='./LOG/read_netlist.log', level=logging.DEBUG)
-
+from .util import _write_circuit_graph, _show_circuit_graph, logging
+from .basic_element import _parse_inst
 
 class SpiceParser:
     """

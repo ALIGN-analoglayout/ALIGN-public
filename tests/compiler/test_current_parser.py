@@ -1,12 +1,9 @@
 import pathlib
 from os.path import dirname, abspath, join
 import sys
-# Find code directory relative to our directory
-THIS_DIR = dirname(__file__)
-CODE_DIR = abspath(join(THIS_DIR, '../../', 'src'))
-sys.path.append(CODE_DIR)
-from read_netlist import SpiceParser
-from match_graph import reduce_graph, _mapped_graph_list
+
+from align.compiler.read_netlist import SpiceParser
+from align.compiler.match_graph import reduce_graph, _mapped_graph_list
 
 def test_parser1():
     test_path=(pathlib.Path(__file__).parent / 'test1.sp').resolve()
@@ -24,11 +21,11 @@ def test_parser2():
 
 
 def test_parser3():
-    test_path=(pathlib.Path(__file__).parent / 'ota.sp').resolve()
+    test_path=pathlib.Path(__file__).resolve().parent / 'ota.sp'
     sp = SpiceParser(test_path,"ota",0)
     g = sp.sp_parser()[0]
     assert len(g["graph"].nodes()) == 25 # number of nodes in OTA
-    test_path=(pathlib.Path(__file__).parent / 'basic_template.sp').resolve()
+    test_path=pathlib.Path(__file__).resolve().parent / 'basic_template.sp'
     lib_sp =  SpiceParser(test_path)
     lib_list = lib_sp.sp_parser()
     #shutil.rmtree("library_graphs")

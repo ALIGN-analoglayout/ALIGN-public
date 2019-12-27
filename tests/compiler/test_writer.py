@@ -1,12 +1,9 @@
 import os
 from os.path import dirname, abspath, join, isfile
 import sys
-# Find code directory relative to our directory
-THIS_DIR = dirname(__file__)
-CODE_DIR = abspath(join(THIS_DIR, '../../', 'src'))
-sys.path.append(CODE_DIR)
-from write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteConst,FindArray,WriteCap
-from test_parser import test_match
+
+from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteConst,FindArray,WriteCap
+from test_current_parser import test_match
 
 def test_verilog_writer():
     subckts = test_match()
@@ -33,10 +30,6 @@ def test_verilog_writer():
     VERILOG_FP.close()
     LEF_FP.close()
     SP_FP.close()
-    for files in os.listdir('./'):
-        if isfile(files):
-            if 'ota' in files or 'const' in files: 
-                os.remove(files)
 
 def find_ports(graph):
     ports = []
@@ -45,5 +38,3 @@ def find_ports(graph):
             if attr['net_type'] == "external":
                 ports.append(node)
     return ports
-#if __name__ == '__main__':
-#    test_parser3()
