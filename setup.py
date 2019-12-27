@@ -26,6 +26,7 @@ setup(name='align',
       author_email='parijat.mukherjee@intel.com',
       license='BSD-3-Clause',
       packages=find_packages(include=['align', 'align.*']),
+      package_data={'align': ['config/*']},
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',
