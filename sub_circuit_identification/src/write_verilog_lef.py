@@ -659,7 +659,7 @@ def WriteConst(graph,input_dir,name,ports):
                     symmBlock = symmBlock+' {'+key+ '} ,'
                 else:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            elif: 
+            else: 
                 if len(list(graph.neighbors(key)))<3:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
