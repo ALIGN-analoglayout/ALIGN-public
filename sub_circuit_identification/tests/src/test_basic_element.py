@@ -34,6 +34,14 @@ def test_nmos():
     dev = _parse_inst("m0 3 2 1 1 n nfin=1")
     assert len(dev.items()) == 6
 
+def test_nmos1():
+    dev = _parse_inst("m0 (3 2 1 1) n nfin=1")
+    assert len(dev.items()) == 6
+
+def test_nmos_err():
+    dev = _parse_inst("m0 3 2=4 1 1 n nfin=1")
+    assert AttributeError
+
 def test_pmos_param():
     dev = _parse_inst("m0 3 2 1 1 p nfin = 1")
     assert len(dev.items()) == 6
