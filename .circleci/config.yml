@@ -314,7 +314,7 @@ jobs:
             - coverage-reports/sci
 
 
-  build-pdk:
+  build-pdks:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -325,8 +325,7 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name pdk_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN && pip install . && cd /ALIGN/pdks && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
-          cd -
+          docker run --name pdks_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN && pip install . && cd pdks && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdks && cp junit.xml /test-reports/pdks"
 
           docker cp pdk_container:test-reports .
           docker rm pdk_container
@@ -634,7 +633,7 @@ workflows:
 #      - build-satplacer:
 #          requires:
 #            - start 
-      - build-pdk:
+      - build-pdks:
           requires:
             - build-align 
       - finish:
@@ -645,7 +644,7 @@ workflows:
             - build-sci 
             - build-align
             - build-cktgen 
-            - build-pdk 
+            - build-pdks 
             - build-PlaceRouteHierFlow
 #            - build-satplacer
 
