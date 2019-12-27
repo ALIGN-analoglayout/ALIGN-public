@@ -333,7 +333,7 @@ jobs:
       - persist_to_workspace:
           root: /work/workspace
           paths:
-            - test-reports/pdk
+            - test-reports/pdks
 
 
   build-cktgen:
