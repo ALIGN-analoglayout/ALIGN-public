@@ -1,9 +1,54 @@
-# PlaceRouteHierFlow
+# ALIGN: Hierarchical Analog Placer and Router Flow
 
-## A. Syntax
+## Brief description
+The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints.
+
+## Software description
+Inputs: Analog designs (verilog netlist, LEF, XX.gds.json for subblock, GDSII map file and PDK file), constraints file. Example [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
+Outputs: Analog design layouts (XX.gds.json file)
+
+## Installation/getting started
+
+### Run in Docker
+1.  Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
 ``` Shell
+docker build -f Dockerfile.build -t with_protobuf .
+```
+2.  Build the image for place&route
+``` Shell
+docker build -t placeroute_image .
+```
+3. Run the test case
+``` Shell
+(cd testcase_example; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
+
+docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0"
+```
+
+### Run in local
+1. Install the prerequisite
+g++ 5.0 or above
+ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
+C++ json library: <https://github.com/nlohmann/json.git>
+C++ boost libraries: <https://github.com/boostorg/boost>
+GTEST: <https://github.com/google/googletest>
+2. Set environment
+```Shell
+export LP_DIR=<LP_DIR>/lpsolve
+export LD_LIBRARY_PATH=<LP_DIR>/lpsolve/lp_solve_5.5.2.5_dev_ux64
+export JSON=<JSON_DIR>/json
+export BOOST_LP=<BOOST_DIR>/boost
+export GTEST_DIR =<GTEST_DIR>/gtest/googletest/googletest
+```
+3. Compile
+```Shell
+make
+```
+4. Run testcase
+```Shell
 ./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
+
 Inputs
 >-   testcase_DIR: string type; the directory of input data
 >-   testcase.lef: string type; LEF file
@@ -16,42 +61,33 @@ Inputs
 
 Outputs: all the results will be saved under 'Results' folder by default
 >-   xx.plt: GNU plot file of placement results
+>-   Capxx.gds.json: JSON format of CCC P&R layout
 >-   xx_PL.gds.json: JSON format of placement layout
 >-   xx_GL.gds.json: JSON format of global routing layout
 >-   xx_DR.gds.json: JSON format of detailed routing layout
 >-   xx_PR.gds.json: JSON format of power routing layout
 
-## B. Setup & Kickoff
-
-### Build the image 
-1.  Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
-``` Shell
-docker build -f Dockerfile.build -t with_protobuf .
-```
-Googletest is now required to build this tool. (Build instruction are documents in `Dockerfile.build`.)
-
-2.  Build the image for place&route
-``` Shell
-docker build -t placeroute_image .
-```
-### Run the test case
-``` Shell
-(cd testcase_example; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
-
-docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0"
-```
-
-## C. Conversion between JSON and GDS for layouts
+### Conversion from JSON to GDS or from GDS to JSON
 Currently we support the input/output layout files in JSON format.
 
-To convert the format, please use the codes under [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv)
+To convert the format, please use the codes of the ALIGN-public repo.
+https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv
 
-To configure the Python environment, please follow Dockerfile.python3 under GDSConv.
+##Usage
+##Limitations
+##To-do
+##License
+License for this module
+License for external non-ALIGN modules, if applicable
+Example:
+The license for the Nangate45nm PDK in this repository can be found in platforms directory in the OpenCellLibraryLicenseSi2.txt. The Nangate45nm PDK is downloaded from https://projects.si2.org/openeda.si2.org/project/showfiles.php?group_id=63#503
 
-## D. About third-party solvers/libraries
-1.  In our router, a third-party ILP solver lp_solve is required. The current supported version is lp_solve 5.5.2.5.
-Please download the codes from <http://lpsolve.sourceforge.net/5.5/>.
-
-2.  All the output layouts are written in JSON format. To write JSON files, we use a third-party c++ json library. Please download the codes from <https://github.com/nlohmann/json.git>.
-
-3.  In our mixed-size block placement, C++ boost libraries are employed to implement some arithmetical calculation. Please download the codes from <https://github.com/boostorg/boost>.
+The rest of this repository is licensed under BSD 3-Clause License.
+BSD 3-Clause License
+Copyright (c) 2019, The Regents of the University of Minnesota
+All rights reserved.
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+· Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+· Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+· Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
