@@ -10,6 +10,15 @@ Outputs: Analog design layouts (XX.gds.json file)
 
 ## Installation/getting started
 
+### Prerequisite
+
+>-   g++ 5.0 or above
+>-   ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
+>-   C++ json library: <https://github.com/nlohmann/json.git>
+>-   C++ boost libraries: <https://github.com/boostorg/boost>
+>-   GTEST: <https://github.com/google/googletest>
+
+
 ### Run in Docker
 1.  Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
 ``` Shell
@@ -27,15 +36,7 @@ docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT -
 ```
 
 ### Run in local
-1. Install the prerequisite
-
->-   g++ 5.0 or above
->-   ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
->-   C++ json library: <https://github.com/nlohmann/json.git>
->-   C++ boost libraries: <https://github.com/boostorg/boost>
->-   GTEST: <https://github.com/google/googletest>
-
-2. Set environment
+1. Set environment
 ```Shell
 export LP_DIR=<LP_DIR>/lpsolve
 export LD_LIBRARY_PATH=<LP_DIR>/lpsolve/lp_solve_5.5.2.5_dev_ux64
@@ -43,7 +44,7 @@ export JSON=<JSON_DIR>/json
 export BOOST_LP=<BOOST_DIR>/boost
 export GTEST_DIR =<GTEST_DIR>/gtest/googletest/googletest
 ```
-3. Compile
+2. Compile the flow
 ```Shell
 make
 ```
