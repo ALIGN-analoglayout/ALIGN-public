@@ -19,4 +19,4 @@ def test_compiler_output():
     updated_ckt=test_compiler()
     # Every example should contain a setup file
     test_path=pathlib.Path(__file__).resolve().parent / 'ota.sp'
-    compiler_output(test_path, updated_ckt, 'ota', pathlib.Path('.') / 'Results', 12 , 12 )
+    compiler_output(test_path, updated_ckt, 'ota', pathlib.Path(__file__).parent / 'Results', 12 , 12 )
