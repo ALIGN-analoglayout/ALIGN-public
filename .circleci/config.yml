@@ -118,7 +118,8 @@ jobs:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
             
       - store_artifacts:
-          path: ../examples/telescopic_ota/telescopic_ota_0.png
+          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+          destination: examples/telescopic_ota/telescopic_ota_0.png
 
       - run:
           shell: /bin/bash
