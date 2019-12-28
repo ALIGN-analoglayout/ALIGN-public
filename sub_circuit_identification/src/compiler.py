@@ -146,8 +146,9 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
         if name not in  generated_module:
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            logging.info("call constraint generator writer for block: %s", name)
-            WriteConst(graph, input_dir, name, inoutpin)
+            if name not in design_setup['DIGITAL']:
+                logging.info("call constraint generator writer for block: %s", name)
+                WriteConst(graph, input_dir, name, inoutpin)
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)

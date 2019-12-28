@@ -714,6 +714,7 @@ if __name__ == '__main__':
     print_header(VERILOG_FP, INPUT_PICKLE)
     design_setup=read_setup('./input_circuit/'+INPUT_PICKLE+'.setup')
     POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
+    digital_blocks = design_setup['DIGITAL'][0]
     #read lef to not write those modules as macros
     ALL_LEF = read_lef()
     logging.info("Reading available lef: %s", ", ".join(ALL_LEF))
@@ -784,7 +785,8 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph, POWER_PINS)
-            WriteConst(graph, './input_circuit/', name, inoutpin)
+            if name not in digital_blocks:
+                WriteConst(graph, './input_circuit/', name, inoutpin)
             all_array=FindArray(graph, './input_circuit/', name )
             WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP,all_array)
             wv.print_module(VERILOG_FP)
