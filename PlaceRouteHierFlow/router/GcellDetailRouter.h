@@ -135,6 +135,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void UpdateMetalContact(RouterDB::Metal &temp_metal);
     void UpdateVia(RouterDB::Via &temp_via);
     void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts);
+    void modify_tile_metals(RouterDB::Net& Net, bool set);
 };
 
 #endif

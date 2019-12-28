@@ -276,6 +276,48 @@ std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, Rout
   
 };
 
+void GcellDetailRouter::modify_tile_metals(RouterDB::Net& Net, bool set){
+  //set=1, set terminal tiles' metals to Lmetal~Hmetal
+  //set=0, reset terminal tiles' metals
+  std::vector<std::pair<int, int>> path = Net.STs[Net.STindex].path;
+  if(set){
+    std::vector<int> metal;
+    for (int i = lowest_metal; i <= highest_metal;i++)metal.push_back(i);
+    for (unsigned int j = 0; j < path.size(); ++j)
+    {
+      int first_tile = path[j].first, last_tile = path[j].second;
+      if (std::find(Net.terminals.begin(), Net.terminals.end(), first_tile) != Net.terminals.end())
+      {
+        //if the first tile is terminal
+        Gcell.tiles_total[first_tile].origin_metal = Gcell.tiles_total[first_tile].metal;
+        Gcell.tiles_total[first_tile].metal = metal;
+      }
+      if (std::find(Net.terminals.begin(), Net.terminals.end(), last_tile) != Net.terminals.end())
+      {
+        //if the last tile is terminal
+        Gcell.tiles_total[last_tile].origin_metal = Gcell.tiles_total[last_tile].metal;
+        Gcell.tiles_total[last_tile].metal = metal;
+      }
+    }
+  }else{
+    for (unsigned int j = 0; j < path.size(); ++j)
+    {
+      int first_tile = path[j].first, last_tile = path[j].second;
+      if (std::find(Net.terminals.begin(), Net.terminals.end(), first_tile) != Net.terminals.end())
+      {
+        //if the first tile is terminal
+        Gcell.tiles_total[first_tile].metal = Gcell.tiles_total[first_tile].origin_metal;
+      }
+      if (std::find(Net.terminals.begin(), Net.terminals.end(), last_tile) != Net.terminals.end())
+      {
+        //if the last tile is terminal
+        Gcell.tiles_total[last_tile].metal = Gcell.tiles_total[last_tile].origin_metal;
+      }
+    }
+  }
+  
+}
+
 
 void GcellDetailRouter::create_detailrouter(){
 
@@ -300,6 +342,7 @@ void GcellDetailRouter::create_detailrouter(){
   //end initial set
   //start detail router 
   for(unsigned int i=0;i<Nets.size();i++){
+       modify_tile_metals(Nets[i], 1);
 
        int multi_number = 0;
        if(Nets[i].R_constraints.size()>0){
@@ -329,13 +372,12 @@ void GcellDetailRouter::create_detailrouter(){
        chip_UR.y = height;
        int STindex = Nets[i].STindex;
 
-       std::cout<<"STindex "<<Nets[i].STindex<<std::endl;
-       std::cout<<"STs size "<<Nets[i].STs.size()<<std::endl;
-      
-       
+       std::cout << "STindex " << Nets[i].STindex << std::endl;
+       std::cout << "STs size " << Nets[i].STs.size() << std::endl;
+
        for(unsigned int q=0;q<Nets[i].STs.size();q++){
-           std::cout<<"STs path size "<<Nets[i].STs[q].path.size()<<std::endl;
-          }
+            std::cout << "STs path size " << Nets[i].STs[q].path.size() << std::endl;
+       }
 
        std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
        std::pair<int,int> temp_global_path;
@@ -598,9 +640,8 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"Detail Router check point 11"<<std::endl;
       InsertPlistToSet_x(Set_net, add_plist);
 
-     }
-
-
+      modify_tile_metals(Nets[i], 0);
+  }
 };
 
 RouterDB::contact GcellDetailRouter::SymContact(RouterDB::contact &temp_contact, bool H, int center){
