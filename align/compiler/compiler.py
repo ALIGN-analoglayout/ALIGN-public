@@ -9,10 +9,10 @@ from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_s
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
 from .read_lef import read_lef
 
-def compiler(input_ckt,design_name,flat=0,Debug=False):
-    input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
+def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
+    input_dir=input_ckt.parents[0]
     logging.info("Reading subckt %s", input_ckt)
-    sp = SpiceParser(input_ckt,design_name,flat)
+    sp = SpiceParser(input_ckt, design_name, flat)
     circuit = sp.sp_parser()[0]
 
     logging.info("template parent path: %s",pathlib.Path(__file__).parent)
@@ -31,7 +31,7 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
-    design_setup=read_setup(input_dir+design_name+'.setup')
+    design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
 
     UPDATED_CIRCUIT_LIST = []
     for circuit_name, circuit in hier_graph_dict.items():
@@ -64,23 +64,23 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
         })
     return UPDATED_CIRCUIT_LIST
  
-def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size_cap=12,flat=0,result_dir='./Results/'):
-    if not os.path.exists(result_dir):
-        os.mkdir(result_dir)
+def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_mos=12, unit_size_cap=12):
+    if not result_dir.exists():
+        result_dir.mkdir()
     logging.info("Writing results in dir: %s",result_dir)
-    input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
-    VERILOG_FP = open(result_dir +  design_name+ '.v', 'w')
+    input_dir=input_ckt.parents[0]
+    VERILOG_FP = open(result_dir / (design_name + '.v'), 'w')
     ## File pointer for running cell generator
-    LEF_FP = open(result_dir + design_name + '_lef.sh', 'w')
+    LEF_FP = open(result_dir / (design_name + '_lef.sh'), 'w')
     LEF_FP.write('# ALIGN generated shell file to generate lef')
 
     logging.info("writing spice file for cell generator")
 
     ## File pointer for spice generator
-    SP_FP = open(result_dir + design_name + '_blocks.sp', 'w')
+    SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
     print_cell_gen_header(LEF_FP)
     print_header(VERILOG_FP, design_name)
-    design_setup=read_setup(input_dir+design_name+'.setup')
+    design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
     POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
@@ -152,7 +152,7 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
     LEF_FP.close()
     SP_FP.close()
 
-    print("OUTPUT LEF generator:", result_dir + design_name + "_lef.sh")
-    print("OUTPUT verilog netlist at:", result_dir + design_name + ".v")
-    print("OUTPUT spice netlist at:", result_dir + design_name + "_blocks.sp")
+    print("OUTPUT LEF generator:", result_dir / (design_name + "_lef.sh"))
+    print("OUTPUT verilog netlist at:", result_dir / (design_name + ".v"))
+    print("OUTPUT spice netlist at:", result_dir / (design_name + "_blocks.sp"))
 

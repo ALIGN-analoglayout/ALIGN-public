@@ -1,3 +1,5 @@
+import pathlib
+
 from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteConst,FindArray,WriteCap
 from test_current_parser import test_match
 
@@ -20,9 +22,9 @@ def test_verilog_writer():
         if subckt["name"] in available_cell_generator:
             ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts)
             ws.print_subckt(SP_FP)
-        WriteConst(subckt["graph"], "./", subckt["name"], subckt['ports'])
-        all_array=FindArray(subckt["graph"], "./", subckt["name"] )
-        WriteCap(subckt["graph"], "./",subckt["name"],  unit_cap,all_array)   
+        WriteConst(subckt["graph"], pathlib.Path("."), subckt["name"], subckt['ports'])
+        all_array=FindArray(subckt["graph"], pathlib.Path("."), subckt["name"] )
+        WriteCap(subckt["graph"], pathlib.Path("."),subckt["name"],  unit_cap,all_array)   
     VERILOG_FP.close()
     LEF_FP.close()
     SP_FP.close()

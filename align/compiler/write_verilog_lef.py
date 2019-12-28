@@ -419,8 +419,8 @@ def check_common_centroid(graph,input_dir,name,ports):
         Fix cc cap in const and netlist
     """
     cc_pair={}
-    const_path=input_dir + name + '.const'
-    new_const_path = input_dir + name + '.const_temp'
+    const_path=input_dir / (name + '.const')
+    new_const_path = input_dir / (name + '.const_temp')
     if os.path.isfile(const_path): 
         print('Reading const file for common centroid', const_path)
         const_fp = open(const_path, "r")
@@ -453,9 +453,9 @@ def check_common_centroid(graph,input_dir,name,ports):
     return(cc_pair)
 
 def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
-    const_path = input_dir + name + '.const'
-    new_const_path = input_dir + name + '.const_temp'
-    logging.info("writing cap constraints:"+input_dir + name + '.const')
+    const_path = input_dir / (name + '.const')
+    new_const_path = input_dir / (name + '.const_temp')
+    logging.info(f"writing cap constraints: {const_path}")
     available_cap_const = []
     if os.path.isfile(const_path): 
         print('Reading const file for cap', const_path)
@@ -619,7 +619,7 @@ def FindArray(graph,input_dir,name):
                 #match_branches(graph,nodes_dict)
 def WriteConst(graph,input_dir,name,ports):
     check_common_centroid(graph,input_dir,name,ports)
-    logging.info("writing constraints: %s",input_dir + name + '.const')
+    logging.info("writing constraints: %s",input_dir / (name + '.const'))
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
@@ -635,15 +635,16 @@ def WriteConst(graph,input_dir,name,ports):
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
     existing_SymmBlock =False
-    if os.path.exists(input_dir + name + '.const'):
-        with open(input_dir + name + '.const') as f:
+    const_file = (input_dir / (name + '.const'))
+    if const_file.exists() and const_file.is_file():
+        with open(const_file) as f:
             content = f.readlines()
             if 'SymmBlock' in content:
                 existing_SymmBlock = True
             elif 'SymmNet' in content:
                 existing_SymmNet += content.strip()
 
-    const_fp = open(input_dir + name + '.const', 'a+')
+    const_fp = open(input_dir / (name + '.const'), 'a+')
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
