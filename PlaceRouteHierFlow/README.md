@@ -29,11 +29,11 @@ docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT -
 ### Run in local
 1. Install the prerequisite
 
->-g++ 5.0 or above
->-ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
->-C++ json library: <https://github.com/nlohmann/json.git>
->-C++ boost libraries: <https://github.com/boostorg/boost>
->-GTEST: <https://github.com/google/googletest>
+>-   g++ 5.0 or above
+>-   ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
+>-   C++ json library: <https://github.com/nlohmann/json.git>
+>-   C++ boost libraries: <https://github.com/boostorg/boost>
+>-   GTEST: <https://github.com/google/googletest>
 
 2. Set environment
 ```Shell
