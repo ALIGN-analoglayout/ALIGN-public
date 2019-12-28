@@ -4,9 +4,21 @@
 The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints.
 
 ## Software description
-Inputs: Analog designs (verilog netlist, LEF, XX.gds.json for subblock, GDSII map file and PDK file), constraints file. Example [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
+Inputs: Analog designs
+>-   verilog netlist
+>-   LEF
+>-   XX.gds.json for subblock in verilog
+>-   GDSII map file
+>-   PDK file
 
-Outputs: Analog design layouts (XX.gds.json file)
+Constraints file
+
+Example [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
+
+
+Outputs: Analog design layouts
+>-   XX.gds.json
+
 
 ## Installation/getting started
 
@@ -48,7 +60,7 @@ export GTEST_DIR =<GTEST_DIR>/gtest/googletest/googletest
 ```Shell
 make
 ```
-4. Run testcase
+3. Run testcase
 ```Shell
 ./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
