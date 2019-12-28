@@ -3,6 +3,9 @@
 ## Brief description
 The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints. The analog router is composed of global router, detailed router and power router.
 
+
+<img align = "right" width="45%" src="Flow.png">
+
 ## Software description
 
 - Inputs:
@@ -64,7 +67,7 @@ make
 ./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
 
-Inputs expla
+Inputs explaination:
 >-   testcase_DIR: string type; the directory of input data
 >-   testcase.lef: string type; LEF file
 >-   testcase.v: string type; Verilog file
@@ -74,7 +77,7 @@ Inputs expla
 >-   numOfLayout: integer type; the max number of generated layouts
 >-   optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
 
-Outputs: all the results will be saved under 'Results' folder by default
+Outputs explaination: (all the results will be saved under 'Results' folder by default)
 >-   xx.plt: GNU plot file of placement results
 >-   Capxx.gds.json: JSON format of CCC P&R layout
 >-   xx_PL.gds.json: JSON format of placement layout
