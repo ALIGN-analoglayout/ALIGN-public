@@ -42,14 +42,12 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
       tile_size = 100000;
     }
 
-
-
-
-  int tileLayerNo = Hmetal-Lmetal + 1;
-  if(node.isIntelGcellGlobalRouter == true){
-    //SMB Override for Intel router
-     tileLayerNo = 1;
-     tile_size = 10;
+    int tileLayerNo = 1; //     Hmetal - Lmetal + 1;
+    if (node.isIntelGcellGlobalRouter == true)
+    {
+      //SMB Override for Intel router
+      tileLayerNo = 1;
+      tile_size = 10;
   }
   GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   std::cout<<"Test 3"<<std::endl;
@@ -192,11 +190,33 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
  
   std::cout<<"Test 15"<<std::endl;
   ILPSolveRouting(Gcell,GGgraph,Tile_Set);
-  std::cout<<"Test 16"<<std::endl;
+  ThreeDimRouteAcc();
+  std::cout << "Test 16" << std::endl;
   //5. Return hierNode  Q2. return some to hierNode for detial router
   ReturnHierNode(node);
-
 };
+
+void GcellGlobalRouter::ThreeDimRouteAcc(){
+  std::vector<int> metal{1, 2, 3, 4, 5, 6};
+  for (unsigned int i = 0; i < Nets.size(); ++i)
+  {
+    std::vector<std::pair<int, int>> path = Nets[i].STs[Nets[i].STindex].path;
+    for (unsigned int j = 0; j < path.size(); ++j)
+    {
+      int first_tile = path[j].first, last_tile = path[j].second;
+      if (std::find(Nets[i].terminals.begin(), Nets[i].terminals.end(), first_tile) != Nets[i].terminals.end())
+      {
+        //if the first tile is terminal
+        Gcell.tiles_total[first_tile].metal = metal;
+      }
+      if (std::find(Nets[i].terminals.begin(), Nets[i].terminals.end(), last_tile) != Nets[i].terminals.end())
+      {
+        //if the last tile is terminal
+        Gcell.tiles_total[last_tile].metal = metal;
+      }
+    }
+  }
+}
 
 std::vector<int> GcellGlobalRouter::GenerateSTsUniqueV(RouterDB::Net &temp_net){
 

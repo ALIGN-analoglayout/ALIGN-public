@@ -125,8 +125,9 @@ class GcellGlobalRouter : public RawRouter {
     int SymNetTerminal_PrimeSet(GlobalGrid &grid, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set, RouterDB::Net &temp_net, RouterDB::Net &sym_net, bool H, int center);
     int CopyPath(std::vector<std::pair<int,int> > &path, std::map<int,int> &temp_map, std::vector<std::pair<int,int> > &sy_path);
     void AssignContact(RouterDB::contact &RouterDB_contact, PnRDB::contact &PnRDB_contact);
+    void ThreeDimRouteAcc();
 
-//    void getPhsical_metal_via(int i, int j);
+    //    void getPhsical_metal_via(int i, int j);
 
     //void NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
     //void NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net);
