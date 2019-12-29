@@ -85,17 +85,28 @@ Outputs explaination: (all the results will be saved under 'Results' folder by d
 >-   xx_DR.gds.json: JSON format of detailed routing layout
 >-   xx_PR.gds.json: JSON format of power routing layout
 
-### Conversion from JSON to GDS or from GDS to JSON
-Currently we support the input/output layout files in JSON format.
-
-To convert the format, please use the codes [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv).
-
-
 ## Usage
+
+If the flow is run locally, the operations listed below are necessary:
+
+### Cell Generation
+To get the XX_gds.json file, Verlog file, Map file and LEF file, please use the code [Cell Generation](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/CellFabric)
+
+### PDK Abstraction
+To get the PDK file, please use the code [PDK abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PDK_Abstraction)
+
+### Conversion from JSON to GDS (from GDS to JSON)
+Currently the input/output layout files are in JSON format. To convert the format, please use the codes [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv).
 
 ## Limitations
 
+1) a
+2) b
+
 ## To-do
+
+1) a
+2) b
 
 ## LICENSE
 
