@@ -140,6 +140,8 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts);
     void CreatePlistSrc_Dest(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::vector<RouterDB::SinkData > &temp_src, std::vector<RouterDB::SinkData > &temp_dest);
     void SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact);
+    void modify_tile_metals(RouterDB::Net& Net, bool set);
+    void Copy_tile_metals();
 };
 
 #endif

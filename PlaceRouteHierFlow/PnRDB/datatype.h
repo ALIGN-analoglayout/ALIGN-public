@@ -483,10 +483,10 @@ struct ViaModel {
 
 struct GdsDatatype
 {
-  int Draw;
-  int Pin;
-  int Label;
-  int Blockage;    
+  int Draw = 0;
+  int Pin = 0;
+  int Label = 0;
+  int Blockage = 0;
 };
 
 struct metal_info {

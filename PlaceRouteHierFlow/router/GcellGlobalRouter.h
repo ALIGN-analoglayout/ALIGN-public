@@ -128,7 +128,8 @@ class GcellGlobalRouter : public RawRouter {
     void AssignMetal(RouterDB::terminal &temp_Terminal, int horizontal_index, int vertical_index, int times);
     void Determine_Terminal_Center(int horizontal_index, int vertical_index, int times);
     void PlaceTerminal();
-//    void getPhsical_metal_via(int i, int j);
+    //void getPhsical_metal_via(int i, int j);
+
 
     //void NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& net, int net_index);
     //void NetToNodeInterMetal(PnRDB::hierNode& HierNode, RouterDB::Net& net);

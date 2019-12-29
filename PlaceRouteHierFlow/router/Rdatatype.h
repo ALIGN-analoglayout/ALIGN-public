@@ -72,7 +72,8 @@ struct tile{
   int width;
   int height;
   std::vector<int> metal;
-  int tileLayer=-1;
+  std::vector<int> origin_metal;
+  int tileLayer = -1;
   int index=-1;
   int Yidx=-1;
   int Xidx=-1;
