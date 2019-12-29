@@ -38,7 +38,7 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 ``` Shell
 docker build -f Dockerfile.build -t with_protobuf .
 ```
-2.  Build the image for place&route
+2.  Build the image for the flow
 ``` Shell
 docker build -t placeroute_image .
 ```
@@ -62,7 +62,7 @@ export GTEST_DIR =<GTEST_DIR>/gtest/googletest/googletest
 ```Shell
 make
 ```
-3. Run testcase
+3. Run test case
 ```Shell
 ./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
@@ -88,12 +88,15 @@ Outputs explaination: (all the results will be saved under 'Results' folder by d
 ### Conversion from JSON to GDS or from GDS to JSON
 Currently we support the input/output layout files in JSON format.
 
-To convert the format, please use the codes of the ALIGN-public repo.
-https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv
+To convert the format, please use the codes [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv).
+
 
 ## Usage
+
 ## Limitations
+
 ## To-do
+
 ## LICENSE
 
 The license for the Nangate45nm PDK in this repository can be found in
