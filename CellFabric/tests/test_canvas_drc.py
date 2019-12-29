@@ -15,7 +15,7 @@ def test_min_length_pass_v(setup):
     c = setup
     # L(300) > MinL(180)
     c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 300]}]
-    c.gen_data()
+    c.gen_data() 
     assert c.drc.num_errors == 0
 
 def test_min_length_pass_h(setup):
@@ -30,6 +30,7 @@ def test_min_length_fail_v(setup):
     # L(175) < MinL(180)
     c.terminals = [{'layer': 'M1', 'netName': 'x', 'rect': [0, 0, 100, 175]}]
     c.gen_data()
+    print(c.drc.errors) 
     assert c.drc.num_errors == 1
 
 def test_min_length_fail_h(setup):

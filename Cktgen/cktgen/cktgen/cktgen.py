@@ -304,12 +304,16 @@ class ADNetlist:
     self.instances = OrderedDict()
     self.nets = OrderedDict()
     self.ports = []
+    self.preroutes = []
 
   def addInstance( self, i):
     self.instances[i.instanceName] = i
 
   def addPort( self, p):
     self.ports.append( p)
+
+  def addPreroute( self, p):
+    self.preroutes.append( p)
 
   def connect( self, instanceName, f, a):
     if a not in self.nets:
@@ -354,6 +358,10 @@ class ADNetlist:
         netl.newWire( p['net_name'], Rect( r[0]*720-200, r[1]*720-360, r[2]*720+200, r[3]*720+360), ly)
       if ly in ["metal2","metal4","metal6"]:
         netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
+
+    for p in self.preroutes:
+      print( "Preroute", p)
+      netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
 class Rect:
   def __init__( self, llx, lly, urx=None, ury=None):
@@ -623,14 +631,20 @@ Option name=allow_opens value=1
 
 # custom routing options
 #Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
-#Option name=nets_to_route value=vxx,vyy,vssx
+#Option name=nets_to_route value=vin_o,vip_o
+#Option name=nets_to_route value=clk
+#Option name=nets_to_route value=von,vop
+#Option name=nets_to_route value=vssx
+#Option name=nets_to_route value=vcc_0p9
 
-Option name=nets_not_to_route value=!kor
+Option name=nets_not_to_route value=!kor,vssx,vcc_0p9
+#Option name=nets_not_to_route value=!kor
 
 #Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
 
 #Option name=opt_maximize_ties_between_trunks_and_terminals value=0
 #Option name=opt_minimize_preroute_extensions value=0
+#Option name=disable_optimization value=1
 
 # debug options
 Option name=create_fake_global_routes            value={1 if show_global_routes else 0}

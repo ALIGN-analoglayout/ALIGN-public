@@ -6,6 +6,8 @@
 #include <time.h>
 
 using namespace nlohmann;
+#define FinFET_MOCK_PDK
+//uncomment the above line when using layer.json from FinFET_MOCK_PDK
 
 
 void PnRdatabase::ReadPDKJSON(std::string drfile) {
@@ -24,7 +26,15 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           std::string lname=layer["Layer"];
           if(lname.front()=='M') {
             // metal layer
+            #ifdef FinFET_MOCK_PDK
+            int lnum=layer["GdsLayerNo"];
+            int Drawnum=layer["GdsDatatype"]["Draw"];
+            int Pinnum=layer["GdsDatatype"]["Pin"];
+            int Labelnum=layer["GdsDatatype"]["Label"];
+            int Blockagenum=layer["GdsDatatype"]["Blockage"];
+            #else
             int lnum=layer["LayerNo"];
+            #endif
             std::string ldir=layer["Direction"];
             int lpitch=-1;
             json pdata=layer["Pitch"];
@@ -47,13 +57,26 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int le2e=layer["EndToEnd"];
 
             double unit_C = 0;
-            if(layer["UnitC"].is_number()){unit_C=layer["UnitC"];}
+            double unit_CC = 0;
             double unit_R = 0;
+            #ifdef FinFET_MOCK_PDK
+            if(layer["UnitC"]["Mean"].is_number()){unit_C=layer["UnitC"]["Mean"];}
+            if(layer["UnitCC"]["Mean"].is_number()){unit_CC=layer["UnitCC"]["Mean"];}
+            if(layer["UnitR"]["Mean"].is_number()){unit_R=layer["UnitR"]["Mean"];}
+            #else
+            if(layer["UnitC"].is_number()){unit_C=layer["UnitC"];}
             if(layer["UnitR"].is_number()){unit_R=layer["UnitR"];}
+            #endif
 
             PnRDB::metal_info tmp_metal;
             tmp_metal.name=lname;
             tmp_metal.layerNo=lnum;
+            #ifdef FinFET_MOCK_PDK
+            tmp_metal.gds_datatype.Draw=Drawnum;
+            tmp_metal.gds_datatype.Pin=Pinnum;
+            tmp_metal.gds_datatype.Label=Labelnum;
+            tmp_metal.gds_datatype.Blockage=Blockagenum;
+            #endif
             if(ldir.compare("V")==0) { tmp_metal.direct=0; tmp_metal.grid_unit_x=times*lpitch; tmp_metal.grid_unit_y=-1;
             } else if (ldir.compare("H")==0) { tmp_metal.direct=1; tmp_metal.grid_unit_y=times*lpitch; tmp_metal.grid_unit_x=-1;
             } else {std::cout<<"PnR-Error: incorrect metal direction\n";}
@@ -64,6 +87,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             double rc_scale = 0.0005;
             tmp_metal.unit_R = unit_R*rc_scale;
             tmp_metal.unit_C = unit_C*rc_scale;
+            tmp_metal.unit_CC = unit_CC*rc_scale;
             metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
             }
         }
@@ -79,7 +103,12 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           std::string lname=layer["Layer"];
           if(lname.front()=='V') {
             // via layer
+            #ifdef FinFET_MOCK_PDK
+            int lnum=layer["GdsLayerNo"];
+            int Drawnum=layer["GdsDatatype"]["Draw"];
+            #else
             int lnum=layer["LayerNo"];
+            #endif
             json stackAry = layer["Stack"];
             int lwidthx= layer["WidthX"];
             int lwidthy= layer["WidthY"];
@@ -91,11 +120,18 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             int lvencph= layer["VencP_H"];
 
             double R = 0;
+            #ifdef FinFET_MOCK_PDK
+            if(layer["R"]["Mean"].is_number()){R=layer["R"]["Mean"];}
+            #else
             if(layer["R"].is_number()){R=layer["R"];}
+            #endif
             
             PnRDB::via_info tmp_via;
             tmp_via.name=lname;
             tmp_via.layerNo=lnum;
+            #ifdef FinFET_MOCK_PDK
+            tmp_via.gds_datatype.Draw=Drawnum;
+            #endif
             tmp_via.width=times*lwidthx;
             tmp_via.width_y=times*lwidthy;
             tmp_via.cover_l=times*lvencal;

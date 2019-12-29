@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+import datetime
 import sys
 import pathlib
 import logging
@@ -74,7 +74,14 @@ def main( args):
                                  'DA': [('M1', 'D'), ('M1', 'G')],
                                  'DB': [('M2', 'D')],
                                  'GB': [('M2', 'G')]})
-
+    elif args.primitive in ["Dummy_NMOS", "Dummy_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'G')],
+                                 'D': [('M1', 'D')]})
+    elif args.primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D')],
+                                'G': [('M1', 'G')]})
+    elif args.primitive in ["Dcap1_NMOS", "Dcap1_PMOS"]:
+        cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')]})
     elif args.primitive in ["SCM_NMOS", "SCM_PMOS"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
@@ -127,7 +134,7 @@ def main( args):
     gen_lef.json_lef(args.block_name + '.json', args.block_name, cell_pin)
     with open( args.block_name + ".json", "rt") as fp0, \
          open( args.block_name + ".gds.json", 'wt') as fp1:
-        gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
+        gen_gds_json.translate(args.block_name, '', args.pinSwitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
 
     return uc
 
@@ -140,6 +147,7 @@ def gen_parser():
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
+    parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
     parser.add_argument( "--model", type=str, required=False, default=None)
     parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")

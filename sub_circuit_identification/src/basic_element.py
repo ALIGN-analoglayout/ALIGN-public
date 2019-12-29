@@ -57,6 +57,11 @@ class BasicElement:
         else :
             self.value = self.line.strip().split()[self.num_pins+1:]
             self.real_inst_type = ""
+        if self.pins and '0' in self.pins:
+            for n, i in enumerate(self.pins):
+                if i=='0':
+                    self.pins[n]='vss'
+
 
         logging.info("real inst type from netlist: %s",self.real_inst_type)
         start = 1
@@ -164,14 +169,15 @@ class BasicElement:
         else:
             print("Error: undefined inst format", self.line)
 
+        #print( self.line,self.real_inst_type,self.pins[3])
 
-        if self.pins[0] == self.pins[2]:
-            inst_type = "dummy"
-        self.pin_weight[0] = self.pin_weight[2]     
+        #if self.pins[0] == self.pins[2]:
+        #    inst_type = "dummy"
+        #self.pin_weight[0] = self.pin_weight[2]     
         return {
             "inst": self.inst,
             "inst_type": inst_type,
-            "real_inst_type": self.real_inst_type,
+            "real_inst_type": self.real_inst_type+'_'+self.pins[3],
             "ports": self.pins[0:3],
             "edge_weight": self.pin_weight[0:3],
             "values": parse_value(self.value)
@@ -210,6 +216,8 @@ def _parse_inst(line):
             or line.strip().lower().startswith('n') \
             or line.strip().lower().startswith('p') \
             or line.strip().lower().startswith('xm') \
+            or line.strip().startswith('xn') \
+            or line.strip().startswith('xp') \
             or (line.strip().startswith('I') and 'mos' in line) \
             or line.strip().lower().startswith('t'):
         logging.debug('FOUND transistor : %s', line.strip())
@@ -226,6 +234,7 @@ def _parse_inst(line):
     elif line.strip().lower().startswith('c') \
             or ( line.strip().lower().startswith('xc') \
             and 'cap' in  line.strip().split()[3].lower()):
+        #DESIGN=Sanitized_TX_8l12b has XC for caps 
         logging.debug('FOUND cap: %s', line.strip())
         device = element.capacitor()
     elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):
@@ -280,7 +289,7 @@ def _parse_inst(line):
             device = None
             logging.error("RECHECK unidentified Device: %s", line)
         elif  device["inst_type"]=="dummy":
-            device = None
+            #device = None
             logging.error("Removing dummy transistor: %s", line)
     else:
         logging.error("Extraction error: %s (unidentified line)", line)

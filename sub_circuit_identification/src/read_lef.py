@@ -8,11 +8,10 @@ Created on Thu Nov 29 19:38:43 2018
 import os
 
 
-def read_lef():
+def read_lef(lef_dir="./LEF/"):
     """ Reads available lef in LEF dir
     Reads .lef files or param_lef files
     """
-    lef_dir = "./LEF/"
     lef_blocks = []
     for file in os.listdir(lef_dir):
         if file.endswith(".lef"):
@@ -20,7 +19,7 @@ def read_lef():
             print("READING_LEF", lef_path)
             with open(lef_path, "r") as lef_fp:
                 line = lef_fp.readline()
-                while "END LIBRARY" not in line:
+                while line:
                     if line.startswith("MACRO"):
                         lef_blocks.append(line.strip().split()[1])
                     line = lef_fp.readline()

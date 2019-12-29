@@ -1,5 +1,12 @@
 import json
 from collections import OrderedDict
+from cell_fabric import pdk
+from pathlib import Path
+
+pdkfile = (Path(__file__).parent / 'layers.json').resolve()
+p = pdk.Pdk().load(pdkfile)
+exclude_layers = p.get_lef_exclude()
+
 def json_lef(input_json,out_lef,cell_pin):
 
   macro_name = out_lef + '.lef'
@@ -13,8 +20,8 @@ def json_lef(input_json,out_lef,cell_pin):
     for i in range(4):
       j['bbox'][i] *= 10
 
-    assert (j['bbox'][3]-j['bbox'][1]) % 840 == 0, f"Cell height not a multiple of the grid {j['bbox']}"
-    assert (j['bbox'][2]-j['bbox'][0]) % 800 == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+    assert (j['bbox'][3]-j['bbox'][1]) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
+    assert (j['bbox'][2]-j['bbox'][0]) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
 
     for obj in j['terminals']:
       for i in range(4):
@@ -37,8 +44,12 @@ def json_lef(input_json,out_lef,cell_pin):
     fp.write( "  FOREIGN %s 0 0 ;\n" % out_lef)
 
     fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
-    exclude_layers ={"V0","V1","V2","poly","LISD","SDT","fin","polycon","GCUT","active","nselect","pselect","nwell"}
-    #for i in ["S","D","G"]:
+    cell_pin = list(cell_pin)
+    if cell_pin[0] != "PLUS":
+      cell_pin.append('B') ### add body contact to the pin list of transistors
+    else:
+      pass 
+
     for i in cell_pin:
       fp.write( "  PIN %s\n" % i)
         #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
@@ -52,10 +63,10 @@ def json_lef(input_json,out_lef,cell_pin):
           ### Check Pins are on grid or not
           if obj['layer'] == 'M2':
             cy = (obj['rect'][1]+obj['rect'][3])//2
-            assert cy%840 == 0, (f"M2 pin is not on grid {cy} {cy%84}")
+            assert cy%p['M2']['Pitch'] == 0, (f"M2 pin is not on grid {cy} {cy%84}")
           if obj['layer'] == 'M1' or obj['layer'] == 'M3':
             cx = (obj['rect'][0]+obj['rect'][2])//2
-            assert cx%800 == 0, (f"M1 pin is not on grid {cx} {cx%80}")
+            assert cx%p['M1']['Pitch'] == 0, (f"M1 pin is not on grid {cx} {cx%80}")
 
       fp.write( "    END\n")
       fp.write( "  END %s\n" % i)

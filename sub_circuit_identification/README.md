@@ -13,8 +13,7 @@ docker run --mount source=inputVol,target=/INPUT topology bash -c "source /sympy
 
 ## Direct run on terminal
 ```bash
-chmod +x runme.sh
-./runme.sh ota
+python ./src/compiler.py --dir ./input_circuit/ -f telescopic_ota.sp --subckt telescopic_ota --flat 0 -U_cap 12 -U_mos 12
 ```
 
 ## Run unit tests in container
