@@ -97,13 +97,15 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## Limitations
 
-1) a
-2) b
+1) The flow is Mainly developed and tested by [ASAP7 DPK](http://asap.asu.edu/asap/). Now the code is being updated to supported MockPDK. In the future, the flow run more test cases by other PDKs. 
 
 ## To-do
 
 1) Top-down placement optimization.
 2) Guard ring insertion.
+3) Data Structure optimization.
+4) Detailed router code optimization.
+5) More Complex test case for routing constraints.
 
 ## LICENSE
 
