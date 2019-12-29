@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>basic_element Module &#8212; circuit annotation 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-basic_element">
+<span id="basic-element-module"></span><h1>basic_element Module<a class="headerlink" href="#module-basic_element" title="Permalink to this headline">¶</a></h1>
+<p>Created on Wed Oct 10 13:18:49 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="class">
+<dt id="basic_element.BasicElement">
+<em class="property">class </em><code class="sig-prename descclassname">basic_element.</code><code class="sig-name descname">BasicElement</code><span class="sig-paren">(</span><em class="sig-param">line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Defines the basic elements of spice file
+e.g: a resistor, inductor
+It also defines the weight on each port of device</p>
+<dl class="method">
+<dt id="basic_element.BasicElement.capacitor">
+<code class="sig-name descname">capacitor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.capacitor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.capacitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>cap: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.get_elements">
+<code class="sig-name descname">get_elements</code><span class="sig-paren">(</span><em class="sig-param">num_pins=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.get_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.get_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract pins and values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.i_source">
+<code class="sig-name descname">i_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.i_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.i_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cur_source: i3 vdd! net1 DC=idc
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.inductor">
+<code class="sig-name descname">inductor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.inductor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.inductor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Res: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.resistor">
+<code class="sig-name descname">resistor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.resistor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.resistor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Res: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.transistor">
+<code class="sig-name descname">transistor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.transistor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.transistor" title="Permalink to this definition">¶</a></dt>
+<dd><p>transistor: m5 net5 phi2 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+The assumption is 3 port network
+pins = [drain, gate, source]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.v_source">
+<code class="sig-name descname">v_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.v_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.v_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>v_source: v1 vbiasp1 0 DC=vbiasp1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="basic_element.BasicElement.vcvs_source">
+<code class="sig-name descname">vcvs_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#BasicElement.vcvs_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.BasicElement.vcvs_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>v_source: E1 (Vinp net2 net3 net2) vcvs gain=1
+The assumption is 4 port network</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="basic_element.parse_value">
+<code class="sig-prename descclassname">basic_element.</code><code class="sig-name descname">parse_value</code><span class="sig-paren">(</span><em class="sig-param">all_param</em>, <em class="sig-param">vtype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic_element.html#parse_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic_element.parse_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse the value parameters for each block and returns a dict</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/basic_element.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kishor Kunal.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

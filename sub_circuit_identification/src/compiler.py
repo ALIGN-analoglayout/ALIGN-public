@@ -9,14 +9,17 @@ elif os.path.exists("./LOG/compiler.log"):
     os.rename("./LOG/compiler.log", "./LOG/compiler.log1")
 
 logging.basicConfig(filename='./LOG/compiler.log', level=logging.DEBUG)
-from util import _write_circuit_graph
+from util import _write_circuit_graph,max_connectivity
 from read_netlist import SpiceParser
-from match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
-from write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
+from match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
+from write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap,check_common_centroid
 from read_lef import read_lef
 
 
 def compiler(input_ckt,design_name,flat=0,Debug=False):
+    """
+    Wrapper file
+    """
     input_dir='/'.join(str(input_ckt).split('/')[0:-1])+'/'
     logging.info("Reading subckt %s", input_ckt)
     sp = SpiceParser(input_ckt,design_name,flat)
@@ -29,6 +32,7 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
     lib_path=(pathlib.Path(__file__).parent / '../basic_library/user_template.sp').resolve()
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
+    library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
                                      "./circuit_graphs/")
@@ -47,6 +51,8 @@ def compiler(input_ckt,design_name,flat=0,Debug=False):
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logging.info("no of nodes: %i", len(G1))
+            add_parallel_caps(G1)
+            add_series_res(G1)
             preprocess_stack(G1)
             initial_size=len(G1)
             delta =1
@@ -146,13 +152,14 @@ def compiler_output(input_ckt,updated_ckt,design_name,unit_size_mos=12,unit_size
         if name not in  generated_module:
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            if name not in design_setup['DIGITAL']:
-                logging.info("call constraint generator writer for block: %s", name)
-                WriteConst(graph, input_dir, name, inoutpin)
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)
             WriteCap(graph, input_dir, name, unit_size_cap,all_array)
+            check_common_centroid(graph,input_dir,name,inoutpin)
+            if name not in design_setup['DIGITAL']:
+                logging.info("call constraint generator writer for block: %s", name)
+                #WriteConst(graph, input_dir, name, inoutpin)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 

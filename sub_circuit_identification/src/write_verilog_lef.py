@@ -376,7 +376,6 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
         (port and len(list(G.neighbors(nodes1))) ==1):
         for node1 in list(G.neighbors(nodes1)):
             if node1 not in traverced:
-                logging.info(node1)
                 #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
                 compare_nodes(G,match_pair,traverced,node1,node1)
@@ -444,13 +443,14 @@ def check_common_centroid(graph,input_dir,name,ports):
                     conn = list(graph.neighbors(cap_block))
                     matched_ports['MINUS'+str(idx)] = conn[0]
                     matched_ports['PLUS'+str(idx)]= conn[1]
-                print("matched_ports",cc_pair,matched_ports)
+                #print("matched_ports",cc_pair,matched_ports)
                 line = line.replace(caps_in_line,updated_cap)
                 graph, _ = merge_nodes(
                         graph, 'Cap_cc',cap_blocks , matched_ports)
+                print("reading line")
             new_const_fp.write(line)
             line=const_fp.readline()
-    
+        print("updated common centroid cap const") 
         const_fp.close()
         new_const_fp.close()
         os.rename(new_const_path, const_path)
@@ -625,7 +625,7 @@ def FindArray(graph,input_dir,name):
     return all_array
                 #match_branches(graph,nodes_dict)
 def WriteConst(graph,input_dir,name,ports):
-    check_common_centroid(graph,input_dir,name,ports)
+    #check_common_centroid(graph,input_dir,name,ports)
     logging.info("writing constraints: %s",input_dir + name + '.const')
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
@@ -785,10 +785,10 @@ if __name__ == '__main__':
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, list_graph, POWER_PINS)
-            if name not in digital_blocks:
-                WriteConst(graph, './input_circuit/', name, inoutpin)
             all_array=FindArray(graph, './input_circuit/', name )
             WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP,all_array)
+            if name not in digital_blocks:
+                WriteConst(graph, './input_circuit/', name, inoutpin)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 

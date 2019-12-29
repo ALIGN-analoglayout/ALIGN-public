@@ -384,7 +384,58 @@ def define_SD(G,power,gnd,clk):
                     traversed.append(node)
             except (TypeError, ValueError):
                 logging.info("All source drain checked:%s",power)
-                
+def add_parallel_caps(G):
+    logging.info("merging all caps, initial graph size:%s", len(G))
+    remove_nodes = []
+    for node, attr in G.nodes(data=True):
+        if 'cap' in attr["inst_type"] and node not in remove_nodes:
+            for net in G.neighbors(node):
+                for next_node in G.neighbors(net):
+                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
+                        "inst_type"] == G.nodes[node]["inst_type"] and\
+                        len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
+                        for param, value in G.nodes[node]["values"].items():
+                            if param == 'cap':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['cap']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['cap']=c_val
+                            elif param == 'c':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['c']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['c']=c_val
+    logging.info("removed parallel caps: %s",remove_nodes)
+    for node in remove_nodes:
+        G.remove_node(node)
+def add_series_res(G):
+    logging.info("merging all series res, initial graph size:%s", len(G))
+    remove_nodes = []
+    modified_edges = {}
+    for net, attr in G.nodes(data=True):
+        if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
+            and net not in remove_nodes:
+            nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
+            combined_r,remove_r=list(G.neighbors(net))
+            if nbr_type[0]==nbr_type[1]=='res':
+                remove_nodes.append(net)
+                remove_nodes.append(remove_r)
+                new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
+                for param, value in G.nodes[combined_r]["values"].items():
+                    if param == 'res':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['res']))
+                        G.nodes[combined_r]["values"]['res']=r_val
+                        G.add_edge(combined_r, new_net, G[combined_r][net]["weight"])
+                    elif param == 'r':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['r']))
+                        G.nodes[combined_r]["values"]['r']=r_val
+                        G.add_edge(combined_r, new_net, G[combined_r][net]["weight"])
+    logging.info("removed series r: %s",remove_nodes)
+    for node in remove_nodes:
+        G.remove_node(node)
+
 def preprocess_stack(G):
     logging.info("START reducing  stacks in graph: ")
     logging.debug("initial size of graph:%s", len(G))
@@ -510,6 +561,7 @@ if __name__ == '__main__':
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logging.info("no of nodes: %i", len(G1))
             preprocess_stack(G1)
+            add_parallel_caps(G1)
             initial_size=len(G1)
             delta =1
             while delta > 0:

@@ -19,7 +19,7 @@ Results/${DESIGN}_lef.sh:
 #	python3 $(SRC)/check_const.py --name ${DESIGN}
 #
 Results/${DESIGN}_lef.sh:	input_circuit/${DESIGN}.sp
-	python3 $(SRC)/compiler.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat $(FLAT)
+	python3 $(SRC)/compiler.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt ${DESIGN} --flat $(FLAT) --unit_size_mos 12 --unit_size_cap 12
 	-cp -p ./input_circuit/*.const ./Results/
 
 input_circuit/${DESIGN}.sp:	${INPUT}/${DESIGN}.sp

@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ALIGN: Analog Layout, Intelligently Generated from Netlists! &#8212; circuit annotation 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Project Summary" href="project.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="project.html" title="Project Summary"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="align-analog-layout-intelligently-generated-from-netlists">
+<h1>ALIGN: Analog Layout, Intelligently Generated from Netlists!<a class="headerlink" href="#align-analog-layout-intelligently-generated-from-netlists" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="automatic-circuit-annotation-documentation">
+<h2>Automatic circuit annotation documentation!<a class="headerlink" href="#automatic-circuit-annotation-documentation" title="Permalink to this headline">¶</a></h2>
+<p>This is an introduction to auto annotation work done under project ALIGN done at University of Ninnesota.</p>
+<p>Circuit annotation automatically identifies hierarchies in the design using a combination of library and rule based approach.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Input:</dt><dd><ul>
+<li><p>Unannotate spice netlist</p></li>
+<li><dl class="simple">
+<dt>setup file</dt><dd><ul>
+<li><p>Power and Gnd signals (First power signal is used for global power grid)</p></li>
+<li><p>Clk signal (optional)</p></li>
+<li><p>Digitial blocks (optional)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Library:(spice format)</dt><dd><ul>
+<li><p>A basic template library is provided which is used to identify elements in the design.</p></li>
+<li><p>User can add more library elements in user_template library.</p></li>
+<li><p>User can also use dont_use_cells.txt to remove any library element from being used.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>LEF:</dt><dd><ul>
+<li><p>This folder is used to keep a list of modules for which cell generator/LEF is available.</p></li>
+<li><p>The list of parametric cells are stored in param_lef.</p></li>
+<li><p>Any LEF file in this directory will be used to identify available modules.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Outputs:</dt><dd><ul>
+<li><p>Verilog file (used for PnR): A hierarchical netlist</p></li>
+<li><p>inputs for cell generator: parameters for parametric cell generator based input design</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p><strong>Run on docker</strong></p>
+<p>Create a Docker image:</p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">build</span> <span class="pre">-t</span> <span class="pre">topology</span> <span class="pre">.</span></code></p>
+<p><strong>Direct run on terminal</strong></p>
+<dl class="simple">
+<dt>Requirements:</dt><dd><p>Python3.6, networkx, matplotlib, pyyaml</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>A combination of library based and rule based method is used for automatic annotation. We support docker based flow as it helps in minimizing environment setup issues.</p>
+<dl class="simple">
+<dt><strong>Library based annotation</strong></dt><dd><ul class="simple">
+<li><p>Library based annotation is used for identifying smaller circuits (primitives) in the design. We use VF2 based subgraph isomorphism to map library elements to the circuit.</p></li>
+</ul>
+</dd>
+<dt><strong>Rule based annotation</strong></dt><dd><ul class="simple">
+<li><p>Analog designs are dominated by arrays in the circuits which need a structured layout. To identify array structures in the layout we use graph traversal which is then used to put common centroid constraints.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Run a Python-based test using docker</p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span> <span class="pre">--name</span> <span class="pre">topology_container</span> <span class="pre">--mount</span> <span class="pre">source=inputVol,target=/INPUT</span> <span class="pre">topology</span> <span class="pre">bash</span> <span class="pre">-c</span> <span class="pre">&quot;source</span> <span class="pre">/sympy/bin/activate</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">/DEMO</span> <span class="pre">&amp;&amp;</span> <span class="pre">make</span> <span class="pre">ota</span> <span class="pre">&amp;&amp;</span> <span class="pre">cp</span> <span class="pre">-r</span> <span class="pre">./Results</span> <span class="pre">/INPUT&quot;</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">cp</span> <span class="pre">topology_container:/INPUT/results</span> <span class="pre">.</span></code></p>
+<p>Using make:</p>
+<p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">&lt;design</span> <span class="pre">name&gt;</span></code></p>
+<p>Python command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">src/compiler.py</span> <span class="pre">--dir</span> <span class="pre">./input_circuit</span> <span class="pre">-f</span> <span class="pre">`basename</span> <span class="pre">$&lt;</span> <span class="pre">.sp`.sp</span> <span class="pre">--subckt</span> <span class="pre">&lt;design</span> <span class="pre">name&gt;</span> <span class="pre">--flat</span> <span class="pre">0</span> <span class="pre">--unit_size_mos</span> <span class="pre">12</span> <span class="pre">--unit_size_cap</span> <span class="pre">12</span></code></p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Summary</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="project.html#main-goals-of-project">Main Goals of project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="project.html#learnings">Learnings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Need python to run this</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ALIGN: Analog Layout, Intelligently Generated from Netlists!</a><ul>
+<li><a class="reference internal" href="#automatic-circuit-annotation-documentation">Automatic circuit annotation documentation!</a></li>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="project.html"
+                        title="next chapter">Project Summary</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="project.html" title="Project Summary"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kishor Kunal.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

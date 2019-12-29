@@ -1,0 +1,684 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>read_netlist &#8212; circuit annotation 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">circuit annotation 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for read_netlist</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Oct 10 13:04:45 2018</span>
+
+<span class="sd">@author: kunal</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># %% Parser</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+
+<span class="kn">from</span> <span class="nn">util</span> <span class="kn">import</span> <span class="n">_write_circuit_graph</span><span class="p">,</span> <span class="n">_show_circuit_graph</span>
+<span class="kn">from</span> <span class="nn">basic_element</span> <span class="kn">import</span> <span class="n">_parse_inst</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;./LOG&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;./LOG&quot;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;./LOG/read_netlist.log&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">&quot;./LOG/read_netlist.log&quot;</span><span class="p">,</span> <span class="s2">&quot;./LOG/read_netlist.log1&quot;</span><span class="p">)</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./LOG/read_netlist.log&#39;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SpiceParser"><a class="viewcode-back" href="../read_netlist.html#read_netlist.SpiceParser">[docs]</a><span class="k">class</span> <span class="nc">SpiceParser</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a spice file (.sp/.cdl) and converts it to a graph.</span>
+<span class="sd">    Device properties are inherited from BasicElement.py</span>
+<span class="sd">    You can flatten the circuit by using flag: flat</span>
+<span class="sd">    The final graph is stored in a yaml file in circuit_graphs folder.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netlistPath</span><span class="p">,</span> <span class="n">top_ckt_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netlist</span> <span class="o">=</span> <span class="n">netlistPath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">circuits_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">option</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span> <span class="o">=</span> <span class="n">top_ckt_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flat</span> <span class="o">=</span> <span class="n">flat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prev_line</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;creating an instance of SpiceParser: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpiceParser.sp_parser"><a class="viewcode-back" href="../read_netlist.html#read_netlist.SpiceParser.sp_parser">[docs]</a>    <span class="k">def</span> <span class="nf">sp_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the defined file line wise&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">netlist</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File doesn&#39;t exist&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">netlist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File exist: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">netlist</span><span class="p">)</span>
+            <span class="n">fp_l</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">netlist</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">while</span> <span class="s2">&quot;.END&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="c1"># if &quot;**&quot; in line.lower(): pass</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;//&quot;</span><span class="p">,</span> <span class="s2">&quot;**&quot;</span><span class="p">,</span><span class="s1">&#39;*.&#39;</span><span class="p">)):</span>
+                    <span class="c1">#line = fp_l.readline()</span>
+                    <span class="k">pass</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                    <span class="k">pass</span>
+                <span class="k">elif</span> <span class="s2">&quot;global&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parse_global</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;.temp&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">temp_line</span> <span class="o">=</span> <span class="n">line</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Temp line: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">temp_line</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;.option&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parse_option</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;subckt&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="s2">&quot;subckts&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parse_subckt_info</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;include&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;info&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_parse_include</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="s2">&quot;param&quot;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">check_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_param</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">check_param</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">check_param</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">check_param</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">parsed_inst</span> <span class="o">=</span> <span class="n">_parse_inst</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">parsed_inst</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parsed_inst</span><span class="p">)</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO: PARSING INPUT NETLIST FILE DONE&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found top_param: </span><span class="si">%s</span><span class="s1">, value:</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">option</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">option</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">!=</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">option</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_global</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span> <span class="o">!=</span> <span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_global</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;List of subckts in design: </span><span class="si">%s</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">))</span>
+
+<span class="c1"># %%</span>
+            <span class="c1">## remove source from testbench circuit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_source</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span> <span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No top circuit name provided, returning multiple graphs&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">:</span>
+                    <span class="n">design</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hier_circuit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="n">subckt_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_bipartite_circuit_graph</span><span class="p">(</span>
+                        <span class="n">design</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">circuits_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                        <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">subckt_graph</span><span class="p">,</span>
+                        <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span> 
+                    <span class="p">})</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s1">&#39;Instances found at top, adding dummy subckt: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                    <span class="n">resolve_top_param</span><span class="p">()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                     <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">,</span>
+                    <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span>
+                <span class="p">}</span>
+                <span class="n">design</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolve_hierarchy</span><span class="p">()</span>
+                <span class="n">circuit_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_bipartite_circuit_graph</span><span class="p">(</span>
+                    <span class="n">design</span><span class="p">,</span> <span class="p">[])</span>
+                <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">circuit_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+                    <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+                        <span class="n">circuit_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;external&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">circuits_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">,</span>
+                    <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">circuit_graph</span><span class="p">,</span>
+                    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span> 
+                <span class="p">})</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">design</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resolve_hierarchy</span><span class="p">()</span>
+                <span class="n">subckt_ports</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
+                <span class="n">circuit_graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_bipartite_circuit_graph</span><span class="p">(</span>
+                    <span class="n">design</span><span class="p">,</span> <span class="n">subckt_ports</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">circuits_list</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">,</span>
+                    <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">circuit_graph</span><span class="p">,</span>
+                    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span> 
+                <span class="p">})</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No design found&quot;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="mi">0</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;################### PARSING DONE </span><span class="se">\</span>
+<span class="s2">                #################### </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">###################</span><span class="se">\</span>
+<span class="s2">                FINAL CIRCUIT AFTER initialization</span><span class="se">\</span>
+<span class="s2">                #################### </span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">design</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+            <span class="c1">#self._show_circuit_graph(&quot;circuit&quot;, self.circuit_graph,&quot;./circuit_graph_images/&quot;)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">circuits_list</span></div>
+<div class="viewcode-block" id="SpiceParser.resolve_hierarchy"><a class="viewcode-back" href="../read_netlist.html#read_netlist.SpiceParser.resolve_hierarchy">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_hierarchy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Flatten circuit: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">)</span>
+            <span class="n">design</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_circuit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">design</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hier_circuit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_ckt_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">design</span></div>
+
+<div class="viewcode-block" id="SpiceParser.resolve_top_param"><a class="viewcode-back" href="../read_netlist.html#read_netlist.SpiceParser.resolve_top_param">[docs]</a>    <span class="k">def</span> <span class="nf">resolve_top_param</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;values&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="c1">#print(node)</span>
+                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="s2">&quot;found function in values&quot;</span><span class="p">)</span>
+                        <span class="n">value_function</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value_function</span><span class="p">:</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="n">mult</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                            <span class="k">except</span><span class="p">:</span>
+                                <span class="n">value</span><span class="o">=</span><span class="n">val</span>
+                    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">mult</span>
+                        <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span>  <span class="nb">str</span><span class="p">(</span><span class="n">mult</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;*&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">]</span>
+                            <span class="k">del</span> <span class="n">mult</span>
+                        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                            <span class="s1">&#39;assigning top parameter </span><span class="si">%s</span><span class="s1"> value </span><span class="si">%s</span><span class="s1"> to node: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                            <span class="n">param</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_insts</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">param</span><span class="p">],</span>
+                            <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No sizing info:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">])</span></div>
+    <span class="k">def</span> <span class="nf">_remove_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">no_of_source</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1">#source_ports = []</span>
+        <span class="k">for</span> <span class="n">ckt_name</span><span class="p">,</span> <span class="n">elements</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">reduced_subckt</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">source_ports</span> <span class="o">=</span><span class="p">[]</span>
+            <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">[</span><span class="s2">&quot;nodes&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+                    <span class="n">source_ports</span> <span class="o">+=</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">reduced_subckt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+            <span class="n">no_of_source</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">reduced_subckt</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced_subckt</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">ckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">source_ports</span>
+            <span class="c1">#print(source_ports)</span>
+        <span class="k">if</span> <span class="n">no_of_source</span> <span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;REMOVED </span><span class="si">%i</span><span class="s1"> sources from circuit.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">no_of_source</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SpiceParser.get_next_line"><a class="viewcode-back" href="../read_netlist.html#read_netlist.SpiceParser.get_next_line">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_pointer</span><span class="p">,</span> <span class="n">line_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line_type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prev_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span> <span class="o">=</span> <span class="n">file_pointer</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span> <span class="o">=</span> <span class="n">file_pointer</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="c1">#print(&quot;Read line&quot;,self.next_line,self.check_next_line)</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">)</span> \
+                <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span><span class="o">.</span><span class="n">strip</span><span class="p">()):</span>
+                <span class="c1">#print(&quot;reading next line&quot;, self.check_next_line)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">check_next_line</span> <span class="o">=</span> <span class="n">file_pointer</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="c1">#exit(0)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="c1">#print(&quot;Read line:&quot;,self.next_line)</span>
+        <span class="k">elif</span> <span class="n">line_type</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prev_line</span>
+        <span class="k">elif</span> <span class="n">line_type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_line</span></div>
+
+    <span class="k">def</span> <span class="nf">_parse_subckt_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read subckt line &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;started reading subckt: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">subckt_nodes</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">subckt_name</span> <span class="o">=</span> <span class="n">subckt_nodes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_subckt</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">subckt_nodes</span><span class="p">[</span><span class="mi">2</span><span class="p">:],</span>
+            <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="n">nodes</span><span class="p">,</span>
+            <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params</span>
+        <span class="p">}</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished reading subckt: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">subckt_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_subckt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read all lines in subckt&quot;&quot;&quot;</span>
+        <span class="n">insts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">subckt_param_all</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">)</span>
+                   <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.end&#39;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;//&quot;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">)):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="s1">&#39;param&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">subckt_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_param</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">subckt_param</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">subckt_param_all</span><span class="p">:</span>
+                        <span class="n">subckt_param_all</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">subckt_param</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">subckt_param_all</span> <span class="o">=</span> <span class="n">subckt_param</span>
+                    <span class="c1">#for param,value in subckt_param.items():</span>
+                    <span class="c1">#    logging.info(&#39;Found subckt param: %s, value:%s&#39;, param, value);</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node1</span> <span class="o">=</span> <span class="n">_parse_inst</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">node1</span><span class="p">:</span>
+                    <span class="n">insts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node1</span><span class="p">)</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_next_line</span><span class="p">(</span><span class="n">fp_l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">insts</span><span class="p">,</span> <span class="n">subckt_param_all</span>
+
+    <span class="k">def</span> <span class="nf">_parse_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reads and store all parameters&quot;&quot;&quot;</span>
+        <span class="n">param_list</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;param: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="n">all_param</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">individual_param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_param</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">individual_param</span><span class="p">:</span>
+                <span class="p">[</span><span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">individual_param</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">param</span><span class="p">:</span>
+                    <span class="n">param</span> <span class="o">=</span> <span class="n">all_param</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">all_param</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found parameters: </span><span class="si">%s</span><span class="s1">, value:</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span>
+                             <span class="n">value</span><span class="p">)</span>
+                <span class="n">param_list</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">param_list</span>
+
+    <span class="k">def</span> <span class="nf">_parse_global</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read all global lines&quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;global: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_global</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_parse_include</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;include: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">_parse_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">fp_l</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;option: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">option</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_resolve_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inherited_param</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;inherited parameter: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">inherited_param</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;values&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;checking parameter: </span><span class="si">%s</span><span class="s2">= </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">value</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="s2">&quot;found function in values&quot;</span><span class="p">)</span>
+                    <span class="n">value_function</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">value_function</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">mult</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                            <span class="n">value</span><span class="o">=</span><span class="n">val</span>
+
+
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inherited_param</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="c1">#print(node)</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">inherited_param</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">mult</span>
+                    <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+                        <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span><span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">*=</span>  <span class="n">mult</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s1">&#39;assigning inherited parameter:</span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1"> to device: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">param</span><span class="p">,</span> <span class="n">inherited_param</span><span class="p">[</span><span class="n">value</span><span class="p">],</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">values</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_flatten_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">subckt_name</span><span class="p">,</span>
+                         <span class="n">subckt_inst</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">connected_nets</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                         <span class="n">inherited_param</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="n">flatdesign</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">## FIX for UT Austin circuit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inherited_param</span><span class="p">:</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">inherited_param</span><span class="p">}</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">],</span><span class="o">**</span><span class="n">inherited_param</span><span class="p">}</span>
+            <span class="c1">#inherited_param = {**inherited_param, **self.subckts[subckt_name][&quot;params&quot;]}</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;flattening the circuits below: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">,</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                     <span class="n">subckt_name</span><span class="p">,</span> <span class="n">subckt_inst</span><span class="p">,</span> <span class="n">connected_nets</span><span class="p">,</span> <span class="n">inherited_param</span><span class="p">)</span>
+        <span class="c1">### node is not local copy and modifying it modifies dictionary</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">]:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;checking nets of node: </span><span class="si">%s</span><span class="s2"> ports:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span>
+                         <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]))</span>
+            <span class="n">modified_ports</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">net_name</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">net_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">]:</span>
+                    <span class="n">net_name</span> <span class="o">=</span> <span class="n">subckt_inst</span> <span class="o">+</span> <span class="n">net_name</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Net internal to subckt </span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">subckt_name</span><span class="p">,</span>
+                                 <span class="n">net_name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">connected_nets</span><span class="p">:</span>
+                    <span class="n">net_name</span> <span class="o">=</span> <span class="n">connected_nets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">]</span>
+                                              <span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">net_name</span><span class="p">)]</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Net is part of higher level subckt: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="n">net_name</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;net lies in top level net in: </span><span class="si">%s</span><span class="s2"> net_name: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span> <span class="n">net_name</span><span class="p">)</span>
+                <span class="n">modified_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">net_name</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">inherited_param</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_param</span><span class="p">(</span><span class="n">inherited_param</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+
+
+            <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">:</span>
+
+                <span class="n">flatdesign</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_circuit</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">],</span>
+                                          <span class="n">subckt_inst</span> <span class="o">+</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;|&#39;</span><span class="p">,</span>
+                                          <span class="nb">list</span><span class="p">(</span><span class="n">modified_ports</span><span class="p">),</span> <span class="n">values</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#print(&quot;FLAT NODE:&quot;, subckt_inst + node[&quot;inst&quot;],modified_ports)</span>
+                <span class="n">flat_node</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;inst&quot;</span><span class="p">:</span> <span class="n">subckt_inst</span> <span class="o">+</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;inst_type&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;real_inst_type&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">modified_ports</span><span class="p">,</span>
+                    <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">,</span>
+                    <span class="s2">&quot;edge_weight&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;edge_weight&quot;</span><span class="p">]</span>
+                <span class="p">}</span>
+
+                <span class="n">flatdesign</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flat_node</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updated Node name: </span><span class="si">%s</span><span class="s2">, type: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                              <span class="n">flat_node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span> <span class="n">flat_node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">])</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Total no of nodes in design </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">subckt_name</span><span class="p">,</span>
+                     <span class="nb">len</span><span class="p">(</span><span class="n">flatdesign</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">flatdesign</span>
+
+    <span class="k">def</span> <span class="nf">_hier_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">subckt_name</span><span class="p">,</span>
+                      <span class="n">connected_nets</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                      <span class="n">inherited_param</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span> <span class="p">(</span><span class="s2">&quot;subcktparameters:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">inherited_param</span><span class="p">)</span>
+        <span class="n">hier_design</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">## FIX for UT Austin circuit</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">inherited_param</span><span class="p">:</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">inherited_param</span><span class="p">}</span>
+            <span class="n">inherited_param</span> <span class="o">=</span> <span class="p">{</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;params&quot;</span><span class="p">],</span><span class="o">**</span><span class="n">inherited_param</span><span class="p">}</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;making hierarchical circuits: </span><span class="si">%s</span><span class="s2"> params: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">subckt_name</span><span class="p">,</span><span class="n">inherited_param</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">]:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;node info: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">inherited_param</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_param</span><span class="p">(</span><span class="n">inherited_param</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">values</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;updated circuit params are: </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">inherited_param</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FOUND hier_node: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">])</span>
+                <span class="n">hier_node</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;inst&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;inst_type&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;real_inst_type&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">,</span>
+                    <span class="s2">&quot;edge_weight&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;edge_weight&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;hier_nodes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hier_circuit</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">subckt_name</span><span class="p">][</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span> <span class="n">values</span><span class="p">)</span>
+                <span class="p">}</span>
+                <span class="n">hier_design</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hier_node</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hier_design</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">hier_design</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">values</span>
+        <span class="k">return</span> <span class="n">hier_design</span>
+
+    <span class="k">def</span> <span class="nf">_create_bipartite_circuit_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_nodes</span><span class="p">,</span> <span class="n">inout_ports</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating bipartitie graph, devices:</span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_nodes</span><span class="p">))</span>
+        <span class="n">circuit_graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">all_nodes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;hier_nodes&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">subgraph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_bipartite_circuit_graph</span><span class="p">(</span>
+                    <span class="n">node</span><span class="p">[</span><span class="s2">&quot;hier_nodes&quot;</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]][</span><span class="s2">&quot;ports&quot;</span><span class="p">])</span>
+                                <span class="c1"># Define ports for subblock</span>
+                <span class="n">connection</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">pin</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subckts</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]][</span><span class="s2">&quot;ports&quot;</span><span class="p">]):</span>
+                        <span class="n">connection</span><span class="p">[</span><span class="n">pin</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Creating sub-graph for node:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">subgraph</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">connection</span><span class="o">=</span><span class="kc">None</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading node: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+            <span class="n">circuit_graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span>
+                                   <span class="n">inst_type</span><span class="o">=</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">],</span>
+                                   <span class="n">real_inst_type</span><span class="o">=</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;real_inst_type&quot;</span><span class="p">],</span>
+                                   <span class="n">ports</span><span class="o">=</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;ports&#39;</span><span class="p">],</span>
+                                   <span class="n">edge_weight</span><span class="o">=</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;edge_weight&#39;</span><span class="p">],</span>
+                                   <span class="n">values</span><span class="o">=</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;values&#39;</span><span class="p">],</span>
+                                   <span class="n">sub_graph</span><span class="o">=</span><span class="n">subgraph</span><span class="p">,</span>
+                                   <span class="n">connection</span><span class="o">=</span><span class="n">connection</span><span class="p">)</span>
+            <span class="c1">##### ASSIGNING EDGE WEIGHTS ######</span>
+            <span class="c1">#wt_index = 0</span>
+            <span class="k">for</span> <span class="n">wt_index</span><span class="p">,</span> <span class="n">net</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]):</span>
+                <span class="c1">#if net not in [&quot;0&quot;, &quot;vdd!&quot;, &quot;gnd!&quot;]:</span>
+                <span class="k">if</span> <span class="s2">&quot;edge_weight&quot;</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">edge_wt</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;edge_weight&quot;</span><span class="p">][</span><span class="n">wt_index</span><span class="p">]</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using existing weights </span><span class="si">%s</span><span class="s2"> for net:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="n">edge_wt</span><span class="p">,</span> <span class="n">net</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">edge_wt</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">^</span> <span class="n">wt_index</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;no existing weights using dummy weights:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                  <span class="n">edge_wt</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">net</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">circuit_graph</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding net node:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">net</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">inout_ports</span><span class="p">:</span>
+                        <span class="n">circuit_graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">net</span><span class="p">,</span>
+                                               <span class="n">inst_type</span><span class="o">=</span><span class="s2">&quot;net&quot;</span><span class="p">,</span>
+                                               <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;external&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">circuit_graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">net</span><span class="p">,</span>
+                                               <span class="n">inst_type</span><span class="o">=</span><span class="s2">&quot;net&quot;</span><span class="p">,</span>
+                                               <span class="n">net_type</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">circuit_graph</span><span class="o">.</span><span class="n">has_edge</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span> <span class="n">net</span><span class="p">):</span>
+                    <span class="n">node_name</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">]</span>
+                    <span class="n">edge_wt</span> <span class="o">=</span> <span class="n">edge_wt</span> <span class="o">+</span> <span class="n">circuit_graph</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span>
+                        <span class="n">node_name</span><span class="p">,</span> <span class="n">net</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Multiple connection b/w net and node:</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">. new weight: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">net</span><span class="p">,</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">edge_wt</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;New connection found b/w nod </span><span class="si">%s</span><span class="s2">, and net </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                 <span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span> <span class="n">net</span><span class="p">)</span>
+                <span class="n">circuit_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;inst&quot;</span><span class="p">],</span> <span class="n">net</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">edge_wt</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;added edge with weight:</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">edge_wt</span><span class="p">)</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Created bipartitie graph with Total no of Nodes: </span><span class="si">%i</span><span class="s2"> edges: </span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">circuit_graph</span><span class="p">),</span> <span class="n">circuit_graph</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">())</span>
+        <span class="c1">#print(circuit_graph.nodes[&#39;xM03|MN0&#39;][&quot;ports&quot;])</span>
+
+        <span class="k">return</span> <span class="n">circuit_graph</span></div>
+
+
+<span class="c1">#%%%%%%%%%%%%%%%%%%%%%%%%%MAIN%%%%%%%%%%%%%%%%%%%%</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="n">PARSER</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;directory path for input circuits&quot;</span><span class="p">)</span>
+    <span class="n">PARSER</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-d&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;--dir&quot;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="s1">&#39;../training_set_netlist&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;relative directory path&#39;</span><span class="p">)</span>
+    <span class="n">PARSER</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-f&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;--file&quot;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Name of file in the directory. </span><span class="se">\</span>
+<span class="s1">                If not provided it reads all files in given dir.&#39;</span><span class="p">)</span>
+    <span class="n">PARSER</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;-s&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;--subckt&quot;</span><span class="p">,</span>
+                        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Top subckt defination in file.</span><span class="se">\</span>
+<span class="s1">                        </span><span class="se">\n</span><span class="s1">If no name given it takes file name as subckt name. </span><span class="se">\</span>
+<span class="s1">                        </span><span class="se">\n</span><span class="s1">If there are instances at top level,</span><span class="se">\</span>
+<span class="s1">                        a new subckt is created of name filename&#39;</span><span class="p">)</span>
+    <span class="n">PARSER</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-flat&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--flat&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;1 = flatten the netlist, 0= read as hierahical netlist&#39;</span><span class="p">)</span>
+    <span class="n">ARGS</span> <span class="o">=</span> <span class="n">PARSER</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">NETLIST_DIR</span> <span class="o">=</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">dir</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">NETLIST_DIR</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input dir doesn&#39;t exist. Please enter a valid dir path&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Input dir doesn&#39;t exist. Please enter a valid dir path&quot;</span><span class="p">)</span>
+
+    <span class="n">NETLIST_FILES</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">NETLIST_DIR</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">NETLIST_FILES</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No spice files found in input_circuit directory. exiting&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;No spice files found in input_circuit directory. exiting&quot;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Input file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+        <span class="n">NETLIST_FILES</span> <span class="o">=</span> <span class="p">[</span><span class="n">ARGS</span><span class="o">.</span><span class="n">file</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">netlist</span> <span class="ow">in</span> <span class="n">NETLIST_FILES</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reading netlist file:&quot;</span><span class="p">,</span> <span class="n">netlist</span><span class="p">)</span>
+        <span class="c1">#name = &quot;switched_cap_filter&quot;</span>
+        <span class="k">if</span> <span class="n">netlist</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;sp&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">netlist</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;cdl&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;READING files in dir: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">NETLIST_DIR</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;READ file: </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2"> flat=</span><span class="si">%i</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">NETLIST_DIR</span><span class="p">,</span> <span class="n">netlist</span><span class="p">,</span>
+                         <span class="n">ARGS</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">subckt</span> <span class="ow">and</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">flat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading subckt </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">subckt</span><span class="p">)</span>
+                <span class="n">sp</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">NETLIST_DIR</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">netlist</span><span class="p">,</span>
+                                 <span class="n">ARGS</span><span class="o">.</span><span class="n">subckt</span><span class="p">,</span>
+                                 <span class="n">flat</span><span class="o">=</span><span class="n">ARGS</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">subckt</span><span class="p">:</span>
+                <span class="n">sp</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">NETLIST_DIR</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">netlist</span><span class="p">,</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">subckt</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ARGS</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading netlist as flat&quot;</span><span class="p">)</span>
+                <span class="n">sp</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">NETLIST_DIR</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">netlist</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="n">ARGS</span><span class="o">.</span><span class="n">flat</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sp</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">NETLIST_DIR</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">netlist</span><span class="p">)</span>
+
+            <span class="n">final_circuit_graph</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sp_parser</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1">#print(final_circuit_graph.nodes[&#39;xM03|MN0&#39;][&quot;ports&quot;])</span>
+            <span class="k">if</span> <span class="n">final_circuit_graph</span><span class="p">:</span>
+                <span class="n">ckt_name</span> <span class="o">=</span> <span class="n">netlist</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saving graph: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ckt_name</span><span class="p">)</span>
+                <span class="c1">#_show_circuit_graph(ckt_name,</span>
+                <span class="c1">#final_circuit_graph,&quot;./circuit_graph_images/&quot;)</span>
+                <span class="c1">#_show_bipartite_circuit_graph( ckt_name,</span>
+                <span class="c1">#final_circuit_graph, &quot;./circuit_graphs/&quot;)</span>
+                <span class="n">_write_circuit_graph</span><span class="p">(</span><span class="n">ckt_name</span><span class="p">,</span> <span class="n">final_circuit_graph</span><span class="p">,</span>
+                                     <span class="s2">&quot;./circuit_graphs/&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;circuit graph written in dir: circuit_graphs&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Not a valid file type (.sp/cdl).Skipping this file&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">circuit annotation 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kishor Kunal.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>write_verilog_lef Module &#8212; circuit annotation 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-write_verilog_lef">
+<span id="write-verilog-lef-module"></span><h1>write_verilog_lef Module<a class="headerlink" href="#module-write_verilog_lef" title="Permalink to this headline">¶</a></h1>
+<p>Created on Wed Nov 21 13:12:15 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="write_verilog_lef.FindArray">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">FindArray</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#FindArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.FindArray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.WriteCap">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">WriteCap</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em>, <em class="sig-param">unit_size_cap</em>, <em class="sig-param">all_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteCap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteCap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.WriteConst">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">WriteConst</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em>, <em class="sig-param">ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteConst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteConst" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="write_verilog_lef.WriteSpice">
+<em class="property">class </em><code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">WriteSpice</code><span class="sig-paren">(</span><em class="sig-param">circuit_graph</em>, <em class="sig-param">circuit_name</em>, <em class="sig-param">inout_pin_names</em>, <em class="sig-param">subckt_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteSpice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteSpice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>write hierarchical verilog file</p>
+<dl class="method">
+<dt id="write_verilog_lef.WriteSpice.check_ports_match">
+<code class="sig-name descname">check_ports_match</code><span class="sig-paren">(</span><em class="sig-param">port</em>, <em class="sig-param">subckt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteSpice.check_ports_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteSpice.check_ports_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="write_verilog_lef.WriteSpice.print_subckt">
+<code class="sig-name descname">print_subckt</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteSpice.print_subckt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteSpice.print_subckt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="write_verilog_lef.WriteVerilog">
+<em class="property">class </em><code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">WriteVerilog</code><span class="sig-paren">(</span><em class="sig-param">circuit_graph</em>, <em class="sig-param">circuit_name</em>, <em class="sig-param">inout_pin_names</em>, <em class="sig-param">subckt_list</em>, <em class="sig-param">power_pins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteVerilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteVerilog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>write hierarchical verilog file</p>
+<dl class="method">
+<dt id="write_verilog_lef.WriteVerilog.check_ports_match">
+<code class="sig-name descname">check_ports_match</code><span class="sig-paren">(</span><em class="sig-param">port</em>, <em class="sig-param">subckt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteVerilog.check_ports_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteVerilog.check_ports_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="write_verilog_lef.WriteVerilog.map_pins">
+<code class="sig-name descname">map_pins</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteVerilog.map_pins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteVerilog.map_pins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="write_verilog_lef.WriteVerilog.print_module">
+<code class="sig-name descname">print_module</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#WriteVerilog.print_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.WriteVerilog.print_module" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.check_common_centroid">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">check_common_centroid</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em>, <em class="sig-param">ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#check_common_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.check_common_centroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads available const in input dir
+Fix cc cap in const and netlist</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.compare_node">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">compare_node</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">node1</em>, <em class="sig-param">node2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#compare_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.compare_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.compare_nodes">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">compare_nodes</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">match_pair</em>, <em class="sig-param">traverced</em>, <em class="sig-param">nodes1</em>, <em class="sig-param">nodes2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#compare_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.compare_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.concat_values">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">concat_values</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#concat_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.concat_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.connection">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">connection</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">net</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.connection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.generate_lef">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">generate_lef</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">name</em>, <em class="sig-param">values</em>, <em class="sig-param">available_block_lef</em>, <em class="sig-param">unit_size_mos=12</em>, <em class="sig-param">unit_size_cap=12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#generate_lef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.generate_lef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a shell script to generate parameterized lef</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.match_branches">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">match_branches</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">nodes_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#match_branches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.match_branches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.matching_groups">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">matching_groups</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">level1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#matching_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.matching_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.print_cell_gen_header">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">print_cell_gen_header</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#print_cell_gen_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.print_cell_gen_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.print_globals">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">print_globals</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">power</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#print_globals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.print_globals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write global variables</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.print_header">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">print_header</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#print_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.print_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write Verilog header</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="write_verilog_lef.trace_template">
+<code class="sig-prename descclassname">write_verilog_lef.</code><code class="sig-name descname">trace_template</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">similar_node_groups</em>, <em class="sig-param">visited</em>, <em class="sig-param">template</em>, <em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/write_verilog_lef.html#trace_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#write_verilog_lef.trace_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/write_verilog_lef.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">circuit annotation 1.0.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Kishor Kunal.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
