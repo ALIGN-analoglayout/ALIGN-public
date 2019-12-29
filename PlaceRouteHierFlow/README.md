@@ -102,8 +102,8 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## To-do
 
-1) a
-2) b
+1) Top-down placement optimization.
+2) Guard ring insertion.
 
 ## LICENSE
 
