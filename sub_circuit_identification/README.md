@@ -30,6 +30,5 @@ docker run -p 8000:8000 --mount source=coverageVol,target=/INPUT -d with_python 
 
 To see coverage report look at localhost:8000
 
+<meta http-equiv="refresh" content="0; url="docs/build/html/index.html">
 
-# Usage slides:
-https://docs.google.com/presentation/d/1NbXXx6vI8KNOhjRaRHlG57hA6jdRX_BA-xOshC8XbzU/edit?usp=sharing
