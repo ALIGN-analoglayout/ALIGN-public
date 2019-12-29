@@ -14,7 +14,9 @@ from math import sqrt, ceil
 from read_lef import read_lef
 from util import convert_to_unit
 from merge_nodes import merge_nodes
+from match_graph import read_setup
 
+from collections import Counter
 if not os.path.exists("./LOG"):
     os.mkdir("./LOG")
 elif os.path.exists("./LOG/writer.log"):
@@ -26,16 +28,23 @@ logging.basicConfig(filename='./LOG/writer.log', level=logging.DEBUG)
 class WriteVerilog:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, power_pins):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
-        self.pins = inout_pin_names
+        self.pins = [] 
+        for port in inout_pin_names:
+            if port not in power_pins:
+                self.pins.append(port)
+        self.power_pins=power_pins
         self.subckt_list = subckt_list
 
     def check_ports_match(self,port,subckt):
         for members in self.subckt_list:
             if members["name"]==subckt and port in members["ports"]:
+                return 1
+            else:
+                logging.warning("no ports match: %s %s",subckt,port)
                 return 1
 
     def print_module(self, fp):
@@ -47,7 +56,7 @@ class WriteVerilog:
         if self.inout_pins:
             logging.info("Writing ports : %s", ', '.join(self.inout_pins))
             fp.write("\ninput ")
-            fp.write(', '.join(self.inout_pins))
+            fp.write(', '.join(self.pins))
             fp.write(";\n")
 
         for node, attr in self.circuit_graph.nodes(data=True):
@@ -75,7 +84,7 @@ class WriteVerilog:
                         logging.error("ERROR: Subckt %s defination not found",attr['inst_type'])
 
                 else:
-                    logging.info("No connectivity info found : %s",
+                    logging.error("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
@@ -85,6 +94,7 @@ class WriteVerilog:
                     fp.write(', '.join(mapped_pins))
                     fp.write(' ); ')
                 else:
+                    fp.write(' ); ')
                     print("MAPPING NOT CORRECT")
 
         fp.write("\n\nendmodule\n")
@@ -93,7 +103,8 @@ class WriteVerilog:
         if len(a) == len(b):
             mapped_pins = []
             for i in range(len(a)):
-                mapped_pins.append("." + a[i] + "(" + b[i] + ")")
+                if a[i] not in self.power_pins:
+                    mapped_pins.append("." + a[i] + "(" + b[i] + ")")
 
             return mapped_pins
         elif len(set(a)) == len(set(b)):
@@ -109,6 +120,8 @@ class WriteVerilog:
                         mapped_pins.append("." + a[i] + "(" +
                                            b[i - no_of_sort] + ")")
                         check_sort.append(a[i])
+                    if a[i] in self.power_pins:
+                        mapped_pins= mapped_pins[:-1]
 
                 return mapped_pins
 
@@ -130,6 +143,8 @@ class WriteSpice:
         for members in self.subckt_list:
             if members["name"]==subckt and port in members["ports"]:
                 return 1
+            else:
+                logging.warning("no ports match: %s %s",subckt,port)
 
     def print_subckt(self, fp):
         logging.info("Writing module : %s", self.circuit_name)
@@ -156,10 +171,10 @@ class WriteSpice:
                     elif 'DCL_PMOS' in attr['inst_type']:
                         nets[1:1]=[nets[1]]
                     # add body ports to transistor
-                    if 'PMOS' in attr['inst_type']:
-                        nets.append('vdd')
-                    elif 'NMOS' in attr['inst_type']:
-                        nets.append('vss')
+                    #if 'PMOS' in attr['inst_type']:
+                    #    nets.append('vdd')
+                    #elif 'NMOS' in attr['inst_type']:
+                    #    nets.append('vss')
 
                 else:
                     logging.error("No connectivity info found : %s",
@@ -180,15 +195,15 @@ def concat_values(values):
 
 def print_globals(fp, power):
     """ Write global variables"""
-    fp.write("\n\n// End HDL models")
-    fp.write("\n// Global nets module")
+    #fp.write("\n\n// End HDL models")
+    #fp.write("\n// Global nets module")
     fp.write("\n`celldefine")
-    fp.write("\nmodule cds_globals;\n")
+    fp.write("\nmodule global_power;")
     for i in range(len(power)):
         fp.write("\nsupply" + str(i) + " " + power[i] + ";")
 
-    fp.write("\n\nendmodule")
-    fp.write("\n`endcelldefine")
+    fp.write("\nendmodule")
+    fp.write("\n`endcelldefine\n")
     fp.close()
 
 
@@ -304,6 +319,11 @@ def generate_lef(fp, name, values, available_block_lef,
             size = int(values["nfin"])
             if 'nf' in values.keys():
                 size=size*int(values["nf"])
+            ## Hack For VCO circuit
+            if 'nmos' in name.lower() and unit_size_mos==37:
+                unit_size_mos=8
+            elif unit_size_mos==37:
+                unit_size_mos=10
             no_units = ceil(size / unit_size_mos)
 
         elif "l" in values.keys():
@@ -318,7 +338,7 @@ def generate_lef(fp, name, values, available_block_lef,
         #print(size)
         logging.info('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
-            no_units = ceil(size / unit_size_mos)
+            no_units = 2*ceil(size / unit_size_mos)
             square_x = ceil(sqrt(no_units))
             while no_units % square_x != 0:
                 square_x += 1
@@ -333,8 +353,8 @@ def generate_lef(fp, name, values, available_block_lef,
                      " -b " + block_name +
                      " -n " + str(unit_size_mos) +
                      " -X " + xval +
-                     " -Y " + yval +
-                     " --params " + "'" + json.dumps(values) + "'")
+                     " -Y " + yval)
+                     #" --params " + "'" + json.dumps(values) + "'")
         else:
             logging.info("No proper marameters found for cell generation")
             block_name = name+"_"+size       
@@ -342,12 +362,21 @@ def generate_lef(fp, name, values, available_block_lef,
     return block_name
 
 def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
-    #print(G.node[node1],G.node[node2])
+    #logging.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
+    #logging.info("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
     #match_pair={}
-    if len(list(G.neighbors(nodes1))) <=2 and \
-            set(G.neighbors(nodes1)) == set(G.neighbors(nodes2)):
+    #logging.info("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
+    if 'net' in G.nodes[nodes1]['inst_type'] and \
+        G.nodes[nodes1]['net_type'] == 'external':
+            port=True
+    else:
+        port = False
+    if (not port and len(list(G.neighbors(nodes1))) <=2 and \
+        set(G.neighbors(nodes1)) == set(G.neighbors(nodes2)) ) or\
+        (port and len(list(G.neighbors(nodes1))) ==1):
         for node1 in list(G.neighbors(nodes1)):
             if node1 not in traverced:
+                logging.info(node1)
                 #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
                 compare_nodes(G,match_pair,traverced,node1,node1)
@@ -367,29 +396,31 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
                             compare_nodes(G,match_pair,traverced,node1,node2)                    
     return match_pair
 def compare_node(G,node1,node2):
-    if G.node[node1]["inst_type"]=="net" and \
-            G.node[node2]["inst_type"]=="net" and \
+    if G.nodes[node1]["inst_type"]=="net" and \
+            G.nodes[node2]["inst_type"]=="net" and \
             len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
-            G.node[node1]["net_type"] == G.node[node2]["net_type"]:
+            G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
+        #logging.info("comparing_nodes, %s %s True",node1,node2)
         return True
-    elif (G.node[node1]["inst_type"]==G.node[node2]["inst_type"] and
-        'values' in G.node[node1].keys() and 
-         G.node[node1]["values"]==G.node[node2]["values"] and
+    elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
+        'values' in G.nodes[node1].keys() and 
+         G.nodes[node1]["values"]==G.nodes[node2]["values"] and
         len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
+        #logging.info("comparing_nodes, %s %s True",node1,node2)
         return True
     else:
+        logging.info("comparing_nodes, %s %s False",node1,node2)
         return False
-def connection(G,net):
+def connection(graph,net):
     conn =[]
-    for nbr in list(G.neighbors(net)):
-        #print(graph.node[nbr]["ports_match"].items())
-        if "ports_match" in graph.node[nbr]:
-            idx=list(graph.node[nbr]["ports_match"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.node[nbr]["ports_match"].keys())[idx])
-    if graph.node[net]["net_type"]=="external":
+    for nbr in list(graph.neighbors(net)):
+        #print(graph.nodes[nbr]["ports_match"].items())
+        if "ports_match" in graph.nodes[nbr]:
+            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
+            conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+    if graph.nodes[net]["net_type"]=="external":
         conn.append(net)
     return conn
-
 def check_common_centroid(graph,input_dir,name,ports):
     """ Reads available const in input dir
         Fix cc cap in const and netlist
@@ -428,7 +459,7 @@ def check_common_centroid(graph,input_dir,name,ports):
 
     return(cc_pair)
 
-def WriteCap(graph,input_dir,name,unit_size_cap):
+def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     const_path = input_dir + name + '.const'
     new_const_path = input_dir + name + '.const_temp'
     logging.info("writing cap constraints:"+input_dir + name + '.const')
@@ -450,6 +481,29 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
     else:
         new_const_fp = open(new_const_path, "w")
         logging.info("Creating new const file"+new_const_path)
+    logging.info("writing common centroid caps: %s",all_array)
+    for _,array in all_array.items():
+        n_cap=[]
+        cc_caps=[]
+        logging.info("group1: %s",array)
+        for _,arr in array.items():
+            for ele in arr:
+                if graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
+                    ele not in available_cap_const:
+                    if 'cap' in graph.nodes[ele]['values'].keys():
+                        size = graph.nodes[ele]['values']["cap"]*1E15
+                    elif 'c' in graph.nodes[ele]['values'].keys():
+                        size = graph.nodes[ele]['values']["c"]*1E15
+                    else: 
+                        size = unit_size_cap
+                    n_cap.append( str(ceil(size/unit_size_cap)))
+                    cc_caps.append(ele)
+        if len(n_cap)>0:
+            available_cap_const = available_cap_const+ cc_caps
+            unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
+            cap_line = "CC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
+            logging.info("Cap constraint"+cap_line)
+            new_const_fp.write(cap_line)
 
 
     for node, attr in graph.nodes(data=True):
@@ -472,10 +526,106 @@ def WriteCap(graph,input_dir,name,unit_size_cap):
     else:
         os.rename(new_const_path, const_path)
 
+def matching_groups(G,level1):
+    similar_groups=[] 
+    logging.info("matching groups for all neighbors: %s", level1)
+    for l1_node1 in level1:
+        for l1_node2 in level1:
+            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2):
+                found_flag=0
+                #logging.info("similar_group %s",similar_groups)
+                #print(l1_node1,l1_node2)
+                for index, sublist in enumerate(similar_groups):
+                    if l1_node1 in sublist and l1_node2 in sublist:
+                        found_flag=1
+                        break
+                    if l1_node1 in sublist:
+                        similar_groups[index].append(l1_node2)
+                        found_flag=1
+                        #print("found match")
 
+                        break
+                    elif l1_node2 in sublist:
+                        similar_groups[index].append(l1_node1)
+                        found_flag=1
+                        #print("found match")
+                        break
+                if found_flag==0:
+                    similar_groups.append([l1_node1,l1_node2])
+    return similar_groups
+def trace_template(graph, similar_node_groups,visited,template,array):
+    next_match={}
+    for source,groups in similar_node_groups.items():
+        next_match[source]=[]
+        for node in groups:
+            #print(node)
+            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
+            #level1=[l1 for l1 in level_1a if l1 not in visited]
+            next_match[source] +=level1
+            visited +=level1
+
+    if match_branches(graph,next_match):
+        for source in array.keys():
+            array[source]+=next_match[source]
+        template +=next_match[list(next_match.keys())[0]]
+        logging.info("found matching level: %s,%s",template,similar_node_groups)
+        trace_template(graph, next_match,visited,template,array)
+
+
+def match_branches(graph,nodes_dict):
+    #print("matching branches",nodes_dict)
+    #match_pair={}
+    nbr_values = {}
+    for node, nbrs in nodes_dict.items():
+        #super_dict={}
+        super_list=[]
+        for nbr in nbrs:
+            #print("checking nbr",nbr,graph.nodes[nbr])
+            if graph.nodes[nbr]['inst_type']== 'net':
+                super_list.append('net')
+                super_list.append(graph.nodes[nbr]['net_type'])
+            else:
+                super_list.append(graph.nodes[nbr]['inst_type'])
+                for v in graph.nodes[nbr]['values'].values():
+                    #super_dict.setdefault(k,[]).append(v)
+                    #print("value",k,v)
+                    super_list.append(v)
+        nbr_values[node]=Counter(super_list)
+    _,main=nbr_values.popitem()
+    for node, val in nbr_values.items():
+        if val == main:
+            #print("found values",list(val.elements()))
+            continue
+        else:
+            return False
+    return True 
+
+def FindArray(graph,input_dir,name):
+    templates = {}
+    array_of_node = {}
+    visited =[]
+    all_array = {}
+
+    for node, attr in graph.nodes(data=True):
+        #print("node data",graph.nodes[node])
+        if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
+            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
+            array_of_node[node]=matching_groups(graph,level1)
+            logging.info("finding array:%s,%s",node,array_of_node[node])
+            if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
+                similar_node_groups = {}
+                for el in array_of_node[node][0]:
+                    similar_node_groups[el]=[el]
+                templates[node]=[list(similar_node_groups.keys())[0]]
+                visited=array_of_node[node][0]+[node]
+                array=similar_node_groups
+                trace_template(graph,similar_node_groups,visited,templates[node],array)
+                logging.info("similar groups final, %s",array)
+                all_array[node]=array
+    return all_array
+                #match_branches(graph,nodes_dict)
 def WriteConst(graph,input_dir,name,ports):
     check_common_centroid(graph,input_dir,name,ports)
-    const_fp = open(input_dir + name + '.const', 'a+')
     logging.info("writing constraints: %s",input_dir + name + '.const')
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
@@ -491,23 +641,35 @@ def WriteConst(graph,input_dir,name,ports):
             if pair:
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
-    symmBlock = "SymmBlock ("
-    for key, value in all_match_pairs.items():
-        if graph.node[key]["inst_type"]!="net":
-            if key ==value:
-                symmBlock = symmBlock+' {'+key+ '} ,'
-            else:
-                symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-        else:
-            if len(list(graph.neighbors(key)))<3:
-                symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
-                        '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
-                const_fp.write(symmNet)
+    existing_SymmBlock =False
+    if os.path.exists(input_dir + name + '.const'):
+        with open(input_dir + name + '.const') as f:
+            content = f.readlines()
+            if 'SymmBlock' in content:
+                existing_SymmBlock = True
+            elif 'SymmNet' in content:
+                existing_SymmNet += content.strip()
+
+    const_fp = open(input_dir + name + '.const', 'a+')
+    if len(list(all_match_pairs.keys()))>0:
+        symmBlock = "SymmBlock ("
+        for key, value in all_match_pairs.items():
+            if graph.nodes[key]["inst_type"]!="net":
+                if key ==value:
+                    symmBlock = symmBlock+' {'+key+ '} ,'
+                else:
+                    symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
+            else: 
+                if len(list(graph.neighbors(key)))<3:
+                    symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
+                            '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
+                    const_fp.write(symmNet)
 
 
-    symmBlock = symmBlock[:-1]+')'
-    const_fp.write(symmBlock)
-    const_fp.close()
+        symmBlock = symmBlock[:-1]+')\n'
+        if not existing_SymmBlock:
+            const_fp.write(symmBlock)
+        const_fp.close()
 #%%
 if __name__ == '__main__':
     if not os.path.exists("./Results/"):
@@ -550,7 +712,8 @@ if __name__ == '__main__':
     print_cell_gen_header(LEF_FP)
     LEF_FP.write('# file to generate lef')
     print_header(VERILOG_FP, INPUT_PICKLE)
-    POWER_PINS = ["vdd!", "gnd"]
+    design_setup=read_setup('./input_circuit/'+INPUT_PICKLE+'.setup')
+    POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
     #read lef to not write those modules as macros
     ALL_LEF = read_lef()
     logging.info("Reading available lef: %s", ", ".join(ALL_LEF))
@@ -560,7 +723,8 @@ if __name__ == '__main__':
     logging.info("Unit cap cell size: %s", str(UNIT_SIZE_CAP))
     logging.info("Unit mos cell size: %s", str(UNIT_SIZE_MOS))
     logging.info("Reading file: %s", RESULT_DIR + INPUT_PICKLE + '.p')
-
+    if 'vco_dtype_12' in  INPUT_PICKLE:
+        UNIT_SIZE_MOS=37
     with open(RESULT_DIR + INPUT_PICKLE + '.p', 'rb') as fp:
         list_graph = pickle.load(fp)
     #print(list_graph)
@@ -574,15 +738,21 @@ if __name__ == '__main__':
         floating_ports=[]
         if members["ports_match"]:
             for key, value in members["ports_match"].items():
-                inoutpin.append(key)
+                if key not in POWER_PINS:
+                    inoutpin.append(key)
             if members["ports"]:
-                logging.info("Found module ports:%s",members["ports"] )
+                logging.info("Found module ports kk:%s",members["ports"] )
                 floating_ports = list(set(inoutpin) - set(members["ports"]))
+                logging.warning("floating port found: %s",floating_ports)
         else:
             inoutpin = members["ports"]
-        if len(floating_ports)>0:
-            logging.warning("Floating ports in design:%s,%s",len(floating_ports),floating_ports)
-            inoutpin=members["ports"]
+       #     for port in members["ports"]:
+       #         if port not in POWER_PINS:
+       #             inoutpin.append(port)
+
+        #if len(floating_ports)>0:
+        #    logging.warning("Floating ports in design:%s,%s",len(floating_ports),floating_ports)
+        #    inoutpin=members["ports"]
         
         graph = members["lib_graph"].copy()
         logging.info("Reading nodes from graph: %s", str(graph))
@@ -613,13 +783,14 @@ if __name__ == '__main__':
         #print("inout pins:",inoutpin)
         if name not in  generated_module:
             logging.info("writing verilog for block: %s", name)
-            wv = WriteVerilog(graph, name, inoutpin, list_graph)
-            #WriteConst(graph, './input_circuit/', name, inoutpin)
-            WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP)
+            wv = WriteVerilog(graph, name, inoutpin, list_graph, POWER_PINS)
+            WriteConst(graph, './input_circuit/', name, inoutpin)
+            all_array=FindArray(graph, './input_circuit/', name )
+            WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP,all_array)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 
-
+    print_globals(VERILOG_FP,POWER_PINS)
     LEF_FP.close()
     SP_FP.close()
 
