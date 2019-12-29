@@ -276,6 +276,16 @@ std::vector<int> GcellDetailRouter::EstimateDist(RouterDB::R_const &temp_R, Rout
   
 };
 
+void GcellDetailRouter::Copy_tile_metals(){
+
+  for(int i=0;i<Gcell.tiles_total.size();i++){
+
+      Gcell.tiles_total[i].origin_metal = Gcell.tiles_total[i].metal;
+
+    }
+
+};
+
 void GcellDetailRouter::modify_tile_metals(RouterDB::Net& Net, bool set){
   //set=1, set terminal tiles' metals to Lmetal~Hmetal
   //set=0, reset terminal tiles' metals
@@ -289,13 +299,13 @@ void GcellDetailRouter::modify_tile_metals(RouterDB::Net& Net, bool set){
       if (std::find(Net.terminals.begin(), Net.terminals.end(), first_tile) != Net.terminals.end())
       {
         //if the first tile is terminal
-        Gcell.tiles_total[first_tile].origin_metal = Gcell.tiles_total[first_tile].metal;
+        //Gcell.tiles_total[first_tile].origin_metal = Gcell.tiles_total[first_tile].metal;
         Gcell.tiles_total[first_tile].metal = metal;
       }
       if (std::find(Net.terminals.begin(), Net.terminals.end(), last_tile) != Net.terminals.end())
       {
         //if the last tile is terminal
-        Gcell.tiles_total[last_tile].origin_metal = Gcell.tiles_total[last_tile].metal;
+        //Gcell.tiles_total[last_tile].origin_metal = Gcell.tiles_total[last_tile].metal;
         Gcell.tiles_total[last_tile].metal = metal;
       }
     }
@@ -341,8 +351,9 @@ void GcellDetailRouter::create_detailrouter(){
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
   //end initial set
   //start detail router 
+  Copy_tile_metals();
   for(unsigned int i=0;i<Nets.size();i++){
-       modify_tile_metals(Nets[i], 1);
+       
 
        int multi_number = 0;
        if(Nets[i].R_constraints.size()>0){
@@ -390,6 +401,7 @@ void GcellDetailRouter::create_detailrouter(){
 
           }
 
+       modify_tile_metals(Nets[i], 1);
 
        if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
 
