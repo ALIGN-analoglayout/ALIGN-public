@@ -4,7 +4,7 @@
 The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints. The analog router is composed of global router, detailed router and power router.
 
 
-<img align = "left" width="100%" src="Flow.png">
+<img align = "center" width="90%" src="Flow.png">
 
 ## Software description
 
