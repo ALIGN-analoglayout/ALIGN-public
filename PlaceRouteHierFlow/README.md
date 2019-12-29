@@ -107,9 +107,7 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## LICENSE
 
-The license for the Nangate45nm PDK in this repository can be found in
-[platforms](platforms) directory in the [OpenCellLibraryLicenseSi2.txt](platforms/nangate45/OpenCellLibraryLicenseSi2.txt).
-The Nangate45nm PDK is downloaded from https://projects.si2.org/openeda.si2.org/project/showfiles.php?group_id=63#503
+Third-paty license:
 
 - The license for ILP solver can be found [Lp_solver license](http://lpsolve.sourceforge.net/5.5/)
 - The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
