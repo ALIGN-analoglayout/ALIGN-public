@@ -9,6 +9,16 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
+    if not working_dir.is_dir():
+        logging.error("Working directory doesn't exist. Please enter a valid directory path")
+        print("Working directory doesn't exist. Please enter a valid directory path")
+        exit(0)
+
+    pdk_dir = pathlib.Path(pdk_dir).resolve()
+    if not pdk_dir.is_dir():
+        logging.error("PDK directory doesn't exist. Please enter a valid directory path")
+        print("PDK directory doesn't exist. Please enter a valid directory path")
+        exit(0)
 
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
@@ -37,9 +47,11 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
         else:
             subckt = subckt_name
         logging.info(f"READ file: {netlist} subckt_name={subckt}, flat={flatten_heirarchy}")
-        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_SCI', flatten_heirarchy, unit_size_mos , unit_size_cap)
+        (working_dir / '1_hierarchy').mkdir(exist_ok=True)
+        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_hierarchy', flatten_heirarchy, unit_size_mos , unit_size_cap)
+        (working_dir / '2_primitives').mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            generate_primitive(block_name, **block_args, pinswitch=0, pdkdir=pdk_dir, outputdir=working_dir / '2_primitives')
+            generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=working_dir / '2_primitives')
         # lef_generator = working_dir / '1_SCI' / f'{subckt}_lef.sh'
         # lef_generator.chmod(0o755)
         # subprocess.run(['/bin/bash', '-c', str(lef_generator), 'python3'])

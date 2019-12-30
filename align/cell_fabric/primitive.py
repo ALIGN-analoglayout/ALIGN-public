@@ -23,7 +23,8 @@ def get_parameters(primitive, parameters, nfin):
     parameters['nfin'] = nfin
     return parameters
 
-def generate_primitive(block_name, primitive, pattern, height, nfin, x_cells, y_cells, parameters, pinswitch, pdkdir, outputdir):
+# WARNING: Bad code. Changing these default values breaks functionality.
+def generate_primitive(block_name, primitive=None, pattern=1, height=12, nfin=12, x_cells=1, y_cells=1, parameters=dict(), pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))
@@ -125,7 +126,7 @@ def generate_primitive(block_name, primitive, pattern, height, nfin, x_cells, y_
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
 
-    gen_lef.json_lef(block_name + '.json', block_name, cell_pin)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))

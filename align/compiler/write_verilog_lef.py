@@ -228,14 +228,12 @@ def generate_lef(fp, name, values, available_block_lef,
         logging.info("Found cap with size: %s %d",size,unit_size_cap )                
         block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
-        if not block_name in available_block_lef:
-            logging.info('Generating lef for: %s %s', name, size)
-            fp.write("\n$PC fabric_" + name + ".py " +
-                     " -b " + unit_block_name + 
-                     " -n " + str(unit_size_cap))
-            #fp.write("\n$PC fabric_" + name + ".py " +
-            #         " -b " + block_name + 
-            #         " -n " + str(size))
+        if block_name in available_block_lef:
+            return block_name, available_block_lef[block_name]
+        logging.info('Generating lef for: %s %s', name, size)
+        fp.write("\n$PC fabric_" + name + ".py " +
+                    " -b " + unit_block_name + 
+                    " -n " + str(unit_size_cap))
 
     elif name.lower().startswith('res_array_8'):
         if 'res' in values.keys():
@@ -251,7 +249,7 @@ def generate_lef(fp, name, values, available_block_lef,
             height = ceil(sqrt(float(size) / res_unit_size))
             block_name = name + '_' + size.replace('.','p')
             if block_name in available_block_lef:
-                return block_name
+                return block_name, available_block_lef[block_name]
             logging.info('Generating lef for: %s %s', block_name, size)
             fp.write("\n$PC fabric_Res_array.py " +
                      " -b " + block_name +
@@ -275,7 +273,7 @@ def generate_lef(fp, name, values, available_block_lef,
             #size = float(size)
             height = ceil(sqrt(float(size) / res_unit_size))
             if block_name in available_block_lef:
-                return block_name
+                return block_name, available_block_lef[block_name]
             logging.info('Generating lef for: %s %s', block_name, size)
             fp.write("\n$PC fabric_" + name + ".py " +
                      " -b " + block_name +
@@ -294,18 +292,18 @@ def generate_lef(fp, name, values, available_block_lef,
         except :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-            
+
         ind_unit_size = unit_size_cap
         height = ceil(sqrt(size / ind_unit_size))
         block_name = name + '_' + str(size)
         if block_name in available_block_lef:
-            return block_name
+            return block_name, available_block_lef[block_name]
         logging.info('Generating lef for: %s %s', block_name, size)
         fp.write("\n$PC fabric_" + name + ".py " +
                  " -b " + block_name +
                  " -n " + str(height) +
                  " -r " + str(size))
-        
+
     else:
         #print("other param",values)
         if "nfin" in values.keys():
@@ -335,24 +333,30 @@ def generate_lef(fp, name, values, available_block_lef,
             square_x = ceil(sqrt(no_units))
             while no_units % square_x != 0:
                 square_x += 1
-            xval = str(square_x)
-            yval = str(int(no_units / square_x))
-            block_name = (name + "_n" + str(unit_size_mos) +
-                        "_X" + xval + "_Y" + yval)
+            xval = square_x
+            yval = int(no_units / square_x)
+            block_name = f"{name}_n{unit_size_mos}_X{xval}_Y{yval}"
             if block_name in available_block_lef:
-                return block_name
+                return block_name, available_block_lef[block_name]
             logging.info("Generating parametric lef of: %s", block_name)
             fp.write("\n$PC Align_primitives.py -p " + name +
                      " -b " + block_name +
                      " -n " + str(unit_size_mos) +
-                     " -X " + xval +
-                     " -Y " + yval)
+                     " -X " + str(xval) +
+                     " -Y " + str(yval))
                      #" --params " + "'" + json.dumps(values) + "'")
+            return block_name, {
+                'primitive': name,
+                'nfin': unit_size_mos,
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters': values
+            }
         else:
             logging.info("No proper marameters found for cell generation")
             block_name = name+"_"+size       
 
-    return block_name
+    raise NotImplementedError(f"Could not generate LEF for {name}")
 
 def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
     #logging.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))

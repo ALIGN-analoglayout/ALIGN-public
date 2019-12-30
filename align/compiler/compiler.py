@@ -11,8 +11,7 @@ from .read_lef import read_lef
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size_mos , unit_size_cap):
     updated_ckt = compiler(netlist, subckt, flatten_heirarchy)
-    compiler_output(netlist, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
-    return {}
+    return compiler_output(netlist, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     input_dir=input_ckt.parents[0]
@@ -113,7 +112,7 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
         else:
             inoutpin = members["ports"]
 
-
+        primitives = {}
         graph = members["graph"].copy()
         logging.info("Reading nodes from graph: %s", str(graph))
         for node, attr in graph.nodes(data=True):
@@ -123,17 +122,20 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
             #if attr['ports'
             lef_name = attr['inst_type']
             if "values" in attr and (lef_name in ALL_LEF):
-                block_name = generate_lef(LEF_FP, lef_name, attr["values"],
-                                         ALL_LEF, unit_size_mos, unit_size_cap)
+                block_name, block_args = generate_lef(
+                    LEF_FP, lef_name, attr["values"],
+                    primitives, unit_size_mos, unit_size_cap)
                 block_name_ext = block_name.replace(lef_name,'')
                 logging.info("Created new lef for: %s", block_name)
-
-                ALL_LEF.append(block_name)
+                if block_name in primitives:
+                    assert block_args == primitives[block_name]
+                else:
+                    primitives[block_name] = block_args
                 graph.nodes[node]['inst_type'] = block_name
             else:
                 logging.warning("No physical information found for: %s", name)
 
-        if name in ALL_LEF or name in generated_module[:-1]:
+        if name in primitives or name in generated_module[:-1]:
             logging.info("writing spice for block: %s", name)
             ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt)
             ws.print_subckt(SP_FP)
@@ -161,3 +163,4 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
     print("OUTPUT spice netlist at:", result_dir / (design_name + "_blocks.sp"))
     print("OUTPUT const file at:", result_dir / (design_name + ".const"))
 
+    return primitives

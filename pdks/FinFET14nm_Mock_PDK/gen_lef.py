@@ -35,9 +35,7 @@ def json_lef(input_json,out_lef,cell_pin):
   with open( input_json, "rt") as fp:
     j = json.load( fp)
   
-  with open( macro_name, "wt") as fp:
-
-    #macro_name = "macro_name"
+  with open( input_json.parents[0] / macro_name, "wt") as fp:
 
     fp.write( "MACRO %s\n" % out_lef)
     fp.write( "  ORIGIN 0 0 ;\n")
