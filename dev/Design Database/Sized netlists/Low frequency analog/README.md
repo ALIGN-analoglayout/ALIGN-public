@@ -1,11 +1,9 @@
-This folder contains example ANALOG circuits (some of which have been taped out) that can be used as benchmarks.
+**Low Frequency Analog**
 
-A1 : Fully differential current mirror OTA
-
-A2 : Comparator (not clocked)
-
-A3 : Comparator (clocked)
-
-A4 : Non-overlapping clock generator
-
-A5 : Fully differential telescopic OTA
+Circuit | Technology | ALIGN | Netlist | Schematic | Layout | Testbench | Constraints |
+:------ | :--------- | :---- | :------ | :-------- | :----- | :-------- | :---------- |
+Fully differential current mirror OTA | 65 nm |   | :heavy_check_mark: |  |  |  |  |
+Comparator (not clocked) | 65 nm |   | :heavy_check_mark: | :heavy_check_mark: |  :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Comparator (clocked) | 65 nm |  | :heavy_check_mark: | :heavy_check_mark: |  :heavy_check_mark: |  |  |
+Non-overlapping clock generator | 65 nm |   | :heavy_check_mark: | :heavy_check_mark: |  :heavy_check_mark: |  |  |
+Fully differential telescopic OTA | 7 nm | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |   | :heavy_check_mark: | :heavy_check_mark: | 
