@@ -1110,6 +1110,136 @@ void Grid::InactivePlist(std::vector<std::vector<RouterDB::DetailPoint> > &plist
 
 void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
   RouterDB::point tmpP;
+  int obs_l=0;
+  int obs_h=this->layerNo-1;
+  std::cout<<"Enter converter"<<std::endl;
+  int direction = drc_info.Metal_info[mIdx].direct;
+  int minL = drc_info.Metal_info[mIdx].minL;
+
+  if(direction==1){ //h
+
+    if( (URx-LLx)<minL ){
+
+        int extend_dis = ceil(minL- (URx-LLx))/2;
+        LLx = LLx - extend_dis;
+        URx = URx + extend_dis;
+      }
+
+  }else{//v
+
+    if( (URy-LLy)<minL ){
+
+        int extend_dis = ceil(minL- (URy-LLy))/2;
+        LLy = LLy - extend_dis;
+        URy = URy + extend_dis;
+      }
+
+  }
+
+  if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
+    int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
+    int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
+    int newURx=URx+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    int boundX=(newLLx%curlayer_unit==0) ? (newLLx+curlayer_unit) : ( (newLLx/curlayer_unit)*curlayer_unit<newLLx ? (newLLx/curlayer_unit+1)*curlayer_unit : (newLLx/curlayer_unit)*curlayer_unit  );
+    for(int x=boundX; x<newURx; x+=curlayer_unit) {
+      if(mIdx!=obs_l) {
+        int nexlayer_unit=drc_info.Metal_info.at(mIdx-1).grid_unit_y;
+
+        //int newLLy=LLy-nexlayer_unit;
+        //int newURy=URy+nexlayer_unit;
+        //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
+        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
+        //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        std::cout<<"converter check point 1"<<std::endl;
+        for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
+          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+             std::cout<<"Plist problem"<<std::endl;
+             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+            }
+          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+      if(mIdx!=obs_h) {
+        int nexlayer_unit=drc_info.Metal_info.at(mIdx+1).grid_unit_y;
+
+        //int newLLy=LLy-nexlayer_unit;
+        //int newURy=URy+nexlayer_unit;
+        //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
+        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
+        //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        std::cout<<"converter check point 2"<<std::endl;
+        for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
+          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+            }
+          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+    }
+  } else if(drc_info.Metal_info[mIdx].direct==1) { // horizontal metal layer
+    int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_y;
+    int newLLy=LLy-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
+    int newURy=URy+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    int boundY=(newLLy%curlayer_unit==0) ? (newLLy+curlayer_unit) : ( (newLLy/curlayer_unit)*curlayer_unit<newLLy ? (newLLy/curlayer_unit+1)*curlayer_unit : (newLLy/curlayer_unit)*curlayer_unit  );
+    for(int y=boundY; y<newURy; y+=curlayer_unit) {
+      if(mIdx!=obs_l) {
+        int nexlayer_unit=drc_info.Metal_info.at(mIdx-1).grid_unit_x;
+
+        //int newLLx=LLx-nexlayer_unit;
+        //int newURx=URx+nexlayer_unit;
+        //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
+        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
+        //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+         std::cout<<"converter check point 3"<<std::endl;
+        for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
+           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+            }
+           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+      if(mIdx!=obs_h) {
+        int nexlayer_unit=drc_info.Metal_info.at(mIdx+1).grid_unit_x;
+
+        //int newLLx=LLx-nexlayer_unit;
+        //int newURx=URx+nexlayer_unit;
+        //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+
+        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
+        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
+        //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+         std::cout<<"converter check point 4"<<std::endl;
+        for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
+          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+            }
+          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+        }
+      }
+    }
+  } else {
+    std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
+  }
+
+};
+
+/*
+void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy) {
+  RouterDB::point tmpP;
   if(this->routeDirect.at(mIdx)==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
@@ -1203,6 +1333,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
 //    std::cout<<"Router-Error: incorrect routing direction"<<std::endl;
 //  }
 }
+*/
 
 void Grid::PrepareGraphVertices(int LLx, int LLy, int URx, int URy) {
 
