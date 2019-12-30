@@ -328,6 +328,40 @@ void GcellDetailRouter::modify_tile_metals(RouterDB::Net& Net, bool set){
   
 }
 
+void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path ){
+
+  std::pair<int,int> temp_path;
+  temp_path.first = tile_index;
+  temp_path.second = tile_index;
+  global_path.push_back(temp_path);
+
+  while(Gcell.tiles_total[tile_index].down.size()>0){
+    if(Gcell.tiles_total[tile_index].down.size()>1){
+        std::cout<<"Tile error"<<std::endl;
+        assert(0);
+      }
+    tile_index = Gcell.tiles_total[tile_index].down[0].next;
+    temp_path.first = tile_index;
+    temp_path.second = tile_index;
+    global_path.push_back(temp_path);   
+  }
+
+  while(Gcell.tiles_total[tile_index].up.size()>0){
+    if(Gcell.tiles_total[tile_index].up.size()>1){
+        std::cout<<"Tile error"<<std::endl;
+        assert(0);
+      }
+    tile_index = Gcell.tiles_total[tile_index].up[0].next;
+    temp_path.first = tile_index;
+    temp_path.second = tile_index;
+    global_path.push_back(temp_path);   
+  }
+
+  
+
+
+};
+
 
 void GcellDetailRouter::create_detailrouter(){
 
@@ -351,7 +385,7 @@ void GcellDetailRouter::create_detailrouter(){
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
   //end initial set
   //start detail router 
-  Copy_tile_metals();
+  //Copy_tile_metals();
   for(unsigned int i=0;i<Nets.size();i++){
        
 
@@ -396,13 +430,11 @@ void GcellDetailRouter::create_detailrouter(){
 
        for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
 
-            temp_global_path.first = Nets[i].terminals[terminal_size];
-            temp_global_path.second = Nets[i].terminals[terminal_size];
-            global_path.push_back(temp_global_path);
+            Adding_tiles_for_terminal(Nets[i].terminals[terminal_size], global_path);
 
           }
 
-       modify_tile_metals(Nets[i], 1);
+       //modify_tile_metals(Nets[i], 1);
 
        if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
 
@@ -595,7 +627,7 @@ void GcellDetailRouter::create_detailrouter(){
            std::cout<<"Detail Router check point 5"<<std::endl;
            std::vector<std::vector<RouterDB::Metal> > physical_path;
            std::cout<<Nets[i].netName<<std::endl;
-           //assert(pathMark);
+           assert(pathMark);
            if(pathMark) {
 ///////////dijstra
           //physical_path=graph.ConvertPathintoPhysical(grid);
@@ -663,7 +695,7 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"Detail Router check point 11"<<std::endl;
       InsertPlistToSet_x(Set_net, add_plist);
 
-      modify_tile_metals(Nets[i], 0);
+      //modify_tile_metals(Nets[i], 0);
   }
 };
 
@@ -2568,8 +2600,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2589,8 +2622,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2616,8 +2650,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2636,9 +2671,10 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-         std::cout<<"converter check point 4"<<std::endl;
+        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);

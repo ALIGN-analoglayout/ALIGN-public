@@ -142,6 +142,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact);
     void modify_tile_metals(RouterDB::Net& Net, bool set);
     void Copy_tile_metals();
+    void Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path );
 };
 
 #endif

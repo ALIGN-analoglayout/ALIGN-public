@@ -257,7 +257,7 @@ void GcellGlobalRouter::PlaceTerminal(){
   }
 
   std::cout<<"terminal test 1"<<std::endl;
-  int times = 1;
+  int times = 3;
   Determine_Terminal_Center(horizontal_index, vertical_index, times);
   std::cout<<"terminal test 1.1"<<std::endl;
   std::cout<<"terminal test 2"<<std::endl;
