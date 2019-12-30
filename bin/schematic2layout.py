@@ -10,6 +10,11 @@ if __name__ == '__main__':
     PARSER.add_argument("netlist_dir",
                         type=str,
                         help='Path to netlist directory')
+    PARSER.add_argument("-p",
+                        "--pdk_dir",
+                        type=str,
+                        required=True,
+                        help='Path to PDK directory')
     PARSER.add_argument("-w",
                         "--working_dir",
                         type=str,
@@ -47,4 +52,4 @@ if __name__ == '__main__':
                         help='no of fins in unit size')
     args = PARSER.parse_args()
 # %%
-    align.schematic2layout(args.netlist_dir, args.file, args.subckt, args.working_dir, args.flat, args.unit_size_mos, args.unit_size_cap)
+    align.schematic2layout(args.netlist_dir, args.pdk_dir, args.file, args.subckt, args.working_dir, args.flat, args.unit_size_mos, args.unit_size_cap)

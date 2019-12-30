@@ -72,7 +72,6 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
     VERILOG_FP = open(result_dir / (design_name + '.v'), 'w')
     ## File pointer for running cell generator
     LEF_FP = open(result_dir / (design_name + '_lef.sh'), 'w')
-    LEF_FP.write('# ALIGN generated shell file to generate lef')
 
     logging.info("writing spice file for cell generator")
 
