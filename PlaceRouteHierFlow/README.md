@@ -7,7 +7,7 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 ## Software description
 
 - Inputs:
-	* Analog designs
+	*Analog designs
 		* Verilog netlist
 		* LEF
 		* XX.gds.json for subblock in Verilog netlist
@@ -29,7 +29,6 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 >- C++ json library: <https://github.com/nlohmann/json.git>
 >- C++ boost libraries: <https://github.com/boostorg/boost>
 >- GTEST: <https://github.com/google/googletest>
-
 
 ### Run in Docker
 1. Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
