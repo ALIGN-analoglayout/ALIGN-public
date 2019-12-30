@@ -2,8 +2,6 @@
 
 ## Brief description
 The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints. The analog router is composed of global router, detailed router and power router.
-
-
 <img align = "center" width="90%" src="Flow.png">
 
 ## Software description
@@ -26,19 +24,19 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 
 ### Prerequisite
 
->-   g++ 5.0 or above
->-   ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
->-   C++ json library: <https://github.com/nlohmann/json.git>
->-   C++ boost libraries: <https://github.com/boostorg/boost>
->-   GTEST: <https://github.com/google/googletest>
+>- g++ 5.0 or above
+>- ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
+>- C++ json library: <https://github.com/nlohmann/json.git>
+>- C++ boost libraries: <https://github.com/boostorg/boost>
+>- GTEST: <https://github.com/google/googletest>
 
 
 ### Run in Docker
-1.  Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
+1. Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
 ``` Shell
 docker build -f Dockerfile.build -t with_protobuf .
 ```
-2.  Build the image for the flow
+2. Build the image for the flow
 ``` Shell
 docker build -t placeroute_image .
 ```
@@ -48,7 +46,6 @@ docker build -t placeroute_image .
 
 docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0"
 ```
-
 ### Run in local
 1. Set environment
 ```Shell
@@ -68,22 +65,22 @@ make
 ```
 
 Inputs explaination:
->-   testcase_DIR: string type; the directory of input data
->-   testcase.lef: string type; LEF file
->-   testcase.v: string type; Verilog file
->-   testcase.map: string type; map file for gds.json
->-   testcase.json: string type; PDK file in.json format
->-   testcaseTop: string type; top module name in netlist
->-   numOfLayout: integer type; the max number of generated layouts
->-   optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
+>- testcase_DIR: string type; the directory of input data
+>- testcase.lef: string type; LEF file
+>- testcase.v: string type; Verilog file
+>- testcase.map: string type; map file for gds.json
+>- testcase.json: string type; PDK file in.json format
+>- testcaseTop: string type; top module name in netlist
+>- numOfLayout: integer type; the max number of generated layouts
+>- optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
 
 Outputs explaination: (all the results will be saved under 'Results' folder by default)
->-   xx.plt: GNU plot file of placement results
->-   Capxx.gds.json: JSON format of CCC P&R layout
->-   xx_PL.gds.json: JSON format of placement layout
->-   xx_GL.gds.json: JSON format of global routing layout
->-   xx_DR.gds.json: JSON format of detailed routing layout
->-   xx_PR.gds.json: JSON format of power routing layout
+>- xx.plt: GNU plot file of placement results
+>- Capxx.gds.json: JSON format of CCC P&R layout
+>- xx_PL.gds.json: JSON format of placement layout
+>- xx_GL.gds.json: JSON format of global routing layout
+>- xx_DR.gds.json: JSON format of detailed routing layout
+>- xx_PR.gds.json: JSON format of power routing layout
 
 ## Usage
 
@@ -127,14 +124,14 @@ The rest of this repository is licensed under BSD 3-Clause License.
 >Redistribution and use in source and binary forms, with or without
 >modification, are permitted provided that the following conditions are met:
 >
->* Redistributions of source code must retain the above copyright notice, this
+>- Redistributions of source code must retain the above copyright notice, this
 >  list of conditions and the following disclaimer.
 >
->* Redistributions in binary form must reproduce the above copyright notice,
+>- Redistributions in binary form must reproduce the above copyright notice,
 >  this list of conditions and the following disclaimer in the documentation
 >  and/or other materials provided with the distribution.
 >
->* Neither the name of the copyright holder nor the names of its
+>- Neither the name of the copyright holder nor the names of its
 >  contributors may be used to endorse or promote products derived from
 >  this software without specific prior written permission.
 >
