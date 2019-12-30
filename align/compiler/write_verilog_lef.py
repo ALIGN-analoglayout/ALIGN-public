@@ -617,7 +617,7 @@ def FindArray(graph,input_dir,name):
                 all_array[node]=array
     return all_array
                 #match_branches(graph,nodes_dict)
-def WriteConst(graph,input_dir,name,ports):
+def WriteConst(graph, input_dir, name, ports, working_dir):
     check_common_centroid(graph,input_dir,name,ports)
     logging.info("writing constraints: %s",input_dir / (name + '.const'))
     #const_fp.write(str(ports))
@@ -635,7 +635,17 @@ def WriteConst(graph,input_dir,name,ports):
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
     existing_SymmBlock =False
-    const_file = (input_dir / (name + '.const'))
+
+    # Copy const file to working directory if needed
+    input_const_file = (input_dir / (name + '.const'))
+    const_file = (working_dir / (name + '.const'))
+    if input_const_file.exists() and input_const_file.is_file():
+        if const_file == input_const_file:
+            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
+        else:
+            const_file.write_text(input_const_file.read_text())
+
+    # Read contents
     if const_file.exists() and const_file.is_file():
         with open(const_file) as f:
             content = f.readlines()
@@ -644,7 +654,7 @@ def WriteConst(graph,input_dir,name,ports):
             elif 'SymmNet' in content:
                 existing_SymmNet += content.strip()
 
-    const_fp = open(input_dir / (name + '.const'), 'a+')
+    const_fp = open(const_file, 'a+')
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
@@ -664,130 +674,3 @@ def WriteConst(graph,input_dir,name,ports):
         if not existing_SymmBlock:
             const_fp.write(symmBlock)
         const_fp.close()
-#%%
-if __name__ == '__main__':
-    if not os.path.exists("./Results/"):
-        os.mkdir("./Results/")
-    RESULT_DIR = "./Results/"
-    logging.info("Writing results in ./Results dir: ")
-
-    PARSER = argparse.ArgumentParser(
-        description="directory path for input circuits")
-    PARSER.add_argument("-U_mos",
-                        "--unit_size_mos",
-                        type=int,
-                        default=10,
-                        help='no of fins in unit size')
-    PARSER.add_argument("-U_cap",
-                        "--unit_size_cap",
-                        type=int,
-                        default=10,
-                        help='no of fins in unit size')
-    ARGS = PARSER.parse_args()
-
-    FILE_NAMES = os.listdir(RESULT_DIR)
-    INPUT_PICKLE = []
-    for files in FILE_NAMES:
-        if files.endswith('.p'):
-            INPUT_PICKLE.append(files[:-2])
-            logging.info("Searching file: %s", files)
-    logging.info("Found files: %s", ", ".join(INPUT_PICKLE))
-    try:
-        INPUT_PICKLE = INPUT_PICKLE[0]
-    except ValueError:
-        print("ERROR: No input file. Exiting verilog writer")
-        sys.exit()
-    logging.info("Picking first file for generating results: %s", INPUT_PICKLE)
-    # write a verilog file
-    VERILOG_FP = open(RESULT_DIR + INPUT_PICKLE + '.v', 'w')
-    LEF_FP = open(RESULT_DIR + INPUT_PICKLE + '_lef.sh', 'w')
-    logging.info("writing spice file for cell generator")
-    SP_FP = open(RESULT_DIR + INPUT_PICKLE + '_blocks.sp', 'w')
-    print_cell_gen_header(LEF_FP)
-    LEF_FP.write('# file to generate lef')
-    print_header(VERILOG_FP, INPUT_PICKLE)
-    design_setup=read_setup('./input_circuit/'+INPUT_PICKLE+'.setup')
-    POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
-    #read lef to not write those modules as macros
-    ALL_LEF = read_lef()
-    logging.info("Reading available lef: %s", ", ".join(ALL_LEF))
-
-    UNIT_SIZE_CAP = ARGS.unit_size_cap
-    UNIT_SIZE_MOS = ARGS.unit_size_mos
-    logging.info("Unit cap cell size: %s", str(UNIT_SIZE_CAP))
-    logging.info("Unit mos cell size: %s", str(UNIT_SIZE_MOS))
-    logging.info("Reading file: %s", RESULT_DIR + INPUT_PICKLE + '.p')
-    if 'vco_dtype_12' in  INPUT_PICKLE:
-        UNIT_SIZE_MOS=37
-    with open(RESULT_DIR + INPUT_PICKLE + '.p', 'rb') as fp:
-        list_graph = pickle.load(fp)
-    #print(list_graph)
-    generated_module=[]
-    for members in list_graph:
-        #print(members)
-        name = members["name"]
-        logging.info("Found module: %s", name )
-        inoutpin = []
-        logging.info("found ports match: %s",members["ports_match"])
-        floating_ports=[]
-        if members["ports_match"]:
-            for key, value in members["ports_match"].items():
-                if key not in POWER_PINS:
-                    inoutpin.append(key)
-            if members["ports"]:
-                logging.info("Found module ports kk:%s",members["ports"] )
-                floating_ports = list(set(inoutpin) - set(members["ports"]))
-                logging.warning("floating port found: %s",floating_ports)
-        else:
-            inoutpin = members["ports"]
-       #     for port in members["ports"]:
-       #         if port not in POWER_PINS:
-       #             inoutpin.append(port)
-
-        #if len(floating_ports)>0:
-        #    logging.warning("Floating ports in design:%s,%s",len(floating_ports),floating_ports)
-        #    inoutpin=members["ports"]
-        
-        graph = members["lib_graph"].copy()
-        logging.info("Reading nodes from graph: %s", str(graph))
-        for node, attr in graph.nodes(data=True):
-            #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
-            if 'net' in attr['inst_type']: continue
-            #Dropping floating ports
-            #if attr['ports'
-            lef_name = attr['inst_type']
-            if "values" in attr and (lef_name in ALL_LEF):
-                block_name = generate_lef(LEF_FP, lef_name, attr["values"],
-                                         ALL_LEF, UNIT_SIZE_MOS, UNIT_SIZE_CAP)
-                block_name_ext = block_name.replace(lef_name,'')
-                logging.info("Created new lef for: %s", block_name)
-
-                ALL_LEF.append(block_name)
-                graph.nodes[node]['inst_type'] = block_name
-            else:
-                logging.warning("No physical information found for: %s",
-                             name)
-
-        if name in ALL_LEF or name in generated_module[:-1]:
-            logging.info("writing spice for block: %s", name)
-            ws = WriteSpice(graph, name+block_name_ext, inoutpin, list_graph)
-            ws.print_subckt(SP_FP)
-            continue
-
-        #print("inout pins:",inoutpin)
-        if name not in  generated_module:
-            logging.info("writing verilog for block: %s", name)
-            wv = WriteVerilog(graph, name, inoutpin, list_graph, POWER_PINS)
-            WriteConst(graph, './input_circuit/', name, inoutpin)
-            all_array=FindArray(graph, './input_circuit/', name )
-            WriteCap(graph, './input_circuit/', name, UNIT_SIZE_CAP,all_array)
-            wv.print_module(VERILOG_FP)
-            generated_module.append(name)
-
-    print_globals(VERILOG_FP,POWER_PINS)
-    LEF_FP.close()
-    SP_FP.close()
-
-    print("OUTPUT LEF generator:", RESULT_DIR + INPUT_PICKLE + "_lef.sh")
-    print("OUTPUT verilog netlist at:", RESULT_DIR + INPUT_PICKLE + ".v")
-    print("OUTPUT spice netlist at:", RESULT_DIR + INPUT_PICKLE + "_blocks.sp")

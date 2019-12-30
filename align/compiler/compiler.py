@@ -140,11 +140,11 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
             logging.info("call constraint generator writer for block: %s", name)
-            WriteConst(graph, input_dir, name, inoutpin)
+            WriteConst(graph, input_dir, name, inoutpin, result_dir)
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)
-            WriteCap(graph, input_dir, name, unit_size_cap,all_array)
+            WriteCap(graph, result_dir, name, unit_size_cap,all_array)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 
@@ -155,4 +155,5 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
     print("OUTPUT LEF generator:", result_dir / (design_name + "_lef.sh"))
     print("OUTPUT verilog netlist at:", result_dir / (design_name + ".v"))
     print("OUTPUT spice netlist at:", result_dir / (design_name + "_blocks.sp"))
+    print("OUTPUT const file at:", result_dir / (design_name + ".const"))
 
