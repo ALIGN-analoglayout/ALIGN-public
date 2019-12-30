@@ -23,7 +23,7 @@ def get_parameters(primitive, parameters, nfin):
     parameters['nfin'] = nfin
     return parameters
 
-def generate_primitives(block_name, primitive, pattern, height, nfin, x_cells, y_cells, parameters, pinswitch, pdkdir, outputdir):
+def generate_primitive(block_name, primitive, pattern, height, nfin, x_cells, y_cells, parameters, pinswitch, pdkdir, outputdir):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))

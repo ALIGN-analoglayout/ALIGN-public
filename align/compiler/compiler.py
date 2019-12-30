@@ -9,6 +9,11 @@ from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_s
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
 from .read_lef import read_lef
 
+def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size_mos , unit_size_cap):
+    updated_ckt = compiler(netlist, subckt, flatten_heirarchy)
+    compiler_output(netlist, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
+    return {}
+
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     input_dir=input_ckt.parents[0]
     logging.info("Reading subckt %s", input_ckt)

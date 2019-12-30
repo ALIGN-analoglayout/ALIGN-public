@@ -1,7 +1,8 @@
 import pathlib
 import subprocess
 
-from .compiler.compiler import compiler, compiler_output
+from .compiler import generate_hierarchy
+from .cell_fabric import generate_primitive
 from .compiler.util import logging
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, working_dir=None, flatten_heirarchy=False, unit_size_mos=10, unit_size_cap=10):
@@ -36,5 +37,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
         else:
             subckt = subckt_name
         logging.info(f"READ file: {netlist} subckt_name={subckt}, flat={flatten_heirarchy}")
-        updated_ckt = compiler(netlist, subckt, flatten_heirarchy)
-        compiler_output(netlist, updated_ckt, subckt, working_dir / 'Results', unit_size_mos , unit_size_cap)
+        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_SCI', flatten_heirarchy, unit_size_mos , unit_size_cap)
+        for block_name, block_args in primitives.items():
+            generate_primitive(block_name, **block_args, pinswitch=0, pdkdir=pdk_dir, outputdir=working_dir / '2_primitives')
+        # lef_generator = working_dir / '1_SCI' / f'{subckt}_lef.sh'
+        # lef_generator.chmod(0o755)
+        # subprocess.run(['/bin/bash', '-c', str(lef_generator), 'python3'])
