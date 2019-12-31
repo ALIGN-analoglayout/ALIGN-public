@@ -11,6 +11,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->Blocks = GR.Blocks;
   this->Terminals = GR.Terminals;
   this->drc_info = GR.drc_info;
+  this->terminal_routing = GR.terminal_routing;
   this->lowest_metal = GR.lowest_metal;
   this->highest_metal = GR.highest_metal;
   this->width = GR.width;
@@ -2787,15 +2788,14 @@ void GcellDetailRouter::NetToNodeBlockPins(PnRDB::hierNode& HierNode, RouterDB::
   temp_pin.name = Terminals.at(net.terminal_idx).name;
 
   //if(this->isTop)
-  if(1){
+  if(terminal_routing){
 
              PnRDB::contact temp_contact;
 ConvertToContactPnRDB_Placed_Origin(temp_contact,Terminals.at(net.terminal_idx).termContacts[0]);
              temp_pin.pinContacts.push_back(temp_contact);
 
-    }
+    }else{
 
-/*
   //blockspin to intermetal
   for(unsigned int i=0;i<net.connected.size();i++){
       if(net.connected[i].type == RouterDB::BLOCK){
@@ -2830,7 +2830,7 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
       ConvertToViaPnRDB_Placed_Origin(temp_via, net.path_via[i]);  
       temp_pin.pinVias.push_back(temp_via);
      }
-*/          
+  }         
 
   HierNode.blockPins.push_back(temp_pin);    
   std::cout<<"END NetToNodeBlockPins"<<std::endl;
@@ -2886,7 +2886,7 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
      }
   
   //if(isTop==1)
-  if(1){
+  if(terminal_routing){
     //return terminal to node terminal
     std::cout<<"test terminal to termina: start"<<std::endl;
     TerminalToNodeTerminal(HierNode);

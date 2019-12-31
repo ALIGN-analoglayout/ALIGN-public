@@ -424,16 +424,16 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
             std::cout<<"Write blockPins info "<<node.blockPins[i].name<<std::endl;
             std::cout<<"blockPins contact size "<<node.blockPins[i].pinContacts.size()<<std::endl;
 	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
-		PnRDB::contact con = node.blockPins[i].pinContacts[j];
-                std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
-                con.placedBox = con.originBox;
-                addContactBoundaries (jsonElements, con, drc_info, unitScale);
-		assignBoxPoints (x, y, con.originBox, unitScale);
 		if (write == 0) {
+		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
+                    std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
+                    con.placedBox = con.originBox;
+                    addContactBoundaries (jsonElements, con, drc_info, unitScale);
+		    assignBoxPoints (x, y, con.originBox, unitScale);
 		    addTextElements (jsonElements, (x[0]+x[2])/2, (y[0]+y[2])/2,
 				     metal2int( drc_info, con.metal), 
-                     drc_info, drc_info.Metalmap.at(con.metal),
-                     node.blockPins[i].name);
+                    drc_info, drc_info.Metalmap.at(con.metal),
+                    node.blockPins[i].name);
 		    write = 1;	// added by yg 
 		}
 	    }

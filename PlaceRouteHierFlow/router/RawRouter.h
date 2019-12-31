@@ -17,6 +17,7 @@ class RawRouter {
     std::vector<RouterDB::Block> Blocks;
     std::vector<RouterDB::terminal> Terminals;
     std::vector<RouterDB::PowerNet> PowerNets;
+    bool terminal_routing;
     RouterDB::PowerGrid Vdd_grid;
     RouterDB::PowerGrid Gnd_grid;
     RouterDB::point LL; //LL for entire node

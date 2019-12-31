@@ -272,26 +272,25 @@ void GcellGlobalRouter::PlaceTerminal(){
 };
 
 GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
-  
+  terminal_routing = 1;
   //1. Initial Drcdata and design data
   std::cout<<"Test 1"<<std::endl;
   getDRCdata(drcData);
   getData(node, Lmetal, Hmetal);
 
-  std::cout<<"Begin Terminal Placement"<<std::endl;
-  PlaceTerminal();
-  std::cout<<"End Terminal Placement"<<std::endl;
+  if(terminal_routing==1){
 
-  //remove this part
-  /*
-  if(node.isIntelGcellGlobalRouter == false){
+    std::cout<<"Begin Terminal Placement"<<std::endl;
+    PlaceTerminal();
+    std::cout<<"End Terminal Placement"<<std::endl;
+
+  }else if(node.isIntelGcellGlobalRouter == false){
+    
     std::cout<<"Begin Terminal"<<std::endl;
     placeTerminals();
     std::cout<<"End Terminal"<<std::endl;
+
   }
-  */
-  std::cout<<"Test 2"<<std::endl;
-  //remove this part
 
   //2. create GcellGlobalGrid
   //CreateGrid for within the region LL, UR
@@ -335,7 +334,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      
   //}
   std::cout<<"Test 10"<<std::endl;
-  Gcell.SetNetSink(Blocks, Nets, Terminals);
+  Gcell.SetNetSink(Blocks, Nets, Terminals, terminal_routing);
   //Gcell.CreateGridDataNCap();
   //Gcell.CreateGridDataCap(true);
 
@@ -851,7 +850,7 @@ void GcellGlobalRouter::placeTerminals() {
       }
     }
     if(mark) {
-      if(!this->isTop) {
+      if(!this->terminal_routing) {
         this->Nets.at(i).connected.erase(this->Nets.at(i).connected.begin()+mj);
         this->Nets.at(i).degree--;
       }
@@ -877,7 +876,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
 
   std::cout<<"Router-Info: begin to import data"<<std::endl;
   //this->isTop = node.isTop;
-  this->isTop = 0;
+  this->isTop = node.isTop;
   this->topName=node.name;
   this->width=node.width;
   this->height=node.height;

@@ -570,7 +570,7 @@ void GlobalGrid::ConverNetTerminal(std::set<int>& sSet, std::vector<int>& sVec, 
   }
 }
 
-void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, std::vector<RouterDB::terminal>& Terminals ) {
+void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, std::vector<RouterDB::terminal>& Terminals, bool terminal_routing ) {
   int net_index = 0;
   for(std::vector<RouterDB::Net>::iterator nit=Nets.begin(); nit!=Nets.end(); ++nit) {
     std::cout<<"For Net "<<net_index<<std::endl;
@@ -587,7 +587,7 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
           ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
           std::cout<<"Pin Contact LL ( "<<cit->placedLL.x<<" "<<cit->placedLL.y<<" ) UR ( "<<cit->placedUR.x<<" "<<cit->placedUR.y<<" )"<<std::endl;
         }
-      } else { // terminal
+      } else if(terminal_routing){ // terminal
 
         for( std::vector<RouterDB::contact>::iterator cit=Terminals.at(iter).termContacts.begin(); cit!=Terminals.at(iter).termContacts.end(); ++cit) {
           //ConverNetTerminal(tSet, nit->connectedTile.at(i), this->lowest_metal, cit->placedCenter.x, cit->placedCenter.y);
