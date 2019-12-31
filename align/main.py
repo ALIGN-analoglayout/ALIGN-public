@@ -61,6 +61,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
              (primitive_dir / (subckt + '.lef')).open(mode='w') as lp:
             for file_ in primitive_dir.iterdir():
                 if file_.suffixes == ['.gds', '.json']:
-                    mp.write(f'{file_.stem} {file_.stem}.gds\n')
-                elif file_.suffix == '.lef':
+                    true_stem = file_.stem.split('.')[0]
+                    mp.write(f'{true_stem} {true_stem}.gds\n')
+                elif file_.suffix == '.lef' and file_.stem != subckt:
                     lp.write(file_.read_text())

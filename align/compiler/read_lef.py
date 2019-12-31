@@ -6,9 +6,8 @@ Created on Thu Nov 29 19:38:43 2018
 """
 
 import os
-import pathlib
 
-def read_lef(lef_dir=pathlib.Path(__file__).resolve().parent.parent / 'config'):
+def read_lef(lef_dir):
     """ Reads available lef in LEF dir
     Reads .lef files or param_lef files
     """
