@@ -229,13 +229,13 @@ def generate_lef(fp, name, values, available_block_lef,
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logging.info('Generating lef for: %s %s', name, size)
-            return block_name, {
-                'primitive': name,
-                'nfin': unit_size_mos,
-                'x_cells': xval,
-                'y_cells': yval,
-                'parameters': values
-            }
+        # return block_name, {
+        #     'primitive': name,
+        #     'nfin': unit_size_mos,
+        #     'x_cells': xval,
+        #     'y_cells': yval,
+        #     'parameters': values
+        # }
 
         fp.write("\n$PC fabric_" + name + ".py " +
                     " -b " + unit_block_name + 
