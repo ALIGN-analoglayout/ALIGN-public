@@ -416,13 +416,13 @@ def connection(graph,net):
     if graph.nodes[net]["net_type"]=="external":
         conn.append(net)
     return conn
-def check_common_centroid(graph,input_dir,name,ports):
+
+def check_common_centroid(graph,const_path,ports):
     """ Reads available const in input dir
         Fix cc cap in const and netlist
     """
     cc_pair={}
-    const_path=input_dir / (name + '.const')
-    new_const_path = input_dir / (name + '.const_temp')
+    new_const_path = const_path.parents[0] / (const_path.stem + '.const_temp')
     if os.path.isfile(const_path): 
         print('Reading const file for common centroid', const_path)
         const_fp = open(const_path, "r")
@@ -620,8 +620,18 @@ def FindArray(graph,input_dir,name):
     return all_array
                 #match_branches(graph,nodes_dict)
 def WriteConst(graph, input_dir, name, ports, working_dir):
-    check_common_centroid(graph,input_dir,name,ports)
-    logging.info("writing constraints: %s",input_dir / (name + '.const'))
+
+    # Copy const file to working directory if needed
+    input_const_file = (input_dir / (name + '.const'))
+    const_file = (working_dir / (name + '.const'))
+    if input_const_file.exists() and input_const_file.is_file():
+        if const_file == input_const_file:
+            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
+        else:
+            const_file.write_text(input_const_file.read_text())
+
+    check_common_centroid(graph,const_file,ports)
+    logging.info("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
@@ -637,15 +647,6 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
     existing_SymmBlock =False
-
-    # Copy const file to working directory if needed
-    input_const_file = (input_dir / (name + '.const'))
-    const_file = (working_dir / (name + '.const'))
-    if input_const_file.exists() and input_const_file.is_file():
-        if const_file == input_const_file:
-            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
-        else:
-            const_file.write_text(input_const_file.read_text())
 
     # Read contents
     if const_file.exists() and const_file.is_file():
