@@ -47,11 +47,19 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
         else:
             subckt = subckt_name
         logging.info(f"READ file: {netlist} subckt_name={subckt}, flat={flatten_heirarchy}")
-        (working_dir / '1_hierarchy').mkdir(exist_ok=True)
-        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_hierarchy', flatten_heirarchy, unit_size_mos , unit_size_cap)
-        (working_dir / '2_primitives').mkdir(exist_ok=True)
+        # Generate hierarchy
+        (working_dir / '1_topology').mkdir(exist_ok=True)
+        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_topology', flatten_heirarchy, unit_size_mos , unit_size_cap)
+        # Generate primitives
+        primitive_dir = (working_dir / '2_primitives')
+        primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=working_dir / '2_primitives')
-        # lef_generator = working_dir / '1_SCI' / f'{subckt}_lef.sh'
-        # lef_generator.chmod(0o755)
-        # subprocess.run(['/bin/bash', '-c', str(lef_generator), 'python3'])
+        # Generate .map & .lef inputs for PnR
+        with (primitive_dir / (subckt + '.map')).open(mode='w') as mp, \
+             (primitive_dir / (subckt + '.lef')).open(mode='w') as lp:
+            for file_ in primitive_dir.iterdir():
+                if file_.suffixes == ['.gds', '.json']:
+                    mp.write(f'{file_.stem} {file_.stem}.gds\n')
+                elif file_.suffix == '.lef':
+                    lp.write(file_.read_text())
