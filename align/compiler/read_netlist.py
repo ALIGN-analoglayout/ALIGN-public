@@ -5,14 +5,11 @@ Created on Wed Oct 10 13:04:45 2018
 @author: kunal
 """
 
-# %% Parser
-
 import os
-import argparse
 import logging
 import networkx as nx
 
-from .util import _write_circuit_graph, logging
+from .util import logging
 from .basic_element import _parse_inst
 
 class SpiceParser:

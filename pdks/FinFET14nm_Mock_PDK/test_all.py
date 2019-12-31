@@ -4,7 +4,6 @@ from align.cell_fabric.primitive import get_xcells_pattern
 def check_shorts( cmdlist):
     parser = gen_parser()
     args = parser.parse_args(cmdlist)
-    print(args)
     uc = main(args)
     assert len(uc.rd.shorts) == 0, uc.rd.shorts
     assert len(uc.rd.opens) == 0, uc.rd.opens

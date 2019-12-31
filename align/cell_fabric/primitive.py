@@ -1,9 +1,7 @@
-import argparse
 import datetime
 import sys
 import pathlib
 import logging
-import json
 import collections
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,6 @@ Created on Wed Nov 21 13:12:15 2018
 """
 import pickle
 import os
-import argparse
 import sys
 import json
 from math import sqrt, ceil
