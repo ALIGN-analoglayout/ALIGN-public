@@ -84,7 +84,7 @@ RUN cd opt && \
 
 from align_base as align_image
 
-COPY . /ALIGN
+COPY . /ALIGN-public
 
-RUN cd /ALIGN && \
+RUN cd /ALIGN-public && \
     $pip install .
