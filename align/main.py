@@ -4,7 +4,7 @@ from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, working_dir=None, flatten_heirarchy=False, unit_size_mos=10, unit_size_cap=10):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
@@ -42,15 +42,15 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
                 f"No spice files {netlist_file} found in netlist directory. Exiting...")
             exit(0)
 
+    if subckt is None:
+        assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"
+        subckt = netlist_files[0].stem
+
     for netlist in netlist_files:
-        if subckt_name is None:
-            subckt = netlist.stem
-        else:
-            subckt = subckt_name
-        logging.info(f"READ file: {netlist} subckt_name={subckt}, flat={flatten_heirarchy}")
+        logging.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
         (working_dir / '1_topology').mkdir(exist_ok=True)
-        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_topology', flatten_heirarchy, unit_size_mos , unit_size_cap)
+        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_topology', flatten, unit_size_mos , unit_size_cap)
         # Generate primitives
         primitive_dir = (working_dir / '2_primitives')
         primitive_dir.mkdir(exist_ok=True)
