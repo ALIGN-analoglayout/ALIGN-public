@@ -13,7 +13,7 @@
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
-PDK_DIR=${ALIGN_HOME}/pdks/FinFET14nm_Mock_PDK
+PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
@@ -53,9 +53,9 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${DESIGN}/${PDK_
 
 # Run the heirarchy & cell generator script
 ${GEN_OUTPUT}/${DESIGN}.lef:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${PDK_DIR} -flat ${FLAT}")
+	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
 
-${DESIGN}/${PDK_FILE}:	${PDK_DIR}/${PDK_FILE}  ${DESIGN}
+${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
 	cp $< ${DESIGN}/
 
 ${DESIGN}:
