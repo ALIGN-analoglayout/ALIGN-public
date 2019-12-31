@@ -5,18 +5,18 @@ import gen_lef
 import pathlib
 
 from datetime import datetime
-from align.cell_fabric import Canvas, Pdk, Wire, Region, Via
+from align.cell_fabric import DefaultCanvas, Pdk, Wire, Region, Via
 from align.cell_fabric import EnclosureGrid
 from align.cell_fabric import ColoredCenterLineGrid
 
 pdkfile = (pathlib.Path(__file__).parent / 'layers.json').resolve()
 
-class CanvasCap(Canvas):
+class CanvasCap(DefaultCanvas):
 
     def __init__( self, x_length, y_length):
         p = Pdk().load(pdkfile)
         super().__init__(p)
-        
+
         c_m1_p = p['Cap']['m1Pitch']
         c_m1_w = p['Cap']['m1Width']
         c_m2_p = p['Cap']['m2Pitch']
@@ -32,7 +32,7 @@ class CanvasCap(Canvas):
 
         self.x_number = compute( x_length, c_m1_p, c_m1_w)
         self.y_number = compute( y_length, c_m2_p, c_m2_w)
-       
+
         print( f"Number of wires {self.x_number} {self.y_number}")
 
         def roundup( x, p):
@@ -41,30 +41,7 @@ class CanvasCap(Canvas):
         self.last_y1_track = roundup( (self.y_number-1)*c_m2_p, m2_p)
         self.last_x1_track = roundup( (self.x_number-1)*c_m1_p, m1_p)
 
-        if False: # probably don't need this (Better to do recoloring if necessary)
-            if (self.y_number-1) % 2 != self.last_y1_track % 2:
-                print( "Bump up last_y1_track for color compatibility")
-                self.last_y1_track += 1 # so the last color is compatible with the external view of the cell
-            if (self.x_number-1) % 2 != self.last_x1_track % 2:
-                print( "Bump up last_x1_track for color compatibility")
-                self.last_x1_track += 1 # so the last color is compatible with the external view of the cell
-
         print( "last_x1_track (m1Pitches_standards)", self.last_x1_track, "last_y1_track (m2Pitch_standards)", self.last_y1_track)
-
-        #gcd = math.gcd( self.m2Pitch_narrow, self.m2Pitch_standard)
-        #print( "GCD,LCM,(LCM in m2Pitch_narrowes),(LCM in m2Pitch_standards) of m2Pitch_narrow (minimum) and m2Pitch_standard (devices)", gcd, self.m2Pitch_narrow, self.m2Pitch_standard, (self.m2Pitch_narrow*self.m2Pitch_standard)//gcd, self.m2Pitch_standard//gcd, self.m2Pitch_narrow//gcd)
-
-
-        self.m1 = self.addGen( Wire( 'm1', 'M1', 'v',
-                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M1']['Pitch'], width=p['M1']['Width']),
-                                     spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['V1']['VencA_L'] +p['M2']['Width']//2, check=True)))
-        self.m2 = self.addGen( Wire( 'm2', 'M2', 'h',
-                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M2']['Pitch'], width=p['M2']['Width']),
-                                     spg=EnclosureGrid( pitch=p['M1']['Pitch'], stoppoint=p['V1']['VencA_H'] + p['M1']['Width']//2, check=True)))
-        # cheating here width is the cap width; do not port m3
-        self.m3 = self.addGen( Wire( 'm3', 'M3', 'v',
-                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M3']['Pitch'], width=p['Cap']['m3Width']),
-                                     spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] +p['M2']['Width']//2, check=True)))
 
         self.m1n = self.addGen( Wire( 'm1n', 'M1', 'v',
                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m1Pitch'], width=p['Cap']['m1Width']),
@@ -78,9 +55,6 @@ class CanvasCap(Canvas):
                                      spg=EnclosureGrid(pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] + p['M2']['Width']//2, check=False)))
 
         self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
-
-#        self.v1 = self.addGen( Via( 'v1', 'V1', h_clg=self.m2.clg, v_clg=self.m1.clg))
-#        self.v2 = self.addGen( Via( 'v2', 'V2', h_clg=self.m2.clg, v_clg=self.m3.clg))
 
         self.v1_xn = self.addGen( Via( 'v1_xn', 'V1', h_clg=self.m2n.clg, v_clg=self.m1.clg))
         self.v1_nx = self.addGen( Via( 'v1_nx', 'V1', h_clg=self.m2.clg, v_clg=self.m1n.clg))
