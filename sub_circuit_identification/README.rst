@@ -69,18 +69,3 @@ Python command:
 ``python3 src/compiler.py --dir ./input_circuit -f `basename $< .sp`.sp --subckt <design name> --flat 0 --unit_size_mos 12 --unit_size_cap 12``
 
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   project
-   tutorial
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
