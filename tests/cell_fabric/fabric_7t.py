@@ -1,4 +1,4 @@
-from align.cell_fabric import Grid, SingleGrid, EnclosureGrid
+from align.cell_fabric import SingleGrid, EnclosureGrid
 from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
 from align.cell_fabric import Canvas as AbstractCanvas
 from align.cell_fabric import Wire, Via, Region

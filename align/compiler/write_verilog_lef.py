@@ -11,10 +11,8 @@ import sys
 import json
 from math import sqrt, ceil
 
-from .read_lef import read_lef
 from .util import convert_to_unit, logging
 from .merge_nodes import merge_nodes
-from .match_graph import read_setup
 
 from collections import Counter
 

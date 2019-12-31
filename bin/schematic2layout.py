@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 import align
-import pathlib
 
 if __name__ == '__main__':
 # %%

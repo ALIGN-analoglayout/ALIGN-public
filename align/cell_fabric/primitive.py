@@ -18,13 +18,15 @@ def get_xcells_pattern( primitive, pattern, x_cells):
     return x_cells, pattern
 
 def get_parameters(primitive, parameters, nfin):
+    if parameters is None:
+        parameters = {}
     if 'model' not in parameters:
         parameters['model'] = 'NMOS' if 'NMOS' in primitive else 'PMOS'
     parameters['nfin'] = nfin
     return parameters
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive=None, pattern=1, height=12, nfin=12, x_cells=1, y_cells=1, parameters=dict(), pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive=None, pattern=1, height=12, nfin=12, x_cells=1, y_cells=1, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))

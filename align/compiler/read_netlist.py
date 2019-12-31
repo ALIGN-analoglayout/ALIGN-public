@@ -12,7 +12,7 @@ import argparse
 import logging
 import networkx as nx
 
-from .util import _write_circuit_graph, _show_circuit_graph, logging
+from .util import _write_circuit_graph, logging
 from .basic_element import _parse_inst
 
 class SpiceParser:

@@ -1,5 +1,4 @@
 import pathlib
-import subprocess
 
 from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive

@@ -14,7 +14,7 @@ def test_verilog_writer():
     for subckt in subckts:
         for _, attr in subckt['graph'].nodes(data=True):
             if 'values' in attr:
-                block_name, block_args = generate_lef(LEF_FP, attr['inst_type'], attr["values"],
+                block_name, _ = generate_lef(LEF_FP, attr['inst_type'], attr["values"],
                             available_cell_generator, unit_mos, unit_cap)
                 block_name_ext = block_name.replace(attr['inst_type'],'')
         wv = WriteVerilog(subckt["graph"],subckt["name"]  , subckt["ports"], subckts,['vdd!','vss'])
