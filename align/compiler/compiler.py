@@ -91,6 +91,7 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
     if 'vco_dtype_12' in  design_name:
         unit_size_mos=37
     generated_module=[]
+    primitives = {}
     for members in updated_ckt:
         #print(members)
         name = members["name"]
@@ -109,7 +110,6 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
         else:
             inoutpin = members["ports"]
 
-        primitives = {}
         graph = members["graph"].copy()
         logging.info("Reading nodes from graph: %s", str(graph))
         for node, attr in graph.nodes(data=True):
