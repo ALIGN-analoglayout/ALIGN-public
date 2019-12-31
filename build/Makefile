@@ -38,7 +38,7 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python $(TOP)/align/gdsconv/json2gds.py $< $@")
+	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
 
 # Transfer inputs and run placeroute
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${DESIGN}/${PDK_FILE}
