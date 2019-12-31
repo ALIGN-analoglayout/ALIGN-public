@@ -82,4 +82,9 @@ RUN cd /opt && \
 RUN cd opt && \
     git clone https://github.com/nlohmann/json.git
 
+from align_base as align_image
+
 COPY . /ALIGN
+
+RUN cd /ALIGN && \
+    $pip install .
