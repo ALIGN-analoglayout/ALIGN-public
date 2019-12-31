@@ -28,9 +28,3 @@ def read_lef(lef_dir):
                 lines = param_lef_fp.read().splitlines()
                 lef_blocks.extend(lines)
     return lef_blocks
-
-
-if __name__ == '__main__':
-
-    AVAILABLE_BLOCK_LEF = read_lef()
-    print(AVAILABLE_BLOCK_LEF)

@@ -229,81 +229,88 @@ def generate_lef(fp, name, values, available_block_lef,
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logging.info('Generating lef for: %s %s', name, size)
+            return block_name, {
+                'primitive': name,
+                'nfin': unit_size_mos,
+                'x_cells': xval,
+                'y_cells': yval,
+                'parameters': values
+            }
+
         fp.write("\n$PC fabric_" + name + ".py " +
                     " -b " + unit_block_name + 
                     " -n " + str(unit_size_cap))
 
-    elif name.lower().startswith('res_array_8'):
-        if 'res' in values.keys():
-            size = '%g'%(round(values["res"],2))
-        elif 'r' in values.keys():
-            size = '%g'%(round(values["r"],2))
-        else :
-            convert_to_unit(values)
-            size = '_'.join(param+str(values[param]) for param in values)
-        try:
-            #size = float(size)
-            res_unit_size = 30 * unit_size_cap
-            height = ceil(sqrt(float(size) / res_unit_size))
-            block_name = name + '_' + size.replace('.','p')
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
-            logging.info('Generating lef for: %s %s', block_name, size)
-            fp.write("\n$PC fabric_Res_array.py " +
-                     " -b " + block_name +
-                     " -n " + str(height) +
-                     " -X " + "8" +
-                     " -r " + size)
-        except:
-            block_name = name + '_' + size
+    # elif name.lower().startswith('res_array_8'):
+    #     if 'res' in values.keys():
+    #         size = '%g'%(round(values["res"],2))
+    #     elif 'r' in values.keys():
+    #         size = '%g'%(round(values["r"],2))
+    #     else :
+    #         convert_to_unit(values)
+    #         size = '_'.join(param+str(values[param]) for param in values)
+    #     try:
+    #         #size = float(size)
+    #         res_unit_size = 30 * unit_size_cap
+    #         height = ceil(sqrt(float(size) / res_unit_size))
+    #         block_name = name + '_' + size.replace('.','p')
+    #         if block_name in available_block_lef:
+    #             return block_name, available_block_lef[block_name]
+    #         logging.info('Generating lef for: %s %s', block_name, size)
+    #         fp.write("\n$PC fabric_Res_array.py " +
+    #                  " -b " + block_name +
+    #                  " -n " + str(height) +
+    #                  " -X " + "8" +
+    #                  " -r " + size)
+    #     except:
+    #         block_name = name + '_' + size
                 
-    elif name.lower().startswith('res'):
-        if 'res' in values.keys():
-            size = '%g'%(round(values["res"],2))
-        elif 'r' in values.keys():
-            size = '%g'%(round(values["r"],2))
-        else :
-            convert_to_unit(values)
-            size = '_'.join(param+str(values[param]) for param in values)
-        block_name = name + '_' + size.replace('.','p')
-        res_unit_size = 300 
-        try:
-            #size = float(size)
-            height = ceil(sqrt(float(size) / res_unit_size))
-            if block_name in available_block_lef:
-                return block_name, available_block_lef[block_name]
-            logging.info('Generating lef for: %s %s', block_name, size)
-            fp.write("\n$PC fabric_" + name + ".py " +
-                     " -b " + block_name +
-                     " -n " + str(height) +
-                     " -r " + size)
-        except:
-            fp.write("\n$PC fabric_" + name + ".py " +
-                     " -b " + block_name +
-                     " -n " + '1'  +
-                     " -r " + str(res_unit_size))
+    # elif name.lower().startswith('res'):
+    #     if 'res' in values.keys():
+    #         size = '%g'%(round(values["res"],2))
+    #     elif 'r' in values.keys():
+    #         size = '%g'%(round(values["r"],2))
+    #     else :
+    #         convert_to_unit(values)
+    #         size = '_'.join(param+str(values[param]) for param in values)
+    #     block_name = name + '_' + size.replace('.','p')
+    #     res_unit_size = 300 
+    #     try:
+    #         #size = float(size)
+    #         height = ceil(sqrt(float(size) / res_unit_size))
+    #         if block_name in available_block_lef:
+    #             return block_name, available_block_lef[block_name]
+    #         logging.info('Generating lef for: %s %s', block_name, size)
+    #         fp.write("\n$PC fabric_" + name + ".py " +
+    #                  " -b " + block_name +
+    #                  " -n " + str(height) +
+    #                  " -r " + size)
+    #     except:
+    #         fp.write("\n$PC fabric_" + name + ".py " +
+    #                  " -b " + block_name +
+    #                  " -n " + '1'  +
+    #                  " -r " + str(res_unit_size))
 
-    elif name.lower().startswith('inductor') or \
-        name.lower().startswith('spiral'):
-        try:
-            size = round(values["ind"]*1E12,2)
-        except :
-            convert_to_unit(values)
-            size = '_'.join(param+str(values[param]) for param in values)
+    # elif name.lower().startswith('inductor') or \
+    #     name.lower().startswith('spiral'):
+    #     try:
+    #         size = round(values["ind"]*1E12,2)
+    #     except :
+    #         convert_to_unit(values)
+    #         size = '_'.join(param+str(values[param]) for param in values)
 
-        ind_unit_size = unit_size_cap
-        height = ceil(sqrt(size / ind_unit_size))
-        block_name = name + '_' + str(size)
-        if block_name in available_block_lef:
-            return block_name, available_block_lef[block_name]
-        logging.info('Generating lef for: %s %s', block_name, size)
-        fp.write("\n$PC fabric_" + name + ".py " +
-                 " -b " + block_name +
-                 " -n " + str(height) +
-                 " -r " + str(size))
+    #     ind_unit_size = unit_size_cap
+    #     height = ceil(sqrt(size / ind_unit_size))
+    #     block_name = name + '_' + str(size)
+    #     if block_name in available_block_lef:
+    #         return block_name, available_block_lef[block_name]
+    #     logging.info('Generating lef for: %s %s', block_name, size)
+    #     fp.write("\n$PC fabric_" + name + ".py " +
+    #              " -b " + block_name +
+    #              " -n " + str(height) +
+    #              " -r " + str(size))
 
     else:
-        #print("other param",values)
         if "nfin" in values.keys():
             size = int(values["nfin"])
             if 'nf' in values.keys():
@@ -322,9 +329,7 @@ def generate_lef(fp, name, values, available_block_lef,
         elif "lr" in values.keys():
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-            #size = int(values["lr"]*1E+9)
-            
-        #print(size)
+
         logging.info('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
             no_units = 2*ceil(size / unit_size_mos)
@@ -337,12 +342,6 @@ def generate_lef(fp, name, values, available_block_lef,
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
             logging.info("Generating parametric lef of: %s", block_name)
-            fp.write("\n$PC Align_primitives.py -p " + name +
-                     " -b " + block_name +
-                     " -n " + str(unit_size_mos) +
-                     " -X " + str(xval) +
-                     " -Y " + str(yval))
-                     #" --params " + "'" + json.dumps(values) + "'")
             return block_name, {
                 'primitive': name,
                 'nfin': unit_size_mos,
@@ -351,8 +350,8 @@ def generate_lef(fp, name, values, available_block_lef,
                 'parameters': values
             }
         else:
-            logging.info("No proper marameters found for cell generation")
-            block_name = name+"_"+size       
+            logging.info("No proper parameters found for cell generation")
+            block_name = name+"_"+size
 
     raise NotImplementedError(f"Could not generate LEF for {name}")
 
