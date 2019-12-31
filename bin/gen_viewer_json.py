@@ -16,7 +16,7 @@ def main():
     parser.add_argument( "-m", "--markers", action='store_true')
     parser.add_argument( "-e", "--extract", action='store_true')
     parser.add_argument( "-t", "--tag", type=str, default="")
-    parser.add_argument( "-p", "--pdk", type=str, default="../PDK_Abstraction/FinFET14nm_Mock_PDK/")
+    parser.add_argument( "-p", "--pdk", type=str, default="../pdks/FinFET14nm_Mock_PDK/")
     parser.add_argument( "-o", "--output_dir", type=str, default=".")
     parser.add_argument( "-ifn", "--input_file_name", type=str, default="")
     parser.add_argument( "--draw_grid", action='store_true')

@@ -13,7 +13,7 @@
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
-PDK_DIR=PDK_Abstraction/FinFET14nm_Mock_PDK
+PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 CELL_GENERATOR=${PDK_DIR}
 FLAT=0
