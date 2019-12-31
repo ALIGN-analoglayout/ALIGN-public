@@ -104,7 +104,7 @@ services:
     image: ubuntu:18.04
     container_name: transfer_cont
 
-  python-service:
+  align-service:
     <<: *default-service
     image: align_image
     build:
