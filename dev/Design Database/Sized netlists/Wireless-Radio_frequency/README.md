@@ -1,9 +1,8 @@
-This folder contains example Power Management circuits (some of which have been taped out) that can be used as benchmarks.
+**Wireless/Radio Frequency**
 
-WLESS1: Low Noise Amplifier used in a RF Transceiver
-
-WLESS2: Mixer
-
-WLESS3: Bandpass Filter
-
-WLESS4: Oscillator
+Circuit | Technology | Netlist | Schematic | Layout | Testbench | Constraints | ALIGN |
+:------ | :--------- | :---- | :------ | :-------- | :----- | :-------- | :---------- |
+LNA | 65 nm | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
+Mixer | 65 nm | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
+Bandpass Filter | 65 nm | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
+Oscillator | 65 nm | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
