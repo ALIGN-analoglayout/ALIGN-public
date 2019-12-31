@@ -3,8 +3,8 @@ from .main import schematic2layout
 
 class CmdlineParser():
 
-    def __init__(self):
-        parser = argparse.ArgumentParser(
+    def __init__(self, *args, **kwargs):
+        parser = argparse.ArgumentParser(*args, **kwargs,
             description="directory path for input circuits")
         parser.add_argument("netlist_dir",
                             type=str,
@@ -51,6 +51,6 @@ class CmdlineParser():
                             help='no of fins in unit size')
         self.parser = parser
 
-    def run(self):
-        args = self.parser.parse_args()
-        schematic2layout(**vars(args))
+    def parse_args(self, *args, **kwargs):
+        arguments = self.parser.parse_args(*args, **kwargs)
+        schematic2layout(**vars(arguments))

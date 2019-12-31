@@ -2,4 +2,4 @@
 import align
 
 if __name__ == '__main__':
-    align.CmdlineParser().run()
+    align.CmdlineParser().parse_args()
