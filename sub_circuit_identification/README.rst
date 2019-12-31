@@ -7,7 +7,7 @@ ALIGN: Analog Layout, Intelligently Generated from Netlists!
 ============================================================
 Automatic circuit annotation documentation!
 --------------------------------------------
-This is an introduction to auto annotation work done under project ALIGN done at University of Ninnesota.
+This is an introduction to auto annotation work done under project ALIGN done at University of Minnesota.
 
 Circuit annotation automatically identifies hierarchies in the design using a combination of library and rule based approach.
 
@@ -45,12 +45,12 @@ Requirements:
 
 Usage
 ------
-A combination of library based and rule based method is used for automatic annotation. We support docker based flow as it helps in minimizing environment setup issues.
+An integrated flow using a combination of library-based and rule-based methods are used for automatic annotation. We support docker based flow as it helps in minimizing environment setup issues.
 
-**Library based annotation**
+**Library-based annotation**
     - Library based annotation is used for identifying smaller circuits (primitives) in the design. We use VF2 based subgraph isomorphism to map library elements to the circuit.
 
-**Rule based annotation**
+**Rule-based annotation**
     - Analog designs are dominated by arrays in the circuits which need a structured layout. To identify array structures in the layout we use graph traversal which is then used to put common centroid constraints.
 
 Run a Python-based test using docker
