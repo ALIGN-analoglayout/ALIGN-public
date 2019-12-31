@@ -87,7 +87,7 @@ struct vertex{
   int metal=-1;
   int Cost = -1;
   bool active=false;
-  bool via_active = false;
+  bool via_active = true;
   int parent = -1; // -1 mean source
   int index=-1;
   std::vector<int> gridmetal;
