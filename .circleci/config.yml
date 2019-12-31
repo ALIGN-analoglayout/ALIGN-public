@@ -126,35 +126,35 @@ jobs:
     #   - store_artifacts:
     #       path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
             
-    #   - run:
-    #       shell: /bin/bash
-    #       command: |
-    #         cd build/
-    #         make docker DESIGN=current_mirror_ota && \
-    #         docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
+            make docker DESIGN=current_mirror_ota && \
+            docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
             
-    #   - store_artifacts:
-    #       path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+      - store_artifacts:
+          path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
 
-    #   - run:
-    #       shell: /bin/bash
-    #       command: |
-    #         cd build/
-    #         make docker DESIGN=cascode_current_mirror_ota && \
-    #         docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
+            make docker DESIGN=cascode_current_mirror_ota && \
+            docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
             
-    #   - store_artifacts:
-    #       path: cascode_current_mirror_ota/pnr_output/Results/cascode_current_mirror_ota_0.png
+      - store_artifacts:
+          path: cascode_current_mirror_ota/pnr_output/Results/cascode_current_mirror_ota_0.png
             
-    #   - run:
-    #       shell: /bin/bash
-    #       command: |
-    #         cd build/
-    #         make docker DESIGN=five_transistor_ota && \
-    #         docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
+            make docker DESIGN=five_transistor_ota && \
+            docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
             
-    #   - store_artifacts:
-    #       path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
+      - store_artifacts:
+          path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
           
   build-make-monolithic:
