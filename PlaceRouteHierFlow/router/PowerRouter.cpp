@@ -120,6 +120,8 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
 
   std::cout<<"checkpoint1.1"<<std::endl;
   GetData(node, drc_info, Lmetal, Hmetal, rate);
+  CreatePowerGridDrc_info();
+  this->drc_info=this->PowerGrid_Drc_info;
   std::cout<<"checkpoint1.2"<<std::endl;
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
@@ -141,7 +143,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
   std::cout<<"checkpoint1.2.8"<<std::endl;
-  CreatePowerGridDrc_info();
+  
   //how to crate PowerGrid here????
   Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
 
