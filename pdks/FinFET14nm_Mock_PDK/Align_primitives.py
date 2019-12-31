@@ -7,7 +7,7 @@ from align.cell_fabric import generate_primitive
 
 def main( args):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))
-    generate_primitive(
+    return generate_primitive(
         args.block_name,
         args.primitive,
         args.pattern,
@@ -34,7 +34,7 @@ def gen_parser():
     parser.add_argument( "--model", type=str, required=False, default=None)
     parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
-    parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path.cwd().resolve() / 'Results')
+    parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='ERROR', help="Set the logging level (default: %(default)s)")
     return parser
 

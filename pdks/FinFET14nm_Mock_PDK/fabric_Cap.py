@@ -2,13 +2,14 @@ import math
 import argparse
 import gen_gds_json
 import gen_lef
+import pathlib
+
 from datetime import datetime
 from align.cell_fabric import Canvas, Pdk, Wire, Region, Via
 from align.cell_fabric import EnclosureGrid
 from align.cell_fabric import ColoredCenterLineGrid
 
-from pathlib import Path
-pdkfile = (Path(__file__).parent / 'layers.json').resolve()
+pdkfile = (pathlib.Path(__file__).parent / 'layers.json').resolve()
 
 class CanvasCap(Canvas):
 
@@ -141,6 +142,8 @@ def gen_parser():
     parser.add_argument( "--x_length", type=int, default=None)
     parser.add_argument( "--y_length", type=int, default=None)
     parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
+    parser.add_argument( "-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
+    parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path.cwd().resolve())
     return parser
 
 
@@ -165,13 +168,13 @@ def main( args):
 
     print( "bbox", uc.bbox)
 
-    with open(args.block_name + '.json', "wt") as fp:
+    with open(args.outputdir / (args.block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp, draw_grid=False)
 
     cell_pin = ["PLUS", "MINUS"]
-    gen_lef.json_lef(args.block_name + '.json',args.block_name,cell_pin)
-    with open( args.block_name + ".json", "rt") as fp0, \
-         open( args.block_name + ".gds.json", 'wt') as fp1:
+    gen_lef.json_lef(args.outputdir / (args.block_name + '.json'),args.block_name,cell_pin)
+    with open( args.outputdir / (args.block_name + ".json"), "rt") as fp0, \
+         open( args.outputdir / (args.block_name + ".gds.json"), 'wt') as fp1:
         #gen_gds_json.translate(args.block_name, '', fp0, fp1, datetime.now())
         gen_gds_json.translate(args.block_name, '', args.pinSwitch, fp0, fp1, datetime.now()) 
 
