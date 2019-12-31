@@ -1,9 +1,4 @@
 #
-# Import container dependencies
-#
-FROM stevenmburns/xyce as xyce
-
-#
 # Base container starts here
 #
 FROM ubuntu:18.04 as align_base
@@ -57,10 +52,6 @@ RUN $pip install \
     pytest \
     pytest-cov \
     coverage-badge
-
-# Xyce
-COPY --from=xyce /usr/local/bin/Xyce /usr/local/bin/
-COPY --from=xyce /usr/lib/x86_64-linux-gnu/libfftw3.so.3 /usr/lib/x86_64-linux-gnu/libamd.so.2 /usr/lib/x86_64-linux-gnu/liblapack.so.3 /usr/lib/x86_64-linux-gnu/libblas.so.3 /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/x86_64-linux-gnu/libsuitesparseconfig.so.5 /usr/lib/x86_64-linux-gnu/libgfortran.so.4 /usr/lib/x86_64-linux-gnu/libquadmath.so.0 /usr/lib/x86_64-linux-gnu/
 
 # Lpsolve
 RUN \
