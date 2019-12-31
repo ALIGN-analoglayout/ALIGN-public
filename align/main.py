@@ -24,6 +24,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
         logging.error("Netlist directory doesn't exist. Please enter a valid directory path")
         print("Netlist directory doesn't exist. Please enter a valid directory path")
         exit(0)
+    netlist_file = pathlib.Path(netlist_file).resolve()
 
     netlist_files = [x for x in netlist_dir.iterdir() if x.is_file() and x.suffix in ('.sp', '.cdl')]
     if not netlist_files:
@@ -33,7 +34,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt_name=None, 
         exit(0)
 
     if netlist_file:
-        netlist_files = [x for x in netlist_files if netlist_file == x.name]
+        print(netlist_files)
+        netlist_files = [x for x in netlist_files if netlist_file == x]
         if not netlist_files:
             print(f"No spice file {netlist_file} found in netlist directory. Exiting...")
             logging.error(
