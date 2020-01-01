@@ -41,6 +41,9 @@ struct Via;
 struct PowerGrid;
 struct PowerNet;
 struct PortPos;
+struct Router_report;
+struct routing_net;
+
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -533,6 +536,22 @@ struct Drc_info {
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
 };
+
+struct routing_net{
+   
+  string net_name;
+  vector<string> pin_name;
+  vector<int> pin_access; 
+   
+};
+
+struct Router_report{
+
+  string node_name;
+  vector<routing_net> routed_net;
+  
+};
+
 
 }
 
