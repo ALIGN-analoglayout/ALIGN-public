@@ -1,9 +1,11 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 
- This the main repository for the DARPA IDEA ALIGN project led by University of Minnesota.
+This the main repository for the ALIGN (Analog Layout, Intelligently Generated from Netlists) project. The goal of this project is to automatically translate an unannotated (or partially annotated) analog circuit netlist to a GDSII layout. 
 
-# Push Button Flow
+This project is a result of joint research from the University of Minnesota, Texas A&M University, and Intel Corporation under the DARPA IDEA program.
+
+# Push-Button Flow
  * make ALIGN : Runs the full flow using single command
  * make ALIGN_docker : Runs the full flow on Docker 
 ```bash
@@ -12,7 +14,7 @@
   - make compile : required once for setting up the tool
 ```
 
-## (Proposed) Push Button Docker Flow
+## (Proposed) Push-Button Docker Flow
 *  Works from a separate directory pointing to ALIGN_HOME, managing dependencies correctly, handles proxies, uses a single shared volume.
    *  make DESIGN=<example>
       1.  updates the docker images
