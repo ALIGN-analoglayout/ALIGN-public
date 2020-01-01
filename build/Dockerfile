@@ -9,9 +9,8 @@ WORKDIR /dataVolume
 
 COPY ./build /ALIGN-public/build
 COPY ./examples /ALIGN-public/examples
-COPY ./PDK_Abstraction/ /ALIGN-public/PDK_Abstraction
+COPY ./pdks/ /ALIGN-public/pdks
 
 RUN \
     mkdir /ALIGN-public/PlaceRouteHierFlow &&\
-    mkdir -p /ALIGN-public/build/ThirdParty/Klayout &&\
-    mkdir /ALIGN-public/sub_circuit_identification
+    mkdir -p /ALIGN-public/build/ThirdParty/Klayout

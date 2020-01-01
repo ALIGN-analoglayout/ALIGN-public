@@ -1,5 +1,0 @@
-matplotlib>=3.1.0
-networkx>=2.3
-protobuf>=3.8.0
-sympy>=1.4
-pyyaml
