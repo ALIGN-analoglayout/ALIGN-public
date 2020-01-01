@@ -2732,7 +2732,7 @@ void GcellDetailRouter::ConvertRect2GridPoints_Via(std::vector<std::vector<Route
   int obs_l=0;
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
-  int direction = drc_info.Metal_info[mIdx].direct;
+  //int direction = drc_info.Metal_info[mIdx].direct;
 
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
