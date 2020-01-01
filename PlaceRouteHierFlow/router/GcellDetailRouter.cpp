@@ -3044,6 +3044,8 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   std::cout<<"test blockintermetal to node intermetal: start"<<std::endl;
   BlockInterMetalToNodeInterMetal(HierNode);
   std::cout<<"test blockintermetal to node intermetal: end"<<std::endl;
+
+  HierNode.router_report.push_back(temp_report);
   //std::cout<<"End ReturnHierNode"<<std::endl;
 };
 
@@ -3195,3 +3197,4 @@ void GcellDetailRouter::ConvertToContactPnRDB_Placed_Placed(PnRDB::contact& pnr_
   pnr_contact.placedCenter.y = router_contact.placedCenter.y; 
 
 };
+

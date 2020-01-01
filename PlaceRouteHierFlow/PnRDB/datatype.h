@@ -364,6 +364,7 @@ struct hierNode {
   vector<PortPos> Port_Location;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
+  vector<Router_report> router_report;
 
 
 }; // structure of vertex in heirarchical tree
