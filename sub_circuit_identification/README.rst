@@ -7,7 +7,7 @@ ALIGN: Analog Layout, Intelligently Generated from Netlists!
 ============================================================
 Automatic circuit annotation documentation!
 --------------------------------------------
-This is an introduction to the auto annotation module of the ALIGN project. This work was performed at the University of Minnesota.
+This is an introduction to the auto-annotation module of the ALIGN project. This work was performed at the University of Minnesota.
 
 Circuit annotation automatically identifies hierarchies in the design using a combination of a library-based and rule-based approach.
 
