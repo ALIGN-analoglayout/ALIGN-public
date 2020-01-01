@@ -132,18 +132,18 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
             else:
                 logging.warning("No physical information found for: %s", name)
 
-        if name in primitives or name in generated_module[:-1]:
+        if name in ALL_LEF:
             logging.info("writing spice for block: %s", name)
             ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt)
             ws.print_subckt(SP_FP)
             continue
 
-        #print("inout pins:",inoutpin)
-        if name not in  generated_module:
+        print("generated data", name, generated_module, primitives)
+        if name not in  ALL_LEF:
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
             logging.info("call constraint generator writer for block: %s", name)
-            WriteConst(graph, input_dir, name, inoutpin, result_dir)
+            #WriteConst(graph, input_dir, name, inoutpin, result_dir)
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)
