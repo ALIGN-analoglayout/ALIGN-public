@@ -13,15 +13,14 @@
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
-PDK_DIR=PDK_Abstraction/FinFET14nm_Mock_PDK
+PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
-CELL_GENERATOR=${PDK_DIR}
 FLAT=0
 
 PNRDIR=${DESIGN}/pnr_output/
 PNR_OUTPUT=${DESIGN}/pnr_output/Results
-GEN_OUTPUT=${DESIGN}/generator_output
-TPO_OUTPUT=${DESIGN}/topology_output/Results
+GEN_OUTPUT=${DESIGN}/2_primitives
+TPO_OUTPUT=${DESIGN}/1_topology
 
 ifeq ($(BUILD),docker)
 	execute = docker-compose -p build exec $(1) $(2)
@@ -39,10 +38,10 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,cellfabric-service, /bin/bash -c "source general/bin/activate && python $(TOP)/GDSConv/gdsconv/json2gds.py $< $@")
+	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
 
 # Transfer inputs and run placeroute
-${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${DESIGN}.v ${DESIGN}/${PDK_FILE}
+${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${DESIGN}/${PDK_FILE}
 	-$(call execute, transfer-service, /bin/bash -c "mkdir -p ${PNRDIR}/inputs && \
 	cp $(DESIGN)/$(PDK_FILE) \$$_ && \
 	cp $(GEN_OUTPUT)/$(DESIGN).lef \$$_ && \
@@ -52,16 +51,9 @@ ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${TPO_OUTPUT}/${
 	cp $(TPO_OUTPUT)/*.const \$$_")
 	$(call execute, placeroute-service, /bin/bash -c "mkdir -p ${PNR_OUTPUT} && cd \$$_/.. && make -f $(TOP)/PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log")
 
-# Run the cell generator
-${GEN_OUTPUT}/${DESIGN}.lef:	${TPO_OUTPUT}/${DESIGN}_lef.sh
-	$(call execute,cellfabric-service, /bin/bash -c "source general/bin/activate && mkdir -p ${GEN_OUTPUT} && cd \$$_ && make -f $(TOP)/CellFabric/Makefile INPUT=/`pwd`/${TPO_OUTPUT} DESIGN=${DESIGN}")
-
-# Build the cell generator script
-${TPO_OUTPUT}/${DESIGN}_lef.sh:	${DESIGN}/${DESIGN}.sp
-	$(call execute,topology-service,/bin/bash -c "source general/bin/activate  && mkdir -p ${TPO_OUTPUT} && cd \$$_/.. && make -f $(TOP)/sub_circuit_identification/Makefile INPUT=/`pwd`/${DESIGN} DESIGN=${DESIGN} FLAT=${FLAT}")
-
-${DESIGN}/${DESIGN}.sp:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	cp ${EXAMPLES}/${DESIGN}/* ${DESIGN}/
+# Run the heirarchy & cell generator script
+${GEN_OUTPUT}/${DESIGN}.lef:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
 
 ${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
 	cp $< ${DESIGN}/
@@ -101,8 +93,8 @@ docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 docker:	volume services make-docker-service
 	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
 
-services:	transfer-service cellfabric-service placeroute-service \
-		topology-service klayoutconvert-service
+services:	transfer-service align-service placeroute-service \
+		klayoutconvert-service
 
 transfer-service:	docker-compose.yml
 	docker-compose -p build up -d $@
@@ -112,15 +104,11 @@ protobuf-service:	docker-compose.yml
 	docker-compose -p build up -d $@
 	touch $@
 
-cellfabric-service:	docker-compose.yml
+align-service:	docker-compose.yml
 	docker-compose -p build up -d $@
 	touch $@
 
 placeroute-service:	docker-compose.yml
-	docker-compose -p build up -d $@
-	touch $@
-
-topology-service:	docker-compose.yml
 	docker-compose -p build up -d $@
 	touch $@
 

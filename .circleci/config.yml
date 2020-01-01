@@ -43,8 +43,7 @@ jobs:
           pip install --upgrade pip
           pip install wheel pytest coverage pytest-cov networkx pyyaml python-gdsii
 
-          (cd CellFabric && pip install .)
-          (cd GDSConv && pip install .)
+          pip install .
 
       - run:
           make DESIGN_NAME=telescopic_ota ALIGN_docker generate_png
@@ -117,15 +116,15 @@ jobs:
       - store_artifacts:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
             
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            make docker DESIGN=switched_capacitor_filter && \
-            docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
+    #   - run:
+    #       shell: /bin/bash
+    #       command: |
+    #         cd build/
+    #         make docker DESIGN=switched_capacitor_filter && \
+    #         docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
-      - store_artifacts:
-          path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+    #   - store_artifacts:
+    #       path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
             
       - run:
           shell: /bin/bash
@@ -288,8 +287,7 @@ jobs:
             - test-reports/sgi
             - coverage-reports/sgi
 
-
-  build-sci:
+  build-pdks:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -298,49 +296,17 @@ jobs:
           at: /work/workspace
 
       - run: |
-          cd sub_circuit_identification
-          docker build -t topology .
+          docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name sci_container topology bash -c "source general/bin/activate && cd sub_circuit_identification/ && pytest --junitxml=junit.xml --cov=. && coverage html && coverage xml && mkdir -p /test-reports/sci && cp /sub_circuit_identification/junit.xml /test-reports/sci && mkdir -p /coverage-reports/sci && cp -r /sub_circuit_identification/coverage.xml /sub_circuit_identification/htmlcov /coverage-reports/sci"
-          cd -
+          docker run --name pdks_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && pip install . && cd pdks && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdks && cp junit.xml /test-reports/pdks"
 
-          docker cp sci_container:coverage-reports .
-          docker cp sci_container:test-reports .
-          docker rm sci_container
+          docker cp pdks_container:test-reports .
+          docker rm pdks_container
 
       - persist_to_workspace:
           root: /work/workspace
           paths:
-            - test-reports/sci
-            - coverage-reports/sci
-
-
-  build-pdk:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd CellFabric
-          docker build -t cellfabric_image:1.0 -f ./Dockerfile ..
-
-      - run: |
-          cd PDK_Abstraction
-          docker build -t pdk_image:1.0 .
-
-          docker run --name pdk_container pdk_image:1.0 bash -c "source general/bin/activate && cd /src && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdk && cp /src/junit.xml /test-reports/pdk"
-          cd -
-
-          docker cp pdk_container:test-reports .
-          docker rm pdk_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/pdk
+            - test-reports/pdks
 
 
   build-cktgen:
@@ -368,7 +334,7 @@ jobs:
             - test-reports/cktgen
             - coverage-reports/cktgen
 
-  build-cellfabric:
+  build-align:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -377,22 +343,19 @@ jobs:
           at: /work/workspace
 
       - run: |
-          cd CellFabric
-          docker build -t cellfabric_image -f ./Dockerfile ..
+          docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name cellfabric_container cellfabric_image bash -c "source general/bin/activate && cd CellFabric && coverage run --source=cell_fabric,tests,Cell_Fabric_FinFET__Mock setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/cellfabric && cp /CellFabric/junit.xml /test-reports/cellfabric && mkdir -p /coverage-reports/cellfabric && cp -r /CellFabric/coverage.xml /CellFabric/htmlcov /coverage-reports/cellfabric"
-          cd -
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
 
-          docker cp cellfabric_container:coverage-reports .
-          docker cp cellfabric_container:test-reports .
-          docker rm cellfabric_container
+          docker cp align_container:coverage-reports .
+          docker cp align_container:test-reports .
+          docker rm align_container
 
       - persist_to_workspace:
           root: /work/workspace
           paths:
-            - test-reports/cellfabric
-            - coverage-reports/cellfabric
-
+            - test-reports/align
+            - coverage-reports/align
 
   build-satplacer:
     executor: docker-executor
@@ -478,33 +441,6 @@ jobs:
           
       - store_artifacts:
           path: coverage-reports
-
-
-  build-GDSConv:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd build
-          docker build -f Dockerfile.build.python -t with_python .
-
-      - run: |
-          cd GDSConv
-          docker build -t gds_image . -f Dockerfile.python3
-          
-      - run: |
-          docker run --name run_gds -ti gds_image /bin/bash -c "source general/bin/activate; cd /GDSConv && pytest"
-          mkdir -p test-reports/gdsconv
-          docker cp run_gds:/GDSConv/junit.xml test-reports/gdsconv
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/gdsconv
 
   mono_end_to_end:
     executor: docker-executor
@@ -658,34 +594,26 @@ workflows:
       - build-PlaceRouteHierFlow:
           requires:
             - start 
-      - build-GDSConv:
-          requires:
-            - start 
-      - build-sci:
-          requires:
-            - start 
       - build-cktgen:
           requires:
             - start 
-      - build-cellfabric:
+      - build-align:
           requires:
             - start 
 #      - build-satplacer:
 #          requires:
 #            - start 
-      - build-pdk:
+      - build-pdks:
           requires:
-            - build-cellfabric 
+            - build-align 
       - finish:
           requires:
 #            - build-tally 
 #            - build-sgi 
 #            - build-PlacementEditor 
-            - build-GDSConv 
-            - build-sci 
-            - build-cellfabric
+            - build-align
             - build-cktgen 
-            - build-pdk 
+            - build-pdks 
             - build-PlaceRouteHierFlow
 #            - build-satplacer
 
