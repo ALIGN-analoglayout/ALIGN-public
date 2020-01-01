@@ -107,6 +107,7 @@ class Grid {
     void Check_Full_Connection_Grid();
     bool CheckExtendable(int i, int metal);
     void CreatePlistSingleContact(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts);
+    void InactivePointlist_via(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
     //void inactive_node_global();
     //void inacitve_node_detail();
     //active or inactive node?

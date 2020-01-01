@@ -274,6 +274,17 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
   }
 }
 
+
+void Grid::InactivePointlist_via(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist) {
+  for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
+    int mm=it->metal;
+    RouterDB::point p; p.x=it->x; p.y=it->y;
+    if(plist.at(mm).find(p)!=plist.at(mm).end()) {
+       it->via_active=false;
+      }
+  }
+}
+
 void Grid::InactivePointlist_Power(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist) {
   for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
     int mm=it->metal;
