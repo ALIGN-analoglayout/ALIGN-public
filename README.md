@@ -1,8 +1,8 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 
-#ALIGN: Analog Layout, Intelligently Generated from Netlists
-ALIGN is an open source automatic layout generator for analog circuits developed under IDEA program led by University of Minnesota funded by DARPA. The ALIGN flow includes circuit annotation, cell generation and placement and routing steps to generate a GDS from an input spice netlist. Circuit annotation creates multiple hierarchies in the input netlist to implement the design in using a hierarchical approach. Design rules are abstracted from PDK into a json format. A mock PDK based on FinFET technology is provided with this repository which is being used by cell generator and Placer and Router to generate layout.
+# ALIGN: Analog Layout, Intelligently Generated from Netlists
+ALIGN is an open source automatic layout generator for analog circuits developed under IDEA program led by University of Minnesota funded by DARPA. The ALIGN flow includes circuit annotation, cell generation and placement and routing steps to generate a GDS from an input spice netlist. Circuit annotation creates multiple hierarchies in the input netlist to implement the design in using a hierarchical approach. Design rules are abstracted from PDK into a JSON format. A mock PDK based on FinFET technology is provided with this repository which is being used by cell generator and Placer and Router to generate layout.
 
 ## Inputs:
  * Unannotated [spice netlist](examples/telescopic_ota/telescopic_ota.sp)
@@ -11,18 +11,18 @@ ALIGN is an open source automatic layout generator for analog circuits developed
     - Clk signal (optional)
     - Digital blocks (optional)
  * Library:(spice format)
-    - A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify elements in the design.
-    - The user can add more template library elements in the [user_template library](align/config/user_template.sp).
-    - The user can also specify dont_use_cells.txt to ask annotation to ignore a subset of library elements during annotation.
+    - A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+    - More library elements can be added in the [user_template library](align/config/user_template.sp).
  * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
     - A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by cell generator and Place and Route.
-    - For any new PDK users need to extract the design rules in the format provided in this directory.
+    - New design rule abstraction can be added in JSON format similar to design rules file provided.
+    - Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) need to be redefined for any new PDK 
  * LEF:
     - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 ## Outputs:
  * Design Layout GDS: Final layout of the design. The output gds can be imported into any 
  * Design json: Final layout which can be viewed using ALIGN Viewer created by Intel
- * Layout image: a .jpg format of layout saved using klayout
+ * Layout image: .jpg format of layout saved using klayout
 
 ## Getting started
  Suggested way to run the end-to-end ALIGN flow is using a Docker container-based flow for which you need to have a Docker, docker-compose installed. The software get installed in a container image and we use Make to run the flow through the containers. Us can also use the Makefile to run the ALIGN flow through the native Linux build of all the componennts in the current environment (assuming you have all software prerequisites installed).
