@@ -31,6 +31,7 @@ Two environment variables need to be set to run the Makefile in any environment.
 		% export ALIGN_HOME=<top of ALIGN source area>
 
 Second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
+
         % docker volume create <volumeName>
 		% export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 #### Docker flow
