@@ -154,8 +154,9 @@ class PnRdatabase
                                    const int first_tile_idx, const int last_tile_idx,
                                    std::vector<int>& tile_idxs, const int MetalDirection, const int net_id) const;
     void WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
-	void WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
+    void WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
     void WriteLef(const PnRDB::hierNode& node, const string& file, const string& opath) const;
+    void Write_Router_Report(PnRDB::hierNode &node, const string& opath);
     
 };
 

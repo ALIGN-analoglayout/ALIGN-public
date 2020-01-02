@@ -186,6 +186,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 	 
   }
 
+  hierTree[nodeID].router_report = updatedNode.router_report; //update router information
+
   //update terminals information when the node is top level
     //if(updatedNode.isTop==1)
     if(1){	 
@@ -260,6 +262,14 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
      std::cout<<"Start update blocks in parent"<<std::endl;
      //update father blocks information
      auto& parent_node = hierTree[hierTree[nodeID].parent[i]];
+
+     //there will be a bug for multi-aspect ratio Yaguang 1/1/2020
+     std::cout<<"Update router report for parent"<<std::endl;
+     for(int j=0;j<updatedNode.router_report.size();j++){
+          parent_node.router_report.push_back(updatedNode.router_report[j]);
+        }
+     std::cout<<"End Update router report for parent"<<std::endl;
+
      for(unsigned int j=0;j<parent_node.Blocks.size();j++){
 
 	 auto& lhs = parent_node.Blocks[j];
@@ -321,6 +331,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
                             found = 1;
 
                             //parent_node.PowerNets[l].dummy_connected.clear();
+                            //there will be a bug, if not clear() for multi aspect ratio *** BUG*** Yaguang, 1/1/2020
 
                             for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
                                   PnRDB::connectNode temp_connectNode;
@@ -1073,6 +1084,35 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
         }
      }
 
+
+};
+
+void PnRdatabase::Write_Router_Report(PnRDB::hierNode &node, const string& opath){
+
+  std::ofstream router_report;
+  string report_path = opath+"Router_Report.txt";
+  router_report.open(report_path);
+
+
+  for(int i = 0;i < node.router_report.size();i++){
+
+      router_report<<"Node "<<node.router_report[i].node_name<<std::endl;
+
+      for(int j=0;j<node.router_report[i].routed_net.size();j++){
+       
+        router_report<<"  Net "<<node.router_report[i].routed_net[j].net_name<<std::endl;
+
+        for(int k=0;k<node.router_report[i].routed_net[j].pin_name.size();k++){
+           
+           router_report<<"    Pin "<<node.router_report[i].routed_net[j].pin_name[k]<<" Find a path "<<node.router_report[i].routed_net[j].pin_access[k]<<std::endl;              
+
+        }
+
+      }
+      
+    }
+
+  router_report.close();
 
 };
 
