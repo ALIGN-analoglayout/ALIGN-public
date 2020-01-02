@@ -68,9 +68,11 @@ Design directory is by default set to examples directory and can be modfied in t
         % make DESIGN=<design>
     
 ## Design database:
- * Contains example circuits with netlist, schematic
+* Contain example circuits with netlist, schematic running on circleci
+* [Other design examples](dev/Design\ Database) 
  
 ## Viewer :
-* GDS output: KLayout: https://github.com/KLayout/klayout
-* JSON output: Layout viewer from JSON file
+The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
+* [KLayout](https://github.com/KLayout/klayout): GDS viewer
+* [Viewer](Viewer): Layout viewer to view output JSON file
 
