@@ -565,7 +565,6 @@ void GcellDetailRouter::create_detailrouter(){
 
         temp_routing_net.pin_name.push_back(temp_pin_name);
         temp_routing_net.pin_access.push_back(1);
-        temp_report.routed_net.push_back(temp_routing_net);
 
 
        for(unsigned int j=1;j<temp_pins.size();j++){
@@ -663,9 +662,9 @@ void GcellDetailRouter::create_detailrouter(){
 
            temp_routing_net.pin_name.push_back(temp_pin_name);
            temp_routing_net.pin_access.push_back(pathMark);
-           temp_report.routed_net.push_back(temp_routing_net);
+           //temp_report.routed_net.push_back(temp_routing_net);
 
-           assert(pathMark);
+           //assert(pathMark);
            if(pathMark) {
              AddViaSpacing(a_star, grid);
              //grid.InactivePointlist_via()
@@ -735,6 +734,7 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"Detail Router check point 11"<<std::endl;
       InsertPlistToSet_x(Set_net, add_plist);
 
+      temp_report.routed_net.push_back(temp_routing_net);
       //modify_tile_metals(Nets[i], 0);
   }
 };
