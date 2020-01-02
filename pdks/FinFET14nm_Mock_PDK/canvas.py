@@ -1,5 +1,5 @@
 from align.cell_fabric import Via, Region, Wire, Pdk, DefaultCanvas
-from align.cell_fabric import CenterLineGrid, UncoloredCenterLineGrid
+from align.cell_fabric import CenterLineGrid, ColoredCenterLineGrid, UncoloredCenterLineGrid
 from align.cell_fabric import EnclosureGrid, SingleGrid, CenteredGrid
 
 from pathlib import Path
@@ -79,8 +79,8 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         stoppoint = unitCellLength//2-p['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=p['Pb']['pbWidth'], offset= offset_active_body),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))     
-        
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+
         self.LISDb = self.addGen( Wire( 'LISDb', 'Lisd', 'v',
                                      clg=UncoloredCenterLineGrid( pitch=   p['M1']['Pitch'], width= p['Lisd']['LisdWidth'], offset= p['M1']['Offset']),
                                      spg=EnclosureGrid( pitch=p['M2']['Pitch'], offset=0, stoppoint= p['M2']['Width']//2+p['V1']['VencA_L'], check=True)))
@@ -99,3 +99,20 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine(i*v0pitch,    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
+        self.m1n = self.addGen( Wire( 'm1n', 'M1', 'v',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m1Pitch'], width=p['Cap']['m1Width']),
+                                     spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['V1']['VencA_L'] +p['M2']['Width']//2, check=False)))
+        self.m2n = self.addGen( Wire( 'm2n', 'M2', 'h',
+                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m2Pitch'], width=p['Cap']['m2Width']),
+                                      spg=EnclosureGrid( pitch=p['M1']['Pitch'], stoppoint=p['V1']['VencA_H'] + p['M1']['Width']//2, check=False)))
+
+        self.m3n = self.addGen( Wire( 'm3n', 'M3', 'v',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m3Pitch'], width=p['Cap']['m3Width']),
+                                     spg=EnclosureGrid(pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] + p['M2']['Width']//2, check=False)))
+
+        self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
+
+        self.v1_xn = self.addGen( Via( 'v1_xn', 'V1', h_clg=self.m2n.clg, v_clg=self.m1.clg))
+        self.v1_nx = self.addGen( Via( 'v1_nx', 'V1', h_clg=self.m2.clg, v_clg=self.m1n.clg))
+        self.v2_xn = self.addGen( Via( 'v2_xn', 'V2', h_clg=self.m2n.clg, v_clg=self.m3.clg))
+        self.v2_nx = self.addGen( Via( 'v2_nx', 'V2', h_clg=self.m2.clg, v_clg=self.m3n.clg))
