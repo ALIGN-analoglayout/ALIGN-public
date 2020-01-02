@@ -1,86 +1,73 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 
- This the main repository for the DARPA IDEA ALIGN project led by University of Minnesota.
+#ALIGN: Analog Layout, Intelligently Generated from Netlists
+ALIGN is an open source automatic layout generator for analog circuits developed under IDEA program led by University of Minnesota funded by DARPA. The ALIGN flow includes circuit annotation, cell generation and placement and routing steps to generate a GDS from an input spice netlist. Circuit annotation creates multiple hierarchies in the input netlist to implement the design in using a hierarchical approach. Design rules are abstracted from PDK into a json format. A mock PDK based on FinFET technology is provided with this repository which is being used by cell generator and Placer and Router to generate layout.
 
-# Push Button Flow
- * make ALIGN : Runs the full flow using single command
- * make ALIGN_docker : Runs the full flow on Docker 
-```bash
-  - update local paths in Makefile before running the tool [line 1-7]
-  - make : lists all available commands 
-  - make compile : required once for setting up the tool
+## Inputs:
+ * Unannotated [spice netlist](examples/telescopic_ota/telescopic_ota.sp)
+ * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
+    - Power and Gnd signals (First power signal is used for global power grid)
+    - Clk signal (optional)
+    - Digital blocks (optional)
+ * Library:(spice format)
+    - A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify elements in the design.
+    - The user can add more template library elements in the [user_template library](align/config/user_template.sp).
+    - The user can also specify dont_use_cells.txt to ask annotation to ignore a subset of library elements during annotation.
+ * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
+    - A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by cell generator and Place and Route.
+    - For any new PDK users need to extract the design rules in the format provided in this directory.
+ * LEF:
+    - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
+## Outputs:
+ * Design Layout GDS: Final layout of the design. The output gds can be imported into any 
+ * Design json: Final layout which can be viewed using ALIGN Viewer created by Intel
+ * Layout image: a .jpg format of layout saved using klayout
+
+## Getting started
+ Suggested way to run the end-to-end ALIGN flow is using a Docker container-based flow for which you need to have a Docker, docker-compose installed. The software get installed in a container image and we use Make to run the flow through the containers. Us can also use the Makefile to run the ALIGN flow through the native Linux build of all the componennts in the current environment (assuming you have all software prerequisites installed).
+Two environment variables need to be set to run the Makefile in any environment. First is the ALIGN\_HOME variable which should point the top directory of the ALIGN analog system.
+
+		% export ALIGN_HOME=<top of ALIGN source area>
+
+Second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
+        % docker volume create <volumeName>
+		% export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
+
+ * Native Linux Environment Flow
+  * Requirements
+    - Python > 3.6
+    - gcc > 7.2
+    - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
+    - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
+    - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
+    - [Googletest]( https://github.com/google/googletest)>=1.10
+ * setting up local environment variables if installations are not in system search path 
+    % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
+    % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
+    % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
+    % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
+    % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
+## Usage
+Design directory is by default set to examples directory and can be modfied in the Makefile 
+* Docker based run
+
+``` bash
+    cd $ALIGN_HOME/build
+    make docker DESIGN=<design>
 ```
+* Native environment flow
 
-## (Proposed) Push Button Docker Flow
-*  Works from a separate directory pointing to ALIGN_HOME, managing dependencies correctly, handles proxies, uses a single shared volume.
-   *  make DESIGN=<example>
-      1.  updates the docker images
-      -   brings up running containers, ready to execute commands
-      -   exec's commands in running containers 
-   *  clean : removes files, shuts down containers.
-
-# Design Flow 
-## Continuous Integration
-```bash
-  - Circleci to integrate code from multiple developers. 
-  - Each check-in is verified automatically.
-  - Code coverage and quality checks are done before merging.
-  - Cross platform using Docker.
+``` bash
+    cd $ALIGN_WORK_DIR
+    ln -s $ALIGN_HOME/build/Makefile
+    source general/bin/activate <general is python virtual environment name>
+    make DESIGN=<design>
 ```
 ## Design database:
  * Contains example circuits with netlist, schematic
  
-## Build : 
-
-* Docker setup initialization for c++/python
-
-
-## Circuit Annotation :
-
-* Sub_circuit_identification: Reading and annotating netlist
-```bash
-  - Generates a verilog file for input circuit. 
-  - Generates input for parametric cell generator.
-```
-* Constraints: JSON format (manual)
-
-## PDK abstraction: (Some parts are private)
-
-* PDK_Abstraction: JSON file format
-* CellFabric: Parametric cell generation
-```bash
-  - Creation of LEF and GDS for cells based on PDK data ( private github).
-  - The sizing is parameterized based on sizing in input netlist.
-```
-## Placement and Routing : 
-* PlaceRouteHierFlow: (private)
-```bash
-Hierarchical placement and router.
-Final output is stored in gds format
-```
-* PlacemenEditor: 
-```bash
-  - View and edit placements of leaf cells. 
-  - Shows bounding box of all wires while moving around a particular leaf.
-```
-* Cktgen: Intel detail router example
-```bash
-  - Takes leaf cell placement and global routing information and sets up the detailed routing task.
-  - Run Intel’s detailed router. 
-```
 ## Viewer :
 * GDS output: KLayout: https://github.com/KLayout/klayout
 * JSON output: Layout viewer from JSON file
-
-## Tutorials: Not exhaustive (WIP)
-
-## Miscellaneous 
-```bash
-PySat : 
-  - SAT-based toolkit
-  - SAT-based leaf cell placer
-  - SAT-based global router 
-  - Full design example for equalizer
-```
 
