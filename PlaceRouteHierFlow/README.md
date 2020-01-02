@@ -7,14 +7,14 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 ## Software description
 
 - Inputs:
-	* Analog designs
-		*Verilog netlist
-		*LEF
-		*XX.gds.json for subblock in Verilog netlist
-		*GDSII map file
-		*PDK file
-	* Constraints file
-	* Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example) 
+>Analog designs
+>>Verilog netlist
+>>LEF
+>>XX.gds.json for subblock in Verilog netlist
+>>GDSII map file
+>>PDK file
+>Constraints file
+>Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example) 
 
 - Outputs: 
 	* Analog design layouts
