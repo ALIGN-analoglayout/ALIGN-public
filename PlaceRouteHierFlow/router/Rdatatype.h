@@ -121,6 +121,13 @@ struct Via{
   //int ViaUpperYLoc;
 };
 
+/* currently unused
+struct via_point{
+  int vIdx;
+  point position;
+};
+*/
+
 struct Metal{
   int MetalIdx;
   std::vector<point> LinePoint;
@@ -371,6 +378,22 @@ struct pointYXComp {
       return lhs.x<rhs.x;
     } else {
       return lhs.y<rhs.y;
+    }
+  }
+};
+
+struct pointSetComp{
+  bool operator() (const std::pair<int, RouterDB::point>& lhs, const std::pair<int, RouterDB::point>& rhs) const{
+    if(lhs.first==rhs.first){
+      if(lhs.second.x==rhs.second.x) {
+        return lhs.second.y < rhs.second.y;
+      }
+      else
+      {
+        return lhs.second.x < rhs.second.x;
+      }
+    }else{
+      return lhs.first < rhs.first;
     }
   }
 };

@@ -386,10 +386,10 @@ void GcellDetailRouter::create_detailrouter(){
   std::cout<<"Gcell Detail Router Check point 5"<<std::endl;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
 
-  //initialize two vector<set<int>>, each set in vector include points in one layer
-  //the points are locations of vias in lower/upper metal
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal(this->layerNo);
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal(this->layerNo);
+  //initialize two set<pair>, each pair includes via idx and via location
+  //and read internal via info from Blcoks
+  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via;
+  InsertInternalVia(Pset_via, this->Blocks);
   //end initial set
   //start detail router
   //Copy_tile_metals();
@@ -635,7 +635,8 @@ void GcellDetailRouter::create_detailrouter(){
            bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
 //////////dijstra
 */
-
+      
+          AddViaSpacing(Pset_via, grid);//this line shoule be done for every net
 ///////// A_star
           A_star a_star(grid, Nets[i].shielding);
           int left_path_number = multi_number;
@@ -672,7 +673,7 @@ void GcellDetailRouter::create_detailrouter(){
 
            assert(pathMark);
            if(pathMark) {
-             AddViaSpacing(a_star, grid, Pset_via_lower_metal, Pset_via_upper_metal);
+             InsertRoutingVia(a_star, grid, Pset_via);//insert routing vias int via set
              //grid.InactivePointlist_via()
              ///////////dijstra
              //physical_path=graph.ConvertPathintoPhysical(grid);
@@ -744,26 +745,67 @@ void GcellDetailRouter::create_detailrouter(){
   }
 };
 
-void GcellDetailRouter::AddViaSpacing(A_star& a_star, Grid& grid,\
-                                      std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_lower_metal, \
-                                      std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_upper_metal){
-  std::vector<std::vector<int>> path = a_star.GetPath();
-  std::vector<std::pair<int, RouterDB::box>> via_vec;
-  grid.SetViaInactiveBox(path, via_vec);//via_vec contains {via_layer, via spacing box}
-  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->drc_info.Via_info.size()); //points in this list cannot have an upper via
-  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->drc_info.Via_info.size()); //points in this list cannot have a lower via
-  for (std::vector<std::pair<int, RouterDB::box>>::const_iterator v_it = via_vec.begin(); v_it != via_vec.end();v_it++){
-    ConvertRect2GridPoints_Via(plist_via_lower_metal, v_it->first, v_it->second.LL.x, v_it->second.LL.y, v_it->second.UR.x, v_it->second.UR.y);
-    ConvertRect2GridPoints_Via(plist_via_upper_metal, v_it->first + 1, v_it->second.LL.x, v_it->second.LL.y, v_it->second.UR.x, v_it->second.UR.y);
+void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
+  std::pair<int, RouterDB::point> via_point;
+  //insert via point into via set
+  for (unsigned int bit = 0; bit < Blocks.size(); bit++)
+  {
+    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size();vit++){
+      via_point.first = Blocks[bit].InternalVia[vit].model_index;
+      via_point.second.x = Blocks[bit].InternalVia[vit].position.x;
+      via_point.second.y = Blocks[bit].InternalVia[vit].position.y;
+      Pset_via.insert(via_point);
+    }
   }
-  std::vector<RouterDB::point> empty_pointvec;
-  plist_via_lower_metal.insert(plist_via_lower_metal.end(), empty_pointvec);
-  plist_via_upper_metal.insert(plist_via_upper_metal.end(), empty_pointvec);
-  InsertPlistToSet(Pset_via_lower_metal, plist_via_lower_metal);
-  InsertPlistToSet(Pset_via_upper_metal, plist_via_upper_metal);
+}
+
+void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via){
+  //1.get path from a_star
+  std::vector<std::vector<int>> path = a_star.GetPath();
+  //2.insert via point into via set
+  std::pair<int, RouterDB::point> via_point;
+  for (std::vector<std::vector<int>>::const_iterator paths_it = path.begin(); paths_it != path.end(); paths_it++)
+  {
+    for (std::vector<int>::const_iterator path_it = paths_it->begin(); path_it != paths_it->end();path_it++){
+      if(path_it==paths_it->begin())continue;//start from the second vertice
+      int mIdx1 = grid.vertices_total[*(path_it - 1)].metal, mIdx2 = grid.vertices_total[*path_it].metal;
+      if (mIdx1==mIdx2)continue; //skip vertices in the same layer
+      int x1 = grid.vertices_total[*(path_it - 1)].x, y1 = grid.vertices_total[*(path_it - 1)].y;
+      int x2 = grid.vertices_total[*path_it].x, y2 = grid.vertices_total[*path_it].y;
+      if(x1!=x2 || y1!=y2)continue;//skip when vertices in different location
+      via_point.first = std::min(mIdx1, mIdx2);
+      via_point.second.x = x1;
+      via_point.second.y = y1;
+      Pset_via.insert(via_point);
+    }
+  }
+}
+
+void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
+  std::vector<std::pair<int, RouterDB::box>> via_spacing_vec;
+  int vIdx = 0, x = 0, y = 0;
+  RouterDB::box box;
+  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+  //1.convert via point into via spacing box and 
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();vit++)
+  {
+    vIdx = vit->first;
+    box.LL.x = vit->second.x - drc_info.Via_info[vIdx].dist_ss;
+    box.LL.y = vit->second.y - drc_info.Via_info[vIdx].dist_ss_y;
+    box.UR.x = vit->second.x + drc_info.Via_info[vIdx].dist_ss;
+    box.UR.y = vit->second.y + drc_info.Via_info[vIdx].dist_ss_y;
+    //and return point list in via's bounding box
+    ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+  };
+
+  //convert vector into set
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
   grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
   grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
-}
+};
 
 void GcellDetailRouter::SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact){
 
