@@ -15,7 +15,6 @@ class DefaultPrimitiveGenerator():
 
         def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
-            self.addWire( self.LISD, None, None, i, (y, 1), (y+1, -1))
             for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
                 self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
@@ -23,7 +22,6 @@ class DefaultPrimitiveGenerator():
         # Draw FEOL Layers
 
         self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.RVT,    None,    None, y, (x, 1), (x+1, -1))
         self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
         for i in range(1,  self.finsPerUnitCell):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
@@ -96,13 +94,14 @@ class DefaultPrimitiveGenerator():
 
         self.addWire( self.m2, 'B', 'B', ((y_cells)* self.m2PerUnitCell//2, self.lFin//4), (0, 1), (x_cells*self.gatesPerUnitCell, -1))
 
-    def _bodyContact(self, x, y, y_cells, x_cells, name='M1'):
+    def _addBodyContact(self, x, y, yloc=None, name='M1'):
+        fullname = f'{name}_X{x}_Y{y}'
+        if yloc is not None:
+            y = yloc
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
         gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
-        fullname = f'{name}_X{x}_Y{y}'
-        y = y_cells-1
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
@@ -127,27 +126,27 @@ class DefaultPrimitiveGenerator():
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, names[0], False, **parameters)
-                    self._bodyContact(x, y, y_cells, x_cells, names[0])
+                    self._addBodyContact(x, y, y_cells - 1, names[0])
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2, **parameters)
-                    self._bodyContact(x, y, y_cells, x_cells, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
+                    self._addBodyContact(x, y, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
-                    self._bodyContact(x, y, y_cells, x_cells, names[((x % 2) + (y % 2)) % 2])
                     self._addMOS(x, y, names[((x % 2) + (y % 2)) % 2], False, **parameters)
+                    self._addBodyContact(x, y, y_cells - 1, names[((x % 2) + (y % 2)) % 2])
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
-                    self._bodyContact(x, y, y_cells, x_cells, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
+                    self._addBodyContact(x, y, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, connections)
