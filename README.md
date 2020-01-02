@@ -33,37 +33,40 @@ Two environment variables need to be set to run the Makefile in any environment.
 Second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
         % docker volume create <volumeName>
 		% export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
+#### Docker flow
+ * Requirements
+    - Docker-ce > 17.12
+    - Docker compose > 3.6
 
- * Native Linux Environment Flow
-  * Requirements
+#### Native Linux Environment Flow
+ * Requirements
     - Python > 3.6
     - gcc > 7.2
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
- * setting up local environment variables if installations are not in system search path 
-    % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
-    % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
-    % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
-    % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
-    % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
+
+ * Setting up local environment variables if installations are not in system search path 
+
+        % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
+        % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
+        % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
+        % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
+        % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
 ## Usage
 Design directory is by default set to examples directory and can be modfied in the Makefile 
 * Docker based run
 
-``` bash
-    cd $ALIGN_HOME/build
-    make docker DESIGN=<design>
-```
+        % cd $ALIGN_HOME/build
+        % make docker DESIGN=<design>
 * Native environment flow
 
-``` bash
-    cd $ALIGN_WORK_DIR
-    ln -s $ALIGN_HOME/build/Makefile
-    source general/bin/activate <general is python virtual environment name>
-    make DESIGN=<design>
-```
+        % cd $ALIGN_WORK_DIR
+        % ln -s $ALIGN_HOME/build/Makefile
+        % source general/bin/activate <general is python virtual environment name>
+        % make DESIGN=<design>
+    
 ## Design database:
  * Contains example circuits with netlist, schematic
  
