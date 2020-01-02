@@ -345,7 +345,7 @@ void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<st
     tile_index = Gcell.tiles_total[tile_index].down[0].next;
     temp_path.first = tile_index;
     temp_path.second = tile_index;
-    global_path.push_back(temp_path);   
+    global_path.push_back(temp_path);
   }
 
   while(Gcell.tiles_total[tile_index].up.size()>0){
@@ -716,7 +716,6 @@ void GcellDetailRouter::create_detailrouter(){
            }
            Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source,temp_dest, physical_path);
            UpdatePlistNets(physical_path, add_plist);
-
           }
       Symmetry_Routing(sym_flag, i, Set_net);
       std::cout<<"Detail Router check point 11"<<std::endl;
@@ -2356,6 +2355,31 @@ void GcellDetailRouter::UpdatePlistNets(std::vector<std::vector<RouterDB::Metal>
           LLy = physical_path[i][j].MetalRect.placedLL.y;
           URx = physical_path[i][j].MetalRect.placedUR.x;
           URy = physical_path[i][j].MetalRect.placedUR.y;
+
+          int direction = drc_info.Metal_info[mIdx].direct;
+          int minL = drc_info.Metal_info[mIdx].minL;
+
+          if(direction==1){ //h
+
+          if( (URx-LLx)<minL ){
+
+              int extend_dis = ceil(minL- (URx-LLx))/2;
+              LLx = LLx - extend_dis;
+              URx = URx + extend_dis;
+            }
+
+            }else{//v
+
+            if( (URy-LLy)<minL ){
+
+              int extend_dis = ceil(minL- (URy-LLy))/2;
+              LLy = LLy - extend_dis;
+              URy = URy + extend_dis;
+           }
+
+  }
+
+
           ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
          }
      }
@@ -2606,28 +2630,6 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   int obs_l=0;
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
-  int direction = drc_info.Metal_info[mIdx].direct;
-  int minL = drc_info.Metal_info[mIdx].minL;
-
-  if(direction==1){ //h
-
-    if( (URx-LLx)<minL ){
-
-        int extend_dis = ceil(minL- (URx-LLx))/2;
-        LLx = LLx - extend_dis;
-        URx = URx + extend_dis;
-      }
-
-  }else{//v
-
-    if( (URy-LLy)<minL ){
-
-        int extend_dis = ceil(minL- (URy-LLy))/2;
-        LLy = LLy - extend_dis;
-        URy = URy + extend_dis;
-      }
-
-  }
 
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
