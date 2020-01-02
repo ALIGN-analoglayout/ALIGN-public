@@ -104,22 +104,14 @@ services:
     image: ubuntu:18.04
     container_name: transfer_cont
 
-  topology-service:
+  align-service:
     <<: *default-service
-    image: topology
-    build:
-      <<: *default-build
-      context: ${ALIGN_HOME}/sub_circuit_identification
-    container_name: topology_cont
-
-  cellfabric-service:
-    <<: *default-service
-    image: cellfabric_image
+    image: align_image
     build:
       <<: *default-build
       context: ${ALIGN_HOME}/
-      dockerfile: CellFabric/Dockerfile
-    container_name: cellfabric_cont
+      dockerfile: build/Dockerfile.base
+    container_name: align_cont
 
   placeroute-service:
     <<: *default-service
