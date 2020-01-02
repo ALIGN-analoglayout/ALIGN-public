@@ -145,7 +145,8 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void Copy_tile_metals();
     void Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path );
     void ConvertRect2GridPoints_Via(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
-    void AddViaSpacing(A_star &a_star, Grid &grid);
+    void AddViaSpacing(A_star &a_star, Grid &grid, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_lower_metal,
+                       std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_upper_metal);
 };
 
 #endif

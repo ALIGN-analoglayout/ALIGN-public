@@ -375,7 +375,7 @@ void GcellDetailRouter::create_detailrouter(){
   CreatePlistBlocks(plist, this->Blocks);
 
   std::cout<<"Gcell Detail Router Check point 2"<<std::endl;
-  //CreatePlistTerminals(plist, this->Terminals);
+  CreatePlistTerminals(plist, this->Terminals);
 
   std::cout<<"Gcell Detail Router Check point 3"<<std::endl;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
@@ -385,8 +385,13 @@ void GcellDetailRouter::create_detailrouter(){
 
   std::cout<<"Gcell Detail Router Check point 5"<<std::endl;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
+
+  //initialize two vector<set<int>>, each set in vector include points in one layer
+  //the points are locations of vias in lower/upper metal
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal(this->layerNo);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal(this->layerNo);
   //end initial set
-  //start detail router 
+  //start detail router
   //Copy_tile_metals();
   for(unsigned int i=0;i<Nets.size();i++){
 
@@ -400,9 +405,9 @@ void GcellDetailRouter::create_detailrouter(){
            multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
        }
 
-       //added for terminals
-       CreatePlistTerminals(plist, this->Terminals);
-       InsertPlistToSet_x(Set_x, plist);
+       //added for terminals, comment duplicated lines
+       //CreatePlistTerminals(plist, this->Terminals);
+       //InsertPlistToSet_x(Set_x, plist);
        //added for teminals
 
        if(Nets[i].path_metal.size()>0){continue;}
@@ -565,6 +570,7 @@ void GcellDetailRouter::create_detailrouter(){
 
         temp_routing_net.pin_name.push_back(temp_pin_name);
         temp_routing_net.pin_access.push_back(1);
+        temp_report.routed_net.push_back(temp_routing_net);
 
 
        for(unsigned int j=1;j<temp_pins.size();j++){
@@ -662,11 +668,11 @@ void GcellDetailRouter::create_detailrouter(){
 
            temp_routing_net.pin_name.push_back(temp_pin_name);
            temp_routing_net.pin_access.push_back(pathMark);
-           //temp_report.routed_net.push_back(temp_routing_net);
+           temp_report.routed_net.push_back(temp_routing_net);
 
-           //assert(pathMark);
+           assert(pathMark);
            if(pathMark) {
-             AddViaSpacing(a_star, grid);
+             AddViaSpacing(a_star, grid, Pset_via_lower_metal, Pset_via_upper_metal);
              //grid.InactivePointlist_via()
              ///////////dijstra
              //physical_path=graph.ConvertPathintoPhysical(grid);
@@ -734,12 +740,13 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"Detail Router check point 11"<<std::endl;
       InsertPlistToSet_x(Set_net, add_plist);
 
-      temp_report.routed_net.push_back(temp_routing_net);
       //modify_tile_metals(Nets[i], 0);
   }
 };
 
-void GcellDetailRouter::AddViaSpacing(A_star& a_star, Grid& grid){
+void GcellDetailRouter::AddViaSpacing(A_star& a_star, Grid& grid,\
+                                      std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_lower_metal, \
+                                      std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Pset_via_upper_metal){
   std::vector<std::vector<int>> path = a_star.GetPath();
   std::vector<std::pair<int, RouterDB::box>> via_vec;
   grid.SetViaInactiveBox(path, via_vec);//via_vec contains {via_layer, via spacing box}
@@ -752,10 +759,10 @@ void GcellDetailRouter::AddViaSpacing(A_star& a_star, Grid& grid){
   std::vector<RouterDB::point> empty_pointvec;
   plist_via_lower_metal.insert(plist_via_lower_metal.end(), empty_pointvec);
   plist_via_upper_metal.insert(plist_via_upper_metal.end(), empty_pointvec);
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
-  grid.InactivePointlist_via(pset_via_lower_metal, true); //inactive metal's upper via
-  grid.InactivePointlist_via(pset_via_upper_metal, false); //inactive metal's lower via
+  InsertPlistToSet(Pset_via_lower_metal, plist_via_lower_metal);
+  InsertPlistToSet(Pset_via_upper_metal, plist_via_upper_metal);
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
 }
 
 void GcellDetailRouter::SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact){

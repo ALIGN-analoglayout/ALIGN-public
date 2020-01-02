@@ -44,6 +44,6 @@ class RawRouter {
     std::vector<std::vector<RouterDB::point> > FindPlist(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR);
     std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > FindsetPlist(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR);
     std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > Plist2Set(std::vector<std::vector<RouterDB::point> >& plist);
-
+    void InsertPlistToSet(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Set, std::vector<std::vector<RouterDB::point>> &plist);
 };
 #endif
