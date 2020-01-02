@@ -667,26 +667,28 @@ void GcellDetailRouter::create_detailrouter(){
 
            assert(pathMark);
            if(pathMark) {
-///////////dijstra
-          //physical_path=graph.ConvertPathintoPhysical(grid);
-///////////dijstra
+             AddViaSpacing(a_star, grid);
+             //grid.InactivePointlist_via()
+             ///////////dijstra
+             //physical_path=graph.ConvertPathintoPhysical(grid);
+             ///////////dijstra
 
-///////// A_star
-          physical_path=a_star.ConvertPathintoPhysical(grid);
-///////// A_star
+             ///////// A_star
+             physical_path = a_star.ConvertPathintoPhysical(grid);
+             ///////// A_star
 
-           std::cout<<"Detail Router check point 6"<<std::endl;
-           //lastmile connection source
-           //check first point of physical path
-           lastmile_source_new(physical_path,temp_source);
-           //lastmile connection dest
-             //check last point of physical path 
-           std::cout<<"Detail Router check point 7"<<std::endl;
-           lastmile_dest_new(physical_path,temp_dest);
+             std::cout << "Detail Router check point 6" << std::endl;
+             //lastmile connection source
+             //check first point of physical path
+             lastmile_source_new(physical_path, temp_source);
+             //lastmile connection dest
+             //check last point of physical path
+             std::cout << "Detail Router check point 7" << std::endl;
+             lastmile_dest_new(physical_path, temp_dest);
 
-           //return physical path to net
-           //splitPath(physical_path, Nets[i]);
-           returnPath(physical_path, Nets[i]);
+             //return physical path to net
+             //splitPath(physical_path, Nets[i]);
+             returnPath(physical_path, Nets[i]);
            }else{
            std::cout<<"Router-Warning: feasible path might not be found\n";
            }
@@ -737,8 +739,24 @@ void GcellDetailRouter::create_detailrouter(){
   }
 };
 
-
-
+void GcellDetailRouter::AddViaSpacing(A_star& a_star, Grid& grid){
+  std::vector<std::vector<int>> path = a_star.GetPath();
+  std::vector<std::pair<int, RouterDB::box>> via_vec;
+  grid.SetViaInactiveBox(path, via_vec);//via_vec contains {via_layer, via spacing box}
+  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->drc_info.Via_info.size()); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->drc_info.Via_info.size()); //points in this list cannot have a lower via
+  for (std::vector<std::pair<int, RouterDB::box>>::const_iterator v_it = via_vec.begin(); v_it != via_vec.end();v_it++){
+    ConvertRect2GridPoints_Via(plist_via_lower_metal, v_it->first, v_it->second.LL.x, v_it->second.LL.y, v_it->second.UR.x, v_it->second.UR.y);
+    ConvertRect2GridPoints_Via(plist_via_upper_metal, v_it->first + 1, v_it->second.LL.x, v_it->second.LL.y, v_it->second.UR.x, v_it->second.UR.y);
+  }
+  std::vector<RouterDB::point> empty_pointvec;
+  plist_via_lower_metal.insert(plist_via_lower_metal.end(), empty_pointvec);
+  plist_via_upper_metal.insert(plist_via_upper_metal.end(), empty_pointvec);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
+  grid.InactivePointlist_via(pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(pset_via_upper_metal, false); //inactive metal's lower via
+}
 
 void GcellDetailRouter::SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact){
 

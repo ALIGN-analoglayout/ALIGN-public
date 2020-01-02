@@ -275,14 +275,25 @@ void Grid::InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::po
 }
 
 
-void Grid::InactivePointlist_via(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist) {
-  for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
+void Grid::InactivePointlist_via(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist, bool up) {
+  if(up){
+    for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
     int mm=it->metal;
     RouterDB::point p; p.x=it->x; p.y=it->y;
     if(plist.at(mm).find(p)!=plist.at(mm).end()) {
-       it->via_active=false;
+       it->via_active_up=false;
       }
+    }
+  }else{
+    for(std::vector<RouterDB::vertex>::iterator it=this->vertices_total.begin(); it!=this->vertices_total.end();++it) {
+      int mm=it->metal;
+      RouterDB::point p; p.x=it->x; p.y=it->y;
+      if(plist.at(mm).find(p)!=plist.at(mm).end()) {
+          it->via_active_down=false;
+        }
+    }
   }
+
 }
 
 void Grid::InactivePointlist_Power(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist) {
@@ -3263,4 +3274,24 @@ void Grid::Full_Connected_Vertex(){
        start_index = next_start_index;
        
       }
+}
+
+void Grid::SetViaInactiveBox(std::vector<std::vector<int>> path, std::vector<std::pair<int, RouterDB::box>>& via_vec){
+  via_vec.clear();
+  for (std::vector<std::vector<int>>::const_iterator paths_it = path.begin(); paths_it != path.end(); paths_it++)
+  {
+    for (std::vector<int>::const_iterator path_it = paths_it->begin(); path_it != paths_it->end();path_it++){
+      if(path_it==paths_it->begin())continue;//start from the second vertice
+      int mIdx1 = vertices_total[*(path_it - 1)].metal, mIdx2 = vertices_total[*path_it].metal;
+      if (mIdx1==mIdx2)continue; //skip vertices in the same layer
+      int x1 = vertices_total[*(path_it - 1)].x, y1 = vertices_total[*(path_it - 1)].y;
+      int x2 = vertices_total[*path_it].x, y2 = vertices_total[*path_it].y;
+      if(x1!=x2 || y1!=y2)continue;//skip when vertices in different location
+      int vIdx = std::min(mIdx1, mIdx2);
+      RouterDB::point LL{x1 - drc_info.Via_info[vIdx].dist_ss, y1 - drc_info.Via_info[vIdx].dist_ss_y};
+      RouterDB::point UR{x1 + drc_info.Via_info[vIdx].dist_ss, y1 + drc_info.Via_info[vIdx].dist_ss_y};
+      RouterDB::box box{LL, UR};
+      via_vec.push_back(std::make_pair(vIdx, box));
+    }
+  }
 }

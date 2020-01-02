@@ -14,6 +14,7 @@
 //using std::map;
 
 namespace RouterDB {
+struct box;
 struct point;
 struct vertex;
 struct ViaModel;
@@ -87,7 +88,8 @@ struct vertex{
   int metal=-1;
   int Cost = -1;
   bool active=false;
-  bool via_active = true;
+  bool via_active_down = true;
+  bool via_active_up = true;
   int parent = -1; // -1 mean source
   int index=-1;
   std::vector<int> gridmetal;
@@ -501,5 +503,8 @@ struct SegOrderComp {
   }
 };
 
-}
+struct box{
+  point LL, UR;
+};
+} // namespace RouterDB
 #endif

@@ -160,7 +160,7 @@ bool A_star::expand_node_u(int direction, std::vector<int> &temp_node, Grid &gri
 
 bool A_star::expand_node_d(int direction, std::vector<int> &temp_node, Grid &grid){
 
-  if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].via_active and grid.vertices_total[direction].Cost==-1){
+  if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].via_active_up and grid.vertices_total[direction].Cost==-1){
      temp_node.push_back(direction);
     }
 
@@ -455,7 +455,7 @@ bool A_star::found_near_node_S(int left_up, int right_down, int current_node, Gr
     //std::cout<<"expand node checkout point4"<<std::endl;
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
     //std::cout<<"expand node checkout point5"<<std::endl;
-    if(grid.vertices_total[current_node].via_active){
+    if(grid.vertices_total[current_node].via_active_up){
       up_found = expand_node_u(grid.vertices_total[current_node].up, up_node, grid);
     }else{
       up_found = false;
@@ -579,7 +579,7 @@ bool A_star::found_near_node(int left_up, int right_down, int current_node, Grid
     //std::cout<<"expand node checkout point4"<<std::endl;
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
     //std::cout<<"expand node checkout point5"<<std::endl;
-    if(grid.vertices_total[current_node].via_active){
+    if(grid.vertices_total[current_node].via_active_up){
        up_found = expand_node_u(grid.vertices_total[current_node].up, up_node, grid);
     }else{
        up_found = false;
@@ -2653,3 +2653,8 @@ void A_star::refreshGrid(Grid& grid){
        grid.vertices_total[i].parent = -1;
      }
 };
+
+std::vector<std::vector<int>> A_star::GetPath(){
+  std::vector<std::vector<int>> path(Path);
+  return (path);
+}

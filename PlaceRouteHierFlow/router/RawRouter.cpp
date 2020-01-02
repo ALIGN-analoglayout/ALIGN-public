@@ -124,6 +124,19 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Findse
 
 };
 
+std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Plist2Set(std::vector<std::vector<RouterDB::point> >& plist){
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Sets;
+  for (unsigned int i = 0; i < plist.size();i++){
+    std::set<RouterDB::point, RouterDB::pointXYComp> Set;
+    for (unsigned int j = 0; j < plist[i].size(); j++)
+    {
+      Set.insert(plist[i][j]);
+    }
+    Sets.push_back(Set);
+  }
+  return Sets;
+}
+
 std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, int LLx, int LLy, int URx, int URy) {
   std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp > LLxSet, URxSet, LLySet, URySet;
   std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp >::iterator itlow, itup, xit;
