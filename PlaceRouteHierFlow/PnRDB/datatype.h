@@ -41,6 +41,8 @@ struct Via;
 struct PowerGrid;
 struct PowerNet;
 struct PortPos;
+struct Router_report;
+struct routing_net;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -361,7 +363,7 @@ struct hierNode {
   vector<PortPos> Port_Location;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
-
+  vector<Router_report> router_report;
 
 }; // structure of vertex in heirarchical tree
 
@@ -532,6 +534,21 @@ struct Drc_info {
   vector<ViaModel> Via_model;
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
+};
+
+struct routing_net{
+
+  string net_name;
+  vector<string> pin_name;
+  vector<int> pin_access; 
+
+};
+
+struct Router_report{
+
+  string node_name;
+  vector<routing_net> routed_net;
+
 };
 
 }

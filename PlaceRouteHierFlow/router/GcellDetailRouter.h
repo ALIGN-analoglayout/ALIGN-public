@@ -36,7 +36,8 @@ class GcellDetailRouter : public GcellGlobalRouter{
   friend class PowerRouter;
 
   private:
-  GlobalGrid Gcell; 
+  GlobalGrid Gcell;
+  PnRDB::Router_report temp_report; 
 /*
    int End_Metal_Flag = 1;
    

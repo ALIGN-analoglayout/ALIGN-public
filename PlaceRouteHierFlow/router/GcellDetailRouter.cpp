@@ -26,6 +26,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->layerNo = GR.drc_info.Metal_info.size();
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
+  this->temp_report.node_name = HierNode.name;
 
   printNetsInfo(); 
 
@@ -301,6 +302,10 @@ void GcellDetailRouter::create_detailrouter(){
   //start detail router 
   for(unsigned int i=0;i<Nets.size();i++){
 
+       PnRDB::routing_net temp_routing_net;       
+       temp_routing_net.net_name = Nets[i].netName;
+       std::string temp_pin_name;
+
        int multi_number = 0;
        if(Nets[i].R_constraints.size()>0){
            std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
@@ -397,9 +402,9 @@ void GcellDetailRouter::create_detailrouter(){
            if(sym_flag == 1){
 
              std::cout<<"sym_flag exist"<<std::endl;
-             SortPins(temp_pins);
-             SortPins(sym_temp_pins);
-             SortPins(common_pins);
+             //SortPins(temp_pins);
+             //SortPins(sym_temp_pins);
+             //SortPins(common_pins);
              temp_pins = common_pins;
            }
 
@@ -409,7 +414,7 @@ void GcellDetailRouter::create_detailrouter(){
             std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
             temp_pins = findPins_new(grid, Nets[i]);
             std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
-            SortPins(temp_pins);
+            //SortPins(temp_pins);
           }
 
        //JudgeTileCoverage(Nets[i].STs[STindex].path, temp_pins, Gcell);
@@ -459,6 +464,21 @@ void GcellDetailRouter::create_detailrouter(){
           }
 
        int source_lock = 0;
+
+       if(Nets[i].connected[0].type==RouterDB::BLOCK){
+              int iter2 = Nets[i].connected[0].iter2;
+              int iter = Nets[i].connected[0].iter;
+              temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
+         }else{
+              int iter = Nets[i].connected[0].iter;
+              temp_pin_name = Terminals[iter].name;
+         }
+
+
+        temp_routing_net.pin_name.push_back(temp_pin_name);
+        temp_routing_net.pin_access.push_back(1);
+        //temp_report.routed_net.push_back(temp_routing_net);
+
        for(unsigned int j=1;j<temp_pins.size();j++){
            //create dest
            std::cout<<"Working on dest "<<j<<std::endl;
@@ -531,6 +551,21 @@ void GcellDetailRouter::create_detailrouter(){
            std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
            std::cout<<"Detail Router check point 5"<<std::endl;
            std::vector<std::vector<RouterDB::Metal> > physical_path;
+
+           if(Nets[i].connected[j].type==RouterDB::BLOCK){
+              int iter2 = Nets[i].connected[j].iter2;
+              int iter = Nets[i].connected[j].iter;
+              temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
+           }else{
+              int iter = Nets[i].connected[j].iter;
+              temp_pin_name = Terminals[iter].name;
+           }
+
+
+           temp_routing_net.pin_name.push_back(temp_pin_name);
+           temp_routing_net.pin_access.push_back(pathMark);
+           //temp_report.routed_net.push_back(temp_routing_net);
+
            if(pathMark) {
 ///////////dijstra
           //physical_path=graph.ConvertPathintoPhysical(grid);
@@ -597,7 +632,7 @@ void GcellDetailRouter::create_detailrouter(){
 
       std::cout<<"Detail Router check point 11"<<std::endl;
       InsertPlistToSet_x(Set_net, add_plist);
-
+      temp_report.routed_net.push_back(temp_routing_net);
      }
 
 
@@ -2750,6 +2785,8 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
   std::cout<<"test blockintermetal to node intermetal: start"<<std::endl;
   BlockInterMetalToNodeInterMetal(HierNode);
   std::cout<<"test blockintermetal to node intermetal: end"<<std::endl;
+
+  HierNode.router_report.push_back(temp_report);
   //std::cout<<"End ReturnHierNode"<<std::endl;
 };
 
