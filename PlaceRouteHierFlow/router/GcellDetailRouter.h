@@ -145,10 +145,24 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void Copy_tile_metals();
     void Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path );
     void ConvertRect2GridPoints_Via(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
+    void Generate_Block_Terminal_Internal_Metal_Set(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
+    void Initial_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i);
+    int R_constraint_based_Parallel_routing_number(int i);
+    void Global_Path_Operation_For_Pins(int i, std::vector<std::pair<int,int> > &global_path);
+    void Global_Path_Operation_For_Symmetry_Pins(int i, std::vector<std::pair<int,int> > &global_path);
+    Grid Generate_Grid_Net(int i);
+    void Grid_Inactive(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, RouterDB::point &gridll, RouterDB::point &gridur);
+    int Found_Pins_and_Symmetry_Pins(Grid &grid, int i, std::vector<std::vector<RouterDB::SinkData> > &temp_pins);
+    void Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid, RouterDB::point sym_gridll, RouterDB::point sym_gridur, RouterDB::point &gridll, RouterDB::point &gridur);
+    std::vector<RouterDB::SinkData> Initial_source_pin(std::vector<std::vector<RouterDB::SinkData> > &temp_pins, int &source_lock);
+    void Update_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i, int j, int pathMark);
+    void Detailed_router_set_src_dest(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, int i, RouterDB::point &sym_gridll, RouterDB::point &sym_gridur, RouterDB::point &gridll, RouterDB::point &gridur, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag);
+    void Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::vector<std::vector<RouterDB::Metal> > &physical_path);
+    void Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
     void InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks);
     void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
     void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid);
-    
 };
+
 
 #endif
