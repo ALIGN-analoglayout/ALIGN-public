@@ -595,7 +595,7 @@ void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::v
 
     if(source_lock==1){
        temp_source.clear();
-       source_lock = 1;
+       //source_lock = 1;
       }
 
     std::cout<<"Detail Router check point 9"<<std::endl;
@@ -726,9 +726,9 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
   std::vector<std::vector<int>> path = a_star.GetPath();
   //2.insert via point into via set
   std::pair<int, RouterDB::point> via_point;
-  for (std::vector<std::vector<int>>::const_iterator paths_it = path.begin(); paths_it != path.end(); paths_it++)
+  for (std::vector<std::vector<int>>::const_iterator paths_it = path.begin(); paths_it != path.end(); ++paths_it)
   {
-    for (std::vector<int>::const_iterator path_it = paths_it->begin(); path_it != paths_it->end();path_it++){
+    for (std::vector<int>::const_iterator path_it = paths_it->begin(); path_it != paths_it->end();++path_it){
       if(path_it==paths_it->begin())continue;//start from the second vertice
       int mIdx1 = grid.vertices_total[*(path_it - 1)].metal, mIdx2 = grid.vertices_total[*path_it].metal;
       if (mIdx1==mIdx2)continue; //skip vertices in the same layer
@@ -744,12 +744,12 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
 }
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
-  int vIdx = 0, x = 0, y = 0;
+  int vIdx = 0;
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
   std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
   //1.convert via point into via spacing box and 
-  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();vit++)
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
   {
     vIdx = vit->first;
     box.LL.x = vit->second.x - drc_info.Via_info[vIdx].dist_ss;
