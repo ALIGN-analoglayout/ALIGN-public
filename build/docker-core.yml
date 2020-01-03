@@ -106,6 +106,14 @@ services:
 
   align-service:
     <<: *default-service
+    environment:
+      - http_proxy
+      - https_proxy
+      - bhttp_proxy
+      - bhttps_proxy
+      - TOP=/ALIGN-public
+      - ALIGN_HOME=/ALIGN-public
+      - ALIGN_WORK_DIR
     image: align_image
     build:
       <<: *default-build
