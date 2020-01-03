@@ -48,20 +48,22 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"
         subckt = netlist_files[0].stem
 
+    # Create directories for each stage
+    topology_dir = working_dir / '1_topology'
+    topology_dir.mkdir(exist_ok=True)
+    primitive_dir = (working_dir / '2_primitives')
+    primitive_dir.mkdir(exist_ok=True)
+    pnr_dir = working_dir / '3_pnr'
+    pnr_dir.mkdir(exist_ok=True)
+
     for netlist in netlist_files:
         logging.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
-        topology_dir = working_dir / '1_topology'
-        topology_dir.mkdir(exist_ok=True)
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, unit_size_mos , unit_size_cap)
         # Generate primitives
-        primitive_dir = (working_dir / '2_primitives')
-        primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
-        pnr_dir = working_dir / '3_pnr'
-        pnr_dir.mkdir(exist_ok=True)
         output = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
         if output is None:
             print("Cannot proceed further. See LOG/compiler.log for last error. Exiting...")
