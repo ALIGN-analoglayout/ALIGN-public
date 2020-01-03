@@ -17,7 +17,7 @@ PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
-PNRDIR=${DESIGN}/3_pnr/
+PNRDIR=${DESIGN}/3_pnr
 PNR_OUTPUT=${DESIGN}/Results
 GEN_OUTPUT=${DESIGN}/2_primitives
 TPO_OUTPUT=${DESIGN}/1_topology
