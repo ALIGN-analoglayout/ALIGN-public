@@ -1,5 +1,4 @@
 import pathlib
-import sys
 
 from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
@@ -65,9 +64,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
         output = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
-        if output is None:
-            print("Cannot proceed further. See LOG/compiler.log for last error. Exiting...")
-            sys.exit(-1)
+        assert output is not None, "Cannot proceed further. See LOG/compiler.log for last error."
         # Convert gds.json to gds
         output_dir = working_dir / 'Results'
         convert_GDSjson_GDS(output_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
