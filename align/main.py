@@ -1,10 +1,11 @@
 import pathlib
+import sys
 
 from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
 from .pnr import generate_pnr
-from .gdsconv.json2gds import convert_GDSjson_GDS_fps
+from .gdsconv.json2gds import convert_GDSjson_GDS
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
 
@@ -58,39 +59,13 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
-        # Generate .map & .lef inputs for PnR
-        with (primitive_dir / f'{subckt}.map').open(mode='wt') as mp, \
-             (primitive_dir / f'{subckt}.lef').open(mode='wt') as lp:
-            for file_ in primitive_dir.iterdir():
-                if file_.suffixes == ['.gds', '.json']:
-                    true_stem = file_.stem.split('.')[0]
-                    mp.write(f'{true_stem} {true_stem}.gds\n')
-                elif file_.suffix == '.lef' and file_.stem != subckt:
-                    lp.write(file_.read_text())
         # Copy over necessary collateral & run PNR tool
         pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
-        # TODO: Copying is bad ! Rewrite C++ code to accept fully qualified paths
-        (pnr_dir / f'{subckt}.map').write_text((primitive_dir / f'{subckt}.map').read_text())
-        (pnr_dir / f'{subckt}.lef').write_text((primitive_dir / f'{subckt}.lef').read_text())
-        (pnr_dir / f'{subckt}.v').write_text((topology_dir / f'{subckt}.v').read_text())
-        (pnr_dir / 'layers.json').write_text((pdk_dir / 'layers.json').read_text())
-        for file_ in topology_dir.iterdir():
-            if file_.suffix == '.const':
-                (pnr_dir / file_.name).write_text(file_.read_text())
-        for file_ in primitive_dir.iterdir():
-            if file_.suffix == '.json':
-                (pnr_dir / file_.name).write_text(file_.read_text())
-        output = generate_pnr(
-            pnr_dir,
-            f'{subckt}.lef',
-            f'{subckt}.v',
-            f'{subckt}.map',
-            'layers.json',
-            subckt)
+        output = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
         if output is None:
-            print("Cannot proceed further")
+            print("Cannot proceed further. See LOG/compiler.log for last error. Exiting...")
             sys.exit(-1)
         # Convert gds.json to gds
         output_dir = working_dir / 'Results'
-        convert_GDSjson_GDS_fps(output_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
+        convert_GDSjson_GDS(output_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
