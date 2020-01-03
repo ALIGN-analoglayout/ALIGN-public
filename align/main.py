@@ -59,8 +59,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Generate .map & .lef inputs for PnR
-        with (primitive_dir / f'{subckt}.map').open(mode='w') as mp, \
-             (primitive_dir / f'{subckt}.map').open(mode='w') as lp:
+        with (primitive_dir / f'{subckt}.map').open(mode='wt') as mp, \
+             (primitive_dir / f'{subckt}.map').open(mode='wt') as lp:
             for file_ in primitive_dir.iterdir():
                 if file_.suffixes == ['.gds', '.json']:
                     true_stem = file_.stem.split('.')[0]
