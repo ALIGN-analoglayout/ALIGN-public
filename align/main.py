@@ -60,7 +60,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Generate .map & .lef inputs for PnR
         with (primitive_dir / f'{subckt}.map').open(mode='wt') as mp, \
-             (primitive_dir / f'{subckt}.map').open(mode='wt') as lp:
+             (primitive_dir / f'{subckt}.lef').open(mode='wt') as lp:
             for file_ in primitive_dir.iterdir():
                 if file_.suffixes == ['.gds', '.json']:
                     true_stem = file_.stem.split('.')[0]
@@ -72,7 +72,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         pnr_dir.mkdir(exist_ok=True)
         # TODO: Copying is bad ! Rewrite C++ code to accept fully qualified paths
         (pnr_dir / f'{subckt}.map').write_text((primitive_dir / f'{subckt}.map').read_text())
-        (pnr_dir / f'{subckt}.map').write_text((primitive_dir / f'{subckt}.map').read_text())
+        (pnr_dir / f'{subckt}.lef').write_text((primitive_dir / f'{subckt}.lef').read_text())
         (pnr_dir / f'{subckt}.v').write_text((topology_dir / f'{subckt}.v').read_text())
         (pnr_dir / 'layers.json').write_text((pdk_dir / 'layers.json').read_text())
         for file_ in topology_dir.iterdir():
@@ -83,7 +83,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 (pnr_dir / file_.name).write_text(file_.read_text())
         output = generate_pnr(
             pnr_dir,
-            f'{subckt}.map',
+            f'{subckt}.lef',
             f'{subckt}.v',
             f'{subckt}.map',
             'layers.json',
