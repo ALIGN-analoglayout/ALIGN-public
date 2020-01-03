@@ -744,7 +744,6 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
 }
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
-  std::vector<std::pair<int, RouterDB::box>> via_spacing_vec;
   int vIdx = 0, x = 0, y = 0;
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
