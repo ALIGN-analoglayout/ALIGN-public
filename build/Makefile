@@ -79,7 +79,7 @@ docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 docker:	volume services make-docker-service
 	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
 
-services:	transfer-service align-service placeroute-service \
+services:	transfer-service align-service \
 		klayoutconvert-service
 
 transfer-service:	docker-compose.yml
