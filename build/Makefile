@@ -38,11 +38,11 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 
 # Convert output to GDS
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
+	$(call execute,align-service, /bin/bash -c "source general/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
 
 # Run schematic2layout
 ${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
+	$(call execute,align-service, /bin/bash -c "source general/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
 
 ${DESIGN}:
 	mkdir ${DESIGN}

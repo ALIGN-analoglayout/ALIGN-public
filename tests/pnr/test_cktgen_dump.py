@@ -29,10 +29,10 @@ def aux(design, subdesign=None):
         subdesign = design
 
     # Generate this above formatted file from PnRDB data
-    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/Results"
+    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/Results"
     assert rdir.is_dir()
 
-    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/inputs"
+    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/3_pnr"
     assert json_dir.is_dir()
 
     with (rdir / f"{subdesign}_0.post_gr.db.json").open("rt") as fp:
@@ -228,10 +228,11 @@ def test_A():
 @pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
                     reason='Necessary test collateral has not been built')
 def test_B():
-    aux( "switched_capacitor_filter", "telescopic_ota")
+    aux( "telescopic_ota", "telescopic_ota")
 
 @pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
                     reason='Necessary test collateral has not been built')
 def test_C():
-    aux( "cascode_current_mirror_ota", "cascode_current_mirror_ota")
+    aux( "cascode_current_mirror_ota", "CASCODED_CMC_PMOS")
+#    aux( "cascode_current_mirror_ota", "cascode_current_mirror_ota")
 
