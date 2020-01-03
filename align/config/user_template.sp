@@ -55,7 +55,7 @@ M2 (D2 D0 S B) NMOS_VTL w=w l=90n
 .ends CMB_NMOS_2 
 
 .subckt CMB_NMOS_3 D0 D1 D2 D3 S
-M0 (D0 D0 S vss) NMOS_VTL w=w l=90n
+M0 (D0 D0 S B) NMOS_VTL w=w l=90n
 M1 (D1 D0 S B) NMOS_VTL w=w l=90n
 M2 (D2 D0 S B) NMOS_VTL w=w l=90n
 M3 (D3 D0 S B) NMOS_VTL w=w l=90n
