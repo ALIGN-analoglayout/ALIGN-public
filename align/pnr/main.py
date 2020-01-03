@@ -15,3 +15,4 @@ def generate_pnr(input_dir, lef_file, verilog_file, map_file, pdk_file, design_n
         logger.critical(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
         print(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
         return None
+    return True

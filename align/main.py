@@ -4,6 +4,7 @@ from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
 from .pnr import generate_pnr
+from .gdsconv.json2gds import convert_GDSjson_GDS_fps
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
 
@@ -80,10 +81,16 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for file_ in primitive_dir.iterdir():
             if file_.suffix == '.json':
                 (pnr_dir / file_.name).write_text(file_.read_text())
-        generate_pnr(
+        output = generate_pnr(
             pnr_dir,
             (subckt + '.lef'),
             f'{subckt}.v',
             f'{subckt}.map',
             'layers.json',
             subckt)
+        if output is None:
+            print("Cannot proceed further")
+            sys.exit(-1)
+        # Convert gds.json to gds
+        output_dir = working_dir / 'Results'
+        convert_GDSjson_GDS_fps(output_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
