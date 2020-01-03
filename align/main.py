@@ -57,10 +57,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         primitive_dir = (working_dir / '2_primitives')
         primitive_dir.mkdir(exist_ok=True)
         for block_name, block_args in primitives.items():
-            generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=working_dir / '2_primitives')
+            generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Generate .map & .lef inputs for PnR
-        with (primitive_dir / (subckt + '.map')).open(mode='w') as mp, \
-             (primitive_dir / (subckt + '.lef')).open(mode='w') as lp:
+        with (primitive_dir / f'{subckt}.map').open(mode='w') as mp, \
+             (primitive_dir / f'{subckt}.map').open(mode='w') as lp:
             for file_ in primitive_dir.iterdir():
                 if file_.suffixes == ['.gds', '.json']:
                     true_stem = file_.stem.split('.')[0]
@@ -71,9 +71,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         pnr_dir = working_dir / '3_pnr'
         pnr_dir.mkdir(exist_ok=True)
         # TODO: Copying is bad ! Rewrite C++ code to accept fully qualified paths
-        (pnr_dir / (subckt + '.map')).write_text((primitive_dir / (subckt + '.map')).read_text())
-        (pnr_dir / (subckt + '.lef')).write_text((primitive_dir / (subckt + '.lef')).read_text())
-        (pnr_dir / (subckt + '.v')).write_text((topology_dir / (subckt + '.v')).read_text())
+        (pnr_dir / f'{subckt}.map').write_text((primitive_dir / f'{subckt}.map').read_text())
+        (pnr_dir / f'{subckt}.map').write_text((primitive_dir / f'{subckt}.map').read_text())
+        (pnr_dir / f'{subckt}.v').write_text((topology_dir / f'{subckt}.v').read_text())
         (pnr_dir / 'layers.json').write_text((pdk_dir / 'layers.json').read_text())
         for file_ in topology_dir.iterdir():
             if file_.suffix == '.const':
@@ -83,7 +83,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                 (pnr_dir / file_.name).write_text(file_.read_text())
         output = generate_pnr(
             pnr_dir,
-            (subckt + '.lef'),
+            f'{subckt}.map',
             f'{subckt}.v',
             f'{subckt}.map',
             'layers.json',
