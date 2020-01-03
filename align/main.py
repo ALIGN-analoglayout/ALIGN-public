@@ -3,6 +3,7 @@ import pathlib
 from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
+from .pnr import generate_pnr
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
 
@@ -24,7 +25,6 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         logging.error("Netlist directory doesn't exist. Please enter a valid directory path")
         print("Netlist directory doesn't exist. Please enter a valid directory path")
         exit(0)
-    netlist_file = pathlib.Path(netlist_file).resolve()
 
     netlist_files = [x for x in netlist_dir.iterdir() if x.is_file() and x.suffix in ('.sp', '.cdl')]
     if not netlist_files:
@@ -34,7 +34,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         exit(0)
 
     if netlist_file:
-        print(netlist_files)
+        netlist_file = pathlib.Path(netlist_file).resolve()
         netlist_files = [x for x in netlist_files if netlist_file == x]
         if not netlist_files:
             print(f"No spice file {netlist_file} found in netlist directory. Exiting...")
@@ -49,8 +49,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     for netlist in netlist_files:
         logging.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
-        (working_dir / '1_topology').mkdir(exist_ok=True)
-        primitives = generate_hierarchy(netlist, subckt, working_dir / '1_topology', flatten, unit_size_mos , unit_size_cap)
+        topology_dir = working_dir / '1_topology'
+        topology_dir.mkdir(exist_ok=True)
+        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, unit_size_mos , unit_size_cap)
         # Generate primitives
         primitive_dir = (working_dir / '2_primitives')
         primitive_dir.mkdir(exist_ok=True)
@@ -65,3 +66,24 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                     mp.write(f'{true_stem} {true_stem}.gds\n')
                 elif file_.suffix == '.lef' and file_.stem != subckt:
                     lp.write(file_.read_text())
+        # Copy over necessary collateral & run PNR tool
+        pnr_dir = working_dir / '3_pnr'
+        pnr_dir.mkdir(exist_ok=True)
+        # TODO: Copying is bad ! Rewrite C++ code to accept fully qualified paths
+        (pnr_dir / (subckt + '.map')).write_text((primitive_dir / (subckt + '.map')).read_text())
+        (pnr_dir / (subckt + '.lef')).write_text((primitive_dir / (subckt + '.lef')).read_text())
+        (pnr_dir / (subckt + '.v')).write_text((topology_dir / (subckt + '.v')).read_text())
+        (pnr_dir / 'layers.json').write_text((pdk_dir / 'layers.json').read_text())
+        for file_ in topology_dir.iterdir():
+            if file_.suffix == '.const':
+                (pnr_dir / file_.name).write_text(file_.read_text())
+        for file_ in primitive_dir.iterdir():
+            if file_.suffix == '.json':
+                (pnr_dir / file_.name).write_text(file_.read_text())
+        generate_pnr(
+            pnr_dir,
+            (subckt + '.lef'),
+            f'{subckt}.v',
+            f'{subckt}.map',
+            'layers.json',
+            subckt)
