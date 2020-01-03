@@ -364,386 +364,348 @@ void GcellDetailRouter::Adding_tiles_for_terminal(int tile_index, std::vector<st
 
 };
 
-
-void GcellDetailRouter::create_detailrouter(){
+void GcellDetailRouter::Generate_Block_Terminal_Internal_Metal_Set(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x){
 
   //initial a set for internal metal
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
 
-  std::cout<<"Gcell Detail Router Check point 1"<<std::endl;
+  //std::cout<<"Gcell Detail Router Check point 1"<<std::endl;
   CreatePlistBlocks(plist, this->Blocks);
 
-  std::cout<<"Gcell Detail Router Check point 2"<<std::endl;
+  //std::cout<<"Gcell Detail Router Check point 2"<<std::endl;
   CreatePlistTerminals(plist, this->Terminals);
 
-  std::cout<<"Gcell Detail Router Check point 3"<<std::endl;
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
-
-  std::cout<<"Gcell Detail Router Check point 4"<<std::endl;
+  //std::cout<<"Gcell Detail Router Check point 4"<<std::endl;
   InsertPlistToSet_x(Set_x, plist);
 
-  std::cout<<"Gcell Detail Router Check point 5"<<std::endl;
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
+  //std::cout<<"Gcell Detail Router Check point 5"<<std::endl;
+  //std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
+};
 
-  //initialize two set<pair>, each pair includes via idx and via location
-  //and read internal via info from Blcoks
-  std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via;
-  InsertInternalVia(Pset_via, this->Blocks);
-  //end initial set
-  //start detail router
-  //Copy_tile_metals();
-  for(unsigned int i=0;i<Nets.size();i++){
+void GcellDetailRouter::Initial_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i){
 
-       PnRDB::routing_net temp_routing_net;       
-       temp_routing_net.net_name = Nets[i].netName;
-       std::string temp_pin_name;
+  temp_routing_net.net_name = Nets[i].netName;
 
-       int multi_number = 0;
-       if(Nets[i].R_constraints.size()>0){
-           std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
-           multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
+};
+
+int GcellDetailRouter::R_constraint_based_Parallel_routing_number(int i){
+
+  int multi_number = 0;
+
+  if(Nets[i].R_constraints.size()>0){
+        std::vector<int> Dist_es= EstimateDist(Nets[i].R_constraints[0], Nets[i]);
+        multi_number = Estimate_multi_connection_number(Nets[i].R_constraints[0],Dist_es);
+    }
+
+  return multi_number;
+
+
+};
+
+void GcellDetailRouter::Global_Path_Operation_For_Pins(int i, std::vector<std::pair<int,int> > &global_path){
+
+  for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
+      Adding_tiles_for_terminal(Nets[i].terminals[terminal_size], global_path);
+  }
+
+};
+
+void GcellDetailRouter::Global_Path_Operation_For_Symmetry_Pins(int i, std::vector<std::pair<int,int> > &global_path){
+
+  std::pair<int,int> temp_global_path;
+  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
+
+     int sym_ST_index = Nets[Nets[i].symCounterpart].STindex;
+     for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].STs[sym_ST_index].path.size();j++){
+           global_path.push_back(Nets[Nets[i].symCounterpart].STs[sym_ST_index].path[j]);
+        }  
+     for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].terminals.size();j++){
+           temp_global_path.first = Nets[Nets[i].symCounterpart].terminals[j];
+           temp_global_path.second = Nets[Nets[i].symCounterpart].terminals[j];
+           global_path.push_back(temp_global_path);
+        }
+    }
+
+};
+
+Grid GcellDetailRouter::Generate_Grid_Net(int i){
+
+  RouterDB::point chip_LL;
+  RouterDB::point chip_UR;
+  chip_LL.x = 0;
+  chip_LL.y = 0;
+  chip_UR.x = width;
+  chip_UR.y = height;
+  int STindex = Nets[i].STindex;
+
+  std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
+  std::pair<int,int> temp_global_path;
+
+  Global_Path_Operation_For_Pins(i, global_path);
+  Global_Path_Operation_For_Symmetry_Pins(i, global_path);
+  Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
+  grid.Full_Connected_Vertex();
+
+  return grid;
+
+};
+
+void GcellDetailRouter::Grid_Inactive(Grid &grid, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, RouterDB::point &gridll, RouterDB::point &gridur){
+
+  gridll=grid.GetGridLL();
+  gridur=grid.GetGridUR();
+  //std::cout<<"Detail path region ( "<<gridll.x<<" "<<gridll.y<<") ( "<<gridur.x<<" "<<gridur.y<<" ) "<<std::endl;
+  //std::cout<<"Gcell Detail Router Check point 8"<<std::endl;
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > plist = FindsetPlist(Set_x, gridll, gridur);
+  //std::cout<<"Gcell Detail Router Check point 9"<<std::endl;
+  grid.InactivePointlist(plist);//+back
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > temp_netplist = FindsetPlist(Set_net, gridll, gridur);
+  //std::cout<<"Detail Router check point 1.3"<<std::endl;
+  grid.InactivePointlist(temp_netplist);//+back
+
+};
+
+int GcellDetailRouter::Found_Pins_and_Symmetry_Pins(Grid &grid ,int i, std::vector<std::vector<RouterDB::SinkData> > &temp_pins){
+
+  int sym_flag = 0;
+  std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins; //symmetry pins 
+  std::vector<std::vector<RouterDB::SinkData> > common_pins; //common part for routing pins and symmetry pins
+
+  if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
+     sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
+     if(sym_flag == 1){
+        std::cout<<"sym_flag exist"<<std::endl;
+        //SortPins(temp_pins);
+        //SortPins(sym_temp_pins);
+        //SortPins(common_pins);
+        temp_pins = common_pins;
        }
+    }else{
+     std::cout<<"Net index "<<i<<std::endl;
+     std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
+     temp_pins = findPins_new(grid, Nets[i]);
+     std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
+     //SortPins(temp_pins);
+    }
 
-       //added for terminals, comment duplicated lines
-       //CreatePlistTerminals(plist, this->Terminals);
-       //InsertPlistToSet_x(Set_x, plist);
-       //added for teminals
+    return sym_flag;
 
-       if(Nets[i].path_metal.size()>0){continue;}
-       if(Nets[i].connected.size()<=1){continue;}
+};
 
 
-       std::vector<std::vector<RouterDB::SinkData> > temp_pins;
-       std::vector<std::vector<RouterDB::SinkData> > sym_temp_pins;
-       std::vector<std::vector<RouterDB::SinkData> > common_pins;
-
-//////QQQ1 grid creation       
-
-       RouterDB::point chip_LL;
-       RouterDB::point chip_UR;
-       chip_LL.x = 0;
-       chip_LL.y = 0;
-       chip_UR.x = width;
-       chip_UR.y = height;
-       int STindex = Nets[i].STindex;
-
-       std::cout << "STindex " << Nets[i].STindex << std::endl;
-       std::cout << "STs size " << Nets[i].STs.size() << std::endl;
-
-       for(unsigned int q=0;q<Nets[i].STs.size();q++){
-            std::cout << "STs path size " << Nets[i].STs[q].path.size() << std::endl;
-       }
-
-       std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
-       std::pair<int,int> temp_global_path;
-
-       for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
-
-            Adding_tiles_for_terminal(Nets[i].terminals[terminal_size], global_path);
-
-          }
+void GcellDetailRouter::Symmetry_metal_Inactive(int i, int sym_flag, Grid &grid, RouterDB::point sym_gridll, RouterDB::point sym_gridur, RouterDB::point &gridll, RouterDB::point &gridur){
 
        //modify_tile_metals(Nets[i], 1);
+    if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
 
-       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){
+       RouterDB::point global_sym_gridll;
+       RouterDB::point global_sym_gridur;
+       //FindBoundryofGlobalSymNet(gridll,gridur,global_sym_gridll,global_sym_gridur,Nets[i].sym_H,Nets[i].center, Nets[i].global_sym);
+      }
 
-            int sym_ST_index = Nets[Nets[i].symCounterpart].STindex;
-            for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].STs[sym_ST_index].path.size();j++){
-                  global_path.push_back(Nets[Nets[i].symCounterpart].STs[sym_ST_index].path[j]);
-                }
-             
-            for(unsigned int j=0;j<Nets[Nets[i].symCounterpart].terminals.size();j++){
-                  temp_global_path.first = Nets[Nets[i].symCounterpart].terminals[j];
-                  temp_global_path.second = Nets[Nets[i].symCounterpart].terminals[j];
-                  global_path.push_back(temp_global_path);
-               }
+    // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
+    sym_gridll = gridll;
+    sym_gridur = gridur;
 
+    if(sym_flag ==1){
+        std::cout<<"Starting sym net metal coping"<<std::endl;
+        RouterDB::SinkData sym_aear;
+        sym_aear.metalIdx = -1;
+        sym_aear.coord.push_back(sym_gridll);
+        sym_aear.coord.push_back(sym_gridur);
+        sym_aear= Sym_contact(sym_aear, Nets[i].sym_H, Nets[i].center);
+        sym_gridll = sym_aear.coord[0];
+        sym_gridur = sym_aear.coord[1];
+        std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_netplist;
+        std::cout<<"Starting sym block metal coping flag"<<std::endl;
+        CreatePlistSymBlocks(sym_netplist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
+        std::cout<<"Starting sym block metal coping flag"<<std::endl;
+        grid.InactivePointlist(sym_netplist);
+        std::cout<<"End sym net metal coping"<<std::endl;
+      }
 
-         }
+};std::vector<RouterDB::SinkData> GcellDetailRouter::Initial_source_pin(std::vector<std::vector<RouterDB::SinkData> > &temp_pins, int &source_lock){
 
-       std::cout<<"Gcell Detail Router Check point 6"<<std::endl;
-       Grid grid(Gcell, global_path, drc_info, chip_LL, chip_UR, lowest_metal, highest_metal, grid_scale);
-       grid.Full_Connected_Vertex();
+  std::vector<RouterDB::SinkData> temp_source;
+  for(unsigned int j = 0;j<temp_pins[0].size();j++){
+      temp_source.push_back(temp_pins[0][j]);
+     }
+  source_lock = 0;  
 
-       std::cout<<"starting check find pin"<<std::endl;
-       RouterDB::point gridll=grid.GetGridLL();
-       RouterDB::point gridur=grid.GetGridUR();
-       std::cout<<"Detail path region ( "<<gridll.x<<" "<<gridll.y<<") ( "<<gridur.x<<" "<<gridur.y<<" ) "<<std::endl;
-//QQQQ
-       std::cout<<"Gcell Detail Router Check point 8"<<std::endl;
-       std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > plist = FindsetPlist(Set_x, gridll, gridur);
+  return temp_source;
 
-       std::cout<<"Gcell Detail Router Check point 9"<<std::endl;
-       grid.InactivePointlist(plist);//+back
-
-       std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > temp_netplist = FindsetPlist(Set_net, gridll, gridur);
-       std::cout<<"Detail Router check point 1.3"<<std::endl;
-       grid.InactivePointlist(temp_netplist);//+back
-
-       std::cout<<"Gcell Detail Router Check point 9.1"<<std::endl;
-
-
-       int sym_flag = 0;
-
-       std::cout<<"Gcell Detail Router Check point 7"<<std::endl;
-       //CheckTile(Nets[i], Gcell);
-
-       if(Nets[i].symCounterpart!=-1 and Nets[i].symCounterpart < (int)Nets.size()-1){       
-           sym_flag = findPins_Sym(grid, Nets[i], Nets[Nets[i].symCounterpart], Nets[i].sym_H, Nets[i].center, temp_pins, sym_temp_pins, common_pins);
-           if(sym_flag == 1){
-
-             std::cout<<"sym_flag exist"<<std::endl;
-             //SortPins(temp_pins);
-             //SortPins(sym_temp_pins);
-             //SortPins(common_pins);
-             temp_pins = common_pins;
-           }
-
-          }else{
-
-            std::cout<<"Net index "<<i<<std::endl;
-            std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
-            temp_pins = findPins_new(grid, Nets[i]);
-            std::cout<<"temp_ pin size "<<temp_pins.size()<<std::endl;
-            //SortPins(temp_pins);
-          }
-
-       //JudgeTileCoverage(Nets[i].STs[STindex].path, temp_pins, Gcell);
-
-       std::cout<<"end check find pin"<<std::endl;
-
-//QQQQ
-       if(sym_flag==1 and Nets[i].global_sym!=-1 and Nets[i].global_sym <(int)Nets.size()-1){
-           
-            RouterDB::point global_sym_gridll;
-            RouterDB::point global_sym_gridur;
-            //FindBoundryofGlobalSymNet(gridll,gridur,global_sym_gridll,global_sym_gridur,Nets[i].sym_H,Nets[i].center, Nets[i].global_sym);
-           
-         }
-
-
-
-      // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
-       RouterDB::point sym_gridll = gridll;
-       RouterDB::point sym_gridur = gridur;
-       if(sym_flag ==1){
-           std::cout<<"Starting sym net metal coping"<<std::endl;
-           RouterDB::SinkData sym_aear;
-           sym_aear.metalIdx = -1;
-           sym_aear.coord.push_back(sym_gridll);
-           sym_aear.coord.push_back(sym_gridur);
-           sym_aear= Sym_contact(sym_aear, Nets[i].sym_H, Nets[i].center);
-           sym_gridll = sym_aear.coord[0];
-           sym_gridur = sym_aear.coord[1];
-           std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_netplist;
-           std::cout<<"Starting sym block metal coping flag"<<std::endl;
-           CreatePlistSymBlocks(sym_netplist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
-           std::cout<<"Starting sym block metal coping flag"<<std::endl;
-           grid.InactivePointlist(sym_netplist);
-           std::cout<<"End sym net metal coping"<<std::endl;
-
-          }
-       
-       //initial source
-       std::vector<RouterDB::SinkData> temp_source;
-       std::vector<std::vector<RouterDB::point> > add_plist;
-       add_plist.resize(this->layerNo);
-       //temp_source = temp_pins[0];
-       
-       for(unsigned int j = 0;j<temp_pins[0].size();j++){
-            temp_source.push_back(temp_pins[0][j]);
-          }
-
-       int source_lock = 0;
-
-
-       if(Nets[i].connected[0].type==RouterDB::BLOCK){
-              int iter2 = Nets[i].connected[0].iter2;
-              int iter = Nets[i].connected[0].iter;
-              temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
-         }else{
-              int iter = Nets[i].connected[0].iter;
-              temp_pin_name = Terminals[iter].name;
-         }
-
-
-        temp_routing_net.pin_name.push_back(temp_pin_name);
-        temp_routing_net.pin_access.push_back(1);
-        temp_report.routed_net.push_back(temp_routing_net);
-
-
-       for(unsigned int j=1;j<temp_pins.size();j++){
-           //create dest
-
-           std::cout<<"Working on dest "<<j<<std::endl;
-           std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
-           std::cout<<"Detail Router check point 1"<<std::endl;
-           std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-           //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
-           grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
-           std::cout<<"Detail Router check point 1.1"<<std::endl;
-           grid.ActivateSourceDest();
-           std::cout<<"Detail Router check point 1.11"<<std::endl;
-           std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
-           std::cout<<"Detail Router check point 1.111"<<std::endl;
-           CreatePlistSrc_Dest(src_dest_plist,temp_source,temp_dest);
-           std::cout<<"Detail Router check point 1.12"<<std::endl;
-           grid.ActivePointlist(src_dest_plist);
-           //activate src dest
-
-           std::cout<<"Detail Router check point 1.2"<<std::endl;
-           std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, gridll, gridur);
-           std::cout<<"Detail Router check point 1.3"<<std::endl;
-           grid.InactivePointlist(netplist);//+back
-           std::cout<<"Detail Router check point 2"<<std::endl;
-           std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_net_plist;
-           if(sym_flag == 1){
-
-              //inactivate the point in the sym part, then recover those node in the end
-              CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridll);
-              grid.InactivePointlist(sym_net_plist);
-              
-             }
-
-           //std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-           //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
-           grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
-
-           for(unsigned int pin_size = 0; pin_size<temp_source.size(); pin_size++){
-
-               std::cout<<"source rec ( "<<temp_source[pin_size].coord[0].x<<" "<<temp_source[pin_size].coord[0].y<<" ) ( "<<temp_source[pin_size].coord[1].x<<" "<<temp_source[pin_size].coord[1].y<<" ) "<<"metal index "<<temp_source[pin_size].metalIdx<<std::endl; 
-
-              }
-
-           for(unsigned int pin_size = 0; pin_size<temp_dest.size(); pin_size++){
-
-               std::cout<<"dest rec ( "<<temp_dest[pin_size].coord[0].x<<" "<<temp_dest[pin_size].coord[0].y<<" ) ( "<<temp_dest[pin_size].coord[1].x<<" "<<temp_dest[pin_size].coord[1].y<<" ) "<<"metal index "<<temp_dest[pin_size].metalIdx<<std::endl; 
-
-              }
-
-           std::cout<<"Detail Router check point 3"<<std::endl;
-//what about this problem?????
-           grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y); //QQQQQto be fixed
-//what about this problem?????
-           //Graph graph(grid, this->path_number);
-
-/*
-//////////dijstra
-           Graph graph(grid);
-           std::cout<<"Detail Router check point 4"<<std::endl;
-           bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
-//////////dijstra
-*/
-      
-          AddViaSpacing(Pset_via, grid);//this line shoule be done for every net
-///////// A_star
-          A_star a_star(grid, Nets[i].shielding);
-          int left_path_number = multi_number;
-
-          int right_path_number = multi_number;
-/*
-          if(Nets[i].shielding){
-             left_path_number = left_path_number + 1;
-             right_path_number = right_path_number + 1;
-          }
-*/
-          std::cout<<"Detail Router check point 4"<<std::endl;
-          bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, left_path_number, right_path_number);
-///////// A_star
-
-           std::cout<<"Current Net index "<<i<<"Current Net pin index "<<j<<" pathMark "<<pathMark<<std::endl;
-           std::cout<<"Detail Router check point 5"<<std::endl;
-           std::vector<std::vector<RouterDB::Metal> > physical_path;
-           std::cout<<Nets[i].netName<<std::endl;
-
-           if(Nets[i].connected[j].type==RouterDB::BLOCK){
-              int iter2 = Nets[i].connected[j].iter2;
-              int iter = Nets[i].connected[j].iter;
-              temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
-           }else{
-              int iter = Nets[i].connected[j].iter;
-              temp_pin_name = Terminals[iter].name;
-           }
-
-
-           temp_routing_net.pin_name.push_back(temp_pin_name);
-           temp_routing_net.pin_access.push_back(pathMark);
-           temp_report.routed_net.push_back(temp_routing_net);
-
-           assert(pathMark);
-           if(pathMark) {
-             InsertRoutingVia(a_star, grid, Pset_via);//insert routing vias int via set
-             //grid.InactivePointlist_via()
-             ///////////dijstra
-             //physical_path=graph.ConvertPathintoPhysical(grid);
-             ///////////dijstra
-
-             ///////// A_star
-             physical_path = a_star.ConvertPathintoPhysical(grid);
-             ///////// A_star
-
-             std::cout << "Detail Router check point 6" << std::endl;
-             //lastmile connection source
-             //check first point of physical path
-             lastmile_source_new(physical_path, temp_source);
-             //lastmile connection dest
-             //check last point of physical path
-             std::cout << "Detail Router check point 7" << std::endl;
-             lastmile_dest_new(physical_path, temp_dest);
-
-             //return physical path to net
-             //splitPath(physical_path, Nets[i]);
-             returnPath(physical_path, Nets[i]);
-           }else{
-           std::cout<<"Router-Warning: feasible path might not be found\n";
-           }
-
-           std::cout<<"Detail Router check point 8"<<std::endl;
-           //update physical path to 
-           UpdatePlistNets(physical_path, add_plist);
-           if(sym_flag ==1){
-              
-             }
-
-           if(source_lock==1){
-              temp_source.clear();
-              source_lock = 1;
-             }
-
-           //add
-           std::cout<<"Detail Router check point 9"<<std::endl;
-           updateSource(physical_path, temp_source);// wbxu: temp_dest might need be appended into temp_source
-           grid.InactivateSourceDest();
-           grid.InactivePointlist(src_dest_plist);
-           std::cout<<"Detail Router check point 9.1"<<std::endl;
-           //grid.ActivePointlist(sym_net_plist);
-           std::cout<<"Detail Router check point 9.2"<<std::endl;
-
-           for(unsigned int p=0;p<temp_dest.size();p++){
-                 temp_source.push_back(temp_dest[p]);
-              }
-          }
-        std::cout<<"Detail Router check point 10"<<std::endl;
-      if(sym_flag==1){
-
-          std::vector<RouterDB::Metal> sym_path = CpSymPath(Nets[i].path_metal, Nets[i].sym_H, Nets[i].center);
-          Nets[Nets[i].symCounterpart].path_metal = sym_path;
-          std::vector<std::vector<RouterDB::Metal> > Sym_path;
-          std::vector<std::vector<RouterDB::point> > sym_add_plist;
-          sym_add_plist.resize(this->layerNo);
-          Sym_path.push_back(sym_path);
-          UpdatePlistNets(Sym_path, sym_add_plist);
-          InsertPlistToSet_x(Set_net,sym_add_plist);          
-
-        }
-
-      std::cout<<"Detail Router check point 11"<<std::endl;
-      InsertPlistToSet_x(Set_net, add_plist);
-
-      //modify_tile_metals(Nets[i], 0);
-  }
 };
+
+void GcellDetailRouter::Update_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i, int j, int pathMark){
+
+  std::string temp_pin_name;   
+  if(Nets[i].connected[j].type==RouterDB::BLOCK){
+       int iter2 = Nets[i].connected[j].iter2;
+       int iter = Nets[i].connected[j].iter;
+       temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
+    }else{
+       int iter = Nets[i].connected[j].iter;
+       temp_pin_name = Terminals[iter].name;
+    }
+
+   temp_routing_net.pin_name.push_back(temp_pin_name);
+   if(j==0){
+     temp_routing_net.pin_access.push_back(1);
+   }else{
+     temp_routing_net.pin_access.push_back(pathMark);
+   }
+
+};
+
+void GcellDetailRouter::Detailed_router_set_src_dest(Grid &grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, int i, RouterDB::point &sym_gridll, RouterDB::point &sym_gridur, RouterDB::point &gridll, RouterDB::point &gridur, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net, int sym_flag){
+
+   std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap; //this map can be removed
+   grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+   //std::cout<<"Detail Router check point 1.1"<<std::endl;
+   grid.ActivateSourceDest();
+   //std::cout<<"Detail Router check point 1.11"<<std::endl;
+   //std::cout<<"Detail Router check point 1.111"<<std::endl;
+   CreatePlistSrc_Dest(src_dest_plist,temp_source,temp_dest);
+   //std::cout<<"Detail Router check point 1.12"<<std::endl;
+   grid.ActivePointlist(src_dest_plist);
+   //activate src dest
+   //std::cout<<"Detail Router check point 1.2"<<std::endl;
+   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, gridll, gridur);
+   //std::cout<<"Detail Router check point 1.3"<<std::endl;
+   grid.InactivePointlist(netplist);//+back
+   //std::cout<<"Detail Router check point 2"<<std::endl;
+   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > sym_net_plist;
+
+   if(sym_flag == 1){
+     //inactivate the point in the sym part, then recover those node in the end
+     CreatePlistSymNets(sym_net_plist, sym_gridll, sym_gridur, Nets[i].sym_H, Nets[i].center, gridll, gridur);
+     grid.InactivePointlist(sym_net_plist);
+    }
+
+   grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+
+   grid.PrepareGraphVertices(gridll.x, gridll.y, gridur.x, gridur.y); //on longer needed seems
+
+};
+
+void GcellDetailRouter::Update_Grid_Src_Dest(Grid &grid, int source_lock, std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > &src_dest_plist, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest, std::vector<std::vector<RouterDB::Metal> > &physical_path){
+
+       // void InactivePointlist(std::vector< std::set<RouterDB::point, RouterDB::pointXYComp> > &plist);
+
+    if(source_lock==1){
+       temp_source.clear();
+       source_lock = 1;
+      }
+
+    std::cout<<"Detail Router check point 9"<<std::endl;
+    updateSource(physical_path, temp_source);// wbxu: temp_dest might need be appended into temp_source
+    grid.InactivateSourceDest();
+    grid.InactivePointlist(src_dest_plist);
+
+
+    for(unsigned int p=0;p<temp_dest.size();p++){
+       temp_source.push_back(temp_dest[p]);
+      }
+
+};
+
+
+void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net){
+
+   if(sym_flag==1){
+
+      std::vector<RouterDB::Metal> sym_path = CpSymPath(Nets[i].path_metal, Nets[i].sym_H, Nets[i].center);
+      Nets[Nets[i].symCounterpart].path_metal = sym_path;
+      std::vector<std::vector<RouterDB::Metal> > Sym_path;
+      std::vector<std::vector<RouterDB::point> > sym_add_plist;
+      sym_add_plist.resize(this->layerNo);
+      Sym_path.push_back(sym_path);
+      UpdatePlistNets(Sym_path, sym_add_plist);
+      InsertPlistToSet_x(Set_net,sym_add_plist);          
+
+    }
+
+};
+
+void GcellDetailRouter::create_detailrouter(){
+
+   std::vector<std::vector<RouterDB::point> > plist;
+   plist.resize( this->layerNo );
+
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; //block terminal internal metal set
+   Generate_Block_Terminal_Internal_Metal_Set(Set_x);
+
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net; //Net internal metal set
+
+   std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via;
+   InsertInternalVia(Pset_via, this->Blocks);
+   //end initial set
+   //start detail router
+   //Copy_tile_metals();
+   for(unsigned int i=0;i<Nets.size();i++){
+
+        PnRDB::routing_net temp_routing_net; //router report struct  
+        Initial_rouer_report_info(temp_routing_net, i);
+        int multi_number = R_constraint_based_Parallel_routing_number(i);
+
+        if(Nets[i].path_metal.size()>0){continue;} //if the net has already been routed, then skip
+        if(Nets[i].connected.size()<=1){continue;} //if suspending, then skip 
+
+        std::vector<std::vector<RouterDB::SinkData> > temp_pins; //routing pins
+        RouterDB::point gridll;
+        RouterDB::point gridur;
+        RouterDB::point sym_gridll;
+        RouterDB::point sym_gridur;
+        Grid grid=Generate_Grid_Net(i);//create grid for this net
+        Grid_Inactive(grid, Set_x, Set_net, gridll, gridur);//inactive grid on internal metals
+        int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
+        Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
+
+        int source_lock = 0;
+        std::vector<RouterDB::SinkData> temp_source = Initial_source_pin(temp_pins,source_lock);//initial source
+
+        std::vector<std::vector<RouterDB::point> > add_plist;// new feasible grid for routed net
+        add_plist.resize(this->layerNo);
+
+        Update_rouer_report_info(temp_routing_net, i, 0, 0);
+
+        for(unsigned int j=1;j<temp_pins.size();j++){
+            //create dest
+            std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
+            std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
+            Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
+            AddViaSpacing(Pset_via, grid);
+            A_star a_star(grid, Nets[i].shielding);
+            bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+            std::vector<std::vector<RouterDB::Metal> > physical_path;
+            Update_rouer_report_info(temp_routing_net, i, j, pathMark);
+
+            //assert(pathMark);
+            if(pathMark) {
+              InsertRoutingVia(a_star, grid, Pset_via);
+              physical_path = a_star.ConvertPathintoPhysical(grid);
+              lastmile_source_new(physical_path, temp_source);
+              lastmile_dest_new(physical_path, temp_dest);
+              returnPath(physical_path, Nets[i]);
+            }else{
+            std::cout<<"Router-Warning: feasible path might not be found\n";
+            }
+
+            std::cout<<"Detail Router check point 8"<<std::endl;
+            //update physical path to 
+            Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source,temp_dest, physical_path);
+            UpdatePlistNets(physical_path, add_plist);
+           }
+       Symmetry_Routing(sym_flag, i, Set_net);
+       std::cout<<"Detail Router check point 11"<<std::endl;
+       InsertPlistToSet_x(Set_net, add_plist);
+
+       temp_report.routed_net.push_back(temp_routing_net);
+       //modify_tile_metals(Nets[i], 0);
+   }
+ };
+
 
 void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
   std::pair<int, RouterDB::point> via_point;
