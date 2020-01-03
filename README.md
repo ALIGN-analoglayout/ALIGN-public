@@ -2,35 +2,43 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
-ALIGN is an open source automatic layout generator for analog circuits developed under IDEA program led by University of Minnesota funded by DARPA. The ALIGN flow includes circuit annotation, cell generation and placement and routing steps to generate a GDS from an input spice netlist. Circuit annotation creates multiple hierarchies in the input netlist to implement the design in using a hierarchical approach. Design rules are abstracted from PDK into a JSON format. A mock PDK based on FinFET technology is provided with this repository which is being used by cell generator and Placer and Router to generate layout.
+ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&M University, and Intel Corporation. 
+
+The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs. 
+
+The ALIGN flow includes the following steps:
+* _Circuit annotation_ creates a multilevel hierarchical representation of the input netlist. This representation is used to implement the circuit layout in using a hierarchical manner. 
+* _Design rule abstraction_ creates a compact JSON-format represetation of the design rules in a PDK. This repository provides a mock PDK based on a FinFET technology (where the parameters are based on published data). These design rules are used to guide the layout and ensure DRC-correctness.
+* _Primitive cell generation_ works with primitives, i.e., blocks the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
+* _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
 
 ## Inputs:
- * Unannotated [spice netlist](examples/telescopic_ota/telescopic_ota.sp)
+ * Unannotated [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp)
  * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
     - Power and Gnd signals (First power signal is used for global power grid)
     - Clk signal (optional)
     - Digital blocks (optional)
- * Library:(spice format)
+ * Library:(SPICE format)
     - A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
     - More library elements can be added in the [user_template library](align/config/user_template.sp).
  * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
-    - A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by cell generator and Place and Route.
-    - New design rule abstraction can be added in JSON format similar to design rules file provided.
-    - Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) need to be redefined for any new PDK 
+    - A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
+    - A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
+    - Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
  * LEF:
     - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 ## Outputs:
- * Design Layout GDS: Final layout of the design. The output gds can be imported into any 
- * Design json: Final layout which can be viewed using ALIGN Viewer created by Intel
- * Layout image: .jpg format of layout saved using klayout
+ * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
+ * Design JSON: Final layout which can be viewed using the ALIGN Viewer.
+ * Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
 
 ## Getting started
- Suggested way to run the end-to-end ALIGN flow is using a Docker container-based flow for which you need to have a Docker, docker-compose installed. The software get installed in a container image and we use Make to run the flow through the containers. Us can also use the Makefile to run the ALIGN flow through the native Linux build of all the componennts in the current environment (assuming you have all software prerequisites installed).
-Two environment variables need to be set to run the Makefile in any environment. First is the ALIGN\_HOME variable which should point the top directory of the ALIGN analog system.
+The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
+Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN\_HOME variable, which should point the top directory of the ALIGN analog system.
 
 	% export ALIGN_HOME=<top of ALIGN source area>
 
-Second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
+The second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
 
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
@@ -60,7 +68,7 @@ Second is a working directory ALIGN\_WORK\_DIR, which can either be the full pat
         % cd PlaceRouteHierFlow
         % make
 ## Usage
-Design directory is by default set to examples directory and can be modfied in the Makefile 
+By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
 * Docker based run
 
         % cd $ALIGN_HOME/build
