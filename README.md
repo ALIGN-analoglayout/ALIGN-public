@@ -13,7 +13,7 @@ The ALIGN flow includes the following steps:
 * _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
 
 ## Inputs:
- * Unannotated [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp)
+ * A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
  * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
     - Power and Gnd signals (First power signal is used for global power grid)
     - Clk signal (optional)
