@@ -1,7 +1,12 @@
 # ALIGN: Hierarchical Analog Placer and Router Flow
 
 ## Brief description
-The Hierarchical Placer and Router Flow automatically generates layouts for constraints based analog designs. There are four components in the flow, Hierarchical Database (HD), Common Centroid Capacitor (CCC) Placer and Router (P&R), Analog Placer and Analog Router. HD stores the data of hierarchical analog designs and constraints. CCC P&R generates common centroid layout for capacitor array when necessary. Analog Placer handles geometrical constraints, such as symmetry, and alignment constraints. Analog Router handles routing constraints, such as symmetry, shielding and parallel routing constraints. The analog router is composed of global router, detailed router and power router.
+The Hierarchical Placer and Router Flow automatically generates layouts for constraints-based analog designs. There are four components in the flow: 
+* _Hierarchical Database (HD)_, which stores the data of hierarchical analog designs and constraints.
+* _Common Centroid Capacitor (CCC) Placer and Router (P&R)_, which generates common centroid layout for capacitor array when necessary.
+* _Analog Placer_, which places the hierarchical blocks and handles geometrical constraints, such as symmetry, and alignment constraints.
+* _Analog Router_, which handles routing constraints, such as symmetry, shielding and parallel routing constraints, and is composed of global router, detailed router and power router.
+
 <img align = "center" width="90%" src="Flow.png">
 
 ## Software description
@@ -63,7 +68,7 @@ make
 ./pnr_compiler testcase_DIR testcase.lef testcase.v testcase.map testcase.json testcaseTop numOfLayout optEffort
 ```
 
-Inputs explaination:
+Inputs explanation:
 >- testcase_DIR: string type; the directory of input data
 >- testcase.lef: string type; LEF file
 >- testcase.v: string type; Verilog file
@@ -73,8 +78,8 @@ Inputs explaination:
 >- numOfLayout: integer type; the max number of generated layouts
 >- optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
 
-Outputs explaination: (all the results will be saved under 'Results' folder by default)
->- xx.plt: GNU plot file of placement results
+Outputs explanation: (all the results will be saved under 'Results' folder by default)
+>- xx.plt: GNUplot file of placement results
 >- Capxx.gds.json: JSON format of CCC P&R layout
 >- xx_PL.gds.json: JSON format of placement layout
 >- xx_GL.gds.json: JSON format of global routing layout
@@ -93,23 +98,23 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## Limitations
 
-1) The flow is Mainly developed and tested by [ASAP7 DPK](http://asap.asu.edu/asap/). Now the code is being updated to supported MockPDK. In the future, the flow run more test cases by other PDKs. 
+1) The flow is mainly developed and tested by [ASAP7 PDK](http://asap.asu.edu/asap/). The code is being updated to support the FinFET MockPDK. The flow has been applied by the ALIGN team to synthesize designs in a commercial FinFET process and a commercial bulk process. In the future, the flow should be able to to run more test cases by other PDKs. 
 
 ## To-do
 
 1) Top-down placement optimization.
 2) Guard ring insertion.
-3) Data Structure optimization.
+3) Data structure optimization.
 4) Detailed router code optimization.
-5) More Complex test case for routing constraints.
+5) Exercising more complex test cases for routing constraints.
 
 ## LICENSE
 
 Third-paty license:
 
-- The license for ILP solver can be found [Lp_solver license](http://lpsolve.sourceforge.net/5.5/)
+- The license for ILP solver can be found [lp_solve license](http://lpsolve.sourceforge.net/5.5/)
 - The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
-- The license for boost library can be found [boost libraray license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
+- The license for boost library can be found [boost library license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
 - The license for gtest can be found [gtest license](https://github.com/google/googletest/blob/master/LICENSE)
 
 The rest of this repository is licensed under BSD 3-Clause License.
