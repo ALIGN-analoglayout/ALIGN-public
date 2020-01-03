@@ -17,8 +17,8 @@ PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
-PNRDIR=${DESIGN}/pnr_output/
-PNR_OUTPUT=${DESIGN}/pnr_output/Results
+PNRDIR=${DESIGN}/3_pnr/
+PNR_OUTPUT=${DESIGN}/Results
 GEN_OUTPUT=${DESIGN}/2_primitives
 TPO_OUTPUT=${DESIGN}/1_topology
 
@@ -40,23 +40,9 @@ ${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
 ${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
 	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
 
-# Transfer inputs and run placeroute
-${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${DESIGN}/${PDK_FILE}
-	-$(call execute, transfer-service, /bin/bash -c "mkdir -p ${PNRDIR}/inputs && \
-	cp $(DESIGN)/$(PDK_FILE) \$$_ && \
-	cp $(GEN_OUTPUT)/$(DESIGN).lef \$$_ && \
-	cp $(GEN_OUTPUT)/$(DESIGN).map \$$_ && \
-	cp $(GEN_OUTPUT)/*.json \$$_ && \
-	cp $(TPO_OUTPUT)/$(DESIGN).v \$$_ && \
-	cp $(TPO_OUTPUT)/*.const \$$_")
-	$(call execute, placeroute-service, /bin/bash -c "mkdir -p ${PNR_OUTPUT} && cd \$$_/.. && make -f $(TOP)/PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log")
-
-# Run the heirarchy & cell generator script
-${GEN_OUTPUT}/${DESIGN}.lef:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+# Run schematic2layout
+${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
 	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
-
-${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
-	cp $< ${DESIGN}/
 
 ${DESIGN}:
 	mkdir ${DESIGN}
