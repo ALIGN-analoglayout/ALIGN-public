@@ -4,7 +4,6 @@ from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
 from .pnr import generate_pnr
-from .gdsconv.json2gds import convert_GDSjson_GDS
 
 def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
 
@@ -63,8 +62,5 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
-        output = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
-        assert output is not None, "Cannot proceed further. See LOG/compiler.log for last error."
-        # Convert gds.json to gds
-        output_dir = working_dir / 'Results'
-        convert_GDSjson_GDS(output_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
+        assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/compiler.log for last error."
