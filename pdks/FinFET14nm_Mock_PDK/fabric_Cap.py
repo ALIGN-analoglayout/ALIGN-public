@@ -1,7 +1,4 @@
-import math
 import argparse
-import gen_gds_json
-import gen_lef
 import pathlib
 
 from datetime import datetime

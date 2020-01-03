@@ -19,7 +19,7 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         self.finsPerUnitCell = fin + 2*finDummy
         self.finDummy = finDummy
         self.lFin = 16 ## need to be added in the PDK JSON
-       # Should be a multiple of 4 for maximum utilization
+        # Should be a multiple of 4 for maximum utilization
         assert self.finsPerUnitCell % 4 == 0
         assert fin > 3, "number of fins in the transistor must be more than 2"
         assert finDummy % 2 == 0
