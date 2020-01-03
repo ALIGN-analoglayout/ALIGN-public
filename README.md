@@ -28,7 +28,7 @@ ALIGN is an open source automatic layout generator for analog circuits developed
  Suggested way to run the end-to-end ALIGN flow is using a Docker container-based flow for which you need to have a Docker, docker-compose installed. The software get installed in a container image and we use Make to run the flow through the containers. Us can also use the Makefile to run the ALIGN flow through the native Linux build of all the componennts in the current environment (assuming you have all software prerequisites installed).
 Two environment variables need to be set to run the Makefile in any environment. First is the ALIGN\_HOME variable which should point the top directory of the ALIGN analog system.
 
-		% export ALIGN_HOME=<top of ALIGN source area>
+	% export ALIGN_HOME=<top of ALIGN source area>
 
 Second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
 
@@ -55,6 +55,10 @@ Second is a working directory ALIGN\_WORK\_DIR, which can either be the full pat
         % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
         % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
+ * Place and route installation
+
+        % cd PlaceRouteHierFlow
+        % make
 ## Usage
 Design directory is by default set to examples directory and can be modfied in the Makefile 
 * Docker based run

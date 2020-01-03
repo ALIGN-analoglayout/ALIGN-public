@@ -1,35 +1,38 @@
-# subckt identification
+# ALIGN: Analog Layout, Intelligently Generated from Netlists!
+## Automatic circuit annotation documentation!
+This is an introduction to the auto-annotation module of the ALIGN project. This work was performed at the University of Minnesota.
 
-## Create a Docker image 
-```bash
-docker build -t topology .
-```
+Circuit annotation automatically identifies hierarchies in the design using a combination of a library-based and rule-based approach.
 
-## Run a Python-based test using docker
+#### Input:
+    * Unannotated spice netlist
+    * setup file
+        - Power and Gnd signals (First power signal is used for global power grid)
+        - Clk signal (optional)
+        - Digital blocks (optional)
+    * Library:(spice format)
+        - A basic built-in template library is provided, which is used to identify elements in the design.
+        - The user can add more template library elements in the user_template library.
+    * param_lef:
+        - A list of modules for which parameterized cell generator is available.
+#### Outputs:
+    * Verilog file (used for PnR): A hierarchical netlist
+    * Inputs for the cell generator: parameters for the parameterized cell generator (the next stage of the ALIGN flow)
 
-```bash
-docker run --mount source=inputVol,target=/INPUT topology bash -c "source /sympy/bin/activate && cd /DEMO && ./runme.sh ota"
-```
+#### Getting started
 
-## Direct run on terminal
-```bash
-python ./src/compiler.py --dir ./input_circuit/ -f telescopic_ota.sp --subckt telescopic_ota --flat 0 -U_cap 12 -U_mos 12
-```
+    * Requirements:
+        - Python3.6
+        - networkx
+        - matplotlib
+        - pyyaml
+    * Installation and usage is integrated with top level align flow
 
-## Run unit tests in container
+#### Features
+An integrated flow using a combination of library-based and rule-based methods is used for automatic annotation. We support a Docker-based flow as it helps in minimizing environment setup issues.
 
-Run this.
-```bash
-docker run --mount source=coverageVol,target=/INPUT -it topology bash -c "source sympy/bin/activate && cd DEMO/src && rm -rf __pycache__ && pytest --cov=. && coverage html && rm -rf /INPUT/htmlcov && mv htmlcov /INPUT"
-```
+**Library-based annotation**
+    - Library based annotation is used for identifying smaller circuits (primitives) in the design. We use VF2 based subgraph isomorphism to map library elements to the circuit.
 
-Then this.
-```bash
-docker run -p 8000:8000 --mount source=coverageVol,target=/INPUT -d with_python bash -c "source sympy/bin/activate && cd INPUT/htmlcov && python -m http.server"
-```
-
-To see coverage report look at localhost:8000
-
-
-# Usage slides:
-https://docs.google.com/presentation/d/1NbXXx6vI8KNOhjRaRHlG57hA6jdRX_BA-xOshC8XbzU/edit?usp=sharing
+**Rule-based annotation**
+    - Analog designs are dominated by arrays in the circuits which need a structured layout. To identify array structures in the layout, we use graph traversal, which is then used to identify common centroid constraints that must be enforced.
