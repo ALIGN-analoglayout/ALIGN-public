@@ -20,6 +20,7 @@ class Grid {
   friend class A_star;
   friend class GlobalGrid;
   friend class GcellDetailRouter;
+  friend class PowerRouter;
 
 private:
   std::unordered_map<int, int> total2graph;     // mapping from total to graph vertices

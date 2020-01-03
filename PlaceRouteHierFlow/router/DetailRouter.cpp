@@ -1074,28 +1074,6 @@ void DetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::poin
   int obs_l=0;
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
-  int direction = drc_info.Metal_info[mIdx].direct;
-  int minL = drc_info.Metal_info[mIdx].minL;
-
-  if(direction==1){ //h
-
-    if( (URx-LLx)<minL ){
-
-        int extend_dis = ceil(minL- (URx-LLx))/2;
-        LLx = LLx - extend_dis;
-        URx = URx + extend_dis;
-      }
-
-  }else{//v
-
-    if( (URy-LLy)<minL ){
-
-        int extend_dis = ceil(minL- (URy-LLy))/2;
-        LLy = LLy - extend_dis;
-        URy = URy + extend_dis;
-      }
-
-  }
 
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
