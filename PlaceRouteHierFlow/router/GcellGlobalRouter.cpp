@@ -272,7 +272,7 @@ void GcellGlobalRouter::PlaceTerminal(){
 };
 
 GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
-  terminal_routing = 1;
+  terminal_routing = 0;
   //1. Initial Drcdata and design data
   std::cout<<"Test 1"<<std::endl;
   getDRCdata(drcData);
