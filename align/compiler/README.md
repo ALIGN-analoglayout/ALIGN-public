@@ -4,7 +4,7 @@ This is an introduction to the auto-annotation module of the ALIGN project. This
 
 Circuit annotation automatically identifies hierarchies in the design using a combination of a library-based and rule-based approach.
 
-#### Input:
+#### Inputs:
     * Unannotated spice netlist
     * setup file
         - Power and Gnd signals (First power signal is used for global power grid)
@@ -26,7 +26,7 @@ Circuit annotation automatically identifies hierarchies in the design using a co
         - networkx
         - matplotlib
         - pyyaml
-    * Installation and usage is integrated with top level align flow
+    * Installation and usage is integrated with top level ALIGN flow
 
 #### Features
 An integrated flow using a combination of library-based and rule-based methods is used for automatic annotation. We support a Docker-based flow as it helps in minimizing environment setup issues.
