@@ -13,7 +13,7 @@ def build_test( b, *, n):
 
 def test_range():
     for i in range( 4, 32, 2):
-        check_shorts( ['-b', f'cap_{i}', '--x_length', f"{i}", '--y_length', f"{i}"])
+        build_test( f'cap_{i}', n=i)
 
 
 def test_small():
