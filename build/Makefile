@@ -17,7 +17,7 @@ PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
-OUTPUT_DIR=${DESIGN}/3_pnr
+OUTPUT_DIR=${DESIGN}
 
 ifeq ($(BUILD),docker)
 	execute = docker-compose -p build exec $(1) $(2)

@@ -4,8 +4,9 @@ from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
 from .compiler.util import logging
 from .pnr import generate_pnr
+from .gdsconv.json2gds import convert_GDSjson_GDS
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False):
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
@@ -62,5 +63,9 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for block_name, block_args in primitives.items():
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check)
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/compiler.log for last error."
+        # Generate necessary output collateral into current directory
+        for variant, filemap in variants.items():
+            assert 'gdsjson' in filemap
+            convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')

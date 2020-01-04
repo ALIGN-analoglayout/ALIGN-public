@@ -49,6 +49,16 @@ class CmdlineParser():
                             type=int,
                             default=10,
                             help='no of fins in unit size')
+        parser.add_argument("-n",
+                            "--nvariants",
+                            type=int,
+                            default=1,
+                            help='Number of layout candidates to (attempt to) generate')
+        parser.add_argument("-e",
+                            "--effort",
+                            type=int,
+                            default=0,
+                            help='Amount of effort to dedicate to alternate layouts')
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):

@@ -2,12 +2,11 @@ import subprocess
 import pathlib
 import os
 import logging
-
-from ..gdsconv.json2gds import convert_GDSjson_GDS
+import collections
 
 logger = logging.getLogger(__name__)
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, variants=1, effort=0, save_state=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, save_state=False):
 
     # Check to make sure pnr_compiler is available to begin with
     assert 'ALIGN_HOME' in os.environ, "ALIGN_HOME not in environment"
@@ -60,7 +59,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, varia
         os.environ['PNRDB_SAVE_STATE'] = ''
 
     # Run pnr_compiler
-    cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, variants, effort)]
+    cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
     try:
         subprocess.run(cmd, stderr=subprocess.PIPE, check=True, cwd=working_dir)
     except subprocess.CalledProcessError as e:
@@ -68,6 +67,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, varia
         print(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
         return {}
 
-    convert_GDSjson_GDS(results_dir / f'{subckt}_0.gds.json', output_dir / f'{subckt}_0.gds')
-
-    return True
+    variants = collections.defaultdict(collections.defaultdict)
+    for file_ in results_dir.iterdir():
+        if not file_.name.split('.')[0].replace(f'{subckt}_', '').isdigit():
+            continue
+        if file_.suffixes == ['.gds', '.json']:
+            variants[file_.name.split('.')[0]]['gdsjson'] = file_
+        elif file_.suffixes == ['.db', '.json']:
+            variants[file_.name.split('.')[0]]['dbjson'] = file_
+        elif file_.suffixes == ['.lef']:
+            variants[file_.name.split('.')[0]]['lef'] = file_
+    return variants
