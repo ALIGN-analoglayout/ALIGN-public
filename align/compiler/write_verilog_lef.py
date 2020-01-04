@@ -155,6 +155,9 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
+                    #move body pin to last
+                    ports[0], ports[-1] = ports[-1], ports[0]
+                    nets[0], nets[-1] = nets[-1], nets[0]
                     # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
@@ -470,7 +473,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")
-        logging.info("Creating new const file"+new_const_path)
+        logging.info("Creating new const file: %s",new_const_path)
     logging.info("writing common centroid caps: %s",all_array)
     for _,array in all_array.items():
         n_cap=[]
