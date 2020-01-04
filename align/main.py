@@ -69,3 +69,5 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         for variant, filemap in variants.items():
             assert 'gdsjson' in filemap
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+            assert 'lef' in filemap
+            (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
