@@ -3,10 +3,47 @@ import pathlib
 import os
 import logging
 import collections
+import json
+
+from .db import hierNode
+from .checkers import gen_viewer_json
 
 logger = logging.getLogger(__name__)
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, save_state=False):
+def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False):
+
+    ret = {}
+    with open(dbfile,"rt") as fp:
+        hN = hierNode(json.load(fp))
+    res = gen_viewer_json( hN, pdk=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract)
+
+    if check or extract:
+        cnv, d = res
+    else:
+        d = res
+
+    with open( output_dir / f'{variant}.json', 'wt') as fp:
+        json.dump( d, fp=fp, indent=2)
+    ret['json'] = output_dir / f'{variant}.json'
+
+    if check:
+        with open(output_dir / f'{variant}.errors', 'wt') as fp:
+            fp.write('\n'.join(['SHORT ' + x for x in cnv.rd.shorts]))
+            fp.write('\n'.join(['OPEN ' + x for x in cnv.rd.opens]))
+            fp.write('\n'.join(['DIFFERENT WIDTH ' + x for x in cnv.rd.different_widths]))
+            fp.write('\n'.join(['DRC ERROR ' + x for x in cnv.drc.errors]))
+        ret['errfile'] = output_dir / f'{variant}.errors'
+
+        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
+
+    if extract:
+        with open(output_dir / f'{variant}.cir', 'wt') as fp:
+            cnv.pex.writePex(fp)
+        ret['cir'] = output_dir / f'{variant}.cir'
+
+    return ret
+
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, check=False, extract=False):
 
     # Check to make sure pnr_compiler is available to begin with
     assert 'ALIGN_HOME' in os.environ, "ALIGN_HOME not in environment"
@@ -14,7 +51,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     assert compiler_path.is_file(), f"{compiler_path} not found. Has it been built?"
 
     # Create working & input directories
-    working_dir = output_dir / 'workspace'
+    working_dir = output_dir
     working_dir.mkdir(exist_ok=True)
     input_dir = working_dir / 'inputs'
     input_dir.mkdir(exist_ok=True)
@@ -55,7 +92,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Dump out intermediate states
-    if save_state:
+    if check or extract:
         os.environ['PNRDB_SAVE_STATE'] = ''
 
     # Run pnr_compiler
@@ -69,12 +106,14 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
     variants = collections.defaultdict(collections.defaultdict)
     for file_ in results_dir.iterdir():
-        if not file_.name.split('.')[0].replace(f'{subckt}_', '').isdigit():
+        variant = file_.name.split('.')[0]
+        if not variant.replace(f'{subckt}_', '').isdigit():
             continue
         if file_.suffixes == ['.gds', '.json']:
-            variants[file_.name.split('.')[0]]['gdsjson'] = file_
-        elif file_.suffixes == ['.db', '.json']:
-            variants[file_.name.split('.')[0]]['dbjson'] = file_
+            variants[variant]['gdsjson'] = file_
         elif file_.suffixes == ['.lef']:
-            variants[file_.name.split('.')[0]]['lef'] = file_
+            variants[variant]['lef'] = file_
+        elif file_.suffixes == ['.db', '.json'] and (check or extract):
+            variants[variant].update(_generate_json(file_, variant, primitive_dir, pdk_dir, working_dir, check, extract))
+
     return variants
