@@ -12,30 +12,30 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 ## Software description
 
 Inputs:
- * Analog designs
-    - Verilog netlist
-    - LEF
-    - XX.gds.json for subblock in Verilog netlist
-    - GDSII map file
-    - PDK file
+* Analog designs
+  - Verilog netlist
+  - LEF
+  - XX.gds.json for subblock in Verilog netlist
+  - GDSII map file
+  - PDK file
 
- * Constraints file
+* Constraints file
 
- * Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
+* Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
 
 Outputs: 
- * Analog design layouts
-    - XX.gds.json
+* Analog design layouts
+  - XX.gds.json
 
 ## Installation/getting started
 
 ### Prerequisite
 
- * g++ 7.2 or above
- * ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
- * C++ json library: <https://github.com/nlohmann/json.git>
- * C++ boost libraries: <https://github.com/boostorg/boost>
- * GTEST: <https://github.com/google/googletest>
+* g++ 7.2 or above
+* ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
+* C++ json library: <https://github.com/nlohmann/json.git>
+* C++ boost libraries: <https://github.com/boostorg/boost>
+* GTEST: <https://github.com/google/googletest>
 
 ### Run in Docker
 1. Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
@@ -71,22 +71,22 @@ make
 ```
 
 Inputs explanation:
- * testcase_DIR: string type; the directory of input data
- * testcase.lef: string type; LEF file
- * testcase.v: string type; Verilog file
- * testcase.map: string type; map file for gds.json
- * testcase.json: string type; PDK file in.json format
- * testcaseTop: string type; top module name in netlist
- * numOfLayout: integer type; the max number of generated layouts
- * optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
+* testcase_DIR: string type; the directory of input data
+* testcase.lef: string type; LEF file
+* testcase.v: string type; Verilog file
+* testcase.map: string type; map file for gds.json
+* testcase.json: string type; PDK file in.json format
+* testcaseTop: string type; top module name in netlist
+* numOfLayout: integer type; the max number of generated layouts
+* optEffort: integer type; optimization effort in range of 0 to 2 (0: low, 1: median, 2: high)
 
 Outputs explanation: (all the results will be saved under 'Results' folder by default)
- * xx.plt: GNUplot file of placement results
- * Capxx.gds.json: JSON format of CCC P&R layout
- * xx_PL.gds.json: JSON format of placement layout
- * xx_GL.gds.json: JSON format of global routing layout
- * xx_DR.gds.json: JSON format of detailed routing layout
- * xx_PR.gds.json: JSON format of power routing layout
+* xx.plt: GNUplot file of placement results
+* Capxx.gds.json: JSON format of CCC P&R layout
+* xx_PL.gds.json: JSON format of placement layout
+* xx_GL.gds.json: JSON format of global routing layout
+* xx_DR.gds.json: JSON format of detailed routing layout
+* xx_PR.gds.json: JSON format of power routing layout
 
 ## Usage
 
@@ -114,10 +114,10 @@ If the flow is run locally, the operations listed below are necessary:
 
 Third-paty license:
 
- * The license for ILP solver can be found [lp_solve license](http://lpsolve.sourceforge.net/5.5/)
- * The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
- * The license for boost library can be found [boost library license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
- * The license for gtest can be found [gtest license](https://github.com/google/googletest/blob/master/LICENSE)
+* The license for ILP solver can be found [lp_solve license](http://lpsolve.sourceforge.net/5.5/)
+* The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
+* The license for boost library can be found [boost library license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
+* The license for gtest can be found [gtest license](https://github.com/google/googletest/blob/master/LICENSE)
 
 The rest of this repository is licensed under BSD 3-Clause License.
 
