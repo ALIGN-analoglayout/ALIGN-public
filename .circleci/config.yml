@@ -116,15 +116,15 @@ jobs:
       - store_artifacts:
           path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
             
-    #   - run:
-    #       shell: /bin/bash
-    #       command: |
-    #         cd build/
-    #         make docker DESIGN=switched_capacitor_filter && \
-    #         docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
+            make docker DESIGN=switched_capacitor_filter && \
+            docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
-    #   - store_artifacts:
-    #       path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+      - store_artifacts:
+          path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
             
       - run:
           shell: /bin/bash

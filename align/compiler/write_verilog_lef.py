@@ -155,6 +155,9 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
+                    #move body pin to last
+                    ports[0], ports[-1] = ports[-1], ports[0]
+                    nets[0], nets[-1] = nets[-1], nets[0]
                     # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
@@ -228,13 +231,10 @@ def generate_lef(fp, name, values, available_block_lef,
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logging.info('Generating lef for: %s %s', name, size)
-        # return block_name, {
-        #     'primitive': name,
-        #     'nfin': unit_size_mos,
-        #     'x_cells': xval,
-        #     'y_cells': yval,
-        #     'parameters': values
-        # }
+        return block_name, {
+            'primitive': name,
+            'value': unit_size_cap
+        }
 
         fp.write("\n$PC fabric_" + name + ".py " +
                     " -b " + unit_block_name + 
@@ -306,7 +306,7 @@ def generate_lef(fp, name, values, available_block_lef,
     #     logging.info('Generating lef for: %s %s', block_name, size)
     #     fp.write("\n$PC fabric_" + name + ".py " +
     #              " -b " + block_name +
-    #              " -n " + str(height) +
+    #              " -n " + str(height) + ## THIS IS -u (height)
     #              " -r " + str(size))
 
     else:
@@ -343,7 +343,7 @@ def generate_lef(fp, name, values, available_block_lef,
             logging.info("Generating parametric lef of: %s", block_name)
             return block_name, {
                 'primitive': name,
-                'nfin': unit_size_mos,
+                'value': unit_size_mos,
                 'x_cells': xval,
                 'y_cells': yval,
                 'parameters': values
@@ -473,7 +473,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")
-        logging.info("Creating new const file"+new_const_path)
+        logging.info("Creating new const file: %s",new_const_path)
     logging.info("writing common centroid caps: %s",all_array)
     for _,array in all_array.items():
         n_cap=[]
