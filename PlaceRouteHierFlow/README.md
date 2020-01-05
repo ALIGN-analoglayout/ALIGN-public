@@ -15,13 +15,9 @@ Inputs:
 * Analog designs
 
 	* Verilog netlist
-
 	* LEF
-
 	* XX.gds.json for subblock in Verilog netlist
-
 	* GDSII map file
-
 	* PDK file
 
 * Constraints file
@@ -120,10 +116,10 @@ If the flow is run locally, the operations listed below are necessary:
 
 Third-paty license:
 
-- The license for ILP solver can be found [lp_solve license](http://lpsolve.sourceforge.net/5.5/)
-- The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
-- The license for boost library can be found [boost library license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
-- The license for gtest can be found [gtest license](https://github.com/google/googletest/blob/master/LICENSE)
+* The license for ILP solver can be found [lp_solve license](http://lpsolve.sourceforge.net/5.5/)
+* The license for json library can be found [json library license](https://github.com/nlohmann/json/blob/develop/LICENSE.MIT)
+* The license for boost library can be found [boost library license](https://github.com/boostorg/boost/blob/master/LICENSE_1_0.txt)
+* The license for gtest can be found [gtest license](https://github.com/google/googletest/blob/master/LICENSE)
 
 The rest of this repository is licensed under BSD 3-Clause License.
 
