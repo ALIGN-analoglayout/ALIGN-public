@@ -40,20 +40,8 @@ Outputs:
 * GTEST: <https://github.com/google/googletest>
 
 ### Run in Docker
-1. Build prerequisite image with_protobuf under [build](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/build)
-``` Shell
-docker build -f Dockerfile.build -t with_protobuf .
-```
-2. Build the image for the flow
-``` Shell
-docker build -t placeroute_image .
-```
-3. Run the test case
-``` Shell
-(cd testcase_example; tar cvf - .) | docker run --rm -i --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT ubuntu /bin/bash -c "cd /PlaceRouteHierFlow/INPUT; tar xvf -"
+Please follow the instructions in [run in docker](https://github.com/ALIGN-analoglayout/ALIGN-public/blob/master/build/README.md)
 
-docker run --rm --mount source=placerInputVol,target=/PlaceRouteHierFlow/INPUT --mount source=placerOutputVol,target=/PlaceRouteHierFlow/OUTPUT placeroute_image /bin/bash -c "cd /PlaceRouteHierFlow; ./pnr_compiler ./testcase_example switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 2 0"
-```
 ### Run in local
 1. Set environment
 ```Shell
