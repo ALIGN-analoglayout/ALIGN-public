@@ -82,11 +82,11 @@ Outputs explanation: (all the results will be saved under 'Results' folder by de
 
 If the flow is run locally, the operations listed below are necessary:
 
-1) To get the XX_gds.json file, Verlog file, Map file and LEF file, please use the code [Cell Generation](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/CellFabric)
+1) To get the XX_gds.json file, Verlog file, Map file and LEF file, please use the code [Cell Generation](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/cell_fabric)
 
-2) To get the PDK file, please use the code [PDK abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PDK_Abstraction)
+2) To get the PDK file, please use the code [PDK abstraction](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/pdks)
 
-3) Currently the input/output layout files are in JSON format. To convert the format (from json to GDSII or from GDSII to json), please use the codes [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/GDSConv).
+3) Currently the input/output layout files are in JSON format. To convert the format (from json to GDSII or from GDSII to json), please use the codes [GDSConv](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/align/gdsconv).
 
 ## Limitations
 
