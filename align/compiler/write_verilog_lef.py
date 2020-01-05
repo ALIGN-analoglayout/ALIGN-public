@@ -648,6 +648,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
     existing_SymmBlock =False
 
     # Read contents
+    existing_SymmNet=[]
     if const_file.exists() and const_file.is_file():
         with open(const_file) as f:
             content = f.readlines()
@@ -669,7 +670,8 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 if len(list(graph.neighbors(key)))<3:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
-                    const_fp.write(symmNet)
+                    if symmNet not in existing_SymmNet:
+                        const_fp.write(symmNet)
 
 
         for key, value in all_match_pairs.items():

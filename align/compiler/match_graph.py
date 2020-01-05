@@ -425,7 +425,7 @@ def define_SD(G,power,gnd,clk):
             except (TypeError, ValueError):
                 logging.info("All source drain checked:%s",gnd)
     for node in list (set(probable_changes_n) & set(probable_changes_n)):
-        logging.WARNING("changing source drain:%s",node)
+        logging.warning("changing source drain:%s",node)
         change_SD(G,node)
 
 
@@ -456,7 +456,6 @@ def add_parallel_caps(G):
 def add_series_res(G):
     logging.info("merging all series res, initial graph size:%s", len(G))
     remove_nodes = []
-    modified_edges = {}
     for net, attr in G.nodes(data=True):
         if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
             and net not in remove_nodes:
