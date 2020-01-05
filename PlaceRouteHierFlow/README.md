@@ -13,6 +13,7 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 
 Inputs:
 * Analog designs
+
   - Verilog netlist
   - LEF
   - XX.gds.json for subblock in Verilog netlist
