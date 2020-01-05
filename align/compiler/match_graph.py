@@ -200,18 +200,28 @@ def get_key(Gsub, value):
 def get_next_level(G, tree_l1):
     tree_next=[]
     for node in list(tree_l1):
-        tree_next+=list(G.neighbors(node))
-    #print(tree_next)
+        if 'mos' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if G.get_edge_data(node, nbr)['weight']!=2:
+                    tree_next.append(nbr)
+        elif 'net' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if 'mos' in G.nodes[nbr]["inst_type"] and \
+                 G.get_edge_data(node, nbr)['weight']!=2: 
+                    tree_next.append(nbr)
+        else:
+            tree_next=list(G.neighbors(node))
     return tree_next
-             
+
+
 #%% 
 def compare_balanced_tree(G, node1, node2):
     """
     used to remove some false matches for DP and CMC
     """
     logging.info("checking symmtrical connections for nodes: %s, %s",node1, node2)
-    tree1 = set(G.neighbors(node1))
-    tree2 = set(G.neighbors(node2))
+    tree1 = set(get_next_level(G,[node1]))
+    tree2 = set(get_next_level(G,[node2]))
     #logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
     traversed1 = [] 
     traversed2 = [] 
@@ -222,7 +232,7 @@ def compare_balanced_tree(G, node1, node2):
         logging.info("tree1 %s tree2 %s",list(tree1),list(tree2))
         tree1 = set(tree1) ^ set(traversed1)
         tree2 = set(tree2) ^ set(traversed2)
-        logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
+        logging.info("removing traversed tree1 %s tree2 %s",set(tree1),set(tree2))
         #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
         #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
         if tree1.intersection(tree2):
@@ -234,6 +244,8 @@ def compare_balanced_tree(G, node1, node2):
             logging.info("traversing:tree1 %s tree2: %s",tree1,tree2)
             tree1=get_next_level(G,tree1)
             tree2=get_next_level(G,tree2)
+
+    logging.warning("Non symmetrical branches for nets: %s, %s",node1, node2)
     return False
 
 #%%
@@ -297,7 +309,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     check_values(updated_values)
                     G1.nodes[remove_these_nodes[0]]["values"] = updated_values
                     for local_value in updated_values.values():
-                        if not isinstance(local_value, int):
+                        if not isinstance(local_value, float):
                             logging.error("unidentified sizing: %s", G1.nodes[remove_these_nodes[0]])
 
                 else:
@@ -348,6 +360,7 @@ def change_SD(G,node):
 def define_SD(G,power,gnd,clk):
     logging.info("START checking source and drain in graph: ")
     traversed = []
+    probable_changes_p=[]
     if power[0] in G.nodes():
         while power:
             try:
@@ -365,20 +378,109 @@ def define_SD(G,power,gnd,clk):
                         node not in traversed: 
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 1 or weight==3 :
-                            logging.info("changing source drain:%s",node)
-                            change_SD(G,node)
+                            #logging.info("changing source drain:%s",node)
+                            probable_changes_p.append(node)
                     elif 'nmos' == G.nodes[node]["inst_type"] and \
                     node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 4 or weight==6 :
-                            logging.info("changing source drain:%s",node)
-                            change_SD(G,node)
+                            #logging.info("changing source drain:%s",node)
+                            probable_changes_p.append(node)
                     if node not in traversed and node not in  gnd:
                         power.append(node)
                     traversed.append(node)
             except (TypeError, ValueError):
                 logging.info("All source drain checked:%s",power)
-                
+    probable_changes_n=[]
+    if gnd[0] in G.nodes():
+        while gnd:
+            try:
+                nxt = gnd[0]
+                gnd = gnd[1:]
+                high=get_next_level(G,[nxt]) 
+                logging.info("next,gnd: %s %s %s %s",nxt,gnd,high,traversed)
+                for node in high:
+                    if G.get_edge_data(node,nxt)==2:
+                        continue
+                    if set(G.neighbors(node)) & set(clk):
+                        continue
+                    #logging.info("checking node: %s %s", node, gnd)
+                    if 'pmos' == G.nodes[node]["inst_type"] and \
+                        node not in traversed: 
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 4 or weight==6 :
+                            #logging.info("changing source drain:%s",node)
+                            #change_SD(G,node)
+                            probable_changes_n.append(node)
+                    elif 'nmos' == G.nodes[node]["inst_type"] and \
+                    node not in traversed:
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 1 or weight==3 :
+                            #logging.info("changing source drain:%s",node)
+                            #change_SD(G,node)
+                            probable_changes_n.append(node)
+                    if node not in traversed and node not in  power:
+                        gnd.append(node)
+                    traversed.append(node)
+            except (TypeError, ValueError):
+                logging.info("All source drain checked:%s",gnd)
+    for node in list (set(probable_changes_n) & set(probable_changes_n)):
+        logging.WARNING("changing source drain:%s",node)
+        change_SD(G,node)
+
+
+def add_parallel_caps(G):
+    logging.info("merging all caps, initial graph size:%s", len(G))
+    remove_nodes = []
+    for node, attr in G.nodes(data=True):
+        if 'cap' in attr["inst_type"] and node not in remove_nodes:
+            for net in G.neighbors(node):
+                for next_node in G.neighbors(net):
+                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
+                        "inst_type"] == G.nodes[node]["inst_type"] and\
+                        len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
+                        for param, value in G.nodes[node]["values"].items():
+                            if param == 'cap':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['cap']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['cap']=c_val
+                            elif param == 'c':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['c']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['c']=c_val
+    logging.info("removed parallel caps: %s",remove_nodes)
+    for node in remove_nodes:
+        G.remove_node(node)
+def add_series_res(G):
+    logging.info("merging all series res, initial graph size:%s", len(G))
+    remove_nodes = []
+    modified_edges = {}
+    for net, attr in G.nodes(data=True):
+        if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
+            and net not in remove_nodes:
+            nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
+            combined_r,remove_r=list(G.neighbors(net))
+            if nbr_type[0]==nbr_type[1]=='res':
+                remove_nodes.append(net)
+                remove_nodes.append(remove_r)
+                new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
+                for param, value in G.nodes[combined_r]["values"].items():
+                    if param == 'res':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['res']))
+                        G.nodes[combined_r]["values"]['res']=r_val
+                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
+                    elif param == 'r':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['r']))
+                        G.nodes[combined_r]["values"]['r']=r_val
+                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
+    logging.info("removed series r: %s",remove_nodes)
+    for node in remove_nodes:
+        G.remove_node(node)
+
 def preprocess_stack(G):
     logging.info("START reducing  stacks in graph: ")
     logging.debug("initial size of graph:%s", len(G))

@@ -372,6 +372,7 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
                 logging.info(node1)
                 #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
+                traverced.append(node1)
                 compare_nodes(G,match_pair,traverced,node1,node1)
     for node1 in list(G.neighbors(nodes1)):
         if node1 not in traverced and \
@@ -437,7 +438,7 @@ def check_common_centroid(graph,const_path,ports):
                     conn = list(graph.neighbors(cap_block))
                     matched_ports['MINUS'+str(idx)] = conn[0]
                     matched_ports['PLUS'+str(idx)]= conn[1]
-                print("matched_ports",cc_pair,matched_ports)
+                #print("matched_ports",cc_pair,matched_ports)
                 line = line.replace(caps_in_line,updated_cap)
                 graph, _ = merge_nodes(
                         graph, 'Cap_cc',cap_blocks , matched_ports)
@@ -628,13 +629,13 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
         else:
             const_file.write_text(input_const_file.read_text())
 
-    check_common_centroid(graph,const_file,ports)
+    #check_common_centroid(graph,const_file,ports)
     logging.info("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
     all_match_pairs={}
-    for port in ports:
+    for port in sorted(ports):
         if port in graph.nodes():
             #while len(list(graph.neighbors(port)-set(traverced)))==1:
             #nbr = list(graph.neighbors(port))
@@ -659,17 +660,22 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
-            if graph.nodes[key]["inst_type"]!="net":
-                if key ==value:
-                    symmBlock = symmBlock+' {'+key+ '} ,'
-                else:
+            if graph.nodes[key]["inst_type"]!="net" and \
+                key not in symmBlock and value not in symmBlock and \
+                'Dcap' not in graph.nodes[key]["inst_type"] :
+                if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            else: 
+            elif 'Dcap' not in graph.nodes[key]["inst_type"] : 
                 if len(list(graph.neighbors(key)))<3:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
                     const_fp.write(symmNet)
 
+
+        for key, value in all_match_pairs.items():
+            if graph.nodes[key]["inst_type"]!="net" and 'Dcap' not in graph.nodes[key]["inst_type"] :
+                if key ==value and key not in symmBlock:
+                    symmBlock = symmBlock+' {'+key+ '} ,'
 
         symmBlock = symmBlock[:-1]+')\n'
         if not existing_SymmBlock:

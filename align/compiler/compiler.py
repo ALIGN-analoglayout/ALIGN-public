@@ -1,9 +1,9 @@
 import pathlib
 
-from .util import _write_circuit_graph, logging
+from .util import _write_circuit_graph, logging,max_connectivity
 from .read_netlist import SpiceParser
-from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
-from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
+from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
+from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap,check_common_centroid
 from .read_lef import read_lef
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size_mos , unit_size_cap):
@@ -24,6 +24,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
+    library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
 
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
@@ -43,6 +44,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logging.info("no of nodes: %i", len(G1))
+            add_parallel_caps(G1)
+            add_series_res(G1)
             preprocess_stack(G1)
             initial_size=len(G1)
             delta =1
@@ -142,12 +145,15 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
         if name not in  ALL_LEF:
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            logging.info("call constraint generator writer for block: %s", name)
-            #WriteConst(graph, input_dir, name, inoutpin, result_dir)
+            const_file = (result_dir / (name + '.const'))
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)
             WriteCap(graph, result_dir, name, unit_size_cap,all_array)
+            check_common_centroid(graph,const_file,inoutpin)
+            if name not in design_setup['DIGITAL']:
+                logging.info("call constraint generator writer for block: %s", name)
+                WriteConst(graph, input_dir, name, inoutpin, result_dir)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
 

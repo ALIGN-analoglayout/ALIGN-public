@@ -296,7 +296,7 @@ def generate_MOS_primitive(uc, block_name, primitive, height, nfin, x_cells, y_c
     elif primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
         cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D')],
                                 'G': [('M1', 'G')]})
-    elif primitive in ["Dcap1_NMOS", "Dcap1_PMOS"]:
+    elif primitive in ["Dummy1_NMOS", "Dummy1_PMOS"]:
         cell_pin = gen( 3,      {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')]})
     elif primitive in ["SCM_NMOS", "SCM_PMOS"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
