@@ -19,7 +19,7 @@ Inputs:
 	* GDSII map file
 	* PDK file
 * Constraints file
-* Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example) 
+* Example: [testcase_example](https://github.com/ALIGN-analoglayout/ALIGN-public/tree/master/PlaceRouteHierFlow/testcase_example)
 
 Outputs: 
 * Analog design layouts
@@ -29,7 +29,7 @@ Outputs:
 
 ### Prerequisite
 
->- g++ 5.0 or above
+>- g++ 7.2 or above
 >- ILP solver: version 5.5.2.5 <http://lpsolve.sourceforge.net/5.5/>
 >- C++ json library: <https://github.com/nlohmann/json.git>
 >- C++ boost libraries: <https://github.com/boostorg/boost>
