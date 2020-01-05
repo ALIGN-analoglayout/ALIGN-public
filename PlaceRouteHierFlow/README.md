@@ -26,6 +26,7 @@ Inputs:
 
 Outputs: 
 * Analog design layouts
+
   - XX.gds.json
 
 ## Installation/getting started
