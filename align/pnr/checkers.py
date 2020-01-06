@@ -101,18 +101,24 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 logger.warning( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
+        
+
         if not found and input_dir is not None:
+
+            print( "blk.gdsFile:", blk.gdsFile, found, input_dir)
             p = re.compile( r"^\./Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
-                pth = pathlib.Path( input_dir + "/" + m.groups()[0] + ".json")
+                pth = input_dir / (m.groups()[0] + ".json")
                 if not pth.is_file():
-                    logger.warning( f"{pth} not found in input_dir")
+                    print("not found", pth.name)
+                    logger.error( f"{pth} not found in input_dir")
                 else:
+                    print("found")
                     logger.warning( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.warning( f"{blk.gdsFile} does not end in .gds")
+                logger.error( f"{blk.gdsFile} does not end in .gds")
 
         if found:
             with pth.open( "rt") as fp:

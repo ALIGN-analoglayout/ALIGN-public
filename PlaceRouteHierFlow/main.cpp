@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "./PnRDB/datatype.h"
 #include "./PnRDB/PnRdatabase.h"
 #include "./placer/Placer.h"
@@ -196,6 +197,21 @@ int main(int argc, char** argv ){
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
+
+
+  if ( !skip_saving_state) {
+    queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
+    json jsonStrAry = json::array();
+    std::ofstream jsonStream;
+    jsonStream.open( opath + "__hierTree.json");
+    while (!Q.empty()) {
+      jsonStrAry.push_back( DB.CheckoutHierNode(Q.front()).name);
+      Q.pop();
+    }
+    jsonStream << std::setw(4) << jsonStrAry;
+    jsonStream.close();
+  }
+
   queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
 
   while (!Q.empty())
