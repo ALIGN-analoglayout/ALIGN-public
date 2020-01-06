@@ -123,7 +123,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
-          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+          path: telescopic_ota/telescopic_ota_0.png
             
       - run:
           shell: /bin/bash
@@ -133,7 +133,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
-          path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+          path: switched_capacitor_filter/switched_capacitor_filter_0.png
             
       - run:
           shell: /bin/bash
@@ -143,7 +143,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
-          path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+          path: current_mirror_ota/current_mirror_ota_0.png
 
       - run:
           shell: /bin/bash
@@ -153,7 +153,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
-          path: cascode_current_mirror_ota/pnr_output/Results/cascode_current_mirror_ota_0.png
+          path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
             
       - run:
           shell: /bin/bash
@@ -163,7 +163,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
-          path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
+          path: five_transistor_ota/five_transistor_ota_0.png
 
             
       - run:
@@ -174,7 +174,7 @@ jobs:
             docker cp make_docker_cont:/dataVolume/adder ..
 
       - store_artifacts:
-          path: adder/pnr_output/Results/adder_0.png
+          path: adder/adder_0.png
   
           
   build-make-monolithic:
@@ -215,7 +215,7 @@ jobs:
             docker cp fullbuild_cont:/dataVolume/telescopic_ota ..
             
       - store_artifacts:
-          path: telescopic_ota/pnr_output/Results/telescopic_ota_0.png
+          path: telescopic_ota/telescopic_ota_0.png
             
       - run:
           shell: /bin/bash
@@ -225,7 +225,7 @@ jobs:
             docker cp fullbuild_cont:/dataVolume/switched_capacitor_filter ..
             
       - store_artifacts:
-          path: switched_capacitor_filter/pnr_output/Results/switched_capacitor_filter_0.png
+          path: switched_capacitor_filter/switched_capacitor_filter_0.png
             
       - run:
           shell: /bin/bash
@@ -235,7 +235,7 @@ jobs:
             docker cp fullbuild_cont:/dataVolume/current_mirror_ota ..
             
       - store_artifacts:
-          path: current_mirror_ota/pnr_output/Results/current_mirror_ota_0.png
+          path: current_mirror_ota/current_mirror_ota_0.png
 
       - run:
           shell: /bin/bash
@@ -245,7 +245,7 @@ jobs:
             docker cp fullbuild_cont:/dataVolume/cascode_current_mirror_ota ..
             
       - store_artifacts:
-          path: cascode_current_mirror_ota/pnr_output/Results/cascode_current_mirror_ota_0.png
+          path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
             
       - run:
           shell: /bin/bash
@@ -255,7 +255,7 @@ jobs:
             docker cp fullbuild_cont:/dataVolume/five_transistor_ota ..
             
       - store_artifacts:
-          path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
+          path: five_transistor_ota/five_transistor_ota_0.png
 
           
   build-tally:
