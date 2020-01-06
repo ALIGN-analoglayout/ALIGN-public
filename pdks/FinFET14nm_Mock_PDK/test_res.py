@@ -8,11 +8,13 @@ def check_shorts( cmdlist):
     assert len(uc.rd.opens) == 0, uc.rd.opens
     # assert len(uc.drc.errors) == 0, uc.drc.errors
 
-def build_test( b, *, n, r):
-    check_shorts( ['-b', b, '-n', f"{n}", '-r', f"{r}"])
+def build_test( b, *, X, Y, n, r):
+    check_shorts( ['-b', b, '-X', f'{X}', '-Y', f'{Y}', '-n', f'{n}', '-r', f'{r}'])
 
 def test_range():
-    for i in range(1,4):
-        for j in range(400, 1000, 200):
-            build_test( f'res_{i}_{j}', n=i, r=j)
+    for x in range(1,4):
+        for y in range(1,4):
+            for i in range(1,4):
+                for j in range(400, 1000, 200):
+                    build_test( f'res_X{x}_Y{y}_h{i}_r{j}', X=x, Y=y, n=i, r=j)
 
