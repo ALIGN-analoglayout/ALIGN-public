@@ -140,23 +140,29 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     vector<string> obs;
 
     unordered_set<string> obs_map;
-
+    cout<<"step1.0"<<endl;
+    std::cout<<"Unit cap name "<<unit_capacitor<<std::endl;
+    if(lefData.find(unit_capacitor)==lefData.end()){
+      std::cout<<"Unit cap error, check unit cap in lef, gds, and const file"<<std::endl;
+      assert(0);
+     }
     const auto &uc = lefData.at(unit_capacitor);
-
+    
+    cout<<"step1.1"<<endl;
     for(unsigned int i=0;i<uc.interMetals.size();i++){
 	obs_map.insert( uc.interMetals[i].metal);
 	if( std::find( obs.begin(), obs.end(), uc.interMetals[i].metal) == obs.end()) {
 	    obs.push_back(uc.interMetals[i].metal);
 	}
     }
-
+    cout<<"step1.2"<<endl;
     assert( obs_map.size() == obs.size());
 
     unit_cap_dim = PnRDB::point (uc.width, uc.height);
 
     PnRDB::point pin_min (INT_MAX, INT_MAX);
     string pin_metal;
-
+    cout<<"step1.3"<<endl;
     /*
      * SMB: This does something weird
      * it updates the LL if both the x and y coords are less than the previous best
@@ -563,10 +569,19 @@ Placer_Router_Cap::ExtractData (const string& fpath, const string& unit_capacito
     PnRDB::point delta = gp - mw / 2 - cp;
 
     PnRDB::bbox bl = minmax.bloat(delta.x, delta.y);
+
+    bl.LL.x = floor((double) bl.LL.x/drc_info.Metal_info.at(V_metal).grid_unit_x)*drc_info.Metal_info.at(V_metal).grid_unit_x;
+    bl.LL.y = floor((double) bl.LL.y/drc_info.Metal_info.at(H_metal).grid_unit_y)*drc_info.Metal_info.at(H_metal).grid_unit_y;
+
+    bl.UR.x = ceil((double) bl.UR.x/drc_info.Metal_info.at(V_metal).grid_unit_x)*drc_info.Metal_info.at(V_metal).grid_unit_x;
+    bl.UR.y = ceil((double) bl.UR.y/drc_info.Metal_info.at(H_metal).grid_unit_y)*drc_info.Metal_info.at(H_metal).grid_unit_y;
+
     CheckOutBlock.gdsFile = topGDS_loc;
     PnRDB::point temp_point;
     CheckOutBlock.originBox.LL = bl.LL;
+    std::cout<<"cap LL "<<bl.LL.x<<" "<<bl.LL.y<<std::endl;
     CheckOutBlock.originBox.UR = bl.UR;
+    std::cout<<"cap UR "<<bl.UR.x<<" "<<bl.UR.y<<std::endl;
     CheckOutBlock.width = CheckOutBlock.originBox.width();
     CheckOutBlock.height = CheckOutBlock.originBox.height();
     CheckOutBlock.originCenter = CheckOutBlock.originBox.center();
@@ -1228,7 +1243,8 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 
 		    Caps[n.cap_index[k]].access = 1;
 		}
-		if(found == 0){
+                if(0){
+		//if(found == 0){
 		    for(unsigned int k=0;k<n.cap_index.size();k++){
 			int lr = l-Caps[n.cap_index[k]].index_x;
 			if(lr==1){
@@ -1302,11 +1318,16 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 
 		n.metal.push_back(V_metal);
 		  
-		if(first_lock==0){
+		if(first_lock==0 and found==1){
 		    first_coordP.x = opt.x;
 		    first_coordP.y = pt.y;
 		    first_lock=1;
-		}else{
+
+		    end_close=1;
+		    end_coordP.x = opt.x;
+		    end_coordP.y = pt.y;
+
+		}else if(found==1){
 		    end_close=1;
 		    end_coordP.x = opt.x;
 		    end_coordP.y = pt.y;
@@ -1922,8 +1943,8 @@ void Placer_Router_Cap::PrintPlacer_Router_Cap(string outfile){
     fout<<"set output \"result.jpg\""<<endl<<endl;
 
     //set range
-    fout<<"\nset xrange ["<<CheckOutBlock.originBox.LL.x-500<<":"<<CheckOutBlock.originBox.UR.x+500<<"]"<<endl;
-    fout<<"\nset yrange ["<<CheckOutBlock.originBox.LL.y-500<<":"<<CheckOutBlock.originBox.UR.y+500<<"]"<<endl;
+    fout<<"\nset xrange ["<<CheckOutBlock.originBox.LL.x-5000<<":"<<CheckOutBlock.originBox.UR.x+5000<<"]"<<endl;
+    fout<<"\nset yrange ["<<CheckOutBlock.originBox.LL.y-5000<<":"<<CheckOutBlock.originBox.UR.y+5000<<"]"<<endl;
 
   
     //set label for capacitors

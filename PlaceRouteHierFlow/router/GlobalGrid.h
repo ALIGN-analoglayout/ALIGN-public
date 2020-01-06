@@ -78,7 +78,7 @@ class GlobalGrid {
       void AdjustPlateEdgeCapacity();
       void AdjustVerticalEdgeCapacityfromInternalMetal(std::vector<RouterDB::Block>& Blocks);
       void AdjustVerticalEdgeCapacityfromBlockPin(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, int excNet);
-      void SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, std::vector<RouterDB::terminal>& Terminals);
+      void SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, std::vector<RouterDB::terminal>& Terminals, bool terminal_routing);
       //void CreateGridDataNCap();
       void CreateGridDataCap(bool Cap_Ncap);
       inline int GetTileLayerNum() {return this->layerNo;}

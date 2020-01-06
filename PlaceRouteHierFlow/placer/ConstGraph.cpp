@@ -1569,9 +1569,16 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
 }
 
 bool ConstGraph::FastInitialScan() {
+  bool fastscan_H = CheckPositiveCycle(this->HGraph);
+  bool fastscan_V = CheckPositiveCycle(this->VGraph);
+  if( fastscan_H or fastscan_V){
+    return true;
+  }else{
+    return false;
+  }
   // return true if any violation found, otherwise return false
-  if(CheckPositiveCycle(this->HGraph)) return true;
-  return CheckPositiveCycle(this->VGraph);
+  //if(CheckPositiveCycle(this->HGraph)) return true;
+  //return CheckPositiveCycle(this->VGraph);
 }
 
 bool ConstGraph::CheckPositiveCycle(vector<Vertex> &graph) {
@@ -4244,7 +4251,7 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
 }
 
 void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node) {
-  if(node.isTop) {
+  if(1) {
     for(int i=0;i<(int)caseNL.GetSizeofTerminals();i++) {
       //cout<<"Terminal "<<i<<endl;
       node.Terminals.at(i).termContacts.clear();

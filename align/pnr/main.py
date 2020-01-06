@@ -29,10 +29,10 @@ def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=Fa
 
     if check:
         with open(output_dir / f'{variant}.errors', 'wt') as fp:
-            fp.write('\n'.join(['SHORT ' + str(x) for x in cnv.rd.shorts]))
-            fp.write('\n'.join(['OPEN ' + str(x) for x in cnv.rd.opens]))
-            fp.write('\n'.join(['DIFFERENT WIDTH ' + str(x) for x in cnv.rd.different_widths]))
-            fp.write('\n'.join(['DRC ERROR ' + str(x) for x in cnv.drc.errors]))
+            fp.write('\n'.join([f'SHORT {x}' for x in cnv.rd.shorts]))
+            fp.write('\n'.join([f'OPEN {x}' for x in cnv.rd.opens]))
+            fp.write('\n'.join([f'DIFFERENT WIDTH {x}' for x in cnv.rd.different_widths]))
+            fp.write('\n'.join([f'DRC ERROR {x}' for x in cnv.drc.errors]))
         ret['errfile'] = output_dir / f'{variant}.errors'
 
         ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)

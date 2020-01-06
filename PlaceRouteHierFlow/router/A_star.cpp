@@ -142,6 +142,7 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 
 };
 
+
 bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid){
 
   if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
@@ -155,6 +156,7 @@ bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &gr
     }
 
 };
+
 
 bool A_star::Check_S_Connection_L(std::vector<int> &left_up_node, std::vector<int> &right_down_node, std::set<int> &src_set, Grid &grid){
 
@@ -438,9 +440,17 @@ bool A_star::found_near_node_S(int left_up, int right_down, int current_node, Gr
     //std::cout<<"expand node checkout point4"<<std::endl;
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
     //std::cout<<"expand node checkout point5"<<std::endl;
-    up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
+    if(grid.vertices_total[current_node].via_active_up){
+      up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
+    }else{
+      up_found = false;
+    }
     //std::cout<<"expand node checkout point6"<<std::endl;
-    down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
+    if(grid.vertices_total[current_node].via_active_down){
+      down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
+    }else{
+      down_found = false;
+    }
     //std::cout<<"expand node checkout point7"<<std::endl;
 
     if(Check_Parallel_Rule(left_up, right_down, current_node, left_up_node, right_down_node, grid) and Check_S_Connection_L( left_up_node, right_down_node, src_set, grid) ){
@@ -558,9 +568,17 @@ bool A_star::found_near_node(int left_up, int right_down, int current_node, Grid
     //std::cout<<"expand node checkout point4"<<std::endl;
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
     //std::cout<<"expand node checkout point5"<<std::endl;
-    up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
+    if(grid.vertices_total[current_node].via_active_up){
+       up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
+    }else{
+       up_found = false;
+    }
     //std::cout<<"expand node checkout point6"<<std::endl;
-    down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
+    if(grid.vertices_total[current_node].via_active_down){
+      down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
+    }else{
+      down_found = false;
+    }
     //std::cout<<"expand node checkout point7"<<std::endl;
 
 
@@ -2628,3 +2646,8 @@ void A_star::refreshGrid(Grid& grid){
        grid.vertices_total[i].parent = -1;
      }
 };
+
+std::vector<std::vector<int>> A_star::GetPath(){
+  std::vector<std::vector<int>> path(Path);
+  return (path);
+}
