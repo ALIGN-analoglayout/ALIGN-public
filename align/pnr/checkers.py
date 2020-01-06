@@ -101,18 +101,24 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 logger.warning( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
+        
+
         if not found and input_dir is not None:
+
+            print( "blk.gdsFile:", blk.gdsFile, found, input_dir)
             p = re.compile( r"^\./Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
-                pth = pathlib.Path( input_dir + "/" + m.groups()[0] + ".json")
+                pth = input_dir / (m.groups()[0] + ".json")
                 if not pth.is_file():
-                    logger.warning( f"{pth} not found in input_dir")
+                    print("not found", pth.name)
+                    logger.error( f"{pth} not found in input_dir")
                 else:
+                    print("found")
                     logger.warning( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.warning( f"{blk.gdsFile} does not end in .gds")
+                logger.error( f"{blk.gdsFile} does not end in .gds")
 
         if found:
             with pth.open( "rt") as fp:
@@ -287,24 +293,28 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
 
-        for (idx,sh) in enumerate(cnv.rd.shorts):
-            if isinstance( sh, tuple) and len(sh) == 2:
-                p0, p1 = sh
-                logger.info( f"SH: {p0} {p1}")
-                term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
-                d['terminals'].append( term)
-                term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
-                d['terminals'].append( term)
-            else:
-                logger.error( f"Unknown short type: {sh}")
+        #
+        # Experiment for visualizing shorts and opens
+        # 
+
+        # for (idx,sh) in enumerate(cnv.rd.shorts):
+        #     if isinstance( sh, tuple) and len(sh) == 2:
+        #         p0, p1 = sh
+        #         logger.info( f"SH: {p0} {p1}")
+        #         term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
+        #         d['terminals'].append( term)
+        #         term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
+        #         d['terminals'].append( term)
+        #     else:
+        #         logger.error( f"Unknown short type: {sh}")
 
 
-        for (nm,lst) in cnv.rd.opens:
-            logger.info( f"OP: {nm} {lst}")            
-            for (jdx,l) in enumerate(lst):
-                for (ly,r) in l:
-                    term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
-                    d['terminals'].append( term)
+        # for (nm,lst) in cnv.rd.opens:
+        #     logger.info( f"OP: {nm} {lst}")            
+        #     for (jdx,l) in enumerate(lst):
+        #         for (ly,r) in l:
+        #             term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
+        #             d['terminals'].append( term)
 
         # multiply by ten make it be in JSON file units (angstroms) This is a mess!
         rational_scaling( d, mul=10)

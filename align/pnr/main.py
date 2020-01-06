@@ -4,18 +4,19 @@ import os
 import logging
 import collections
 import json
+import re
 
 from .db import hierNode
 from .checkers import gen_viewer_json
 
 logger = logging.getLogger(__name__)
 
-def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False):
+def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None):
 
     ret = {}
     with open(dbfile,"rt") as fp:
         hN = hierNode(json.load(fp))
-    res = gen_viewer_json( hN, pdk=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract)
+    res = gen_viewer_json( hN, pdk=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir)
 
     if check or extract:
         cnv, d = res
@@ -106,6 +107,31 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         print(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
         return {}
 
+    def find_variant_names( nm):
+        p = re.compile( '^(.*)_(\d+)\.db\.json$')
+        variant_names = []
+        for file_ in results_dir.iterdir():
+            m = p.match( file_.name)
+            if m and m.groups()[0] == nm:
+                variant_names.append( f"{nm}_{m.groups()[1]}")
+        return variant_names
+
+    if check or extract:
+        with (results_dir / "__hierTree.json").open("rt") as fp:
+            order = json.load(fp)
+        print( "Topological order:", order)
+
+        assert order[-1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
+
+        # Process subblocks as well
+        for nm in order[:-1]:
+            for variant_name in find_variant_names(nm):
+                print("variant_name:", variant_name)
+                file_ = results_dir / ( variant_name + ".db.json")
+                print( "subblock:", file_.name)
+                # Hack: put results in input dir
+                _generate_json( file_, variant_name, primitive_dir, pdk_dir, working_dir, check, extract, input_dir=working_dir)
+
     variants = collections.defaultdict(collections.defaultdict)
     for file_ in results_dir.iterdir():
         variant = file_.name.split('.')[0]
@@ -116,6 +142,9 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         elif file_.suffixes == ['.lef']:
             variants[variant]['lef'] = file_
         elif file_.suffixes == ['.db', '.json'] and (check or extract):
-            variants[variant].update(_generate_json(file_, variant, primitive_dir, pdk_dir, working_dir, check, extract))
+            print( ".db.json:", file_.name)
+            variants[variant].update(_generate_json(file_, variant, primitive_dir, pdk_dir, working_dir, check, extract, input_dir=working_dir))
+
+                
 
     return variants

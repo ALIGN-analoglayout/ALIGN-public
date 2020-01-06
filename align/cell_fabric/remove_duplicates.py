@@ -171,14 +171,15 @@ class RemoveDuplicates():
             isPorted = 'pin' in d
             if isPorted:
                 assert netName == d['pin'], f"{netName} does not match {d['pin']}"
-
             if layer in self.skip_layers: continue
 
-            assert layer in self.layers, (self.layers, layer)
-            twice_center = sum(rect[index]
-                               for index in self.indicesTbl[self.layers[layer]][0])
+            if layer in self.layers:
+                twice_center = sum(rect[index]
+                                   for index in self.indicesTbl[self.layers[layer]][0])
+                tbl[layer][twice_center].append((rect, netName, isPorted))
+            else:
+                print( f"Layer {layer} not in {self.layers}")
 
-            tbl[layer][twice_center].append((rect, netName, isPorted))
         return tbl
 
 
