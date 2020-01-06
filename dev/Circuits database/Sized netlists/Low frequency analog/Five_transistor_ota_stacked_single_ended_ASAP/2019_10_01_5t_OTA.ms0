@@ -1,4 +1,0 @@
-$DATA1 SOURCE='HSPICE' VERSION='K-2015.06-2 linux64'
-.TITLE '** generated for: hspiced'
- current          temper           alter#          
- -5.062e-05        2.500e+01       1               
