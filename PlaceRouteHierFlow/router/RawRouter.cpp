@@ -18,7 +18,7 @@ RawRouter::RawRouter():topName("defaultDesign") {
 }
 
 void RawRouter::InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, std::vector<std::vector<RouterDB::point> >& plist){
-  
+  std::cout<<"start insert plist"<<std::endl;
   RouterDB::SinkData temp_sink;
   for(unsigned int i=0;i<plist.size();i++){
       temp_sink.metalIdx = i;
@@ -32,18 +32,19 @@ void RawRouter::InsertPlistToSet_x(std::set<RouterDB::SinkData, RouterDB::SinkDa
            Set_x.insert(temp_sink);
       }
   }
-
+  std::cout<<"end insert plist"<<std::endl;
 };
 
 std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterDB::SinkData, RouterDB::SinkDataComp>& Set_x, RouterDB::point LL, RouterDB::point UR){
-
+  std::cout<<"find plist checkpoing 0"<<std::endl;
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize(this->layerNo);
+  std::cout<<"find plist checkpoing 0-1"<<std::endl;
   std::set<RouterDB::SinkData, RouterDB::SinkData2Comp> Set_y;
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp >::iterator itlowx, itupx, xitx;
   std::set<RouterDB::SinkData, RouterDB::SinkData2Comp >::iterator itlowy, itupy, xity; 
   
-
+  std::cout<<"find plist checkpoing 1"<<std::endl;
   //std::cout<<"set@@@@@set"<<std::endl;
   RouterDB::SinkData temp_sink_up;
   RouterDB::SinkData temp_sink_low;
@@ -55,16 +56,16 @@ std::vector<std::vector<RouterDB::point> > RawRouter::FindPlist(std::set<RouterD
   temp_sink_low.metalIdx=this->lowest_metal;
   //temp_sink_low.iterNet=-2;
   itlowx = Set_x.lower_bound(temp_sink_low);
-  
-  //std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
+  std::cout<<"find plist checkpoing 2"<<std::endl;
+  std::cout<<"LL,UR "<<"("<<LL.x<<","<<LL.y<<") ("<<UR.x<<","<<UR.y<<")"<<std::endl;
 
   for(xitx=itlowx; xitx!=itupx; ++xitx){
       Set_y.insert(*xitx);
      }
-
+  std::cout<<"find plist checkpoing 3"<<std::endl;
   itupy = Set_y.upper_bound(temp_sink_up);
   itlowy = Set_y.lower_bound(temp_sink_low);
-
+  std::cout<<"find plist checkpoing 4"<<std::endl;
   //for(xitx=itlowx; xitx!=itupx; ++xitx){
   for(xity=itlowy;xity!=itupy;++xity){
        RouterDB::point temp_point;
@@ -122,6 +123,29 @@ std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Findse
   return plist;
 
 };
+
+std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > RawRouter::Plist2Set(std::vector<std::vector<RouterDB::point> >& plist){
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Sets;
+  for (unsigned int i = 0; i < plist.size();i++){
+    std::set<RouterDB::point, RouterDB::pointXYComp> Set;
+    for (unsigned int j = 0; j < plist[i].size(); j++)
+    {
+      Set.insert(plist[i][j]);
+    }
+    Sets.push_back(Set);
+  }
+  return Sets;
+}
+
+void RawRouter::InsertPlistToSet(std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> &Set, std::vector<std::vector<RouterDB::point>> &plist){
+  unsigned int size = Set.size();
+  if(plist.size()!=size)return;
+  for (unsigned int i = 0; i < size;i++){
+    for (unsigned int j = 0; j < plist[i].size();j++){
+      Set[i].insert(plist[i][j]);
+    }
+  }
+}
 
 std::set<int> RawRouter::CheckOverlap(std::vector<RouterDB::SegPiece>& splist, int LLx, int LLy, int URx, int URy) {
   std::multiset<RouterDB::SegOrder, RouterDB::SegOrderComp > LLxSet, URxSet, LLySet, URySet;
