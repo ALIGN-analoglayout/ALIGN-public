@@ -6,17 +6,9 @@ Created on Tue Dec 11 11:34:45 2018
 """
 import os
 import pathlib
-import logging
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
-
-logdir = pathlib.Path.cwd() / "LOG"
-if not os.path.exists(logdir):
-    os.mkdir(logdir)
-elif os.path.exists(logdir / "compiler.log"):
-    os.rename(logdir / "compiler.log", logdir / "compiler.log1")
-logging.basicConfig(filename=logdir / "compiler.log", level=logging.WARNING)
 
 #library_graphs = glob.glob("L1*.yaml")
 def max_connectivity(G):
@@ -91,11 +83,8 @@ def _show_circuit_graph(filename, graph, dir_path):
         plt.savefig(dir_path+'/'+ filename + "_" +
                     str(no_of_subgraph) + '.png')
         plt.close()
-        #logging.info("Plot saved in graph images directory")
 
 def _show_bipartite_circuit_graph(filename, graph, dir_path):
-    #logging.info("Saving bipartite graph: %s", filename)
-    #print(graph)
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1
@@ -129,14 +118,11 @@ def _show_bipartite_circuit_graph(filename, graph, dir_path):
         plt.savefig(dir_path+'/' + filename + "_" +
                     str(no_of_subgraph) + '.png')
         plt.close()
-        #logging.info("Bipartite graph plot saved in graph images directory")
-
 
 def _write_circuit_graph(filename, graph,dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
     nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
-    #logging.info("Graph saved in circuit_graphs directory")
     
 def convert_to_unit(values):
     for param in values:

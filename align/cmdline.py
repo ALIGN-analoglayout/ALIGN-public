@@ -67,6 +67,7 @@ class CmdlineParser():
                             "--extract",
                             action='store_true',
                             help='Set to true to extract post-layout netlist')
+        parser.add_argument( "-l", "--log", dest="log_level", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='WARNING', help="Set the logging level (default: %(default)s)")
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
