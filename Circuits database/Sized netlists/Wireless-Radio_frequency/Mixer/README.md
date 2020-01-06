@@ -1,13 +1,9 @@
-Mixer ciruit
+## Mixer
 
-Files present:
+### Circuit description
 
-1. Netlist with sizing
+### Testbench/Simulations
 
-2. Schematic 
+### Performance metrics
 
-3. Layout
-
-To be added:
-
-- Testbench
+### Constraints
