@@ -156,6 +156,17 @@ jobs:
       - store_artifacts:
           path: five_transistor_ota/pnr_output/Results/five_transistor_ota_0.png
 
+            
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
+            make docker DESIGN=adder && \
+            docker cp make_docker_cont:/dataVolume/adder ..
+
+      - store_artifacts:
+          path: adder/pnr_output/Results/adder_0.png
+  
           
   build-make-monolithic:
     executor: docker-executor
