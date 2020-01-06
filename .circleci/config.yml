@@ -50,6 +50,15 @@ jobs:
 
       - store_artifacts:
           path: testcase_latest/Results/telescopic_ota.png
+      
+      - run:
+          make DESIGN_NAME=high_speed_comparator ALIGN_docker generate_png
+
+      - store_artifacts:
+          path: testcase_latest/Results/high_speed_comparator.png
+      
+      - run:
+          make DESIGN_NAME=telescopic_ota_with_bias ALIGN_docker generate_png
 
       - run:
           make DESIGN_NAME=switched_capacitor_filter ALIGN_docker generate_png

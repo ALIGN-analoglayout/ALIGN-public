@@ -67,10 +67,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     with (input_dir / map_file).open(mode='wt') as mp, \
          (input_dir / lef_file).open(mode='wt') as lp:
         for file_ in primitive_dir.iterdir():
+            print("found files",file_)
             if file_.suffixes == ['.gds', '.json']:
                 true_stem = file_.stem.split('.')[0]
                 mp.write(f'{true_stem} {true_stem}.gds\n')
             elif file_.suffix == '.lef' and file_.stem != subckt:
+                print("found lef files",file_)
                 lp.write(file_.read_text())
 
     #
