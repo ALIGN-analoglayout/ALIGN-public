@@ -1,14 +1,15 @@
 import pathlib
 
-from .util import _write_circuit_graph, logging
+from .util import _write_circuit_graph, logging,max_connectivity
 from .read_netlist import SpiceParser
-from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes
-from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef,WriteConst,FindArray,WriteCap
+from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
+from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,print_cell_gen_header,generate_lef
+from .write_verilog_lef import WriteConst,FindArray,WriteCap,check_common_centroid
 from .read_lef import read_lef
 
 def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size_mos , unit_size_cap):
-    updated_ckt = compiler(netlist, subckt, flatten_heirarchy)
-    return compiler_output(netlist, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
+    updated_ckt,library = compiler(netlist, subckt, flatten_heirarchy)
+    return compiler_output(netlist, library, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     input_dir=input_ckt.parents[0]
@@ -16,6 +17,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     sp = SpiceParser(input_ckt, design_name, flat)
     circuit = sp.sp_parser()[0]
 
+    design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
     logging.info("template parent path: %s",pathlib.Path(__file__).parent)
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
     logging.info("template library path: %s",lib_path)
@@ -24,6 +26,10 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
+    library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
+    logging.warning("dont use cells: %s",design_setup['DONT_USE_CELLS'])
+    if len(design_setup['DONT_USE_CELLS'])>0:
+        library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
 
     if Debug==True:
         _write_circuit_graph(circuit["name"], circuit["graph"],
@@ -32,7 +38,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
-    design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
 
     UPDATED_CIRCUIT_LIST = []
     for circuit_name, circuit in hier_graph_dict.items():
@@ -43,6 +48,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logging.info("no of nodes: %i", len(G1))
+            add_parallel_caps(G1)
+            add_series_res(G1)
             preprocess_stack(G1)
             initial_size=len(G1)
             delta =1
@@ -63,9 +70,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
         })
-    return UPDATED_CIRCUIT_LIST
+    return UPDATED_CIRCUIT_LIST, library
  
-def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_mos=12, unit_size_cap=12):
+def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, unit_size_mos=12, unit_size_cap=12):
     if not result_dir.exists():
         result_dir.mkdir()
     logging.info("Writing results in dir: %s",result_dir)
@@ -81,7 +88,12 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
     print_cell_gen_header(LEF_FP)
     print_header(VERILOG_FP, design_name)
     design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
-    POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
+    try:
+        POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
+    except (IndexError, ValueError):
+        POWER_PINS=[]
+        logging.error("no power and gnd defination, correct setup file")
+
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     ALL_LEF = read_lef(lef_path)
@@ -92,9 +104,14 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
         unit_size_mos=37
     generated_module=[]
     primitives = {}
+    duplicate_modules =[]
     for members in updated_ckt:
         #print(members)
         name = members["name"]
+        if name in duplicate_modules:
+            continue
+        else:
+            duplicate_modules.append(name)
         logging.info("Found module: %s", name )
         inoutpin = []
         logging.info("found ports match: %s",members["ports_match"])
@@ -142,16 +159,21 @@ def compiler_output(input_ckt, updated_ckt, design_name, result_dir, unit_size_m
         if name not in  ALL_LEF:
             logging.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            logging.info("call constraint generator writer for block: %s", name)
-            #WriteConst(graph, input_dir, name, inoutpin, result_dir)
+            const_file = (result_dir / (name + '.const'))
             logging.info("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
             logging.info("cap constraint gen for block: %s", name)
             WriteCap(graph, result_dir, name, unit_size_cap,all_array)
+            check_common_centroid(graph,const_file,inoutpin)
+            ##Removinf constraints to fix cascoded cmc
+            lib_names=[lib_ele['name'] for lib_ele in library]
+            if name not in design_setup['DIGITAL'] and name not in lib_names:
+                logging.info("call constraint generator writer for block: %s", name)
+                WriteConst(graph, input_dir, name, inoutpin, result_dir)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
-
-    print_globals(VERILOG_FP,POWER_PINS)
+    if len(POWER_PINS)>0:
+        print_globals(VERILOG_FP,POWER_PINS)
     LEF_FP.close()
     SP_FP.close()
 

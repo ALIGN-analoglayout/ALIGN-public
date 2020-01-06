@@ -13,7 +13,7 @@
 ** Library name: ALIGN_circuits_ASAP7nm
 ** Cell name: telescopic_ota
 ** View name: schematic
-.subckt telescopic_ota d1 vdd vinn vinp vss vout
+.subckt telescopic_ota_with_bias d1 vdd vinn vinp vss vout
 m9 vpgate vbiasn net8s vss nmos_rvt w=270e-9 l=20e-9 nfin=70
 m9s net8s vbiasn net8 vss nmos_rvt w=270e-9 l=20e-9 nfin=70
 m8 vout vbiasn net014s vss nmos_rvt w=270e-9 l=20e-9 nfin=70
@@ -50,7 +50,7 @@ m13 vbiasp vbiasp netm13s vdd pmos_rvt w=270e-9 l=20e-9 nfin=5
 m13s netm13s vbiasp net7 vdd pmos_rvt w=270e-9 l=20e-9 nfin=5
 m14 net7 vbiasp netm14s vdd pmos_rvt w=270e-9 l=20e-9 nfin=10
 m14s netm14s vbiasp vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=10
-.ends telescopic_ota
+.ends telescopic_ota_with_bias
 ** End of subcircuit definition.
 
 i5 vdd d1 DC=40e-6
