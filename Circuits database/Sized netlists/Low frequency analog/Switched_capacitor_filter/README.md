@@ -6,7 +6,7 @@ This is a low pass filter circuit. It contains a fully differential telescopic O
 
 The diagram of the circuit is as follows.
 
-![Circuit diagram](schematic.jpg)
+![Circuit diagram](schematic.PNG)
 
 ### Pin description
 

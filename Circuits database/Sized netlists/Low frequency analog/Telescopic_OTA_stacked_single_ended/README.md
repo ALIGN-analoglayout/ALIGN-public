@@ -1,4 +1,4 @@
-## Fully differential Telescopic OTA
+## Telescopic OTA - single ended and stacked
 
 ### Circuit Description
 
@@ -8,15 +8,11 @@ The diagram of the circuit is as follows.
 
 ![Circuit diagram](schematic.PNG)
 
-Switched capacitor common mode feedback is implemented, with a non-overlapping clock generator.
-
 ### Pin description
 
 * Vin - input common mode DC + input AC
 * Voutp - output of the amplifier
 * Id - bias current input
-* Vdd - supply voltage
-* bias voltages
 
 ### Initial setup + Testbench
 
@@ -24,15 +20,13 @@ The initial setup, for the voltages and currents to these input pins, and the te
 
 Simulations
 * DC - operating point information
-* Transient - this can be used to visualize the gain of the amplifier
-
-The transient response plot is shown below
-
-![Transient response](Transient_response.png)
+* AC - gain, three dB frequency, unity gain frequency, phase margin
 
 ### Performance Metrics
 
-* Gain - 45 dB
+* Gain - 55 dB
+* Unity gain frequency - 892 MHz
+* Phase margin ~ 87 degrees
 
 ### Constraints
 
