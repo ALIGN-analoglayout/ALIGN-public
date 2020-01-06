@@ -6,9 +6,17 @@ This circuit is a part of the gate driver circuitry in a digital low voltage dro
 
 The block diagram of the system is shown in the figure below.
 
+<p align="center">
+  <img width="60%" src="Block_diagram_DLDO.PNG">
+</p>
+
 ![Block diagram](Block_diagram_DLDO.PNG)
 
 The diagram of the circuit is as follows.
+
+<p align="center">
+  <img width="30%" src="Circuit_diagram_gate_driver.PNG">
+</p>
 
 ![Circuit diagram](Circuit_diagram_gate_driver.PNG)
 
@@ -21,6 +29,10 @@ The diagram of the circuit is as follows.
 * SS bar - inverted steady state detection signal switch
 
 The operation of the circuit is highlighted below.
+
+<p align="center">
+  <img width="30%" src="Concept_gate_driver_DLDO.PNG">
+</p>
 
 ![Working](Concept_gate_driver_DLDO.PNG)
 
