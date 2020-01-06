@@ -72,7 +72,7 @@ class GlobalGrid {
   public:
       GlobalGrid();
       GlobalGrid(const GlobalGrid& other);
-      GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, int Hmetal, int tileLayerNo, int scale);
+      GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int URy, int Lmetal, int Hmetal, int tileLayerNo, int scale);
       void ConvertGlobalInternalMetal(std::vector<RouterDB::Block>& Blocks);
       void ConvertGlobalBlockPin(std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, int excNet);
       void AdjustPlateEdgeCapacity();

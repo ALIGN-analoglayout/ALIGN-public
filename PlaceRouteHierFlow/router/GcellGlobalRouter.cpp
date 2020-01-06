@@ -295,13 +295,14 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   //2. create GcellGlobalGrid
   //CreateGrid for within the region LL, UR
   int tile_size = 0;
-  if(UR.x*UR.y<1000000){
+  int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
+  if(chip_size<1000000){
       tile_size = 20;
-    }else if(UR.x*UR.y<10000000000){
+    }else if(chip_size<10000000000){
       tile_size = 100;
-    }else if(UR.x*UR.y<1000000000000){
+    }else if(chip_size<1000000000000){
       tile_size = 1000;
-    }else if(UR.x*UR.y<100000000000000){
+    }else if(chip_size<100000000000000){
       tile_size = 10000;
     }else {
       tile_size = 100000;
@@ -314,8 +315,8 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
       tileLayerNo = 1;
       tile_size = 10;
   }
-  std::cout<<"Before Grid Box "<<UR.x<<" "<<UR.y<<std::endl;
-  GlobalGrid Initial_Gcell = GlobalGrid(drc_info, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
+  std::cout<<"Before Grid Box "<<LL.x<<" "<<LL.y<<" "<<UR.x<<" "<<UR.y<<std::endl;
+  GlobalGrid Initial_Gcell = GlobalGrid(drc_info, LL.x, LL.y, UR.x, UR.y, Lmetal, Hmetal, tileLayerNo, tile_size);
   std::cout<<"Test 3"<<std::endl;
   Initial_Gcell.ConvertGlobalInternalMetal(Blocks);
   std::cout<<"Test 4"<<std::endl;
@@ -384,7 +385,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
              std::cout<<"Especial the pin "<< Blocks[iter2].pins[iter].pinName<<" in subblock "<<Blocks[iter2].blockName<<std::endl;
            }else{
              std::cout<<"Especial the terminal "<<Terminals[iter].name<<std::endl;
-             std::cout<<"Current Box "<<UR.x<<" "<<UR.y<<std::endl;
+             std::cout<<"Current Box "<<LL.x<<" "<<LL.y<<" "<<UR.x<<" "<<UR.y<<std::endl;
              std::cout<<"terminal box "<<Terminals[iter].termContacts[0].placedLL.x<<" "<<Terminals[iter].termContacts[0].placedLL.y<<" "<<Terminals[iter].termContacts[0].placedUR.x<<" "<<Terminals[iter].termContacts[0].placedUR.y<<std::endl;
            }
            assert(0);}
@@ -880,9 +881,9 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   this->topName=node.name;
   this->width=node.width;
   this->height=node.height;
-  this->LL.x=0; this->LL.y=0;
-  this->UR.x=node.width;
-  this->UR.y=node.height;
+  this->LL.x=node.LL.x; this->LL.y=node.LL.y;
+  this->UR.x=node.UR.x;
+  this->UR.y=node.UR.y;
   this->path_number=5; // number of candidates
   int max_width = node.width;
   int max_height = node.height;

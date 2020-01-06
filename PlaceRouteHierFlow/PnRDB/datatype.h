@@ -328,6 +328,8 @@ struct hierNode {
   bool isIntelGcellGlobalRouter=false;
   int width=0;
   int height=0;
+  point LL;
+  point UR;
   string name="";
   string gdsFile="";
   vector<int> parent;
