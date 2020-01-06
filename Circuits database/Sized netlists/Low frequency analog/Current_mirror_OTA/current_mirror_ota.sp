@@ -20,12 +20,12 @@
 ** Library name: DC_converter
 ** Cell name: 2018_11_09_ASAP7_current_mirror_ota
 ** View name: schematic
-i4 vdd! net17 DC=200e-6
+i4 vdd! id DC=200e-6
 c2 voutp 0 357e-15
 m17 net16 vinn net24 0 nmos_rvt w=27e-9 l=20e-9 nfin=28
-m16 net24 net17 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=10
+m16 net24 id 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=10
 m15 net27 vinp net24 0 nmos_rvt w=27e-9 l=20e-9 nfin=28
-m14 net17 net17 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=10
+m14 id id 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=10
 m11 vbiasnd vbiasnd 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=24
 m10 voutp vbiasnd 0 0 nmos_rvt w=27e-9 l=20e-9 nfin=24
 v3 vdd! 0 DC=0.8
