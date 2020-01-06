@@ -16,12 +16,12 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->highest_metal = GR.highest_metal;
   this->width = GR.width;
   this->height = GR.height;
-  this->LL.x = 0;
-  this->LL.y = 0;
-  this->UR.x = GR.width;
-  this->UR.y = GR.height;
-  this->LL=GR.LL;
-  this->UR=GR.UR;
+  this->LL.x = GR.LL.x;
+  this->LL.y = GR.LL.y;
+  this->UR.x = GR.UR.x;
+  this->UR.y = GR.UR.y;
+  //this->LL=GR.LL;
+  //this->UR=GR.UR;
   this->path_number = path_number;
   this->grid_scale = grid_scale;
   this->layerNo = GR.drc_info.Metal_info.size();
@@ -433,10 +433,10 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i){
 
   RouterDB::point chip_LL;
   RouterDB::point chip_UR;
-  chip_LL.x = 0;
-  chip_LL.y = 0;
-  chip_UR.x = width;
-  chip_UR.y = height;
+  chip_LL.x = LL.x;
+  chip_LL.y = LL.y;
+  chip_UR.x = UR.x;
+  chip_UR.y = UR.y;
   int STindex = Nets[i].STindex;
 
   std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
