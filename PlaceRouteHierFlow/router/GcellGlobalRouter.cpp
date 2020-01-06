@@ -40,7 +40,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
   //int v_ee = drc_info.Metal_info[vertical_index].dist_ee;
   int v_metal = vertical_index;
   std::cout<<"vminL "<<times*v_minL<<std::endl;
-  if(temp_point.y == 0 or temp_point.y==height){
+  if(temp_point.y == LL.y or temp_point.y==UR.y){
     //assgin this terminal to horizontal metal, currently M2
     
     RouterDB::contact temp_contact;
@@ -64,7 +64,7 @@ void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horiz
     return;
   }
 
-  if(temp_point.x==0 or temp_point.x==width){
+  if(temp_point.x==LL.x or temp_point.x==UR.x){
    //assgin this terminal to verital, currenly M1
 
     RouterDB::contact temp_contact;
@@ -115,10 +115,10 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
   std::cout<<"v_dist "<<v_dist<<std::endl;
   std::cout<<"hminL "<<times*h_minL<<std::endl;
   std::cout<<"vminL "<<times*v_minL<<std::endl;
-  int h_index = UR.x/(h_dist);
-  int v_index = UR.y/(v_dist);
+  int h_index = (UR.x-LL.x)/(h_dist);
+  int v_index = (UR.y-LL.y)/(v_dist);
   std::cout<<"width "<<this->width<<" height "<<this->height<<std::endl;
-  std::cout<<UR.x<<" "<<UR.y<<std::endl;
+  std::cout<<LL.x<<" "<<LL.y<<" "<<UR.x<<" "<<UR.y<<std::endl;
   std::vector<int> v_L;
   std::vector<int> v_U;
   std::vector<int> h_L;
@@ -152,7 +152,7 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
      std::cout<<"Determine terminal center 2"<<std::endl;
      
      for(int j=1;j<v_L.size();j++){
-        dis = abs(temp_point.y -j*v_dist)+abs(temp_point.x -0);
+        dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -LL.x);
         if(dis<min_dist and v_L[j]==0){
           min_dist = dis;
           min_index = j;
@@ -160,13 +160,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 0;
           found_h_U = 0;
-          new_temp_point.y = j*v_dist;
-          new_temp_point.x = 0;
+          new_temp_point.y = j*v_dist+LL.y;
+          new_temp_point.x = LL.x;
         }
      }
 
      for(int j=1;j<v_U.size();j++){
-        dis = abs(temp_point.y -j*v_dist)+abs(temp_point.x -width);
+        dis = abs(temp_point.y -j*v_dist-LL.y)+abs(temp_point.x -UR.x);
         if(dis<min_dist and v_U[j]==0){
           min_dist = dis;
           min_index = j;
@@ -174,13 +174,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 1;
           found_h_L = 0;
           found_h_U = 0;
-          new_temp_point.y = j*v_dist;
-          new_temp_point.x = width;
+          new_temp_point.y = j*v_dist+LL.y;
+          new_temp_point.x = UR.x;
         }
      }
 
      for(int j=1;j<h_L.size();j++){
-        dis = abs(temp_point.x -j*h_dist)+abs(temp_point.y -height);
+        dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -LL.y);
         if(dis<min_dist and h_L[j]==0){
           min_dist = dis;
           min_index = j;
@@ -188,13 +188,13 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 1;
           found_h_U = 0;
-          new_temp_point.x = j*h_dist;
-          new_temp_point.y = 0;
+          new_temp_point.x = j*h_dist+LL.x;
+          new_temp_point.y = LL.y;
         }
      }
 
      for(int j=1;j<h_U.size();j++){
-        dis = abs(temp_point.x -j*h_dist)+abs(temp_point.y -height);
+        dis = abs(temp_point.x -j*h_dist-LL.x)+abs(temp_point.y -UR.y);
         if(dis<min_dist and h_U[j]==0){
           min_dist = dis;
           min_index = j;
@@ -202,8 +202,8 @@ void GcellGlobalRouter::Determine_Terminal_Center(int horizontal_index, int vert
           found_v_U = 0;
           found_h_L = 0;
           found_h_U = 1;
-          new_temp_point.x = j*h_dist;
-          new_temp_point.y = height;
+          new_temp_point.x = j*h_dist+LL.x;
+          new_temp_point.y = UR.y;
         }
      }
 
