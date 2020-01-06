@@ -5,6 +5,8 @@ import logging
 import collections
 import math
 
+from .generators import Wire
+
 logger = logging.getLogger(__name__)
 
 class DefaultPrimitiveGenerator():
@@ -238,6 +240,79 @@ class DefaultPrimitiveGenerator():
 
         print( "Computed Boundary:", self.terminals[-1], self.terminals[-1]['rect'][2], self.terminals[-1]['rect'][2]%80)
 
+    def addResArray(self, x_cells, y_cells, height, unit_res):
+
+        for x in range(x_cells):
+            for y in range(y_cells):
+                self._addRes(x, y, height, unit_res, (x == x_cells-1) and (y == y_cells-1))
+
+    def _addRes( self, x, y, height, unit_res, draw_boundary=True):
+
+        y_length = self.finsPerUnitCell * self.pdk['Fin']['Pitch'] * height
+        assert y_length != 0, (self.finsPerUnitCell, self.pdk['Fin']['Pitch'], height)
+        res_per_length = 67
+        x_number = int(round(((1000*unit_res)/(res_per_length*y_length))))
+        assert x_number >= 1, (unit_res, res_per_length, y_length)
+
+        # ga = 2 if x_number == 1 else 1 ## when number of wires is 2 then large spacing req. so contact can be placed without a DRC error 
+        # x_length = (x_number - 1) *ga*self.pdk['Cap']['m1Pitch']
+
+        y_number = int(2 *round(((y_length+self.pdk['Cap']['m2Pitch']-self.pdk['Cap']['m2Width'])/(2.0*self.pdk['Cap']['m2Pitch']))))
+
+        last_y1_track = ((y_number-1)*self.pdk['Cap']['m2Pitch']+self.pdk['M2']['Pitch']-1)//self.pdk['M2']['Pitch']
+        last_x_track = x_number - 1
+
+        m2factor = 2 ### number of m2-tracks (m2factor-1)in between two unitcells in y-direction
+        m1factor = 3
+
+        if (y_number-1) % 2 != last_y1_track % 2:
+            last_y1_track += 1 # so the last color is compatible with the external view of the cell
+
+        if last_y1_track % 2 == 1:
+            m2factor += 1 # so colors match in arrayed blocks
+
+        grid_cell_x_pitch = m1factor + last_x_track
+        grid_cell_y_pitch = m2factor + last_y1_track
+
+        grid_y0 = y*grid_cell_y_pitch
+        grid_y1 = grid_y0 + last_y1_track
+
+        for i in range(x_number):
+            (k, p) = (2*i, 1) if x_number==2 else (i, 0)
+            grid_x = k + x*grid_cell_x_pitch
+
+            self.addWire( self.m1res, None, None, grid_x, (grid_y0, -1), (grid_y1, 1))
+            if i < x_number-1:
+                grid_yh = ((i+1)%2)*last_y1_track
+                self.addWire( self.m1res2, None, None, grid_yh, (i, -1), (i+p+1, 1))
+
+#
+# Build the narrow m2 pitch grid starting at grid_cell_y_pitch*y in standard m2 pitch grids (m2.clg)
+#
+        m2n = Wire( self.m2res2.nm, self.m2res2.layer, self.m2res2.direction,
+                    clg=self.m2res2.clg.copyShift( self.m2res.clg.value( grid_cell_y_pitch*y)[0]),
+                    spg=self.m2res2.spg)
+
+        #v1n = Via( 'v1', 'via1', h_clg=m2n.clg, v_clg=self.m1res.clg)
+        #v2n = Via( 'v2', 'via2', h_clg=m2n.clg, v_clg=self.m3res.clg)
+
+        grid_x0 = x*grid_cell_x_pitch
+        grid_x1 = grid_x0 + last_x_track
+        grid_y = (x_number%2)*last_y1_track
+
+        pin = 'PLUS'
+        self.addWire( m2n, 'PLUS', pin, 0, (0, -1), (0, 1))
+        self.addVia( self.v1res, None, None, 0, 0)
+        pin = 'MINUS'
+        self.addWire( self.m2res, 'MINUS', pin, grid_y, (grid_x1+p, -1), (grid_x1+p, 1))
+        self.addVia( self.v1res, None, None, grid_x1+p, grid_y)
+
+        if draw_boundary:
+            self.addRegion( self.boundary, 'boundary', None,
+                            -1, -1,
+                            last_x_track  + x * grid_cell_x_pitch + 1 + p,
+                            last_y1_track + y * grid_cell_y_pitch + 1)
+
 def get_xcells_pattern( primitive, pattern, x_cells):
     if any(primitive.startswith(f'{x}_') for x in ["CM", "CMFB"]):
         # Dual transistor (current mirror) primitives
@@ -351,6 +426,11 @@ def generate_Cap(uc, block_name, unit_cap):
 
     return uc, ['PLUS', 'MINUS']
 
+def generate_Res(uc, block_name, x_cells, y_cells, height, unit_res):
+    uc.addResArray(x_cells, y_cells, height, unit_res)
+
+    return uc, ['PLUS', 'MINUS']
+
 # WARNING: Bad code. Changing these default values breaks functionality.
 def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, pattern=1, value=12, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
@@ -373,6 +453,9 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
         uc, cell_pin = generate_MOS_primitive(uc, block_name, primitive, height, value, x_cells, y_cells, pattern, parameters, pinswitch)
     elif 'Cap' in primitive:
         uc, cell_pin = generate_Cap(uc, block_name, value)
+        uc.setBboxFromBoundary()
+    elif 'Res' in primitive:
+        uc, cell_pin = generate_Res(uc, block_name, x_cells, y_cells, value[0], value[1])
         uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")

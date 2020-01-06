@@ -99,6 +99,8 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
             self.v0.h_clg.addCenterLine(i*v0pitch,    p['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    p['V0']['WidthY'], False)
 
+        # CAP Layers
+        # TODO: Generalize these !!!
         self.m1n = self.addGen( Wire( 'm1n', 'M1', 'v',
                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m1Pitch'], width=p['Cap']['m1Width']),
                                      spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['V1']['VencA_L'] +p['M2']['Width']//2, check=False)))
@@ -116,3 +118,28 @@ class FinFET14nm_Mock_PDK_Canvas(DefaultCanvas):
         self.v1_nx = self.addGen( Via( 'v1_nx', 'V1', h_clg=self.m2.clg, v_clg=self.m1n.clg))
         self.v2_xn = self.addGen( Via( 'v2_xn', 'V2', h_clg=self.m2n.clg, v_clg=self.m3.clg))
         self.v2_nx = self.addGen( Via( 'v2_nx', 'V2', h_clg=self.m2.clg, v_clg=self.m3n.clg))
+
+        # Resistor Layers
+        # TODO: Generalize these
+        self.m1res = self.addGen( Wire( 'm1res', 'M1', 'v',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m1Pitch'], width=p['Cap']['m1Width']),
+                                     spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['V1']['VencA_L'] +p['Cap']['m2Width']//2, check=True)))
+
+        self.m1res2 = self.addGen( Wire( 'm1res2', 'M1', 'h',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M2']['Pitch'], width=p['Cap']['m1Width']),
+                                     spg=EnclosureGrid( pitch=p['Cap']['m1Pitch'], stoppoint=p['Cap']['m1Width']//2, check=False)))
+
+        self.m2res = self.addGen( Wire( 'm2res', 'M2', 'h',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['M2']['Pitch'], width=p['Cap']['m2Width']),
+                                     spg=EnclosureGrid( pitch=p['Cap']['m1Pitch'], stoppoint=p['V1']['VencA_H'] + p['Cap']['m1Width']//2, check=False)))
+
+        self.m2res2 = self.addGen( Wire( 'm2res2', 'M2', 'h',
+                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m2Pitch'], width=p['Cap']['m2Width']),
+                                      spg=EnclosureGrid( pitch=p['Cap']['m1Pitch'], stoppoint=p['V1']['VencA_H'] + p['Cap']['m1Width']//2)))
+
+        self.m3res = self.addGen( Wire( 'm3res', 'M3', 'v',
+                                     clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=p['Cap']['m3Pitch'], width=p['Cap']['m3Width']),
+                                     spg=EnclosureGrid(pitch=p['M2']['Pitch'], stoppoint=p['V2']['VencA_H'] + p['Cap']['m2Width']//2, check=True)))
+
+        self.v1res = self.addGen( Via( 'v1res', 'V1', h_clg=self.m2res.clg, v_clg=self.m1res.clg))
+        self.v2res = self.addGen( Via( 'v2res', 'V2', h_clg=self.m2res.clg, v_clg=self.m3res.clg))
