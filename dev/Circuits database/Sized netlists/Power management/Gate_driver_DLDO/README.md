@@ -10,15 +10,11 @@ The block diagram of the system is shown in the figure below.
   <img width="60%" src="Block_diagram_DLDO.PNG">
 </p>
 
-![Block diagram](Block_diagram_DLDO.PNG)
-
 The diagram of the circuit is as follows.
 
 <p align="center">
   <img width="30%" src="Circuit_diagram_gate_driver.PNG">
 </p>
-
-![Circuit diagram](Circuit_diagram_gate_driver.PNG)
 
 ### Pin description
 
@@ -33,8 +29,6 @@ The operation of the circuit is highlighted below.
 <p align="center">
   <img width="30%" src="Concept_gate_driver_DLDO.PNG">
 </p>
-
-![Working](Concept_gate_driver_DLDO.PNG)
 
 When the steady state detection is low, gate driver is a combination of an inverter with a voltage divider. Dout is at a voltage (eg. 250 mV) depending on the ratio of the resistors. When the steady state detection signal is high, the input is maintained constant, the voltage divider also incorporates the resistance contributed by the switch controlled by Vb. As Vb changes, Dout changes.
 
