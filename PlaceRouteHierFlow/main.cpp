@@ -45,7 +45,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   std::cout<<"Checkpoint : before route"<<std::endl;
   DB.PrintHierNode(current_node);
 
-  DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
+  //DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
 
   Router curr_route;
 
@@ -198,10 +198,19 @@ int main(int argc, char** argv ){
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
   queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
+  std::vector<int> TraverseOrder; //save traverse order, same as Q
+  std::vector<std::vector<PnRDB::hierNode>> TreeVec(DB.hierTree.size());
+  int Q_size = Q.size();
+  for (int i = 0; i < Q_size;i++)
+  {//copy Q to TraverseOrder
+    TraverseOrder.push_back(Q.front());
+    Q.pop();
+    Q.push(TraverseOrder.back());
+  }
 
-  while (!Q.empty())
+  for (int i = 0; i < Q_size;i++)
   {
-    int idx=Q.front();
+    int idx=TraverseOrder[i];
     cout<<"Main-Info: start to work on node "<<idx<<endl;
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
@@ -227,6 +236,64 @@ int main(int argc, char** argv ){
     }
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    /**
+    if(multi_thread){
+      std::thread t[nodeVec.size()];
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
+                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
+      }
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        t[lidx].join();
+      }
+    }else{
+      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+      }
+    }
+    **/
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      DB.CheckinHierNode(idx, nodeVec[lidx]);
+    }
+    
+
+    TreeVec[idx] = nodeVec;
+    //Q.pop();
+    if(disable_io)std::cout.clear();
+    cout<<"Main-Info: complete node "<<idx<<endl;
+  }
+
+  for (int i = 0; i < Q_size;i++)
+  {
+    int idx=TraverseOrder[i];
+    cout<<"Main-Info: start to work on node "<<idx<<endl;
+    if(disable_io)std::cout.setstate(std::ios_base::failbit);
+    /**
+    PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
+    DB.PrintHierNode(current_node);
+
+    
+    save_state( DB, current_node, -1, opath, ".pre_prc", "Placer_Router_Cap", skip_saving_state);
+    DB.AddingPowerPins(current_node);
+    Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
+    save_state( DB, current_node, -1, opath, ".post_prc", "Placer_Router_Cap", skip_saving_state);
+
+    std::cout<<"Checkpoint : before place"<<std::endl;
+    DB.PrintHierNode(current_node);
+
+    save_state( DB, current_node, -1, opath, ".pre_pl", "Before Placement", skip_saving_state);
+    
+    // Placement
+    std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
+    Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
+
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      save_state( DB, nodeVec[lidx], lidx, opath, ".post_pl", "End Placement", skip_saving_state);
+    }
+
+    std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    **/
+    std::vector<PnRDB::hierNode> nodeVec=TreeVec[idx];
     if(multi_thread){
       std::thread t[nodeVec.size()];
       for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
@@ -246,7 +313,7 @@ int main(int argc, char** argv ){
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
 
-    Q.pop();
+    //Q.pop();
     if(disable_io)std::cout.clear();
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
