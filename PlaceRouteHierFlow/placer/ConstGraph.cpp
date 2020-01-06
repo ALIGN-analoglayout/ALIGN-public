@@ -1569,9 +1569,16 @@ void ConstGraph::CalculateLongestPath(int s, vector<Vertex> &graph, bool backwar
 }
 
 bool ConstGraph::FastInitialScan() {
+  bool fastscan_H = CheckPositiveCycle(this->HGraph);
+  bool fastscan_V = CheckPositiveCycle(this->VGraph);
+  if( fastscan_H or fastscan_V){
+    return true;
+  }else{
+    return false;
+  }
   // return true if any violation found, otherwise return false
-  if(CheckPositiveCycle(this->HGraph)) return true;
-  return CheckPositiveCycle(this->VGraph);
+  //if(CheckPositiveCycle(this->HGraph)) return true;
+  //return CheckPositiveCycle(this->VGraph);
 }
 
 bool ConstGraph::CheckPositiveCycle(vector<Vertex> &graph) {

@@ -75,7 +75,11 @@ RUN cd opt && \
 
 from align_base as align_image
 
-COPY . /ALIGN-public
+ENV ALIGN_HOME=/ALIGN-public
 
-RUN cd /ALIGN-public && \
-    $pip install .
+COPY . $ALIGN_HOME
+
+RUN cd $ALIGN_HOME && \
+    $pip install . && \
+    cd PlaceRouteHierFlow && \
+    make -j4

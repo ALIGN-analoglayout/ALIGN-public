@@ -10,11 +10,11 @@ def main( args):
     return generate_primitive(
         args.block_name,
         args.primitive,
-        args.pattern,
         args.height,
-        args.nfin,
         args.Xcells,
         args.Ycells,
+        args.pattern,
+        args.value,
         args.params,
         args.pinSwitch,
         args.pdkdir,
@@ -26,12 +26,11 @@ def gen_parser():
     parser.add_argument( "-p", "--primitive", type=str, required=True)
     parser.add_argument( "-b", "--block_name", type=str, required=True)
     parser.add_argument( "-u", "--height", type=int, required=False, default=12)
-    parser.add_argument( "-n", "--nfin", type=int, required=True)
     parser.add_argument( "-X", "--Xcells", type=int, required=True)
     parser.add_argument( "-Y", "--Ycells", type=int, required=True)
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
     parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
-    parser.add_argument( "--model", type=str, required=False, default=None)
+    parser.add_argument( "-n", "--value", type=str, required=False, default=None)
     parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
     parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)

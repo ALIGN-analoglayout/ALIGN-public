@@ -17,10 +17,7 @@ PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
-PNRDIR=${DESIGN}/pnr_output/
-PNR_OUTPUT=${DESIGN}/pnr_output/Results
-GEN_OUTPUT=${DESIGN}/2_primitives
-TPO_OUTPUT=${DESIGN}/1_topology
+OUTPUT_DIR=${DESIGN}
 
 ifeq ($(BUILD),docker)
 	execute = docker-compose -p build exec $(1) $(2)
@@ -33,30 +30,12 @@ else
 endif
 
 # Convert output to PNG
-${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
+${OUTPUT_DIR}/${DESIGN}_0.png:	${OUTPUT_DIR}/${DESIGN}_0.gds
 	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
 
-# Convert output to GDS
-${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
-
-# Transfer inputs and run placeroute
-${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${GEN_OUTPUT}/${DESIGN}.lef ${DESIGN}/${PDK_FILE}
-	-$(call execute, transfer-service, /bin/bash -c "mkdir -p ${PNRDIR}/inputs && \
-	cp $(DESIGN)/$(PDK_FILE) \$$_ && \
-	cp $(GEN_OUTPUT)/$(DESIGN).lef \$$_ && \
-	cp $(GEN_OUTPUT)/$(DESIGN).map \$$_ && \
-	cp $(GEN_OUTPUT)/*.json \$$_ && \
-	cp $(TPO_OUTPUT)/$(DESIGN).v \$$_ && \
-	cp $(TPO_OUTPUT)/*.const \$$_")
-	$(call execute, placeroute-service, /bin/bash -c "mkdir -p ${PNR_OUTPUT} && cd \$$_/.. && make -f $(TOP)/PlaceRouteHierFlow/Makefile.run DESIGN=${DESIGN} |& tee Results/PnR.log")
-
-# Run the heirarchy & cell generator script
-${GEN_OUTPUT}/${DESIGN}.lef:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+# Convert schematic to GDS
+${OUTPUT_DIR}/${DESIGN}_0.gds:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
 	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
-
-${DESIGN}/${PDK_FILE}:	${ALIGN_HOME}/${PDK_DIR}/${PDK_FILE}  ${DESIGN}
-	cp $< ${DESIGN}/
 
 ${DESIGN}:
 	mkdir ${DESIGN}
@@ -93,7 +72,7 @@ docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 docker:	volume services make-docker-service
 	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
 
-services:	transfer-service align-service placeroute-service \
+services:	transfer-service align-service \
 		klayoutconvert-service
 
 transfer-service:	docker-compose.yml
