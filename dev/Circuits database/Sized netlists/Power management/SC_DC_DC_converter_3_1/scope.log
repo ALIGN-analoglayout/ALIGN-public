@@ -1,0 +1,138 @@
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/GF_14nm_Hspice/sc_dc_dc_converter_Dec20/sc_dc_dc_conv_tb.tr0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 290x358+650+350
+pf:read PF:1 v(phi2)
+# WF:1:1
+Graph addsignal WF:1:1 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal0
+pf:read PF:1 v(phi2_bar)
+# WF:1:2
+Graph addsignal WF:1:2 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal1
+ScopeSigMgr:Reload 0 {{(1) sc_dc_dc_conv_tb.tr0}}
+GrXY:NewGraph
+# Graph1
+pf:read PF:2 v(vin)
+# WF:2:3
+Graph addsignal WF:2:3 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal0
+pf:read PF:2 i(v0)
+# WF:2:4
+Graph addsignal WF:2:4 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal1
+Graph:DSel
+Graph:Select Graph1
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.022041175844427 -0.072470639444183} {2.9761u 4.3884u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.023857925044173 -0.11947341247991} {3.7577166u 4.3257418u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.052927898725586 -0.14512994948952} {4.0776349u 4.2733826u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.047715850088347 -0.17379621699433} {4.2334267u 4.3164711u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.034685728495248 -0.1164636819847} {4.28442084u 4.31200346u}}
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph1 Signal1 {} xyrangeVisible
+# M:0
+Graph:DSel
+GrMeas:Select Graph1 M:0 0 1
+GrMeas:MovePoint Graph1 M:0 0 4.2970880035301u -0.047296204168943
+Graph:DSel
+pf:read PF:2 v(vout)
+# WF:2:5
+Graph addsignal WF:2:5 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal2
+Graph:Select Graph1
+Graph:DSel
+Graph itemselect Signal2 add
+# Signal2
+Graph sigconfig Signal2 -region 1 -rgnindex 1
+Graph:DSel
+Graph:Select Graph0
+ScopeSigMgr:Unload 0 {{(1) sc_dc_dc_conv_tb.tr0}}
+GrXY:NewGraph
+# Graph2
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/GF_14nm_Hspice/sc_dc_dc_converter_Dec20/sc_dc_dc_conv_tb.tr0 1 openonly
+# PF:5
+wm geometry .sigmgr._PF:5 290x358+650+350
+pf:read PF:5 i(r0)
+# WF:5:1
+Graph addsignal WF:5:1 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal0
+pf:read PF:5 i(v0)
+# WF:5:2
+Graph addsignal WF:5:2 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal1
+Graph:DSel
+Graph:Select Graph2
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.017176597116337 -0.1148619683604} {2.8985u 4.7453u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.052927898725586 -0.33797574906738} {3.5104643u 4.4625098u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.073666984248372 -0.75591742384558} {3.918u 4.5586287u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.086526734395617 -1.4597143613188} {4.1796024u 4.7401525u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.26867655539389 -0.27858855151626} {4.5005222u 4.5509421u}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{0.12853703475886 -0.10079310527968} {4.5506454u 4.55717032u}}
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph2 Signal1 {} xyrangeVisible
+# M:0
+Graph:DSel
+Graph:DSel
+Graph:DSel
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph2 Signal1 {} xyrangeVisible
+# M:1
+Graph:DSel
+GrMeas:Select Graph2 M:1 0 1
+GrMeas:MovePoint Graph2 M:1 0 4.5564777543014u -0.033946181521449
+GrMeas:MovePoint Graph2 M:1 0 4.558505670428u -0.05068762920961
+GrMeas:MoveText Graph2 M:1 0 -43 -44
+GrMeas:MovePoint Graph2 M:1 0 4.5586428420855u -0.051517811683906
+pf:read PF:5 v(phi2)
+# WF:5:3
+Graph addsignal WF:5:3 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal2
+pf:read PF:5 v(phi2_bar)
+# WF:5:4
+Graph addsignal WF:5:4 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal3
+pf:read PF:5 v(phi1)
+# WF:5:5
+Graph addsignal WF:5:5 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal4
+Graph:Select Graph2
+Graph:DSel
+Graph itemselect Signal4 add
+# Signal4
+Graph sigconfig Signal4 -region 2 -rgnindex 1
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.0074881817491 -0.71503042726181} {4.555480007u 4.557168385u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.289822186655 -0.96202485794984} {4.555721669u 4.556372901u}}
+Graph axisconfig {AxisY(0,0) AxisX(0) AxisY(1,0) AxisY(2,0) AxisY(3,0)} -range {{-0.003 0.009 } {4.555u 4.557u } {-0.4 0.4 } {-3.0 5.0 } {-1.2 3.2 }}
+Graph axisconfig {AxisY(0,0) AxisX(0) AxisY(1,0) AxisY(2,0) AxisY(3,0)} -range {{-0.02 0.02 } {4.5525u 4.5585u } {-1.0 1.0 } {-9.0 11.0 } {-5.0 7.0 }}
+Graph axisconfig {AxisX(0) AxisY(0,0) AxisY(1,0) AxisY(2,0) AxisY(3,0)} -range {all all all all all} -zoomed {0 0 0 0 0}
+Graph:DSel
+Graph axisconfig {AxisY(3,0) AxisX(0)} -range {{2.0004771477368 -3.5885073655327} {3.154u 4.3066u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.027360580355 -0.098986070478328} {4.356328u 4.754207u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.6872701587734 -0.23939218137097} {4.6465863u 4.7634238u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.3982170881419 -0.56457688583146} {4.72426483u 4.75521097u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{2.6872701587734 -0.85362995646301} {4.74384248u 4.75154744u}}
+Graph:DSel
+Graph axisconfig {AxisY(2,0) AxisX(0)} -range {{3.0485864970629 -0.52844525200252} {4.748988297u 4.751972389u}}
+Graph:DSel

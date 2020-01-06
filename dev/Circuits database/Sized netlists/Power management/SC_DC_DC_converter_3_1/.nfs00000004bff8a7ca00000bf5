@@ -1,0 +1,19 @@
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/GF_14nm_Hspice/sc_dc_dc_converter_Dec20/sc_dc_dc_conv_tb.tr0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 290x358+650+350
+pf:read PF:1 v(net6)
+# WF:1:1
+Graph addsignal WF:1:1 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal0
+Graph:DSel
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal0 add
+# Signal0
+GrMeas:AtX Graph0 Signal0 {} xyrangeVisible
+# M:0
+Graph:DSel
+pf:read PF:1 i(v0)
+# WF:1:2
+Graph addsignal WF:1:2 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal1

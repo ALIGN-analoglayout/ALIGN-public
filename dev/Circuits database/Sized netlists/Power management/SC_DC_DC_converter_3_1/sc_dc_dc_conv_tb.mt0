@@ -1,0 +1,14 @@
+$DATA1 SOURCE='HSPICE' VERSION='K-2015.06-2 linux64'
+.TITLE '** generated for: hspiced'
+ avgcondv         avgcondi         pow_cond         avgphi1v        
+ avgphi1i         pow_phi1         avgphi2v         avgphi2i        
+ pow_phi2         avgphi2barv      avgphi2bari      pow_phi2_bar    
+ avgoutv          avgouti          pow_out          efficiency      
+ output_power     output_current   output_voltage   temper          
+ alter#          
+  2.000e+00       -1.571e-03        3.142e-03        1.030e+00      
+  3.387e-06        3.777e-06        1.030e+00        8.789e-07      
+ -8.235e-07        9.700e-01       -6.409e-06        1.317e-05      
+  5.861e-01        4.689e-03        2.748e-03        8.700e+01      
+  2.748e-03        4.689e-03        5.861e-01        2.500e+01      
+ 1               

@@ -1,0 +1,21 @@
+* "simulator" "HSPICE" 
+* "version" "K-2015.06-2 linux64"
+* "format" "HSP"
+* "rundate" "18:39:57 01/05/2020 "
+* "netlist" "five_transistor_OTA_testbench.sp "
+* "runtitle" "** generated for: hspiced"
+* time =  0.000e+00       
+* temperature =  2.500e+01       
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc= 1.000e-12       
+.nodeset
++ id_ota = 4.323e-01       
++ vdd_ota = 1.000e+00       
++ vinn_ota = 5.500e-01       
++ vinp_ota = 5.500e-01       
++ vout_ota = 5.851e-01       
++ vss_ota = 0.000e+00       
++ xi0.net017 = 2.117e-01       
++ xi0.net19 = 5.851e-01       
+***   END: Saved Operating Point ***                     

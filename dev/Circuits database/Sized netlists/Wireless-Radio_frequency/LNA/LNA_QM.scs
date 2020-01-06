@@ -1,0 +1,94 @@
+** Generated for: hspiceD
+** Generated on: Jan  5 21:02:24 2020
+** Design library name: PhasedArray_WB_copy
+** Design cell name: LNA_QM
+** Design view name: schematic
+
+
+.TEMP 25.0
+.OPTION
++    ARTIST=2
++    INGOLD=2
++    PARHIER=LOCAL
++    PSF=2
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mim
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_dnw
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip_npn
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfrtmom
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_disres
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_res
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_hvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_lvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_sa
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_esd
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmim
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25ud18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25ud18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfjvar
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rtmom
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_rpo
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_hvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfind
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_lvt
+
+** Library name: PhasedArray_WB_copy
+** Cell name: LNA_QM
+** View name: schematic
+xr5 net011 vaux vdd rppolywo_rf l=6e-6 w=500e-9 m=1 mismatchflag=0
+xr4 net063 sf_bias vdd rppolywo_rf l=6e-6 w=500e-9 m=1 mismatchflag=0
+xr10 net0252 vmain vdd rppolywo_rf l=6e-6 w=500e-9 m=1 mismatchflag=0
+xr3 net033 sf_bias vdd rppolywo_rf l=6e-6 w=500e-9 m=1 mismatchflag=0
+xc12 net0252 vss vss mimcap_um_sin_rf lt=16e-6 wt=16e-6 m=1 mimflag=3 mismatchflag=0
+xc9 net0252 vss vss mimcap_um_sin_rf lt=16e-6 wt=16e-6 m=1 mimflag=3 mismatchflag=0
+xc6 outn net063 vdd mimcap_um_sin_rf lt=20e-6 wt=20e-6 m=1 mimflag=3 mismatchflag=0
+xc43 in_int net011 vdd mimcap_um_sin_rf lt=16e-6 wt=16e-6 m=1 mimflag=3 mismatchflag=0
+xc5 outp net033 vdd mimcap_um_sin_rf lt=20e-6 wt=20e-6 m=1 mimflag=3 mismatchflag=0
+xc11 net059 vdd vdd mimcap_um_sin_rf lt=100e-6 wt=50e-6 m=1 mimflag=3 mismatchflag=0
+xc8 net047 vdd vdd mimcap_um_sin_rf lt=100e-6 wt=50e-6 m=1 mimflag=3 mismatchflag=0
+xm10 vdd net033 voutp voutp nmos_rf lr=120e-9 wr=2e-6 nr=32 sigma=1 m=1 mismatchflag=0
+xm12 vdd net063 voutn voutn nmos_rf lr=120e-9 wr=2e-6 nr=32 sigma=1 m=1 mismatchflag=0
+xm4 outn net011 vss vss nmos_rf lr=60e-9 wr=1e-6 nr=10 sigma=1 m=4 mismatchflag=0
+xm13 outp net0252 in_int in_int nmos_rf lr=60e-9 wr=1e-6 nr=10 sigma=1 m=1 mismatchflag=0
+xr38 net058 net057 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr0 voutp vss vdd rppolys_rf l=20e-6 w=1e-6 m=1 mismatchflag=0
+xr36 net042 net056 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr35 net056 net055 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr34 net055 net054 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr33 net054 net060 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr41 outn net032 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr32 net060 outp vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr1 voutn vss vdd rppolys_rf l=20e-6 w=1e-6 m=1 mismatchflag=0
+xr40 net032 vdd vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr37 net057 net042 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xr39 vdd net058 vdd rppolyl_rf l=24e-6 w=3e-6 m=1 mismatchflag=0
+xl8 net047 outp vss spiral_std_mu_z w=3e-6 rad=45.5e-6 nr=3.75 lay=9 spacing=2e-6 gdis=10e-6 m=1
+xl9 net059 outn vss spiral_std_mu_z w=3e-6 rad=42.4e-6 nr=3.75 lay=9 spacing=2e-6 gdis=10e-6 m=1
+xl7 in in_int vss spiral_std_mu_z w=3e-6 rad=30e-6 nr=3.5 lay=9 spacing=2e-6 gdis=10e-6 m=1
+.END

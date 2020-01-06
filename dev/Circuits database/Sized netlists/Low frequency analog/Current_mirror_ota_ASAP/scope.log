@@ -1,0 +1,91 @@
+ScopeSigMgr:loadpffile /scratch/ALIGN_shared/DESIGN_DATABASE/Current_mirror_ota_ASAP/current_mirror_ota.ac0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 232x342+650+350
+pf:read PF:1 v(voutp)
+# WF:1:1
+Graph addsignal {WF:1:1 WF:1:1} -region {new new} -yview {cphasedeg(y) db(y)} -xview {real(x) real(x)} -tracehi {2 2}
+# Signal0 Signal1
+Graph:Select Graph0
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:0
+Graph:DSel
+GrMeas:Select Graph0 M:0 0 1
+GrMeas:MovePoint Graph0 M:0 0 1.0 26.319224999562
+GrMeas:MoveText Graph0 M:0 0 85 45
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:1
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 53.12013235483meg 23.075078607957
+GrMeas:MoveText Graph0 M:1 0 41 -22
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{34.168918302183 4.4483959335822} {4.2meg 540meg}}
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 43.519019760485meg 23.90587309803
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{32.073116051489 15.989068652012} {20.6meg 86.1meg}}
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 46.114887735453meg 23.684021299664
+Graph axisconfig {AxisX(0) AxisY(0,0) AxisY(1,0)} -range {all all all} -zoomed {0 0 0}
+Graph:DSel
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{37.665450345547 -3.4188011639885} {1meg 20g}}
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 46.930140034402meg 23.61327542774
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{27.031929526418 1.2450057066025} {10meg 1g}}
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 50.049818109897meg 23.346217764154
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 2
+GrMeas:MoveText Graph0 M:1 0 49 -34
+Graph:DSel
+Graph axisconfig {AxisX(0) AxisY(0,0) AxisY(1,0)} -range {all all all} -zoomed {0 0 0}
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MoveText Graph0 M:1 0 -41 -28
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:2
+Graph:DSel
+GrMeas:Select Graph0 M:2 0 1
+GrMeas:MovePoint Graph0 M:2 0 1.046335076838g -0.04501646262126
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{15.812125074518 -17.404929337448} {140meg 30g}}
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{8.9262372124612 -6.8081569826803} {378meg 2.67g}}
+Graph:DSel
+GrMeas:Select Graph0 M:2 0 1
+GrMeas:MovePoint Graph0 M:2 0 1.0311138652221g 0.082640888624831
+GrMeas:MoveText Graph0 M:2 0 69 -19
+Graph:DSel
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{3.4141589932211 -6.3761307282002} {630.1meg 2.767g}}
+Graph:DSel
+GrMeas:Select Graph0 M:2 0 1
+GrMeas:MovePoint Graph0 M:2 0 1.040179105486g 0.0063853351313668
+Graph:DSel
+Graph axisconfig {AxisX(0) AxisY(0,0) AxisY(1,0)} -range {all all all} -zoomed {0 0 0}
+Graph:DSel
+GrMeas:Select Graph0 M:2 0 1
+GrMeas:MoveText Graph0 M:2 0 -31 46
+Graph:DSel

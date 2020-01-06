@@ -1,0 +1,3 @@
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/ASAP7nm_Hspice/2019_10_01_stacked_5t_ota/2019_10_01_5t_OTA.sw0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 290x358+680+384

@@ -1,0 +1,34 @@
+* "simulator" "HSPICE" 
+* "version" "K-2015.06-2 linux64"
+* "format" "HSP"
+* "rundate" "14:38:08 01/05/2020 "
+* "netlist" "2019_05_19_continuous_time_CMFB.sp "
+* "runtitle" "** generated for: hspiced"
+* time =  0.000e+00       
+* temperature =  2.500e+01       
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc= 1.000e-12       
+.nodeset
++ id = 3.753e-01       
++ vbiasn = 7.000e-01       
++ vbiasnd = 3.806e-01       
++ vbiasp1 = 4.900e-01       
++ vbiasp2 = 3.000e-01       
++ vcm = 5.500e-01       
++ vdd = 1.000e+00       
++ vdd! = 1.000e+00       
++ vinn = 5.500e-01       
++ vinp = 5.500e-01       
++ voutn = 5.553e-01       
++ voutp = 5.553e-01       
++ vss = 0.000e+00       
++ xi15.net012 = 7.612e-01       
++ xi15.net014 = 3.202e-01       
++ xi15.net06 = 7.612e-01       
++ xi15.net10 = 2.171e-01       
++ xi15.net8 = 3.202e-01       
++ xi14.net11 = 5.553e-01       
++ xi14.net12 = 5.553e-01       
++ xi14.net9 = 5.553e-01       
+***   END: Saved Operating Point ***                     

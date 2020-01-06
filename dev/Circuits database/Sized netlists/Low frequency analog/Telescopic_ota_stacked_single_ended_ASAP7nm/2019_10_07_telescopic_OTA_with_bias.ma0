@@ -1,0 +1,6 @@
+$DATA1 SOURCE='HSPICE' VERSION='K-2015.06-2 linux64'
+.TITLE '** generated for: hspiced'
+ gain             ugf              threedb_gain     threedb         
+ pm               temper           alter#          
+  5.516e+01        8.926e+08        4.807e+01        1.554e+06      
+  8.667e+01        2.500e+01       1               

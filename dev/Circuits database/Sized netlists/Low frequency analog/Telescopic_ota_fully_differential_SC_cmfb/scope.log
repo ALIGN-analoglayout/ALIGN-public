@@ -1,0 +1,43 @@
+ScopeSigMgr:loadpffile /scratch/ALIGN_shared/DESIGN_DATABASE/Telescopic_ota_fully_differential_SC_cmfb/2019_04_10_fully_differential_telescopic_OTA_single_devices_testbench.tr0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 232x342+650+350
+pf:read PF:1 par(vdiff1)
+# WF:1:1
+Graph addsignal WF:1:1 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal0
+pf:read PF:1 par(vdiff)
+# WF:1:2
+Graph addsignal WF:1:2 -region new -yview real(y) -xview real(x) -tracehi 2
+# Signal1
+Mdi:Resize 500 388
+Mdi:Move 5 5
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:0
+Graph:DSel
+GrMeas:Select Graph0 M:0 0 1
+GrMeas:MovePoint Graph0 M:0 0 25.038724857688u 198.4350712645u
+GrMeas:MoveText Graph0 M:0 0 74 -15
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal0 add
+# Signal0
+GrMeas:AtX Graph0 Signal0 {} xyrangeVisible
+# M:1
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 15.034346354238u 0.035097885982741
+GrMeas:MoveText Graph0 M:1 0 67 -27
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 25.026062136041u -0.035106073931333
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 2
+GrMeas:MoveText Graph0 M:1 0 3 -115
+GrMeas:MoveText Graph0 M:1 0 5 -124
+Graph:DSel
+Graph:DSel

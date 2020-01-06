@@ -1,0 +1,116 @@
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/ASAP7nm_Hspice/2019_10_01_5t_OTA.ac0 1 openonly
+# PF:1
+wm geometry .sigmgr._PF:1 232x342+680+384
+pf:read PF:1 v(vout)
+# WF:1:1
+Graph addsignal {WF:1:1 WF:1:1} -region {new new} -yview {cphasedeg(y) db(y)} -xview {real(x) real(x)} -tracehi {2 2}
+# Signal0 Signal1
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:0
+Graph:DSel
+GrMeas:Select Graph0 M:0 0 1
+GrMeas:MovePoint Graph0 M:0 0 1.0 18.021841728451
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:0 0 2
+GrMeas:MoveText Graph0 M:0 0 48 32
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:1
+Graph:DSel
+GrMeas:Select Graph0 M:1 0 1
+GrMeas:MovePoint Graph0 M:1 0 29.512107392902g 13.544642994685
+GrMeas:MoveText Graph0 M:1 0 -52 34
+GrMeas:MovePoint Graph0 M:1 0 99.999938271192g 3.3315476887644
+ScopeSigMgr:Unload 0 {{(1) 2019_10_01_5t_OTA.ac0}}
+Graph0 delsignal Signal0
+Graph0 delsignal Signal1
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/ASAP7nm_Hspice/2019_10_01_5t_OTA.ac0 1 openonly
+# PF:2
+wm geometry .sigmgr._PF:2 232x342+680+384
+pf:read PF:2 v(vout)
+# WF:2:1
+Graph addsignal {WF:2:1 WF:2:1} -region {new new} -yview {cphasedeg(y) db(y)} -xview {real(x) real(x)} -tracehi {2 2}
+# Signal0 Signal1
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:2
+Graph:DSel
+GrMeas:Select Graph0 M:2 0 1
+GrMeas:MovePoint Graph0 M:2 0 1.0 18.021841728451
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:3
+Graph:DSel
+GrMeas:Select Graph0 M:3 0 1
+GrMeas:MoveText Graph0 M:3 0 4 30
+GrMeas:MovePoint Graph0 M:3 0 884.72740031664meg 0.70691821908864
+Graph:DSel
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:3 0 1
+GrMeas:MoveText Graph0 M:3 0 -91 39
+Graph:DSel
+Graph:DSel
+Graph axisconfig {AxisY(1,0) AxisX(0)} -range {{-15.977805770207 25.790395332543} {150g 21meg}}
+Graph axisconfig {AxisX(0) AxisY(0,0) AxisY(1,0)} -range {all all all} -zoomed {0 0 0}
+ScopeSigMgr:Unload 0 {{(1) 2019_10_01_5t_OTA.ac0}}
+Graph0 delsignal Signal0
+Graph0 delsignal Signal1
+ScopeSigMgr:loadpffile /project/analog-group04/Meghna/Design_Work/Design_TSMC_65GP/ZR_DLDO/Cadence/ASAP7nm_Hspice/2019_10_01_5t_OTA.ac0 1 openonly
+# PF:3
+wm geometry .sigmgr._PF:3 232x342+680+384
+pf:read PF:3 v(vout)
+# WF:3:1
+Graph addsignal {WF:3:1 WF:3:1} -region {new new} -yview {cphasedeg(y) db(y)} -xview {real(x) real(x)} -tracehi {2 2}
+# Signal0 Signal1
+Graph:Select Graph0
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:4
+Graph:DSel
+GrMeas:Select Graph0 M:4 0 1
+GrMeas:MovePoint Graph0 M:4 0 1.0 32.039962774435
+Graph:DSel
+GrMeas:Select Graph0 M:4 0 2
+GrMeas:MoveText Graph0 M:4 0 60 30
+GrMeas:MoveText Graph0 M:4 0 64 30
+Graph:DSel
+Graph itemselect Signal1 add
+# Signal1
+GrMeas:AtX Graph0 Signal1 {} xyrangeVisible
+# M:5
+Graph:DSel
+GrMeas:Select Graph0 M:5 0 1
+GrMeas:MoveText Graph0 M:5 0 81 63
+GrMeas:MovePoint Graph0 M:5 0 924.95822134282meg 0.046033971420044
+GrMeas:MoveText Graph0 M:5 0 -9 40
+GrMeas:MoveText Graph0 M:5 0 -57 38
+Graph:DSel
+Graph:DSel
+Graph itemselect Signal0 add
+# Signal0
+GrMeas:AtX Graph0 Signal0 {} xyrangeVisible
+# M:6
+Graph:DSel
+GrMeas:Select Graph0 M:6 0 1
+GrMeas:MovePoint Graph0 M:6 0 933.55988717275meg -91.034296284823
+Graph:DSel
+Graph:DSel
+GrMeas:Select Graph0 M:6 0 1
+GrMeas:MoveText Graph0 M:6 0 -36 15
+Graph:DSel

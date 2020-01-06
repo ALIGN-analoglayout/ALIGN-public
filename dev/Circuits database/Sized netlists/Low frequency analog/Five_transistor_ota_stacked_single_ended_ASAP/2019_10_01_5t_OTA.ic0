@@ -1,0 +1,26 @@
+* "simulator" "HSPICE" 
+* "version" "K-2015.06-2 linux64"
+* "format" "HSP"
+* "rundate" "13:25:27 01/05/2020 "
+* "netlist" "2019_10_01_5t_OTA.sp "
+* "runtitle" "** generated for: hspiced"
+* time =  0.000e+00       
+* temperature =  2.500e+01       
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc= 1.000e-12       
+.nodeset
++ net0s = 4.283e-01       
++ net10 = 4.058e-01       
++ net15 = 6.750e-01       
++ net17 = 6.750e-01       
++ net1s = 9.740e-01       
++ net2 = 3.427e-01       
++ net2s = 9.740e-01       
++ net3s = 4.283e-01       
++ net4s = 3.234e-02       
++ net5s = 3.166e-02       
++ net8 = 7.124e-01       
++ vdd = 1.000e+00       
++ vout = 7.124e-01       
+***   END: Saved Operating Point ***                     
