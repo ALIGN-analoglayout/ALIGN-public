@@ -110,7 +110,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
 
     for lib_ele in liblist:
         G2 = lib_ele['graph']
-        # Digital blocks only transistors:
+        # DIgital blocks only transistors:
         nd = [node for node in G2.nodes()
                 if 'net' not in G2.nodes[node]["inst_type"]]
         if DIGITAL and len(nd)>1:
@@ -329,7 +329,6 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                                  sub_block_name)
                     #print(sub_block_name)
                     #print(matched_ports)
-
                     mapped_subgraph_list = _mapped_graph_list(
                         G2, [
                             i for i in liblist
@@ -371,6 +370,8 @@ def define_SD(G,power,gnd,clk):
     try:
         gotpower=power[0]
         gotgnd=gnd[0]
+        logging.info("using power: %s and ground: %s",gotpower,gotgnd)
+
     except (IndexError, ValueError):
         logging.error("no power and gnd defination, correct setup file")
         return False

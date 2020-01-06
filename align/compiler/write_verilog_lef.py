@@ -408,8 +408,11 @@ def compare_node(G,node1,node2):
 def connection(graph,net):
     conn =[]
     for nbr in list(graph.neighbors(net)):
-        #print("neighbours",graph.nodes[nbr].items())
-        if "connection" in graph.nodes[nbr]:
+        #print(graph.nodes[nbr]["ports_match"].items())
+        if "ports_match" in graph.nodes[nbr]:
+            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
+            conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+        elif "connection" in graph.nodes[nbr]:
             idx=list(graph.nodes[nbr]["connection"].values()).index(net)
             conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
     if graph.nodes[net]["net_type"]=="external":
@@ -667,7 +670,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
             elif 'Dcap' not in graph.nodes[key]["inst_type"] : 
-                if len(list(graph.neighbors(key)))<3 and len(list(graph.neighbors(key)))>1:
+                if len(connection(graph,key))<=3 and len(connection(graph,key))>1:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
                     if not existing_SymmNet:
