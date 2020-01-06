@@ -255,7 +255,7 @@ class DefaultPrimitiveGenerator():
         assert x_number >= 1, (unit_res, res_per_length, y_length)
 
         ga = 2 if x_number == 1 else 1 ## when number of wires is 2 then large spacing req. so contact can be placed without a DRC error 
-        x_length = (x_number - 1) *ga*self.pdk['Cap']['m1Pitch']
+        # x_length = (x_number - 1) *ga*self.pdk['Cap']['m1Pitch']
 
         y_number = int(2 *round(((y_length+self.pdk['Cap']['m2Pitch']-self.pdk['Cap']['m2Width'])/(2.0*self.pdk['Cap']['m2Pitch']))))
 

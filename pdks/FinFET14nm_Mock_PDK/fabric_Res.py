@@ -1,7 +1,6 @@
 import argparse
 import pathlib
 
-from datetime import datetime
 from align.cell_fabric import generate_primitive
 
 def gen_parser():
