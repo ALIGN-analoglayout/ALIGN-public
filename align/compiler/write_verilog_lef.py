@@ -10,10 +10,13 @@ import sys
 import json
 from math import sqrt, ceil
 
-from .util import convert_to_unit, logging
+from .util import convert_to_unit
 from .merge_nodes import merge_nodes
 
 from collections import Counter
+
+import logging
+logger = logging.getLogger(__name__)
 
 class WriteVerilog:
     """ write hierarchical verilog file """
@@ -34,47 +37,47 @@ class WriteVerilog:
             if members["name"]==subckt and port in members["ports"]:
                 return 1
             else:
-                logging.warning("no ports match: %s %s",subckt,port)
+                logger.warning("no ports match: %s %s",subckt,port)
                 return 1
 
     def print_module(self, fp):
-        logging.info("Writing module : %s", self.circuit_name)
+        logger.info("Writing module : %s", self.circuit_name)
         fp.write("\nmodule " + self.circuit_name + " ( ")
         fp.write(', '.join(self.pins))
         fp.write(" ); ")
 
         if self.inout_pins:
-            logging.info("Writing ports : %s", ', '.join(self.inout_pins))
+            logger.info("Writing ports : %s", ', '.join(self.inout_pins))
             fp.write("\ninput ")
             fp.write(', '.join(self.pins))
             fp.write(";\n")
 
         for node, attr in self.circuit_graph.nodes(data=True):
             if 'source' in attr['inst_type']:
-                logging.info("Skipping source nodes : %s", node)
+                logger.info("Skipping source nodes : %s", node)
                 continue
             if 'net' not in attr['inst_type']:
-                logging.info("Writing node: %s", node)
+                logger.info("Writing node: %s", node)
                 fp.write("\n" + attr['inst_type'] + " " + node + ' ( ')
                 ports = []
                 nets = []
                 if "ports_match" in attr:
-                    logging.info("Nets connected to ports: %s",attr["ports_match"])
+                    logger.info("Nets connected to ports: %s",attr["ports_match"])
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
                 elif "connection" in attr:
                     try:
-                        logging.info("connection to ports: %s",attr["connection"])
+                        logger.info("connection to ports: %s",attr["connection"])
                         for key, value in attr["connection"].items():
                             if self.check_ports_match(key,attr['inst_type']):
                                 ports.append(key)
                                 nets.append(value)                    
                     except:
-                        logging.error("ERROR: Subckt %s defination not found",attr['inst_type'])
+                        logger.error("ERROR: Subckt %s defination not found",attr['inst_type'])
 
                 else:
-                    logging.error("No connectivity info found : %s",
+                    logger.error("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
@@ -134,24 +137,24 @@ class WriteSpice:
             if members["name"]==subckt and port in members["ports"]:
                 return 1
             else:
-                logging.warning("no ports match: %s %s",subckt,port)
+                logger.warning("no ports match: %s %s",subckt,port)
 
     def print_subckt(self, fp):
-        logging.info("Writing module : %s", self.circuit_name)
+        logger.info("Writing module : %s", self.circuit_name)
         fp.write("\n.subckt " + self.circuit_name + " ")
         fp.write(' '.join(self.pins))
 
         for node, attr in self.circuit_graph.nodes(data=True):
             if 'source' in attr['inst_type']:
-                logging.info("Skipping source nodes : %s", node)
+                logger.info("Skipping source nodes : %s", node)
                 continue
             if 'net' not in attr['inst_type']:
-                logging.info("Writing node: %s", attr['inst_type'])
+                logger.info("Writing node: %s", attr['inst_type'])
                 fp.write("\n" + node + ' ')
                 ports = []
                 nets = []
                 if "ports_match" in attr:
-                    logging.info("Nets connected to ports: %s",attr["ports_match"])
+                    logger.info("Nets connected to ports: %s",attr["ports_match"])
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
@@ -170,7 +173,7 @@ class WriteSpice:
                     #    nets.append('vss')
 
                 else:
-                    logging.error("No connectivity info found : %s",
+                    logger.error("No connectivity info found : %s",
                                  ', '.join(attr["ports"]))
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
@@ -213,7 +216,7 @@ def print_cell_gen_header(fp):
 def generate_lef(fp, name, values, available_block_lef, 
                  unit_size_mos=12 , unit_size_cap=12):
     """ Creates a shell script to generate parameterized lef"""
-    logging.info("checking lef for:%s,%s",name,values)
+    logger.info("checking lef for:%s,%s",name,values)
     #for param, value in size.items():
 
     if name.lower().startswith('cap'):
@@ -225,12 +228,12 @@ def generate_lef(fp, name, values, available_block_lef,
         else: 
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        logging.info("Found cap with size: %s %d",size,unit_size_cap )                
+        logger.info("Found cap with size: %s %d",size,unit_size_cap )                
         block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
-        logging.info('Generating lef for: %s %s', name, size)
+        logger.info('Generating lef for: %s %s', name, size)
         return block_name, {
             'primitive': name,
             'value': unit_size_cap
@@ -251,7 +254,7 @@ def generate_lef(fp, name, values, available_block_lef,
     #         block_name = name + '_' + size.replace('.','p')
     #         if block_name in available_block_lef:
     #             return block_name, available_block_lef[block_name]
-    #         logging.info('Generating lef for: %s %s', block_name, size)
+    #         logger.info('Generating lef for: %s %s', block_name, size)
     #         fp.write("\n$PC fabric_Res_array.py " +
     #                  " -b " + block_name +
     #                  " -n " + str(height) +
@@ -275,7 +278,7 @@ def generate_lef(fp, name, values, available_block_lef,
             height = ceil(sqrt(float(size) / res_unit_size))
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
-            logging.info('Generating lef for: %s %s', block_name, size)
+            logger.info('Generating lef for: %s %s', block_name, size)
             return block_name, {
                 'primitive': name,
                 'value': (height, float(size))
@@ -299,7 +302,7 @@ def generate_lef(fp, name, values, available_block_lef,
     #     block_name = name + '_' + str(size)
     #     if block_name in available_block_lef:
     #         return block_name, available_block_lef[block_name]
-    #     logging.info('Generating lef for: %s %s', block_name, size)
+    #     logger.info('Generating lef for: %s %s', block_name, size)
     #     fp.write("\n$PC fabric_" + name + ".py " +
     #              " -b " + block_name +
     #              " -n " + str(height) + ## THIS IS -u (height)
@@ -325,7 +328,7 @@ def generate_lef(fp, name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
 
-        logging.info('Generating lef for: %s %s', name, str(size))
+        logger.info('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
             no_units = 2*ceil(size / unit_size_mos)
             square_x = ceil(sqrt(no_units))
@@ -336,7 +339,7 @@ def generate_lef(fp, name, values, available_block_lef,
             block_name = f"{name}_n{unit_size_mos}_X{xval}_Y{yval}"
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
-            logging.info("Generating parametric lef of: %s", block_name)
+            logger.info("Generating parametric lef of: %s", block_name)
             return block_name, {
                 'primitive': name,
                 'value': unit_size_mos,
@@ -345,16 +348,16 @@ def generate_lef(fp, name, values, available_block_lef,
                 'parameters': values
             }
         else:
-            logging.info("No proper parameters found for cell generation")
+            logger.info("No proper parameters found for cell generation")
             block_name = name+"_"+size
 
     raise NotImplementedError(f"Could not generate LEF for {name}")
 
 def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
-    #logging.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
-    #logging.info("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
+    #logger.info("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
+    #logger.info("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
     #match_pair={}
-    #logging.info("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
+    #logger.info("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
     if 'net' in G.nodes[nodes1]['inst_type'] and \
         G.nodes[nodes1]['net_type'] == 'external':
             port=True
@@ -365,7 +368,7 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
         (port and len(list(G.neighbors(nodes1))) ==1):
         for node1 in list(G.neighbors(nodes1)):
             if node1 not in traverced:
-                logging.info(node1)
+                logger.info(node1)
                 #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
                 traverced.append(node1)
@@ -390,26 +393,26 @@ def compare_node(G,node1,node2):
             G.nodes[node2]["inst_type"]=="net" and \
             len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
             G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
-        #logging.info("comparing_nodes, %s %s True",node1,node2)
+        #logger.info("comparing_nodes, %s %s True",node1,node2)
         return True
     elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
         'values' in G.nodes[node1].keys() and 
          G.nodes[node1]["values"]==G.nodes[node2]["values"] and
         len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
-        #logging.info("comparing_nodes, %s %s True",node1,node2)
+        #logger.info("comparing_nodes, %s %s True",node1,node2)
         return True
     else:
-        logging.info("comparing_nodes, %s %s False",node1,node2)
+        logger.info("comparing_nodes, %s %s False",node1,node2)
         return False
 def connection(graph,net):
     conn =[]
     for nbr in list(graph.neighbors(net)):
         if "ports_match" in graph.nodes[nbr]:
-            logging.info("ports match:%s",graph.nodes[nbr]["ports_match"].items())
+            logger.info("ports match:%s",graph.nodes[nbr]["ports_match"].items())
             idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
             conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
         elif "connection" in graph.nodes[nbr]:
-            logging.info("connection:%s",graph.nodes[nbr]["connection"].items())
+            logger.info("connection:%s",graph.nodes[nbr]["connection"].items())
             idx=list(graph.nodes[nbr]["connection"].values()).index(net)
             conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
     if graph.nodes[net]["net_type"]=="external":
@@ -456,7 +459,7 @@ def check_common_centroid(graph,const_path,ports):
 def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     const_path = input_dir / (name + '.const')
     new_const_path = input_dir / (name + '.const_temp')
-    logging.info(f"writing cap constraints: {const_path}")
+    logger.info(f"writing cap constraints: {const_path}")
     available_cap_const = []
     if os.path.isfile(const_path): 
         print('Reading const file for cap', const_path)
@@ -469,17 +472,17 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
             new_const_fp.write(line)
-            logging.info("cap const %s",line)
+            logger.info("cap const %s",line)
             line=const_fp.readline()
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")
-        logging.info("Creating new const file: %s",new_const_path)
-    logging.info("writing common centroid caps: %s",all_array)
+        logger.info("Creating new const file: %s",new_const_path)
+    logger.info("writing common centroid caps: %s",all_array)
     for _,array in all_array.items():
         n_cap=[]
         cc_caps=[]
-        logging.info("group1: %s",array)
+        logger.info("group1: %s",array)
         for _,arr in array.items():
             for ele in arr:
                 if graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
@@ -496,7 +499,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
             available_cap_const = available_cap_const+ cc_caps
             unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
             cap_line = "CC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
-            logging.info("Cap constraint"+cap_line)
+            logger.info("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)
 
 
@@ -511,7 +514,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
             n_cap = str(ceil(size/unit_size_cap))
             unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
             cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
-            logging.info("Cap constraint"+cap_line)
+            logger.info("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)
             available_cap_const.append(node)
     new_const_fp.close()
@@ -522,12 +525,12 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
 
 def matching_groups(G,level1):
     similar_groups=[] 
-    logging.info("matching groups for all neighbors: %s", level1)
+    logger.info("matching groups for all neighbors: %s", level1)
     for l1_node1 in level1:
         for l1_node2 in level1:
             if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2):
                 found_flag=0
-                #logging.info("similar_group %s",similar_groups)
+                #logger.info("similar_group %s",similar_groups)
                 #print(l1_node1,l1_node2)
                 for index, sublist in enumerate(similar_groups):
                     if l1_node1 in sublist and l1_node2 in sublist:
@@ -562,7 +565,7 @@ def trace_template(graph, similar_node_groups,visited,template,array):
         for source in array.keys():
             array[source]+=next_match[source]
         template +=next_match[list(next_match.keys())[0]]
-        logging.info("found matching level: %s,%s",template,similar_node_groups)
+        logger.info("found matching level: %s,%s",template,similar_node_groups)
         trace_template(graph, next_match,visited,template,array)
 
 
@@ -605,7 +608,7 @@ def FindArray(graph,input_dir,name):
         if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
             level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
             array_of_node[node]=matching_groups(graph,level1)
-            logging.info("finding array:%s,%s",node,array_of_node[node])
+            logger.info("finding array:%s,%s",node,array_of_node[node])
             if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
                 similar_node_groups = {}
                 for el in array_of_node[node][0]:
@@ -614,7 +617,7 @@ def FindArray(graph,input_dir,name):
                 visited=array_of_node[node][0]+[node]
                 array=similar_node_groups
                 trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logging.info("similar groups final, %s",array)
+                logger.info("similar groups final, %s",array)
                 all_array[node]=array
     return all_array
                 #match_branches(graph,nodes_dict)
@@ -630,7 +633,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
             const_file.write_text(input_const_file.read_text())
 
     #check_common_centroid(graph,const_file,ports)
-    logging.info("writing constraints: %s",const_file)
+    logger.info("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]

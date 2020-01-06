@@ -1,5 +1,6 @@
 import argparse
 from .main import schematic2layout
+from . import __version__
 
 class CmdlineParser():
 
@@ -67,6 +68,15 @@ class CmdlineParser():
                             "--extract",
                             action='store_true',
                             help='Set to true to extract post-layout netlist')
+        parser.add_argument( "-l", "--log",
+                            dest="log_level",
+                            choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                            default='WARNING',
+                            help="Set the logging level (default: %(default)s)")
+        parser.add_argument('--version',
+                            action='version',
+                            version='%(prog)s ' + __version__)
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
