@@ -1,49 +1,39 @@
-## Gate driver circuit for a DLDO
+## Fully differential Switched Capacitor Filter
 
 ### Circuit Description
 
-This circuit is a part of the gate driver circuitry in a digital low voltage dropout regulator [1]. This circuit drives PMOS power transistors that supply a load current to the output at a given voltage. 
-
-The block diagram of the system is shown in the figure below.
-
-![Block diagram](Block_diagram_DLDO.PNG)
+This is a low pass filter circuit. It contains a fully differential telescopic OTA, switched capacitor common mode feedback circuit and a non-overlapping clock generator.
 
 The diagram of the circuit is as follows.
 
-![Circuit diagram](Circuit_diagram_gate_driver.PNG)
+![Circuit diagram](schematic.jpg)
 
 ### Pin description
 
-* Din - input pulse waveform
-* Dout - inverted output pulse waveform
-* Vb - gate voltage of transistor in triode that changes the on resistance
-* SS - steady state detection signal switch
-* SS bar - inverted steady state detection signal switch
-
-The operation of the circuit is highlighted below.
-
-![Working](Concept_gate_driver_DLDO.PNG)
-
-When the steady state detection is low, gate driver is a combination of an inverter with a voltage divider. Dout is at a voltage (eg. 250 mV) depending on the ratio of the resistors. When the steady state detection signal is high, the input is maintained constant, the voltage divider also incorporates the resistance contributed by the switch controlled by Vb. As Vb changes, Dout changes.
-
-### Netlist description
-
-* Din - input
-* Dout - output
-* Vb - control (similar to diagram)
-* ss - steady state detection signal 
-* ss_bar_nmos - nmos switch controlled by ss_bar
-* ss_bar_pmos - pmos switch controlled by ss_bar
-* Lres_nmos - on voltage of large nmos resistor
-* Lres_pmos - on voltage of large pmos resistor
-* Sres_nmos - on voltage of small nmos resistor
-* Sres_pmos - on voltage of small pmos resistor
+* Vinp - input common mode DC + input AC
+* Vinn - input common mode DC + input AC
+* Voutp - output of the amplifier
+* Voutn - output of the amplifier
+* Vdd - supply voltage
+* Bias voltages and currents
 
 ### Initial setup + Testbench
 
-To test this circuit, give a clock waveform at Din and observe Dout in steady state and not in steady state. In steady state, Vb can be changed to observe a change in Dout.
+The initial setup, for the voltages and currents to these input pins, and the testbench is present in the spice file.
+
+Simulations
+* DC - operating point information
+* Transient - this can be used to visualize the gain of the amplifier
+
+The transient response plot is shown below
+
+![Transient response](Transient_response.png)
+
+### Performance Metrics
+
+* Gain - 6 dB
 
 ### Constraints
 
-* In steady state there is power dissipation through the voltage divider and any added parasitic routing
-* The capacitance at the output will lower the speed of switching when not in steady state
+* The differential paths in the filter must be symmetric and matched
+* The differential pair and current mirror in the OTA circuit need to be matched

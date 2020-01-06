@@ -6,7 +6,7 @@ This OTA (Operational Transconductance Amplifier) circuit is used to achieve goo
 
 The diagram of the circuit is as follows.
 
-![Circuit diagram](schematic.png)
+![Circuit diagram](schematic.PNG)
 
 ### Pin description
 
