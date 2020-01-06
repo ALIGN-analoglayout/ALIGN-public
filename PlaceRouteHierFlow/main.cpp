@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include "./PnRDB/datatype.h"
 #include "./PnRDB/PnRdatabase.h"
 #include "./placer/Placer.h"
@@ -59,7 +60,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     if ( adr_mode) {
       global_router_mode = 6;
     }
-    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
@@ -67,12 +68,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
-    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
   } else {
     // Global Routing (old version)
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
-    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
@@ -81,7 +82,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     // Detail Routing
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
-    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
@@ -121,10 +122,11 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
         
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 1, 6, binary_directory, rate);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
     DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
+    DB.Write_Router_Report(current_node,opath);
         
   }
 
@@ -196,6 +198,21 @@ int main(int argc, char** argv ){
   PnRdatabase DB(fpath, topcell, vfile, lfile, mfile, dfile); // construction of database
   PnRDB::Drc_info drcInfo=DB.getDrc_info();
   map<string, PnRDB::lefMacro> lefData = DB.checkoutSingleLEF();
+
+
+  if ( !skip_saving_state) {
+    queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
+    json jsonStrAry = json::array();
+    std::ofstream jsonStream;
+    jsonStream.open( opath + "__hierTree.json");
+    while (!Q.empty()) {
+      jsonStrAry.push_back( DB.CheckoutHierNode(Q.front()).name);
+      Q.pop();
+    }
+    jsonStream << std::setw(4) << jsonStrAry;
+    jsonStream.close();
+  }
+
   queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
 
   while (!Q.empty())

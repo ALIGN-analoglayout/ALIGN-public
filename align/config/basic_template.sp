@@ -46,8 +46,8 @@ M1 (DB G S B) NMOS w=w l=90n
 .ends CMC_NMOS_S
 
 .subckt CMC_PMOS_S  DA DB G S
-M0 (DA G S vdd) PMOS w=w l=90n
-M1 (DB G S vdd) PMOS w=w l=90n
+M0 (DA G S B) PMOS w=w l=90n
+M1 (DB G S B) PMOS w=w l=90n
 .ends CMC_PMOS_S
 
 .subckt DP_NMOS  DA DB GA GB S
@@ -65,15 +65,25 @@ M0 (DA G SA B) PMOS w=w l=90n
 M1 (DB G SB B) PMOS w=w l=90n
 .ends CMC_PMOS
 
-.subckt CCP_NMOS DA DB S
-M0 (DA DB S B) NMOS w=w l=90n
-M1 (DB DA S B) NMOS w=w l=90n
+.subckt CCP_NMOS DA DB SA SB
+M0 (DA DB SA B) NMOS w=w l=90n
+M1 (DB DA SB B) NMOS w=w l=90n
 .ends CCP_NMOS
 
-.subckt CCP_PMOS DA DB S
+.subckt CCP_PMOS DA DB SA SB
+M0 (DA DB SA B) PMOS w=w l=90n
+M1 (DB DA SB B) PMOS w=w l=90n
+.ends CCP_PMOS
+
+.subckt CCP_NMOS_S DA DB S
+M0 (DA DB S B) NMOS w=w l=90n
+M1 (DB DA S B) NMOS w=w l=90n
+.ends CCP_NMOS_S
+
+.subckt CCP_PMOS_S DA DB S
 M0 (DA DB S B) PMOS w=w l=90n
 M1 (DB DA S B) PMOS w=w l=90n
-.ends CCP_PMOS
+.ends CCP_PMOS_S
 
 .subckt LS_NMOS DA DB SA SB
 M0 (DA DA SA B) NMOS w=w l=90n
@@ -122,13 +132,13 @@ M0 (S G S B) NMOS w=w l=90n
 M0 (S G S B) PMOS w=w l=90n
 .ends Dcap_PMOS
 
-.subckt Dcap1_NMOS S
+.subckt Dummy1_NMOS S
 M0 (S S S B) NMOS w=w l=90n
-.ends Dcap1_NMOS
+.ends Dummy1_NMOS
 
-.subckt Dcap1_PMOS S
+.subckt Dummy1_PMOS S
 M0 (S S S B) PMOS w=w l=90n
-.ends Dcap1_PMOS
+.ends Dummy1_PMOS
 
 .subckt Res PLUS MINUS
 RR1 PLUS MINUS res res=10k

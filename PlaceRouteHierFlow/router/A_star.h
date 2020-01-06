@@ -30,6 +30,7 @@ class A_star {
     void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, const std::set<int> &S_or_D, int left_up, int right_down);
     bool expand_node(std::vector<int> &direction, std::vector<int> &temp_node, Grid &grid);
     bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
+    //bool expand_node_d(int direction, std::vector<int> &temp_node, Grid &grid);
     bool found_near_node(int left_up, int right_down, int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> dest_set);
     bool found_near_node_S(int left_up, int right_down, int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> src_set, std::set<int> dest_set);
     std::vector<int> A_star_algorithm(Grid& grid, int left_up, int right_down);
@@ -55,6 +56,7 @@ class A_star {
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
     void CheckExtendable(std::vector<int> &candidate_node, int current_node, Grid& grid);
     int trace_back(int current_node, Grid& grid);
+    std::vector<std::vector<int>> GetPath();
 };
 
 #endif

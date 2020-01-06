@@ -10,6 +10,8 @@
 #   % ln -sf $ALIGN_HOME/build/Makefile $ALIGN_WORK_DIR
 #   % make DESIGN=<design in $ALIGN_HOME/examples"
 
+VENV=/opt/venv
+
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
@@ -17,10 +19,7 @@ PDK_DIR=pdks/FinFET14nm_Mock_PDK
 PDK_FILE=layers.json
 FLAT=0
 
-PNRDIR=${DESIGN}/3_pnr
-PNR_OUTPUT=${DESIGN}/Results
-GEN_OUTPUT=${DESIGN}/2_primitives
-TPO_OUTPUT=${DESIGN}/1_topology
+OUTPUT_DIR=${DESIGN}
 
 ifeq ($(BUILD),docker)
 	execute = docker-compose -p build exec $(1) $(2)
@@ -33,16 +32,12 @@ else
 endif
 
 # Convert output to PNG
-${PNR_OUTPUT}/${DESIGN}_0.png:	${PNR_OUTPUT}/${DESIGN}_0.gds
+${OUTPUT_DIR}/${DESIGN}_0.png:	${OUTPUT_DIR}/${DESIGN}_0.gds
 	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
 
-# Convert output to GDS
-${PNR_OUTPUT}/${DESIGN}_0.gds:	${PNR_OUTPUT}/${DESIGN}_0.gds.json
-	$(call execute,align-service, /bin/bash -c "source general/bin/activate && python ${ALIGN_HOME}/align/gdsconv/json2gds.py $< $@")
-
-# Run schematic2layout
-${PNR_OUTPUT}/${DESIGN}_0.gds.json: ${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source general/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
+# Convert schematic to GDS
+${OUTPUT_DIR}/${DESIGN}_0.gds:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
 
 ${DESIGN}:
 	mkdir ${DESIGN}

@@ -155,6 +155,9 @@ class WriteSpice:
                     for key, value in attr["ports_match"].items():
                         ports.append(key)
                         nets.append(value)
+                    #move body pin to last
+                    ports[0], ports[-1] = ports[-1], ports[0]
+                    nets[0], nets[-1] = nets[-1], nets[0]
                     # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
@@ -233,10 +236,6 @@ def generate_lef(fp, name, values, available_block_lef,
             'value': unit_size_cap
         }
 
-        fp.write("\n$PC fabric_" + name + ".py " +
-                    " -b " + unit_block_name + 
-                    " -n " + str(unit_size_cap))
-
     # elif name.lower().startswith('res_array_8'):
     #     if 'res' in values.keys():
     #         size = '%g'%(round(values["res"],2))
@@ -260,32 +259,32 @@ def generate_lef(fp, name, values, available_block_lef,
     #                  " -r " + size)
     #     except:
     #         block_name = name + '_' + size
-                
-    # elif name.lower().startswith('res'):
-    #     if 'res' in values.keys():
-    #         size = '%g'%(round(values["res"],2))
-    #     elif 'r' in values.keys():
-    #         size = '%g'%(round(values["r"],2))
-    #     else :
-    #         convert_to_unit(values)
-    #         size = '_'.join(param+str(values[param]) for param in values)
-    #     block_name = name + '_' + size.replace('.','p')
-    #     res_unit_size = 300 
-    #     try:
-    #         #size = float(size)
-    #         height = ceil(sqrt(float(size) / res_unit_size))
-    #         if block_name in available_block_lef:
-    #             return block_name, available_block_lef[block_name]
-    #         logging.info('Generating lef for: %s %s', block_name, size)
-    #         fp.write("\n$PC fabric_" + name + ".py " +
-    #                  " -b " + block_name +
-    #                  " -n " + str(height) +
-    #                  " -r " + size)
-    #     except:
-    #         fp.write("\n$PC fabric_" + name + ".py " +
-    #                  " -b " + block_name +
-    #                  " -n " + '1'  +
-    #                  " -r " + str(res_unit_size))
+
+    elif name.lower().startswith('res'):
+        if 'res' in values.keys():
+            size = '%g'%(round(values["res"],2))
+        elif 'r' in values.keys():
+            size = '%g'%(round(values["r"],2))
+        else :
+            convert_to_unit(values)
+            size = '_'.join(param+str(values[param]) for param in values)
+        block_name = name + '_' + size.replace('.','p')
+        res_unit_size = 300 
+        try:
+            #size = float(size)
+            height = ceil(sqrt(float(size) / res_unit_size))
+            if block_name in available_block_lef:
+                return block_name, available_block_lef[block_name]
+            logging.info('Generating lef for: %s %s', block_name, size)
+            return block_name, {
+                'primitive': name,
+                'value': (height, float(size))
+            }
+        except:
+            return block_name, {
+                'primitive': name,
+                'value': (1, res_unit_size)
+            }
 
     # elif name.lower().startswith('inductor') or \
     #     name.lower().startswith('spiral'):
@@ -369,6 +368,7 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
                 logging.info(node1)
                 #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
+                traverced.append(node1)
                 compare_nodes(G,match_pair,traverced,node1,node1)
     for node1 in list(G.neighbors(nodes1)):
         if node1 not in traverced and \
@@ -404,10 +404,14 @@ def compare_node(G,node1,node2):
 def connection(graph,net):
     conn =[]
     for nbr in list(graph.neighbors(net)):
-        #print(graph.nodes[nbr]["ports_match"].items())
         if "ports_match" in graph.nodes[nbr]:
+            logging.info("ports match:%s",graph.nodes[nbr]["ports_match"].items())
             idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
             conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+        elif "connection" in graph.nodes[nbr]:
+            logging.info("connection:%s",graph.nodes[nbr]["connection"].items())
+            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+            conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
     if graph.nodes[net]["net_type"]=="external":
         conn.append(net)
     return conn
@@ -434,7 +438,7 @@ def check_common_centroid(graph,const_path,ports):
                     conn = list(graph.neighbors(cap_block))
                     matched_ports['MINUS'+str(idx)] = conn[0]
                     matched_ports['PLUS'+str(idx)]= conn[1]
-                print("matched_ports",cc_pair,matched_ports)
+                #print("matched_ports",cc_pair,matched_ports)
                 line = line.replace(caps_in_line,updated_cap)
                 graph, _ = merge_nodes(
                         graph, 'Cap_cc',cap_blocks , matched_ports)
@@ -470,7 +474,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")
-        logging.info("Creating new const file"+new_const_path)
+        logging.info("Creating new const file: %s",new_const_path)
     logging.info("writing common centroid caps: %s",all_array)
     for _,array in all_array.items():
         n_cap=[]
@@ -625,13 +629,13 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
         else:
             const_file.write_text(input_const_file.read_text())
 
-    check_common_centroid(graph,const_file,ports)
+    #check_common_centroid(graph,const_file,ports)
     logging.info("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
     traverced =[]
     all_match_pairs={}
-    for port in ports:
+    for port in sorted(ports):
         if port in graph.nodes():
             #while len(list(graph.neighbors(port)-set(traverced)))==1:
             #nbr = list(graph.neighbors(port))
@@ -642,6 +646,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
     existing_SymmBlock =False
+    existing_SymmNet = False
 
     # Read contents
     if const_file.exists() and const_file.is_file():
@@ -650,23 +655,29 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
             if 'SymmBlock' in content:
                 existing_SymmBlock = True
             elif 'SymmNet' in content:
-                existing_SymmNet += content.strip()
+                existing_SymmNet = True 
 
     const_fp = open(const_file, 'a+')
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
-            if graph.nodes[key]["inst_type"]!="net":
-                if key ==value:
-                    symmBlock = symmBlock+' {'+key+ '} ,'
-                else:
+            if graph.nodes[key]["inst_type"]!="net" and \
+                key not in symmBlock and value not in symmBlock and \
+                'Dcap' not in graph.nodes[key]["inst_type"] :
+                if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            else: 
-                if len(list(graph.neighbors(key)))<3:
+            elif 'Dcap' not in graph.nodes[key]["inst_type"] : 
+                if len(connection(graph,key))<3 and len(connection(graph,key))>1:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
-                    const_fp.write(symmNet)
+                    if not existing_SymmNet:
+                        const_fp.write(symmNet)
 
+
+        for key, value in all_match_pairs.items():
+            if graph.nodes[key]["inst_type"]!="net" and 'Dcap' not in graph.nodes[key]["inst_type"] :
+                if key ==value and key not in symmBlock:
+                    symmBlock = symmBlock+' {'+key+ '} ,'
 
         symmBlock = symmBlock[:-1]+')\n'
         if not existing_SymmBlock:
