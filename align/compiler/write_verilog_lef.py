@@ -236,10 +236,6 @@ def generate_lef(fp, name, values, available_block_lef,
             'value': unit_size_cap
         }
 
-        fp.write("\n$PC fabric_" + name + ".py " +
-                    " -b " + unit_block_name + 
-                    " -n " + str(unit_size_cap))
-
     # elif name.lower().startswith('res_array_8'):
     #     if 'res' in values.keys():
     #         size = '%g'%(round(values["res"],2))
@@ -263,32 +259,32 @@ def generate_lef(fp, name, values, available_block_lef,
     #                  " -r " + size)
     #     except:
     #         block_name = name + '_' + size
-                
-    # elif name.lower().startswith('res'):
-    #     if 'res' in values.keys():
-    #         size = '%g'%(round(values["res"],2))
-    #     elif 'r' in values.keys():
-    #         size = '%g'%(round(values["r"],2))
-    #     else :
-    #         convert_to_unit(values)
-    #         size = '_'.join(param+str(values[param]) for param in values)
-    #     block_name = name + '_' + size.replace('.','p')
-    #     res_unit_size = 300 
-    #     try:
-    #         #size = float(size)
-    #         height = ceil(sqrt(float(size) / res_unit_size))
-    #         if block_name in available_block_lef:
-    #             return block_name, available_block_lef[block_name]
-    #         logging.info('Generating lef for: %s %s', block_name, size)
-    #         fp.write("\n$PC fabric_" + name + ".py " +
-    #                  " -b " + block_name +
-    #                  " -n " + str(height) +
-    #                  " -r " + size)
-    #     except:
-    #         fp.write("\n$PC fabric_" + name + ".py " +
-    #                  " -b " + block_name +
-    #                  " -n " + '1'  +
-    #                  " -r " + str(res_unit_size))
+
+    elif name.lower().startswith('res'):
+        if 'res' in values.keys():
+            size = '%g'%(round(values["res"],2))
+        elif 'r' in values.keys():
+            size = '%g'%(round(values["r"],2))
+        else :
+            convert_to_unit(values)
+            size = '_'.join(param+str(values[param]) for param in values)
+        block_name = name + '_' + size.replace('.','p')
+        res_unit_size = 300 
+        try:
+            #size = float(size)
+            height = ceil(sqrt(float(size) / res_unit_size))
+            if block_name in available_block_lef:
+                return block_name, available_block_lef[block_name]
+            logging.info('Generating lef for: %s %s', block_name, size)
+            return block_name, {
+                'primitive': name,
+                'value': (height, float(size))
+            }
+        except:
+            return block_name, {
+                'primitive': name,
+                'value': (1, res_unit_size)
+            }
 
     # elif name.lower().startswith('inductor') or \
     #     name.lower().startswith('spiral'):
