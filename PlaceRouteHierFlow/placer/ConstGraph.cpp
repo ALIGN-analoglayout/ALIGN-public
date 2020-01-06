@@ -4258,6 +4258,7 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
       node.Terminals.at(i).termContacts.resize( node.Terminals.at(i).termContacts.size()+1 );
       node.Terminals.at(i).termContacts.back().placedCenter=ConvertPointData(caseNL.GetTerminalCenter(i));
     }
+
   /*
     placerDB::point p, bp;
     for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
@@ -4297,6 +4298,29 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
     }
   */
   }
+
+  //update blockpin information
+
+  PnRDB::pin temp_pin;
+
+  if(1){
+
+    for(int i=0;i<(int)caseNL.GetSizeofTerminals();i++) {
+      //cout<<"Terminal "<<i<<endl;
+      temp_pin.name = node.Terminals.at(i).name;
+      temp_pin.type = node.Terminals.at(i).type;
+
+      temp_pin.netIter = node.Terminals.at(i).netIter;
+      temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+
+      temp_pin.name = node.Terminals.at(i).name;
+      temp_pin.type = node.Terminals.at(i).type;
+      
+      node.blockPins.push_back(temp_pin);
+    }
+
+  }
+
 }
 
 void ConstGraph::UpdateHierNodeAP(design& caseNL, Aplace& caseAP, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
