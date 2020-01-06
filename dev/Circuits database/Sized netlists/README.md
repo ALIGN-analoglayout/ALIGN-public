@@ -20,7 +20,9 @@ For eg. Variable gain amplifier, linear equalizer
 
 Typical constraints related to these classes of circuits are shown in the figure below.
 
-![Different Classes of Analog Circuits](Constraints_picture.PNG)
+<p align="center">
+  <img width="60%" src="Constraints_picture.PNG">
+</p>
 
 
 ## Testbenches

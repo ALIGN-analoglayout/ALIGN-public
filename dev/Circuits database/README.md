@@ -1,6 +1,8 @@
 # Circuits Database
 
-![Circuits database](circuit_database_structure.png)
+<p align="center">
+  <img width=60%" src="circuit_database_structure.png">
+</p>
 
 * Sized netlists - Contains sized netlists in different technology nodes
 * Unsized netlists - Contains unsized netlists generated for training GCN based netlist annotation
