@@ -408,10 +408,10 @@ def compare_node(G,node1,node2):
 def connection(graph,net):
     conn =[]
     for nbr in list(graph.neighbors(net)):
-        #print(graph.nodes[nbr]["ports_match"].items())
-        if "ports_match" in graph.nodes[nbr]:
-            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+        #print("neighbours",graph.nodes[nbr].items())
+        if "connection" in graph.nodes[nbr]:
+            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+            conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
     if graph.nodes[net]["net_type"]=="external":
         conn.append(net)
     return conn
@@ -646,16 +646,16 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 #const_fp.write(port)
                 all_match_pairs.update(pair)
     existing_SymmBlock =False
+    existing_SymmNet = False
 
     # Read contents
-    existing_SymmNet=[]
     if const_file.exists() and const_file.is_file():
         with open(const_file) as f:
             content = f.readlines()
             if 'SymmBlock' in content:
                 existing_SymmBlock = True
             elif 'SymmNet' in content:
-                existing_SymmNet += content.strip()
+                existing_SymmNet = True 
 
     const_fp = open(const_file, 'a+')
     if len(list(all_match_pairs.keys()))>0:
@@ -667,10 +667,10 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
             elif 'Dcap' not in graph.nodes[key]["inst_type"] : 
-                if len(list(graph.neighbors(key)))<3:
+                if len(list(graph.neighbors(key)))<3 and len(list(graph.neighbors(key)))>1:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
-                    if symmNet not in existing_SymmNet:
+                    if not existing_SymmNet:
                         const_fp.write(symmNet)
 
 

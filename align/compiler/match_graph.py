@@ -110,7 +110,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
 
     for lib_ele in liblist:
         G2 = lib_ele['graph']
-        # DIgital blocks only transistors:
+        # Digital blocks only transistors:
         nd = [node for node in G2.nodes()
                 if 'net' not in G2.nodes[node]["inst_type"]]
         if DIGITAL and len(nd)>1:
@@ -133,7 +133,9 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
                 all_nd = [
                 key for key in Gsub
                 if 'net' not in G1.nodes[key]["inst_type"]]
+                logging.info("matched inst: %s",all_nd)
                 if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
+                    logging.info("Discarding match due to clock")
                     continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
                     if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
@@ -147,6 +149,8 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
                             map_list.append(Gsub)
                             logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
                             logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                    else:
+                        logging.info("Discarding match %s,%s,%s",sub_block_name,G1.nodes[all_nd[0]]['values'],G1.nodes[all_nd[1]]['values'])
 
                 else:
                     map_list.append(Gsub)
@@ -167,7 +171,8 @@ def read_setup(setup_path):
             "POWER":['vdd'],
             "GND":[],
             "CLOCK":[],
-            "DIGITAL":[]
+            "DIGITAL":[],
+            "DONT_USE_CELLS":[]
             }
     if os.path.isfile(setup_path):
         print('Reading setup file:', setup_path)
@@ -186,6 +191,9 @@ def read_setup(setup_path):
             elif line.strip().startswith("DIGITAL"):
                 DIGITAL = line.strip().split('=')[1].split()
                 design_setup['DIGITAL']=DIGITAL
+            elif line.strip().startswith("DONT_USE_CELLS"):
+                DONT_USE_CELLS = line.strip().split('=')[1].split()
+                design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
             else:
                 print("Non identified values found",line)
             line=fp.readline()
@@ -321,6 +329,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                                  sub_block_name)
                     #print(sub_block_name)
                     #print(matched_ports)
+
                     mapped_subgraph_list = _mapped_graph_list(
                         G2, [
                             i for i in liblist
@@ -359,6 +368,13 @@ def change_SD(G,node):
 
 def define_SD(G,power,gnd,clk):
     logging.info("START checking source and drain in graph: ")
+    try:
+        gotpower=power[0]
+        gotgnd=gnd[0]
+    except (IndexError, ValueError):
+        logging.error("no power and gnd defination, correct setup file")
+        return False
+
     traversed = []
     probable_changes_p=[]
     if power[0] in G.nodes():
