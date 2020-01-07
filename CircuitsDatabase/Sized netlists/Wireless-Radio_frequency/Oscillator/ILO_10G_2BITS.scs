@@ -1,0 +1,153 @@
+** Generated for: hspiceD
+** Generated on: Jan  5 21:00:24 2020
+** Design library name: PhasedArray_WB_copy
+** Design cell name: ILO_10G_2BITS
+** Design view name: schematic
+
+
+.TEMP 25.0
+.OPTION
++    ARTIST=2
++    INGOLD=2
++    PARHIER=LOCAL
++    PSF=2
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mim
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_dnw
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip_npn
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfrtmom
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_disres
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_res
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_hvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_lvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_sa
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_esd
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmim
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25ud18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25ud18
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfjvar
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rtmom
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25od33
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_rpo
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_hvt
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfind
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar_25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25
+.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_lvt
+
+** Library name: PhasedArray_WB_copy
+** Cell name: res_24K
+** View name: schematic
+.subckt res_24K t1 t2 vss
+xr4 t2 net05 vss rppolywo_rf l=8e-6 w=500e-9 m=1 mismatchflag=0
+xr2 net06 net05 vss rppolywo_rf l=8e-6 w=500e-9 m=1 mismatchflag=0
+xr1 net06 net6 vss rppolywo_rf l=8e-6 w=500e-9 m=1 mismatchflag=0
+xr0 t1 net6 vss rppolywo_rf l=8e-6 w=500e-9 m=1 mismatchflag=0
+.ends res_24K
+** End of subcircuit definition.
+
+** Library name: PhasedArray_WB_copy
+** Cell name: capbank_gp_lowC_noLSB_9u_2BITS
+** View name: schematic
+.subckt capbank_gp_lowC_noLSB_9u_2BITS b<3> b<2> b<1> b<0> left right vdd vss
+xc3 right net3 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 lay=7 m=2 mimflag=3 mismatchflag=0
+xc2 left net1 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 lay=7 m=2 mimflag=3 mismatchflag=0
+xc1 right net4 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 lay=7 m=1 mimflag=3 mismatchflag=0
+xc0 left net2 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 lay=7 m=1 mimflag=3 mismatchflag=0
+xm1 net1 b1_buf net3 vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=2 mismatchflag=0
+xm0 net2 b0_buf net4 vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=1 mismatchflag=0
+m44 net0155 net0120 vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m40 net0120 b<3> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m37 net0159 net0104 vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m36 net0158 net0105 vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m35 net0157 net0106 vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m31 net0104 b<2> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m30 net0105 b<1> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m29 net0106 b<0> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m18 b3_buf b3_inv vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m16 b3_inv b<3> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m15 b2_inv b<2> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m13 b2_buf b2_inv vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m11 b1_buf b1_inv vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m9 b1_inv b<1> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m7 b0_buf b0_inv vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m4 b0_inv b<0> vss vss nch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m42 net0155 net0120 vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m38 net0120 b<3> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m34 net0159 net0104 vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m33 net0158 net0105 vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m32 net0157 net0106 vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m28 net0104 b<2> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m27 net0105 b<1> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m26 net0106 b<0> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m19 b3_inv b<3> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m17 b3_buf b3_inv vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m14 b2_buf b2_inv vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m12 b2_inv b<2> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m10 b1_buf b1_inv vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m8 b1_inv b<1> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m6 b0_buf b0_inv vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+m5 b0_inv b<0> vdd vdd pch l=60e-9 w=1e-6 m=1 nf=1 sd=200e-9 ad=175e-15 as=175e-15 pd=2.35e-6 ps=2.35e-6 nrd=100e-3 nrs=100e-3 sa=175e-9 sb=175e-9 sca=0 scb=0 scc=0
+xi16 b1_inv net3 vss res_24K
+xi17 b1_inv net1 vss res_24K
+xi18 b0_inv net2 vss res_24K
+xi19 b0_inv net4 vss res_24K
+.ends capbank_gp_lowC_noLSB_9u_2BITS
+** End of subcircuit definition.
+
+** Library name: PhasedArray_WB_copy
+** Cell name: VCO_10G_2BITS
+** View name: schematic
+.subckt VCO_10G_2BITS dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vdd_vco0p5 vss vtune
+xc4 outm vtune vss moscap_rf_nw wr=2e-6 lr=500e-9 br=4 gr=4 m=1
+xc0 outp vtune vss moscap_rf_nw wr=2e-6 lr=500e-9 br=4 gr=4 m=1
+xm0 outp outm vss vss nmos_rf lr=60e-9 wr=1e-6 nr=25 sigma=1 m=2 mismatchflag=0
+xm1 outm outp vss vss nmos_rf lr=60e-9 wr=1e-6 nr=25 sigma=1 m=2 mismatchflag=0
+xi10 dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vss capbank_gp_lowC_noLSB_9u_2BITS
+xl0 outp outm vss vdd_vco0p5 spiral_sym_ct_mu_z w=9e-6 nr=2 rad=35.5e-6 lay=9 spacing=3e-6 gdis=10e-6 m=1
+.ends VCO_10G_2BITS
+** End of subcircuit definition.
+
+** Library name: PhasedArray_WB_copy
+** Cell name: ILO_IN_V5_CROSS
+** View name: schematic
+.subckt ILO_IN_V5_CROSS in out out_aux vddsw vss
+xc2 in net3 vss mimcap_woum_sin_rf lt=20e-6 wt=20e-6 lay=7 m=1 mimflag=3 mismatchflag=0
+xr4 vss net08 vss rppolywo_rf l=6e-6 w=1e-6 m=1 mismatchflag=0
+xr3 vss net3 vss rppolywo_rf l=12e-6 w=1e-6 m=1 mismatchflag=0
+xr2 net3 vddsw vss rppolywo_rf l=12e-6 w=1e-6 m=1 mismatchflag=0
+xm0 out_aux net3 net08 net08 nmos_rf lr=60e-9 wr=2e-6 nr=18 sigma=1 m=1 mismatchflag=0
+xm3 out net3 vss vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=1 mismatchflag=0
+.ends ILO_IN_V5_CROSS
+** End of subcircuit definition.
+
+** Library name: PhasedArray_WB_copy
+** Cell name: ILO_10G_2BITS
+** View name: schematic
+xi11 dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vdd_vco0p5 vss vtune VCO_10G_2BITS
+xi12 inp outm outp vddsw vss ILO_IN_V5_CROSS
+xi13 inm outp outm vddsw vss ILO_IN_V5_CROSS
+.END

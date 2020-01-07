@@ -2,35 +2,40 @@ import pathlib
 
 from .compiler import generate_hierarchy
 from .cell_fabric import generate_primitive
-from .compiler.util import logging
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False):
+import logging
+logger = logging.getLogger(__name__)
+
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None):
+
+    if log_level:
+        logging.getLogger().setLevel(logging.getLevelName(log_level))
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
     if not working_dir.is_dir():
-        logging.error("Working directory doesn't exist. Please enter a valid directory path")
+        logger.error("Working directory doesn't exist. Please enter a valid directory path")
         print("Working directory doesn't exist. Please enter a valid directory path")
         exit(0)
 
     pdk_dir = pathlib.Path(pdk_dir).resolve()
     if not pdk_dir.is_dir():
-        logging.error("PDK directory doesn't exist. Please enter a valid directory path")
+        logger.error("PDK directory doesn't exist. Please enter a valid directory path")
         print("PDK directory doesn't exist. Please enter a valid directory path")
         exit(0)
 
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
-        logging.error("Netlist directory doesn't exist. Please enter a valid directory path")
+        logger.error("Netlist directory doesn't exist. Please enter a valid directory path")
         print("Netlist directory doesn't exist. Please enter a valid directory path")
         exit(0)
 
     netlist_files = [x for x in netlist_dir.iterdir() if x.is_file() and x.suffix in ('.sp', '.cdl')]
     if not netlist_files:
         print("No spice files found in netlist directory. Exiting...")
-        logging.error(
+        logger.error(
             "No spice files found in netlist directory. Exiting...")
         exit(0)
 
@@ -39,7 +44,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         netlist_files = [x for x in netlist_files if netlist_file == x]
         if not netlist_files:
             print(f"No spice file {netlist_file} found in netlist directory. Exiting...")
-            logging.error(
+            logger.error(
                 f"No spice files {netlist_file} found in netlist directory. Exiting...")
             exit(0)
 
@@ -56,7 +61,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir.mkdir(exist_ok=True)
 
     for netlist in netlist_files:
-        logging.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
+        logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, unit_size_mos , unit_size_cap)
         # Generate primitives

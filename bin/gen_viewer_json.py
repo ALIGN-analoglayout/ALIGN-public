@@ -2,10 +2,11 @@
 
 import json
 import argparse
-import logging
 #import cProfile
 
 from align.pnr import hierNode, gen_viewer_json
+
+import logging
 
 def main():
     parser = argparse.ArgumentParser( description="Visualize PnR database")
@@ -25,8 +26,7 @@ def main():
     parser.add_argument( "--json_dir", type=str, default=None)
  
     args = parser.parse_args()
-
-    logging.basicConfig(level=logging.getLevelName(args.logLevel))
+    logging.getLogger().setLevel(logging.getLevelName(args.logLevel))
 
     fn = args.input_dir + "/" + args.block + "_" + args.variant + ".db.json"
 
