@@ -25,7 +25,7 @@ class WriteVerilog:
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
-        self.pins = [] 
+        self.pins = []
         for port in inout_pin_names:
             if port not in power_pins:
                 self.pins.append(port)
@@ -72,7 +72,7 @@ class WriteVerilog:
                         for key, value in attr["connection"].items():
                             if self.check_ports_match(key,attr['inst_type']):
                                 ports.append(key)
-                                nets.append(value)                    
+                                nets.append(value)
                     except:
                         logger.error("ERROR: Subckt %s defination not found",attr['inst_type'])
 
@@ -88,7 +88,7 @@ class WriteVerilog:
                     fp.write(' ); ')
                 else:
                     fp.write(' ); ')
-                    print("MAPPING NOT CORRECT")
+                    logger.warning("MAPPING NOT CORRECT")
 
         fp.write("\n\nendmodule\n")
 
@@ -119,7 +119,7 @@ class WriteVerilog:
                 return mapped_pins
 
         else:
-            print("unmatched ports found")
+            logger.warning("unmatched ports found")
             return 0
 
 class WriteSpice:
@@ -181,7 +181,7 @@ class WriteSpice:
                 fp.write(' '.join(nets) +' '+ attr['inst_type'] + ' '+ concat_values(attr['values']) )
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
-        
+
 def concat_values(values):
     merged_values =""
     for key,value in values.items():
@@ -213,7 +213,7 @@ def print_cell_gen_header(fp):
     fp.write("\nPC=$1\n")
 
 
-def generate_lef(fp, name, values, available_block_lef, 
+def generate_lef(fp, name, values, available_block_lef,
                  unit_size_mos=12 , unit_size_cap=12):
     """ Creates a shell script to generate parameterized lef"""
     logger.info("checking lef for:%s,%s",name,values)
@@ -225,10 +225,10 @@ def generate_lef(fp, name, values, available_block_lef,
             size = '%g'%(round(values["cap"]*1E15,4))
         elif 'c' in values.keys():
             size = '%g'%(round(values["c"]*1E15,4))
-        else: 
+        else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
-        logger.info("Found cap with size: %s %d",size,unit_size_cap )                
+        logger.info("Found cap with size: %s %d",size,unit_size_cap )
         block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
@@ -272,7 +272,7 @@ def generate_lef(fp, name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         block_name = name + '_' + size.replace('.','p')
-        res_unit_size = 300 
+        res_unit_size = 300
         try:
             #size = float(size)
             height = ceil(sqrt(float(size) / res_unit_size))
@@ -386,7 +386,7 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
                             #print(node1,node2)
                             traverced.append(node1)
                             traverced.append(node2)
-                            compare_nodes(G,match_pair,traverced,node1,node2)                    
+                            compare_nodes(G,match_pair,traverced,node1,node2)
     return match_pair
 def compare_node(G,node1,node2):
     if G.nodes[node1]["inst_type"]=="net" and \
@@ -396,7 +396,7 @@ def compare_node(G,node1,node2):
         #logger.info("comparing_nodes, %s %s True",node1,node2)
         return True
     elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
-        'values' in G.nodes[node1].keys() and 
+        'values' in G.nodes[node1].keys() and
          G.nodes[node1]["values"]==G.nodes[node2]["values"] and
         len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
         #logger.info("comparing_nodes, %s %s True",node1,node2)
@@ -425,8 +425,8 @@ def check_common_centroid(graph,const_path,ports):
     """
     cc_pair={}
     new_const_path = const_path.parents[0] / (const_path.stem + '.const_temp')
-    if os.path.isfile(const_path): 
-        print('Reading const file for common centroid', const_path)
+    if os.path.isfile(const_path):
+        logger.info(f'Reading const file for common centroid {const_path}')
         const_fp = open(const_path, "r")
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
@@ -447,12 +447,12 @@ def check_common_centroid(graph,const_path,ports):
                         graph, 'Cap_cc',cap_blocks , matched_ports)
             new_const_fp.write(line)
             line=const_fp.readline()
-    
+
         const_fp.close()
         new_const_fp.close()
         os.rename(new_const_path, const_path)
     else:
-        print("Couldn't find constraint file",const_path," (might be okay)")
+        logger.info(f"Couldn't find constraint file {const_path} (might be okay)")
 
     return(cc_pair)
 
@@ -461,8 +461,8 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     new_const_path = input_dir / (name + '.const_temp')
     logger.info(f"writing cap constraints: {const_path}")
     available_cap_const = []
-    if os.path.isfile(const_path): 
-        print('Reading const file for cap', const_path)
+    if os.path.isfile(const_path):
+        logger.info(f'Reading const file for cap {const_path}')
         const_fp = open(const_path, "r")
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
@@ -472,17 +472,17 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
             new_const_fp.write(line)
-            logger.info("cap const %s",line)
+            logger.info(f"cap const {line}")
             line=const_fp.readline()
         const_fp.close()
     else:
         new_const_fp = open(new_const_path, "w")
-        logger.info("Creating new const file: %s",new_const_path)
-    logger.info("writing common centroid caps: %s",all_array)
+        logger.info(f"Creating new const file: {new_const_path}")
+    logger.info(f"writing common centroid caps: {all_array}")
     for _,array in all_array.items():
         n_cap=[]
         cc_caps=[]
-        logger.info("group1: %s",array)
+        logger.info(f"group1: {array}")
         for _,arr in array.items():
             for ele in arr:
                 if graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
@@ -491,7 +491,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                         size = graph.nodes[ele]['values']["cap"]*1E15
                     elif 'c' in graph.nodes[ele]['values'].keys():
                         size = graph.nodes[ele]['values']["c"]*1E15
-                    else: 
+                    else:
                         size = unit_size_cap
                     n_cap.append( str(ceil(size/unit_size_cap)))
                     cc_caps.append(ele)
@@ -509,7 +509,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 size = attr['values']["cap"]*1E15
             elif 'c' in attr['values'].keys():
                 size = attr['values']["c"]*1E15
-            else: 
+            else:
                 size = unit_size_cap
             n_cap = str(ceil(size/unit_size_cap))
             unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
@@ -524,7 +524,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         os.rename(new_const_path, const_path)
 
 def matching_groups(G,level1):
-    similar_groups=[] 
+    similar_groups=[]
     logger.info("matching groups for all neighbors: %s", level1)
     for l1_node1 in level1:
         for l1_node2 in level1:
@@ -595,7 +595,7 @@ def match_branches(graph,nodes_dict):
             continue
         else:
             return False
-    return True 
+    return True
 
 def FindArray(graph,input_dir,name):
     templates = {}
@@ -658,7 +658,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
             if 'SymmBlock' in content:
                 existing_SymmBlock = True
             elif 'SymmNet' in content:
-                existing_SymmNet = True 
+                existing_SymmNet = True
 
     const_fp = open(const_file, 'a+')
     if len(list(all_match_pairs.keys()))>0:
@@ -669,7 +669,7 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
                 'Dcap' not in graph.nodes[key]["inst_type"] :
                 if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            elif 'Dcap' not in graph.nodes[key]["inst_type"] : 
+            elif 'Dcap' not in graph.nodes[key]["inst_type"] :
                 if len(connection(graph,key))<3 and len(connection(graph,key))>1:
                     symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'

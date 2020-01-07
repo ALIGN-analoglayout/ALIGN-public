@@ -178,7 +178,7 @@ class RemoveDuplicates():
                                    for index in self.indicesTbl[self.layers[layer]][0])
                 tbl[layer][twice_center].append((rect, netName, isPorted))
             else:
-                print( f"Layer {layer} not in {self.layers}")
+                logger.warning( f"Layer {layer} not in {self.layers}")
 
         return tbl
 

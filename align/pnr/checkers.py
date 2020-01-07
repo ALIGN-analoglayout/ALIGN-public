@@ -105,16 +105,14 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
 
         if not found and input_dir is not None:
 
-            print( "blk.gdsFile:", blk.gdsFile, found, input_dir)
+            logger.debug( f"blk.gdsFile: {blk.gdsFile} {found} {input_dir}")
             p = re.compile( r"^\./Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
                 pth = input_dir / (m.groups()[0] + ".json")
                 if not pth.is_file():
-                    print("not found", pth.name)
                     logger.error( f"{pth} not found in input_dir")
                 else:
-                    print("found")
                     logger.warning( f"{pth} found in input_dir")
                     found = True
             else:
@@ -164,7 +162,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
             add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     for n in hN.Nets:
-        print( f"Net: {n.name}")
+        logger.debug( f"Net: {n.name}")
 
         def addt( obj, con):
             b = con.placedBox
@@ -183,7 +181,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 formal_name = pin.name
 
                 tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
-                print( f'\t{tag}')
+                logger.debug( f'\t{tag}')
                 for con in pin.pinContacts:
                     addt( n, con)
             else:
@@ -191,7 +189,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 terminal_name = term.name
                 assert terminal_name == n.name
                 tag = f'Terminal formal_index: {c.iter},{terminal_name}'
-                print( f'\t{tag}')
+                logger.debug( f'\t{tag}')
                 for con in term.termContacts:
                     pass
 #                    addt( n, con)

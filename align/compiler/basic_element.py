@@ -157,7 +157,7 @@ class BasicElement:
              The assumption is 3 port network
              pins = [drain, gate, source]
         """
-        #print("querying transistor",self.line)
+        logger.debug(f"Querying transistor {self.line}")
         self.get_elements(4)
         if not self.pins:
             return None
@@ -166,9 +166,7 @@ class BasicElement:
         elif 'p' in self.real_inst_type.lower():
             inst_type = "pmos"
         else:
-            print("Error: undefined inst format", self.line)
-
-        #print( self.line,self.real_inst_type,self.pins[3])
+            logger.error(f"Undefined inst format {self.line}")
 
         #if self.pins[0] == self.pins[2]:
         #    inst_type = "dummy"

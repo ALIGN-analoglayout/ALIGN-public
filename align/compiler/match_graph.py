@@ -572,12 +572,8 @@ def check_values(values):
     for param,value in values.items():
         logger.debug("param,value:%s,%s", param,value)
         if param == 'model': continue
-        try:
-            assert(isinstance(value, int) or isinstance(value, float))
-        except AssertionError:
-            print("ERROR: Parameter value",value, "not defined. Check match log")
-            exit()
-            
+        assert(isinstance(value, int) or isinstance(value, float)), f"ERROR: Parameter value {value} not defined. Check match log"
+
 def check_nodes(graph_list):
     logger.debug("Checking all values")
     for local_subckt in graph_list:

@@ -14,7 +14,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     g_copy = G.copy()
     for node in argv:
         if not G.nodes[node]:
-            print("node not in graph anymore")
+            logger.info("node not in graph anymore")
             return G, nx.Graph
     #print("Is input bipartite",nx.is_bipartite(G))
     assert len(argv) > 1
@@ -97,7 +97,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     #    GM = isomorphism.GraphMatcher(g_copy,subgraph)
 
     if not graph_match.subgraph_is_isomorphic():
-        print("isomorphism check fail")
+        logger.warning("isomorphism check fail")
     #print("checking sub graph")
     check_nodes(subgraph)
 
@@ -226,10 +226,9 @@ def convert_unit(value):
         try:
             value = float(value)
         except ValueError:
-            print("ERROR: Parameter",value, "not defined. \
+            logger.error(f"Parameter {value} not defined. \
                   using value=10n. Please fix netlist")
             value = 1e-8
-    #print()
     return mult*value
 
 def check_values(values):

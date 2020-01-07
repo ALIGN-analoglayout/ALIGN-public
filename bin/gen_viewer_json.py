@@ -50,7 +50,6 @@ def main():
             with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
                 json.dump( d, fp=fp, indent=2)
         if args.extract:
-            print(args.output_dir + "/" + args.block + ".cir")
             with open(args.output_dir + "/" + args.block + ".cir", 'wt') as fp:
                 cnv.pex.writePex(fp)
 

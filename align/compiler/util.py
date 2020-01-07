@@ -10,6 +10,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 
+import logging
+logger = logging.getLogger(__name__)
+
 #library_graphs = glob.glob("L1*.yaml")
 def max_connectivity(G):
     conn_value =0 
@@ -137,6 +140,6 @@ def convert_to_unit(values):
         elif values[param]*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
         else:
-            print("ERROR:WRONG value, %s",values)
-            
-            
+            logger.error(f"WRONG value, {values}")
+
+
