@@ -4,8 +4,23 @@ import align
 import os
 import pathlib
 
+examples = ['buffer',
+            'adder',
+            'telescopic_ota',
+            'high_speed_comparator',
+            'inverter_v1',
+            'inverter_v2',
+            'inverter_v3',
+            'single_to_differential_converter', 
+            'telescopic_ota_with_bias',
+            'current_mirror_ota',
+            'five_transistor_ota',
+            'cascode_current_mirror_ota',
+            'switched_capacitor_filter',
+            'sc_dc_dc_converter']
+
 @pytest.mark.nightly
-@pytest.mark.parametrize( "nm", ['telescopic_ota', 'cascode_current_mirror_ota', 'current_mirror_ota',  'five_transistor_ota', 'switched_capacitor_filter'])
+@pytest.mark.parametrize( "nm", examples)
 def test_A( nm):
     home = pathlib.Path( os.environ['ALIGN_HOME'])
     design_dir = home / "examples" / nm
