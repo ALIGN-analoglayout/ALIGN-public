@@ -287,7 +287,7 @@ jobs:
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
           docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
 
-          - persist_to_workspace:
+      - persist_to_workspace:
           root: /work/workspace
           paths:
             - test-reports/PlaceRouteHierFlow
