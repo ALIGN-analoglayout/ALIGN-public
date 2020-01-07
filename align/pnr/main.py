@@ -68,12 +68,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     with (input_dir / map_file).open(mode='wt') as mp, \
          (input_dir / lef_file).open(mode='wt') as lp:
         for file_ in primitive_dir.iterdir():
-            logger.debug("found files",file_)
+            logger.debug(f"found files {file_}")
             if file_.suffixes == ['.gds', '.json']:
                 true_stem = file_.stem.split('.')[0]
                 mp.write(f'{true_stem} {true_stem}.gds\n')
             elif file_.suffix == '.lef' and file_.stem != subckt:
-                logger.debug("found lef files",file_)
+                logger.debug(f"found lef files {file_}")
                 lp.write(file_.read_text())
 
     #
@@ -101,7 +101,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
     try:
-        subprocess.run(cmd, stderr=subprocess.PIPE, check=True, cwd=working_dir)
+        ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', cwd=working_dir)
+        logger.debug(f'{ret.stdout}')
     except subprocess.CalledProcessError as e:
         logger.error(f"Call to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
         return {}
