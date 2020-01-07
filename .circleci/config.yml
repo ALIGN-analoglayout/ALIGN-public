@@ -360,14 +360,14 @@ workflows:
           requires:
             - start 
 
-  scheduled-jobs:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - master
+  nightly:
+    # triggers:
+    #   - schedule:
+    #       cron: "0 0 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - master
 
     jobs:
       - start
@@ -378,25 +378,25 @@ workflows:
           requires:
             - build-nightly
 
-  full:
-    jobs:
-      - start
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start 
-      - build-cktgen:
-          requires:
-            - start 
-      - build-align:
-          requires:
-            - start 
-      - build-pdks:
-          requires:
-            - build-align 
-      - finish:
-          requires:
-            - build-align
-            - build-cktgen 
-            - build-pdks 
-            - build-PlaceRouteHierFlow
+  # full:
+  #   jobs:
+  #     - start
+  #     - build-PlaceRouteHierFlow:
+  #         requires:
+  #           - start 
+  #     - build-cktgen:
+  #         requires:
+  #           - start 
+  #     - build-align:
+  #         requires:
+  #           - start 
+  #     - build-pdks:
+  #         requires:
+  #           - build-align 
+  #     - finish:
+  #         requires:
+  #           - build-align
+  #           - build-cktgen 
+  #           - build-pdks 
+  #           - build-PlaceRouteHierFlow
 
