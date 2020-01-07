@@ -60,6 +60,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     pnr_dir = working_dir / '3_pnr'
     pnr_dir.mkdir(exist_ok=True)
 
+    results = []
     for netlist in netlist_files:
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
@@ -69,6 +70,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract)
+        results.append( (netlist, variants))
+
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/compiler.log for last error."
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
@@ -79,3 +82,5 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
                     (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
+
+    return results

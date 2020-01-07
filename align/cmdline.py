@@ -81,4 +81,4 @@ class CmdlineParser():
 
     def parse_args(self, *args, **kwargs):
         arguments = self.parser.parse_args(*args, **kwargs)
-        schematic2layout(**vars(arguments))
+        return schematic2layout(**vars(arguments))
