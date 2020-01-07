@@ -2,6 +2,9 @@ import argparse
 from .main import schematic2layout
 from . import __version__
 
+import logging
+logger = logging.getLogger(__name__)
+
 class CmdlineParser():
 
     def __init__(self, *args, **kwargs):
@@ -81,4 +84,9 @@ class CmdlineParser():
 
     def parse_args(self, *args, **kwargs):
         arguments = self.parser.parse_args(*args, **kwargs)
-        schematic2layout(**vars(arguments))
+        try:
+            schematic2layout(**vars(arguments))
+            return 0
+        except Exception:
+            logger.exception("Fatal Error. Cannot proceed")
+        return 1

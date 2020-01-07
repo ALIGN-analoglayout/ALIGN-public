@@ -1,4 +1,5 @@
 import pathlib
+import pprint
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
@@ -158,7 +159,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             ws.print_subckt(SP_FP)
             continue
 
-        print("generated data", name, generated_module, primitives)
+        logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF:
             logger.info("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
@@ -180,9 +181,9 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     LEF_FP.close()
     SP_FP.close()
 
-    print("OUTPUT LEF generator:", result_dir / (design_name + "_lef.sh"))
-    print("OUTPUT verilog netlist at:", result_dir / (design_name + ".v"))
-    print("OUTPUT spice netlist at:", result_dir / (design_name + "_blocks.sp"))
-    print("OUTPUT const file at:", result_dir / (design_name + ".const"))
+    logger.info("Topology identification done !!!")
+    logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
+    logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
+    logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
 
     return primitives

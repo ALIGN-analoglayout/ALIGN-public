@@ -118,7 +118,6 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
             continue
 
         sub_block_name = lib_ele['name']
-        #print("Matching:",sub_block_name)
         logger.info("Matching: %s : %s", sub_block_name,
                      str(' '.join(G2.nodes())))
         GM = isomorphism.GraphMatcher(
@@ -176,7 +175,7 @@ def read_setup(setup_path):
             "DONT_USE_CELLS":[]
             }
     if os.path.isfile(setup_path):
-        print('Reading setup file:', setup_path)
+        logger.info(f'Reading setup file: {setup_path}')
         fp = open(setup_path, "r")
         line = fp.readline()
         while line:
@@ -196,13 +195,13 @@ def read_setup(setup_path):
                 DONT_USE_CELLS = line.strip().split('=')[1].split()
                 design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
             else:
-                print("Non identified values found",line)
+                logger.warning("Non identified values found",line)
             line=fp.readline()
         logger.info("SETUP:%s",design_setup)
     else:
-        print("no setup file found:",setup_path)
+        logger.warning("no setup file found: ", setup_path)
     return design_setup
-            
+
 def get_key(Gsub, value):
     return list(Gsub.keys())[list(Gsub.values()).index(value)]
 

@@ -16,37 +16,32 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
     if not working_dir.is_dir():
-        logger.error("Working directory doesn't exist. Please enter a valid directory path")
-        print("Working directory doesn't exist. Please enter a valid directory path")
-        exit(0)
+        logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
+        raise FileNotFoundError(2, 'No such working directory', working_dir)
 
     pdk_dir = pathlib.Path(pdk_dir).resolve()
     if not pdk_dir.is_dir():
-        logger.error("PDK directory doesn't exist. Please enter a valid directory path")
-        print("PDK directory doesn't exist. Please enter a valid directory path")
-        exit(0)
+        logger.error(f"PDK directory {pdk_dir} doesn't exist. Please enter a valid directory path")
+        raise FileNotFoundError(2, 'No such pdk directory', pdk_dir)
 
     netlist_dir = pathlib.Path(netlist_dir).resolve()
     if not netlist_dir.is_dir():
-        logger.error("Netlist directory doesn't exist. Please enter a valid directory path")
-        print("Netlist directory doesn't exist. Please enter a valid directory path")
-        exit(0)
+        logger.error(f"Netlist directory {netlist_dir} doesn't exist. Please enter a valid directory path")
+        raise FileNotFoundError(2, 'No such netlist directory', netlist_dir)
 
     netlist_files = [x for x in netlist_dir.iterdir() if x.is_file() and x.suffix in ('.sp', '.cdl')]
     if not netlist_files:
-        print("No spice files found in netlist directory. Exiting...")
         logger.error(
-            "No spice files found in netlist directory. Exiting...")
-        exit(0)
+            f"No spice files found in netlist directory {netlist_dir}. Exiting...")
+        raise FileNotFoundError(2, 'No matching netlist files', f'{netlist_dir}/*(.sp|.cdl)')
 
     if netlist_file:
         netlist_file = pathlib.Path(netlist_file).resolve()
         netlist_files = [x for x in netlist_files if netlist_file == x]
         if not netlist_files:
-            print(f"No spice file {netlist_file} found in netlist directory. Exiting...")
             logger.error(
                 f"No spice files {netlist_file} found in netlist directory. Exiting...")
-            exit(0)
+            raise FileNotFoundError(2, 'No such netlist file', netlist_file)
 
     if subckt is None:
         assert len(netlist_files) == 1, "Encountered multiple spice files. Cannot infer top-level circuit"

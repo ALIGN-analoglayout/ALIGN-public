@@ -41,7 +41,7 @@ class SpiceParser:
         """Parse the defined file line wise"""
 
         if not os.path.isfile(self.netlist):
-            print("File doesn't exist",self.netlist)
+            logger.warning("File doesn't exist",self.netlist)
         else:
             logger.info("File exist: %s", self.netlist)
             fp_l = open(self.netlist, "r")
@@ -78,7 +78,7 @@ class SpiceParser:
                 line = self.get_next_line(fp_l, 1)
                 if not line:
                     break
-            print("INFO: PARSING INPUT NETLIST FILE DONE")
+            logger.info("PARSING INPUT NETLIST FILE DONE")
             if self.params:
                 for param, value in self.params.items():
                     logger.info('Found top_param: %s, value:%s', param, value)
@@ -168,7 +168,6 @@ class SpiceParser:
     def resolve_top_param(self):
         for index, node in enumerate(self.top_insts):
             if "values" in node.keys():
-                #print(node)
                 for param, value in node["values"].items():
                     if '*' in value:
                         logger.info ("found function in values")
@@ -209,7 +208,6 @@ class SpiceParser:
                 self.subckts[ckt_name]["nodes"]) - len(reduced_subckt)
             self.subckts[ckt_name]["nodes"] = reduced_subckt
             self.subckts[ckt_name]["ports"] += source_ports
-            #print(source_ports)
         if no_of_source >0:
             logger.warning('REMOVED %i sources from circuit.\n', no_of_source)
 
@@ -223,18 +221,13 @@ class SpiceParser:
                 self.next_line = self.check_next_line
 
             self.check_next_line = file_pointer.readline()
-            #print("Read line",self.next_line,self.check_next_line)
             while self.next_line.strip().endswith('\\') or \
                 self.check_next_line.strip().startswith('+') \
                 or (self.check_next_line and not self.check_next_line.strip()):
-                #print("reading next line", self.check_next_line)
                 self.next_line += self.check_next_line
                 self.check_next_line = file_pointer.readline().strip()
-                #exit(0)
             self.next_line = self.next_line.replace('+', '')
             self.next_line = self.next_line.replace('\\','')
-
-            #print("Read line:",self.next_line)
         elif line_type == -1:
             self.next_line = self.prev_line
         elif line_type == 0:
@@ -327,9 +320,7 @@ class SpiceParser:
                         except ValueError:
                             value=val
 
-
                 if value in inherited_param.keys():
-                    #print(node)
                     values[param] = inherited_param[value]
                     try:
                         mult
@@ -385,13 +376,11 @@ class SpiceParser:
 
 
             if node["inst_type"] in self.subckts:
-
                 flatdesign.extend(
                     self._flatten_circuit(node["inst_type"],
                                           subckt_inst + node["inst"] + '|',
                                           list(modified_ports), values))
             else:
-                #print("FLAT NODE:", subckt_inst + node["inst"],modified_ports)
                 flat_node = {
                     "inst": subckt_inst + node["inst"],
                     "inst_type": node["inst_type"],
@@ -400,7 +389,6 @@ class SpiceParser:
                     "values": values,
                     "edge_weight": node["edge_weight"]
                 }
-
                 flatdesign.append(flat_node)
                 logger.debug("Updated Node name: %s, type: %s",
                               flat_node["inst"], flat_node["inst_type"])
@@ -509,6 +497,5 @@ class SpiceParser:
         logger.info(
             "Created bipartitie graph with Total no of Nodes: %i edges: %i",
             len(circuit_graph), circuit_graph.number_of_edges())
-        #print(circuit_graph.nodes['xM03|MN0']["ports"])
 
         return circuit_graph
