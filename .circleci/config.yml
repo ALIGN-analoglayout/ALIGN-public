@@ -287,7 +287,7 @@ jobs:
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
           docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
 
-      - persist_to_workspace:
+          - persist_to_workspace:
           root: /work/workspace
           paths:
             - test-reports/PlaceRouteHierFlow
@@ -310,7 +310,7 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && pytest -vv --runnightly && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && export ALIGN_HOME=`pwd` && mkdir -p build/tmp && export ALIGN_WORK_DIR=$ALIGN_HOME/build/tmp && pytest -vv --runnightly && mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
 
           docker cp align_container:test-reports .
           docker rm align_container
