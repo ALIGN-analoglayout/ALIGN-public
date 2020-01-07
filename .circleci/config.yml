@@ -320,42 +320,6 @@ jobs:
           paths:
             - test-reports/align-nightly
             
-  build-PlaceRouteHierFlow:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd PlaceRouteHierFlow
-          docker build -t placeroute_coverage_image -f Dockerfile-coverage .
-          docker volume create placerInputVol
-          docker volume create placerOutputVol
-
-      - run: |
-          apk add bash
-          (cd PlaceRouteHierFlow && ./run_small_in_docker.sh)
-          mkdir -p coverage-reports
-          docker cp PnR:/PlaceRouteHierFlow/coverage.out coverage-reports/PlaceRouteHierFlow
-          mkdir -p test-reports/PlaceRouteHierFlow/{PnRDB,placer,router,cap_placer}
-          docker cp PnR:/PlaceRouteHierFlow/PnRDB/junit.xml test-reports/PlaceRouteHierFlow/PnRDB
-          docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
-          docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
-          docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
-          
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/PlaceRouteHierFlow
-            - coverage-reports/PlaceRouteHierFlow
-            
-      - store_artifacts:
-          path: test-reports
-          
-      - store_artifacts:
-          path: coverage-reports
 
   finish:
     executor: git-executor
