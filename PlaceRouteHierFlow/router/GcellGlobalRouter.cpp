@@ -692,13 +692,13 @@ void GcellGlobalRouter::transformCenter(bool H, int &center, GlobalGrid &grid){
          }
     
       }
-
-  if(H){
+  if(index>=0 &&index<grid.tiles_total.size()){
+    if(H){
       center = grid.tiles_total[index].y;
     }else{
       center = grid.tiles_total[index].x;
     }
-
+  }
 
 };
 

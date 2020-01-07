@@ -79,6 +79,24 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
   return hierTree[nodeID];
 }
 
+std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
+  std::vector<PnRDB::hierNode> nodeVec(hierTree[nodeID].PnRAS.size());
+  for (unsigned int lidx = 0; lidx < hierTree[nodeID].PnRAS.size(); lidx++)
+  {
+    PnRDB::hierNode current_node = hierTree[nodeID];
+    current_node.gdsFile = current_node.PnRAS[lidx].gdsFile;
+    current_node.width = current_node.PnRAS[lidx].width;
+    current_node.height = current_node.PnRAS[lidx].height;
+    current_node.Blocks = current_node.PnRAS[lidx].Blocks;
+    current_node.Terminals = current_node.PnRAS[lidx].Terminals;
+    current_node.Nets = current_node.PnRAS[lidx].Nets;
+    nodeVec[lidx] = current_node;
+    nodeVec[lidx].LL = current_node.PnRAS[lidx].LL;
+    nodeVec[lidx].UR = current_node.PnRAS[lidx].UR;
+  }
+  return nodeVec;
+}
+
 bool PnRdatabase::ReadMap(string fpath, string mapname) {
   cout<<"PnRDB-Info: reading map file "<<fpath+"/"+mapname<<endl;
   ifstream fin;
@@ -97,7 +115,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
       }
     }
     fin.close();
-    return true;
+    return true; 
   } catch(ifstream::failure& e) {
     cerr<<"PnRDB-Error: fail to read map file "<<endl;
   }
@@ -138,6 +156,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.Blocks=updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;
+  tmpL.LL = updatedNode.LL;
+  tmpL.UR = updatedNode.UR;
   hierTree[nodeID].PnRAS.push_back(tmpL);
 
   hierTree[nodeID].isCompleted = 1;

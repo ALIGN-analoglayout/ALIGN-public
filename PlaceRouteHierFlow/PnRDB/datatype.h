@@ -317,6 +317,8 @@ struct layoutAS {
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
+  point LL;
+  point UR;
   //vector<pin> blockPins;
   //vector<contact> interMetals;
   //vector<Via> interVias;
@@ -330,7 +332,8 @@ struct hierNode {
   int height=0;
   point LL;
   point UR;
-  string name="";
+  int numPlacement = 0;
+  string name = "";
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;

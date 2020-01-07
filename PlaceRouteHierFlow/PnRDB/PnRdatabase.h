@@ -111,6 +111,7 @@ class PnRdatabase
 
     queue<int> TraverseHierTree(); // traverse hierarchical tree in topological order
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
+    std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
     void updatePowerPins(PnRDB::pin& temp_pin);
    
