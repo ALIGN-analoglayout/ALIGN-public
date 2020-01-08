@@ -158,22 +158,22 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 }
 
 void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode){
+  string current_node_name = current_node.name;
   for (unsigned int bit = 0; bit < current_node.Blocks.size();bit++){
     if(current_node.Blocks[bit].child==-1)
       continue;
     int idx = current_node.Blocks[bit].child;
     //get and update childnode from parent
     PnRDB::hierNode childnode = DB.hierTree[idx];
+    string child_node_name = childnode.name;
     childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL;
     childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR;
     DB.TransformNode(childnode);
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)
     {
       route_top_down(DB, drcInfo, childnode, lidx, opath, binary_directory, skip_saving_state, adr_mode);
-      
     }
   }
-  string current_node_name = current_node.name;
   //route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
   //DB.CheckinHierNode(idx, current_node);
 }
