@@ -98,7 +98,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
         if json_dir is not None:
             pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
             if not pth.is_file():
-                logger.warning( f"{pth} is not available; not importing subblock rectangles")
+                logger.info( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
 
@@ -113,7 +113,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 if not pth.is_file():
                     logger.error( f"{pth} not found in input_dir")
                 else:
-                    logger.warning( f"{pth} found in input_dir")
+                    logger.info( f"{pth} found in input_dir")
                     found = True
             else:
                 logger.error( f"{blk.gdsFile} does not end in .gds")
