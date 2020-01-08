@@ -19,8 +19,8 @@ v2 phi2 0 PULSE 2 0 2.55e-9 25e-12 25e-12 2.4e-9 5e-9
 v1 phi1 0 PULSE 2 0 50e-12 25e-12 25e-12 2.4e-9 5e-9
 c1 vout 0 capacitor c=1e-9
 c0 net1 0 capacitor c=200e-12 
-xp0 net1 phi2 vin vdd! pfet m=1 l=14e-9 nfin=40 nf=10 
-xp1 vout phi1 net1 vdd! pfet m=1 l=14e-9 nfin=40 nf=10 
+xp0 net1 phi2 vin vdd! pmos m=1 l=14e-9 nfin=40 nf=10 
+xp1 vout phi1 net1 vdd! pmos m=1 l=14e-9 nfin=40 nf=10 
 r0 vout 0 225
 .MEAS TRAN avgcondv AVG V(vin) FROM=3e-6 TO=5e-6
 .MEAS TRAN avgcondi AVG I(v0) FROM=3e-6 TO=5e-6

@@ -1,6 +1,6 @@
 ** Generated for: hspiceD
 ** Generated on: Dec 20 18:33:51 2019
-** Design library name: GF_14nm_test1
+** Design library name:_14nm_test1
 ** Design cell name: 2019_12_18_SC_DC_DC_converter_ideal
 ** Design view name: schematic
 
@@ -12,7 +12,7 @@
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
 
 
-** Library name: GF_14nm_test1
+** Library name:_14nm_test1
 ** Cell name: 2019_12_18_SC_DC_DC_converter_ideal
 ** View name: schematic
 r0 vout 0 125

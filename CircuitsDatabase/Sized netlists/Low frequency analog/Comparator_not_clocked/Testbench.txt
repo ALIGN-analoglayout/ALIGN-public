@@ -11,7 +11,7 @@ global 0
 // View name: schematic
 subckt DC_converter_23Dec_2017_comparator_symbol_schematic Vn Vout Vp Vdd \
         cgnd
-    M21 (net44 cgnd Vdd Vdd) pch l=1.32u w=120.0n m=1 nf=1
+    M21 (net44 cgnd Vdd Vdd) pmos l=1.32u w=120.0n m=1 nf=1
        
        
     M5 (net10 Vn net7 cgnd) nmos_rf lr=120.0n wr=600n nr=1 sigma=1 m=1

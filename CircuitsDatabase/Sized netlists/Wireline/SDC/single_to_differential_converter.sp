@@ -4,8 +4,8 @@
 
 .subckt nfet2x d g s b
 .param p1=30
-    MN0 d g n1 b    nfet l=0.014u nfin=p1
-    MN1 n1 g s b    nfet l=0.014u nfin=p1
+    MN0 d g n1 b    nmos l=0.014u nfin=p1
+    MN1 n1 g s b    nmos l=0.014u nfin=p1
 .ends nfet2x
 
 .subckt single_to_differential_converter vb vin vout_sdc1 vout_sdc2 vps vgnd

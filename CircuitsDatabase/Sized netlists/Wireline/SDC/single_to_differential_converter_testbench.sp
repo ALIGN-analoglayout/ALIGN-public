@@ -4,8 +4,8 @@ global 0 vdd!
 // Library name: EQ_01012020
 // Cell name: SDC_top
 // View name: schematic
-N0 (vd net1 net11 0) nfet m=1 l=14n nfin=24 nf=1 
-N1 (net11 net1 vs 0) nfet m=1 l=14n nfin=24 nf=1 
+N0 (vd net1 net11 0) nmos m=1 l=14n nfin=24 nf=1 
+N1 (net11 net1 vs 0) nmos m=1 l=14n nfin=24 nf=1 
 R2 (net1 vb) resistor r=15000
 R1 (0 vs) resistor r=1080
 R0 (vd vdd!) resistor r=1080 

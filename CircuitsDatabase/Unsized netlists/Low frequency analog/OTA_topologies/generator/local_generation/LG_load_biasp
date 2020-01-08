@@ -32,8 +32,8 @@
 
 .SUBCKT LG_load_biasp Biasn Vbiasp1 Vbiasp2
 *.PININFO Biasn:I Vbiasp1:O Vbiasp2:O
-MM0 Vbiasp2 Biasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM1 Vbiasp2 Vbiasp2 Vbiasp1 vdd! pmos_rvt w=WA l=LA nfin=nA
-MM3 Vbiasp1 Vbiasp1 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM0 Vbiasp2 Biasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM1 Vbiasp2 Vbiasp2 Vbiasp1 vdd! pmos w=WA l=LA nfin=nA
+MM3 Vbiasp1 Vbiasp1 vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 

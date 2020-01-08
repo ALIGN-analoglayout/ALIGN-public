@@ -20,24 +20,24 @@ V2 (vac 0) vsource dc=0 mag=2 type=sine ampl=200m freq=1G
 I25 (vdd! net048) isource dc=ib_ctle type=dc
 E2 (vin2 vcm_ctle vac 0) vcvs gain=-0.5
 E0 (vin1 vcm_ctle vac 0) vcvs gain=0.5
-N33 (net066 vin2 net055 0) nfet m=1 l=14n nfin=12 nf=4         
-N32 (vout2_ctle vin2 net066 0) nfet m=1 l=14n nfin=12 nf=4         
-N31 (net055 net048 net065 0) nfet m=1 l=14n nfin=12 nf=7 
-N30 (net065 net048 0 0) nfet m=1 l=14n nfin=12 nf=7 
-N29 (net074 s2_ctle net068 0) nfet m=1 l=14n nfin=12 nf=4 
-N28 (net073 s1_ctle net067 0) nfet m=1 l=14n nfin=12 nf=4   
-N27 (net072 s3_ctle net070 0) nfet m=1 l=14n nfin=12 nf=4         
-N26 (net071 s0_ctle net069 0) nfet m=1 l=14n nfin=12 nf=4         
-N25 (net075 s0_ctle net071 0) nfet m=1 l=14n nfin=12 nf=4         
-N24 (net076 s3_ctle net072 0) nfet m=1 l=14n nfin=12 nf=4         
-N23 (net077 s1_ctle net073 0) nfet m=1 l=14n nfin=12 nf=4         
-N20 (net078 s2_ctle net074 0) nfet m=1 l=14n nfin=12 nf=4        
-N19 (net079 vin1 net052 0) nfet m=1 l=14n nfin=12 nf=4         
-N18 (net080 net048 0 0) nfet m=1 l=14n nfin=12 nf=7 
-N17 (net052 net048 net080 0) nfet m=1 l=14n nfin=12 nf=7 
-N16 (vout1_ctle vin1 net079 0) nfet m=1 l=14n nfin=12 nf=4        
-N22 (net081 net048 0 0) nfet m=1 l=14n nfin=12 nf=7 
-N21 (net048 net048 net081 0) nfet m=1 l=14n nfin=12 nf=7 
+N33 (net066 vin2 net055 0) nmos m=1 l=14n nfin=12 nf=4         
+N32 (vout2_ctle vin2 net066 0) nmos m=1 l=14n nfin=12 nf=4         
+N31 (net055 net048 net065 0) nmos m=1 l=14n nfin=12 nf=7 
+N30 (net065 net048 0 0) nmos m=1 l=14n nfin=12 nf=7 
+N29 (net074 s2_ctle net068 0) nmos m=1 l=14n nfin=12 nf=4 
+N28 (net073 s1_ctle net067 0) nmos m=1 l=14n nfin=12 nf=4   
+N27 (net072 s3_ctle net070 0) nmos m=1 l=14n nfin=12 nf=4         
+N26 (net071 s0_ctle net069 0) nmos m=1 l=14n nfin=12 nf=4         
+N25 (net075 s0_ctle net071 0) nmos m=1 l=14n nfin=12 nf=4         
+N24 (net076 s3_ctle net072 0) nmos m=1 l=14n nfin=12 nf=4         
+N23 (net077 s1_ctle net073 0) nmos m=1 l=14n nfin=12 nf=4         
+N20 (net078 s2_ctle net074 0) nmos m=1 l=14n nfin=12 nf=4        
+N19 (net079 vin1 net052 0) nmos m=1 l=14n nfin=12 nf=4         
+N18 (net080 net048 0 0) nmos m=1 l=14n nfin=12 nf=7 
+N17 (net052 net048 net080 0) nmos m=1 l=14n nfin=12 nf=7 
+N16 (vout1_ctle vin1 net079 0) nmos m=1 l=14n nfin=12 nf=4        
+N22 (net081 net048 0 0) nmos m=1 l=14n nfin=12 nf=7 
+N21 (net048 net048 net081 0) nmos m=1 l=14n nfin=12 nf=7 
 R13 (net069 net055) resistor r=1200
 R12 (net070 net055) resistor r=1200
 R11 (vout2_ctle vdd!) resistor r=2000

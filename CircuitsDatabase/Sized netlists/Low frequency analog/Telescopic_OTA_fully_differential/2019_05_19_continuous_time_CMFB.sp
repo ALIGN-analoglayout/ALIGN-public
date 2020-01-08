@@ -1,6 +1,6 @@
 ** Generated for: hspiceD
 ** Generated on: May 19 14:10:16 2019
-** Design library name: ALIGN_circuits_ASAP7nm
+** Design library name: ALIGN_circuitsnm
 ** Design cell name: continuous_time_CMFB
 ** Design view name: schematic
 
@@ -20,21 +20,21 @@
 
 .subckt telescopic_ota vbiasnd vbiasn vbiasp2 vbiasp1 vinn vinp voutn voutp D1
 
-m9 voutn vbiasn net8 0 nmos_rvt w=270e-9 l=20e-9 nfin=25
-m8 voutp vbiasn net014 0 nmos_rvt w=270e-9 l=20e-9 nfin=25
-m5 D1 D1 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
-m4 net10 vbiasnd 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=50
-m3 net014 vinn net10 0 nmos_rvt w=270e-9 l=20e-9 nfin=70
-m0 net8 vinp net10 0 nmos_rvt w=270e-9 l=20e-9 nfin=70
-m7 voutp vbiasp2 net012 net012 pmos_rvt w=270e-9 l=20e-9 nfin=15
-m6 voutn vbiasp2 net06 net06 pmos_rvt w=270e-9 l=20e-9 nfin=15
-m2 net012 vbiasp1 vdd! vdd! pmos_rvt w=270e-9 l=20e-9 nfin=10
-m1 net06 vbiasp1 vdd! vdd! pmos_rvt w=270e-9 l=20e-9 nfin=10
+m9 voutn vbiasn net8 0 nmos w=270e-9 l=20e-9 nfin=25
+m8 voutp vbiasn net014 0 nmos w=270e-9 l=20e-9 nfin=25
+m5 D1 D1 0 0 nmos w=270e-9 l=20e-9 nfin=10
+m4 net10 vbiasnd 0 0 nmos w=270e-9 l=20e-9 nfin=50
+m3 net014 vinn net10 0 nmos w=270e-9 l=20e-9 nfin=70
+m0 net8 vinp net10 0 nmos w=270e-9 l=20e-9 nfin=70
+m7 voutp vbiasp2 net012 net012 pmos w=270e-9 l=20e-9 nfin=15
+m6 voutn vbiasp2 net06 net06 pmos w=270e-9 l=20e-9 nfin=15
+m2 net012 vbiasp1 vdd! vdd! pmos w=270e-9 l=20e-9 nfin=10
+m1 net06 vbiasp1 vdd! vdd! pmos w=270e-9 l=20e-9 nfin=10
 
 .ends
 
 
-** Library name: ALIGN_circuits_ASAP7nm
+** Library name: ALIGN_circuitsnm
 ** Cell name: continuous_time_CMFB
 ** View name: schematic
 .subckt continuous_time_CMFB va vb vcm vg vgout vss
@@ -48,7 +48,7 @@ e0 net12 vss VCVS va vss 1
 
 i5 vdd! id DC=40e-6
 **xi0 vg vbiasn net08 net09 vbiasp1 vbiasp2 id vss vdd voutn voutp telescopic_ota_DR
-**xi3 clk vdd! 0 phi1 phi2 DC_converter_2018_11_09_ASAP7_non_overlapping_clock_generator_schematic
+**xi3 clk vdd! 0 phi1 phi2 DC_converter_2018_11_09_non_overlapping_clock_generator_schematic
 **v0 clk 0 PULSE 0 1 0 0 0 115e-9 250e-9
 xi15 vbiasnd vbiasn vbiasp2 vbiasp1 vinn vinp voutn voutp id telescopic_ota
 v11 vdd! 0 DC=1
@@ -65,7 +65,7 @@ v8 vss 0 DC=0
 v9 vdd 0 DC=1
 c1 voutn vss 350e-15
 c2 voutp vss 350e-15
-**xi13 voutn voutp id vcm vg phi1 phi2 DC_converter_2018_11_09_ASAP7_cmfb_schematic
+**xi13 voutn voutp id vcm vg phi1 phi2 DC_converter_2018_11_09_cmfb_schematic
 xi14 voutn voutp vcm id vbiasnd vss continuous_time_CMFB
 .probe vdiff1=par('v(voutn)-v(voutp)')
 .probe vdiff=par('v(vinn)-v(vinp)')

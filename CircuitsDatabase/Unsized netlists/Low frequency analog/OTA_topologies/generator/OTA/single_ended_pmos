@@ -32,10 +32,10 @@
 
 .SUBCKT single_ended_pmos Vbiasp Vinn Vinp Voutp
 *.PININFO Vbiasp:I Vinn:I Vinp:I Voutp:O
-MM9 Voutp net12 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM8 net12 net12 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM7 Voutp Vinn net10 net14 pmos_rvt w=WA l=LA nfin=nA
-MM6 net12 Vinp net10 net14 pmos_rvt w=WA l=LA nfin=nA
-MM5 net10 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM9 Voutp net12 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM8 net12 net12 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM7 Voutp Vinn net10 net14 pmos w=WA l=LA nfin=nA
+MM6 net12 Vinp net10 net14 pmos w=WA l=LA nfin=nA
+MM5 net10 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 

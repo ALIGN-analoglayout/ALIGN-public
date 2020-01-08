@@ -8,7 +8,7 @@ global 0
 // Library name: DC_converter
 // Cell name: 23Dec_2017_comparator_symbol
 // View name: schematic
-M21 (net44 cgnd Vdd Vdd) pch l=1.32u w=120.0n m=1 nf=1 
+M21 (net44 cgnd Vdd Vdd) pmos l=1.32u w=120.0n m=1 nf=1 
 M5 (net10 Vn net7 cgnd) nmos_rf lr=120.0n wr=600n nr=1 
 M0 (net5 Vp net7 cgnd) nmos_rf lr=120.0n wr=600n nr=1 
 M11 (net7 net44 cgnd cgnd) nmos_rf lr=120.0n wr=1.2u nr=1 

@@ -35,7 +35,7 @@
 RR1 Vbiasn net7 res=rK
 RR0 vdd! net7 res=rK
 RRF vdd! Vbiasn res=rK
-MM1 net7 Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
+MM1 net7 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM0 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
 .ENDS
 

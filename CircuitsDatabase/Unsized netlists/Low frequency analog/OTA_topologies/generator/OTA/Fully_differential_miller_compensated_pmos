@@ -33,15 +33,15 @@
 .SUBCKT Fully_differential_miller_compensated_pmos Vbiasn1 Vbiasp Vinn Vinp 
 + Voutn Voutp
 *.PININFO Vbiasn1:I Vbiasp:I Vinn:I Vinp:I Voutn:O Voutp:O
-MM1 Voutn net21 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM13 Voutp net25 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM9 net25 Vbiasn1 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM8 net21 Vbiasn1 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Voutn Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM12 Voutp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM11 net17 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM10 net25 Vinn net17 net28 pmos_rvt w=WA l=LA nfin=nA
-MM7 net21 Vinp net17 net28 pmos_rvt w=WA l=LA nfin=nA
+MM1 Voutn net21 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM13 Voutp net25 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM9 net25 Vbiasn1 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM8 net21 Vbiasn1 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM0 Voutn Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM12 Voutp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM11 net17 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM10 net25 Vinn net17 net28 pmos w=WA l=LA nfin=nA
+MM7 net21 Vinp net17 net28 pmos w=WA l=LA nfin=nA
 CC0 Voutn net21 1p $[CP]
 CC2 Voutp net25 1p $[CP]
 .ENDS

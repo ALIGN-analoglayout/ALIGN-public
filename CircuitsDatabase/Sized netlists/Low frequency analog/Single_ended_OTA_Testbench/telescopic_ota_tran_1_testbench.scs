@@ -1,6 +1,6 @@
 ** Generated for: hspiceD
 ** Generated on: Jan  5 20:02:02 2020
-** Design library name: GF12_telescopic_ota_testbench
+** Design library name:12_telescopic_ota_testbench
 ** Design cell name: telescopic_ota_sr_testbench
 ** Design view name: schematic
 .GLOBAL vss! vdd!
@@ -20,36 +20,36 @@
 +    PSF=2
 
 
-** Library name: GF12nm_OTA_schematic
+** Library name:12nm_OTA_schematic
 ** Cell name: 2019_09_20_telescopic_ota_w_bias1
 ** View name: schematic
-.subckt GF12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic vdd vss vinn vinp vout ibiasn inh_hsup inh_lsup
-xn10 net020 ibiasn vss inh_lsup nfet m=1 l=14e-9 nfin=6 nf=2 
-xn9 vbiasn vbiasn net018 inh_lsup nfet m=1 l=14e-9 nfin=25 nf=2 
-xn8 net018 vbiasn vss inh_lsup nfet m=1 l=14e-9 nfin=2 nf=1 
-xn6 vbiasp ibiasn vss inh_lsup nfet m=1 l=14e-9 nfin=12 nf=2 
-xn5 vout vbiasn net19 inh_lsup nfet m=1 l=14e-9 nfin=25 nf=2 
-xn4 net030 vbiasn net20 inh_lsup nfet m=1 l=14e-9 nfin=25 nf=2 
-xn3 ibiasn ibiasn vss inh_lsup nfet m=1 l=14e-9 nfin=5 nf=2 
-xn2 net025 ibiasn vss inh_lsup nfet m=1 l=14e-9 nfin=40 nf=2 
-xn1 net19 vinn net025 inh_lsup nfet m=1 l=14e-9 nfin=40 nf=2 
-xn0 net20 vinp net025 inh_lsup nfet m=1 l=14e-9 nfin=40 nf=2 
-xp9 net020 net020 vdd inh_hsup pfet m=1 l=14e-9 nfin=8 nf=2 
-xp7 net010 net020 vdd inh_hsup pfet m=1 l=14e-9 nfin=15 nf=2 
-xp8 vbiasn vbiasp net010 inh_hsup pfet m=1 l=14e-9 nfin=10 nf=2 
-xp5 net015 vbiasp vdd inh_hsup pfet m=1 l=14e-9 nfin=2 nf=2 
-xp4 vbiasp vbiasp net015 inh_hsup pfet m=1 l=14e-9 nfin=5 nf=2 
-xp3 net18 net030 vdd inh_hsup pfet m=1 l=14e-9 nfin=15 nf=2 
-xp2 net21 net030 vdd inh_hsup pfet m=1 l=14e-9 nfin=15 nf=2 
-xp1 vout vbiasp net18 inh_hsup pfet m=1 l=14e-9 nfin=10 nf=2 
-xp0 net030 vbiasp net21 inh_hsup pfet m=1 l=14e-9 nfin=10 nf=2 
-.ends GF12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic
+.subckt12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic vdd vss vinn vinp vout ibiasn inh_hsup inh_lsup
+xn10 net020 ibiasn vss inh_lsup nmos m=1 l=14e-9 nfin=6 nf=2 
+xn9 vbiasn vbiasn net018 inh_lsup nmos m=1 l=14e-9 nfin=25 nf=2 
+xn8 net018 vbiasn vss inh_lsup nmos m=1 l=14e-9 nfin=2 nf=1 
+xn6 vbiasp ibiasn vss inh_lsup nmos m=1 l=14e-9 nfin=12 nf=2 
+xn5 vout vbiasn net19 inh_lsup nmos m=1 l=14e-9 nfin=25 nf=2 
+xn4 net030 vbiasn net20 inh_lsup nmos m=1 l=14e-9 nfin=25 nf=2 
+xn3 ibiasn ibiasn vss inh_lsup nmos m=1 l=14e-9 nfin=5 nf=2 
+xn2 net025 ibiasn vss inh_lsup nmos m=1 l=14e-9 nfin=40 nf=2 
+xn1 net19 vinn net025 inh_lsup nmos m=1 l=14e-9 nfin=40 nf=2 
+xn0 net20 vinp net025 inh_lsup nmos m=1 l=14e-9 nfin=40 nf=2 
+xp9 net020 net020 vdd inh_hsup pmos m=1 l=14e-9 nfin=8 nf=2 
+xp7 net010 net020 vdd inh_hsup pmos m=1 l=14e-9 nfin=15 nf=2 
+xp8 vbiasn vbiasp net010 inh_hsup pmos m=1 l=14e-9 nfin=10 nf=2 
+xp5 net015 vbiasp vdd inh_hsup pmos m=1 l=14e-9 nfin=2 nf=2 
+xp4 vbiasp vbiasp net015 inh_hsup pmos m=1 l=14e-9 nfin=5 nf=2 
+xp3 net18 net030 vdd inh_hsup pmos m=1 l=14e-9 nfin=15 nf=2 
+xp2 net21 net030 vdd inh_hsup pmos m=1 l=14e-9 nfin=15 nf=2 
+xp1 vout vbiasp net18 inh_hsup pmos m=1 l=14e-9 nfin=10 nf=2 
+xp0 net030 vbiasp net21 inh_hsup pmos m=1 l=14e-9 nfin=10 nf=2 
+.ends12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic
 ** End of subcircuit definition.
 
-** Library name: GF12_telescopic_ota_testbench
+** Library name:12_telescopic_ota_testbench
 ** Cell name: telescopic_ota_sr_testbench
 ** View name: schematic
-xi0 net02 0 vout vinp vout net06 vdd! vss! GF12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic
+xi0 net02 0 vout vinp vout net06 vdd! vss!12nm_OTA_schematic_2019_09_20_telescopic_ota_w_bias1_schematic
 v4 net02 0 DC=vdd_r
 v6 net7 0 DC=vcm_r
 v0 vinp net7 PWL 0 0 100e-12 0 110e-12 '-vicm/2' '1/ugf' '-vicm/2' '1/ugf+100e-12' 'vicm/2' TD=0
