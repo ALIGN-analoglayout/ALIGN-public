@@ -184,6 +184,8 @@ class RemoveDuplicates():
 
 
     def build_scan_lines( self, tbl):
+        skip_layers_for_different_widths = ['Active']
+
         self.store_scan_lines = defaultdict(dict)
 
         for (layer, dir) in self.layers.items():
@@ -199,7 +201,8 @@ class RemoveDuplicates():
                         widths = set()
                         for (r, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
-                        self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
+                        if layer not in skip_layers_for_different_widths:
+                            self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
