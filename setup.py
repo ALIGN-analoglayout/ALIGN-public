@@ -35,7 +35,12 @@ setup(name='align',
           'pyyaml'
           ],
       setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
+      tests_require=[
+          'pytest',
+          'pytest-cov',
+          'pytest-timeout',
+          'coverage-badge'
+          ],
       python_requires='~=3.6',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

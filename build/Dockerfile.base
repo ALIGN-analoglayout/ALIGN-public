@@ -51,6 +51,7 @@ RUN $pip install \
     # Testing dependencies
     pytest \
     pytest-cov \
+    pytest-timeout \
     coverage-badge
 
 # Lpsolve
