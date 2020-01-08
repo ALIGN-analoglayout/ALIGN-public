@@ -15,7 +15,7 @@ def read_lef(lef_dir):
     for file in os.listdir(lef_dir):
         if file.endswith(".lef"):
             lef_path = os.path.join(lef_dir, file)
-            logger.info(f"READING_LEF {lef_path}")
+            logger.debug(f"READING_LEF {lef_path}")
             with open(lef_path, "r") as lef_fp:
                 line = lef_fp.readline()
                 while line:

@@ -14,7 +14,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     g_copy = G.copy()
     for node in argv:
         if not G.nodes[node]:
-            logger.info("node not in graph anymore")
+            logger.debug("node not in graph anymore")
             return G, nx.Graph
     #print("Is input bipartite",nx.is_bipartite(G))
     assert len(argv) > 1

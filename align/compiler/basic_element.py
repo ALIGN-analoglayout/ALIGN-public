@@ -62,7 +62,7 @@ class BasicElement:
                     self.pins[n]='vss'
 
 
-        logger.info("real inst type from netlist: %s",self.real_inst_type)
+        logger.debug("real inst type from netlist: %s",self.real_inst_type)
         start = 1
         multiple = 2
         self.pin_weight = [start*multiple**i for i in range(self.num_pins)]
@@ -191,7 +191,7 @@ def parse_value(all_param, vtype=None):
                 param = all_param[idx - 1]
             if not value:
                 value = all_param[idx + 1]
-            logger.info('Found device values: %s, value:%s', param, value)
+            logger.debug('Found device values: %s, value:%s', param, value)
             device_param_list[param] = value
     if not device_param_list and len(all_param)>0:
         device_param_list[vtype] =all_param[0]
@@ -203,7 +203,7 @@ def _parse_inst(line):
 
     #line = line.replace("(", "").replace(")", "")
     element = BasicElement(line)
-    #logger.info('READ line:'+line)
+    #logger.debug('READ line:'+line)
     device = None
     if not line.strip():
         return device
@@ -261,7 +261,7 @@ def _parse_inst(line):
                     if not value:
                         value = all_nodes[idx + 1]
                         pass
-                    logger.info('Found subckt parameter values: %s, value:%s',
+                    logger.debug('Found subckt parameter values: %s, value:%s',
                                  param, value)
                     device_param_list[param] = value
 

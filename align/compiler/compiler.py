@@ -16,15 +16,16 @@ def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size
     return compiler_output(netlist, library, updated_ckt, subckt, output_dir, unit_size_mos , unit_size_cap)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
+    logger.info("Starting topology identification...")
     input_dir=input_ckt.parents[0]
-    logger.info("Reading subckt %s", input_ckt)
+    logger.debug("Reading subckt %s", input_ckt)
     sp = SpiceParser(input_ckt, design_name, flat)
     circuit = sp.sp_parser()[0]
 
     design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
-    logger.info("template parent path: %s",pathlib.Path(__file__).parent)
+    logger.debug("template parent path: %s",pathlib.Path(__file__).parent)
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'basic_template.sp'
-    logger.info("template library path: %s",lib_path)
+    logger.debug("template library path: %s",lib_path)
     basic_lib = SpiceParser(lib_path)
     library = basic_lib.sp_parser()
     lib_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'user_template.sp'
@@ -45,20 +46,20 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 
     UPDATED_CIRCUIT_LIST = []
     for circuit_name, circuit in hier_graph_dict.items():
-        logger.info("START MATCHING in circuit: %s", circuit_name)
+        logger.debug("START MATCHING in circuit: %s", circuit_name)
         G1 = circuit["graph"]
         if circuit_name in design_setup['DIGITAL']:
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['CLOCK'], True )
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-            logger.info("no of nodes: %i", len(G1))
+            logger.debug("no of nodes: %i", len(G1))
             add_parallel_caps(G1)
             add_series_res(G1)
             preprocess_stack(G1)
             initial_size=len(G1)
             delta =1
             while delta > 0:
-                logger.info("CHECKING stacked transistors")
+                logger.debug("CHECKING stacked transistors")
                 preprocess_stack(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
@@ -79,13 +80,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, unit_size_mos=12, unit_size_cap=12):
     if not result_dir.exists():
         result_dir.mkdir()
-    logger.info("Writing results in dir: %s",result_dir)
+    logger.debug("Writing results in dir: %s",result_dir)
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / (design_name + '.v'), 'w')
     ## File pointer for running cell generator
     LEF_FP = open(result_dir / (design_name + '_lef.sh'), 'w')
 
-    logger.info("writing spice file for cell generator")
+    logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
     SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
@@ -101,7 +102,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     #read lef to not write those modules as macros
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     ALL_LEF = read_lef(lef_path)
-    logger.info("Available library cells: %s", ", ".join(ALL_LEF))
+    logger.debug("Available library cells: %s", ", ".join(ALL_LEF))
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
     if 'vco_dtype_12' in  design_name:
@@ -116,23 +117,23 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             continue
         else:
             duplicate_modules.append(name)
-        logger.info("Found module: %s", name )
+        logger.debug("Found module: %s", name )
         inoutpin = []
-        logger.info("found ports match: %s",members["ports_match"])
+        logger.debug("found ports match: %s",members["ports_match"])
         floating_ports=[]
         if members["ports_match"]:
             for key in members["ports_match"].keys():
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if members["ports"]:
-                logger.info("Found module ports kk:%s",members["ports"] )
+                logger.debug("Found module ports kk:%s",members["ports"] )
                 floating_ports = list(set(inoutpin) - set(members["ports"]))
                 logger.warning("floating port found: %s",floating_ports)
         else:
             inoutpin = members["ports"]
 
         graph = members["graph"].copy()
-        logger.info("Reading nodes from graph: %s", str(graph))
+        logger.debug("Reading nodes from graph: %s", str(graph))
         for node, attr in graph.nodes(data=True):
             #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
             if 'net' in attr['inst_type']: continue
@@ -144,7 +145,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     LEF_FP, lef_name, attr["values"],
                     primitives, unit_size_mos, unit_size_cap)
                 block_name_ext = block_name.replace(lef_name,'')
-                logger.info("Created new lef for: %s", block_name)
+                logger.debug("Created new lef for: %s", block_name)
                 if block_name in primitives:
                     assert block_args == primitives[block_name]
                 else:
@@ -154,25 +155,25 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                 logger.warning("No physical information found for: %s", name)
 
         if name in ALL_LEF:
-            logger.info("writing spice for block: %s", name)
+            logger.debug("writing spice for block: %s", name)
             ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt)
             ws.print_subckt(SP_FP)
             continue
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF:
-            logger.info("call verilog writer for block: %s", name)
+            logger.debug("call verilog writer for block: %s", name)
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
             const_file = (result_dir / (name + '.const'))
-            logger.info("call array finder for block: %s", name)
+            logger.debug("call array finder for block: %s", name)
             all_array=FindArray(graph, input_dir, name )
-            logger.info("cap constraint gen for block: %s", name)
+            logger.debug("cap constraint gen for block: %s", name)
             WriteCap(graph, result_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
             ##Removinf constraints to fix cascoded cmc
             lib_names=[lib_ele['name'] for lib_ele in library]
             if name not in design_setup['DIGITAL'] and name not in lib_names:
-                logger.info("call constraint generator writer for block: %s", name)
+                logger.debug("call constraint generator writer for block: %s", name)
                 WriteConst(graph, input_dir, name, inoutpin, result_dir)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
