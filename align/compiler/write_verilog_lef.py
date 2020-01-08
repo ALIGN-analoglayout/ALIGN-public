@@ -26,7 +26,7 @@ class WriteVerilog:
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = []
-        for port in inout_pin_names:
+        for port in sorted(inout_pin_names):
             if port not in power_pins:
                 self.pins.append(port)
         self.power_pins=power_pins
@@ -37,7 +37,7 @@ class WriteVerilog:
             if members["name"]==subckt and port in members["ports"]:
                 return 1
             else:
-                logger.warning("no ports match: %s %s",subckt,port)
+                logger.info("ports match: %s %s",subckt,port)
                 return 1
 
     def print_module(self, fp):
@@ -118,7 +118,7 @@ class WriteVerilog:
                 return mapped_pins
 
         else:
-            logger.warning("unmatched ports found")
+            logger.info("unmatched ports found")
             return 0
 
 class WriteSpice:
@@ -136,7 +136,7 @@ class WriteSpice:
             if members["name"]==subckt and port in members["ports"]:
                 return 1
             else:
-                logger.warning(f"no ports match: {subckt} {port}")
+                logger.info(f"no ports match: {subckt} {port}")
 
     def print_subckt(self, fp):
         logger.debug(f"Writing module : {self.circuit_name}")
@@ -226,7 +226,7 @@ def generate_lef(name, values, available_block_lef,
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name}, {size}')
-        return block_name, {
+        return unit_block_name, {
             'primitive': name,
             'value': unit_size_cap
         }
@@ -316,7 +316,7 @@ def generate_lef(name, values, available_block_lef,
             size = int(values["l"]*1E+9)
             no_units = ceil(size / unit_size_mos)
 
-        elif "lr" in values.keys():
+        else: 
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
 
@@ -463,6 +463,14 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
+            elif line.startswith("SymmBlock"):
+                blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
+                logging.info("place symmetrical cap as CC:%s",blocks_in_line)
+                for pair in blocks_in_line:
+                    p1,p2=pair.split(',')
+                    if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
+                        all_array[p1]={p1:[p1,p2]}
+                        line=line.replace(' {'+pair+'} ','').replace('(,','(').replace(',)',')').replace(',,',',')
             new_const_fp.write(line)
             logger.debug(f"cap const {line}")
             line=const_fp.readline()
@@ -613,7 +621,7 @@ def FindArray(graph,input_dir,name):
                 all_array[node]=array
     return all_array
                 #match_branches(graph,nodes_dict)
-def WriteConst(graph, input_dir, name, ports, working_dir):
+def WriteConst(graph, input_dir, name, ports, working_dir,stop_points):
 
     # Copy const file to working directory if needed
     input_const_file = (input_dir / (name + '.const'))
@@ -628,19 +636,21 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
     logger.debug("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
-    traverced =[]
+    traverced =stop_points
     all_match_pairs={}
-    for port in sorted(ports):
-        if port in graph.nodes():
+    for port1 in sorted(ports):
+        if port1 in graph.nodes() and port1 not in traverced:
+            for port2 in sorted(ports):
+                if port2 in graph.nodes() and sorted(ports).index(port2)>=sorted(ports).index(port1) and port2 not in traverced:
             #while len(list(graph.neighbors(port)-set(traverced)))==1:
             #nbr = list(graph.neighbors(port))
-            pair ={}
-            traverced.append(port)
-            compare_nodes(graph, pair, traverced, port, port)
-            if pair:
-                #const_fp.write(port)
-                all_match_pairs.update(pair)
-    existing_SymmBlock =False
+                    pair ={}
+                    traverced.append(port1)
+                    compare_nodes(graph, pair, traverced, port1, port2)
+                    if pair:
+                        all_match_pairs.update(pair)
+                        logging.info("Symmetric blocks found: %s",pair)
+    existing_SymmBlock =[]
     existing_SymmNet = False
 
     # Read contents
@@ -648,14 +658,24 @@ def WriteConst(graph, input_dir, name, ports, working_dir):
         with open(const_file) as f:
             content = f.readlines()
             if 'SymmBlock' in content:
-                existing_SymmBlock = True
+                existing_SymmBlock+=content
             elif 'SymmNet' in content:
                 existing_SymmNet = True
+    del_existing=[]
+    for key, value in all_match_pairs.items():
+        if key in existing_SymmBlock or value in existing_SymmBlock:
+            del_existing.append(key)
+    logging.info("matching pairs:%s existing %s",all_match_pairs,existing_SymmBlock)
+    logging.info("removing existing symmblocks:%s",del_existing)
+    for nodes in del_existing:
+        del all_match_pairs[nodes]
 
     const_fp = open(const_file, 'a+')
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
+            if key in stop_points:
+                continue
             if graph.nodes[key]["inst_type"]!="net" and \
                 key not in symmBlock and value not in symmBlock and \
                 'Dcap' not in graph.nodes[key]["inst_type"] :
