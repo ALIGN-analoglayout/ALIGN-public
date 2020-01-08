@@ -226,8 +226,7 @@ def convert_unit(value):
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. \
-                  using value=10n. Please fix netlist")
+            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
             value = 1e-8
     return mult*value
 

@@ -10,5 +10,6 @@ def configure_logging():
     rollover = logfile.is_file()
     logging.config.fileConfig(cfg, disable_existing_loggers=False)
     if rollover:
-        [x.doRollover() for x in logging.getLogger().handlers \
-        if isinstance(x, logging.handlers.RotatingFileHandler)]
+        for x in logging.getLogger().handlers:
+            if isinstance(x, logging.handlers.RotatingFileHandler):
+                x.doRollover()

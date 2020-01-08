@@ -62,7 +62,7 @@ class BasicElement:
                     self.pins[n]='vss'
 
 
-        logger.debug("real inst type from netlist: %s",self.real_inst_type)
+        logger.debug(f"real inst type from netlist: {self.real_inst_type}")
         start = 1
         multiple = 2
         self.pin_weight = [start*multiple**i for i in range(self.num_pins)]
@@ -191,7 +191,7 @@ def parse_value(all_param, vtype=None):
                 param = all_param[idx - 1]
             if not value:
                 value = all_param[idx + 1]
-            logger.debug('Found device values: %s, value:%s', param, value)
+            logger.debug(f'Found device values: {param}, value: {value}')
             device_param_list[param] = value
     if not device_param_list and len(all_param)>0:
         device_param_list[vtype] =all_param[0]
@@ -216,28 +216,28 @@ def _parse_inst(line):
             or line.strip().startswith('xp') \
             or (line.strip().startswith('I') and 'mos' in line) \
             or line.strip().lower().startswith('t'):
-        logger.debug('FOUND transistor : %s', line.strip())
+        logger.debug(f'FOUND transistor : {line.strip()}')
         device = element.transistor()
     elif line.strip().lower().startswith('v'):
-        logger.debug('FOUND v_source: %s', line.strip())
+        logger.debug(f'FOUND v_source: {line.strip()}')
         device = element.v_source()
     elif line.strip().lower().startswith('e'):
-        logger.debug('FOUND vcvs_source: %s', line.strip())
+        logger.debug(f'FOUND vcvs_source: {line.strip()}')
         device = element.vcvs_source()
     elif line.strip().startswith('i'):
-        logger.debug('FOUND i_source: %s', line.strip())
+        logger.debug(f'FOUND i_source: {line.strip()}')
         device = element.i_source()
     elif line.strip().lower().startswith('c') \
             or ( line.strip().lower().startswith('xc') \
             and 'cap' in  line.strip().split()[3].lower()):
         #DESIGN=Sanitized_TX_8l12b has XC for caps
-        logger.debug('FOUND cap: %s', line.strip())
+        logger.debug(f'FOUND cap: {line.strip()}')
         device = element.capacitor()
     elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):
-        logger.debug('FOUND resistor: %s', line.strip())
+        logger.debug(f'FOUND resistor: {line.strip()}')
         device = element.resistor()
     elif line.strip().lower().startswith('l'):
-        logger.debug("inductance: %s", line.strip())
+        logger.debug(f"inductance: {line.strip()}")
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
             or line.strip().startswith('I'):
@@ -261,8 +261,7 @@ def _parse_inst(line):
                     if not value:
                         value = all_nodes[idx + 1]
                         pass
-                    logger.debug('Found subckt parameter values: %s, value:%s',
-                                 param, value)
+                    logger.debug(f'Found subckt parameter values: {param}, value: {value}')
                     device_param_list[param] = value
 
                 else:
@@ -276,18 +275,17 @@ def _parse_inst(line):
             "edge_weight": list(range(len(hier_nodes[1:-1]))),
             "values": device_param_list
         }
-        logger.debug('FOUND subckt instance: %s, type %s ', device["inst"],
-                      device["inst_type"])
+        logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')
 
     if device:
         if '=' in device["inst"] or '=' in device[
                 "inst_type"] or '=' in ' '.join(device["ports"]):
             device = None
-            logger.error("RECHECK unidentified Device: %s", line)
+            logger.error(f"RECHECK unidentified Device: {line}")
         elif  device["inst_type"]=="dummy":
             #device = None
-            logger.error("Removing dummy transistor: %s", line)
+            logger.error(f"Removing dummy transistor: {line}")
     else:
-        logger.error("Extraction error: %s (unidentified line)", line)
+        logger.error(f"Extraction error: {line} (unidentified line)")
 
     return device
