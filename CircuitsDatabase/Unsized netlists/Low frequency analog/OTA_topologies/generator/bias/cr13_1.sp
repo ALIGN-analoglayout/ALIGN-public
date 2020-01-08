@@ -32,9 +32,9 @@
 
 .SUBCKT CR13_2 Vbiasn Vbiasp
 *.PININFO Vbiasn:O Vbiasp:O
-MM2 Vbiasp Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM3 Vbiasp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM1 Vbiasn Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM2 Vbiasp Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM0 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM3 Vbiasp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM1 Vbiasn Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 

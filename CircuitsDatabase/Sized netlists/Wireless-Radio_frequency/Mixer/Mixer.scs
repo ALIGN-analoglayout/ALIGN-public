@@ -11,64 +11,19 @@
 +    INGOLD=2
 +    PARHIER=LOCAL
 +    PSF=2
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mim
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_dnw
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_18
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_bip_npn
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfrtmom
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap_25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_18
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_disres
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_res
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_hvt
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_18
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_lvt
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_sa
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_esd
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmim
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25od33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25od33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_mos_cap
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_25ud18
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_25ud18
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25od33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfjvar
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmos_25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rtmom
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25od33
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_dio_na25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfres_rpo
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_hvt
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfind
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_rfmvar_25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_na25
-.LIB "/project/analog-group04/TSMC65GP_2f/models/hspice/crn65gplus_2d5_lk_v1d0.l" tt_lvt
+
 
 ** Library name: test_qmeng
 ** Cell name: MIXER_RFBIAS_RES
 ** View name: schematic
 .subckt MIXER_RFBIAS_RES m p tail_bias
-xr3  p net9   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr3  p net9   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr0  net9 tail_bias   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr0  net9 tail_bias   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr1  tail_bias net05   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1  tail_bias net05   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr2  net05 m   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr2  net05 m   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
 .ends MIXER_RFBIAS_RES
 ** End of subcircuit definition.
@@ -77,25 +32,25 @@ xr2  net05 m   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
 ** Cell name: MIXER_LOSWBIAS_RES
 ** View name: schematic
 .subckt MIXER_LOSWBIAS_RES mixer_lobias vdd vss
-xr5  vdd net050   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr5  vdd net050   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr4  net031 net034   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr4  net031 net034   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr9  net049 net031   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr9  net049 net031   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr6  net050 net051   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr6  net050 net051   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr7  net051 mixer_lobias   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr7  net051 mixer_lobias   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr8  mixer_lobias net049   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr8  mixer_lobias net049   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr0  net039 vss   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr0  net039 vss   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr1  net033 net039   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1  net033 net039   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr3  net034 net036   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr3  net034 net036   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
-xr2  net036 net033   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr2  net036 net033   rppolywo l=4e-6 w=1e-6 m=1 mf=1 
 
 .ends MIXER_LOSWBIAS_RES
 ** End of subcircuit definition.
@@ -104,13 +59,13 @@ xr2  net036 net033   rppolywo l=4e-6 w=1e-6 m=1 mf=1 mismatchflag=0
 ** Cell name: MIXER_LOAD_RES_HBW
 ** View name: schematic
 .subckt MIXER_LOAD_RES_HBW a b
-xr4  b b   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr4  b b   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr0  a net06   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr0  a net06   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr1  net06 net05   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1  net06 net05   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr3  net05 b   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr3  net05 b   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
 .ends MIXER_LOAD_RES_HBW
 ** End of subcircuit definition.
@@ -118,54 +73,53 @@ xr3  net05 b   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
 ** Library name: PhasedArray_WB_copy
 ** Cell name: Mixer
 ** View name: schematic
-xm35 net051 tailm vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=12 sigma=1 m=1 mismatchflag=0
-xm34 net039 tailp vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=12 sigma=1 m=1 mismatchflag=0
-xm44<1> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<2> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<3> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<4> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<5> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<6> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<7> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm44<8> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm43 vss vss vss vss nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=2 mismatchflag=0
-xm38 mixer_tail_iin mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm39 pbias mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 mismatchflag=0
-xm7 ifm oscp net039 net039 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 mismatchflag=0
-xm13 ifp oscp net051 net051 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 mismatchflag=0
-xm12 ifm oscm net051 net051 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 mismatchflag=0
-xm11 ifp oscm net039 net039 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 mismatchflag=0
-xm29 vdd vdd vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=8 sigma=1 m=2 mismatchflag=0
-xm16 pbias pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=8 sigma=1 m=2 mismatchflag=0
-xm24 ifp pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=24 sigma=1 m=2 mismatchflag=0
-xm23 ifm pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=24 sigma=1 m=2 mismatchflag=0
+xm35 net051 tailm vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=12 sigma=1 m=1 
+xm34 net039 tailp vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=12 sigma=1 m=1 
+xm44<1> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<2> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<3> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<4> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<5> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<6> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<7> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm44<8> vss mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm43 vss vss vss vss nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=2 
+xm38 mixer_tail_iin mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm39 pbias mixer_tail_iin vss vss nmos_rf lr=240e-9 wr=3.6e-6 nr=2 sigma=1 m=1 
+xm7 ifm oscp net039 net039 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 
+xm13 ifp oscp net051 net051 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 
+xm12 ifm oscm net051 net051 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 
+xm11 ifp oscm net039 net039 nmos_rf lr=60e-9 wr=2e-6 nr=4 sigma=1 m=1 
+xm29 vdd vdd vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=8 sigma=1 m=2 
+xm16 pbias pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=8 sigma=1 m=2 
+xm24 ifp pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=24 sigma=1 m=2 
+xm23 ifm pbias vdd vdd pmos_rf lr=240e-9 wr=2.05e-6 nr=24 sigma=1 m=2 
 xi29 tailm tailp mixer_tail_iin MIXER_RFBIAS_RES
 xi12 oscp vdd vss MIXER_LOSWBIAS_RES
 xi21 oscm vdd vss MIXER_LOSWBIAS_RES
 xi33 ifp vdd MIXER_LOAD_RES_HBW
 xi17 ifm vdd MIXER_LOAD_RES_HBW
-xr1<1>  vss net040<0>   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1<1>  vss net040<0>   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr1<2>  vss net040<1>   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1<2>  vss net040<1>   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr1<3>  vss net040<2>   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1<3>  vss net040<2>   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xr1<4>  vss net040<3>   rppolys l=13e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr1<4>  vss net040<3>   rppolys l=13e-6 w=1e-6 m=1 mf=1 
 
-xc15 lop oscp vss mimcap_woum_sin_rf lt=32e-6 wt=16e-6 lay=7 m=1 mimflag=3 mismatchflag=0
-xc6 rfm tailm vss mimcap_woum_sin_rf lt=22e-6 wt=22e-6 lay=7 m=1 mimflag=3 mismatchflag=0
-xc7 rfp tailp vss mimcap_woum_sin_rf lt=22e-6 wt=22e-6 lay=7 m=1 mimflag=3 mismatchflag=0
-xc14 lom oscm vss mimcap_woum_sin_rf lt=32e-6 wt=16e-6 lay=7 m=1 mimflag=3 mismatchflag=0
-xr2  ifp outp   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xc15 lop oscp vss mimcap_woum_sin_rf lt=32e-6 wt=16e-6 
+xc7 rfp tailp vss mimcap_woum_sin_rf lt=22e-6 wt=22e-6 
+xc14 lom oscm vss mimcap_woum_sin_rf lt=32e-6 wt=16e-6 
+xr2  ifp outp   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr5<1>  vss net043<0>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr5<1>  vss net043<0>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr5<2>  vss net043<1>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr5<2>  vss net043<1>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr5<3>  vss net043<2>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr5<3>  vss net043<2>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr5<4>  vss net043<3>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr5<4>  vss net043<3>   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
-xr0  outm ifm   rppolywo l=6e-6 w=1e-6 m=1 mf=1 mismatchflag=0
+xr0  outm ifm   rppolywo l=6e-6 w=1e-6 m=1 mf=1 
 
 .END

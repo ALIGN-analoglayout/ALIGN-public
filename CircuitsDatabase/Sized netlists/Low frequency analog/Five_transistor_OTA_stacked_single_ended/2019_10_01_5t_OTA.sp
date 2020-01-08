@@ -1,7 +1,7 @@
 ** Generated for: hspiceD
 ** Generated on: Nov 10 15:48:14 2018
 ** Design library name: DC_converter
-** Design cell name: 2018_11_09_ASAP7_ota
+** Design cell name: 
 ** Design view name: schematic
 .GLOBAL vdd!
 
@@ -10,23 +10,21 @@
 
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
 
-.INCLUDE /project/design-kits/OpenSource_PDKs/ASAP_7nm/asap7PDK_r1p3/models/hspice/7nm_TT_160803.pm
-
 ** Library name: DC_converter
-** Cell name: 2018_11_09_ASAP7_ota
+** Cell name: 2018_11_09_ota
 ** View name: schematic
-m5 net2 net2 net5s 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
-m5s net5s net2 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=10
-m4 net10 net2 net4s 0 nmos_rvt w=270e-9 l=20e-9 nfin=40
-m4s net4s net2 0 0 nmos_rvt w=270e-9 l=20e-9 nfin=40
-m3 vout net15 net3s 0 nmos_rvt w=270e-9 l=20e-9 nfin=160
-m3s net3s net15 net10 0 nmos_rvt w=270e-9 l=20e-9 nfin=160
-m0 net8 net17 net0s 0 nmos_rvt w=270e-9 l=20e-9 nfin=160
-m0s net0s net17 net10 0 nmos_rvt w=270e-9 l=20e-9 nfin=160
-m2 vout net8 net2s vdd pmos_rvt w=270e-9 l=20e-9 nfin=100
-m2s net2s net8 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=100
-m1 net8 net8 net1s vdd pmos_rvt w=270e-9 l=20e-9 nfin=100
-m1s net1s net8 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=100
+m5 net2 net2 net5s 0 nmos w=270e-9 l=20e-9 nfin=10
+m5s net5s net2 0 0 nmos w=270e-9 l=20e-9 nfin=10
+m4 net10 net2 net4s 0 nmos w=270e-9 l=20e-9 nfin=40
+m4s net4s net2 0 0 nmos w=270e-9 l=20e-9 nfin=40
+m3 vout net15 net3s 0 nmos w=270e-9 l=20e-9 nfin=160
+m3s net3s net15 net10 0 nmos w=270e-9 l=20e-9 nfin=160
+m0 net8 net17 net0s 0 nmos w=270e-9 l=20e-9 nfin=160
+m0s net0s net17 net10 0 nmos w=270e-9 l=20e-9 nfin=160
+m2 vout net8 net2s vdd pmos w=270e-9 l=20e-9 nfin=100
+m2s net2s net8 vdd vdd pmos w=270e-9 l=20e-9 nfin=100
+m1 net8 net8 net1s vdd pmos w=270e-9 l=20e-9 nfin=100
+m1s net1s net8 vdd vdd pmos w=270e-9 l=20e-9 nfin=100
 
 **testbench
 v2 net15 0 DC=675e-3 AC 500e-3 180

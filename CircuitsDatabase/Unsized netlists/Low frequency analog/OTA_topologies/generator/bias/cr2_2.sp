@@ -33,9 +33,9 @@
 .SUBCKT CR2_2_wilson Vbiasn Vbiasp
 *.PININFO Vbiasn:O Vbiasp:O
 RR0 Vbiasn gnd! res=rK
-MM2 Vbiasp net12 Vbiasn gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 net12 Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM3 Vbiasp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM1 net12 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM2 Vbiasp net12 Vbiasn gnd! nmos w=WA l=LA nfin=nA
+MM0 net12 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM3 Vbiasp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM1 net12 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 

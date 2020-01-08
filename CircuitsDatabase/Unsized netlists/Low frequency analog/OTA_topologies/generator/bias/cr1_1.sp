@@ -33,6 +33,6 @@
 .SUBCKT CR1_1 Vbiasn
 *.PININFO Vbiasn:O
 RRF vdd! Vbiasn res=rK
-MM0 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
+MM0 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
 .ENDS
 

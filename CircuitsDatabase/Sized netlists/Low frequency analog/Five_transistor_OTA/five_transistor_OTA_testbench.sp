@@ -1,9 +1,8 @@
 ** Generated for: hspiceD
 ** Generated on: Nov  1 12:14:13 2019
-** Design library name: GF_14nm_test1
+** Design library name
 ** Design cell name: 2019_09_16_five_transistor_ota
 ** Design view name: schematic
-.LIB "/project/design-kits/GF_PDKs/12nm/PDK/GF-12LP/12LP/V1.0_1.4/Models/HSPICE/models/12LP_Hspice.lib" TT
 .PARAM wireopt=3
 .INCLUDE "./five_transistor_OTA.sp"
 
@@ -11,10 +10,6 @@
 
 .TEMP 25.0
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
-
-** Library name: GF_14nm_test1
-** Cell name: 2019_09_16_five_transistor_ota
-** View name: schematic
 
 xi0 vinn_ota vinp_ota vout_ota id_ota vdd_ota vss_ota five_transistor_OTA
 v2 vinn_ota 0 DC=550e-3 AC 500e-3 180

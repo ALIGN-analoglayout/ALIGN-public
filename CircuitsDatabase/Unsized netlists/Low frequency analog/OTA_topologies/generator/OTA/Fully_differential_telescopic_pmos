@@ -33,12 +33,12 @@
 .SUBCKT Fully_differential_telescopic_pmos Vbiasn1 Vbiasn2 Vbiasp Vinn Vinp 
 + Voutn Voutp
 *.PININFO Vbiasn1:I Vbiasn2:I Vbiasp:I Vinn:I Vinp:I Voutn:O Voutp:O
-MM0 Voutp Vbiasn2 net12 net12 nmos_rvt w=WA l=LA nfin=nA
-MM1 Voutn Vbiasn2 net17 net17 nmos_rvt w=WA l=LA nfin=nA
-MM8 net17 Vbiasn1 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM9 net12 Vbiasn1 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM5 net14 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM7 Voutp Vinn net14 net18 pmos_rvt w=WA l=LA nfin=nA
-MM6 Voutn Vinp net14 net18 pmos_rvt w=WA l=LA nfin=nA
+MM0 Voutp Vbiasn2 net12 net12 nmos w=WA l=LA nfin=nA
+MM1 Voutn Vbiasn2 net17 net17 nmos w=WA l=LA nfin=nA
+MM8 net17 Vbiasn1 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM9 net12 Vbiasn1 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM5 net14 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM7 Voutp Vinn net14 net18 pmos w=WA l=LA nfin=nA
+MM6 Voutn Vinp net14 net18 pmos w=WA l=LA nfin=nA
 .ENDS
 

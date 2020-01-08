@@ -33,9 +33,9 @@
 .SUBCKT CR11_1 Vbiasn
 *.PININFO Vbiasn:O
 RRF vdd! Vbiasn res=rK
-MM1 net9 Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM3 net9 net9 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM2 Vbiasn net9 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM1 net9 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM0 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM3 net9 net9 vdd! vdd! pmos w=WA l=LA nfin=nA
+MM2 Vbiasn net9 vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 

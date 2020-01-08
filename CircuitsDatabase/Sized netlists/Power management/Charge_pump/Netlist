@@ -3,17 +3,17 @@
 // Design library name: EnergyHarvesting
 // Design cell name: ChargePump
 // Design view name: schematic
-simulator lang=spectre
+
 global 0
 
 // Library name: DC_converter
 // Cell name: NAND
 // View name: schematic
 subckt NAND GND VDD VIN1 VIN2 VOUT
-    M2 (VOUT VIN1 net16 GND) nch l=60n w=240.0n m=1 nf=1 
-    M3 (net16 VIN2 GND GND) nch l=60n w=240.0n m=1 nf=1 
-    M0 (VOUT VIN1 VDD VDD) pch l=60n w=240.0n m=1 nf=1 
-    M1 (VOUT VIN2 VDD VDD) pch l=60n w=240.0n m=1 nf=1 
+    M2 (VOUT VIN1 net16 GND) nmos l=60n w=240.0n m=1 nf=1 
+    M3 (net16 VIN2 GND GND) nmos l=60n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN1 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
+    M1 (VOUT VIN2 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
 ends NAND
 // End of subcircuit definition.
 
@@ -21,8 +21,8 @@ ends NAND
 // Cell name: INV1x
 // View name: schematic
 subckt INV1x GND VDD VIN VOUT
-    M0 (VOUT VIN GND GND) nch l=60n w=120.0n m=1 nf=1 
-    M1 (VOUT VIN VDD VDD) pch l=60n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN GND GND) nmos l=60n w=120.0n m=1 nf=1 
+    M1 (VOUT VIN VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
 ends INV1x
 // End of subcircuit definition.
 
@@ -30,32 +30,32 @@ ends INV1x
 // Cell name: NOR
 // View name: schematic
 subckt NOR GND VDD VIN1 VIN2 VOUT
-    M0 (VOUT VIN1 GND GND) nch l=60n w=150.0n m=1 nf=1 
-    M1 (VOUT VIN2 GND GND) nch l=60n w=150.0n m=1 nf=1 
-    M3 (VOUT VIN1 net14 VDD) pch l=60n w=600n m=1 nf=1 
-    M2 (net14 VIN2 VDD VDD) pch l=60n w=600n m=1 nf=1 
+    M0 (VOUT VIN1 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M1 (VOUT VIN2 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M3 (VOUT VIN1 net14 VDD) pmos l=60n w=600n m=1 nf=1 
+    M2 (net14 VIN2 VDD VDD) pmos l=60n w=600n m=1 nf=1 
 ends NOR
 // End of subcircuit definition.
 
 // Library name: EnergyHarvesting
 // Cell name: ChargePump
 // View name: schematic
-M17 (net027 VSTEPD net044 GND) nch l=60n w=120.0n m=1 nf=1 
-M16 (net044 PDB GND GND) nch l=60n w=120.0n m=1 nf=1 
-M13 (net036 net036 GND GND) nch l=200n w=200n m=1 nf=1 
-M14 (VSTEPD PD net036 GND) nch l=60n w=200n m=1 nf=1 
-M12 (net026 net036 GND GND) nch l=200n w=200n m=1 nf=1 
-M8 (net22 PU GND GND) nch l=60n w=120.0n m=1 nf=1 
-M7 (net058 VSTEPU net22 GND) nch l=60n w=120.0n m=1 nf=1 
-M0 (VSTEPU PUB GND GND) nch l=60n w=200n m=1 nf=1 
-M19 (net043 PDB VDD VDD) pch l=60n w=200n m=1 nf=1 
-M18 (net027 VSTEPD net043 VDD) pch l=60n w=200n m=1 nf=1 
-M15 (VSTEPD PD VDD VDD) pch l=60n w=200n m=1 nf=1 
-M6 (net058 VSTEPU net21 VDD) pch l=60n w=200n m=1 
-M5 (net21 PU VDD VDD) pch l=60n w=200n m=1 nf=1 
-M3 (net27 net8 VDD VDD) pch l=200n w=400n m=1 nf=1 
-M2 (net8 net8 VDD VDD) pch l=200n w=400n m=1 nf=1 
-M1 (VSTEPU PUB net8 VDD) pch l=60n w=200n m=1 nf=1 
+M17 (net027 VSTEPD net044 GND) nmos l=60n w=120.0n m=1 nf=1 
+M16 (net044 PDB GND GND) nmos l=60n w=120.0n m=1 nf=1 
+M13 (net036 net036 GND GND) nmos l=200n w=200n m=1 nf=1 
+M14 (VSTEPD PD net036 GND) nmos l=60n w=200n m=1 nf=1 
+M12 (net026 net036 GND GND) nmos l=200n w=200n m=1 nf=1 
+M8 (net22 PU GND GND) nmos l=60n w=120.0n m=1 nf=1 
+M7 (net058 VSTEPU net22 GND) nmos l=60n w=120.0n m=1 nf=1 
+M0 (VSTEPU PUB GND GND) nmos l=60n w=200n m=1 nf=1 
+M19 (net043 PDB VDD VDD) pmos l=60n w=200n m=1 nf=1 
+M18 (net027 VSTEPD net043 VDD) pmos l=60n w=200n m=1 nf=1 
+M15 (VSTEPD PD VDD VDD) pmos l=60n w=200n m=1 nf=1 
+M6 (net058 VSTEPU net21 VDD) pmos l=60n w=200n m=1 
+M5 (net21 PU VDD VDD) pmos l=60n w=200n m=1 nf=1 
+M3 (net27 net8 VDD VDD) pmos l=200n w=400n m=1 nf=1 
+M2 (net8 net8 VDD VDD) pmos l=200n w=400n m=1 nf=1 
+M1 (VSTEPU PUB net8 VDD) pmos l=60n w=200n m=1 nf=1 
 C3 (VDD VSTEPD) mimcap_sin lt=5u wt=5u mimflag=3 mf=1 mismatchflag=0
 C1 (GND VSTEPU) mimcap_sin lt=5u wt=5u mimflag=3 mf=1 mismatchflag=0
 C4 (GND net058) mimcap_sin lt=5u wt=5u mimflag=3 mf=1 mismatchflag=0

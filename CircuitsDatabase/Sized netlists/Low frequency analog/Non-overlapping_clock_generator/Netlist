@@ -3,7 +3,6 @@
 // Design library name: EnergyHarvesting
 // Design cell name: NON_OVLP3
 // Design view name: schematic
-simulator lang=spectre
 global 0
 
 
@@ -11,10 +10,10 @@ global 0
 // Cell name: NOR
 // View name: schematic
 subckt NOR GND VDD VIN1 VIN2 VOUT
-    M0 (VOUT VIN1 GND GND) nch l=60n w=150.0n m=1 nf=1 
-    M1 (VOUT VIN2 GND GND) nch l=60n w=150.0n m=1 nf=1 
-    M3 (VOUT VIN1 net14 VDD) pch l=60n w=600n m=1 nf=1 
-    M2 (net14 VIN2 VDD VDD) pch l=60n w=600n m=1 nf=1 
+    M0 (VOUT VIN1 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M1 (VOUT VIN2 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M3 (VOUT VIN1 net14 VDD) pmos l=60n w=600n m=1 nf=1 
+    M2 (net14 VIN2 VDD VDD) pmos l=60n w=600n m=1 nf=1 
 ends NOR
 // End of subcircuit definition.
 
@@ -22,8 +21,8 @@ ends NOR
 // Cell name: INV1x
 // View name: schematic
 subckt INV1x GND VDD VIN VOUT
-    M0 (VOUT VIN GND GND) nch l=60n w=120.0n m=1 nf=1 
-    M1 (VOUT VIN VDD VDD) pch l=60n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN GND GND) nmos l=60n w=120.0n m=1 nf=1 
+    M1 (VOUT VIN VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
 ends INV1x
 // End of subcircuit definition.
 
@@ -31,8 +30,8 @@ ends INV1x
 // Cell name: INV_L2x
 // View name: schematic
 subckt INV_L2x GND VDD VIN VOUT
-    M0 (VOUT VIN GND GND) nch l=120.0n w=120.0n m=1 nf=1 
-    M1 (VOUT VIN VDD VDD) pch l=120.0n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN GND GND) nmos l=120.0n w=120.0n m=1 nf=1 
+    M1 (VOUT VIN VDD VDD) pmos l=120.0n w=240.0n m=1 nf=1 
 ends INV_L2x
 // End of subcircuit definition.
 
@@ -40,10 +39,10 @@ ends INV_L2x
 // Cell name: NAND
 // View name: schematic
 subckt NAND GND VDD VIN1 VIN2 VOUT
-    M2 (VOUT VIN1 net16 GND) nch l=60n w=240.0n m=1 nf=1 
-    M3 (net16 VIN2 GND GND) nch l=60n w=240.0n m=1 nf=1 
-    M0 (VOUT VIN1 VDD VDD) pch l=60n w=240.0n m=1 nf=1 
-    M1 (VOUT VIN2 VDD VDD) pch l=60n w=240.0n m=1 nf=1 
+    M2 (VOUT VIN1 net16 GND) nmos l=60n w=240.0n m=1 nf=1 
+    M3 (net16 VIN2 GND GND) nmos l=60n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN1 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
+    M1 (VOUT VIN2 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
 ends NAND
 // End of subcircuit definition.
 

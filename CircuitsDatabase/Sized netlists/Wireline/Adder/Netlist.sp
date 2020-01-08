@@ -16,14 +16,14 @@ global VDD! VSS!
 
 .subckt nfet2x d g s b 
 .param p1=2
-    MN0 d g n1 b    nfet l=0.014u nfin=p1
-    MN1 n1 g s b    nfet l=0.014u nfin=p1
+    MN0 d g n1 b    nmos l=0.014u nfin=p1
+    MN1 n1 g s b    nmos l=0.014u nfin=p1
 .ends nfet2x
 
 .subckt pfet2x d g s b 
 .param p1=2
-    MP0 d g n1 b    pfet l=0.014u nfin=p1
-    MP1 n1 g s b    pfet l=0.014u nfin=p1
+    MP0 d g n1 b    pmos l=0.014u nfin=p1
+    MP1 n1 g s b    pmos l=0.014u nfin=p1
 .ends pfet2x
 
 .subckt adder n1 n2 vin vout vps vgnd 

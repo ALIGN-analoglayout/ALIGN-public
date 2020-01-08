@@ -32,27 +32,27 @@
 
 .SUBCKT single_ended_pmos Vbiasp Vinn Vinp Voutp
 *.PININFO Vbiasp:I Vinn:I Vinp:I Voutp:O
-MM9 Voutp net12 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM8 net12 net12 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM7 Voutp Vinn net10 net14 pmos_rvt w=WA l=LA nfin=nA
-MM6 net12 Vinp net10 net14 pmos_rvt w=WA l=LA nfin=nA
-MM5 net10 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM9 Voutp net12 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM8 net12 net12 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM7 Voutp Vinn net10 net14 pmos w=WA l=LA nfin=nA
+MM6 net12 Vinp net10 net14 pmos w=WA l=LA nfin=nA
+MM5 net10 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 
 
 .SUBCKT LG_nmos_l1 Biasn Vbiasn Vbiasp
 *.PININFO Biasn:I Vbiasn:O Vbiasp:O
-MM2 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM10 Vbiasp Biasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM1 Vbiasn Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM2 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM10 Vbiasp Biasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM1 Vbiasn Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM0 Vbiasp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 
 .SUBCKT CR12_1 Vbiasn
 *.PININFO Vbiasn:O
-MM0 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM1 net10 Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM2 Vbiasn net10 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM0 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM1 net10 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM2 Vbiasn net10 vdd! vdd! pmos w=WA l=LA nfin=nA
 RRF vdd! Vbiasn res=rK
 RR0 vdd! net10 res=rK
 .ENDS

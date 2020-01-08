@@ -32,35 +32,35 @@
 
 .SUBCKT single_ended_low_voltage_cascode_current_mirror Vbiasn Vinn Vinp Voutp
 *.PININFO Vbiasn:I Vinn:I Vinp:I Voutp:O
-MM3 Voutp Vinp net13 gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 net11 Vinn net13 gnd! nmos_rvt w=WA l=LA nfin=nA
-MM4 net13 Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM6 net11 net18 net19 vdd! pmos_rvt w=WA l=LA nfin=nA
-MM5 Voutp net18 net20 vdd! pmos_rvt w=WA l=LA nfin=nA
-MM1 net20 net11 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM2 net19 net11 vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM3 Voutp Vinp net13 gnd! nmos w=WA l=LA nfin=nA
+MM0 net11 Vinn net13 gnd! nmos w=WA l=LA nfin=nA
+MM4 net13 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM6 net11 net18 net19 vdd! pmos w=WA l=LA nfin=nA
+MM5 Voutp net18 net20 vdd! pmos w=WA l=LA nfin=nA
+MM1 net20 net11 vdd! vdd! pmos w=WA l=LA nfin=nA
+MM2 net19 net11 vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 
 
 .SUBCKT LG_pnmos_4 Biasp Vbiasn Vbiasp
 *.PININFO Biasp:I Vbiasn:O Vbiasp:O
-MM1 Vbiasn Vbiasn gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasp net6 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM8 net6 net6 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM2 Vbiasn Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM3 Vbiasp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM10 net6 Biasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM1 Vbiasn Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+MM0 Vbiasp net6 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM8 net6 net6 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM2 Vbiasn Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM3 Vbiasp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM10 net6 Biasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 
 .SUBCKT CR6_3 Vbiasn1 Vbiasn2 Vbiasp
 *.PININFO Vbiasn1:O Vbiasn2:O Vbiasp:O
-MM2 Vbiasp Vbiasn2 Vbiasn1 gnd! nmos_rvt w=WA l=LA nfin=nA
-MM0 Vbiasn2 Vbiasn1 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM4 Vbiasn1 net15 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM5 net15 net15 gnd! gnd! nmos_rvt w=WA l=LA nfin=nA
-MM3 Vbiasp Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM1 Vbiasn2 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
-MM6 net15 Vbiasp vdd! vdd! pmos_rvt w=WA l=LA nfin=nA
+MM2 Vbiasp Vbiasn2 Vbiasn1 gnd! nmos w=WA l=LA nfin=nA
+MM0 Vbiasn2 Vbiasn1 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM4 Vbiasn1 net15 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM5 net15 net15 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM3 Vbiasp Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM1 Vbiasn2 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM6 net15 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
 .ENDS
 
 
