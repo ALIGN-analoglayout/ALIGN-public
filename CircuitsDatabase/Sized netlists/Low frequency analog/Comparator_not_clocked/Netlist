@@ -3,7 +3,6 @@
 // Design library name: DC_converter
 // Design cell name: 23Dec_2017_comparator_symbol
 // Design view name: schematic
-simulator lang=spectre
 global 0
 
 // Library name: DC_converter

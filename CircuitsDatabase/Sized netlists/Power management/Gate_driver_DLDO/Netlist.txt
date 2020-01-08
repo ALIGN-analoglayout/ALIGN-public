@@ -3,7 +3,6 @@
 // Design library name: DC_converter
 // Design cell name: 31Dec_2017_Driver_cap
 // Design view name: schematic
-simulator lang=spectre
 global 0
 
 // Library name: DC_converter

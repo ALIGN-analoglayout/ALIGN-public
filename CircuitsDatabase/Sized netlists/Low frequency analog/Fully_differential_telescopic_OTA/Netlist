@@ -1,7 +1,7 @@
 ** Generated for: hspiceD
 ** Generated on: Nov 19 16:37:16 2018
 ** Design library name: DC_converter
-** Design cell name: 2018_11_09_ASAP7_SCFilter
+** Design cell name: 
 ** Design view name: schematic
 .GLOBAL vdd!
 

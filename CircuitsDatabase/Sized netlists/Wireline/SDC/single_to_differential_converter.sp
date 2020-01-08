@@ -1,16 +1,6 @@
-// Generated for: spectre
-// Generated on: Jun  2 02:57:04 2019
-// Design library name: EQ_12nm
-// Design cell name: SDC_top
-// Design view name: schematic
-simulator lang=spectre
-global VDD! VSS!
 
 .param cload=10f ccoup=50f nfpf=30 ngf=1 rbias=20k rload=900 \
     vbias=600m vps=0.85
-// Library name: EQ_12nm
-// Cell name: SDC_top
-// View name: schematic
 
 .subckt nfet2x d g s b
 .param p1=30
@@ -18,7 +8,7 @@ global VDD! VSS!
     MN1 n1 g s b    nfet l=0.014u nfin=p1
 .ends nfet2x
 
-.subckt sdc vb vin vout_sdc1 vout_sdc2 vps vgnd
+.subckt single_to_differential_converter vb vin vout_sdc1 vout_sdc2 vps vgnd
 .param fin_count=24 rb=20k rl=900 cc=48f cl=12f
 
 	xI0 vd net1 vs vgnd nfet2x p1=fin_count
@@ -28,8 +18,4 @@ global VDD! VSS!
 	C2 vs vout_sdc2 capacitor c=cl
 	C1 vd vout_sdc1 capacitor c=cl
 	C0 vin net1 capacitor c=cc
-.ends sdc
-
-
-
-
+.ends single_to_differential_converter

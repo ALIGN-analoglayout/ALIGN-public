@@ -13,8 +13,8 @@ parameters vs2=0 nfpf_vga_sw=80 vs0=850m cload=10f ib_vga=250u \
 // Library name: Optical_receiver
 // Cell name: VGA_top
 // View name: schematic
-R3 (vout2 vdd!) metalres w=32n l=15.904u metLayer=15
-R2 (vout1 vdd!) metalres w=32n l=15.904u metLayer=15
+R3 (vout2 vdd!) resistor r=477
+R2 (vout1 vdd!) resistor r=477
 N230 (vout1 vin1 net0308 0) nfet m=1 l=14n nfin=12 nf=1 
 N229 (vout1 vin1 net0310 0) nfet m=1 l=14n nfin=12 nf=1 
 N228 (vout2 vin2 net0307 0) nfet m=1 l=14n nfin=12 nf=1 
@@ -96,8 +96,8 @@ N153 (net0336 net0252 0 0) nfet m=1 l=14n nfin=12 nf=1
 V1 (vdd! 0) vsource dc=vps type=dc
 V0 (vb_vga 0) vsource dc=vbias type=dc
 V3 (s0 0) vsource dc=vs0 type=dc
-C2 (vout2 0) capacitor c=cload
-C1 (vout1 0) capacitor c=cload
+C2 (vout2 0) capacitor c=10f
+C1 (vout1 0) capacitor c=10f
 V2 (vac 0) vsource dc=0 mag=1 type=sine ampl=100m freq=1G
 E2 (vin2 vb_vga vac 0) vcvs gain=-1
 E0 (vin1 vb_vga vac 0) vcvs gain=1

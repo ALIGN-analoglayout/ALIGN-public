@@ -4,7 +4,6 @@
 // Design cell name:
 //2018_11_2_fully_diff_cascoded_current_mirror_ota_symbol_database
 // Design view name: schematic
-simulator lang=spectre
 global 0 vdd!
 
 // Library name: DC_converter

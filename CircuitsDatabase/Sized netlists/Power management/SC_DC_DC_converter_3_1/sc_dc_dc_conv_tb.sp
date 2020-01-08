@@ -4,7 +4,6 @@
 ** Design cell name: 2019_12_18_SC_DC_DC_converter_ideal
 ** Design view name: schematic
 
-.LIB "/project/design-kits/GF_PDKs/12nm/PDK/GF-12LP/12LP/V1.0_1.4/Models/HSPICE/models/12LP_Hspice.lib" TT
 .PARAM wireopt=3
 .INCLUDE "sc_dc_dc_conv_schematic.sp"
 .OP

@@ -3,7 +3,6 @@
 // Design library name: EnergyHarvesting
 // Design cell name: NON_OVLP3
 // Design view name: schematic
-simulator lang=spectre
 global 0
 
 

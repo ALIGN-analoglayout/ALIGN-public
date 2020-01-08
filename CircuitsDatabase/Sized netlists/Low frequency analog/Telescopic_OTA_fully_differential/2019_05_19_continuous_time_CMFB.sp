@@ -17,7 +17,6 @@
 
 .TEMP 25.0
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
-.INCLUDE /project/design-kits/OpenSource_PDKs/ASAP_7nm/asap7PDK_r1p3/models/hspice/7nm_TT_160803.pm
 
 .subckt telescopic_ota vbiasnd vbiasn vbiasp2 vbiasp1 vinn vinp voutn voutp D1
 

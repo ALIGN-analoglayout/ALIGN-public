@@ -1,7 +1,7 @@
 ** Generated for: hspiceD
 ** Generated on: Nov 16 11:57:00 2018
 ** Design library name: DC_converter
-** Design cell name: 2018_11_09_ASAP7_current_mirror_ota
+** Design cell name: 
 ** Design view name: schematic
 .GLOBAL vdd!
 
@@ -15,11 +15,6 @@
 
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
 
-.INCLUDE /project/design-kits/OpenSource_PDKs/ASAP_7nm/asap7PDK_r1p3/models/hspice/7nm_TT_160803.pm
-
-** Library name: DC_converter
-** Cell name: 2018_11_09_ASAP7_current_mirror_ota
-** View name: schematic
 i4 vdd! id DC=200e-6
 c2 voutp 0 357e-15
 m17 net16 vinn net24 0 nmos_rvt w=27e-9 l=20e-9 nfin=28

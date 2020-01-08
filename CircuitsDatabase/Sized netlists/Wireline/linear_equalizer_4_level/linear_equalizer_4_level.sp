@@ -25,11 +25,11 @@
 	MN2 d3 d1 s b nfet l=14e-9 nfin=84
 .ends CMB3_ctle_align
 
-.subckt ctle_align vmirror s0 s1 s2 s3 vin1 vin2 vout1 vout2 vps vgnd
+.subckt linear_equalizer_4_level vmirror s0 s1 s2 s3 vin1 vin2 vout1 vout2 vps vgnd
 	MN0 vout2 vin2 n1 vgnd nfet l=14e-9 nfin=48
 	MN1 vout1 vin1 n2 vgnd nfet l=14e-9 nfin=48
 	R0 vps vout1 resistor r=2000
 	R1 vps vout2 resistor r=2000
 	xI0 s0 s1 s2 s3 n1 n2 vgnd gain_control_block
 	xI1 vmirror n1 n2 vgnd vgnd CMB3_ctle_align
-.ends ctle_align
+.ends linear_equalizer_4_level

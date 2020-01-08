@@ -11,7 +11,6 @@
 
 .TEMP 25.0
 .OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
-.INCLUDE /project/design-kits/OpenSource_PDKs/ASAP_7nm/asap7PDK_r1p3/models/hspice/7nm_TT_160803.pm
 
 ** Library name: DC_converter
 ** Cell name: 2018_11_09_ASAP7_current_mirror_ota
