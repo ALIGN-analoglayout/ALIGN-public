@@ -23,24 +23,23 @@ def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=Fa
     else:
         d = res
 
-    with open( output_dir / f'{variant}.json', 'wt') as fp:
-        json.dump( d, fp=fp, indent=2)
     ret['json'] = output_dir / f'{variant}.json'
+    with open( ret['json'], 'wt') as fp:
+        json.dump( d, fp=fp, indent=2)
 
     if check:
-        with open(output_dir / f'{variant}.errors', 'wt') as fp:
-            fp.write('\n'.join([f'SHORT {x}' for x in cnv.rd.shorts]))
-            fp.write('\n'.join([f'OPEN {x}' for x in cnv.rd.opens]))
-            fp.write('\n'.join([f'DIFFERENT WIDTH {x}' for x in cnv.rd.different_widths]))
-            fp.write('\n'.join([f'DRC ERROR {x}' for x in cnv.drc.errors]))
         ret['errfile'] = output_dir / f'{variant}.errors'
-
+        with open(ret['errfile'], 'wt') as fp:
+            for x in cnv.rd.shorts: fp.write( f'SHORT {x}\n')
+            for x in cnv.rd.opens: fp.write( f'OPEN {x}\n')
+            for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
+            for x in cnv.drc.errors: fp.write( f'DRC ERROR {x}\n')
         ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
 
     if extract:
-        with open(output_dir / f'{variant}.cir', 'wt') as fp:
-            cnv.pex.writePex(fp)
         ret['cir'] = output_dir / f'{variant}.cir'
+        with open(ret['cir'], 'wt') as fp:
+            cnv.pex.writePex(fp)
 
     return ret
 
@@ -108,7 +107,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         return {}
 
     def find_variant_names( nm):
-        p = re.compile( '^(.*)_(\d+)\.db\.json$')
+        p = re.compile( r'^(.*)_(\d+)\.db\.json$')
         variant_names = []
         for file_ in results_dir.iterdir():
             m = p.match( file_.name)
