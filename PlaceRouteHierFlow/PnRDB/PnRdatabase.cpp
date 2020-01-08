@@ -144,6 +144,119 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 
 };
 
+void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode){
+  //this function transform all points and inside the node
+  //according to LL and orient
+  //it recursively call other transform functions
+  PnRDB::point LL = updatedNode.LL;
+  std::vector<PnRDB::blockComplex>::iterator bit;
+  TransformBlockComplexs(updatedNode.Blocks);
+}
+
+void PnRdatabase::TransformBlock(PnRDB::block &block, PnRDB::point LL){
+  int width = block.width, height = block.height;
+  PnRDB::Omark ort = block.orient;
+  TransformBbox(block.placedBox, LL, width, height, ort);
+  TransformPoint(block.placedCenter, LL, width, height, ort);
+  TransformPins(block.blockPins, LL, width, height, ort);
+  TransformContacts(block.interMetals, LL, width, height, ort);
+  TransformVias(block.interVias, LL, width, height, ort);
+  TransformPins(block.dummy_power_pin, LL, width, height, ort);
+}
+
+void PnRdatabase::TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL){
+  for (std::vector<PnRDB::block>::iterator bit = blocks.begin(); bit != blocks.end();bit++){
+    TransformBlock(*bit, LL);
+  }
+}
+
+void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL){
+  for (std::vector<PnRDB::blockComplex>::iterator bit = bcs.begin(); bit != bcs.end();bit++){
+    TransformBlockComplex(*bit, LL);
+  }
+}
+
+void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL){
+  TransformBlocks(bc.instance, LL);
+}
+
+void PnRdatabase::TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::pin>::iterator pit = pins.begin(); pit != pins.end();pit++){
+    TransformPin(*pit, LL, width, height, ort);
+  }
+}
+
+void PnRdatabase::TransformPin(PnRDB::pin &pin, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  TransformContacts(pin.pinContacts, LL, width, height, ort);
+  TransformVias(pin.pinVias, LL, width, height, ort);
+}
+
+void PnRdatabase::TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::Via>::iterator vit = vias.begin(); vit != vias.end();vit++){
+    TransformVia(*vit, LL, width, height, ort);
+  }
+}
+
+void PnRdatabase::TransformVia(PnRDB::Via &via, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  TransformPoint(via.placedpos, LL, width, height, ort);
+  TransformContact(via.UpperMetalRect, LL, width, height, ort);
+  TransformContact(via.LowerMetalRect, LL, width, height, ort);
+  TransformContact(via.ViaRect, LL, width, height, ort);
+}
+
+void PnRdatabase::TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::contact>::iterator cit = contacts.begin(); cit != contacts.end();cit++){
+    TransformContact(*cit, LL, width, height, ort);
+  }
+}
+
+void PnRdatabase::TransformContact(PnRDB::contact &contact, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  TransformBbox(contact.placedBox, LL, width, height, ort);
+  TransformPoint(contact.placedCenter, LL, width, height, ort);
+}
+
+void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::bbox>::iterator bit = bboxs.begin(); bit != bboxs.end();bit++){
+    TransformBbox(*bit, LL, width, height, ort);
+  }
+}
+
+void PnRdatabase::TransformBbox(PnRDB::bbox &box, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+  TransformPoint(box.LL, LL, width, height, ort);
+  TransformPoint(box.UR, LL, width, height, ort);
+}
+
+void PnRdatabase::TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::point>::iterator pit = points.begin(); pit != points.end();pit++){
+    TransformPoint(*pit, LL, width, height, ort);
+  }
+}
+
+void PnRdatabase::TransformPoint(PnRDB::point &p, PnRDB::point LL,int width, int height, PnRDB::Omark ort) {
+  int WW=width; int HH=height; int X=p.x; int Y=p.y;
+  switch(ort) {
+    case PnRDB::N: p.x=X;	p.y=Y;
+            break;
+    case PnRDB::S: p.x=WW-X;	p.y=HH-Y;
+            break;
+    case PnRDB::W: p.x=HH-Y;	p.y=X;
+            break;
+    case PnRDB::E: p.x=Y;	p.y=WW-X;
+            break;
+    case PnRDB::FN:p.x=WW-X;	p.y=Y; 
+            break;
+    case PnRDB::FS:p.x=X;	p.y=HH-Y;
+            break;
+    case PnRDB::FW:p.x=Y;	p.y=X;
+            break;
+    case PnRDB::FE:p.x=HH-Y;	p.y=WW-X;
+            break;
+    default:p.x=X;	p.y=Y;
+            break;
+  }
+  p = p + LL;
+}
+
 // [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.

@@ -113,51 +113,68 @@ class PnRdatabase
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
-    void updatePowerPins(PnRDB::pin& temp_pin);
-   
-    void ReadVerilog(istream& inps, const string& fpath, const string& topcell);
-    bool ReadVerilog(const string& fpath, const string& vname, const string& topcell);
+    void updatePowerPins(PnRDB::pin &temp_pin);
+
+    //these functions are used to transform inside info of nodes
+    void TransformNode(PnRDB::hierNode& updatedNode); //transform inside info of node
+    void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL);
+    void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL);
+    void TransformBlock(PnRDB::block &block, PnRDB::point LL);
+    void TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL);
+    void TransformPoint(PnRDB::point &point, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBbox(PnRDB::bbox &bbox, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformContact(PnRDB::contact &contact, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformVia(PnRDB::Via &via, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformPin(PnRDB::pin &pin, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+
+    void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
+    bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);
 
     bool ReadLEF(string leffile); // read building block data from LEF file
-    void PrintLEFData();  // print LEF data for debugging
-    map<string, vector<PnRDB::lefMacro> > checkoutlef(){return lefData;};
-    bool ReadConstraint(PnRDB::hierNode& node, string fpath, string suffix);
-    bool MergeLEFMapData(PnRDB::hierNode& node);
+    void PrintLEFData();          // print LEF data for debugging
+    map<string, vector<PnRDB::lefMacro>> checkoutlef() { return lefData; };
+    bool ReadConstraint(PnRDB::hierNode &node, string fpath, string suffix);
+    bool MergeLEFMapData(PnRDB::hierNode &node);
     void PrintHierTree();
     bool ReadMap(string fpath, string mapname); // read gds data from map file
-    void ReadDesignRule(string drfile); //  read design rule data from design rule file
-    void HardDesignRule(); // hard-code design rules
+    void ReadDesignRule(string drfile);         //  read design rule data from design rule file
+    void HardDesignRule();                      // hard-code design rules
 
-    PnRDB::designRule getDesignRule() const { return drData;}
-    PnRDB::Drc_info getDrc_info() const {return DRC_info;}
+    PnRDB::designRule getDesignRule() const { return drData; }
+    PnRDB::Drc_info getDrc_info() const { return DRC_info; }
 
     // Interface for detail router II - wbxu
-    void WritePlaceRoute(PnRDB::hierNode& node, string pofile, string rofile);
+    void WritePlaceRoute(PnRDB::hierNode &node, string pofile, string rofile);
     void PrintDesignRuleData();
-    void ReadDBJSON( PnRDB::hierNode& node, const string& filename) const;
-    void WriteDBJSON( const PnRDB::hierNode& node, const string& filename) const;
-    string WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, const string& gdsName, const PnRDB::Drc_info& drc_info, const string& opath);
-    void WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string& opath, PnRDB::Drc_info& drc_info);
-    void PrintHierNode(PnRDB::hierNode& node);
-    void PrintContact(PnRDB::contact& cont);
-    void PrintVia(PnRDB::Via& v);
-    void PrintMetal(PnRDB::Metal& m);
-    void PrintBlock(PnRDB::blockComplex& bc);
-    void PrintNet(PnRDB::net& n);
-    void PrintTerminal(PnRDB::terminal& t);
-    void PrintBlockPin(PnRDB::pin& p);
-    void PrintSymmNet(PnRDB::SymmNet& t);
+    void ReadDBJSON(PnRDB::hierNode &node, const string &filename) const;
+    void WriteDBJSON(const PnRDB::hierNode &node, const string &filename) const;
+    string WriteJSON(PnRDB::hierNode &node, bool includeBlock, bool includeNet, bool includePowerNet, bool includePowerGrid, const string &gdsName, const PnRDB::Drc_info &drc_info, const string &opath);
+    void WriteJSON_Routability_Analysis(PnRDB::hierNode &node, const string &opath, PnRDB::Drc_info &drc_info);
+    void PrintHierNode(PnRDB::hierNode &node);
+    void PrintContact(PnRDB::contact &cont);
+    void PrintVia(PnRDB::Via &v);
+    void PrintMetal(PnRDB::Metal &m);
+    void PrintBlock(PnRDB::blockComplex &bc);
+    void PrintNet(PnRDB::net &n);
+    void PrintTerminal(PnRDB::terminal &t);
+    void PrintBlockPin(PnRDB::pin &p);
+    void PrintSymmNet(PnRDB::SymmNet &t);
     void AddingPowerPins(PnRDB::hierNode &node);
     void Extract_RemovePowerPins(PnRDB::hierNode &node);
     map<string, PnRDB::lefMacro> checkoutSingleLEF();
-    json WriteGcellGlobalRouteFile(const PnRDB::hierNode& node, const string& rofile, const string& opath,
+    json WriteGcellGlobalRouteFile(const PnRDB::hierNode &node, const string &rofile, const string &opath,
                                    const int MetalIdx, const string net_name, const int width,
                                    const int first_tile_idx, const int last_tile_idx,
-                                   std::vector<int>& tile_idxs, const int MetalDirection, const int net_id) const;
-    void WriteGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
-    void WriteGcellGlobalRoute(const PnRDB::hierNode& node, const string& rofile, const string& opath) const;
-    void WriteLef(const PnRDB::hierNode& node, const string& file, const string& opath) const;
-    void Write_Router_Report(PnRDB::hierNode &node, const string& opath);
+                                   std::vector<int> &tile_idxs, const int MetalDirection, const int net_id) const;
+    void WriteGlobalRoute(const PnRDB::hierNode &node, const string &rofile, const string &opath) const;
+    void WriteGcellGlobalRoute(const PnRDB::hierNode &node, const string &rofile, const string &opath) const;
+    void WriteLef(const PnRDB::hierNode &node, const string &file, const string &opath) const;
+    void Write_Router_Report(PnRDB::hierNode &node, const string &opath);
     
 };
 

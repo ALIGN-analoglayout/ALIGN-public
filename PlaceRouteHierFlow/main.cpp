@@ -162,9 +162,11 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     if(current_node.Blocks[bit].child==-1)
       continue;
     int idx = current_node.Blocks[bit].child;
+    //get and update childnode from parent
     PnRDB::hierNode childnode = DB.hierTree[idx];
     childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL;
     childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR;
+    DB.TransformNode(childnode);
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)
     {
       route_single_variant(DB, drcInfo, childnode, lidx, opath, binary_directory, skip_saving_state, adr_mode);
