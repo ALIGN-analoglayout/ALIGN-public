@@ -170,10 +170,12 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)
     {
       route_top_down(DB, drcInfo, childnode, lidx, opath, binary_directory, skip_saving_state, adr_mode);
-      DB.CheckinHierNode(idx, childnode);
+      
     }
   }
-  route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+  string current_node_name = current_node.name;
+  //route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+  //DB.CheckinHierNode(idx, current_node);
 }
 
 
