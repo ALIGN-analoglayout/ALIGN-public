@@ -83,8 +83,8 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
           strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Pin'],
                         "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
-    
-  # vias 
+
+  # vias
   for obj in data['terminals']:
       k = obj['layer']
       if k not in via_gen_tbl: continue

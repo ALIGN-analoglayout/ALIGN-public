@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """GDSII to PRETTY JSON."""
-                        
+
 #  This helps understand:  http://www.buchanan1.net/stream_description.html
 #  element:  boundary | path | sref | aref | text | node | box
 
@@ -43,7 +43,7 @@ def convert_GDS_GDSprettyjson (name, oname):
         else:                print ('', file=ofile)
         indent(level)
         for i in s:          print (i, end='', file=ofile)
-        
+
     first = True
     levelTag = [""] * 256
     with open(name, 'rb') as a_file:

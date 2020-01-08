@@ -68,12 +68,12 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     with (input_dir / map_file).open(mode='wt') as mp, \
          (input_dir / lef_file).open(mode='wt') as lp:
         for file_ in primitive_dir.iterdir():
-            print("found files",file_)
+            logger.debug(f"found files {file_}")
             if file_.suffixes == ['.gds', '.json']:
                 true_stem = file_.stem.split('.')[0]
                 mp.write(f'{true_stem} {true_stem}.gds\n')
             elif file_.suffix == '.lef' and file_.stem != subckt:
-                print("found lef files",file_)
+                logger.debug(f"found lef files {file_}")
                 lp.write(file_.read_text())
 
     #
@@ -101,10 +101,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
     try:
-        subprocess.run(cmd, stderr=subprocess.PIPE, check=True, cwd=working_dir)
+        ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', cwd=working_dir, check=True)
+        logger.debug(f'Dumping output from pnr_compiler\n{ret.stdout}')
     except subprocess.CalledProcessError as e:
-        logger.critical(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
-        print(f"\nCall to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
+        logger.error(f"Call to '{' '.join(cmd)}' failed. Dumping output from pnr_compiler below:\n{e.stdout}")
         return {}
 
     def find_variant_names( nm):
@@ -119,16 +119,16 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     if check or extract:
         with (results_dir / "__hierTree.json").open("rt") as fp:
             order = json.load(fp)
-        print( "Topological order:", order)
+        logger.debug( f"Topological order: {order}")
 
         assert order[-1] == subckt, f"Last in topological order should be the subckt {subckt} {order}"
 
         # Process subblocks as well
         for nm in order[:-1]:
             for variant_name in find_variant_names(nm):
-                print("variant_name:", variant_name)
+                logger.debug(f"variant_name: {variant_name}")
                 file_ = results_dir / ( variant_name + ".db.json")
-                print( "subblock:", file_.name)
+                logger.debug(f"subblock: {file_.name}")
                 # Hack: put results in input dir
                 _generate_json( file_, variant_name, primitive_dir, pdk_dir, working_dir, check, extract, input_dir=working_dir)
 
@@ -142,9 +142,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         elif file_.suffixes == ['.lef']:
             variants[variant]['lef'] = file_
         elif file_.suffixes == ['.db', '.json'] and (check or extract):
-            print( ".db.json:", file_.name)
+            logger.debug( f".db.json: {file_.name}")
             variants[variant].update(_generate_json(file_, variant, primitive_dir, pdk_dir, working_dir, check, extract, input_dir=working_dir))
-
-                
 
     return variants
