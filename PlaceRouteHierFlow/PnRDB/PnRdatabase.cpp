@@ -150,7 +150,26 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode){
   //it recursively call other transform functions
   PnRDB::point LL = updatedNode.LL;
   std::vector<PnRDB::blockComplex>::iterator bit;
-  TransformBlockComplexs(updatedNode.Blocks);
+  TransformBlockComplexs(updatedNode.Blocks, LL);
+  TransformTerminals(updatedNode.Terminals, LL);
+  TransformPins(updatedNode.blockPins, LL, 0, 0, PnRDB::Omark::N);
+  TransformContacts(updatedNode.interMetals, LL, 0, 0, PnRDB::Omark::N);
+  TransformVias(updatedNode.interVias, LL, 0, 0, PnRDB::Omark::N);
+}
+
+void PnRdatabase::TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL){
+  for (std::vector<PnRDB::contact>::iterator cit = terminal.termContacts.begin(); cit != terminal.termContacts.end(); cit++)
+  {
+    cit->placedBox = cit->placedBox + LL;
+    cit->placedCenter = cit->placedCenter + LL;
+  }
+}
+
+void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL){
+  for (std::vector<PnRDB::terminal>::iterator tit = terminals.begin(); tit != terminals.end(); tit++)
+  {
+    TransformTerminal(*tit, LL);
+  }
 }
 
 void PnRdatabase::TransformBlock(PnRDB::block &block, PnRDB::point LL){

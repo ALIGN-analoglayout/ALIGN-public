@@ -348,9 +348,9 @@ struct hierNode {
 //added by yg
 
   //Updated
-  vector<pin> blockPins;
-  vector<contact> interMetals;
-  vector<Via> interVias;
+  vector<pin> blockPins;//need
+  vector<contact> interMetals;//need
+  vector<Via> interVias;//need
 
   vector<layoutAS> PnRAS;
 

@@ -117,6 +117,8 @@ class PnRdatabase
 
     //these functions are used to transform inside info of nodes
     void TransformNode(PnRDB::hierNode& updatedNode); //transform inside info of node
+    void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL);
+    void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL);
     void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL);
     void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL);
     void TransformBlock(PnRDB::block &block, PnRDB::point LL);
