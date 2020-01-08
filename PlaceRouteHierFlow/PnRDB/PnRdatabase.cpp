@@ -241,8 +241,49 @@ void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point L
 }
 
 void PnRdatabase::TransformBbox(PnRDB::bbox &box, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
-  TransformPoint(box.LL, LL, width, height, ort);
-  TransformPoint(box.UR, LL, width, height, ort);
+  int WW = width, HH = height;
+  PnRDB::point tempLL = box.LL, tempUR = box.UR;
+  switch (ort)
+  {
+  case PnRDB::N://key same
+    box.LL = tempLL;
+    box.UR = tempUR;
+    break;
+  case PnRDB::S://rotate 180 degree
+    box.LL.x = WW - tempUR.x, box.LL.y = HH - tempUR.y;
+    box.UR.x = WW - tempLL.x, box.UR.y = HH - tempLL.y;
+    break;
+  case PnRDB::W://rotate 90 degree counter clockwise
+    box.LL.x = HH - tempUR.y, box.LL.y = tempLL.x;
+    box.UR.x = HH - tempLL.y, box.UR.y = tempUR.x;
+    break;
+  case PnRDB::E://rotate 90 degree clockwise
+    box.LL.x = tempLL.y, box.LL.y = WW - tempUR.x;
+    box.UR.x = tempUR.y, box.UR.y = WW - tempLL.x;
+    break;
+  case PnRDB::FN://flip horizontally
+    box.LL.x = WW - tempUR.x;
+    box.UR.x = WW - tempLL.x;
+    break;
+  case PnRDB::FS://flip vertically
+    box.LL.y = HH - tempUR.y;
+    box.UR.y = HH - tempLL.y;
+    break;
+  case PnRDB::FW://flip along 45 degree axis
+    box.LL.x = tempLL.y, box.LL.y = tempLL.x;
+    box.UR.x = tempUR.y, box.UR.y = tempUR.x;
+    break;
+  case PnRDB::FE://
+    box.LL.x = HH - tempUR.y, box.LL.y = WW - tempUR.x;
+    box.UR.x = HH - tempLL.y, box.UR.y = WW - tempLL.x;
+    break;
+  default:
+    box.LL = tempLL;
+    box.UR = tempUR;
+    break;
+  }
+  box.LL = box.LL + LL;
+  box.UR = box.UR + LL;
 }
 
 void PnRdatabase::TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
@@ -252,26 +293,45 @@ void PnRdatabase::TransformPoints(std::vector<PnRDB::point> &points, PnRDB::poin
 }
 
 void PnRdatabase::TransformPoint(PnRDB::point &p, PnRDB::point LL,int width, int height, PnRDB::Omark ort) {
-  int WW=width; int HH=height; int X=p.x; int Y=p.y;
-  switch(ort) {
-    case PnRDB::N: p.x=X;	p.y=Y;
-            break;
-    case PnRDB::S: p.x=WW-X;	p.y=HH-Y;
-            break;
-    case PnRDB::W: p.x=HH-Y;	p.y=X;
-            break;
-    case PnRDB::E: p.x=Y;	p.y=WW-X;
-            break;
-    case PnRDB::FN:p.x=WW-X;	p.y=Y; 
-            break;
-    case PnRDB::FS:p.x=X;	p.y=HH-Y;
-            break;
-    case PnRDB::FW:p.x=Y;	p.y=X;
-            break;
-    case PnRDB::FE:p.x=HH-Y;	p.y=WW-X;
-            break;
-    default:p.x=X;	p.y=Y;
-            break;
+  int WW = width, HH = height, X = p.x, Y = p.y;
+  switch (ort)
+  {
+  case PnRDB::N:
+    p.x = X;
+    p.y = Y;
+    break;
+  case PnRDB::S:
+    p.x = WW - X;
+    p.y = HH - Y;
+    break;
+  case PnRDB::W:
+    p.x = HH - Y;
+    p.y = X;
+    break;
+  case PnRDB::E:
+    p.x = Y;
+    p.y = WW - X;
+    break;
+  case PnRDB::FN:
+    p.x = WW - X;
+    p.y = Y;
+    break;
+  case PnRDB::FS:
+    p.x = X;
+    p.y = HH - Y;
+    break;
+  case PnRDB::FW:
+    p.x = Y;
+    p.y = X;
+    break;
+  case PnRDB::FE:
+    p.x = HH - Y;
+    p.y = WW - X;
+    break;
+  default:
+    p.x = X;
+    p.y = Y;
+    break;
   }
   p = p + LL;
 }
