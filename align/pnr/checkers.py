@@ -299,6 +299,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
         #     if isinstance( sh, tuple) and len(sh) == 2:
         #         p0, p1 = sh
         #         logger.info( f"SH: {p0} {p1}")
+        ## "M0" doesn't always exist
         #         term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
         #         d['terminals'].append( term)
         #         term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}

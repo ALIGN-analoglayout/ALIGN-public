@@ -85,8 +85,7 @@ class CmdlineParser():
     def parse_args(self, *args, **kwargs):
         arguments = self.parser.parse_args(*args, **kwargs)
         try:
-            schematic2layout(**vars(arguments))
-            return 0
+            return schematic2layout(**vars(arguments))
         except Exception:
             logger.exception("Fatal Error. Cannot proceed")
-        return 1
+            return None

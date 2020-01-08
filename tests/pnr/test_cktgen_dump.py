@@ -29,13 +29,16 @@ def aux(design, subdesign=None):
         subdesign = design
 
     # Generate this above formatted file from PnRDB data
-    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/Results"
+    rdir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / design / "3_pnr" / "Results"
     assert rdir.is_dir()
 
-    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / f"{design}/pnr_output/inputs"
+    json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / design / "2_primitives"
     assert json_dir.is_dir()
 
-    with (rdir / f"{subdesign}_0.post_gr.db.json").open("rt") as fp:
+    alt_json_dir = pathlib.Path( os.environ["ALIGN_WORK_DIR"]) / design / "3_pnr"
+    assert alt_json_dir.is_dir()
+
+    with (rdir / f"{subdesign}_0.db.json").open("rt") as fp:
         hN = hierNode(json.load(fp))
 
     assert hN.name == subdesign
@@ -55,6 +58,14 @@ def aux(design, subdesign=None):
             logger.warning( f"{pth} is not available; not importing subblock rectangles")
         else:
             found = True
+
+        if not found:
+            pth = alt_json_dir / (blk.master + "_0.json") 
+            if not pth.is_file():
+                logger.warning( f"{pth} is not available; not importing subblock rectangles")
+            else:
+                logger.info( f"{pth} found in alternative path (sub-block)")
+                found = True
 
         assert found
         with pth.open("rt") as fp:
@@ -232,6 +243,12 @@ def test_B():
 
 @pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
                     reason='Necessary test collateral has not been built')
+def test_B2():
+    aux( "telescopic_ota", "telescopic_ota")
+
+@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+                    reason='Necessary test collateral has not been built')
 def test_C():
+    aux( "cascode_current_mirror_ota", "CASCODED_CMC_PMOS")
     aux( "cascode_current_mirror_ota", "cascode_current_mirror_ota")
 
