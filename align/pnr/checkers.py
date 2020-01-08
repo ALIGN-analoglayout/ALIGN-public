@@ -146,7 +146,9 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
+                    assert len(term['terminal']) == 2
                     term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
+                    term['terminal'] = [f"{blk.name}/{term['terminal'][0]}", term['terminal'][1]]
                 if term['layer'] not in ["boundary"]:
                     terminals.append( term)
 
