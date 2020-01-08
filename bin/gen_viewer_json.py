@@ -24,7 +24,7 @@ def main():
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='INFO', help="Set the logging level (default: %(default)s)")
     parser.add_argument( "--global_route_json", type=str, default=None)
     parser.add_argument( "--json_dir", type=str, default=None)
- 
+
     args = parser.parse_args()
     logging.getLogger().setLevel(logging.getLevelName(args.logLevel))
 

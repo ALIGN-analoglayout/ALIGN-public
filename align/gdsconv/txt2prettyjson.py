@@ -25,14 +25,14 @@ def show_data(tag_type, data):
             return int(data)
     else:
         raise Exception ('Unsupported type')
-    
+
     return '\"' + ', '.join('{0}'.format(i) for i in data) + '\"'
 
 def quote (s): return '\"' + s + '\"'
 
 def isElement (e):
     return e == "BOUNDARY" or e == "PATH" or e == "SREF" or e == "AREF" or e == "TEXT" or e == "NODE" or e == "BOX"
-    
+
 def convert_GDStxt_GDSprettyjson (name, oname):
     level = 0
     first = True
@@ -45,13 +45,13 @@ def convert_GDStxt_GDSprettyjson (name, oname):
         while l > 0:
             print("    ", end='', file=ofile)
             l = l - 1
-            
+
     def indentPrint (level, first, *s):
         if not first:        print (',', file=ofile)
         else:                print ('', file=ofile)
         indent(level)
         for i in s:          print (i, end='', file=ofile)
-        
+
     with open (name, 'rt') as ifile:
         indentPrint(level, first, '{')
         for line in ifile:

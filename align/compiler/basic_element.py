@@ -42,7 +42,7 @@ class BasicElement:
                 else:
                     self.pins.append(word)
             self.num_pins = len(self.pins)
-            
+
         else:
             self.num_pins = num_pins
             self.pins = self.line.strip().split()[1:1+self.num_pins]
@@ -50,7 +50,7 @@ class BasicElement:
             if any ('=' in pin_name for pin_name in self.pins):
                 self.pins=None
                 self.num_pins=0
-        if len(self.line.strip().split()) > self.num_pins+2:      
+        if len(self.line.strip().split()) > self.num_pins+2:
             self.value = self.line.strip().split()[self.num_pins+2:]
             self.real_inst_type = self.line.strip().split()[self.num_pins+1]
         else :
@@ -170,7 +170,7 @@ class BasicElement:
 
         #if self.pins[0] == self.pins[2]:
         #    inst_type = "dummy"
-        #self.pin_weight[0] = self.pin_weight[2]     
+        #self.pin_weight[0] = self.pin_weight[2]
         return {
             "inst": self.inst,
             "inst_type": inst_type,
@@ -230,7 +230,7 @@ def _parse_inst(line):
     elif line.strip().lower().startswith('c') \
             or ( line.strip().lower().startswith('xc') \
             and 'cap' in  line.strip().split()[3].lower()):
-        #DESIGN=Sanitized_TX_8l12b has XC for caps 
+        #DESIGN=Sanitized_TX_8l12b has XC for caps
         logger.debug('FOUND cap: %s', line.strip())
         device = element.capacitor()
     elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):

@@ -29,7 +29,7 @@ def traverse_hier_in_graph(G, hier_graph_dict):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
-             
+
             logger.info("external ports:%s,%s",sub_ports,attr["connection"])
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
@@ -105,7 +105,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
-    
+
     logger.info("Matching circuit Graph from library elements")
     mapped_graph_list = {}
 
@@ -215,14 +215,14 @@ def get_next_level(G, tree_l1):
         elif 'net' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if 'mos' in G.nodes[nbr]["inst_type"] and \
-                 G.get_edge_data(node, nbr)['weight']!=2: 
+                 G.get_edge_data(node, nbr)['weight']!=2:
                     tree_next.append(nbr)
         else:
             tree_next=list(G.neighbors(node))
     return tree_next
 
 
-#%% 
+#%%
 def compare_balanced_tree(G, node1, node2):
     """
     used to remove some false matches for DP and CMC
@@ -231,8 +231,8 @@ def compare_balanced_tree(G, node1, node2):
     tree1 = set(get_next_level(G,[node1]))
     tree2 = set(get_next_level(G,[node2]))
     #logger.info("tree1 %s tree2 %s",set(tree1),set(tree2))
-    traversed1 = [] 
-    traversed2 = [] 
+    traversed1 = []
+    traversed2 = []
     if tree1==tree2:
         logger.info("common net or device")
         return True
@@ -270,7 +270,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
 
         if sub_block_name in mapped_graph_list:
             logger.info("Reducing ISOMORPHIC sub_block: %s", sub_block_name)
-            
+
             for Gsub in mapped_graph_list[sub_block_name]:
                 already_merged = 0
                 for g1_node in Gsub:
@@ -343,7 +343,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     logger.info("adding new sub_ckt: %s",sub_block_name)
                     check_nodes(updated_circuit)
                     logger.info("adding remaining ckt: %s",sub_block_name)
-                    
+
                     updated_circuit.append({
                         "name": sub_block_name,
                         "graph": Grest,
@@ -383,7 +383,7 @@ def define_SD(G,power,gnd,clk):
             try:
                 nxt = power[0]
                 power = power[1:]
-                high=get_next_level(G,[nxt]) 
+                high=get_next_level(G,[nxt])
                 #logger.info("next,power: %s %s %s %s",nxt,power,high,traversed)
                 for node in high:
                     if G.get_edge_data(node,nxt)==2:
@@ -392,7 +392,7 @@ def define_SD(G,power,gnd,clk):
                         continue
                     #logger.info("checking node: %s %s", node, power)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
-                        node not in traversed: 
+                        node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 1 or weight==3 :
                             #logger.info("changing source drain:%s",node)
@@ -414,7 +414,7 @@ def define_SD(G,power,gnd,clk):
             try:
                 nxt = gnd[0]
                 gnd = gnd[1:]
-                high=get_next_level(G,[nxt]) 
+                high=get_next_level(G,[nxt])
                 logger.info("next,gnd: %s %s %s %s",nxt,gnd,high,traversed)
                 for node in high:
                     if G.get_edge_data(node,nxt)==2:
@@ -423,7 +423,7 @@ def define_SD(G,power,gnd,clk):
                         continue
                     #logger.info("checking node: %s %s", node, gnd)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
-                        node not in traversed: 
+                        node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 4 or weight==6 :
                             #logger.info("changing source drain:%s",node)

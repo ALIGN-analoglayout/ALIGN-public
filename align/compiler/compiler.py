@@ -75,7 +75,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "size": len(Grest.nodes())
         })
     return UPDATED_CIRCUIT_LIST, library
- 
+
 def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, unit_size_mos=12, unit_size_cap=12):
     if not result_dir.exists():
         result_dir.mkdir()
@@ -102,7 +102,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     lef_path = pathlib.Path(__file__).resolve().parent.parent / 'config'
     ALL_LEF = read_lef(lef_path)
     logger.info("Available library cells: %s", ", ".join(ALL_LEF))
-    # local hack for deisgn vco_dtype, 
+    # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
     if 'vco_dtype_12' in  design_name:
         unit_size_mos=37

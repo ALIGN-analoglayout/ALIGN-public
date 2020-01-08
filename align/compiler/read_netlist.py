@@ -102,7 +102,7 @@ class SpiceParser:
                     self.circuits_list.append({
                         "name": name,
                         "graph": subckt_graph,
-                        "ports": self.subckts[name]["ports"], 
+                        "ports": self.subckts[name]["ports"],
                     })
             elif self.top_insts and self.top_ckt_name not in self.subckts.keys():
                 logger.info(
@@ -126,7 +126,7 @@ class SpiceParser:
                 self.circuits_list.append({
                     "name": self.top_ckt_name,
                     "graph": circuit_graph,
-                    "ports": self.subckts[self.top_ckt_name]["ports"], 
+                    "ports": self.subckts[self.top_ckt_name]["ports"],
                 })
 
             elif self.top_ckt_name in self.subckts.keys():
@@ -137,7 +137,7 @@ class SpiceParser:
                 self.circuits_list.append({
                     "name": self.top_ckt_name,
                     "graph": circuit_graph,
-                    "ports": self.subckts[self.top_ckt_name]["ports"], 
+                    "ports": self.subckts[self.top_ckt_name]["ports"],
                 })
             else:
                 logger.error("No design found")

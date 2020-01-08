@@ -20,7 +20,7 @@ def unbracket (l):    return str(l)[1:-1]
 def quote (s):        return '\"' + s + '\"'
 
 def convert_GDSjson_GDS_fps( ifile, ofile):
-    
+
     def store_data (tag_name, idata):
         tag = tags.DICT[tag_name]
         tag_type = tags.type_of_tag(tag)
@@ -40,7 +40,7 @@ def convert_GDSjson_GDS_fps( ifile, ofile):
             raise Exception('Unsupported type')
         rec = Record(tag, data)
         rec.save(ofile)
-    
+
     data = json.load (ifile)
     store_data ('HEADER', str(data['header']))
     for lib in data['bgnlib']:

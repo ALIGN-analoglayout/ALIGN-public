@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """GDSII to JSON."""
-                        
+
 #  This helps understand:  http://www.buchanan1.net/stream_description.html
 #  element:  boundary | path | sref | aref | text | node | box
 
@@ -32,10 +32,10 @@ def convert_GDS_GDSjson (name, oname):
     level = 0
 
     ofile = open (oname, 'wt')
-    
+
     top = {}
     cursors = [top, {}, {}, {}, {}, {}, {}]
-    
+
     with open(name, 'rb') as a_file:
         for rec in Record.iterate(a_file):
             tag_name = rec.tag_name

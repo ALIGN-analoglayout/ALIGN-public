@@ -113,7 +113,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 #        value = {'cap': calc_cap(values2)}
 #    elif [param for param in values2.keys() if 'fin' in param.lower()]:
 #        value = {'nfin': calc_total_fin(values2)}
-#    else: 
+#    else:
 #        value = calc_value(values2)
 #    #print(value)
 #    return value
@@ -174,10 +174,10 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 #        else:
 #            convert_unit(value)
 #       # print (param, total_val)
-#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val } 
+#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val }
 #    #print(length*1E9)
-#    return {'total_val': int(length*1E9) } 
-        
+#    return {'total_val': int(length*1E9) }
+
 #%%
 def convert_unit(value):
     #print("checking value",value)
@@ -200,7 +200,7 @@ def convert_unit(value):
         is_val =False
     if isinstance(value, float) or isinstance(value, int):
         value = value
-    elif value.endswith('k') and is_val: 
+    elif value.endswith('k') and is_val:
         value = float(value.replace('k', ""))
         value = value * 1000
     elif 'K' in value and is_val:
@@ -241,7 +241,7 @@ def check_nodes(graph):
     for node, attr in graph.nodes(data=True):
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
-            
+
 def merged_value(values1, values2):
     merged_vals={}
     if values1:

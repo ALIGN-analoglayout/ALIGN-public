@@ -34,7 +34,7 @@ def gen_lef_data(data, fp, macro_name, cell_pin):
     if ('pin' not in obj or obj['pin'] not in cell_pin) and obj['layer'] not in exclude_layers:
       fp.write( "    LAYER %s ;\n" % obj['layer'])
       fp.write( "      RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
-  fp.write( "  END\n")    
+  fp.write( "  END\n")
 
   fp.write( "END %s\n" % macro_name)
 
@@ -45,5 +45,3 @@ def gen_lef_json( json_fn, lef_fn, macro_name, cell_pin):
   with open( json_fn, "rt") as json_fp, \
        open( lef_fn, "wt") as fp:
     gen_lef_json_fp( json_fp, lef_fp, macro_name, cell_pin)
-
-  

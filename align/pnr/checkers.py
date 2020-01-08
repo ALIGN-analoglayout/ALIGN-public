@@ -96,12 +96,12 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
         blk = cblk.instance[cblk.selectedInstance]
         found = False
         if json_dir is not None:
-            pth = pathlib.Path( json_dir + "/" + blk.master + ".json") 
+            pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
             if not pth.is_file():
                 logger.warning( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
-        
+
 
         if not found and input_dir is not None:
 
@@ -293,7 +293,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
 
         #
         # Experiment for visualizing shorts and opens
-        # 
+        #
 
         # for (idx,sh) in enumerate(cnv.rd.shorts):
         #     if isinstance( sh, tuple) and len(sh) == 2:
@@ -308,7 +308,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
 
 
         # for (nm,lst) in cnv.rd.opens:
-        #     logger.info( f"OP: {nm} {lst}")            
+        #     logger.info( f"OP: {nm} {lst}")
         #     for (jdx,l) in enumerate(lst):
         #         for (ly,r) in l:
         #             term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
