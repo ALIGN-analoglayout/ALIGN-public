@@ -676,6 +676,7 @@ void GcellDetailRouter::create_detailrouter(){
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
             Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
             AddViaSpacing(Pset_via, grid);
+            AddViaEnclosure(Pset_via, grid);
             A_star a_star(grid, Nets[i].shielding);
             bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal> > physical_path;
@@ -742,6 +743,49 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
     }
   }
 }
+
+void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
+  RouterDB::box box;
+  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+  //1.convert via point into via spacing box and 
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
+  {
+    int vIdx = vit->first;
+    if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 0)//vertical in lower layer
+    {
+      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_l_P);
+      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_l);
+      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_l_P);
+      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_l);
+      //and return point list in via's bounding box
+      ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_u);
+      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_u_P);
+      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_u);
+      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_u_P);
+      ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    }else if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 1){//H in lower layer
+      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_l);
+      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_l_P);
+      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_l);
+      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_l_P);
+      //and return point list in via's bounding box
+      ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_u_P);
+      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_u);
+      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_u_P);
+      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_u);
+      ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    }
+  };
+
+  //convert vector into set
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+};
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
   RouterDB::box box;
