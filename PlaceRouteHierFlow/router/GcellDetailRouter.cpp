@@ -801,7 +801,7 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
     box.UR.y = vit->second.y + drc_info.Via_info[vIdx].dist_ss_y;
     //and return point list in via's bounding box
     ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-    ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
   };
 
   //convert vector into set
