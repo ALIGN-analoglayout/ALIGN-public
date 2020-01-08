@@ -101,10 +101,10 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Run pnr_compiler
     cmd = [str(x) for x in (compiler_path, input_dir, lef_file, verilog_file, map_file, pdk_file, subckt, nvariants, effort)]
     try:
-        ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', cwd=working_dir)
-        logger.debug(f'{ret.stdout}')
+        ret = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', cwd=working_dir, check=True)
+        logger.debug(f'Dumping output from pnr_compiler\n{ret.stdout}')
     except subprocess.CalledProcessError as e:
-        logger.error(f"Call to '{' '.join(cmd)}' failed with error message:\n\n{e.stderr.decode('utf-8')}")
+        logger.error(f"Call to '{' '.join(cmd)}' failed. Dumping output from pnr_compiler below:\n{e.stdout}")
         return {}
 
     def find_variant_names( nm):
