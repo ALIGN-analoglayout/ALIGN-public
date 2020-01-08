@@ -1935,7 +1935,11 @@ void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &t
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-
+         if(j==0 or j==temp_path[i].size()-1){
+           temp_net.extend_label.push_back(0);
+         }else{
+           temp_net.extend_label.push_back(1);
+         }
          temp_net.path_metal.push_back(temp_path[i][j]);
      
         }
@@ -2034,9 +2038,14 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
 
 void GcellDetailRouter::ExtendMetal(){
 
+
   for(unsigned int i=0;i<Nets.size();i++){
 
+     if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
+
      for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
+
+         if(Nets[i].extend_label[j]==0){continue;}
 
          int current_metal = Nets[i].path_metal[j].MetalIdx;
 

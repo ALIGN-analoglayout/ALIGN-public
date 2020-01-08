@@ -241,6 +241,7 @@ struct Net{
   std::vector<connectNode> connected; // list of connected components
   std::string priority=""; // critical net constraint			
   std::vector<Metal> path_metal;
+  std::vector<int> extend_label;
   std::vector<Via> path_via;
   std::vector<SteinerTree> STs;
   std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
