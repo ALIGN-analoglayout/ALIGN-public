@@ -1072,6 +1072,13 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
      for(unsigned int k=0;k<node.Blocks[i].instance.size();k++){
        std::vector<PnRDB::pin> temp_pins;
        for(unsigned int j=0;j<node.Blocks[i].instance[k].blockPins.size();j++){
+
+           PnRDB::pin each_pin =  node.Blocks[i].instance[k].blockPins[j];
+
+           for(unsigned int h=0;h<each_pin.pinContacts.size();h++){
+              node.Blocks[i].instance[k].interMetals.push_back(each_pin.pinContacts[h]);
+           }
+            
             int netIter = node.Blocks[i].instance[k].blockPins[j].netIter;
             if(netIter!=-2){
                  temp_pins.push_back(node.Blocks[i].instance[k].blockPins[j]);
