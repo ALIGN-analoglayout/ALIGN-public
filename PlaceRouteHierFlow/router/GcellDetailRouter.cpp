@@ -37,7 +37,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   Physical_metal_via(); //this needs modify
 
   std::cout<<"Start Extend Metal"<<std::endl;
-  //ExtendMetal(); 
+  ExtendMetal(); 
   std::cout<<"End Extend Metal"<<std::endl; 
 
   std::cout<<"***********start return node in detail router********"<<std::endl;
@@ -751,40 +751,42 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //1.convert via point into via spacing box and 
   for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
   {
-    int vIdx = vit->first;
-    if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 0)//vertical in lower layer
+    int vIdx = vit->first;    
+    if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 0) //vertical in lower layer
     {
-      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_l_P);
-      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_l);
-      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_l_P);
-      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_l);
-      //and return point list in via's bounding box
-      ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_u);
-      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_u_P);
-      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_u);
-      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_u_P);
-      ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      int mIdx = drc_info.Via_model[vIdx].LowerIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ss;
+      ConvertRect2GridPoints(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      mIdx = drc_info.Via_model[vIdx].UpperIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ss;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y;
+      ConvertRect2GridPoints(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     }else if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 1){//H in lower layer
-      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_l);
-      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_l_P);
-      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_l);
-      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_l_P);
-      //and return point list in via's bounding box
-      ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-      box.LL.x = floor(vit->second.x - drc_info.Via_info[vIdx].width / 2 - drc_info.Via_info[vIdx].cover_u_P);
-      box.LL.y = floor(vit->second.y - drc_info.Via_info[vIdx].width_y / 2 - drc_info.Via_info[vIdx].cover_u);
-      box.UR.x = ceil(vit->second.x + drc_info.Via_info[vIdx].width / 2 + drc_info.Via_info[vIdx].cover_u_P);
-      box.UR.y = ceil(vit->second.y + drc_info.Via_info[vIdx].width_y / 2 + drc_info.Via_info[vIdx].cover_u);
-      ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      int mIdx = drc_info.Via_model[vIdx].LowerIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ss;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y;
+      ConvertRect2GridPoints(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      mIdx = drc_info.Via_model[vIdx].UpperIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ss;
+      ConvertRect2GridPoints(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     }
-  };
-
+  }
+  
   //convert vector into set
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
-  grid.InactivePointlist(Pset_via_lower_metal); //inactive metal's lower via enclosure area
-  grid.InactivePointlist(Pset_via_upper_metal); //inactive metal's upper via enclosure area
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
 };
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
@@ -802,7 +804,7 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
     //and return point list in via's bounding box
     ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-  };
+  }
 
   //convert vector into set
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
