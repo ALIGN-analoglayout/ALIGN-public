@@ -1188,8 +1188,8 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
 
        }
 
-       //current_node_length = 2*current_node_expand + current_node_length;
-       //next_node_length = 2*next_node_expand + next_node_length;
+       current_node_length = 2*current_node_expand + current_node_length;
+       next_node_length = 2*next_node_expand + next_node_length;
        std::cout<<"check via current_node_length "<<current_node_length<<std::endl;
        std::cout<<"check via next_length "<<next_node_length<<std::endl;
        if(delta_length<0){

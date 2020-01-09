@@ -2723,9 +2723,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2745,9 +2745,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2773,9 +2773,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2794,9 +2794,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
