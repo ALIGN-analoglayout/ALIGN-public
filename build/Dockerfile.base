@@ -38,8 +38,14 @@ ENV pip=$venv/bin/pip
 
 RUN python3 -m venv $venv
 
-# Upgrade pip
+# Upgrade pip & install testing dependencies
+# Note: Package dependencies are in setup.py
 RUN $pip install --upgrade pip
+RUN $pip install \
+    pytest \
+    pytest-cov \
+    pytest-timeout \
+    coverage-badge
 
 # Lpsolve
 RUN \
