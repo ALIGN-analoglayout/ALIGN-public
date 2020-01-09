@@ -37,7 +37,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   Physical_metal_via(); //this needs modify
 
   std::cout<<"Start Extend Metal"<<std::endl;
-  ExtendMetal(); 
+  //ExtendMetal(); 
   std::cout<<"End Extend Metal"<<std::endl; 
 
   std::cout<<"***********start return node in detail router********"<<std::endl;
@@ -783,8 +783,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //convert vector into set
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
-  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+  grid.InactivePointlist(Pset_via_lower_metal); //inactive metal's lower via enclosure area
+  grid.InactivePointlist(Pset_via_upper_metal); //inactive metal's upper via enclosure area
 };
 
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
