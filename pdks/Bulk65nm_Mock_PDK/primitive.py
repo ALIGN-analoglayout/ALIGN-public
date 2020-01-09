@@ -14,7 +14,7 @@ class PrimitiveGenerator(Bulk65nm_Mock_PDK_Canvas, DefaultPrimitiveGenerator):
         self.subinsts[fullname].parameters.update(parameters)
 
         def _connect_diffusion(i, pin):
-            #self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
+            self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
             for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
                 self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
@@ -24,12 +24,7 @@ class PrimitiveGenerator(Bulk65nm_Mock_PDK_Canvas, DefaultPrimitiveGenerator):
         self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
-        #gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
-        #self.addWire( self.LISD, None, None, gate_x - 1, (y, 1), (y+1, -1))
-        #self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1))
 
-        #for i in range(1,  self.finsPerUnitCell):
-        #    self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
         for i in range(self.gatesPerUnitCell):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
 
@@ -49,4 +44,17 @@ class PrimitiveGenerator(Bulk65nm_Mock_PDK_Canvas, DefaultPrimitiveGenerator):
         else:
             _connect_diffusion(gate_x - 1, 'S') #S
             _connect_diffusion(gate_x + 1, 'D') #D
-        
+
+    def _addBodyContact(self, x, y, yloc=None, name='M1'):
+        fullname = f'{name}_X{x}_Y{y}'
+        if yloc is not None:
+            y = yloc
+        h = self.m2PerUnitCell
+        gu = self.gatesPerUnitCell
+        gate_x = x*gu + gu // 2
+        self._xpins[name]['B'].append(gate_x)
+        self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
+        self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
