@@ -633,10 +633,10 @@ void GcellDetailRouter::create_detailrouter(){
    std::vector<std::vector<RouterDB::point> > plist;
    plist.resize( this->layerNo );
 
-   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; //block terminal internal metal set
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; //block terminal internal metal block vertice set
    Generate_Block_Terminal_Internal_Metal_Set(Set_x);
 
-   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net; //Net internal metal set
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net; //Net internal metal block vertice set
 
    std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via;
    InsertInternalVia(Pset_via, this->Blocks);
@@ -833,10 +833,11 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net, Set_x);
   for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set_x.begin(); mit != Set_x.end(); ++mit)
   {
+
     int mIdx = mit->metalIdx;    
     if (drc_info.Metal_info[mIdx].direct == 0) //vertical
     {
-      if(mIdx<this->layerNo-1){
+      if(mIdx<this->layerNo-1){//not the highest metal
         int vIdx = mIdx;
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
@@ -844,7 +845,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
         ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
       }
-      if(mIdx>0){
+      if(mIdx>0){//not the lowest metal
         int vIdx = mIdx - 1;
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
@@ -853,7 +854,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
       } 
     }else if (drc_info.Metal_info[mIdx].direct == 1){//Horizontal
-      if(mIdx<this->layerNo-1){
+      if(mIdx<this->layerNo-1){//not highest metal
         int vIdx = mIdx;
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y;
@@ -861,7 +862,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y;
         ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
       }
-      if(mIdx>0){
+      if(mIdx>0){//not lowest metal
         int vIdx = mIdx - 1;
         box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
         box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y;
