@@ -1188,23 +1188,34 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
 
        }
 
-       current_node_length = 2*current_node_expand + current_node_length;
-       next_node_length = 2*next_node_expand + next_node_length;
+       //current_node_length = 2*current_node_expand + current_node_length;
+       //next_node_length = 2*next_node_expand + next_node_length;
+       std::cout<<"check via current_node_length "<<current_node_length<<std::endl;
+       std::cout<<"check via next_length "<<next_node_length<<std::endl;
        if(delta_length<0){
-           std::cout<<"start CheckExendable_With_Certain_Length"<<std::endl;
+           //std::cout<<"start CheckExendable_With_Certain_Length"<<std::endl;
            bool feasible = CheckExendable_With_Certain_Length(first_node_same_layer,current_node,length,minL,grid);
+           if(feasible==0){
+             std::cout<<"Length infeasible"<<std::endl;
+           }
            Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
            Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
-           std::cout<<"End CheckExendable_With_Certain_Length"<<std::endl;
+           //std::cout<<"End CheckExendable_With_Certain_Length"<<std::endl;
            if(feasible){
                feasible_node.push_back(next_node);
+             }else{
+               std::cout<<"Up/down infeasible case 1"<<std::endl;
              }           
 
          }else{
             bool feasible = 1;
             Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
             Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
-            if(feasible){feasible_node.push_back(next_node);}
+            if(feasible){
+              feasible_node.push_back(next_node);
+             }else{
+              std::cout<<"Up/down infeasible case 2"<<std::endl;
+             }
          }
      }
   }
@@ -1262,6 +1273,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
   }
 
   culmulated_length = 0;
+  search_flag = true;
   dummy_node = current_node;
   while(search_flag){
      if(culmulated_length>=half_minL){
@@ -1335,6 +1347,7 @@ bool A_star::Check_via_AV(int first_node_same_layer,int current_node,int length,
   }
 
   culmulated_length = 0;
+  search_flag = true;
   dummy_node = current_node;
   while(search_flag){
      if(culmulated_length>=half_minL){
