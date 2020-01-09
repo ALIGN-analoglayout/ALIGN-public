@@ -4,6 +4,7 @@ import pathlib
 import logging
 import collections
 import math
+import json
 
 from .generators import Wire
 
@@ -95,7 +96,7 @@ class DefaultPrimitiveGenerator():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-        self.addWire( self.m2, 'B', 'B', ((y_cells)* self.m2PerUnitCell//2, self.lFin//4), (0, 1), (x_cells*self.gatesPerUnitCell, -1))
+        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell, -1))
 
     def _addBodyContact(self, x, y, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
@@ -106,11 +107,11 @@ class DefaultPrimitiveGenerator():
         gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
+        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
-        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
-        self.addVia( self.va, f'{fullname}:B', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addVia( self.v1, 'B', None, gate_x, ((y+1)*h//2, self.lFin//4))        
+        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
+        self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
 
@@ -459,6 +460,14 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
         uc.setBboxFromBoundary()
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
+
+    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+        uc.computeBbox()
+        json.dump( { 'bbox' : uc.bbox.toList(),
+                     'globalRoutes' : [],
+                     'globalRouteGrid' : [],
+                     'terminals' : uc.terminals}
+                    , fp, indent=2)
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
