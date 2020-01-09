@@ -560,8 +560,10 @@ def trace_template(graph, similar_node_groups,visited,template,array):
             #level1=[l1 for l1 in level_1a if l1 not in visited]
             next_match[source] +=level1
             visited +=level1
+        if len(next_match[source])==0:
+            del next_match[source]
 
-    if match_branches(graph,next_match):
+    if len(next_match.keys())> 0 and match_branches(graph,next_match):
         for source in array.keys():
             array[source]+=next_match[source]
         template +=next_match[list(next_match.keys())[0]]
@@ -585,7 +587,7 @@ def match_branches(graph,nodes_dict):
                 super_list.append(graph.nodes[nbr]['inst_type'])
                 for v in graph.nodes[nbr]['values'].values():
                     #super_dict.setdefault(k,[]).append(v)
-                    #print("value",k,v)
+                    #print("value",k,v
                     super_list.append(v)
         nbr_values[node]=Counter(super_list)
     _,main=nbr_values.popitem()
