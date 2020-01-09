@@ -707,6 +707,85 @@ void GcellDetailRouter::create_detailrouter(){
    }
  };
 
+void GcellDetailRouter::create_detailrouter_old(){
+
+   std::vector<std::vector<RouterDB::point> > plist;
+   plist.resize( this->layerNo );
+
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x; //block terminal internal metal set
+   Generate_Block_Terminal_Internal_Metal_Set(Set_x);
+
+   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net; //Net internal metal set
+
+   std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via;
+   InsertInternalVia(Pset_via, this->Blocks);
+   //end initial set
+   //start detail router
+   //Copy_tile_metals();
+   for(unsigned int i=0;i<Nets.size();i++){
+
+        PnRDB::routing_net temp_routing_net; //router report struct  
+        Initial_rouer_report_info(temp_routing_net, i);
+        int multi_number = R_constraint_based_Parallel_routing_number(i);
+
+        if(Nets[i].path_metal.size()>0){continue;} //if the net has already been routed, then skip
+        if(Nets[i].connected.size()<=1){continue;} //if suspending, then skip 
+
+        std::vector<std::vector<RouterDB::SinkData> > temp_pins; //routing pins
+        RouterDB::point gridll;
+        RouterDB::point gridur;
+        RouterDB::point sym_gridll;
+        RouterDB::point sym_gridur;
+        Grid grid=Generate_Grid_Net(i);//create grid for this net
+        Grid_Inactive(grid, Set_x, Set_net, gridll, gridur);//inactive grid on internal metals
+        int sym_flag = Found_Pins_and_Symmetry_Pins(grid, i, temp_pins);
+        Symmetry_metal_Inactive(i, sym_flag, grid, sym_gridll, sym_gridur, gridll, gridur);
+
+        int source_lock = 0;
+        std::vector<RouterDB::SinkData> temp_source = Initial_source_pin(temp_pins,source_lock);//initial source
+
+        std::vector<std::vector<RouterDB::point> > add_plist;// new feasible grid for routed net
+        add_plist.resize(this->layerNo);
+
+        Update_rouer_report_info(temp_routing_net, i, 0, 0);
+
+        for(unsigned int j=1;j<temp_pins.size();j++){
+            //create dest
+            std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
+            std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
+            Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
+            AddViaSpacing(Pset_via, grid);
+            AddViaEnclosure(Pset_via, grid, Set_x, Set_net);
+            A_star a_star(grid, Nets[i].shielding);
+            bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+            std::vector<std::vector<RouterDB::Metal> > physical_path;
+            Update_rouer_report_info(temp_routing_net, i, j, pathMark);
+
+            //assert(pathMark);
+            if(pathMark) {
+              InsertRoutingVia(a_star, grid, Pset_via);
+              physical_path = a_star.ConvertPathintoPhysical(grid);
+              lastmile_source_new(physical_path, temp_source);
+              lastmile_dest_new(physical_path, temp_dest);
+              returnPath(physical_path, Nets[i]);
+            }else{
+            std::cout<<"Router-Warning: feasible path might not be found\n";
+            }
+
+            std::cout<<"Detail Router check point 8"<<std::endl;
+            //update physical path to 
+            Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source,temp_dest, physical_path);
+            UpdatePlistNets(physical_path, add_plist);
+           }
+       Symmetry_Routing(sym_flag, i, Set_net);
+       std::cout<<"Detail Router check point 11"<<std::endl;
+       InsertPlistToSet_x(Set_net, add_plist);
+
+       temp_report.routed_net.push_back(temp_routing_net);
+       //modify_tile_metals(Nets[i], 0);
+   }
+ };
+
 
 void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
   std::pair<int, RouterDB::point> via_point;
@@ -745,6 +824,64 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
 }
 
 void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid,
+                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
+                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net){
+  RouterDB::box box;
+  //***************block vias around metal******************
+  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net, Set_x);
+  for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set_x.begin(); mit != Set_x.end(); ++mit)
+  {
+    int mIdx = mit->metalIdx;    
+    if (drc_info.Metal_info[mIdx].direct == 0) //vertical
+    {
+      if(mIdx<this->layerNo-1){
+        int vIdx = mIdx;
+        box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x;
+        box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
+        box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x;
+        box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      }
+      if(mIdx>0){
+        int vIdx = mIdx - 1;
+        box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x;
+        box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
+        box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x;
+        box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
+        ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      } 
+    }else if (drc_info.Metal_info[mIdx].direct == 1){//Horizontal
+      if(mIdx<this->layerNo-1){
+        int vIdx = mIdx;
+        box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
+        box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y;
+        box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
+        box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y;
+        ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      }
+      if(mIdx>0){
+        int vIdx = mIdx - 1;
+        box.LL.x = mit->coord[0].x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
+        box.LL.y = mit->coord[0].y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y;
+        box.UR.x = mit->coord[1].x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
+        box.UR.y = mit->coord[1].y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y;
+        ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      } 
+    }
+  }
+  
+  //convert vector into set
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
+  //block via to avoid
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+  //***************block vias around metal******************
+};
+
+void GcellDetailRouter::AddViaEnclosure_old(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net){
   RouterDB::box box;

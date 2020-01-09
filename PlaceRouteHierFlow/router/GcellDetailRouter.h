@@ -82,6 +82,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     //void checkPathMetalToPin(int i, int j);
 
     void create_detailrouter();
+    void create_detailrouter_old();
     //std::vector<std::vector<RouterDB::SinkData> > findPins(RouterDB::Net temp_net);
     std::vector<RouterDB::Metal> findGlobalPath(RouterDB::Net &temp_net);
     void splitPath(std::vector<std::vector<RouterDB::Metal> > &temp_path, RouterDB::Net& temp_net);
@@ -163,6 +164,9 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
     void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid);
     void AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
+                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
+                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
+    void AddViaEnclosure_old(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
                          std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
                          std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
     std::set<RouterDB::SinkData, RouterDB::SinkDataComp> CombineTwoSets(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &set1,
