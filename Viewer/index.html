@@ -17,7 +17,7 @@
   if (params.has("design")) {
     design = params.get("design");
   }
-//  var suffix = "_dr_globalrouting";
+  //  var suffix = "_dr_globalrouting";
   var suffix = "";
   if (params.has("suffix")) {
     suffix = params.get("suffix");
@@ -129,9 +129,9 @@
 
     function color(d) {
       var ly = d.layer;
-      var results = layer_synonyms.filter( dd =>  dd.layer == ly);
-      if ( results.length == 1) {
-         ly = results[0].master;
+      var results = layer_synonyms.filter(dd => dd.layer == ly);
+      if (results.length == 1) {
+        ly = results[0].master;
       }
       results = metalStack.filter(dd => dd.layer == ly);
       if (results.length == 1) {
@@ -227,36 +227,52 @@
     }
 
     var nets = Object.keys(netMap).sort();
-    nets = nets.filter(function(value) { if ( !value.includes(":")) {return value;}})
 
-    d3.select("#netControls")
-      .selectAll("button")
-      .data(nets)
-      .enter()
-      .append("button")
-      .attr("id", (d, i) => "buttonIdNet" + i)
-      .on("click", buttonClickNets)
-      .html(d => d)
-      .style("border", "none")
-      .style("border-radius", "6px");
+    function redraw_net_names(nets) {
+      d3.select("#netControls")
+        .selectAll("button")
+        .data([])
+        .exit()
+        .remove();
 
-    d3.select("#netControls")
-      .append("button")
-      .attr("id", "buttonIdNetAll")
-      .on("click", buttonClickNetsAll)
-      .html("All")
-      .style("border-width", "1px")
-      .style("border-color", "black")
-      .style("border-radius", "6px");
+      d3.select("#netControls")
+        .selectAll("button")
+        .data(nets)
+        .enter()
+        .append("button")
+        .attr("id", (d, i) => "buttonIdNet" + i)
+        .on("click", buttonClickNets)
+        .html(d => d)
+        .style("border", "none")
+        .style("border-radius", "6px");
 
-    d3.select("#netControls")
-      .append("button")
-      .attr("id", "buttonIdNetNone")
-      .on("click", buttonClickNetsNone)
-      .html("None")
-      .style("border-width", "1px")
-      .style("border-color", "black")
-      .style("border-radius", "6px");
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdNetAll")
+        .on("click", buttonClickNetsAll)
+        .html("All")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdNetNone")
+        .on("click", buttonClickNetsNone)
+        .html("None")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdTerm")
+        .on("click", buttonClickTerm)
+        .html("Term")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+    }
 
     var visibleNets = {};
 
@@ -279,6 +295,38 @@
       }
       redraw();
     }
+
+    var show_terminals = true;
+
+    function buttonClickTerm() {
+      show_terminals = !show_terminals;
+
+      if (show_terminals) {
+         showable_nets = nets;
+         for (i = 0; i < nets.length; ++i) {
+            net = nets[i];
+            if ( net.includes(":")) {			 
+               visibleNets[net] = true;
+            }
+         }
+      } else {
+         for (i = 0; i < nets.length; ++i) {
+            net = nets[i];
+            if ( net.includes(":")) {			 
+               visibleNets[net] = false;
+            }
+         }
+         showable_nets = nets.filter(function(value) {
+			 if (!value.includes(":")) {
+		      return value;
+		      }
+		      });
+      }
+      redraw_net_names(showable_nets);
+      redraw();
+    }
+
+    buttonClickTerm();
 
     function buttonClickNets(d, i) {
       var button = d3.select("#buttonIdNet" + i);
