@@ -38,20 +38,8 @@ ENV pip=$venv/bin/pip
 
 RUN python3 -m venv $venv
 
-# Install python dependendencies in venv
+# Upgrade pip
 RUN $pip install --upgrade pip
-RUN $pip install \
-    # Currently unused
-    # wheel \
-    # Actual package dependencies
-    networkx \
-    python-gdsii \
-    matplotlib \
-    pyyaml \
-    # Testing dependencies
-    pytest \
-    pytest-cov \
-    coverage-badge
 
 # Lpsolve
 RUN \
