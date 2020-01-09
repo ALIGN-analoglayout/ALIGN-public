@@ -67,6 +67,12 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
 
         % cd PlaceRouteHierFlow
         % make
+        % cd ALIGN_WORK_DIR
+        % python3.6  -m venv <venv_path>
+        % source $venv_path/bin/activate <venv_path is python virtual environment name>
+        % pip install --upgrade pip
+        % pip install wheel pytest general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii
+
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
 * Docker based run
@@ -77,8 +83,8 @@ By default, the design directory is set to the examples directory. This can be m
 
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
-        % source general/bin/activate <general is python virtual environment name>
-        % make DESIGN=<design>
+        % python3.6 -m venv 
+        % make VENV=$venv_path DESIGN=<design>
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci
