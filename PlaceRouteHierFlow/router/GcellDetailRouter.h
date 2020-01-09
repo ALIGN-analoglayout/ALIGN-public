@@ -162,7 +162,11 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks);
     void InsertRoutingVia(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via);
     void AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid);
-    void AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid);
+    void AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid &grid,
+                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x,
+                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net);
+    std::set<RouterDB::SinkData, RouterDB::SinkDataComp> CombineTwoSets(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &set1,
+                                                                        std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &set2);
 };
 
 #endif
