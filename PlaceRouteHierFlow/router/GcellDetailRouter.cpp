@@ -676,6 +676,7 @@ void GcellDetailRouter::create_detailrouter(){
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
             Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
             AddViaSpacing(Pset_via, grid);
+            AddViaEnclosure(Pset_via, grid);
             A_star a_star(grid, Nets[i].shielding);
             bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal> > physical_path;
@@ -743,6 +744,51 @@ void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<st
   }
 }
 
+void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
+  RouterDB::box box;
+  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+  //1.convert via point into via spacing box and 
+  for (std::set<std::pair<int, RouterDB::point>>::iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit)
+  {
+    int vIdx = vit->first;    
+    if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 0) //vertical in lower layer
+    {
+      int mIdx = drc_info.Via_model[vIdx].LowerIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ss;
+      ConvertRect2GridPoints(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      mIdx = drc_info.Via_model[vIdx].UpperIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x - drc_info.Metal_info[mIdx].dist_ss;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y;
+      ConvertRect2GridPoints(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    }else if (drc_info.Metal_info[drc_info.Via_info[vIdx].lower_metal_index].direct == 1){//H in lower layer
+      int mIdx = drc_info.Via_model[vIdx].LowerIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ss;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[0].y;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].LowerRect[1].y;
+      ConvertRect2GridPoints(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      mIdx = drc_info.Via_model[vIdx].UpperIdx;
+      box.LL.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[0].x;
+      box.LL.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ss;
+      box.UR.x = vit->second.x + 2 * drc_info.Via_model[vIdx].UpperRect[1].x;
+      box.UR.y = vit->second.y + 2 * drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ss;
+      ConvertRect2GridPoints(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+    }
+  }
+  
+  //convert vector into set
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+};
+
 void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, Grid& grid){
   RouterDB::box box;
   std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
@@ -757,8 +803,8 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
     box.UR.y = vit->second.y + drc_info.Via_info[vIdx].dist_ss_y;
     //and return point list in via's bounding box
     ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-    ConvertRect2GridPoints_Via(plist_via_lower_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
-  };
+    ConvertRect2GridPoints_Via(plist_via_upper_metal, vIdx + 1, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+  }
 
   //convert vector into set
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
@@ -1891,7 +1937,11 @@ void GcellDetailRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > &t
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-
+         if(j==0 or j==temp_path[i].size()-1){
+           temp_net.extend_label.push_back(0);
+         }else{
+           temp_net.extend_label.push_back(1);
+         }
          temp_net.path_metal.push_back(temp_path[i][j]);
      
         }
@@ -1990,9 +2040,14 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
 
 void GcellDetailRouter::ExtendMetal(){
 
+
   for(unsigned int i=0;i<Nets.size();i++){
 
+     if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
+
      for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
+
+         if(Nets[i].extend_label[j]==0){continue;}
 
          int current_metal = Nets[i].path_metal[j].MetalIdx;
 
@@ -2668,9 +2723,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2690,9 +2745,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2718,9 +2773,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2739,9 +2794,9 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
         int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
