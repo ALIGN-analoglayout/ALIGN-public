@@ -38,7 +38,7 @@
 "GdsDatatype":{"Draw":0},
 "Direction": "V",
 "Color": [],
-"Pitch": 180,
+"Pitch": 260,
 "Width": 90,
 "MinL": 500,
 "MaxL": null,
@@ -54,8 +54,8 @@
     "GdsLayerNo": 12,
     "GdsDatatype":{"Draw":0}, 
     "Stack": [null, "M1"],
-    "SpaceX": 105,
-    "SpaceY": 105,
+    "SpaceX": 106,
+    "SpaceY": 106,
     "WidthX": 90,
     "WidthY": 90,
     "VencA_L": 50,
@@ -88,8 +88,8 @@
 "GdsLayerNo": 11,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M1", "M2"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -122,8 +122,8 @@
 "GdsLayerNo": 15,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M2", "M3"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -156,8 +156,8 @@
 "GdsLayerNo": 23,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M3", "M4"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -190,8 +190,8 @@
 "GdsLayerNo": 28,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M4", "M5"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -224,8 +224,8 @@
 "GdsLayerNo": 35,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M5", "M6"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -258,8 +258,8 @@
 "GdsLayerNo": 40,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M6", "M7"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -292,8 +292,8 @@
 "GdsLayerNo": 45,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M7", "M8"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -326,8 +326,8 @@
 "GdsLayerNo": 50,
 "GdsDatatype":{"Draw":0},
 "Stack": ["M8", "M9"],
-"SpaceX": 135,
-"SpaceY": 135,
+"SpaceX": 136,
+"SpaceY": 136,
 "WidthX": 90,
 "WidthY": 90,
 "VencA_L": 50,
@@ -339,12 +339,22 @@
 },
 
 {
-"Layer": "Feol",
+"Layer": "Nwell",
+"GdsLayerNo": 2,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Active",
 "GdsLayerNo": 52,
 "GdsDatatype": {"Draw":0},
 "ActiveRvtEnc":100,
 "ActiveNpEnc": 100,
 "ActivePpEnc": 100,
+"activebWidth": 168,
+"activebWidth_H": 160,
+"active_enclosure": 42,
+"plActive_s": 72,
 "ActivePolyHEnc": 48,
 "PolyActiveHang": 400,
 "v0Width": 90,
@@ -354,6 +364,59 @@
 "activebWidth_H":180,
 "cbWidth": 30,
 "cbGateExt":10
+},
+
+{
+"Layer": "Nselect",
+"GdsLayerNo": 7,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Pselect",
+"GdsLayerNo": 8,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Pb",
+"GdsLayerNo": 150,
+"GdsDatatype": {"Draw":0},
+"pbWidth":180,
+"pbWidth_H": 160
+},
+
+{
+"Layer": "Rvt",
+"GdsLayerNo": 11,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Lisd",
+"GdsLayerNo": 98,
+"GdsDatatype": {"Draw":0},
+"LisdWidth": 40
+},
+
+{
+"Layer": "Pc",
+"GdsLayerNo": 99,
+"GdsDatatype": {"Draw":0},
+"PcWidth": 32,
+"PcExt": 2
+},
+
+{
+"Layer": "Boundary",
+"GdsLayerNo": 101,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Bbox",
+"GdsLayerNo": 100,
+"GdsDatatype": {"Draw":5}
 },
 
 {

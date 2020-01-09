@@ -1,27 +1,31 @@
 import json
 from collections import OrderedDict
+from align.cell_fabric import pdk
+from pathlib import Path
+
+pdkfile = (Path(__file__).parent / 'layers.json').resolve()
+p = pdk.Pdk().load(pdkfile)
+exclude_layers = p.get_lef_exclude()
+
 def json_lef(input_json,out_lef,cell_pin):
 
   macro_name = out_lef + '.lef'
 
   def s( x):
-    return "%.3f" % (x/1000.0)
+    return "%.4f" % (x/10000.0)
   #### Start: This part converting all negative coordinates into positive 
   with open( input_json, "rt") as fp:
     j = json.load(fp, object_pairs_hook=OrderedDict)
   
-  x0 = j['bbox'][0]
-  y0 = j['bbox'][1]
-  j['bbox'][0] = 0
-  j['bbox'][1] = 0
-  j['bbox'][2] = j['bbox'][2] - x0
-  j['bbox'][3] = j['bbox'][3] - y0
+    for i in range(4):
+      j['bbox'][i] *= 10
 
-  for obj in j['terminals']:
-    obj['rect'][0] = obj['rect'][0] - x0
-    obj['rect'][1] = obj['rect'][1] - y0
-    obj['rect'][2] = obj['rect'][2] - x0
-    obj['rect'][3] = obj['rect'][3] - y0
+    assert (j['bbox'][3]-j['bbox'][1]) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
+    assert (j['bbox'][2]-j['bbox'][0]) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+
+    for obj in j['terminals']:
+      for i in range(4):
+        obj['rect'][i] *= 10
 
   with open(input_json, "wt") as fp:
     fp.write( json.dumps( j, indent=2) + '\n')
@@ -31,8 +35,7 @@ def json_lef(input_json,out_lef,cell_pin):
   with open( input_json, "rt") as fp:
     j = json.load( fp)
   
-  with open( macro_name, "wt") as fp:
-
+  with open( input_json.parents[0] / macro_name, "wt") as fp:
 
     fp.write( "MACRO %s\n" % out_lef)
     fp.write( "  ORIGIN 0 0 ;\n")
@@ -40,30 +43,29 @@ def json_lef(input_json,out_lef,cell_pin):
 
     fp.write( "  SIZE %s BY %s ;\n" % ( s(j['bbox'][2]), s(j['bbox'][3])))
     cell_pin = list(cell_pin)
-
     if cell_pin[0] != "PLUS":
       cell_pin.append('B') ### add body contact to the pin list of transistors
     else:
-      pass
+      pass 
 
-    exclude_layers ={"poly","active","V0","V1", "V2", "fin", "nwell", "RVT"}
-    pin_layer = ["M1", "M2", "M3"] 
     for i in cell_pin:
       fp.write( "  PIN %s\n" % i)
+        #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
       fp.write( "    DIRECTION INOUT ;\n")
       fp.write( "    USE SIGNAL ;\n")
       fp.write( "    PORT\n")
       for obj in j['terminals']:
-        if 'pin' in obj and obj['layer'] in pin_layer and obj['pin'] == i:               
+        if 'pin' in obj and obj['pin'] == i:               
           fp.write( "      LAYER %s ;\n" % obj['layer'])
           fp.write( "        RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
           ### Check Pins are on grid or not
-          '''if obj['layer'] == 'M2':
-            assert (obj['rect'][1] + 22)%96 == 0, "M2 pin is not on grid"
-            assert (j['bbox'][3] - obj['rect'][1] - 22)%96 == 0, "M2 pin is not on grid from top cell boundary; can't flip it"
+          if obj['layer'] == 'M2':
+            cy = (obj['rect'][1]+obj['rect'][3])//2
+            assert cy%p['M2']['Pitch'] == 0, (f"M2 pin is not on grid {cy} {cy%84}")
           if obj['layer'] == 'M1' or obj['layer'] == 'M3':
-            assert (obj['rect'][0] + 20)%78 == 0, "M1 pin is not on grid"
-            assert (j['bbox'][2] - obj['rect'][0] - 200)%78 == 0, "M1 pin is not on grid from right side; can't mirror it"'''         
+            cx = (obj['rect'][0]+obj['rect'][2])//2
+            assert cx%p['M1']['Pitch'] == 0, (f"M1 pin is not on grid {cx} {cx%80}")
+
       fp.write( "    END\n")
       fp.write( "  END %s\n" % i)
     fp.write( "  OBS\n")
