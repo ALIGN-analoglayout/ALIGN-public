@@ -63,16 +63,15 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
         % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
+        % export VENV= <python virtual environment path, e.g., ./align_venv>
  * Installation
 
         % cd PlaceRouteHierFlow
         % make
-        % cd $ALIGN_WORK_DIR
-        % python3.6  -m venv <venv_name>
-        % source $venv_name/bin/activate <venv_name is python virtual environment name>
-        % pip install --upgrade pip
-        % pip install wheel pytest general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii
         % cd $ALIGN_HOME
+        % python3.6 -m venv $VENV 
+        % source $VENV/bin/activate 
+        % pip install --upgrade pip
         % pip install -e .
 
 ## Usage
@@ -85,7 +84,7 @@ By default, the design directory is set to the examples directory. This can be m
 
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
-        % make VENV=$venv_name DESIGN=<design>
+        % make VENV=$VENV DESIGN=<design>
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci
