@@ -675,8 +675,8 @@ void GcellDetailRouter::create_detailrouter(){
             std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
             Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
-            AddViaSpacing(Pset_via, grid);
-            AddViaEnclosure(Pset_via, grid, Set_x, Set_net);
+            //AddViaSpacing(Pset_via, grid);
+            //AddViaEnclosure(Pset_via, grid, Set_x, Set_net);
             A_star a_star(grid, Nets[i].shielding);
             bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal> > physical_path;
@@ -754,8 +754,8 @@ void GcellDetailRouter::create_detailrouter_old(){
             std::vector<RouterDB::SinkData> temp_dest = temp_pins[j];
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > src_dest_plist;
             Detailed_router_set_src_dest(grid, temp_source, temp_dest, i, sym_gridll, sym_gridur,gridll, gridur, src_dest_plist, Set_net, sym_flag);
-            AddViaSpacing(Pset_via, grid);
-            AddViaEnclosure(Pset_via, grid, Set_x, Set_net);
+            //AddViaSpacing(Pset_via, grid);
+            //AddViaEnclosure(Pset_via, grid, Set_x, Set_net);
             A_star a_star(grid, Nets[i].shielding);
             bool pathMark= a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal> > physical_path;
@@ -2961,6 +2961,38 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
 
+  int enclose_length =0;  
+
+  if(mIdx>=0 and mIdx<drc_info.Metal_info.size()-1){
+
+     int via_Idex = mIdx;
+
+     if(mIdx == drc_info.Via_model[via_Idex].LowerIdx and drc_info.Metal_info[mIdx].direct == 0){ //v
+
+        enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].y - drc_info.Via_model[via_Idex].LowerRect[0].y;
+
+       }else if(mIdx == drc_info.Via_model[via_Idex].LowerIdx and drc_info.Metal_info[mIdx].direct == 1){
+
+        enclose_length = drc_info.Via_model[via_Idex].LowerRect[1].x - drc_info.Via_model[via_Idex].LowerRect[0].x;
+
+     }
+
+  }else if(mIdx>=0){
+
+     int via_Idex = mIdx-1;
+
+     if(mIdx == drc_info.Via_model[via_Idex].UpperIdx and drc_info.Metal_info[mIdx].direct == 0){ //v
+
+        enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].y - drc_info.Via_model[via_Idex].UpperRect[0].y;
+
+       }else if(mIdx == drc_info.Via_model[via_Idex].UpperIdx and drc_info.Metal_info[mIdx].direct == 1){
+
+        enclose_length = drc_info.Via_model[via_Idex].UpperRect[1].x - drc_info.Via_model[via_Idex].UpperRect[0].x;
+
+     }
+
+  }
+
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
@@ -2974,12 +3006,12 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int newURy=URy+nexlayer_unit;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
 
-        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
-        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
+        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee-enclose_length;
+        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee+enclose_length;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -2996,12 +3028,12 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int newURy=URy+nexlayer_unit;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy+nexlayer_unit) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
 
-        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee;
-        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee;
+        int newLLy=LLy-drc_info.Metal_info.at(mIdx).dist_ee-enclose_length;
+        int newURy=URy+drc_info.Metal_info.at(mIdx).dist_ee+enclose_length;
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
-        int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        //int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
-        newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+        //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+        //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -3024,12 +3056,12 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int newURx=URx+nexlayer_unit;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
 
-        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
-        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
+        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee-enclose_length;
+        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee+enclose_length;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
@@ -3045,12 +3077,12 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int newURx=URx+nexlayer_unit;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx+nexlayer_unit) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
 
-        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee;
-        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee;
+        int newLLx=LLx-drc_info.Metal_info.at(mIdx).dist_ee-enclose_length;
+        int newURx=URx+drc_info.Metal_info.at(mIdx).dist_ee+enclose_length;
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
-        int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        //int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
-        newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+        //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
+        //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){

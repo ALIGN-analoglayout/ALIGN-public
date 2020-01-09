@@ -1198,8 +1198,8 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
            if(feasible==0){
              std::cout<<"Length infeasible"<<std::endl;
            }
-           Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
-           Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
+           //Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
+           //Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
            //std::cout<<"End CheckExendable_With_Certain_Length"<<std::endl;
            if(feasible){
                feasible_node.push_back(next_node);
@@ -1209,8 +1209,8 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
 
          }else{
             bool feasible = 1;
-            Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
-            Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
+            //Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
+            //Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
             if(feasible){
               feasible_node.push_back(next_node);
              }else{
