@@ -16,6 +16,8 @@ DCL_NMOS
 DCL_PMOS
 Dummy_NMOS
 Dummy_PMOS
+Dummy1_NMOS
+Dummy1_PMOS
 Dcap_NMOS
 Dcap_PMOS
 Dcap1_NMOS
