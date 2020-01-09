@@ -17,7 +17,13 @@
   if (params.has("design")) {
     design = params.get("design");
   }
-  var filename = "INPUT/" + design + "_dr_globalrouting.json";
+//  var suffix = "_dr_globalrouting";
+  var suffix = "";
+  if (params.has("suffix")) {
+    suffix = params.get("suffix");
+  }
+
+  var filename = "INPUT/" + design + suffix + ".json";
 
   console.log(design);
   console.log(filename);
@@ -221,6 +227,7 @@
     }
 
     var nets = Object.keys(netMap).sort();
+    nets = nets.filter(function(value) { if ( !value.includes(":")) {return value;}})
 
     d3.select("#netControls")
       .selectAll("button")
