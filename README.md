@@ -84,7 +84,7 @@ By default, the design directory is set to the examples directory. This can be m
 
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
-        % make VENV=$VENV DESIGN=<design>
+        % make DESIGN=<design>
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci
