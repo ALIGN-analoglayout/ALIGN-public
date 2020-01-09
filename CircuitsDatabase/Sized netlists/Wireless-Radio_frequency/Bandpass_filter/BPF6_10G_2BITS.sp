@@ -1,7 +1,7 @@
 ** Generated for: hspiceD
-** Generated on: Jan  5 21:00:24 2020
+** Generated on: Jan  5 20:45:56 2020
 ** Design library name: PhasedArray_WB_copy
-** Design cell name: ILO_10G_2BITS
+** Design cell name: BPF6_10G_2BITS
 ** Design view name: schematic
 
 
@@ -17,10 +17,10 @@
 ** Cell name: res_24K
 ** View name: schematic
 .subckt res_24K t1 t2 vss
-xr4 t2 net05 vss rppolywo_rf l=8e-6 w=500e-9 m=1 
-xr2 net06 net05 vss rppolywo_rf l=8e-6 w=500e-9 m=1 
-xr1 net06 net6 vss rppolywo_rf l=8e-6 w=500e-9 m=1 
-xr0 t1 net6 vss rppolywo_rf l=8e-6 w=500e-9 m=1 
+xr4 t2 net05 vss resistor l=8e-6 w=500e-9 m=1 
+xr2 net06 net05 vss resistor l=8e-6 w=500e-9 m=1 
+xr1 net06 net6 vss resistor l=8e-6 w=500e-9 m=1 
+xr0 t1 net6 vss resistor l=8e-6 w=500e-9 m=1 
 .ends res_24K
 ** End of subcircuit definition.
 
@@ -28,12 +28,12 @@ xr0 t1 net6 vss rppolywo_rf l=8e-6 w=500e-9 m=1
 ** Cell name: capbank_gp_lowC_noLSB_9u_2BITS
 ** View name: schematic
 .subckt capbank_gp_lowC_noLSB_9u_2BITS b<3> b<2> b<1> b<0> left right vdd vss
-xc3 right net3 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 
-xc2 left net1 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 
-xc1 right net4 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 
-xc0 left net2 vss mimcap_woum_sin_rf lt=9e-6 wt=9e-6 
-xm1 net1 b1_buf net3 vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=2 
-xm0 net2 b0_buf net4 vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=1 
+xc3 right net3 vss mimcap lt=9e-6 wt=9e-6 lay=7 m=2 
+xc2 left net1 vss mimcap lt=9e-6 wt=9e-6 lay=7 m=2 
+xc1 right net4 vss mimcap lt=9e-6 wt=9e-6 lay=7 m=1 
+xc0 left net2 vss mimcap lt=9e-6 wt=9e-6 lay=7 m=1 
+xm1 net1 b1_buf net3 vss nmos lr=60e-9 wr=2e-6 nr=20 sigma=1 m=2 
+xm0 net2 b0_buf net4 vss nmos lr=60e-9 wr=2e-6 nr=20 sigma=1 m=1 
 m44 net0155 net0120 vss vss nmos l=60e-9 w=1e-6 m=1 nf=1 
 m40 net0120 b<3> vss vss nmos l=60e-9 w=1e-6 m=1 nf=1 
 m37 net0159 net0104 vss vss nmos l=60e-9 w=1e-6 m=1 nf=1 
@@ -74,35 +74,14 @@ xi19 b0_inv net4 vss res_24K
 ** End of subcircuit definition.
 
 ** Library name: PhasedArray_WB_copy
-** Cell name: VCO_10G_2BITS
+** Cell name: BPF6_10G_2BITS
 ** View name: schematic
-.subckt VCO_10G_2BITS dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vdd_vco0p5 vss vtune
-xc4 outm vtune vss moscap_rf_nw wr=2e-6 lr=500e-9 br=4 gr=4 m=1
-xc0 outp vtune vss moscap_rf_nw wr=2e-6 lr=500e-9 br=4 gr=4 m=1
-xm0 outp outm vss vss nmos_rf lr=60e-9 wr=1e-6 nr=25 sigma=1 m=2 
-xm1 outm outp vss vss nmos_rf lr=60e-9 wr=1e-6 nr=25 sigma=1 m=2 
-xi10 dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vss capbank_gp_lowC_noLSB_9u_2BITS
-xl0 outp outm vss vdd_vco0p5 spiral_sym_ct_mu_z w=9e-6 nr=2 rad=35.5e-6 
-.ends VCO_10G_2BITS
-** End of subcircuit definition.
-
-** Library name: PhasedArray_WB_copy
-** Cell name: ILO_IN_V5_CROSS
-** View name: schematic
-.subckt ILO_IN_V5_CROSS in out out_aux vddsw vss
-xc2 in net3 vss mimcap_woum_sin_rf lt=20e-6 wt=20e-6 
-xr4 vss net08 vss rppolywo_rf l=6e-6 w=1e-6 m=1 
-xr3 vss net3 vss rppolywo_rf l=12e-6 w=1e-6 m=1 
-xr2 net3 vddsw vss rppolywo_rf l=12e-6 w=1e-6 m=1 
-xm0 out_aux net3 net08 net08 nmos_rf lr=60e-9 wr=2e-6 nr=18 sigma=1 m=1 
-xm3 out net3 vss vss nmos_rf lr=60e-9 wr=2e-6 nr=20 sigma=1 m=1 
-.ends ILO_IN_V5_CROSS
-** End of subcircuit definition.
-
-** Library name: PhasedArray_WB_copy
-** Cell name: ILO_10G_2BITS
-** View name: schematic
-xi11 dig_vco<3> dig_vco<2> dig_vco<1> dig_vco<0> outm outp vddsw vdd_vco0p5 vss vtune VCO_10G_2BITS
-xi12 inp outm outp vddsw vss ILO_IN_V5_CROSS
-xi13 inm outp outm vddsw vss ILO_IN_V5_CROSS
+xc4 outm vtune vss moscap wr=2e-6 lr=500e-9 br=4 gr=4 m=1
+xc0 outp vtune vss moscap wr=2e-6 lr=500e-9 br=4 gr=4 m=1
+xm20 outp outm vss vss nmos lr=120e-9 wr=2.5e-6 nr=10 sigma=1 m=1 
+xm19 outm outp vss vss nmos lr=120e-9 wr=2.5e-6 nr=10 sigma=1 m=1 
+xm2 outp inm vss vss nmos lr=120e-9 wr=2.5e-6 nr=8 sigma=1 m=1 
+xm8 outm inp vss vss nmos lr=120e-9 wr=2.5e-6 nr=8 sigma=1 m=1 
+xi5 dig_bpf<3> dig_bpf<2> dig_bpf<1> dig_bpf<0> outm outp vddsw vss capbank_gp_lowC_noLSB_9u_2BITS
+xl4 outm outp vss vdd_bpf0p5 spiral_sym_ct_mu_z w=9e-6 nr=2 rad=35.5e-6 
 .END
