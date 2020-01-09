@@ -5,6 +5,9 @@ import pytest
 
 from align.pnr import *
 
+import logging
+logger = logging.getLogger(__name__)
+
 mydir = pathlib.Path(__file__).resolve().parent
 
 def check_wire_widths( terminals, sc):
