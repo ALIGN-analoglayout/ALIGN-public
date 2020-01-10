@@ -238,6 +238,11 @@ class DefaultPrimitiveGenerator():
                         last_x1_track,
                         last_y1_track)
 
+        #self.addRegion( self.Cboundary, 'Cboundary', None,
+        #                    -1, -1,
+        #                    last_x_track  + x * grid_cell_x_pitch + 1 + p,
+        #                    last_y1_track + y * grid_cell_y_pitch + 1)
+
         logger.debug( f"Computed Boundary: {self.terminals[-1]} {self.terminals[-1]['rect'][2]} {self.terminals[-1]['rect'][2]%80}")
 
     def addResArray(self, x_cells, y_cells, height, unit_res):
@@ -309,6 +314,11 @@ class DefaultPrimitiveGenerator():
 
         if draw_boundary:
             self.addRegion( self.boundary, 'boundary', None,
+                            -1, -1,
+                            last_x_track  + x * grid_cell_x_pitch + 1 + p,
+                            last_y1_track + y * grid_cell_y_pitch + 1)
+
+            self.addRegion( self.Rboundary, 'Rboundary', None,
                             -1, -1,
                             last_x_track  + x * grid_cell_x_pitch + 1 + p,
                             last_y1_track + y * grid_cell_y_pitch + 1)
@@ -462,8 +472,11 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
 
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
-
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin)
+    if 'Cap' in primitive:
+        blockM = 1
+    else:
+        pass         
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
