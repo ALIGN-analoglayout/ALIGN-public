@@ -3,7 +3,7 @@ import pytest
 import align
 import os
 import pathlib
-
+run_flat=['linear_equalizer']
 examples = [('examples', 'buffer'),
             ('examples', 'adder'),
             ('examples', 'telescopic_ota'),
@@ -42,8 +42,9 @@ def test_A( d, nm):
     run_dir.mkdir( exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(home / "pdks" / "FinFET14nm_Mock_PDK"), '-flat',  str(0), '--check']
-
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(home / "pdks" / "FinFET14nm_Mock_PDK"), '-flat',  str(0),'--check']
+    if nm in run_flat:
+        args +=['-flat' ,'1']
     results = align.CmdlineParser().parse_args(args)
 
     for result in results:

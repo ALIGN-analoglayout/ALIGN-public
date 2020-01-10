@@ -309,7 +309,7 @@ def generate_lef(name, values, available_block_lef,
             if 'nmos' in name.lower() and unit_size_mos==37:
                 unit_size_mos=8
             elif unit_size_mos==37:
-                unit_size_mos=10
+                unit_size_mos=12
             no_units = ceil(size / unit_size_mos)
 
         elif "l" in values.keys():
@@ -656,13 +656,16 @@ def WriteConst(graph, input_dir, name, ports, working_dir,stop_points):
     existing_SymmNet = False
 
     # Read contents
+    logger.info("input const file: %s", const_file)
     if const_file.exists() and const_file.is_file():
         with open(const_file) as f:
-            content = f.readlines()
-            if 'SymmBlock' in content:
-                existing_SymmBlock+=content
-            elif 'SymmNet' in content:
-                existing_SymmNet = True
+            for content in f:
+                logger.info("line %s",content)
+                if 'SymmBlock' in content:
+                    existing_SymmBlock+=content
+                    logger.info("symmblock found %s",content)
+                elif 'SymmNet' in content:
+                    existing_SymmNet = True
     del_existing=[]
     for key, value in all_match_pairs.items():
         if key in existing_SymmBlock or value in existing_SymmBlock:
