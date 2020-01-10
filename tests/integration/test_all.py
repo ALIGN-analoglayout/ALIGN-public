@@ -1,50 +1,39 @@
-
 import pytest
 import align
 import os
 import pathlib
+
+pdks= []
+for pdk in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
+    if pdk.is_dir() and (pdk / 'layers.json').exists():
+        pdks.append(pdk)
+
 run_flat=['linear_equalizer']
-examples = [('examples', 'buffer'),
-            ('examples', 'adder'),
-            ('examples', 'telescopic_ota'),
-            ('examples', 'high_speed_comparator'),
-            ('examples', 'inverter_v1'),
-            ('examples', 'inverter_v2'),
-            ('examples', 'inverter_v3'),
-            ('examples', 'single_to_differential_converter'), 
-            ('examples', 'telescopic_ota_with_bias'),
-            ('examples', 'current_mirror_ota'),
-            ('examples', 'five_transistor_ota'),
-            ('examples', 'cascode_current_mirror_ota'),
-            ('examples', 'switched_capacitor_filter'),
-            ('examples', 'sc_dc_dc_converter')
-            ]
 
 examples = []
-for p in pathlib.Path( 'examples').iterdir():
+for p in (pathlib.Path(__file__).parent.parent.parent / 'examples').iterdir():
     if p.is_dir():
         if p.parts[-1] == 'modified_USC_UW_UT_testcases': continue
         print(p)
-        examples.append( ('/'.join(p.parts[:-1]), p.parts[-1]))
+        examples.append( p)
 
-for p in (pathlib.Path( 'examples') / 'modified_USC_UW_UT_testcases').iterdir():
+for p in (pathlib.Path(__file__).parent.parent.parent / 'examples' / 'modified_USC_UW_UT_testcases').iterdir():
     if p.is_dir():
         print(p)
-        examples.append( ('/'.join(p.parts[:-1]), p.parts[-1]))
+        examples.append( p)
 
 @pytest.mark.nightly
-@pytest.mark.parametrize( "d,nm", examples)
-def test_A( d, nm):
-    home = pathlib.Path( os.environ['ALIGN_HOME'])
-    design_dir = home / d / nm
-    run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']) / nm
+@pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
+@pytest.mark.parametrize( "pdk_dir", pdks, ids=lambda x: x.name)
+def test_A( pdk_dir, design_dir):
+    nm = design_dir.name
+    run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() / nm
 
     run_dir.mkdir( exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(home / "pdks" / "FinFET14nm_Mock_PDK"), '-flat',  str(0),'--check']
-    if nm in run_flat:
-        args +=['-flat' ,'1']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0),'--check']
+
     results = align.CmdlineParser().parse_args(args)
 
     for result in results:
