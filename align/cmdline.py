@@ -71,6 +71,9 @@ class CmdlineParser():
                             "--extract",
                             action='store_true',
                             help='Set to true to extract post-layout netlist')
+        parser.add_argument( "-g", "--generate",
+                            action='store_true',
+                            help="Set the true to generate png")
         parser.add_argument( "-l", "--log",
                             dest="log_level",
                             choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
