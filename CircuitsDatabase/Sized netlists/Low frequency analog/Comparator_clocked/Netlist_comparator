@@ -1,0 +1,36 @@
+// Generated for: spectre
+// Generated on: Nov  8 14:55:46 2018
+// Design library name: EnergyHarvesting
+// Design cell name: Comp
+// Design view name: schematic
+global 0
+
+// Library name: DC_converter
+// Cell name: NOR
+// View name: schematic
+subckt NOR GND VDD VIN1 VIN2 VOUT
+    M0 (VOUT VIN1 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M1 (VOUT VIN2 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M3 (VOUT VIN1 net14 VDD) pmos l=60n w=600n m=1 nf=1 
+    M2 (net14 VIN2 VDD VDD) pmos l=60n w=600n m=1 nf=1 
+ends NOR
+// End of subcircuit definition.
+
+// Library name: EnergyHarvesting
+// Cell name: Comp
+// View name: schematic
+M2 (OUT OUTP net021 VDD) pmos l=60n w=3u m=1 nf=1 
+M4 (OUTP OUT net020 VDD) pmos l=60n w=3u m=1 nf=1 
+M3 (net023 CLK VDD VDD) pmos l=60n w=300n m=1 nf=1 
+I1 (GND VDD OUT Q QB) NOR
+I0 (GND VDD OUTP QB Q) NOR
+M0 (net020 VINP net023 VDD) pch_25 l=20u w=400n m=1 nf=1 
+M1 (net021 VINN net023 VDD) pch_25 l=20u w=400n m=1 nf=1 
+M12 (net021 CLK GND GND) nmos l=60n w=120.0n m=1 nf=1 
+M11 (net020 CLK GND GND) nmos l=60n w=120.0n m=1 nf=1 
+M10 (net020 CLK net021 GND) nmos l=60n w=120.0n m=1 nf=1 
+M9 (OUT CLK GND GND) nmos l=60n w=200n m=1 nf=1 
+M6 (OUT OUTP GND GND) nmos l=60n w=200n m=1 nf=1 
+M7 (OUTP OUT GND GND) nmos l=60n w=200n m=1 nf=1 
+M8 (OUTP CLK GND GND) nmos l=60n w=200n m=1 nf=1 
+

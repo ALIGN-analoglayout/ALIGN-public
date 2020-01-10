@@ -55,18 +55,28 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
+    - You can look into [docker files](build/Dockerfile.base) inside build directory for exact set of commands used for installing these requirements.
 
- * Setting up local environment variables if installations are not in system search path 
+ * Setting up local environment variables if installations are not in system search path.
 
         % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
         % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
         % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
         % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
- * Place and route installation
+        % export VENV= <python virtual environment path, e.g., ./align_venv>
+ * Installation
 
         % cd PlaceRouteHierFlow
         % make
+        % cd $ALIGN_HOME
+        % python3.6 -m venv $VENV 
+        % source $VENV/bin/activate 
+        % pip install --upgrade pip
+        % pip install -e .
+        % cd $ALIGN_WORK_DIR
+        % ln -s $ALIGN_HOME/build/Makefile
+
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
 * Docker based run
@@ -75,10 +85,8 @@ By default, the design directory is set to the examples directory. This can be m
         % make docker DESIGN=<design>
 * Native environment flow
 
-        % cd $ALIGN_WORK_DIR
-        % ln -s $ALIGN_HOME/build/Makefile
-        % source general/bin/activate <general is python virtual environment name>
         % make DESIGN=<design>
+
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci

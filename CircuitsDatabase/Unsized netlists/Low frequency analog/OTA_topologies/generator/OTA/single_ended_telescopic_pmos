@@ -1,0 +1,43 @@
+************************************************************************
+* auCdl Netlist:
+* 
+* Library Name:  OTA_class
+* Top Cell Name: single_ended_telescopic_pmos
+* View Name:     schematic
+* Netlisted on:  Sep 11 21:39:52 2019
+************************************************************************
+
+*.BIPOLAR
+*.RESI = 2000 
+*.RESVAL
+*.CAPVAL
+*.DIOPERI
+*.DIOAREA
+*.EQUATION
+*.SCALE METER
+*.MEGA
+.PARAM
+
+*.GLOBAL vdd!
++        gnd!
+
+*.PIN vdd!
+*+    gnd!
+
+************************************************************************
+* Library Name: OTA_class
+* Cell Name:    single_ended_telescopic_pmos
+* View Name:    schematic
+************************************************************************
+
+.SUBCKT single_ended_telescopic_pmos Vbiasn2 Vbiasp Vinn Vinp Voutp
+*.PININFO Vbiasn2:I Vbiasp:I Vinn:I Vinp:I Voutp:O
+MM1 net14 Vbiasn2 net013 gnd! nmos w=WA l=LA nfin=nA
+MM0 Voutp Vbiasn2 net10 gnd! nmos w=WA l=LA nfin=nA
+MM9 net10 net14 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM8 net013 net14 gnd! gnd! nmos w=WA l=LA nfin=nA
+MM5 net12 Vbiasp vdd! vdd! pmos w=WA l=LA nfin=nA
+MM7 Voutp Vinn net12 net19 pmos w=WA l=LA nfin=nA
+MM6 net14 Vinp net12 net19 pmos w=WA l=LA nfin=nA
+.ENDS
+

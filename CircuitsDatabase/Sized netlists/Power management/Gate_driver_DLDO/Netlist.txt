@@ -1,0 +1,20 @@
+// Generated for: spectre
+// Generated on: Nov  2 10:25:43 2018
+// Design library name: DC_converter
+// Design cell name: 31Dec_2017_Driver_cap
+// Design view name: schematic
+global 0
+
+// Library name: DC_converter
+// Cell name: 31Dec_2017_Driver_cap
+// View name: schematic
+M13 (net32 lres_nmos gnd gnd) nmos l=4.8u w=120.0n m=1 nf=1 
+M12 (net017 sres_nmos gnd gnd) nmos l=60n w=240.0n m=1 nf=1 
+M11 (net32 ss net33 gnd) nmos l=60n w=120.0n m=2 nf=1 
+M9 (net33 Vb gnd gnd) nmos l=60n w=120.0n m=2 nf=1 
+M14 (Dout Din net32 gnd) nmos l=60n w=120.0n m=1 nf=1 
+M17 (Dout lres_pmos Vdd Vdd) pmos l=4.8u w=120.0n m=1 nf=1 
+M15 (net31 sres_pmos Vdd Vdd) pmos l=120.0n w=120.0n m=1 nf=1 
+M4 (net32 ss_bar_sres_nmos net017 gnd) nmos lr=60n wr=600n nr=1 
+M6 (Dout ss_bar_sres_pmos net31 Vdd) pmos lr=60n wr=600n nr=1 
+M5 (Dout Din Vdd Vdd) pch_hvt l=60n w=120.0n m=5 nf=1 

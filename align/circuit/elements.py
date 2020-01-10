@@ -38,4 +38,3 @@ class Library(dict):
                                                                 issubclass(x, NTerminalDevice) and
                                                                 not x.__name__.startswith('_')) }
         self.update(default)
-

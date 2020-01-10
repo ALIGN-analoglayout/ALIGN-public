@@ -121,7 +121,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -157,7 +157,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -262,7 +262,7 @@ class Canvas:
                 r = [ x-1, 0, x+1, height]
                 data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
 
-            
+
         ly = "M2"
         if ly in self.pdk:
             pitch = self.pdk[ly]["Pitch"]
@@ -311,4 +311,3 @@ class Canvas:
 
     def generate_routing_collateral(self, dirname):
         return routing_collateral.gen( self, dirname)
-

@@ -35,7 +35,6 @@ setup(name='align',
           'pyyaml'
           ],
       setup_requires=['pytest-runner'],
-      tests_require=['pytest'],
       python_requires='~=3.6',
       classifiers=[
           'Development Status :: 2 - Pre-Alpha',

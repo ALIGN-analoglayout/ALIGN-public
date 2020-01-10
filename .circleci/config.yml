@@ -22,71 +22,6 @@ jobs:
           root: /work/workspace
           paths: .
 
-  build-make:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          apk update
-          apk add python3 make bash
-
-          (cd build/ThirdParty/Klayout && docker build . -t layout_convert -f Dockerfile.convert)
-          make build_docker
-
-          python3 -m venv general
-          source general/bin/activate
-
-          pip install --upgrade pip
-          pip install wheel pytest coverage pytest-cov networkx pyyaml python-gdsii
-
-          pip install .
-
-      - run:
-          make DESIGN_NAME=telescopic_ota ALIGN_docker generate_png
-
-      - store_artifacts:
-          path: testcase_latest/Results/telescopic_ota.png
-      
-      - run:
-          make DESIGN_NAME=high_speed_comparator ALIGN_docker generate_png
-
-      - store_artifacts:
-          path: testcase_latest/Results/high_speed_comparator.png
-      
-      - run:
-          make DESIGN_NAME=telescopic_ota_with_bias ALIGN_docker generate_png
-
-      - run:
-          make DESIGN_NAME=switched_capacitor_filter ALIGN_docker generate_png
-          
-      - store_artifacts:
-          path: testcase_latest/Results/switched_capacitor_filter.png
-
-      - run:
-          make DESIGN_NAME=current_mirror_ota ALIGN_docker generate_png
-
-      - store_artifacts:
-          path: testcase_latest/Results/current_mirror_ota.png
-
-      - run:
-          make DESIGN_NAME=five_transistor_ota ALIGN_docker generate_png
-
-      - store_artifacts:
-          path: testcase_latest/Results/five_transistor_ota.png
-
-      - run:
-          make DESIGN_NAME=cascode_current_mirror_ota ALIGN_docker generate_png
-
-      - store_artifacts:
-          path: testcase_latest/Results/cascode_current_mirror_ota.png
-
-# Works but takes too long
-#          make DESIGN_NAME=sc_dc_dc_converter ALIGN_docker generate_png
-
   build-make-compose:
     executor: docker-executor
     steps:
@@ -103,7 +38,7 @@ jobs:
           pip install docker-compose
 
       - setup_remote_docker
-      
+
       - run:
           shell: /bin/bash
           command: |
@@ -114,34 +49,34 @@ jobs:
           shell: /bin/bash
           command: |
             docker volume create --name=$ALIGN_WORK_DIR
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             make docker DESIGN=telescopic_ota && \
             docker cp make_docker_cont:/dataVolume/telescopic_ota ..
-            
+
       - store_artifacts:
           path: telescopic_ota/telescopic_ota_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             make docker DESIGN=switched_capacitor_filter && \
             docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
-            
+
       - store_artifacts:
           path: switched_capacitor_filter/switched_capacitor_filter_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             make docker DESIGN=current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
-            
+
       - store_artifacts:
           path: current_mirror_ota/current_mirror_ota_0.png
 
@@ -151,21 +86,21 @@ jobs:
             cd build/
             make docker DESIGN=cascode_current_mirror_ota && \
             docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
-            
+
       - store_artifacts:
           path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             make docker DESIGN=five_transistor_ota && \
             docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
-            
+
       - store_artifacts:
           path: five_transistor_ota/five_transistor_ota_0.png
 
-            
+
       - run:
           shell: /bin/bash
           command: |
@@ -175,8 +110,8 @@ jobs:
 
       - store_artifacts:
           path: adder/adder_0.png
-  
-          
+
+
   build-make-monolithic:
     executor: docker-executor
     steps:
@@ -195,9 +130,9 @@ jobs:
       - run: |
           echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
           echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-          
+
       - setup_remote_docker
-      
+
       - run:
           shell: /bin/bash
           command: |
@@ -206,34 +141,34 @@ jobs:
             make docker-compose.yml
             docker-compose up -d fullbuild-service
             docker-compose exec fullbuild-service bash -c "ln -sf \$ALIGN_HOME/build/Makefile ."
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             docker-compose exec fullbuild-service bash -c "make DESIGN=telescopic_ota"
             docker cp fullbuild_cont:/dataVolume/telescopic_ota ..
-            
+
       - store_artifacts:
           path: telescopic_ota/telescopic_ota_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             docker-compose exec fullbuild-service bash -c "make DESIGN=switched_capacitor_filter"
             docker cp fullbuild_cont:/dataVolume/switched_capacitor_filter ..
-            
+
       - store_artifacts:
           path: switched_capacitor_filter/switched_capacitor_filter_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             docker-compose exec fullbuild-service bash -c "make DESIGN=current_mirror_ota"
             docker cp fullbuild_cont:/dataVolume/current_mirror_ota ..
-            
+
       - store_artifacts:
           path: current_mirror_ota/current_mirror_ota_0.png
 
@@ -243,91 +178,19 @@ jobs:
             cd build/
             docker-compose exec fullbuild-service bash -c "make DESIGN=cascode_current_mirror_ota"
             docker cp fullbuild_cont:/dataVolume/cascode_current_mirror_ota ..
-            
+
       - store_artifacts:
           path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
-            
+
       - run:
           shell: /bin/bash
           command: |
             cd build/
             docker-compose exec fullbuild-service bash -c "make DESIGN=five_transistor_ota"
             docker cp fullbuild_cont:/dataVolume/five_transistor_ota ..
-            
+
       - store_artifacts:
           path: five_transistor_ota/five_transistor_ota_0.png
-
-          
-  build-tally:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd Pysat
-          docker build -f Dockerfile.tally -t tally_image  .
-          docker run --name tally_container tally_image bash -c "source /general/bin/activate && cd tally && coverage run --source=tally,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/tally && cp /tally/junit.xml /test-reports/tally && mkdir -p /coverage-reports/tally && cp -r /tally/coverage.xml /tally/htmlcov /coverage-reports/tally"
-          cd -
-          docker cp tally_container:coverage-reports .
-          docker cp tally_container:test-reports .
-          docker rm tally_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/tally
-            - coverage-reports/tally
-
-
-  build-sgi:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
-          cd Experimental/SATBasedMonomorphism
-          docker build -t sgi_image .
-          docker run --name sgi_container sgi_image bash -c "source /general/bin/activate && cd sgi && coverage run --source=sgi,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/sgi && cp /sgi/junit.xml /test-reports/sgi && mkdir -p /coverage-reports/sgi && cp -r /sgi/coverage.xml /sgi/htmlcov /coverage-reports/sgi"
-          cd -
-
-          docker cp sgi_container:coverage-reports .
-          docker cp sgi_container:test-reports .
-          docker rm sgi_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/sgi
-            - coverage-reports/sgi
-
-  build-pdks:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-          docker run --name pdks_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && pip install . && cd pdks && pytest --junitxml=junit.xml && mkdir -p /test-reports/pdks && cp junit.xml /test-reports/pdks"
-
-          docker cp pdks_container:test-reports .
-          docker rm pdks_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/pdks
-
 
   build-cktgen:
     executor: docker-executor
@@ -377,54 +240,6 @@ jobs:
             - test-reports/align
             - coverage-reports/align
 
-  build-satplacer:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          (cd Pysat; docker build -f Dockerfile.tally -t tally_image .)
-          cd Pysat
-          docker build -t satplacer_image -f ./Dockerfile ..
-
-          docker run --name satplacer_container satplacer_image bash -c "source general/bin/activate && cd satplacer && coverage run --source=satplacer,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/satplacer && cp /satplacer/junit.xml /test-reports/satplacer && mkdir -p /coverage-reports/satplacer && cp -r /satplacer/coverage.xml /satplacer/htmlcov /coverage-reports/satplacer"
-          cd -
-
-          docker cp satplacer_container:coverage-reports .
-          docker cp satplacer_container:test-reports .
-          docker rm satplacer_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/satplacer
-            - coverage-reports/satplacer
-
-
-  build-PlacementEditor:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          cd PlacementEditor
-          docker build -t pe_image .
-          docker run --name pe_container pe_image bash -c "npm run test && mkdir -p /test-reports/PlacementEditor && cp junit.xml /test-reports/PlacementEditor"
-          cd -
-          docker cp pe_container:test-reports .
-          docker rm pe_container
-
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/PlacementEditor
-            
   build-PlaceRouteHierFlow:
     executor: docker-executor
     steps:
@@ -449,109 +264,39 @@ jobs:
           docker cp PnR:/PlaceRouteHierFlow/placer/junit.xml test-reports/PlaceRouteHierFlow/placer
           docker cp PnR:/PlaceRouteHierFlow/router/junit.xml test-reports/PlaceRouteHierFlow/router
           docker cp PnR:/PlaceRouteHierFlow/cap_placer/junit.xml test-reports/PlaceRouteHierFlow/cap_placer
-          
+
       - persist_to_workspace:
           root: /work/workspace
           paths:
             - test-reports/PlaceRouteHierFlow
             - coverage-reports/PlaceRouteHierFlow
-            
+
       - store_artifacts:
           path: test-reports
-          
+
       - store_artifacts:
           path: coverage-reports
 
-  mono_end_to_end:
+  build-nightly:
     executor: docker-executor
     steps:
-      - attach_workspace:
-          at: /work/workspace
-          
       - setup_remote_docker
 
-      - run: |
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          
-      - run: |
-          docker volume create dr-collateral
-          docker volume create inputVol
-          docker volume create outputVol
-          docker volume create equalizerInputVol
-          docker volume create equalizerOutputVol
-          docker volume create routerStrawman
-
-      - run: |
-          cd Cktgen
-          docker build . -t cktgen
-
-      - run: |
-          cd Pysat
-          docker build -f Dockerfile.tally -t tally_image .
-          docker build -f Dockerfile.pysat -t satplacer_image .
-
-      - run: |
-          apk add bash python3
-          cd Pysat
-          /bin/bash ./bottom-up.sh
-          mkdir -p ../test-reports/bottom-up
-          cp bottom-up.test_result ../test-reports/bottom-up/results.xml
-
-      - store_artifacts:
-          path: test-reports
-
-      - store_test_results:
-          path: test-reports
-
-
-  multi_end_to_end:
-    executor: docker-executor
-    steps:
       - attach_workspace:
           at: /work/workspace
-          
-      - setup_remote_docker
 
       - run: |
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          
-      - run: |
-          docker volume create dr-collateral
-          docker volume create inputVol
-          docker volume create outputVol
-          docker volume create equalizerInputVol
-          docker volume create equalizerOutputVol
-          docker volume create routerStrawman
+          docker build -t align_image -f ./build/Dockerfile.base .
 
-      - run: |
-          cd Cktgen
-          docker build . -t cktgen
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --timeout=1200; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
 
-      - run: |
-          cd Pysat
-          docker build -f Dockerfile.tally -t tally_image .
-          docker build -f Dockerfile.pysat -t satplacer_image .
+          docker cp align_container:test-reports .
+          docker rm align_container
 
-      - run: |
-          docker run --mount source=equalizerInputVol,target=/INPUT --name copy_container ubuntu
-          cd Pysat/INPUT
-          docker cp stack_global_router_out.json copy_container:/INPUT/
-          docker cp  stack_placer_out_scaled.json copy_container:/INPUT/
-
-      - run: |
-          apk update
-          apk add bash python3 pytest
-          cd Pysat/flow
-          pytest
-          mkdir -p ../../test-reports/regression
-          cp junit.xml ../../test-reports/regression/results.xml
-
-
-      - store_artifacts:
-          path: test-reports
-
-      - store_test_results:
-          path: test-reports
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-nightly
 
 
   finish:
@@ -570,6 +315,18 @@ jobs:
       - store_artifacts:
           path: coverage-reports
 
+  finish-nightly:
+    executor: git-executor
+
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+
+      - store_test_results:
+          path: test-reports
+
+      - store_artifacts:
+          path: test-reports
 
 workflows:
   version: 2.1
@@ -579,70 +336,41 @@ workflows:
       - start
       - build-make-compose:
           requires:
-            - start 
-      # - build-make:
-      #     requires:
-      #       - start 
+            - start
 
-  # scheduled-jobs:
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 8 * * *"
+          filters:
+            branches:
+              only:
+                - master
 
-  #   triggers:
-  #     - schedule:
-  #         cron: "35 13 * * *"
-  #         filters:
-  #           branches:
-  #             only: master
-  #
-    # jobs:
-    #   - start
-    #   - build-make-monolithic
-    #       requires:
-    #         - start
+    jobs:
+      - start
+      - build-nightly:
+          requires:
+            - start
+      - finish-nightly:
+          requires:
+            - build-nightly
 
   full:
     jobs:
       - start
-#      - build-tally:
-#          requires:
-#            - start 
-#      - build-sgi:
-#          requires:
-#            - start 
-#      - build-PlacementEditor:
-#          requires:
-#            - start 
       - build-PlaceRouteHierFlow:
           requires:
-            - start 
+            - start
       - build-cktgen:
           requires:
-            - start 
+            - start
       - build-align:
           requires:
-            - start 
-#      - build-satplacer:
-#          requires:
-#            - start 
-      - build-pdks:
-          requires:
-            - build-align 
+            - start
       - finish:
           requires:
-#            - build-tally 
-#            - build-sgi 
-#            - build-PlacementEditor 
             - build-align
-            - build-cktgen 
-            - build-pdks 
+            - build-cktgen
             - build-PlaceRouteHierFlow
-#            - build-satplacer
 
-  # end_to_end:
-  #   jobs:
-  #     - start
-  #     - mono_end_to_end:
-  #         requires:
-  #           - start
-  #     - multi_end_to_end:
-  #         requires:
-  #           - start

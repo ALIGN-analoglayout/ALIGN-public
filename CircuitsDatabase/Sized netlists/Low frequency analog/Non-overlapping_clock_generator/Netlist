@@ -1,0 +1,61 @@
+// Generated for: spectre
+// Generated on: Nov  8 15:11:28 2018
+// Design library name: EnergyHarvesting
+// Design cell name: NON_OVLP3
+// Design view name: schematic
+global 0
+
+
+// Library name: DC_converter
+// Cell name: NOR
+// View name: schematic
+subckt NOR GND VDD VIN1 VIN2 VOUT
+    M0 (VOUT VIN1 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M1 (VOUT VIN2 GND GND) nmos l=60n w=150.0n m=1 nf=1 
+    M3 (VOUT VIN1 net14 VDD) pmos l=60n w=600n m=1 nf=1 
+    M2 (net14 VIN2 VDD VDD) pmos l=60n w=600n m=1 nf=1 
+ends NOR
+// End of subcircuit definition.
+
+// Library name: EnergyHarvesting
+// Cell name: INV1x
+// View name: schematic
+subckt INV1x GND VDD VIN VOUT
+    M0 (VOUT VIN GND GND) nmos l=60n w=120.0n m=1 nf=1 
+    M1 (VOUT VIN VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
+ends INV1x
+// End of subcircuit definition.
+
+// Library name: DC_converter
+// Cell name: INV_L2x
+// View name: schematic
+subckt INV_L2x GND VDD VIN VOUT
+    M0 (VOUT VIN GND GND) nmos l=120.0n w=120.0n m=1 nf=1 
+    M1 (VOUT VIN VDD VDD) pmos l=120.0n w=240.0n m=1 nf=1 
+ends INV_L2x
+// End of subcircuit definition.
+
+// Library name: DC_converter
+// Cell name: NAND
+// View name: schematic
+subckt NAND GND VDD VIN1 VIN2 VOUT
+    M2 (VOUT VIN1 net16 GND) nmos l=60n w=240.0n m=1 nf=1 
+    M3 (net16 VIN2 GND GND) nmos l=60n w=240.0n m=1 nf=1 
+    M0 (VOUT VIN1 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
+    M1 (VOUT VIN2 VDD VDD) pmos l=60n w=240.0n m=1 nf=1 
+ends NAND
+// End of subcircuit definition.
+
+// Library name: EnergyHarvesting
+// Cell name: NON_OVLP3
+// View name: schematic
+I36 (GND VDD net06 CLK A) NOR
+I1 (GND VDD net011 net010 B) NOR
+I37 (GND VDD CLK net010) INV1x
+I43 (GND VDD net010 net012) INV1x
+I39 (GND VDD net09 net011) INV_L2x
+I40 (GND VDD B net08) INV_L2x
+I41 (GND VDD net08 net06) INV_L2x
+I38 (GND VDD A net09) INV_L2x
+I44 (GND VDD D net010 C) NAND
+I45 (GND VDD C net012 D) NAND

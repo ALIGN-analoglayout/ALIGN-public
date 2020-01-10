@@ -183,7 +183,7 @@ class DefaultPrimitiveGenerator():
         m1_p = self.pdk['M1']['Pitch']
         m2_p = self.pdk['M2']['Pitch']
 
-        print( f"Pitches {c_m1_p} {c_m2_p} {m1_p} {m2_p}")
+        logger.debug( f"Pitches {c_m1_p} {c_m2_p} {m1_p} {m2_p}")
 
         def compute( l, p, w):
             # this is nonsense but if l is a multiple of 2p say 2kp, then 2kp+p-w/(2p) is always k
@@ -192,7 +192,7 @@ class DefaultPrimitiveGenerator():
         x_number = compute( x_length, c_m1_p, c_m1_w)
         y_number = compute( y_length, c_m2_p, c_m2_w)
 
-        print( f"Number of wires {x_number} {y_number}")
+        logger.debug( f"Number of wires {x_number} {y_number}")
 
         def roundup( x, p):
             return (x+p-1)//p
@@ -239,7 +239,7 @@ class DefaultPrimitiveGenerator():
                         last_x1_track,
                         last_y1_track)
 
-        print( "Computed Boundary:", self.terminals[-1], self.terminals[-1]['rect'][2], self.terminals[-1]['rect'][2]%80)
+        logger.debug( f"Computed Boundary: {self.terminals[-1]} {self.terminals[-1]['rect'][2]} {self.terminals[-1]['rect'][2]%80}")
 
     def addResArray(self, x_cells, y_cells, height, unit_res):
 

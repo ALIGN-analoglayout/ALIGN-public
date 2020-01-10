@@ -12,7 +12,7 @@ def gen_parser():
     parser.add_argument( "-r", "--res", type=float, required=True)
     parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
     parser.add_argument( "-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
-    parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path.cwd().resolve())
+    parser.add_argument( "-o", "--outputdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
     return parser
 
 def main( args):

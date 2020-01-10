@@ -7,7 +7,7 @@ import json
 import sys
 import re
 
-def print_data (tag_type, data): 
+def print_data (tag_type, data):
     if tag_type == types.ASCII:        return "%s" % data[1:-1]
     elif tag_type == types.BITARRAY:   return int(data)
     elif tag_type == types.REAL8:
@@ -22,11 +22,11 @@ def print_data (tag_type, data):
             return int(data)
     else:
         raise Exception ('Unsupported type')
-    
+
 def isElement (e):
     return e == "BOUNDARY" or e == "PATH" or e == "SREF" or \
            e == "AREF" or e == "TEXT" or e == "NODE" or e == "BOX"
-    
+
 def convert_GDStxt_GDSjson (name, oname):
     level = 0
     rexp = re.compile(r'^(?P<tag>[^:]+)(:\s*(?P<rest>.*))?$')
@@ -34,7 +34,7 @@ def convert_GDStxt_GDSjson (name, oname):
 
     top = {}
     cursors = [top, {}, {}, {}, {}, {}, {}]
-        
+
     lineno = 0
     with open (name, 'rt') as ifile:
         for line in ifile:

@@ -57,6 +57,7 @@ class A_star {
     void CheckExtendable(std::vector<int> &candidate_node, int current_node, Grid& grid);
     int trace_back(int current_node, Grid& grid);
     std::vector<std::vector<int>> GetPath();
+    bool Check_via_AV(int first_node_same_layer,int current_node,int length,int minL,Grid &grid, bool &feasible);
 };
 
 #endif
