@@ -8,6 +8,7 @@ import json
 import importlib
 
 from .generators import Wire
+from . import gen_lef
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ class DefaultPrimitiveGenerator():
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):
+    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 1, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
@@ -450,8 +451,6 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
     sys.path.insert(0, str(pdkdir))
     import gen_gds_json
     importlib.reload(gen_gds_json)
-    import gen_lef
-    importlib.reload(gen_lef)
     from primitive import PrimitiveGenerator
     sys.path.pop(0)
 
@@ -488,7 +487,7 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
         blockM = 1
     else:
         blockM = 0         
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
