@@ -463,7 +463,7 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
 
     if 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(uc, block_name, primitive, height, value, x_cells, y_cells, pattern, parameters, pinswitch)
-    elif 'Cap' in primitive:
+    elif 'cap' in primitive.lower():
         uc, cell_pin = generate_Cap(uc, block_name, value)
         uc.setBboxFromBoundary()
     elif 'Res' in primitive:

@@ -46,12 +46,12 @@ class CmdlineParser():
         parser.add_argument("-U_mos",
                             "--unit_size_mos",
                             type=int,
-                            default=10,
+                            default=12,
                             help='no of fins in unit size')
         parser.add_argument("-U_cap",
                             "--unit_size_cap",
                             type=int,
-                            default=10,
+                            default=12,
                             help='no of fins in unit size')
         parser.add_argument("-n",
                             "--nvariants",

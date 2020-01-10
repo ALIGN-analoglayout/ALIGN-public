@@ -144,16 +144,17 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     primitives, unit_size_mos, unit_size_cap)
                 block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
-                if block_name in primitives:
-                    assert block_args == primitives[block_name]
-                else:
-                    primitives[block_name] = block_args
                 # Only unit caps are generated
-                if 'Cap' in block_name:
+                if 'cap' in block_name.lower():
                     graph.nodes[node]['inst_type'] = block_args['primitive']
                     block_args['primitive']=block_name
                 else:
                     graph.nodes[node]['inst_type'] = block_name
+
+                if block_name in primitives:
+                    assert block_args == primitives[block_name]
+                else:
+                    primitives[block_name] = block_args
             else:
                 logger.info(f"No physical information found for: {name}")
 
