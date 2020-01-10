@@ -24,11 +24,11 @@ RUN apt-get update && apt-get install -yq \
     vim \
     graphviz \
     gnuplot \
+    curl \
+    xvfb \
     # libgraphviz-dev \
     # protobuf-compiler \
-    # curl \
     # lcov \
-    # xvfb \
 && rm -rf /var/lib/apt/lists/*
 
 # Create Virtual Env
@@ -70,7 +70,7 @@ RUN cd /opt && \
 # KLayout
 RUN curl -o /klayout_0.25.4-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.25.4-1_amd64.deb
 
-RUN apt-get install -yq /klayout_0.25.4-1_amd64.deb xvfb
+RUN apt-get install -yq /klayout_0.25.4-1_amd64.deb
 
 from align_base as align_image
 
