@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The variable gain amplifier is used to amplify or, attenuate an input signal with varing gain.
 
 ![Circuit diagram](variable_gain_amplifier_schematic.tiff)
@@ -24,4 +23,3 @@ Simulations
 * DC - operating point information
 * AC - gain, three dB frequency, unity gain frequency, phase margin
 * Tran - to check whether output voltage is distorted
-

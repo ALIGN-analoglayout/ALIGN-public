@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The single to differential converter circuit is used to create two differential signals from a signal.
 
 ![Circuit diagram](single_to_differential_converter_schematic.tiff)
@@ -23,4 +22,3 @@ Simulations
 * DC - operating point information
 * AC - gain, three dB frequency, unity gain frequency, phase margin
 * Tran - to check whether output voltage is distorted
-

@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The transimpedance amplifier circuit converts current to voltage.
 
 ![Circuit diagram](transimpedance_amplifier_schematic.tiff)
@@ -13,4 +12,3 @@ The transimpedance amplifier circuit converts current to voltage.
 * vout  - output 
 * vps - supply voltage
 * vgnd - ground
-

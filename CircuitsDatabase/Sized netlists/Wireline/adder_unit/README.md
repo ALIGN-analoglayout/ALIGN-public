@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The adder unit is used to add two or more signals.
 
 ![Circuit diagram](adder_schematic.tiff)
@@ -24,4 +23,3 @@ Simulations
 * DC - operating point information
 * AC - gain, three dB frequency, unity gain frequency, phase margin
 * Tran - to check whether output voltage is distorted
-

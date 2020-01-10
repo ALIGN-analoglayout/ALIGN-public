@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The double tail sense amplfier is used to read low-voltage inputs.
 
 ![Circuit diagram](double_tail_sense_amplifier_schematic.tiff)

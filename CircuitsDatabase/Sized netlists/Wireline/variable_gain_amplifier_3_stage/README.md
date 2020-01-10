@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The variable gain amplifier is used to amplify or, attenuate an input signal with varing gain.
 
 ![Circuit diagram](variable_gain_amplifier_3_stage_schematic.tiff)
@@ -15,4 +14,3 @@ The variable gain amplifier is used to amplify or, attenuate an input signal wit
 * s0, s1 - Switches to vary gain. Can be set it to either '1' or '0'.
 * vps - supply voltage
 * vgnd - ground
-

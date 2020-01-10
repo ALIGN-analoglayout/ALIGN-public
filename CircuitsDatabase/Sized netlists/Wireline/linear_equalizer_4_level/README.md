@@ -2,7 +2,6 @@
 
 ### Circuit Description
 
-
 The linear equalizer is used to attenuate low-frequency content and amplify high frequency contents.
 
 ![Circuit diagram](linear_equalizer_4_level_schematic.tiff)
@@ -24,4 +23,3 @@ Simulations
 * DC - operating point information
 * AC - gain, three dB frequency, unity gain frequency, phase margin
 * Tran - to check whether output voltage is distorted
-
