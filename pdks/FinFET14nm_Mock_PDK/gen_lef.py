@@ -7,7 +7,7 @@ pdkfile = (Path(__file__).parent / 'layers.json').resolve()
 p = pdk.Pdk().load(pdkfile)
 exclude_layers = p.get_lef_exclude()
 
-def json_lef(input_json,out_lef,cell_pin):
+def json_lef(input_json,out_lef,cell_pin,blockM):
 
   macro_name = out_lef + '.lef'
 
@@ -70,7 +70,7 @@ def json_lef(input_json,out_lef,cell_pin):
       fp.write( "  END %s\n" % i)
     fp.write( "  OBS\n")
     for obj in j['terminals']:
-      if ('pin' not in obj or obj['pin'] not in cell_pin) and obj['layer'] not in exclude_layers: 
+      if ('pin' not in obj or obj['pin'] not in cell_pin or blockM == 1) and obj['layer'] not in exclude_layers: 
         fp.write( "    LAYER %s ;\n" % obj['layer'])
         fp.write( "      RECT %s %s %s %s ;\n" % tuple( [ s(x) for x in obj['rect']]))
     fp.write( "  END\n")    
