@@ -147,7 +147,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void Adding_tiles_for_terminal(int tile_index, std::vector<std::pair<int,int> > &global_path );
     void ConvertRect2GridPoints_Via(std::vector<std::vector<RouterDB::point>> &plist, int mIdx, int LLx, int LLy, int URx, int URy);
     void Generate_Block_Terminal_Internal_Metal_Set(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x);
-    void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact);
+    void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num);
     void Initial_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i);
     int R_constraint_based_Parallel_routing_number(int i);
     void Global_Path_Operation_For_Pins(int i, std::vector<std::pair<int,int> > &global_path);

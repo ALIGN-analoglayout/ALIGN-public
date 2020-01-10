@@ -6,6 +6,7 @@ Mixers are used for translating RF signals to IF signals or IF signals to RF sig
 ### Testbench/Simulations
 Transient simulation is used for checking the output spectrum. PSP simulation is used to calculate the conversion gain. 
 
+A spectre testbench is defined in MIXER\_TB.scs
 ### Performance metrics
 * IIP3
 * Conversion Gain

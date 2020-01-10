@@ -1,4 +1,4 @@
-## Five Transistor OTA - single ended
+## Five Transistor OTA - single ended stacked
 
 ### Circuit Description
 

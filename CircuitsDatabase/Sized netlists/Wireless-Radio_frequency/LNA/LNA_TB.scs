@@ -1,0 +1,64 @@
+// Design view name: schematic
+simulator lang=spectre
+global 0
+parameters aux=430m cmix=80f sfbias=960m vcb0=0 vcb1=0 vcb2=0 Vmain=430m \
+    Ctune=320f
+
+// INCLUDE YOUR MODEL PATH HERE
+include "MODEL_PATH" 
+
+// Library name: LNA_qmeng
+// Cell name: LNA_QM_V1
+// View name: schematic
+subckt LNA_QM_V1 IN OUTN OUTP SF_BIAS VAUX VDD VMAIN VOUTN VOUTP VSS
+    R5 (net011 VAUX VSS) rppolywo_rf l=6u w=500n m=1  
+    R10 (net0252 VMAIN VSS) rppolywo_rf l=6u w=500n m=1  
+    C3 (net0252 VSS VSS) cap lt=100.0000u wt=50u m=1 \
+           
+    C41 (net0252 VSS VSS) cap lt=50u wt=20u m=1   \
+         
+    C14 (net0252 VSS VSS) cap lt=50u wt=20u m=1   \
+         
+    C4 (net0252 VSS VSS) cap lt=50u wt=50u m=1   \
+         
+    C43 (IN net011 VSS) cap lt=49.65u wt=49.65u m=1   \
+         
+    M4 (OUTN net011 VSS VSS) nmos lr=60n wr=1u nr=28 sigma=1 m=4 \
+         
+    M13 (OUTP net0252 IN VSS) nmos lr=60n wr=1u nr=28 sigma=1 m=1 \
+         
+    R29 (net040 net041 VSS) res l=6u w=3u m=1  
+    R31 (VDD net039 VSS) res l=6u w=3u m=1  
+    R30 (net039 net040 VSS) res l=6u w=3u m=1  
+    R25 (net043 net045 VSS) res l=6u w=3u m=1  
+    R22 (net046 OUTN VSS) res l=6u w=3u m=1  
+    R27 (net038 net044 VSS) res l=6u w=3u m=1  
+    R28 (net041 net038 VSS) res l=6u w=3u m=1  
+    R26 (net044 net043 VSS) res l=6u w=3u m=1  
+    R24 (net045 OUTP VSS) res l=6u w=3u m=1  
+    R23 (VDD net046 VSS) res l=6u w=3u m=1  
+    L0 (net049 net048 VSS) ind 925pH
+ends LNA_QM_V1
+// End of subcircuit definition.
+
+// Library name: LNA_qmeng
+// Cell name: LNA_QM_V1_TEST
+// View name: schematic
+V8 (VDD 0) vsource dc=1 type=dc
+V6 (VMAIN 0) vsource dc=Vmain type=dc
+V5 (VAUX 0) vsource dc=aux type=dc
+V3 (SFBIAS 0) vsource dc=sfbias type=dc
+C1 (VOUTP 0) capacitor c=cmix
+C0 (VOUTN 0) capacitor c=cmix
+PORT0 (IN 0) port r=50 dc=0 type=sine ampl=1 mag=1
+I0 (IN OUTN OUTP SFBIAS VAUX VDD VMAIN VOUTN VOUTP 0) LNA_QM_V1
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
+    tnom=27 multithread=on nthreads=3 scalem=1.0 scale=1.0 gmin=1e-12 \
+    rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 \
+    sensfile="../psf/sens.output" dochecklimit=no checklimitdest=psf 
+dcOp dc write="spectre.dc" maxiters=150 maxsteps=10000 annotate=status
+dcOpInfo info what=oppoint where=rawfile
+sp sp ports=[PORT0] start=7G stop=9G lin=101 annotate=status 
+ac ac start=7G stop=9G lin=101 annotate=status 
+noise ( OUTP OUTN ) noise start=7G stop=9G lin=101 iprobe=PORT0 \
+    annotate=status 
