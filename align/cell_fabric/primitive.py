@@ -475,7 +475,7 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
     if 'Cap' in primitive:
         blockM = 1
     else:
-        pass         
+        blockM = 0         
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
