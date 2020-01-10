@@ -222,12 +222,12 @@ def generate_lef(name, values, available_block_lef,
             size = '_'.join(param+str(values[param]) for param in values)
         logger.debug(f"Found cap with size: {size}, {unit_size_cap}")
         block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
-        unit_block_name = 'cap_' + str(unit_size_cap) + 'f'
+        unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name}, {size}')
         return unit_block_name, {
-            'primitive': name,
+            'primitive': block_name,
             'value': unit_size_cap
         }
 
@@ -423,6 +423,7 @@ def check_common_centroid(graph,const_path,ports):
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
         while line:
+            logger.info("checking cc constraint for caps:%s",line)
             if line.startswith("CC") and len(line.strip().split(','))>=5:
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 updated_cap = caps_in_line.replace(',','_')
@@ -451,7 +452,7 @@ def check_common_centroid(graph,const_path,ports):
 def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     const_path = input_dir / (name + '.const')
     new_const_path = input_dir / (name + '.const_temp')
-    logger.debug(f"writing cap constraints: {const_path}")
+    logger.debug(f"writing cap constraints: {new_const_path}")
     available_cap_const = []
     if os.path.isfile(const_path):
         logger.debug(f'Reading const file for cap {const_path}')
@@ -459,13 +460,14 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         new_const_fp = open(new_const_path, "w")
         line = const_fp.readline()
         while line:
+            logger.info("const line :%s",line)
             if line.startswith("CC"):
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
             elif line.startswith("SymmBlock"):
                 blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
-                logging.info("place symmetrical cap as CC:%s",blocks_in_line)
+                logger.info("place symmetrical cap as CC:%s",blocks_in_line)
                 for pair in blocks_in_line:
                     p1,p2=pair.split(',')
                     if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
@@ -497,7 +499,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                     cc_caps.append(ele)
         if len(n_cap)>0:
             available_cap_const = available_cap_const+ cc_caps
-            unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
+            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
             cap_line = "CC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
             logger.debug("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)
@@ -512,7 +514,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
             else:
                 size = unit_size_cap
             n_cap = str(ceil(size/unit_size_cap))
-            unit_block_name = '} , {cap_' + str(unit_size_cap) + 'f} )\n'
+            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
             cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
             logger.debug("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)
@@ -520,8 +522,10 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
     new_const_fp.close()
     if os.stat(new_const_path).st_size ==0:
         os.remove(new_const_path)
+        logger.info("no cap const found: %s",new_const_path)
     else:
         os.rename(new_const_path, const_path)
+        logger.info("added cap const: %s",const_path)
 
 def matching_groups(G,level1):
     similar_groups=[]

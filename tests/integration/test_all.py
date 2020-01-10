@@ -8,7 +8,7 @@ ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 pdks= [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() \
            if pdk.is_dir() and (pdk / 'layers.json').exists() and 'Bulk' not in pdk.name]
 
-run_flat=['linear_equalizer']
+run_flat=['linear_equalizer', 'adder']
 
 examples_dir =  ALIGN_HOME / 'examples'
 

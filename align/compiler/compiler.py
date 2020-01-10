@@ -172,7 +172,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             logger.debug(f"call array finder for block: {name}")
             all_array=FindArray(graph, input_dir, name )
             logger.debug(f"cap constraint gen for block: {name}")
-            WriteCap(graph, result_dir, name, unit_size_cap,all_array)
+            WriteCap(graph, input_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
             ##Removinf constraints to fix cascoded cmc
             lib_names=[lib_ele['name'] for lib_ele in library]
