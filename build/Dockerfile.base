@@ -26,10 +26,11 @@ RUN apt-get update && apt-get install -yq \
     gnuplot \
     curl \
     xvfb \
-    libgraphviz-dev \
+    # libgraphviz-dev \
     # protobuf-compiler \
     # lcov \
-&& rm -rf /var/lib/apt/lists/*
+&&    apt-get clean
+
 
 # Create Virtual Env
 ENV venv=/opt/venv
