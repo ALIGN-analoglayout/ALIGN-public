@@ -410,15 +410,27 @@
 },
 
 {
+"Layer": "Bbox",
+"GdsLayerNo": 100,
+"GdsDatatype": {"Draw":5}
+},
+
+{
 "Layer": "Boundary",
 "GdsLayerNo": 101,
 "GdsDatatype": {"Draw":0}
 },
 
 {
-"Layer": "Bbox",
-"GdsLayerNo": 100,
-"GdsDatatype": {"Draw":5}
+"Layer": "Rboundary",
+"GdsLayerNo": 102,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Cboundary",
+"GdsLayerNo": 103,
+"GdsDatatype": {"Draw":0}
 },
 
 {

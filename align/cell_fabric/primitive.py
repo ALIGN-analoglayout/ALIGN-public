@@ -5,6 +5,7 @@ import logging
 import collections
 import math
 import json
+import importlib
 
 from .generators import Wire
 
@@ -448,7 +449,9 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))
     import gen_gds_json
+    importlib.reload(gen_gds_json)
     import gen_lef
+    importlib.reload(gen_lef)
     from primitive import PrimitiveGenerator
     sys.path.pop(0)
 
