@@ -10,17 +10,11 @@ for pdk in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():
 
 run_flat=['linear_equalizer']
 
+ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
+examples_dir =  ALIGN_HOME / 'examples'
 examples = []
-for p in (pathlib.Path(__file__).parent.parent.parent / 'examples').iterdir():
-    if p.is_dir():
-        if p.parts[-1] == 'modified_USC_UW_UT_testcases': continue
-        print(p)
-        examples.append( p)
-
-for p in (pathlib.Path(__file__).parent.parent.parent / 'examples' / 'modified_USC_UW_UT_testcases').iterdir():
-    if p.is_dir():
-        print(p)
-        examples.append( p)
+examples += [p for p in examples_dir.iterdir() if p.is_dir() and p.name != 'modified_USC_UW_UT_testcases']
+examples += [p in (examples_dir / 'modified_USC_UW_UT_testcases').iterdir() if p.is_dir()]
 
 @pytest.mark.nightly
 @pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
@@ -32,7 +26,7 @@ def test_A( pdk_dir, design_dir):
     run_dir.mkdir( exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0),'--check']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check']
 
     results = align.CmdlineParser().parse_args(args)
 
