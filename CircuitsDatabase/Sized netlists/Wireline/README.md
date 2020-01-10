@@ -2,9 +2,7 @@
 
 Circuit | Technology | Netlist | Schematic | Layout | Testbench | Constraints | ALIGN |
 :------ | :--------- | :---- | :------ | :-------- | :----- | :-------- | :---------- |
-Single to differential converter | 12 nm | :heavy_check_mark: |  |  |  |  |  |
-Adder | 12 nm | :heavy_check_mark: |  |  |  |  |  |
-Variable gain amplifier (VGA) | 12 nm | :heavy_check_mark: |  |  |  |  |  |
+Single to differential converter | 12 nm | :heavy_check_mark: | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: |
 Adder unit | 12 nm | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: |
 Double tail sense amplifier | 12 nm | :heavy_check_mark: | :heavy_check_mark: |  |  |  | :heavy_check_mark: |
 Linear Equalizer 2 level| 12 nm | :heavy_check_mark: | :heavy_check_mark: |  |  |  | :heavy_check_mark: |
