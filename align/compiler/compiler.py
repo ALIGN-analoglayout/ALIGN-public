@@ -32,7 +32,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
     library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
-    logger.warning(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
+    logger.info(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
     if len(design_setup['DONT_USE_CELLS'])>0:
         library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
 
@@ -125,7 +125,8 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             if members["ports"]:
                 logger.debug(f'Found module ports kk: {members["ports"]}')
                 floating_ports = list(set(inoutpin) - set(members["ports"]))
-                logger.warning(f"floating port found: {floating_ports}")
+                if len(floating_ports)> 0:
+                    logger.warning(f"floating port found: {floating_ports}")
         else:
             inoutpin = members["ports"]
 
@@ -147,9 +148,14 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     assert block_args == primitives[block_name]
                 else:
                     primitives[block_name] = block_args
-                graph.nodes[node]['inst_type'] = block_name
+                # Only unit caps are generated
+                if 'Cap' in block_name:
+                    graph.nodes[node]['inst_type'] = block_args['primitive']
+                    block_args['primitive']=block_name
+                else:
+                    graph.nodes[node]['inst_type'] = block_name
             else:
-                logger.warning(f"No physical information found for: {name}")
+                logger.info(f"No physical information found for: {name}")
 
         if name in ALL_LEF:
             logger.debug(f"writing spice for block: {name}")
@@ -171,7 +177,8 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             lib_names=[lib_ele['name'] for lib_ele in library]
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
-                WriteConst(graph, input_dir, name, inoutpin, result_dir)
+                stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
+                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:

@@ -7,6 +7,9 @@ Created on Thu Nov 29 22:19:39 2018
 import networkx as nx
 from networkx.algorithms import isomorphism
 
+import logging
+logger = logging.getLogger(__name__)
+
 def merge_nodes(G, hier_type, argv, matched_ports):
     """ Merges the  given nodes in argv and returns a
      reduced graph. It also returns a subgraph(not used anymore)"""
@@ -226,7 +229,7 @@ def convert_unit(value):
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
+            logger.error(f"Parameter {value} not defined. Using value=12n. Please fix netlist")
             value = 1e-8
     return mult*value
 
