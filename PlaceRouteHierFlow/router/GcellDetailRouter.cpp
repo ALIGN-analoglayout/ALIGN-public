@@ -658,6 +658,9 @@ void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB:
 };
 void GcellDetailRouter::create_detailrouter(){
 
+  //bug:
+  //1. use other SinkDataComp for Set_x_contact and Set_net_contact
+  //2. rm the via inactive for inner the pins
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
 
@@ -1087,7 +1090,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
   plist_via_lower_metal.clear(), plist_via_lower_metal.resize(this->layerNo);
   plist_via_upper_metal.clear(), plist_via_upper_metal.resize(this->layerNo);
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact);
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact); //bug use other sinkDataComp Yaguang
   for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator vit = Set.begin(); vit != Set.end(); ++vit)
   {
     int mIdx = vit->metalIdx;    
