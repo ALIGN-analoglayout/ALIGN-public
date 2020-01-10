@@ -23,6 +23,7 @@
 {
 "Layer": "Fin",
 "LayerNo": 3,
+"GdsDatatype": {"Draw":0},
 "Direction": "H",
 "Pitch": 100,
 "Width": 14,
@@ -35,7 +36,7 @@
 {
 "Layer": "M1",
 "GdsLayerNo": 6,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
 "Pitch": 260,
@@ -48,6 +49,7 @@
 "UnitCC":{"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
 "UnitR": {"L_3Sigma":40, "Mean":50, "U_3Sigma":60}
 },
+
 
 {
     "Layer": "V0",
@@ -69,7 +71,7 @@
 {
 "Layer": "M2",
 "GdsLayerNo": 8,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
 "Pitch": 200,
@@ -86,7 +88,7 @@
 {
 "Layer": "V1",
 "GdsLayerNo": 11,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Stack": ["M1", "M2"],
 "SpaceX": 136,
 "SpaceY": 136,
@@ -103,7 +105,7 @@
 {
 "Layer": "M3",
 "GdsLayerNo": 13,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
 "Pitch": 260,
@@ -137,7 +139,7 @@
 {
 "Layer": "M4",
 "GdsLayerNo": 20,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
 "Pitch": 200,
@@ -171,7 +173,7 @@
 {
 "Layer": "M5",
 "GdsLayerNo": 25,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
 "Pitch": 200,
@@ -205,7 +207,7 @@
 {
 "Layer": "M6",
 "GdsLayerNo": 30,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
 "Pitch": 200,
@@ -239,7 +241,7 @@
 {
 "Layer": "M7",
 "GdsLayerNo": 38,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
 "Pitch": 200,
@@ -273,7 +275,7 @@
 {
 "Layer": "M8",
 "GdsLayerNo": 43,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
 "Pitch": 200,
@@ -307,7 +309,7 @@
 {
 "Layer": "M9",
 "GdsLayerNo": 48,
-"GdsDatatype":{"Draw":0},
+"GdsDatatype":{"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
 "Pitch": 200,
@@ -379,11 +381,10 @@
 },
 
 {
-"Layer": "Pb",
-"GdsLayerNo": 150,
+"Layer": "Lisd",
+"GdsLayerNo": 98,
 "GdsDatatype": {"Draw":0},
-"pbWidth":180,
-"pbWidth_H": 160
+"LisdWidth": 40
 },
 
 {
@@ -393,10 +394,11 @@
 },
 
 {
-"Layer": "Lisd",
-"GdsLayerNo": 98,
+"Layer": "Pb",
+"GdsLayerNo": 150,
 "GdsDatatype": {"Draw":0},
-"LisdWidth": 40
+"pbWidth":180,
+"pbWidth_H": 160
 },
 
 {
@@ -427,8 +429,7 @@
 "m1Width": 100,
 "m2Width": 100,
 "m3Width": 100
-} 
-
+}
 
 ]
 }
