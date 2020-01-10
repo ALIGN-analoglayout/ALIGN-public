@@ -3051,7 +3051,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   std::cout<<"Enter converter"<<std::endl;
 
   int enclose_length =0;  
-
+/*
   if(mIdx>=0 and mIdx<drc_info.Metal_info.size()-1){
 
      int via_Idex = mIdx;
@@ -3081,7 +3081,7 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
      }
 
   }
-
+*/
   if(drc_info.Metal_info[mIdx].direct==0) { // vertical metal layer
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
