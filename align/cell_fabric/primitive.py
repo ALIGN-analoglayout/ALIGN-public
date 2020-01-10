@@ -9,6 +9,7 @@ import importlib
 
 from .generators import Wire
 from . import gen_lef
+from . import gen_gds_json
 
 logger = logging.getLogger(__name__)
 
@@ -449,8 +450,6 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))
-    import gen_gds_json
-    importlib.reload(gen_gds_json)
     from primitive import PrimitiveGenerator
     sys.path.pop(0)
 
@@ -490,6 +489,6 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
-        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)
 
     return uc

@@ -33,7 +33,8 @@ class Pdk(object):
         return self.pdk.values()
 
     def load(self, filename):
-        with open(filename, "rt") as fp:
+        self.layerfile=filename.resolve()
+        with open(self.layerfile, "rt") as fp:
             j = json.load(fp)
         assert 'Abstraction' in j
         for layer in j['Abstraction']:
