@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 def generate_png(working_dir, variant):
     cmd = [
-        str(pathlib.Path(__file__).parent.parent.parent / "bin" / "gds2png.sh"),
+        "gds2png.sh",
         str(working_dir / f'{variant}.gds'),
         str(working_dir / f'{variant}.png'),
         str(pathlib.Path(__file__).parent.parent / 'config' / 'image_png.rb')
