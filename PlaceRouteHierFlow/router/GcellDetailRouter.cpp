@@ -660,7 +660,9 @@ void GcellDetailRouter::create_detailrouter(){
 
   //bug:
   //1. use other SinkDataComp for Set_x_contact and Set_net_contact
-  //2. rm the via inactive for inner the pins
+  //2. rm the via inactive for inner the pins (this have been corrected by rm the pins from internal block pins)
+  //3. the solution rm the metal of internal block pins from internal metal is quite different for some cases
+  //4. for the contact related via inactive, suggest to just inactive the via_active around the box. Around the box.
   std::vector<std::vector<RouterDB::point>> plist;
   plist.resize(this->layerNo);
 
