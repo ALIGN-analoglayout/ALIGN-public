@@ -331,21 +331,21 @@ jobs:
 workflows:
   version: 2.1
 
-  # make:
-  #   jobs:
-  #     - start
-  #     - build-make-compose:
-  #         requires:
-  #           - start
+  make:
+    jobs:
+      - start
+      - build-make-compose:
+          requires:
+            - start
 
   nightly:
-    # triggers:
-    #   - schedule:
-    #       cron: "0 8 * * *"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - master
+    triggers:
+      - schedule:
+          cron: "0 8 * * *"
+          filters:
+            branches:
+              only:
+                - master
 
     jobs:
       - start
@@ -356,21 +356,21 @@ workflows:
           requires:
             - build-nightly
 
-  # full:
-  #   jobs:
-  #     - start
-  #     - build-PlaceRouteHierFlow:
-  #         requires:
-  #           - start
-  #     - build-cktgen:
-  #         requires:
-  #           - start
-  #     - build-align:
-  #         requires:
-  #           - start
-  #     - finish:
-  #         requires:
-  #           - build-align
-  #           - build-cktgen
-  #           - build-PlaceRouteHierFlow
+  full:
+    jobs:
+      - start
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start
+      - build-cktgen:
+          requires:
+            - start
+      - build-align:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build-align
+            - build-cktgen
+            - build-PlaceRouteHierFlow
 
