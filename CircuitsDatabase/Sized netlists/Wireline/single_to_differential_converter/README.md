@@ -4,7 +4,7 @@
 
 The single to differential converter circuit is used to create two differential signals from a signal.
 
-![Circuit diagram](single_to_differential_converter_schematic.tiff)
+![Circuit diagram](single_to_differential_converter_schematic.png)
 
 ### Pin description
 
