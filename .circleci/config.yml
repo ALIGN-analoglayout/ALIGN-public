@@ -288,7 +288,7 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --timeout=1200; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --timeout=300; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
 
           docker cp align_container:test-reports .
           docker rm align_container
@@ -331,21 +331,21 @@ jobs:
 workflows:
   version: 2.1
 
-  make:
-    jobs:
-      - start
-      - build-make-compose:
-          requires:
-            - start
+  # make:
+  #   jobs:
+  #     - start
+  #     - build-make-compose:
+  #         requires:
+  #           - start
 
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
-          filters:
-            branches:
-              only:
-                - master
+    # triggers:
+    #   - schedule:
+    #       cron: "0 8 * * *"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - master
 
     jobs:
       - start
@@ -356,21 +356,21 @@ workflows:
           requires:
             - build-nightly
 
-  full:
-    jobs:
-      - start
-      - build-PlaceRouteHierFlow:
-          requires:
-            - start
-      - build-cktgen:
-          requires:
-            - start
-      - build-align:
-          requires:
-            - start
-      - finish:
-          requires:
-            - build-align
-            - build-cktgen
-            - build-PlaceRouteHierFlow
+  # full:
+  #   jobs:
+  #     - start
+  #     - build-PlaceRouteHierFlow:
+  #         requires:
+  #           - start
+  #     - build-cktgen:
+  #         requires:
+  #           - start
+  #     - build-align:
+  #         requires:
+  #           - start
+  #     - finish:
+  #         requires:
+  #           - build-align
+  #           - build-cktgen
+  #           - build-PlaceRouteHierFlow
 

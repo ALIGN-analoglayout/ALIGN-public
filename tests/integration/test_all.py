@@ -29,7 +29,7 @@ def test_A( d, nm):
     run_dir.mkdir( exist_ok=True)
     os.chdir(run_dir)
 
-    flat = 1 if nm in run_flat
+    flat = 1 if nm in run_flat else 0
 
     args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(home / "pdks" / "FinFET14nm_Mock_PDK"), '-flat',  str(flat),'--check']
     results = align.CmdlineParser().parse_args(args)
