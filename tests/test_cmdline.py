@@ -14,17 +14,14 @@ if 'ALIGN_HOME' in os.environ:
 else:
     os.environ['ALIGN_HOME'] = str(ALIGN_HOME)
 
-if 'ALIGN_WORK_DIR' not in os.environ:
-    run_dir = ALIGN_HOME / 'tests' / 'tmp'
-    run_dir.mkdir(parents=True, exist_ok=True)
-    os.environ['ALIGN_WORK_DIR'] = str(run_dir)
-
 if 'LD_LIBRARY_PATH' not in os.environ:
     os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64'
 
 @pytest.mark.parametrize( "design", examples)
 def test_cmdline(design):
-    os.chdir(os.environ['ALIGN_WORK_DIR'])
+    run_dir = ALIGN_HOME / 'tests' / 'tmp'
+    run_dir.mkdir(parents=True, exist_ok=True)
+    os.chdir(run_dir)
 
     design_dir = ALIGN_HOME / 'examples' / design
     pdk_dir = ALIGN_HOME / 'pdks' / 'FinFET14nm_Mock_PDK'
