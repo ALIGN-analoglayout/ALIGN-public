@@ -4,12 +4,6 @@
 ** Design cell name: switched_capacitor_filter_spice
 ** Design view name: schematic
 
-
-.TEMP 25.0
-.OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
-
-.INCLUDE "/project/analog-group04/Meghna/Design_Work/ASAP7nm/asap7PDK_r1p3/models/hspice/7nm_TT_160803.pm"
-
 ** Library name: ALIGN_circuits_ASAP7nm
 ** Cell name: telescopic_ota
 ** View name: schematic
@@ -52,23 +46,5 @@ m14 net7 vbiasp netm14s vdd pmos_rvt w=270e-9 l=20e-9 nfin=10
 m14s netm14s vbiasp vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=10
 .ends telescopic_ota_with_bias
 ** End of subcircuit definition.
-
-i5 vdd d1 DC=40e-6
-xi15 d1 vdd vinn vinp vss vout telescopic_ota
-v2 vinn 0 DC=550e-3 AC 500e-3 180
-v1 vinp 0 DC=550e-3 AC 500e-3
-v8 vss 0 DC=0
-v9 vdd 0 DC=1
-c1 vout vss 350e-15
-.OP
-
-.AC DEC 100 1.0 1e11
-
-.meas ac GAIN find vdb(vout) at = 1       			$ Measure Open-loop Gain    (Gain) 	(dB)
-.meas ac UGF when vdb(vout)=0
-.meas ac threeDB_gain find vdb(vout) at = 3.16e6
-.meas ac threeDB when par('vdb(vout)+3')=gain				$ Measure Unity-gain Frequency 	(UGF) 	(Hz)
-.meas ac PM find par('180+vp(vout)') when vdb(vout)=0		        $ Measure Phase margin	(PM) 	(deg)
-**.meas ac GM find par('abs(vdb(vout))') when vp(vout)=-179      	        $ Measure Gain Margin	(GM) 	(dB)
 
 .END
