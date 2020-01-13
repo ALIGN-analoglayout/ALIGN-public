@@ -30,7 +30,7 @@ def build_test(pdk, prim, *, n, X, Y):
 
 @pytest.mark.parametrize( "y", range(1,4), ids=lambda x: f'Y{x}')
 @pytest.mark.parametrize( "x", range(1,5), ids=lambda x: f'X{x}')
-@pytest.mark.parametrize( "nfins", [12, 16], ids=lambda x: f'n{x}')
+@pytest.mark.parametrize( "nfins", [12], ids=lambda x: f'n{x}')
 @pytest.mark.parametrize( "typ", ["NMOS", "PMOS"])
 @pytest.mark.parametrize( "pstr", [
                                 "Switch_{}",
