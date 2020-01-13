@@ -5,7 +5,6 @@ import logging
 import collections
 import math
 import json
-import importlib
 
 from .generators import Wire
 from . import gen_lef
