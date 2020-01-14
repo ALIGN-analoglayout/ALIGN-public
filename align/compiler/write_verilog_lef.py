@@ -469,7 +469,13 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
                 logger.info("place symmetrical cap as CC:%s",blocks_in_line)
                 for pair in blocks_in_line:
-                    p1,p2=pair.split(',')
+                    if ',' in pair:
+                        p1,p2=pair.split(',')
+                    elif '|' in pair:
+                        p1,p2=pair.split('|')
+                    else:
+                        logger.error(f"Neither ',' nor '|' found in {pair}.")
+                        assert False, pair
                     if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
                         all_array[p1]={p1:[p1,p2]}
                         line=line.replace(' {'+pair+'} ','').replace('(,','(').replace(',)',')').replace(',,',',')
