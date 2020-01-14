@@ -27,7 +27,10 @@ setup(name='align',
       license='BSD-3-Clause',
       packages=find_packages(include=['align', 'align.*']),
       package_data={'align': ['config/*']},
-      scripts=['bin/schematic2layout.py'],
+      scripts=[
+          'bin/schematic2layout.py',
+          'bin/gds2png.sh'
+      ],
       install_requires=[
           'networkx>=2.4',
           'python-gdsii',

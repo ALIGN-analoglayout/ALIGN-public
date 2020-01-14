@@ -4,8 +4,11 @@ import pathlib
 import logging
 import collections
 import math
+import json
 
 from .generators import Wire
+from . import gen_lef
+from . import gen_gds_json
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +98,7 @@ class DefaultPrimitiveGenerator():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-        self.addWire( self.m2, 'B', 'B', ((y_cells)* self.m2PerUnitCell//2, self.lFin//4), (0, 1), (x_cells*self.gatesPerUnitCell, -1))
+        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell, -1))
 
     def _addBodyContact(self, x, y, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
@@ -106,15 +109,15 @@ class DefaultPrimitiveGenerator():
         gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
         self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
+        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
-        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1)) 
-        self.addVia( self.va, f'{fullname}:B', None, gate_x, ((y+1)*h//2, self.lFin//4))
-        self.addVia( self.v1, 'B', None, gate_x, ((y+1)*h//2, self.lFin//4))        
+        self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
+        self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
+        self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
         for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
             self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)
 
-    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 2, **parameters):
+    def _addMOSArray( self, x_cells, y_cells, pattern, connections, minvias = 1, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
             self.minvias = (self.m2PerUnitCell - 1) // len(connections)
             logger.warning( f"Using minvias = {self.minvias}. Cannot route {len(connections)} signals using minvias = {minvias} (max m2 / unit cell = {self.m2PerUnitCell})" )
@@ -446,8 +449,6 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
     sys.path.insert(0, str(pdkdir))
-    import gen_gds_json
-    import gen_lef
     from primitive import PrimitiveGenerator
     sys.path.pop(0)
 
@@ -461,7 +462,7 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
 
     if 'MOS' in primitive:
         uc, cell_pin = generate_MOS_primitive(uc, block_name, primitive, height, value, x_cells, y_cells, pattern, parameters, pinswitch)
-    elif 'Cap' in primitive:
+    elif 'cap' in primitive.lower():
         uc, cell_pin = generate_Cap(uc, block_name, value)
         uc.setBboxFromBoundary()
     elif 'Res' in primitive:
@@ -470,15 +471,23 @@ def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, p
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")
 
+    with open(outputdir / (block_name + '.debug.json'), "wt") as fp:
+        uc.computeBbox()
+        json.dump( { 'bbox' : uc.bbox.toList(),
+                     'globalRoutes' : [],
+                     'globalRouteGrid' : [],
+                     'terminals' : uc.terminals}
+                    , fp, indent=2)
+
     with open(outputdir / (block_name + '.json'), "wt") as fp:
         uc.writeJSON( fp)
     if 'Cap' in primitive:
         blockM = 1
     else:
         blockM = 0         
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
-        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)
 
     return uc

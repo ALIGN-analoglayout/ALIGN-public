@@ -24,12 +24,13 @@ RUN apt-get update && apt-get install -yq \
     vim \
     graphviz \
     gnuplot \
+    curl \
+    xvfb \
     # libgraphviz-dev \
     # protobuf-compiler \
-    # curl \
     # lcov \
-    # xvfb \
-&& rm -rf /var/lib/apt/lists/*
+&&    apt-get clean
+
 
 # Create Virtual Env
 ENV venv=/opt/venv
@@ -64,8 +65,13 @@ RUN cd /opt && \
     make
 
 # JSON
-RUN cd opt && \
+RUN cd /opt && \
     git clone https://github.com/nlohmann/json.git
+
+# KLayout
+RUN curl -o /klayout_0.25.4-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.25.4-1_amd64.deb
+
+RUN apt-get install -yq /klayout_0.25.4-1_amd64.deb
 
 from align_base as align_image
 

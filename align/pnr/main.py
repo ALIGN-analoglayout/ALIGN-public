@@ -90,7 +90,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
 
     # Copy primitive json files
     for file_ in primitive_dir.iterdir():
-        if file_.suffixes == ['.gds', '.json']:
+        if file_.suffixes == ['.gds', '.json'] or file_.suffixes == ['.json']:
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Dump out intermediate states

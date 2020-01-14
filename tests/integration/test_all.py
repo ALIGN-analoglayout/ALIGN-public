@@ -1,42 +1,38 @@
-
 import pytest
 import align
 import os
 import pathlib
 
-run_flat=set(['linear_equalizer'])
-skip_dirs = set(['modified_USC_UW_UT_testcases','.hypothesis'])
+run_flat = ['linear_equalizer', 'adder']
+skip_dirs = ['modified_USC_UW_UT_testcases','.hypothesis']
+skip_pdks = ['Bulk65nm_Mock_PDK']
 
-examples = []
-for p in pathlib.Path( 'examples').iterdir():
-    if p.is_dir():
-        if p.parts[-1] in skip_dirs: continue
-        print(p)
-        examples.append( ('/'.join(p.parts[:-1]), p.parts[-1]))
+ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
-for p in (pathlib.Path( 'examples') / 'modified_USC_UW_UT_testcases').iterdir():
-    if p.is_dir():
-        print(p)
-        examples.append( ('/'.join(p.parts[:-1]), p.parts[-1]))
+examples_dir =  ALIGN_HOME / 'examples'
+examples =  [p for p in examples_dir.iterdir() \
+               if p.is_dir() and p.name not in skip_dirs]
+examples += [p for p in (examples_dir / 'modified_USC_UW_UT_testcases').iterdir() \
+               if p.is_dir() and p.name not in skip_dirs]
+
+pdks= [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() \
+           if pdk.is_dir() and pdk.name not in skip_pdks]
 
 @pytest.mark.nightly
-@pytest.mark.parametrize( "d,nm", examples)
-def test_A( d, nm):
-    home = pathlib.Path( os.environ['ALIGN_HOME'])
-    design_dir = home / d / nm
-    run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']) / nm
-
-    run_dir.mkdir( exist_ok=True)
+@pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
+@pytest.mark.parametrize( "pdk_dir", pdks, ids=lambda x: x.name)
+def test_A( pdk_dir, design_dir):
+    nm = design_dir.name
+    run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() / pdk_dir.name / nm
+    run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    flat = 1 if nm in run_flat else 0
-
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(home / "pdks" / "FinFET14nm_Mock_PDK"), '-flat',  str(flat),'--check']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"No results generated."
     for result in results:
-        sp_file, variants = result
+        _, variants = result
         for (k,v) in variants.items():
             print(k,v)
             assert 'errors' in v

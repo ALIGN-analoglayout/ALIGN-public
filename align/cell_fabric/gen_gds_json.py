@@ -101,9 +101,5 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   return top
 
-def translate( macro_name, exclude_pattern, pdkfile, pinSwitch, fp, ofile, via_gen_tbl=None, timestamp=None):
-
-  if via_gen_tbl is None:
-    via_gen_tbl = {}
-
-  json.dump(translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, json.load(fp), via_gen_tbl, timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None):
+  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), p.get_via_table(), timestamp), ofile, indent=4)

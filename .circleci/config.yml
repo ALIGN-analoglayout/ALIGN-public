@@ -22,7 +22,7 @@ jobs:
           root: /work/workspace
           paths: .
 
-  build-make-compose:
+  build-make-docker:
     executor: docker-executor
     steps:
 
@@ -55,7 +55,7 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=telescopic_ota && \
-            docker cp make_docker_cont:/dataVolume/telescopic_ota ..
+            docker cp align_cont:/dataVolume/telescopic_ota ..
 
       - store_artifacts:
           path: telescopic_ota/telescopic_ota_0.png
@@ -65,7 +65,7 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=switched_capacitor_filter && \
-            docker cp make_docker_cont:/dataVolume/switched_capacitor_filter ..
+            docker cp align_cont:/dataVolume/switched_capacitor_filter ..
 
       - store_artifacts:
           path: switched_capacitor_filter/switched_capacitor_filter_0.png
@@ -75,7 +75,7 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=current_mirror_ota && \
-            docker cp make_docker_cont:/dataVolume/current_mirror_ota ..
+            docker cp align_cont:/dataVolume/current_mirror_ota ..
 
       - store_artifacts:
           path: current_mirror_ota/current_mirror_ota_0.png
@@ -85,7 +85,7 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=cascode_current_mirror_ota && \
-            docker cp make_docker_cont:/dataVolume/cascode_current_mirror_ota ..
+            docker cp align_cont:/dataVolume/cascode_current_mirror_ota ..
 
       - store_artifacts:
           path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
@@ -95,7 +95,7 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=five_transistor_ota && \
-            docker cp make_docker_cont:/dataVolume/five_transistor_ota ..
+            docker cp align_cont:/dataVolume/five_transistor_ota ..
 
       - store_artifacts:
           path: five_transistor_ota/five_transistor_ota_0.png
@@ -106,91 +106,10 @@ jobs:
           command: |
             cd build/
             make docker DESIGN=adder && \
-            docker cp make_docker_cont:/dataVolume/adder ..
+            docker cp align_cont:/dataVolume/adder ..
 
       - store_artifacts:
           path: adder/adder_0.png
-
-
-  build-make-monolithic:
-    executor: docker-executor
-    steps:
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          apk update
-          apk add py-pip bash
-
-      - run: |
-          apk add python-dev libffi-dev openssl-dev gcc libc-dev make
-          pip install docker-compose
-
-      - run: |
-          echo 'export ALIGN_HOME=/work/workspace' >> $BASH_ENV
-          echo 'export ALIGN_WORK_DIR=compose_dataVolume' >> $BASH_ENV
-
-      - setup_remote_docker
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker volume create --name=compose_dataVolume
-            make docker-compose.yml
-            docker-compose up -d fullbuild-service
-            docker-compose exec fullbuild-service bash -c "ln -sf \$ALIGN_HOME/build/Makefile ."
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=telescopic_ota"
-            docker cp fullbuild_cont:/dataVolume/telescopic_ota ..
-
-      - store_artifacts:
-          path: telescopic_ota/telescopic_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=switched_capacitor_filter"
-            docker cp fullbuild_cont:/dataVolume/switched_capacitor_filter ..
-
-      - store_artifacts:
-          path: switched_capacitor_filter/switched_capacitor_filter_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=current_mirror_ota"
-            docker cp fullbuild_cont:/dataVolume/current_mirror_ota ..
-
-      - store_artifacts:
-          path: current_mirror_ota/current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=cascode_current_mirror_ota"
-            docker cp fullbuild_cont:/dataVolume/cascode_current_mirror_ota ..
-
-      - store_artifacts:
-          path: cascode_current_mirror_ota/cascode_current_mirror_ota_0.png
-
-      - run:
-          shell: /bin/bash
-          command: |
-            cd build/
-            docker-compose exec fullbuild-service bash -c "make DESIGN=five_transistor_ota"
-            docker cp fullbuild_cont:/dataVolume/five_transistor_ota ..
-
-      - store_artifacts:
-          path: five_transistor_ota/five_transistor_ota_0.png
 
   build-cktgen:
     executor: docker-executor
@@ -334,7 +253,7 @@ workflows:
   make:
     jobs:
       - start
-      - build-make-compose:
+      - build-make-docker:
           requires:
             - start
 
