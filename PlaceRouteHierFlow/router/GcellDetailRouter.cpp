@@ -389,16 +389,15 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
   {
     // 1. collect internal metals on grids
     for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
-        //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
-        Set_x_contact.insert(Contact2Sinkdata(*pit));
+      Set_x_contact.insert(Contact2Sinkdata(*pit));
     }
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        Set_x_contact.insert(Contact2Sinkdata(pit->UpperMetalRect));
-        Set_x_contact.insert(Contact2Sinkdata(pit->LowerMetalRect));
+      Set_x_contact.insert(Contact2Sinkdata(pit->UpperMetalRect));
+      Set_x_contact.insert(Contact2Sinkdata(pit->LowerMetalRect));
     }
     // 2. remove pin contacts from internal metal
     for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
-      if(pit->netIter!=net_num)
+      if (pit->netIter != net_num)
         continue;
       for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit)
       {
@@ -409,7 +408,7 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
         Set_x_contact.erase(Contact2Sinkdata(cit->LowerMetalRect));
       }
     }
-  }  
+  }
 };
 
 void GcellDetailRouter::Initial_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i){
@@ -659,7 +658,7 @@ void GcellDetailRouter::Symmetry_Routing(int sym_flag, int i, std::set<RouterDB:
 void GcellDetailRouter::create_detailrouter(){
 
   //bug:
-  //1. use other SinkDataComp for Set_x_contact and Set_net_contact
+  //solved 1. use other SinkDataComp for Set_x_contact and Set_net_contact
   //2. rm the via inactive for inner the pins (this have been corrected by rm the pins from internal block pins)
   //3. the solution rm the metal of internal block pins from internal metal is quite different for some cases
   //4. for the contact related via inactive, suggest to just inactive the via_active around the box. Around the box.
