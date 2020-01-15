@@ -1,4 +1,4 @@
-from align.cell_fabric import default
+from align.primitive import default
 
 #
 # Default generators are good enough !

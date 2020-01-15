@@ -7,10 +7,9 @@ import math
 import json
 import importlib.util
 
-from .generators import Wire
-from . import gen_lef
-from . import gen_gds_json
-from .pdk import Pdk
+from ..cell_fabric import gen_lef
+from ..cell_fabric import gen_gds_json
+from ..cell_fabric.pdk import Pdk
 
 logger = logging.getLogger(__name__)
 

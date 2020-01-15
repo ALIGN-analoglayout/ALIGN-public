@@ -1,5 +1,5 @@
 from ..cell_fabric import transformation, pdk
-from ..cell_fabric import primitive
+from .. import primitive
 import json
 import importlib
 import sys

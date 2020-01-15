@@ -2,7 +2,8 @@ import pathlib
 import json
 
 from align.pnr import *
-from align.cell_fabric import transformation, pdk, primitive
+from align.cell_fabric import transformation, pdk
+from align import primitive
 from pprint import pformat
 
 import pytest

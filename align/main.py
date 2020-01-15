@@ -1,7 +1,7 @@
 import pathlib
 
 from .compiler import generate_hierarchy
-from .cell_fabric import generate_primitive
+from .primitive import generate_primitive
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
 from .utils.gds2png import generate_png

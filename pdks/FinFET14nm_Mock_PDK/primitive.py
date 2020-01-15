@@ -1,4 +1,4 @@
-from align.cell_fabric import default
+from align.primitive import default
 
 # Override default MOSGenerator._addMOS & _addBodyContact 
 # (to add fin & LISD layers)

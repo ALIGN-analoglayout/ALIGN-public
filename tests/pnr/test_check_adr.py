@@ -5,7 +5,8 @@ import re
 from pprint import pformat
 
 from align.pnr import *
-from align.cell_fabric import transformation, pdk, primitive
+from align.cell_fabric import transformation, pdk
+from align import primitive
 
 mydir =  pathlib.Path(__file__).resolve().parent
 
