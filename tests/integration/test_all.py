@@ -4,16 +4,14 @@ import os
 import pathlib
 
 run_flat = ['linear_equalizer', 'adder']
-skip_dirs = ['modified_USC_UW_UT_testcases','.hypothesis']
-skip_pdks = ['Bulk65nm_Mock_PDK']
+skip_dirs = ['modified_USC_UW_UT_testcases']
+skip_pdks = []
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
 examples_dir =  ALIGN_HOME / 'examples'
-examples =  [p for p in examples_dir.iterdir() \
-               if p.is_dir() and p.name not in skip_dirs]
-examples += [p for p in (examples_dir / 'modified_USC_UW_UT_testcases').iterdir() \
-               if p.is_dir() and p.name not in skip_dirs]
+examples =  [p.parents[0] for p in examples_dir.rglob('*.sp') \
+                if all(x not in skip_dirs for x in p.relative_to(examples_dir).parts)]
 
 pdks= [pdk for pdk in (ALIGN_HOME / 'pdks').iterdir() \
            if pdk.is_dir() and pdk.name not in skip_pdks]
@@ -27,7 +25,7 @@ def test_A( pdk_dir, design_dir):
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check', '--generate']
     results = align.CmdlineParser().parse_args(args)
 
     assert results is not None, f"No results generated."
