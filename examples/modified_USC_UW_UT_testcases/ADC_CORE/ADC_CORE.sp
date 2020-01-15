@@ -1,7 +1,7 @@
 ** label = ADC
-.subckt INV0_LVT i zn vdd vss
+.subckt INV0_LVT i zn VDD vss
 xm0 zn i vss vss lvtnfet w=w0 l=l0
-xm1 zn i vdd vdd lvtpfet w=w1 l=l0
+xm1 zn i VDD VDD lvtpfet w=w1 l=l0
 .ends INV0_LVT
 
 .subckt DAC_SWITCHES dac<9> dac<8> dac<7> dac<6> dac<5> dac<4> dac<3> dac<2> dac<1> gnd in<9> in<8> in<7> in<6> in<5> in<4> in<3> in<2> in<1> vcm vdd vrefn vrefp
@@ -18,7 +18,7 @@ xi1 net91 dac<9> vrefp vrefn INV0_LVT
 xi2 net07 dac<8> vrefp vrefn INV0_LVT
 .ends DAC_SWITCHES
 
-.subckt SAMPLE_NETWORK comp_in gnd in<9> in<8> in<7> in<6> in<5> in<4> in<3> in<2> in<1> vcm vdd vrefn vrefp
+.subckt SAMPLE_NETWORK gnd in<9> in<8> in<7> in<6> in<5> in<4> in<3> in<2> in<1> vcm vdd vrefn vrefp
 xi2 dac<9> dac<8> dac<7> dac<6> dac<5> dac<4> dac<3> dac<2> dac<1> gnd in<9> in<8> in<7> in<6> in<5> in<4> in<3> in<2> in<1> vcm vdd vrefn vrefp DAC_SWITCHES
 .ends SAMPLE_NETWORK
 
@@ -63,7 +63,7 @@ xm3 net64 net67 net012 gnd nfet w=w6 l=l0
 xm1 net012 inm net60 gnd nfet w=w6 l=l0
 .ends LATCH
 
-.subckt SAR_LOGIC_2ND_STAGE comp compb gnd q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> vdd q<0> qb<0> s<0>
+.subckt SAR_LOGIC_2ND_STAGE comp compb gnd q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> vdd q<0> qb<0>
 xi1<9> s<9> gnd compb comp net03<0> net04<0> vdd LATCH
 xi1<8> s<8> gnd compb comp net03<1> net04<1> vdd LATCH
 xi1<7> s<7> gnd compb comp net03<2> net04<2> vdd LATCH
@@ -206,7 +206,7 @@ xi17 vdd clkff<10> clksb s<10> sb<10> vdd gnd DFNCND1BWP
 .ends SAR_LOGIC_1ST_STAGE_CLKGATING
 
 .subckt SAR_LOGIC clk clksb gnd outn outp q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vdd q<0> qb<0> s<0> sb<1>
-xi1 outp outn gnd q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> vdd q<0> qb<0> s<0> SAR_LOGIC_2ND_STAGE
+xi1 outp outn gnd q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> vdd q<0> qb<0> SAR_LOGIC_2ND_STAGE
 xi0 clk clksb gnd s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> s<0> vdd sb<1> SAR_LOGIC_1ST_STAGE_CLKGATING
 .ends SAR_LOGIC
 
@@ -261,8 +261,8 @@ xi2 in ctrl net12 vdd gnd NR2D0BWP
 .ends COUNTER
 
 .subckt ADC_CORE clkc clks gnd inn inp q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> q<0> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> qb<0> vdd bypass est_delay vcm vrefn vrefp
-xi1 cpinn gnd q<9> q<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vcm vdd vrefn vrefp SAMPLE_NETWORK
-xi0 cpinp gnd qb<9> qb<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> vcm vdd vrefn vrefp SAMPLE_NETWORK
+xi1 gnd q<9> q<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vcm vdd vrefn vrefp SAMPLE_NETWORK
+xi0 gnd qb<9> qb<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> vcm vdd vrefn vrefp SAMPLE_NETWORK
 xi2 clkc net3 net4 gnd net1 net2 coutn coutp vdd cpinp cpinn COMPARATOR
 xi3 clkc clksb gnd coutn coutp q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> vdd q<0> qb<0> est_delay est SAR_LOGIC
 e0 clksb gnd VCVS vdd clks 1

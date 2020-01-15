@@ -249,7 +249,7 @@ def compare_balanced_tree(G, node1, node2):
             tree1=get_next_level(G,tree1)
             tree2=get_next_level(G,tree2)
 
-    logger.warning(f"Non symmetrical branches for nets: {node1}, {node2}")
+    logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False
 
 def reduce_graph(circuit_graph, mapped_graph_list, liblist):

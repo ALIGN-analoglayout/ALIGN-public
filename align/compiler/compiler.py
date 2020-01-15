@@ -126,7 +126,8 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                 logger.debug(f'Found module ports kk: {members["ports"]}')
                 floating_ports = list(set(inoutpin) - set(members["ports"]))
                 if len(floating_ports)> 0:
-                    logger.warning(f"floating port found: {floating_ports}")
+                    logger.error(f"floating ports found: {name} {floating_ports}")
+                    raise SystemExit('Please remove floating ports')
         else:
             inoutpin = members["ports"]
 
@@ -145,7 +146,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                 block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
                 # Only unit caps are generated
-                if 'cap' in block_name.lower():
+                if  block_name.lower().startswith('cap'):
                     graph.nodes[node]['inst_type'] = block_args['primitive']
                     block_args['primitive']=block_name
                 else:
@@ -179,7 +180,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
-                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
+                #WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:
