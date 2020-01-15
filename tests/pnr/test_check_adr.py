@@ -5,7 +5,7 @@ import re
 from pprint import pformat
 
 from align.pnr import *
-from align.cell_fabric import transformation
+from align.cell_fabric import transformation, pdk, primitive
 
 mydir =  pathlib.Path(__file__).resolve().parent
 
@@ -16,15 +16,12 @@ def aux(fn):
     fpath = get_fpath(fn)
     with fpath.open( "rt") as fp:
         d = json.load( fp)
-        
-    pdk = mydir.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
-    sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
-    pdkpkg = pathlib.Path(pdk).name
-    canvas = importlib.import_module(f'{pdkpkg}.canvas')
+
+    pdkdir = mydir.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
+    generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
-
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
 
     layer_map = {
         'metal1': 'M1',

@@ -1,4 +1,5 @@
-from ..cell_fabric import transformation
+from ..cell_fabric import transformation, pdk
+from ..cell_fabric import primitive
 import json
 import importlib
 import sys
@@ -16,15 +17,12 @@ def rational_scaling( d, *, mul=1, div=1):
             logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
-    sys.path.insert(0, str(pathlib.Path(pdk).parent.resolve()))
-    pdkpkg = pathlib.Path(pdk).name
-    canvas = importlib.import_module(f'{pdkpkg}.canvas')
-    sys.path.pop(0)
+    generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
 
     terminals = []
 
