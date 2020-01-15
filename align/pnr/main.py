@@ -16,7 +16,7 @@ def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=Fa
     ret = {}
     with open(dbfile,"rt") as fp:
         hN = hierNode(json.load(fp))
-    res = gen_viewer_json( hN, pdk=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir)
+    res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir)
 
     if check or extract:
         cnv, d = res
