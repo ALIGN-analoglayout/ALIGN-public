@@ -11,3 +11,5 @@ __pycache__/
 *.lef
 *_cand
 *.pyc
+tmp/
+LOG/
