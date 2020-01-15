@@ -29,10 +29,19 @@ def consume_results(args,tech):
         nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
         terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
 
+        fa_map = inst['formal_actual_map']
+
         for term in leaf['terminals']:
             r = trans.hitRect( Rect( *term['rect'])).canonical()
             print(term)
-            terminals.append( { "netName" : term['net_name'],
+
+            f = term['net_name']
+            if f is not None:
+                a = fa_map.get( f, inst['instance_name'] + "/" + f)
+            else:
+                a = None
+
+            terminals.append( { "netName" : a,
                                 "layer": term['layer'],
                                 "rect": r.toList()})
       

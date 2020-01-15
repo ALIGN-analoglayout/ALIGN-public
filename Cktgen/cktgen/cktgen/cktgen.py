@@ -607,7 +607,14 @@ class Netlist:
 
     return gr
 
-  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates):
+  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates, *, nets_to_route=None, nets_not_to_route=None):
+    if nets_to_route is not None:
+      routes_str = f"Option name=nets_to_route value={','.join(nets_to_route)}"
+    else:
+      if nets_not_to_route is None:
+        nets_not_to_route = []
+      routes_str = f"Option name=nets_not_to_route value={','.join(nets_not_to_route + ['kor'])}"
+
     with open( fn, "w") as fp:
       fp.write( f"""# circuit-independent technology collateral
 Option name=layer_file          value=DR_COLLATERAL/layers.txt
@@ -630,17 +637,7 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
-#Option name=nets_to_route value=vin_o,vip_o
-#Option name=nets_to_route value=clk
-#Option name=nets_to_route value=von,vop
-#Option name=nets_to_route value=vssx
-#Option name=nets_to_route value=vcc_0p9
-
-Option name=nets_not_to_route value=!kor,vssx,vcc_0p9
-#Option name=nets_not_to_route value=!kor
-
-#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
+{routes_str}
 
 #Option name=opt_maximize_ties_between_trunks_and_terminals value=0
 #Option name=opt_minimize_preroute_extensions value=0
@@ -792,7 +789,20 @@ Option name=upper_layer                          value=metal3
 
 
   def write_files( self, tech, dirname, args):
-    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
+
+    if args.nets_to_route == '':
+      nets_to_route = None
+    else:
+      nets_to_route = args.nets_to_route.split(',')
+
+    if args.nets_not_to_route == '':
+      nets_not_to_route = None
+    else:
+      nets_not_to_route = args.nets_not_to_route.split(',')
+
+    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates, nets_to_route=nets_to_route, nets_not_to_route=nets_not_to_route)
+
+
     self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
     self.write_global_routing_file( dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
@@ -1039,6 +1049,8 @@ def parse_args( command_line_args=None):
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
   parser.add_argument( "-s", "--source", type=str, default='')
   parser.add_argument( "--small", action='store_true')
+  parser.add_argument( "--nets_to_route", type=str, default='')
+  parser.add_argument( "--nets_not_to_route", type=str, default='')
 
   args = parser.parse_args( args=command_line_args)
 
