@@ -3,7 +3,7 @@ import pathlib
 import logging
 import json
 
-from align.cell_fabric import generate_primitive
+from align.primitive import generate_primitive
 
 def main( args):
     logging.basicConfig(level=logging.getLevelName(args.logLevel))

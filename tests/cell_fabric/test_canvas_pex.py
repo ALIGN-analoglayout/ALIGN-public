@@ -4,7 +4,8 @@ import math
 import filecmp
 import pathlib
 
-from align.cell_fabric import DefaultCanvas, Pdk
+from align.primitive.default import DefaultCanvas
+from align.cell_fabric import Pdk
 
 mydir = pathlib.Path(__file__).resolve().parent
 pdkfile = mydir.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' / 'layers.json'
