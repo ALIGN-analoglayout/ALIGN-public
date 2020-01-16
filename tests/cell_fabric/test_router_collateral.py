@@ -1,7 +1,8 @@
 
 import pathlib
 
-from align.cell_fabric import DefaultCanvas, Pdk
+from align.cell_fabric import Pdk
+from align.primitive.default import DefaultCanvas
 from align.cell_fabric.routing_collateral import MetalTemplate
 
 mydir = pathlib.Path(__file__).resolve().parent

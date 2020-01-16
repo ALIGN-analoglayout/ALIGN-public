@@ -628,8 +628,8 @@ def FindArray(graph,input_dir,name):
                 all_array[node]=array
     return all_array
                 #match_branches(graph,nodes_dict)
-def WriteConst(graph, input_dir, name, ports, working_dir,stop_points):
 
+def CopyConstFile(name, input_dir, working_dir):
     # Copy const file to working directory if needed
     input_const_file = (input_dir / (name + '.const'))
     const_file = (working_dir / (name + '.const'))
@@ -638,6 +638,11 @@ def WriteConst(graph, input_dir, name, ports, working_dir,stop_points):
             (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
         else:
             const_file.write_text(input_const_file.read_text())
+    return const_file
+
+def WriteConst(graph, input_dir, name, ports, stop_points):
+
+    const_file = (input_dir / (name + '.const'))
 
     #check_common_centroid(graph,const_file,ports)
     logger.debug("writing constraints: %s",const_file)
