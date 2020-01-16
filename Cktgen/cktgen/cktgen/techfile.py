@@ -19,14 +19,16 @@ class MetalTemplate:
     result = "MetalTemplate layer=%s name=%s widths=%s spaces=%s" % ( self.layer, self.name, (",".join( str(i) for i in self.widths)), (",".join( str(i) for i in self.spaces)))
     if self.colors:
       result += " colors=%s" % (",".join( self.colors))
-    result += " stops=%s" % (",".join( str(i) for i in self.stops))
+    if self.stops:
+      result += " stops=%s" % (",".join( str(i) for i in self.stops))
     return result
 
 
 class TechFile:
   def __init__( self, fp):
     self.json = json.load( fp)
-    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops'], stop_offset=d['stop_offset']) for d in self.json['metalTemplates']]
+#    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=d['stops'], stop_offset=d['stop_offset']) for d in self.json['metalTemplates']]
+    self._metalTemplates = [ MetalTemplate( layer=d['layer'], name=d['name'], widths=d['widths'], spaces=d['spaces'], colors=d['colors'], stops=None, stop_offset=[]) for d in self.json['metalTemplates']]
 
   def __getattr__( self, nm):
     return self.json[nm]
@@ -42,7 +44,8 @@ class TechFile:
   def write_options_file( self, fn, bbox):
     with open( fn, "w") as fp:
       for mt in self.metalTemplates:
-        fp.write( "MetalTemplateInstance template=%s pgdoffset_abs=0 ogdoffset_abs=%d region=%s\n" % (mt.name, mt.stop_offset, (':'.join( str(i) for i in bbox))))
+        ogd = "" if mt.stops is None else f" ogdoffset_abs={mt.stop_offset}"
+        fp.write( f"MetalTemplateInstance template={mt.name} pgdoffset_abs=0{ogd} region={':'.join( str(i) for i in bbox)}\n")
 
   def write_metal_template_file( self, fn):
     with open( fn, "w") as fp:
