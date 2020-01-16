@@ -181,7 +181,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
-                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
+                WriteConst(graph, input_dir, name, inoutpin,stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:
