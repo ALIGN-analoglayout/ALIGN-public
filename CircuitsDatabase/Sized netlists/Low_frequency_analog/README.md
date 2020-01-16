@@ -14,11 +14,7 @@ Switched capacitor filter | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | 
 Fully differential telescopic OTA | 7 nm | :heavy_check_mark: |  |  |  |  |  |
 Telescopic OTA - fully differential SC CMFB | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 Telescopic OTA - single ended, stacked | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-Non-overlapping clock generator | 65 nm | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |  :heavy_check_mark: |  |  |
+Non-overlapping clock generator | 65 nm | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
 
 
-# Generic Testbenches
 
-## Single ended OTA testbench
-
-Contains the extensive performance tests that need to be carried out for a single-ended OTA. [In addition to the individual testbench of each circuit]
