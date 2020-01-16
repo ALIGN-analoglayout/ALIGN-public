@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 
-from align.cell_fabric import generate_primitive
+from align.primitive import generate_primitive
 
 def gen_parser():
     parser = argparse.ArgumentParser( description="Inputs for Cell Generation")

@@ -2,7 +2,7 @@ import pathlib
 import sys
 import pytest
 
-from align.cell_fabric.primitive import get_xcells_pattern
+from align.primitive.main import get_xcells_pattern
 
 pdks= []
 for prim in (pathlib.Path(__file__).parent.parent.parent / 'pdks').iterdir():

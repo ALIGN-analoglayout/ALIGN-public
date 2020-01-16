@@ -1,6 +1,8 @@
-from .canvas import Canvas
-from .generators import *
-from .grid import *
+import math
+
+from ...cell_fabric.canvas import Canvas
+from ...cell_fabric.generators import *
+from ...cell_fabric.grid import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -9,10 +11,13 @@ class DefaultCanvas(Canvas):
 
     def __init__( self, pdk):
         super().__init__(pdk)
-        assert self.pdk is not None, "Cannot initialize DefaultCanvas without a pdk"
-        self._create_metal_generators()
+        self._create_metal_canvas()
+        self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
+    #
+    # Automatically Create Metal Generators from layers.json
+    #
 
-    def _create_metal_generators(self):
+    def _create_metal_canvas(self):
         self.gds_layer_map = self.pdk.get_gds_map()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):

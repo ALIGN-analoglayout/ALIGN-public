@@ -2,7 +2,8 @@ import pathlib
 import json
 
 from align.pnr import *
-from align.cell_fabric import transformation
+from align.cell_fabric import transformation, pdk
+from align import primitive
 from pprint import pformat
 
 import pytest
@@ -23,14 +24,12 @@ def test_remove_duplicates(fn):
     with (rdir / fn).open( "rt") as fp:
         d = json.load( fp)
 
-    pdk = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
-    sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
-    pdkpkg = pathlib.Path(pdk).name
-    canvas = importlib.import_module(f'{pdkpkg}.canvas')
+    pdkdir = pathlib.Path(__file__).parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK"
+    generator = primitive.get_generator('MOSGenerator', pdkdir)
+
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
-
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
     cnv.bbox = transformation.Rect( *d["bbox"])
     cnv.terminals = d["terminals"]
     
