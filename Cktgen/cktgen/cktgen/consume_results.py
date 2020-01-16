@@ -1,5 +1,4 @@
 
-import pathlib
 import json
 from .cktgen import parse_lgf
 from .transformation import Rect, Transformation

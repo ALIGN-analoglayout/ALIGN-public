@@ -70,6 +70,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
+      if obj['netName'] is None: continue
       if pat and pat.match( obj['netName']): continue
 
       strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
