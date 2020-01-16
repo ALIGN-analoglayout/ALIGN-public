@@ -374,8 +374,7 @@ def define_SD(G,power,gnd,clk):
         high=power.copy()
         while high:
             try:
-                nxt = high[0]
-                high = high[1:]
+                nxt = high.pop(0)
                 high=get_next_level(G,[nxt])
                 for node in high:
                     if G.get_edge_data(node,nxt)==2:
@@ -405,8 +404,7 @@ def define_SD(G,power,gnd,clk):
         low=gnd.copy()
         while low:
             try:
-                nxt = low[0]
-                low = low[1:]
+                nxt = low.pop(0)
                 high=get_next_level(G,[nxt])
                 logger.debug(f"next,gnd: {nxt} {low} {high} {traversed}")
                 for node in high:
