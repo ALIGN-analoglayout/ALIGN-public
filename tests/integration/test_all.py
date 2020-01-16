@@ -4,7 +4,7 @@ import os
 import pathlib
 
 run_flat = ['linear_equalizer', 'adder']
-skip_dirs = ['modified_USC_UW_UT_testcases']
+skip_dirs = []
 skip_pdks = []
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
