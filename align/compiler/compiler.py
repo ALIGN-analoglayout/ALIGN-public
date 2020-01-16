@@ -124,7 +124,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     inoutpin.append(key)
             if members["ports"]:
                 logger.debug(f'Found module ports kk: {members["ports"]}')
-                floating_ports = list(set(inoutpin) - set(members["ports"]))
+                floating_ports = list(set(inoutpin) - set(members["ports"]) - set(design_setup['POWER']) -set(design_setup['GND']))
                 if len(floating_ports)> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
                     raise SystemExit('Please remove floating ports')
@@ -180,7 +180,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
-                #WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
+                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:

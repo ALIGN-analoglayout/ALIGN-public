@@ -371,18 +371,18 @@ def define_SD(G,power,gnd,clk):
     traversed = []
     probable_changes_p=[]
     if power[0] in G.nodes():
-        while power:
+        high=power.copy()
+        while high:
             try:
-                nxt = power[0]
-                power = power[1:]
+                nxt = high[0]
+                high = high[1:]
                 high=get_next_level(G,[nxt])
-                #logger.debug("next,power: %s %s %s %s",nxt,power,high,traversed)
                 for node in high:
                     if G.get_edge_data(node,nxt)==2:
                         continue
                     if set(G.neighbors(node)) & set(clk):
                         continue
-                    #logger.debug("checking node: %s %s", node, power)
+                    #logger.debug("checking node: %s %s", node, high)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
                         node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
@@ -396,24 +396,24 @@ def define_SD(G,power,gnd,clk):
                             #logger.debug("changing source drain:%s",node)
                             probable_changes_p.append(node)
                     if node not in traversed and node not in  gnd:
-                        power.append(node)
+                        high.append(node)
                     traversed.append(node)
             except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {power}")
+                logger.debug(f"All source drain checked: {high}")
     probable_changes_n=[]
     if gnd[0] in G.nodes():
-        while gnd:
+        low=gnd.copy()
+        while low:
             try:
-                nxt = gnd[0]
-                gnd = gnd[1:]
+                nxt = low[0]
+                low = low[1:]
                 high=get_next_level(G,[nxt])
-                logger.debug(f"next,gnd: {nxt} {gnd} {high} {traversed}")
+                logger.debug(f"next,gnd: {nxt} {low} {high} {traversed}")
                 for node in high:
                     if G.get_edge_data(node,nxt)==2:
                         continue
                     if set(G.neighbors(node)) & set(clk):
                         continue
-                    #logger.debug("checking node: %s %s", node, gnd)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
                         node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
@@ -429,10 +429,10 @@ def define_SD(G,power,gnd,clk):
                             #change_SD(G,node)
                             probable_changes_n.append(node)
                     if node not in traversed and node not in  power:
-                        gnd.append(node)
+                        low.append(node)
                     traversed.append(node)
             except (TypeError, ValueError):
-                logger.debug(f"All source drain checked: {gnd}")
+                logger.debug(f"All source drain checked: {low}")
     for node in list (set(probable_changes_n) & set(probable_changes_n)):
         logger.warning(f"changing source drain: {node}")
         change_SD(G,node)
