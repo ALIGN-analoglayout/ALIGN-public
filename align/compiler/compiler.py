@@ -5,7 +5,7 @@ from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .write_verilog_lef import WriteConst, FindArray, WriteCap, check_common_centroid, CopyConstFile
+from .write_verilog_lef import WriteConst,FindArray,WriteCap,check_common_centroid
 from .read_lef import read_lef
 
 import logging
@@ -169,23 +169,18 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
         if name not in  ALL_LEF:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
+            const_file = (result_dir / (name + '.const'))
             logger.debug(f"call array finder for block: {name}")
             all_array=FindArray(graph, input_dir, name )
-            logger.debug(f"Copy const file for: {name}")
-            const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
-            WriteCap(graph, result_dir, name, unit_size_cap,all_array)
+            WriteCap(graph, input_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
             ##Removinf constraints to fix cascoded cmc
             lib_names=[lib_ele['name'] for lib_ele in library]
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
-<<<<<<< HEAD
-                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
-=======
                 WriteConst(graph, result_dir, name, inoutpin, stop_points)
->>>>>>> 5fb2cc65cfa08b2620e5fac048e514ef3ce4c013
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:
