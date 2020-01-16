@@ -33,7 +33,6 @@ def consume_results(args,tech):
 
         for term in leaf['terminals']:
             r = trans.hitRect( Rect( *term['rect'])).canonical()
-            print(term)
 
             f = term['net_name']
             if f is not None:
