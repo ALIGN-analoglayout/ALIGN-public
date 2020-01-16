@@ -68,7 +68,7 @@ docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 	cp $< .
 
 docker:	volume align-service
-	docker-compose exec align-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
+	docker-compose exec align-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN} FLAT=${FLAT}"
 
 services:	transfer-service align-service \
 		klayoutconvert-service
