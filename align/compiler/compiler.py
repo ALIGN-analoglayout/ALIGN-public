@@ -5,7 +5,7 @@ from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .write_verilog_lef import WriteConst,FindArray,WriteCap,check_common_centroid
+from .write_verilog_lef import WriteConst, FindArray, WriteCap, check_common_centroid, CopyConstFile
 from .read_lef import read_lef
 
 import logging
@@ -169,11 +169,12 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
         if name not in  ALL_LEF:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            const_file = (result_dir / (name + '.const'))
             logger.debug(f"call array finder for block: {name}")
             all_array=FindArray(graph, input_dir, name )
+            logger.debug(f"Copy const file for: {name}")
+            const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
-            WriteCap(graph, input_dir, name, unit_size_cap,all_array)
+            WriteCap(graph, result_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
             ##Removinf constraints to fix cascoded cmc
             lib_names=[lib_ele['name'] for lib_ele in library]
