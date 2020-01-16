@@ -87,7 +87,7 @@ class WriteVerilog:
                     fp.write(' ); ')
                 else:
                     fp.write(' ); ')
-                    logger.warning("MAPPING NOT CORRECT")
+                    logger.warning(f"Unconnected module, only power/gnd conenction found {node}")
 
         fp.write("\n\nendmodule\n")
 
@@ -322,7 +322,7 @@ def generate_lef(name, values, available_block_lef,
 
         logger.debug('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
-            no_units = 2*ceil(size / unit_size_mos)
+            no_units = ceil(size / unit_size_mos)
             square_x = ceil(sqrt(no_units))
             while no_units % square_x != 0:
                 square_x += 1
@@ -567,9 +567,10 @@ def trace_template(graph, similar_node_groups,visited,template,array):
         if len(next_match[source])==0:
             del next_match[source]
 
-    if len(next_match.keys())> 0 and match_branches(graph,next_match):
+    if len(next_match.keys())> 0 and match_branches(graph,next_match) :
         for source in array.keys():
-            array[source]+=next_match[source]
+            if source in next_match.keys():
+                array[source]+=next_match[source]
         template +=next_match[list(next_match.keys())[0]]
         logger.debug("found matching level: %s,%s",template,similar_node_groups)
         trace_template(graph, next_match,visited,template,array)

@@ -285,7 +285,9 @@ def _parse_inst(line):
         elif  device["inst_type"]=="dummy":
             #device = None
             logger.error(f"Removing dummy transistor: {line}")
+    elif line.startswith('*'):
+        logger.info(f"comment: {line}")
     else:
-        logger.error(f"Extraction error: {line} (unidentified line)")
+        logger.warning(f"Extraction error: {line} (unidentified line)")
 
     return device

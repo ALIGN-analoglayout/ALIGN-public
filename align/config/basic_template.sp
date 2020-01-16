@@ -145,15 +145,4 @@ RR1 PLUS MINUS res res=10k
 .ends Res
 
 
-.subckt spiral_ind PLUS MINUS BULK CTAP
-L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
-.ends spiral_ind
-
-.subckt stage2_inv G1 G2 SN SP
-MM0 G1 D SN SN NMOS l=60n w=1u m=1
-MM1 D G2 SN SN NMOS l=60n w=1u m=1
-MM2 G1 D SP SP PMOS l=60n w=1u m=1
-MM3 D G2 SP SP PMOS l=60n w=1u m=1
-.ends stage2_inv
-
 
