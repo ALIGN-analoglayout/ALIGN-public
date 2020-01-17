@@ -12,24 +12,24 @@
 ** Cell name: telescopic_ota
 ** View name: schematic
 .subckt telescopic_ota d1 vdd vinn vinp vss vout
-m9 vpgate vbiasn net8 vss nmos_rvt w=270e-9 l=20e-9 nfin=35
-m8 vout vbiasn net014 vss nmos_rvt w=270e-9 l=20e-9 nfin=35
-m5 D1 D1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m4 net10 D1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=25
-m3 net014 vinn net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=70
-m0 net8 vinp net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=70
-m7 vout vbiasp net012 vdd pmos_rvt w=270e-9 l=20e-9 nfin=55
-m6 vpgate vbiasp net06 vdd pmos_rvt w=270e-9 l=20e-9 nfin=55
-m2 net012 vpgate vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=20
-m1 net06 vpgate vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=20
-m10 vbiasn vbiasn net5 vss nmos_rvt w=270e-9 l=20e-9 nfin=4
-m11 net5 vbiasn net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m15 net9 d1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m16 net9 net9 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=5
-m17 vbiasn net9 vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=5
-m12 vbiasp d1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=5
-m13 vbiasp vbiasp net7 vdd pmos_rvt w=270e-9 l=20e-9 nfin=4
-m14 net7 vbiasp vdd vdd pmos_rvt w=270e-9 l=20e-9 nfin=5
+m9 vpgate vbiasn net8 vss nmos w=270e-9 l=20e-9 nfin=35
+m8 vout vbiasn net014 vss nmos w=270e-9 l=20e-9 nfin=35
+m5 D1 D1 vss vss nmos w=270e-9 l=20e-9 nfin=5
+m4 net10 D1 vss vss nmos w=270e-9 l=20e-9 nfin=25
+m3 net014 vinn net10 vss nmos w=270e-9 l=20e-9 nfin=70
+m0 net8 vinp net10 vss nmos w=270e-9 l=20e-9 nfin=70
+m7 vout vbiasp net012 vdd pmos w=270e-9 l=20e-9 nfin=55
+m6 vpgate vbiasp net06 vdd pmos w=270e-9 l=20e-9 nfin=55
+m2 net012 vpgate vdd vdd pmos w=270e-9 l=20e-9 nfin=20
+m1 net06 vpgate vdd vdd pmos w=270e-9 l=20e-9 nfin=20
+m10 vbiasn vbiasn net5 vss nmos w=270e-9 l=20e-9 nfin=4
+m11 net5 vbiasn net10 vss nmos w=270e-9 l=20e-9 nfin=5
+m15 net9 d1 vss vss nmos w=270e-9 l=20e-9 nfin=5
+m16 net9 net9 vdd vdd pmos w=270e-9 l=20e-9 nfin=5
+m17 vbiasn net9 vdd vdd pmos w=270e-9 l=20e-9 nfin=5
+m12 vbiasp d1 vss vss nmos w=270e-9 l=20e-9 nfin=5
+m13 vbiasp vbiasp net7 vdd pmos w=270e-9 l=20e-9 nfin=4
+m14 net7 vbiasp vdd vdd pmos w=270e-9 l=20e-9 nfin=5
 .ends telescopic_ota
 ** End of subcircuit definition.
 
