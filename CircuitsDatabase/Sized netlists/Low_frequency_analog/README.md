@@ -14,6 +14,7 @@ Telescopic OTA - fully differential| 7 nm | :heavy_check_mark:  | :heavy_check_m
 Switched capacitor filter | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 Fully differential telescopic OTA | 7 nm | :heavy_check_mark: |  |  |  |  |  |
 Telescopic OTA - fully differential SC CMFB | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+Telescopic OTA - single ended | 7 nm | :heavy_check_mark: |  |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 Telescopic OTA - single ended, stacked | 7 nm | :heavy_check_mark: | :heavy_check_mark: |  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 Non-overlapping clock generator | 65 nm | :heavy_check_mark:  | :heavy_check_mark: | :heavy_check_mark: |  |  |  |
 
