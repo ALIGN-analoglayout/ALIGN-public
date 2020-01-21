@@ -107,7 +107,7 @@ class SpiceParser:
                 logger.debug(
                     f'Instances found at top, adding dummy subckt: {self.top_ckt_name}')
                 if self.params:
-                    resolve_top_param()
+                    self.resolve_top_param()
 
                 self.subckts[self.top_ckt_name] = {
                      "ports": [],

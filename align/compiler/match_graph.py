@@ -462,7 +462,7 @@ def add_series_res(G):
     remove_nodes = []
     for net, attr in G.nodes(data=True):
         if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
-            and net not in remove_nodes:
+            and net not in remove_nodes and attr["net_type"]!="external":
             nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
             combined_r,remove_r=list(G.neighbors(net))
             if nbr_type[0]==nbr_type[1]=='res':

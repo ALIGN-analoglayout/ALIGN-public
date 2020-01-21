@@ -179,13 +179,13 @@ subckt Charge_Pump CN CP DN DP IBS UN UP VDD VSS
 	M17 ( net0128 UP Ny VDD ) lvtpfet l=60n w=800n nf=1  
 	M2 ( CN UN Ny VDD ) lvtpfet l=60n w=800n nf=1  
 ends Charge_Pump 
-subckt DLL_core CKI CK_REF ENB1\<1\> ENB1\<2\> ENB1\<3\> ENB1\<4\> ENB2\<1\> ENB2\<2\> ENB2\<3\> ENB2\<4\> ENB3\<1\> ENB3\<2\> ENB3\<3\> ENB3\<4\> ENB4\<1\> ENB4\<2\> ENB4\<3\> ENB4\<4\> ENB5\<1\> ENB5\<2\> ENB5\<3\> ENB5\<4\> ENB6\<1\> ENB6\<2\> ENB6\<3\> ENB6\<4\> ENB7\<1\> ENB7\<2\> ENB7\<3\> ENB7\<4\> ENB8\<1\> ENB8\<2\> ENB8\<3\> ENB8\<4\> IBS O\<1\> O\<2\> O\<3\> O\<4\> O\<5\> O\<6\> O\<7\> O\<8\> VDD VSS V_CTRLn V_CTRLp 
+subckt GF65_DLL_sanitized CKI CK_REF ENB1\<1\> ENB1\<2\> ENB1\<3\> ENB1\<4\> ENB2\<1\> ENB2\<2\> ENB2\<3\> ENB2\<4\> ENB3\<1\> ENB3\<2\> ENB3\<3\> ENB3\<4\> ENB4\<1\> ENB4\<2\> ENB4\<3\> ENB4\<4\> ENB5\<1\> ENB5\<2\> ENB5\<3\> ENB5\<4\> ENB6\<1\> ENB6\<2\> ENB6\<3\> ENB6\<4\> ENB7\<1\> ENB7\<2\> ENB7\<3\> ENB7\<4\> ENB8\<1\> ENB8\<2\> ENB8\<3\> ENB8\<4\> IBS O\<1\> O\<2\> O\<3\> O\<4\> O\<5\> O\<6\> O\<7\> O\<8\> VDD VSS V_CTRLn V_CTRLp 
 	I54 ( V_CTRLp ENB1\<1\> ENB1\<2\> ENB1\<3\> ENB1\<4\> ENB2\<1\> ENB2\<2\> ENB2\<3\> ENB2\<4\> ENB3\<1\> ENB3\<2\> ENB3\<3\> ENB3\<4\> ENB4\<1\> ENB4\<2\> ENB4\<3\> ENB4\<4\> ENB5\<1\> ENB5\<2\> ENB5\<3\> ENB5\<4\> ENB6\<1\> ENB6\<2\> ENB6\<3\> ENB6\<4\> ENB7\<1\> ENB7\<2\> ENB7\<3\> ENB7\<4\> ENB8\<1\> ENB8\<2\> ENB8\<3\> ENB8\<4\> CK_REF O\<1\> O\<2\> O\<3\> O\<4\> O\<5\> O\<6\> O\<7\> O\<8\> VDD VSS V_CTRLn ) Delay_Chain  
 	I5 ( CKI O\<8\> CK_REF DN DP UN UP VDD VSS ) Phase_Detector  
 	I52 ( V_CTRLn V_CTRLp DN DP IBS UN UP VDD VSS ) Charge_Pump  
-ends DLL_core 
+ends GF65_DLL_sanitized
 	V3 ( net08 0 ) vsource dc=0 type=pulse val0=0 val1=VDD period=1/Fs delay=10n rise=10p fall=10p width=0.5/Fs  
-	I6 ( net08 CK_REF VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD net07 CK\<1\> CK\<2\> CK\<3\> CK\<4\> CK\<5\> CK\<6\> CK\<7\> CK\<8\> VDD VSS V_CTRLn V_CTRLp ) DLL_core  
+	I6 ( net08 CK_REF VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD VDD net07 CK\<1\> CK\<2\> CK\<3\> CK\<4\> CK\<5\> CK\<6\> CK\<7\> CK\<8\> VDD VSS V_CTRLn V_CTRLp ) GF65_DLL_sanitized 
 	V28 ( VSS 0 ) vsource dc=0 type=dc  
 	V26 ( VDD 0 ) vsource dc=VDD type=dc  
 	I8 ( net07 0 ) isource dc=20u type=dc  

@@ -3,7 +3,7 @@ import align
 import os
 import pathlib
 
-run_flat = ['linear_equalizer', 'adder']
+run_flat = ['linear_equalizer', 'adder', 'variable_gain_amplifier', 'single_to_differential_converter']
 skip_dirs = []
 skip_pdks = []
 
