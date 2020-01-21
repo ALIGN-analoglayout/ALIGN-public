@@ -30,20 +30,22 @@ def test_A():
     assert rM3[2]-rM3[0] == p.pdk['M3']['Width']
     assert rM2[3]-rM2[1] == p.pdk['M2']['Width']
 
+    assert rM3[3]-rM3[1] == p.pdk['V2']['WidthY'] + 2*p.pdk['V2']['VencA_H']
+    assert rM2[2]-rM2[0] == p.pdk['V2']['WidthX'] + 2*p.pdk['V2']['VencA_L']
 
     print(rM2,rM3,rV2)
 
 def test_B():
     p = pdk.Pdk()
-    p.pdk['M2'] = { 'Direction': 'H', 'Width': 44}
-    p.pdk['M3'] = { 'Direction': 'V', 'Width': 56}
+    p.pdk['M2'] = { 'Direction': 'H', 'Width': 40}
+    p.pdk['M3'] = { 'Direction': 'V', 'Width': 60}
 
     p.pdk['V2'] = { 'Stack': ['M2', 'M3'],
-                'WidthX': 56,
-                'WidthY': 58,
+                'WidthX': 60,
+                'WidthY': 80,
                 'VencA_L': 0,
-                'VencA_H': 21,
-                'VencP_L': -7,
+                'VencA_H': 30,
+                'VencP_L': -20,
                 'VencP_H': 0
     }
     kk, bar = p.get_via_table()['V2']
@@ -62,5 +64,8 @@ def test_B():
 
     assert rM3[2]-rM3[0] == p.pdk['M3']['Width']
     assert rM2[3]-rM2[1] == p.pdk['M2']['Width']
+
+    assert rM3[3]-rM3[1] == p.pdk['V2']['WidthY'] + 2*p.pdk['V2']['VencA_H']
+    assert rM2[2]-rM2[0] == p.pdk['V2']['WidthX'] + 2*p.pdk['V2']['VencA_L']
 
     print(rM2,rM3,rV2)
