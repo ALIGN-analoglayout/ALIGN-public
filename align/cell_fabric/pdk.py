@@ -153,22 +153,28 @@ class Pdk(object):
         return {x: self.pdk[x]['LayerNo'] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x]}
 
     def get_via_table(self):
+        def get_direction( m):
+            dir = self.pdk[m]['Direction'].upper()
+            assert dir == 'V' or dir == 'H', dir
+            return dir
+
+        def swap_enc( a, p, m):
+            return (a,p) if get_direction(m) == 'H' else (p,a)
+
         via_table = {}
-        i = 1
-        for x in self.pdk.keys():
+        s = 40
+        hs = 40//2
+        for (x,e) in self.pdk.items():
             if x.startswith('V') and x != 'V0':
-                lower = self.pdk[x]['Stack'][0]
-                upper = self.pdk[x]['Stack'][1]
-                (x0, y0) = (20*self.pdk[x]['WidthX'], 20*self.pdk[x]['WidthY'])
-                (elx, ely) = (40*self.pdk[x]['VencA_L'], 0*self.pdk[x]['VencP_L'])
-                (ehx, ehy) = (40*self.pdk[x]['VencA_H'], 0*self.pdk[x]['VencP_H'])
-                via_table1 = {x:(x, 
-                                {x:[-x0,-y0, x0, y0], 
-                                 lower:[-x0-ely,-y0-elx, x0+ely, y0+elx] if i%2 !=0 else [-y0-elx, -x0-ely, y0+elx, x0+ely], 
-                                 upper:[-x0-ehx,-y0-ehy, x0+ehx, y0+ehy] if i%2 !=0 else [-y0-ehy, -x0-ehx, y0+ehy, x0+ehx]}
-                                 )
-                              }
-                i = i+1
-                via_table.update(via_table1)
+                lower = e['Stack'][0]
+                upper = e['Stack'][1]
+                (x0, y0) = (hs*e['WidthX'], hs*e['WidthY'])
+                (elx, ely) = swap_enc(s*e['VencA_L'], s*e['VencP_L'], lower)
+                (ehx, ehy) = swap_enc(s*e['VencA_H'], s*e['VencP_H'], upper)
+                via_table.update( {x:(x, 
+                                      {x:[-x0,-y0, x0, y0], 
+                                       lower:[-x0-elx,-y0-ely, x0+elx, y0+ely],
+                                       upper:[-x0-ehx,-y0-ehy, x0+ehx, y0+ehy]
+                                      })})
         return via_table
 
