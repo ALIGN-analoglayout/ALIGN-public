@@ -66,11 +66,14 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   if exclude_pattern != '':
     pat = re.compile( exclude_pattern)
 
+  def exclude_based_on_name( nm):
+    return pat and nm is not None and pat.match( nm)
+
   # non-vias
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
-      if pat and pat.match( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue
 
       strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
@@ -88,7 +91,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   for obj in data['terminals']:
       k = obj['layer']
       if k not in via_gen_tbl: continue
-      if pat and pat.match( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue
 
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2

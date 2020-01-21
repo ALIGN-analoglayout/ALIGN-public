@@ -17,7 +17,7 @@ class Pdk(object):
 
     def __getitem__(self, key):
         """Act like a read-only dict"""
-        assert key in self.pdk
+        assert key in self.pdk, key
         return self.pdk[key]
 
     def items(self):
