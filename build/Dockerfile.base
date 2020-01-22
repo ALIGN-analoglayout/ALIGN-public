@@ -10,8 +10,8 @@ ENV http_proxy=$http_proxy
 ENV https_proxy=$https_proxy
 
 # Update packages
-RUN apt-get -qq -o=Dpkg::Use-Pty=0 update
-RUN apt-get -qq -o=Dpkg::Use-Pty=0 install \
+RUN apt-get -qq -o Dpkg::Use-Pty=0 update
+RUN apt-get -qq -o Dpkg::Use-Pty=0 install \
     # Python dependencies
     python3 \
     python3-pip \
