@@ -1,3 +1,4 @@
+#!/bin/bash
 setenv ALIGN_HOME $PWD
 setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
@@ -30,3 +31,4 @@ pip install --upgrade pip
 pip install wheel pytest general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii
 cd $ALIGN_WORK_DIR
 ln -s $ALIGN_HOME/build/Makefile .
+make VENV=$VENV

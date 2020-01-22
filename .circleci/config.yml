@@ -207,7 +207,7 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
 
           docker cp align_container:test-reports .
           docker rm align_container

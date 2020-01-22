@@ -62,7 +62,7 @@ RUN cd /opt && \
     mkdir mybuild && \
     cd mybuild && \
     cmake CMAKE_INSTALL_MESSAGE=NEVER .. && \
-    make
+    make -s
 
 # JSON
 RUN cd /opt && \
