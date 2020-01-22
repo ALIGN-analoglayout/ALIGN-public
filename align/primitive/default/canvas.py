@@ -9,19 +9,19 @@ logger = logging.getLogger(__name__)
 
 class DefaultCanvas(Canvas):
 
-    def __init__( self, pdk):
+    def __init__( self, pdk, *, check=True):
         super().__init__(pdk)
-        self._create_metal_canvas()
+        self._create_metal_canvas( check=check)
         self.boundary = self.addGen( Region( 'boundary', 'Boundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
     #
     # Automatically Create Metal Generators from layers.json
     #
 
-    def _create_metal_canvas(self):
+    def _create_metal_canvas(self, *, check=True):
         self.gds_layer_map = self.pdk.get_gds_map()
         for layer, info in self.pdk.items():
             if layer.startswith('M'):
-                self._create_metal(layer, info)
+                self._create_metal(layer, info, check=check)
             elif layer.startswith('V'):
                 self._create_via(layer, info)
 
@@ -39,7 +39,7 @@ class DefaultCanvas(Canvas):
         viawidth = self.pdk[via]['WidthX'] if self.pdk[metal]['Direction'] == 'h' else self.pdk[via]['WidthY']
         return viawidth // 2 + viaenc
 
-    def _create_metal( self, layer, info):
+    def _create_metal( self, layer, info, *, check=True):
         if isinstance(info['Width'], list):
             # TODO: Figure out what multiple metal widths even means. Just doing first width for now
             # for i in range(0, len(info['Width'])):
@@ -84,7 +84,7 @@ class DefaultCanvas(Canvas):
 
             setattr(self, layer, self.addGen(
                 Wire(layer, base_layer, info['Direction'], clg = clg,
-                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_offset, stoppoint=spg_stop, check=True))
+                     spg = EnclosureGrid( pitch=spg_pitch, offset=spg_offset, stoppoint=spg_stop, check=check))
             ))
 
     def _create_via( self, layer, info):
