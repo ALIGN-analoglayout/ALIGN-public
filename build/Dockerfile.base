@@ -30,7 +30,7 @@ RUN apt-get -qq -o Dpkg::Use-Pty=0 install \
     # libgraphviz-dev \
     # protobuf-compiler \
     # lcov \
-&&    apt-get -qq clean
+RUN apt-get -qq clean
 
 
 # Create Virtual Env
