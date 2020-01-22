@@ -26,11 +26,11 @@ RUN apt-get -qq -o Dpkg::Use-Pty=0 install \
     graphviz \
     gnuplot \
     curl \
-    xvfb
+    xvfb \
     # libgraphviz-dev \
     # protobuf-compiler \
     # lcov \
-RUN apt-get -qq clean
+&&    apt-get -qq -o Dpkg::Use-Pty=0 install clean
 
 
 # Create Virtual Env
