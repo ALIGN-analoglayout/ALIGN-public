@@ -23,8 +23,8 @@ xm6 clk_boost net6 clk_in gnd nfet w=w6 l=l0
 xm2 net5 net6 net013 gnd nfet w=w5 l=l0
 xi1 net6 bypass net013 vdd gnd NR2D2BWP
 xi2 clk_in net6 vdd gnd INVD0BWP
-xc2 net013 net8 vdd cap
-xc3 net013 net8 vdd cap
+c2 net013 net8 vdd cap
+c3 net013 net8 vdd cap
 .ends CLK_BOOST_COMP
 
 .subckt COMPARATOR_2LEVEL_BIDIRECTIONAL_MAC_SKEW clk clkn fine fine_boost flip flipb gnd intern interp outm outp vdd _net0 _net1 vmid vmidb vxn vxn2 vxp vxp2

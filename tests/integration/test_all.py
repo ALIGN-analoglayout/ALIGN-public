@@ -3,8 +3,8 @@ import align
 import os
 import pathlib
 
-run_flat = ['linear_equalizer', 'adder']
-skip_dirs = ['modified_USC_UW_UT_testcases']
+run_flat = ['linear_equalizer', 'adder', 'variable_gain_amplifier', 'single_to_differential_converter']
+skip_dirs = []
 skip_pdks = []
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
