@@ -5,6 +5,23 @@ setenv ALIGN_HOME $PWD
 setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 
 ## Install Prerequisite
+#### Install Packages
+sudo yum update && sudo yum install -yq \
+    python3 \
+    python3-pip \
+    python3-venv \
+    g++\
+    cmake \
+    libboost-container-dev \
+    graphviz \
+    gnuplot \
+    curl \
+    xvfb \
+&&  sudo yum clean
+#### klayout 
+sudo curl -o /klayout-0.26.3-0.x86_64.rpm https://www.klayout.org/downloads/CentOS_7/klayout-0.26.3-0.x86_64.rpm
+sudo yum install -yq /klayout-0.26.3-0.x86_64.rpm
+
 #### install lpsolve
 git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
 ####  install json
@@ -35,19 +52,19 @@ setenv VENV $ALIGN_HOME/general
 ## install align 
 
 cd $ALIGN_HOME
-python3.6 -m venv $VENV
+python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
 pip install -e .
 deactivate
 
 ## install align_PnR
+setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 
 ## Run first example
-mkdir $ALIGN_WORK_DIR
-cd $ALIGN_WORK_DIR
-ln -s $ALIGN_HOME/build/Makefile .
-## for umn: module load gcc/8.2.0
-setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-make VENV=$VENV
+#mkdir $ALIGN_WORK_DIR
+#cd $ALIGN_WORK_DIR
+#ln -s $ALIGN_HOME/build/Makefile .
+### for umn: module load gcc/8.2.0
+#make VENV=$VENV

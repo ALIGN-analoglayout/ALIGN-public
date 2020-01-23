@@ -36,7 +36,7 @@ The ALIGN flow includes the following steps:
 The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
 Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN\_HOME variable, which should point the top directory of the ALIGN analog system.
 
-	% export ALIGN_HOME=<top of ALIGN source area>
+	    % export ALIGN_HOME=<top of ALIGN source area>
 
 The second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
 
@@ -48,10 +48,10 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
     - Docker compose > 3.6
 
 #### Native Linux Environment Flow
-You can use [setup.sh](setup.sh) (for bash shell) or [setup_tcsh.sh](setup_tcsh.sh) (for tcsh/ Red Hat) to run your first design using native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
+You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](install_tcsh.sh) (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
-    - gcc > 7.2
+    - gcc > 4.2
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
@@ -75,8 +75,6 @@ You can use [setup.sh](setup.sh) (for bash shell) or [setup_tcsh.sh](setup_tcsh.
         % source $VENV/bin/activate 
         % pip install --upgrade pip
         % pip install -e .
-        % cd $ALIGN_WORK_DIR
-        % ln -s $ALIGN_HOME/build/Makefile
 
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
@@ -85,8 +83,14 @@ By default, the design directory is set to the examples directory. This can be m
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>
 * Native environment flow
-
-        % make DESIGN=<design>
+    -make flow
+        % cd $ALIGN_WORK_DIR
+        % ln -s $ALIGN_HOME/build/Makefile
+        % make VENV=$VENV DESIGN=<design>
+    - python command 
+        % source $VENV/bin/acitivate
+        % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c -g (to check drc)
+        % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
     
 ## Design database:

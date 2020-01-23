@@ -5,20 +5,38 @@ export ALIGN_HOME=$PWD
 export ALIGN_WORK_DIR=$ALIGN_HOME/work
 
 ## Install Prerequisite
-#### install lpsolve
+#### Install Packages
+sudo apt-get update && sudo apt-get install -yq \
+    python3 \
+    python3-pip \
+    python3-venv \
+    g++\
+    cmake \
+    libboost-container-dev \
+    graphviz \
+    gnuplot \
+    curl \
+    xvfb \
+&&  sudo apt-get clean
+#### Install klayout 
+sudo curl -o /klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+sudo apt-get install -yq /klayout_0.26.3-1_amd64.deb
+
+#### Install lpsolve
 git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
-####  install json
+####  Install json
 git clone https://github.com/nlohmann/json.git
-#### install boost
+#### Install boost
 git clone --recursive https://github.com/boostorg/boost.git
 cd $ALIGN_HOME/boost
 ./bootstrap.sh -prefix=$ALIGN_HOME/boost
 ./b2 headers
 
-#### install googletest
+#### Install googletest
 cd $ALIGN_HOME
 git clone https://github.com/google/googletest
 cd googletest/
+
 cmake CMakeLists.txt
 make
 mkdir googletest/mybuild
@@ -31,22 +49,22 @@ export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
 export VENV=$ALIGN_HOME/general
 
-## install align 
+## Install align 
 
 cd $ALIGN_HOME
-python3.6 -m venv $VENV
+python3 -m venv $VENV
 source $VENV/bin/activate
-pip install --upgrade pip
-pip install -e .
+pip Install --upgrade pip
+pip Install -e .
 deactivate
 
-## install align_PnR
+## Install align_PnR
+setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 
 ## Run first example
-mkdir $ALIGN_WORK_DIR
-cd $ALIGN_WORK_DIR
-ln -s $ALIGN_HOME/build/Makefile .
-
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-make VENV=$VENV
+#mkdir $ALIGN_WORK_DIR
+#cd $ALIGN_WORK_DIR
+#ln -s $ALIGN_HOME/build/Makefile .
+### for umn: module load gcc/8.2.0
+#make VENV=$VENV
