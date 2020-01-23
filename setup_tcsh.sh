@@ -1,8 +1,8 @@
 #!/bin/bash
 ## You should use these set of commands from in ALIGN-public directory 
 ## Set align home and work directory ( You can use any path for work directory)
-export ALIGN_HOME=$PWD
-export ALIGN_WORK_DIR=$ALIGN_HOME/work
+setenv ALIGN_HOME $PWD
+setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 
 ## Install Prerequisite
 #### install lpsolve
@@ -19,17 +19,18 @@ cd $ALIGN_HOME/boost
 cd $ALIGN_HOME
 git clone https://github.com/google/googletest
 cd googletest/
+#For UMN: cmake -DCMAKE_CXX_COMPILER=/apps/common/gcc/8.2.0/bin/g++ -DCMAKE_C_COMPILER=/apps/common/gcc/8.2.0/bin/gcc CMakeLists.txt
 cmake CMakeLists.txt
 make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
 ## Set prerequisite path 
-export LP_DIR=$ALIGN_HOME/lpsolve
-export BOOST_LP=$ALIGN_HOME/boost
-export JSON=$ALIGN_HOME/json
-export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
-export VENV=$ALIGN_HOME/general
+setenv LP_DIR $ALIGN_HOME/lpsolve
+setenv BOOST_LP $ALIGN_HOME/boost
+setenv JSON $ALIGN_HOME/json
+setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
+setenv VENV $ALIGN_HOME/general
 
 ## install align 
 
@@ -47,6 +48,6 @@ cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 mkdir $ALIGN_WORK_DIR
 cd $ALIGN_WORK_DIR
 ln -s $ALIGN_HOME/build/Makefile .
-
-export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
+## for umn: module load gcc/8.2.0
+setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 make VENV=$VENV
