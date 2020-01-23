@@ -48,6 +48,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
     - Docker compose > 3.6
 
 #### Native Linux Environment Flow
+You can use [setup.sh](setup.sh) (for bash shell) or [setup_tcsh.sh](setup_tcsh.sh) (for tcsh/ Red Hat) to run your first design using native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
     - gcc > 7.2
@@ -55,7 +56,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
-    - You can look into [docker files](build/Dockerfile.base) inside build directory for exact set of commands used for installing these requirements.
+    - You can look into [setup file](setup.sh) for exact set of commands used for installing these requirements.
 
  * Setting up local environment variables if installations are not in system search path.
 
