@@ -216,7 +216,9 @@ class Canvas:
         return self.rd.remove_duplicates()
 
     def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True):
+
         self.computeBbox()
+        self.postprocessor.run(self.terminals)
 
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
@@ -225,9 +227,6 @@ class Canvas:
 
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
-
-        data['terminals'] = self.postprocessor.run(data['terminals'])
-
 
         if self.pdk is not None:
             if draw_grid:
