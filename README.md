@@ -44,7 +44,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
 #### Native Linux Environment Flow
-You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](install_tcsh.sh) (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
+You can use [source install.sh](install.sh) (for bash shell) or [source install_tcsh.sh](install_tcsh.sh) (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
     - gcc>=4.2
@@ -52,7 +52,7 @@ You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](insta
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
-    - You can look into [installation file](install.sh) for exact set of commands used for installing these requirements.
+    - Skip these step if you are using [install.sh](install.sh)
 
  * Setting up local environment variables if installations are not in system search path.
 
@@ -62,12 +62,13 @@ You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](insta
         % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
         % export VENV= <python virtual environment path, e.g., ./align_venv>
+        % Skip these step if you are using [install.sh](install.sh)
  * Installation
 
         % cd PlaceRouteHierFlow
         % make
         % cd $ALIGN_HOME
-        % python3.6 -m venv $VENV 
+        % python3 -m venv $VENV 
         % source $VENV/bin/activate 
         % pip install --upgrade pip
         % pip install -e .
@@ -93,7 +94,7 @@ By default, the design directory is set to the examples directory. This can be m
 
 * Explore different features of align using python arguments 
 
-        % source $VENV/bin/acitivate
+        % source $VENV/bin/activate
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
