@@ -2,6 +2,10 @@
 
 ### Circuit description
 Mixers are used for translating RF signals to IF signals or IF signals to RF signals using local oscillator frequency.
+
+<p align="center">
+  <img width="60%" src="Schematic.jpg">
+</p>
  
 ### Testbench/Simulations
 Transient simulation is used for checking the output spectrum. PSP simulation is used to calculate the conversion gain. 
