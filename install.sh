@@ -54,8 +54,8 @@ export VENV=$ALIGN_HOME/general
 cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
-pip Install --upgrade pip
-pip Install -e .
+pip install --upgrade pip
+pip install -e .
 deactivate
 
 ## Install align_PnR
