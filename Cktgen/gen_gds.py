@@ -23,7 +23,14 @@ if __name__ == "__main__":
                   "metal3": "M3",
                   "via0": "V0",
                   "via1": "V1",
-                  "via2": "V2"}
+                  "via2": "V2",
+                  "basepitchid": "BasepitchID",
+                  "devtype1id": "DEVTYPE1ID",
+                  "devflavn1id":"Devflavn1id",
+                  "devflavp1id": "Devflavp1id",
+                  "tcn": "Diffcon",
+                  "gcn": "Polycon"
+                  }
 
 
     terminals = []
