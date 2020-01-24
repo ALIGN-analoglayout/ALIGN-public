@@ -42,21 +42,17 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
 
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
-#### Docker flow
- * Requirements
-    - Docker-ce > 17.12
-    - Docker compose > 3.6
 
 #### Native Linux Environment Flow
 You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](install_tcsh.sh) (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
-    - gcc > 4.2
+    - gcc>=4.2
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
-    - You can look into [setup file](setup.sh) for exact set of commands used for installing these requirements.
+    - You can look into [installation file](install.sh) for exact set of commands used for installing these requirements.
 
  * Setting up local environment variables if installations are not in system search path.
 
@@ -76,12 +72,14 @@ You can use [install.sh](install.sh) (for bash shell) or [install_tcsh.sh](insta
         % pip install --upgrade pip
         % pip install -e .
 
+#### Docker flow
+ALIGN also supports push button flow on docker.
+ * Requirements
+    - Docker-ce > 17.12
+    - Docker compose > 3.6
+
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
-* Docker based run
-
-        % cd $ALIGN_HOME/build
-        % make docker DESIGN=<design>
 * Native environment flow
     -make flow
         % cd $ALIGN_WORK_DIR
@@ -92,6 +90,10 @@ By default, the design directory is set to the examples directory. This can be m
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c -g (to check drc)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
+* Docker based run
+
+        % cd $ALIGN_HOME/build
+        % make docker DESIGN=<design>
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci
