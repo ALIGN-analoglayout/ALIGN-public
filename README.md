@@ -80,18 +80,18 @@ ALIGN also supports push button flow on docker.
 
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
-* Native environment flow
-    - Setup your own work directory
+#### Native environment flow
+* Setup your own work directory
 
         % mkdir $ALIGN_WORK_DIR
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
         
-    - Run ALIGN using make flow
+* Run ALIGN using make flow
 
         % make VENV=$VENV DESIGN=<design>
 
-    - Explore different features of align using python 
+* Explore different features of align using python 
 
         % source $VENV/bin/acitivate
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
