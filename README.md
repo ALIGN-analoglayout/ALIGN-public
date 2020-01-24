@@ -92,7 +92,7 @@ By default, the design directory is set to the examples directory. This can be m
 
         % make VENV=$VENV DESIGN=<design>
 
-* Explore different features of align using python arguments 
+* Explore different features of ALIGN using python arguments 
 
         % source $VENV/bin/activate
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
@@ -104,8 +104,8 @@ By default, the design directory is set to the examples directory. This can be m
         % make docker DESIGN=<design>
     
 ## Design database:
-* Contain example circuits with netlist, schematic running on circleci
-* [Benchmarking Design examples](CircuitsDatabase) 
+* [examples](examples): Contains example circuits with netlists running on circleci
+* [CircuitsDatabase](CircuitsDatabase): Contains benchmark circuits
  
 ## Viewer :
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
