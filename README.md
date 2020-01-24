@@ -81,13 +81,17 @@ ALIGN also supports push button flow on docker.
 ## Usage
 By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
 * Native environment flow
-    -make flow
+    - Setup your own work directory
+        % mkdir $ALIGN_WORK_DIR
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
+        
+    - Run ALIGN using make flow
         % make VENV=$VENV DESIGN=<design>
-    - python command 
+
+    - Explore different features of align using python 
         % source $VENV/bin/acitivate
-        % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c -g (to check drc)
+        % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
 * Docker based run
@@ -97,10 +101,10 @@ By default, the design directory is set to the examples directory. This can be m
     
 ## Design database:
 * Contain example circuits with netlist, schematic running on circleci
-* [Other design examples](dev/Design%20Database) 
+* [Benchmarking Design examples](CircuitsDatabase) 
  
 ## Viewer :
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
-* [KLayout](https://github.com/KLayout/klayout): GDS viewer
+* [KLayout](https://github.com/KLayout/klayout): GDS viewer (WSL users would need to install xming for display to work)
 * [Viewer](Viewer): Layout viewer to view output JSON file
 

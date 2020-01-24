@@ -61,6 +61,7 @@ deactivate
 ## install align_PnR
 setenv LD_LIBRARY_PATH $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
+cd $ALIGN_HOME
 
 ## Run first example
 #mkdir $ALIGN_WORK_DIR

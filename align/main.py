@@ -72,6 +72,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+            print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
             if check:
                 if filemap['errors'] > 0:
