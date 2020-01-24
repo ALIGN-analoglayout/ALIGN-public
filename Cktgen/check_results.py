@@ -2,10 +2,8 @@
 import json
 import pathlib
 import re
-from pprint import pformat
 
-from align.cell_fabric.gen_gds_json import translate_data
-from align.cell_fabric import pdk, transformation
+from align.cell_fabric import transformation
 
 from Intel.Intel_P1222p2_PDK.IntelP1222p2Canvas import IntelP1222p2Canvas
 
