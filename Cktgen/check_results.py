@@ -4,8 +4,7 @@ import pathlib
 import re
 from pprint import pformat
 
-from align.cell_fabric.gen_gds_json import translate_data
-from align.cell_fabric import pdk, transformation
+from align.cell_fabric import transformation
 
 from Intel.Intel_P1222p2_PDK.IntelP1222p2Canvas import IntelP1222p2Canvas
 
@@ -52,7 +51,8 @@ if __name__ == "__main__":
 
     cnv.gen_data(run_pex=False)
     
-#    assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
-#    assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
-#    assert len(cnv.rd.opens) == 0, pformat(cnv.rd.opens)
-#    assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
+    if False:
+        assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
+        assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
+        assert len(cnv.rd.opens) == 0, pformat(cnv.rd.opens)
+        assert len(cnv.drc.errors) == 0, pformat(cnv.drc.errors)
