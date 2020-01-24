@@ -4,7 +4,7 @@
 
 The SC DC DC converter is a 3:1 converter that in this testbench converts a voltage of 2 V to about 0.6 V
 
-![Circuit diagram](schematic.PNG)
+![Circuit diagram](schematic.png)
 
 ### Pin description
 

@@ -27,8 +27,4 @@ Typical constraints related to these classes of circuits are shown in the figure
 
 ## Testbenches
 
-Generic testbenches enabling plug and play of common modules with different internal topologies
-
-* Low frequency analog
-
-   * Single-ended OTA : Using this testbench, different single-ended OTA topologies (for eg. five transistor OTA, telescopic OTA, current mirror OTA) can be tested.
+Testbenches inside the circuit folder contain excitations and simulations to measure important performance metrics of the circuit.

@@ -3,6 +3,10 @@
 ### Circuit description
 LNA are used at RF front end of receiver to set Noise floor of the system.
 
+<p align="center">
+  <img width="60%" src="Schematic.jpg">
+</p>
+
 ### Testbench/Simulations
 AC simulation is used to check the gain. A noise simulation is required to check noise figure (NF) of LNA.
 Transient simulation is used for checking IIP3 of LNA.
