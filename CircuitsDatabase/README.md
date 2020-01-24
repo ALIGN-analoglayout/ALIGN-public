@@ -6,6 +6,8 @@
 
 * Sized netlists - Contains sized netlists in different technology nodes
 * Unsized netlists - Contains unsized netlists generated for training GCN based netlist annotation
+* Generalized testbenches - Contains exhaustive testbenches suited for circuits with different internal topologies with similar functions and pin structure
+
 
 ## Sized netlists
 
@@ -16,13 +18,13 @@ Designs from four classes of circuits:
 * Wireless/Radio frequency
 * Wireline
 
-### Testbenches
-
-Generic testbenches enabling plug and play of common modules with different internal topologies
 
 ## Unsized netlists
 
 Currently contains designs from two classes of circuits:
 
 * Low frequency analog
-* Wireless/Radio frequency
+
+## Generalized Testbenches
+
+Generalized testbenches enabling plug and play of common modules with different internal topologies to exhaustively characterize their performance
