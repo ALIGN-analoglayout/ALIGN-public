@@ -44,7 +44,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
 #### Native Linux Environment Flow
-You can use [source install.sh](install.sh) (for bash shell) or [source install_tcsh.sh](install_tcsh.sh) (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
+You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
     - gcc>=4.2
@@ -52,7 +52,7 @@ You can use [source install.sh](install.sh) (for bash shell) or [source install_
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
     - [Googletest]( https://github.com/google/googletest)>=1.10
-    - Skip these step if you are using [install.sh](install.sh)
+    - Skip these steps if you are using [install.sh](install.sh)
 
  * Setting up local environment variables if installations are not in system search path.
 
@@ -62,7 +62,7 @@ You can use [source install.sh](install.sh) (for bash shell) or [source install_
         % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
         % export VENV= <python virtual environment path, e.g., ./align_venv>
-        % Skip these step if you are using [install.sh](install.sh)
+        % Skip these steps if you are using [install.sh](install.sh)
  * Installation
 
         % cd PlaceRouteHierFlow
