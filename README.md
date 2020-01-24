@@ -91,13 +91,13 @@ By default, the design directory is set to the examples directory. This can be m
 
         % make VENV=$VENV DESIGN=<design>
 
-* Explore different features of align using python 
+* Explore different features of align using python arguments 
 
         % source $VENV/bin/acitivate
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
-* Docker based run
+#### Docker based run
 
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>
