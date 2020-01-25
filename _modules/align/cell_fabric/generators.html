@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.generators &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.generators</h1><div class="highlight"><pre>
+<span></span>
+<div class="viewcode-block" id="Wire"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Wire">[docs]</a><span class="k">class</span> <span class="nc">Wire</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">clg</span><span class="p">,</span> <span class="n">spg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span>
+        <span class="k">assert</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">,</span><span class="s1">&#39;h&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clg</span> <span class="o">=</span> <span class="n">clg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spg</span> <span class="o">=</span> <span class="n">spg</span>
+
+<div class="viewcode-block" id="Wire.segment"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Wire.segment">[docs]</a>    <span class="k">def</span> <span class="nf">segment</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">bIdx</span><span class="p">,</span> <span class="n">eIdx</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bS</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eS</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bS</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">bS</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spg</span>
+        <span class="k">if</span> <span class="n">eS</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">eS</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spg</span>
+
+        <span class="p">(</span><span class="n">c</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span><span class="n">clr</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">center</span><span class="p">)</span>
+        <span class="n">c0</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="n">w</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="n">c</span> <span class="o">+</span> <span class="n">w</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">bPhys</span> <span class="o">=</span> <span class="n">bS</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">bIdx</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ePhys</span> <span class="o">=</span> <span class="n">eS</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">eIdx</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="p">[</span> <span class="n">bPhys</span><span class="p">,</span> <span class="n">c0</span><span class="p">,</span> <span class="n">ePhys</span><span class="p">,</span> <span class="n">c1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="p">[</span> <span class="n">c0</span><span class="p">,</span> <span class="n">bPhys</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">ePhys</span><span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;netName&#39;</span> <span class="p">:</span> <span class="n">netName</span><span class="p">,</span> <span class="s1">&#39;layer&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;rect&#39;</span> <span class="p">:</span> <span class="n">rect</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">pinName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pinName</span>
+
+        <span class="k">if</span> <span class="n">clr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">clr</span>
+
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+<div class="viewcode-block" id="Region"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Region">[docs]</a><span class="k">class</span> <span class="nc">Region</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">h_grid</span><span class="p">,</span> <span class="n">v_grid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_grid</span> <span class="o">=</span> <span class="n">h_grid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_grid</span> <span class="o">=</span> <span class="n">v_grid</span>
+
+<div class="viewcode-block" id="Region.physical_x"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Region.physical_x">[docs]</a>    <span class="k">def</span> <span class="nf">physical_x</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_grid</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">grid_x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Region.physical_y"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Region.physical_y">[docs]</a>    <span class="k">def</span> <span class="nf">physical_y</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_grid</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">grid_y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Region.segment"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Region.segment">[docs]</a>    <span class="k">def</span> <span class="nf">segment</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">grid_x0</span><span class="p">,</span> <span class="n">grid_y0</span><span class="p">,</span> <span class="n">grid_x1</span><span class="p">,</span> <span class="n">grid_y1</span><span class="p">):</span>
+
+        <span class="n">rect</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_x</span><span class="p">(</span><span class="n">grid_x0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_y</span><span class="p">(</span><span class="n">grid_y0</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">physical_x</span><span class="p">(</span><span class="n">grid_x1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_y</span><span class="p">(</span><span class="n">grid_y1</span><span class="p">)]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;netName&#39;</span> <span class="p">:</span> <span class="n">netName</span><span class="p">,</span> <span class="s1">&#39;layer&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;rect&#39;</span> <span class="p">:</span> <span class="n">rect</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">pinName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pinName</span>
+
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+<div class="viewcode-block" id="Via"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via">[docs]</a><span class="k">class</span> <span class="nc">Via</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">h_clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="p">,</span> <span class="n">h_ext</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">v_ext</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span> <span class="o">=</span> <span class="n">h_clg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span> <span class="o">=</span> <span class="n">v_clg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">h_ext</span> <span class="o">=</span> <span class="n">h_ext</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_ext</span> <span class="o">=</span> <span class="n">v_ext</span>
+
+<div class="viewcode-block" id="Via.physical_xs"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.physical_xs">[docs]</a>    <span class="k">def</span> <span class="nf">physical_xs</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">c</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span><span class="n">_</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Via.physical_ys"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.physical_ys">[docs]</a>    <span class="k">def</span> <span class="nf">physical_ys</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">c</span><span class="p">,(</span><span class="n">w</span><span class="p">,</span><span class="n">_</span><span class="p">))</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_clg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="o">-</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span><span class="n">c</span><span class="o">+</span><span class="n">w</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Via.segment"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.segment">[docs]</a>    <span class="k">def</span> <span class="nf">segment</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">grid_cx</span><span class="p">,</span> <span class="n">grid_cy</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">x1</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_xs</span><span class="p">(</span> <span class="n">grid_cx</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">y0</span><span class="p">,</span><span class="n">y1</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">physical_ys</span><span class="p">(</span> <span class="n">grid_cy</span><span class="p">)</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="p">[</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">]</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;netName&#39;</span> <span class="p">:</span> <span class="n">netName</span><span class="p">,</span> <span class="s1">&#39;layer&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;rect&#39;</span> <span class="p">:</span> <span class="n">rect</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">pinName</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pinName</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Via.center_to_metal_edge"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.generators.Via.center_to_metal_edge">[docs]</a>    <span class="k">def</span> <span class="nf">center_to_metal_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{direction}</span><span class="s1">_ext&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ALIGN: Analog Layout, Intelligently Generated from Netlists &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Design database" href="database.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="Design database"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="align-analog-layout-intelligently-generated-from-netlists">
+<h1>ALIGN: Analog Layout, Intelligently Generated from Netlists<a class="headerlink" href="#align-analog-layout-intelligently-generated-from-netlists" title="Permalink to this headline">¶</a></h1>
+<p>ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&amp;M University, and Intel Corporation.</p>
+<p>The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Design database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html">ALIGN: flow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="README.html#inputs">Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#outputs">Outputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#native-linux-environment-flow">Native Linux Environment Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#docker-flow">Docker flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">How to use ALIGN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#native-environment-flow">Native environment flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage.html#docker-based-run">Docker based run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="viewer.html">Viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debug.html">How to debug installation failures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-gcc-version">Error due to gcc version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-ld-library-path-prerequisite-missing">Error due to LD_LIBRARY_PATH prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-xvfb-library-used-to-generate-image-of-layout">Error due to xvfb library used to generate image of layout</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-lpsolve-library-prerequisite-missing">Error due to lpsolve library prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-googletest-prerequisite-missing">Error due to googletest prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-json-prerequisite-missing">Error due to JSON prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-python-virtual-environment-prerequisite-missing">Error due to python virtual environment prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-klayout-prerequisite-missing">Error due to klayout prerequisite missing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-missing-align-installation">Error due to missing align installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html#error-due-to-g-package-not-updated">Error due to g++ package not updated</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="upcoming.html">Upcoming documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-pdk">How to add your own pdk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-visualize-and-debug-drc-using-align-viewer">How to visualize and debug DRC using ALIGN viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="upcoming.html#how-to-add-your-own-constraints">How to add your own constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">align</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="align.html">align package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">ALIGN: Analog Layout, Intelligently Generated from Netlists</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="database.html"
+                        title="next chapter">Design database</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="Design database"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

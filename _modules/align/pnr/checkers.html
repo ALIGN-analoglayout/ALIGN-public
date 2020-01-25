@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.pnr.checkers &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.pnr.checkers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">..cell_fabric</span> <span class="kn">import</span> <span class="n">transformation</span><span class="p">,</span> <span class="n">pdk</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">primitive</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="rational_scaling"><a class="viewcode-back" href="../../../align.pnr.html#align.pnr.checkers.rational_scaling">[docs]</a><span class="k">def</span> <span class="nf">rational_scaling</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mul</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="p">(</span><span class="n">mul</span><span class="o">*</span><span class="n">c</span><span class="p">)</span> <span class="o">%</span> <span class="n">div</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">])</span>
+    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">mul</span><span class="o">*</span><span class="n">c</span><span class="p">)</span> <span class="o">//</span><span class="n">div</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]]</span>
+    <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span> <span class="p">(</span><span class="n">mul</span><span class="o">*</span><span class="n">c</span><span class="p">)</span> <span class="o">%</span> <span class="n">div</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Terminal </span><span class="si">{term}</span><span class="s2"> not a multiple of </span><span class="si">{div}</span><span class="s2"> (mul=</span><span class="si">{mul}</span><span class="s2">).&quot;</span><span class="p">)</span>
+        <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">mul</span><span class="o">*</span><span class="n">c</span><span class="p">)</span><span class="o">//</span><span class="n">div</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]</span></div>
+
+<div class="viewcode-block" id="gen_viewer_json"><a class="viewcode-back" href="../../../align.pnr.html#align.pnr.checkers.gen_viewer_json">[docs]</a><span class="k">def</span> <span class="nf">gen_viewer_json</span><span class="p">(</span> <span class="n">hN</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">global_route_json</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">json_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">checkOnly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">markers</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">primitive</span><span class="o">.</span><span class="n">get_generator</span><span class="p">(</span><span class="s1">&#39;MOSGenerator&#39;</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">)</span>
+    <span class="c1"># TODO: Remove these hardcoded widths &amp; heights from __init__()</span>
+    <span class="c1">#       (Height may be okay since it defines UnitCellHeight)</span>
+    <span class="n">cnv</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">pdk</span><span class="o">.</span><span class="n">Pdk</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pdkdir</span> <span class="o">/</span> <span class="s1">&#39;layers.json&#39;</span><span class="p">),</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">terminals</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">subinsts</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">t_tbl</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;M1&quot;</span><span class="p">:</span> <span class="s2">&quot;m1&quot;</span><span class="p">,</span> <span class="s2">&quot;M2&quot;</span><span class="p">:</span> <span class="s2">&quot;m2&quot;</span><span class="p">,</span> <span class="s2">&quot;M3&quot;</span><span class="p">:</span> <span class="s2">&quot;m3&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;M4&quot;</span><span class="p">:</span> <span class="s2">&quot;m4&quot;</span><span class="p">,</span> <span class="s2">&quot;M5&quot;</span><span class="p">:</span> <span class="s2">&quot;m5&quot;</span><span class="p">,</span> <span class="s2">&quot;M6&quot;</span><span class="p">:</span> <span class="s2">&quot;m6&quot;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">add_terminal</span><span class="p">(</span> <span class="n">netName</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+        <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">netName</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+        <span class="k">def</span> <span class="nf">f</span><span class="p">(</span> <span class="n">gen</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="c1"># value is in 2x units</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">%</span><span class="mi">2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Off grid:</span><span class="si">{tag}</span><span class="s2"> </span><span class="si">{layer}</span><span class="s2"> </span><span class="si">{netName}</span><span class="s2"> </span><span class="si">{r}</span><span class="s2"> {r[2]-r[0]} {r[3]-r[1]}: </span><span class="si">{value}</span><span class="s2"> (in 2x units) is not divisible by two.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">clg</span><span class="o">.</span><span class="n">inverseBounds</span><span class="p">(</span> <span class="n">value</span><span class="o">//</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Off grid:</span><span class="si">{tag}</span><span class="s2"> </span><span class="si">{layer}</span><span class="s2"> </span><span class="si">{netName}</span><span class="s2"> </span><span class="si">{r}</span><span class="s2"> {r[2]-r[0]} {r[3]-r[1]}: </span><span class="si">{value}</span><span class="s2"> doesn&#39;t land on grid, lb and ub are: </span><span class="si">{p}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">layer</span> <span class="o">==</span> <span class="s2">&quot;cellarea&quot;</span><span class="p">:</span>
+            <span class="n">f</span><span class="p">(</span> <span class="n">cnv</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;LL.x&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="p">(</span> <span class="n">cnv</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;UR.x&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="p">(</span> <span class="n">cnv</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;LL.y&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="p">(</span> <span class="n">cnv</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="s2">&quot;UR.y&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span>   <span class="n">layer</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;M1&quot;</span><span class="p">,</span> <span class="s2">&quot;M3&quot;</span><span class="p">,</span> <span class="s2">&quot;M5&quot;</span><span class="p">]:</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+            <span class="k">elif</span> <span class="n">layer</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;M2&quot;</span><span class="p">,</span> <span class="s2">&quot;M4&quot;</span><span class="p">,</span> <span class="s2">&quot;M6&quot;</span><span class="p">]:</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">center</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">f</span><span class="p">(</span> <span class="n">cnv</span><span class="o">.</span><span class="n">generators</span><span class="p">[</span><span class="n">t_tbl</span><span class="p">[</span><span class="n">layer</span><span class="p">]],</span> <span class="n">center</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">checkOnly</span> <span class="ow">and</span> <span class="n">draw_grid</span><span class="p">:</span>
+        <span class="n">m1_pitch</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+        <span class="n">m2_pitch</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">hN</span><span class="o">.</span><span class="n">width</span><span class="o">+</span><span class="n">m1_pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">m1_pitch</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">m1_pitch</span><span class="o">*</span><span class="n">ix</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="n">x</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">hN</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+            <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="s1">&#39;m1_grid&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+        <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">hN</span><span class="o">.</span><span class="n">height</span><span class="o">+</span><span class="n">m2_pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">m2_pitch</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">m2_pitch</span><span class="o">*</span><span class="n">iy</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">hN</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="s1">&#39;m2_grid&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+    <span class="n">fa_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">hN</span><span class="o">.</span><span class="n">Nets</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;Block&#39;</span><span class="p">:</span>
+                <span class="n">cblk</span> <span class="o">=</span> <span class="n">hN</span><span class="o">.</span><span class="n">Blocks</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter2</span><span class="p">]</span>
+                <span class="n">blk</span> <span class="o">=</span> <span class="n">cblk</span><span class="o">.</span><span class="n">instance</span><span class="p">[</span><span class="n">cblk</span><span class="o">.</span><span class="n">selectedInstance</span><span class="p">]</span>
+                <span class="n">block_name</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">master_name</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">master</span>
+                <span class="n">pin</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">blockPins</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter</span><span class="p">]</span>
+                <span class="n">formal_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.name}</span><span class="s2">/</span><span class="si">{pin.name}</span><span class="s2">&quot;</span>
+                <span class="k">assert</span> <span class="n">formal_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fa_map</span>
+                <span class="n">fa_map</span><span class="p">[</span><span class="n">formal_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">term</span> <span class="o">=</span> <span class="n">hN</span><span class="o">.</span><span class="n">Terminals</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter</span><span class="p">]</span>
+                <span class="n">terminal_name</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">assert</span> <span class="n">terminal_name</span> <span class="o">==</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">for</span> <span class="n">cblk</span> <span class="ow">in</span> <span class="n">hN</span><span class="o">.</span><span class="n">Blocks</span><span class="p">:</span>
+        <span class="n">blk</span> <span class="o">=</span> <span class="n">cblk</span><span class="o">.</span><span class="n">instance</span><span class="p">[</span><span class="n">cblk</span><span class="o">.</span><span class="n">selectedInstance</span><span class="p">]</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">json_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pth</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="n">json_dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">blk</span><span class="o">.</span><span class="n">master</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">pth</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{pth}</span><span class="s2"> is not available; not importing subblock rectangles&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span> <span class="ow">and</span> <span class="n">input_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;blk.gdsFile: </span><span class="si">{blk.gdsFile}</span><span class="s2"> </span><span class="si">{found}</span><span class="s2"> </span><span class="si">{input_dir}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s2">&quot;^\./Results/(\S+)\.gds$&quot;</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="n">blk</span><span class="o">.</span><span class="n">gdsFile</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                <span class="n">pth</span> <span class="o">=</span> <span class="n">input_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">pth</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{pth}</span><span class="s2"> not found in input_dir&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{pth}</span><span class="s2"> found in input_dir&quot;</span><span class="p">)</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.gdsFile}</span><span class="s2"> does not end in .gds&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">pth</span><span class="o">.</span><span class="n">open</span><span class="p">(</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">fp</span><span class="p">)</span>
+            <span class="c1"># Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5</span>
+            <span class="n">rational_scaling</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Transformation</span><span class="o">.</span><span class="n">genTr</span><span class="p">(</span> <span class="n">blk</span><span class="o">.</span><span class="n">orient</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">h</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+            <span class="n">tr2</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Transformation</span><span class="p">(</span> <span class="n">oX</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">placedBox</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">blk</span><span class="o">.</span><span class="n">originBox</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                                                 <span class="n">oY</span><span class="o">=</span><span class="n">blk</span><span class="o">.</span><span class="n">placedBox</span><span class="o">.</span><span class="n">UR</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">blk</span><span class="o">.</span><span class="n">originBox</span><span class="o">.</span><span class="n">LL</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+
+            <span class="n">tr3</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">preMult</span><span class="p">(</span><span class="n">tr2</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;TRANS </span><span class="si">{blk.master}</span><span class="s2"> </span><span class="si">{blk.orient}</span><span class="s2"> </span><span class="si">{tr}</span><span class="s2"> </span><span class="si">{tr2}</span><span class="s2"> </span><span class="si">{tr3}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+                <span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tr3</span><span class="o">.</span><span class="n">hitRect</span><span class="p">(</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span> <span class="o">*</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">canonical</span><span class="p">()</span><span class="o">.</span><span class="n">toList</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+                <span class="n">nm</span> <span class="o">=</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;netName&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">nm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">formal_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.name}</span><span class="s2">/</span><span class="si">{nm}</span><span class="s2">&quot;</span>
+                    <span class="n">term</span><span class="p">[</span><span class="s1">&#39;netName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fa_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span> <span class="n">formal_name</span><span class="p">,</span> <span class="n">formal_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;pin&#39;</span> <span class="ow">in</span> <span class="n">term</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;terminal&#39;</span> <span class="ow">in</span> <span class="n">term</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;terminal&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span>
+                    <span class="n">term</span><span class="p">[</span><span class="s1">&#39;netName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.name}</span><span class="s2">/{&#39;:&#39;.join(term[&#39;terminal&#39;])}&quot;</span>
+                    <span class="n">term</span><span class="p">[</span><span class="s1">&#39;terminal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.name}</span><span class="s2">/</span><span class="si">{term[&#39;terminal&#39;][0]}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;terminal&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="k">if</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;boundary&quot;</span><span class="p">]:</span>
+                    <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">term</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="s1">&#39;subinsts&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                <span class="n">subinsts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{blk.name}</span><span class="s1">/</span><span class="si">{nm}</span><span class="s1">&#39;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">nm</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;subinsts&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">checkOnly</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">blk</span><span class="o">.</span><span class="n">interMetals</span><span class="p">:</span>
+                <span class="n">add_terminal</span><span class="p">(</span> <span class="s1">&#39;!interMetals&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">metal</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">placedBox</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">blk</span><span class="o">.</span><span class="n">interVias</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="p">[</span><span class="n">via</span><span class="o">.</span><span class="n">UpperMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">LowerMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">ViaRect</span><span class="p">]:</span>
+                    <span class="n">add_terminal</span><span class="p">(</span> <span class="s1">&#39;!interVias&#39;</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">metal</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">placedBox</span><span class="p">)</span>
+
+            <span class="n">add_terminal</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{blk.master}</span><span class="s2">:</span><span class="si">{blk.name}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;cellarea&#39;</span><span class="p">,</span> <span class="n">blk</span><span class="o">.</span><span class="n">placedBox</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">hN</span><span class="o">.</span><span class="n">Nets</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Net: </span><span class="si">{n.name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">addt</span><span class="p">(</span> <span class="n">obj</span><span class="p">,</span> <span class="n">con</span><span class="p">):</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">placedBox</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">add_terminal</span><span class="p">(</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">metal</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">add_terminal</span><span class="p">(</span> <span class="n">obj</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">metal</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">connected</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;Block&#39;</span><span class="p">:</span>
+                <span class="n">cblk</span> <span class="o">=</span> <span class="n">hN</span><span class="o">.</span><span class="n">Blocks</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter2</span><span class="p">]</span>
+                <span class="n">blk</span> <span class="o">=</span> <span class="n">cblk</span><span class="o">.</span><span class="n">instance</span><span class="p">[</span><span class="n">cblk</span><span class="o">.</span><span class="n">selectedInstance</span><span class="p">]</span>
+                <span class="n">block_name</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">master_name</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">master</span>
+                <span class="n">pin</span> <span class="o">=</span> <span class="n">blk</span><span class="o">.</span><span class="n">blockPins</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter</span><span class="p">]</span>
+                <span class="n">formal_name</span> <span class="o">=</span> <span class="n">pin</span><span class="o">.</span><span class="n">name</span>
+
+                <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Block formal_index: </span><span class="si">{c.iter}</span><span class="s1">,</span><span class="si">{formal_name}</span><span class="s1"> block_index: </span><span class="si">{c.iter2}</span><span class="s1">,</span><span class="si">{block_name}</span><span class="s1">,</span><span class="si">{master_name}</span><span class="s1">&#39;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{tag}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">pin</span><span class="o">.</span><span class="n">pinContacts</span><span class="p">:</span>
+                    <span class="n">addt</span><span class="p">(</span> <span class="n">n</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">term</span> <span class="o">=</span> <span class="n">hN</span><span class="o">.</span><span class="n">Terminals</span><span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">iter</span><span class="p">]</span>
+                <span class="n">terminal_name</span> <span class="o">=</span> <span class="n">term</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">assert</span> <span class="n">terminal_name</span> <span class="o">==</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Terminal formal_index: </span><span class="si">{c.iter}</span><span class="s1">,</span><span class="si">{terminal_name}</span><span class="s1">&#39;</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{tag}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">termContacts</span><span class="p">:</span>
+                    <span class="k">pass</span>
+<span class="c1">#                    addt( n, con)</span>
+
+        <span class="k">for</span> <span class="n">metal</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">path_metal</span><span class="p">:</span>
+            <span class="n">con</span> <span class="o">=</span> <span class="n">metal</span><span class="o">.</span><span class="n">MetalRect</span>
+            <span class="n">add_terminal</span><span class="p">(</span> <span class="n">n</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">metal</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">placedBox</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">path_via</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="p">[</span><span class="n">via</span><span class="o">.</span><span class="n">UpperMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">LowerMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">ViaRect</span><span class="p">]:</span>
+                <span class="n">addt</span><span class="p">(</span> <span class="n">n</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">via</span> <span class="ow">in</span> <span class="n">n</span><span class="o">.</span><span class="n">interVias</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="p">[</span><span class="n">via</span><span class="o">.</span><span class="n">UpperMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">LowerMetalRect</span><span class="p">,</span><span class="n">via</span><span class="o">.</span><span class="n">ViaRect</span><span class="p">]:</span>
+                <span class="n">addt</span><span class="p">(</span> <span class="n">n</span><span class="p">,</span> <span class="n">con</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">global_route_json</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">global_route_json</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">gr_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">fp</span><span class="p">)</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">wire</span> <span class="ow">in</span> <span class="n">gr_json</span><span class="p">[</span><span class="s1">&#39;wires&#39;</span><span class="p">]:</span>
+            <span class="n">nm</span> <span class="o">=</span> <span class="n">wire</span><span class="p">[</span><span class="s1">&#39;net_name&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">nm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tbl</span><span class="p">:</span>
+                <span class="n">tbl</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">tbl</span><span class="p">[</span><span class="n">nm</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wire</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">conn</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;connected_pins&#39;</span><span class="p">]:</span>
+                    <span class="n">ly</span> <span class="o">=</span> <span class="n">conn</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">conn</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][:]</span>
+                    <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+
+                    <span class="k">if</span> <span class="n">ly</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">d0</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">k</span><span class="o">+</span><span class="s2">&quot;_tm&quot;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ly</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">}</span>
+                        <span class="n">d1</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">conn</span><span class="p">[</span><span class="s1">&#39;sink_name&#39;</span><span class="p">],</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ly</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">}</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Add two terminals: </span><span class="si">{d0}</span><span class="s2"> </span><span class="si">{d1}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">d0</span><span class="p">)</span>
+                        <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">d1</span><span class="p">)</span>
+
+                <span class="n">ly</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;rect&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;No global route &#39;rect&#39; in </span><span class="si">{v}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="n">r</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][:]</span>
+                <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">],</span><span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+
+                <span class="k">if</span>  <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;2-dimensional global route </span><span class="si">{v}</span><span class="s2"> </span><span class="si">{r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">r</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;0-dimensional global route </span><span class="si">{v}</span><span class="s2"> </span><span class="si">{r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Global route: </span><span class="si">{k}</span><span class="s2"> </span><span class="si">{ly}</span><span class="s2"> </span><span class="si">{r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">]</span> <span class="o">==</span> <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]:</span>
+                        <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="p">]</span>   <span class="o">-=</span> <span class="mi">20</span>
+                        <span class="n">r</span><span class="p">[</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">20</span>
+
+                <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span><span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">k</span><span class="o">+</span><span class="s2">&quot;_gr&quot;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ly</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">draw_grid</span><span class="p">:</span>
+            <span class="n">m1_pitch</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">10</span><span class="o">*</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+            <span class="n">m2_pitch</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">10</span><span class="o">*</span><span class="n">cnv</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">hN</span><span class="o">.</span><span class="n">width</span><span class="o">+</span><span class="n">m1_pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">m1_pitch</span><span class="p">):</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">m1_pitch</span><span class="o">*</span><span class="n">ix</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="n">x</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span> <span class="n">hN</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+                <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="s1">&#39;m1_bin&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+            <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">hN</span><span class="o">.</span><span class="n">height</span><span class="o">+</span><span class="n">m2_pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">m2_pitch</span><span class="p">):</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">m2_pitch</span><span class="o">*</span><span class="n">iy</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">hN</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="s1">&#39;m2_bin&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+    <span class="c1"># Create viewer dictionary</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">hN</span><span class="o">.</span><span class="n">width</span><span class="p">,</span><span class="n">hN</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;globalRoutes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;globalRouteGrid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">d</span><span class="p">[</span><span class="s2">&quot;terminals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">terminals</span>
+
+    <span class="k">if</span> <span class="n">checkOnly</span><span class="p">:</span>
+        <span class="c1"># divide by two be make it be in CellFabric units (nanometer)</span>
+        <span class="n">rational_scaling</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">div</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">cnv</span><span class="o">.</span><span class="n">bbox</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span> <span class="o">*</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;bbox&quot;</span><span class="p">])</span>
+        <span class="n">cnv</span><span class="o">.</span><span class="n">terminals</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;terminals&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">inst</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">subinsts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">cnv</span><span class="o">.</span><span class="n">subinsts</span><span class="p">[</span><span class="n">inst</span><span class="p">]</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">cnv</span><span class="o">.</span><span class="n">gen_data</span><span class="p">(</span><span class="n">run_pex</span><span class="o">=</span><span class="n">extract</span><span class="p">)</span>
+
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">toList</span><span class="p">()</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnv</span><span class="o">.</span><span class="n">terminals</span>
+
+        <span class="c1">#</span>
+        <span class="c1"># Experiment for visualizing shorts and opens</span>
+        <span class="c1">#</span>
+
+        <span class="c1"># for (idx,sh) in enumerate(cnv.rd.shorts):</span>
+        <span class="c1">#     if isinstance( sh, tuple) and len(sh) == 2:</span>
+        <span class="c1">#         p0, p1 = sh</span>
+        <span class="c1">#         logger.info( f&quot;SH: {p0} {p1}&quot;)</span>
+        <span class="c1">## &quot;M0&quot; doesn&#39;t always exist</span>
+        <span class="c1">#         term = { &quot;layer&quot;: &quot;M0&quot;, &quot;netName&quot;: f&quot;SH{idx}_{p0.netName}&quot;, &quot;rect&quot;: p0.rect}</span>
+        <span class="c1">#         d[&#39;terminals&#39;].append( term)</span>
+        <span class="c1">#         term = { &quot;layer&quot;: &quot;M0&quot;, &quot;netName&quot;: f&quot;SH{idx}_{p1.netName}&quot;, &quot;rect&quot;: p1.rect}</span>
+        <span class="c1">#         d[&#39;terminals&#39;].append( term)</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         logger.error( f&quot;Unknown short type: {sh}&quot;)</span>
+
+
+        <span class="c1"># for (nm,lst) in cnv.rd.opens:</span>
+        <span class="c1">#     logger.info( f&quot;OP: {nm} {lst}&quot;)</span>
+        <span class="c1">#     for (jdx,l) in enumerate(lst):</span>
+        <span class="c1">#         for (ly,r) in l:</span>
+        <span class="c1">#             term = { &quot;layer&quot;: ly, &quot;netName&quot;: f&quot;OP_{nm}_{jdx}&quot;, &quot;rect&quot;: r}</span>
+        <span class="c1">#             d[&#39;terminals&#39;].append( term)</span>
+
+        <span class="c1"># multiply by ten make it be in JSON file units (angstroms) This is a mess!</span>
+        <span class="n">rational_scaling</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">mul</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">cnv</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># multiply by five make it be in JSON file units (angstroms) This is a mess!</span>
+        <span class="n">rational_scaling</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">mul</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

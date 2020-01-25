@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.drc &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.drc</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DesignRuleCheck"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.DesignRuleCheck">[docs]</a><span class="k">class</span> <span class="nc">DesignRuleCheck</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">num_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DesignRuleCheck.run"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.drc.DesignRuleCheck.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Run DRC on self.canvas &amp; report errors if any</span>
+
+<span class="sd">        Note: self.canvas must already contain &#39;rd&#39;</span>
+<span class="sd">              (aka removeDuplicates has been run)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_via_rules</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_metal_rules</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_errors</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_via_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;TODO : Add via pattern checking rules &#39;&#39;&#39;</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;SpaceX&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">space</span>
+
+    <span class="k">def</span> <span class="nf">_check_metal_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Check metal min-length / min-spacing rules&#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_min_length</span><span class="p">(</span>
+                <span class="n">layer</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">dIndex</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_min_spacing</span><span class="p">(</span>
+                <span class="n">layer</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">dIndex</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_min_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">slrects</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
+        <span class="n">min_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;MinL&#39;</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">dIndex</span><span class="p">,</span> <span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">slrects</span><span class="p">:</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span>
+            <span class="k">if</span> <span class="n">rect</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">-</span> <span class="n">rect</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_length</span><span class="p">:</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;MinLength violation on </span><span class="si">{layer}</span><span class="s2">: </span><span class="si">{root.netName}{rect}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_min_spacing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">slrects</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
+        <span class="n">min_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;EndToEnd&#39;</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">dIndex</span><span class="p">,</span> <span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">prev_slr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">slrects</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">prev_slr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">prev_slr</span><span class="o">.</span><span class="n">rect</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">min_space</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;MinSpace violation on </span><span class="si">{layer}</span><span class="s2">: {prev_slr.root().netName}</span><span class="si">{prev_slr.rect}</span><span class="s2"> x {slr.root().netName}</span><span class="si">{slr.rect}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">prev_slr</span> <span class="o">=</span> <span class="n">slr</span>
+        <span class="k">return</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

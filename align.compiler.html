@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.compiler package &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="align-compiler-package">
+<h1>align.compiler package<a class="headerlink" href="#align-compiler-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.compiler.basic_element">
+<span id="align-compiler-basic-element-module"></span><h2>align.compiler.basic_element module<a class="headerlink" href="#module-align.compiler.basic_element" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Oct 10 13:18:49 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="class">
+<dt id="align.compiler.basic_element.BasicElement">
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.basic_element.</code><code class="sig-name descname">BasicElement</code><span class="sig-paren">(</span><em class="sig-param">line</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Defines the basic elements of spice file
+e.g: a resistor, inductor
+It also defines the weight on each port of device</p>
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.capacitor">
+<code class="sig-name descname">capacitor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.capacitor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.capacitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>cap: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.get_elements">
+<code class="sig-name descname">get_elements</code><span class="sig-paren">(</span><em class="sig-param">num_pins=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.get_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.get_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract pins and values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.i_source">
+<code class="sig-name descname">i_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.i_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.i_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cur_source: i3 vdd! net1 DC=idc
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.inductor">
+<code class="sig-name descname">inductor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.inductor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.inductor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Res: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.resistor">
+<code class="sig-name descname">resistor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.resistor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.resistor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Res: c7 net7 vinp c1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.transistor">
+<code class="sig-name descname">transistor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.transistor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.transistor" title="Permalink to this definition">¶</a></dt>
+<dd><p>transistor: m5 net5 phi2 0 0 nmos_rvt w=81e-9 l=20e-9 nfin=3
+The assumption is 3 port network
+pins = [drain, gate, source]</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.v_source">
+<code class="sig-name descname">v_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.v_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.v_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>v_source: v1 vbiasp1 0 DC=vbiasp1
+The assumption is 2 port network</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.basic_element.BasicElement.vcvs_source">
+<code class="sig-name descname">vcvs_source</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#BasicElement.vcvs_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.BasicElement.vcvs_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>v_source: E1 (Vinp net2 net3 net2) vcvs gain=1
+The assumption is 4 port network</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.basic_element.parse_value">
+<code class="sig-prename descclassname">align.compiler.basic_element.</code><code class="sig-name descname">parse_value</code><span class="sig-paren">(</span><em class="sig-param">all_param</em>, <em class="sig-param">vtype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/basic_element.html#parse_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.basic_element.parse_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse the value parameters for each block and returns a dict</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.compiler">
+<span id="align-compiler-compiler-module"></span><h2>align.compiler.compiler module<a class="headerlink" href="#module-align.compiler.compiler" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="align.compiler.compiler.compiler">
+<code class="sig-prename descclassname">align.compiler.compiler.</code><code class="sig-name descname">compiler</code><span class="sig-paren">(</span><em class="sig-param">input_ckt: pathlib.Path</em>, <em class="sig-param">design_name: str</em>, <em class="sig-param">flat=0</em>, <em class="sig-param">Debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/compiler.html#compiler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.compiler.compiler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.compiler.compiler_output">
+<code class="sig-prename descclassname">align.compiler.compiler.</code><code class="sig-name descname">compiler_output</code><span class="sig-paren">(</span><em class="sig-param">input_ckt</em>, <em class="sig-param">library</em>, <em class="sig-param">updated_ckt</em>, <em class="sig-param">design_name</em>, <em class="sig-param">result_dir</em>, <em class="sig-param">unit_size_mos=12</em>, <em class="sig-param">unit_size_cap=12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/compiler.html#compiler_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.compiler.compiler_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.compiler.generate_hierarchy">
+<code class="sig-prename descclassname">align.compiler.compiler.</code><code class="sig-name descname">generate_hierarchy</code><span class="sig-paren">(</span><em class="sig-param">netlist</em>, <em class="sig-param">subckt</em>, <em class="sig-param">output_dir</em>, <em class="sig-param">flatten_heirarchy</em>, <em class="sig-param">unit_size_mos</em>, <em class="sig-param">unit_size_cap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/compiler.html#generate_hierarchy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.compiler.generate_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.match_graph">
+<span id="align-compiler-match-graph-module"></span><h2>align.compiler.match_graph module<a class="headerlink" href="#module-align.compiler.match_graph" title="Permalink to this headline">¶</a></h2>
+<p>Created on Fri Nov  2 21:33:22 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="align.compiler.match_graph.add_parallel_caps">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">add_parallel_caps</code><span class="sig-paren">(</span><em class="sig-param">G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#add_parallel_caps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.add_parallel_caps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.add_series_res">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">add_series_res</code><span class="sig-paren">(</span><em class="sig-param">G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#add_series_res"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.add_series_res" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.change_SD">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">change_SD</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">node</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#change_SD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.change_SD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.check_nodes">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">check_nodes</code><span class="sig-paren">(</span><em class="sig-param">graph_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#check_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.check_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.check_values">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">check_values</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#check_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.check_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.compare_balanced_tree">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">compare_balanced_tree</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">node1</em>, <em class="sig-param">node2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#compare_balanced_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.compare_balanced_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>used to remove some false matches for DP and CMC</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.define_SD">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">define_SD</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">power</em>, <em class="sig-param">gnd</em>, <em class="sig-param">clk</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#define_SD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.define_SD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.dont_touch_clk">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">dont_touch_clk</code><span class="sig-paren">(</span><em class="sig-param">Gsub</em>, <em class="sig-param">CLOCK</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#dont_touch_clk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.dont_touch_clk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.get_key">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">get_key</code><span class="sig-paren">(</span><em class="sig-param">Gsub</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#get_key"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.get_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.get_next_level">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">get_next_level</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">tree_l1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#get_next_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.get_next_level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.preprocess_stack">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">preprocess_stack</code><span class="sig-paren">(</span><em class="sig-param">G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#preprocess_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.preprocess_stack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.read_inputs">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">read_inputs</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">hier_graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#read_inputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.read_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>read circuit graphs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.read_lib">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">read_lib</code><span class="sig-paren">(</span><em class="sig-param">lib_dir_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#read_lib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.read_lib" title="Permalink to this definition">¶</a></dt>
+<dd><p>read all library graphs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.read_setup">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">read_setup</code><span class="sig-paren">(</span><em class="sig-param">setup_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#read_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.read_setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.reduce_graph">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">reduce_graph</code><span class="sig-paren">(</span><em class="sig-param">circuit_graph</em>, <em class="sig-param">mapped_graph_list</em>, <em class="sig-param">liblist</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#reduce_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.reduce_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>merge matched graphs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.match_graph.traverse_hier_in_graph">
+<code class="sig-prename descclassname">align.compiler.match_graph.</code><code class="sig-name descname">traverse_hier_in_graph</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">hier_graph_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/match_graph.html#traverse_hier_in_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.match_graph.traverse_hier_in_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recusively reads all hierachies in the graph</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.merge_nodes">
+<span id="align-compiler-merge-nodes-module"></span><h2>align.compiler.merge_nodes module<a class="headerlink" href="#module-align.compiler.merge_nodes" title="Permalink to this headline">¶</a></h2>
+<p>Created on Thu Nov 29 22:19:39 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="align.compiler.merge_nodes.check_nodes">
+<code class="sig-prename descclassname">align.compiler.merge_nodes.</code><code class="sig-name descname">check_nodes</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/merge_nodes.html#check_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.merge_nodes.check_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checking all values</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.merge_nodes.check_values">
+<code class="sig-prename descclassname">align.compiler.merge_nodes.</code><code class="sig-name descname">check_values</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/merge_nodes.html#check_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.merge_nodes.check_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.merge_nodes.convert_unit">
+<code class="sig-prename descclassname">align.compiler.merge_nodes.</code><code class="sig-name descname">convert_unit</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/merge_nodes.html#convert_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.merge_nodes.convert_unit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.merge_nodes.merge_nodes">
+<code class="sig-prename descclassname">align.compiler.merge_nodes.</code><code class="sig-name descname">merge_nodes</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">hier_type</em>, <em class="sig-param">argv</em>, <em class="sig-param">matched_ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/merge_nodes.html#merge_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.merge_nodes.merge_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges the  given nodes in argv and returns a
+reduced graph. It also returns a subgraph(not used anymore)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.merge_nodes.merged_value">
+<code class="sig-prename descclassname">align.compiler.merge_nodes.</code><code class="sig-name descname">merged_value</code><span class="sig-paren">(</span><em class="sig-param">values1</em>, <em class="sig-param">values2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/merge_nodes.html#merged_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.merge_nodes.merged_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.read_lef">
+<span id="align-compiler-read-lef-module"></span><h2>align.compiler.read_lef module<a class="headerlink" href="#module-align.compiler.read_lef" title="Permalink to this headline">¶</a></h2>
+<p>Created on Thu Nov 29 19:38:43 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="align.compiler.read_lef.read_lef">
+<code class="sig-prename descclassname">align.compiler.read_lef.</code><code class="sig-name descname">read_lef</code><span class="sig-paren">(</span><em class="sig-param">lef_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_lef.html#read_lef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_lef.read_lef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads available lef in LEF dir
+Reads .lef files or param_lef files</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.read_netlist">
+<span id="align-compiler-read-netlist-module"></span><h2>align.compiler.read_netlist module<a class="headerlink" href="#module-align.compiler.read_netlist" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Oct 10 13:04:45 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="class">
+<dt id="align.compiler.read_netlist.SpiceParser">
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.read_netlist.</code><code class="sig-name descname">SpiceParser</code><span class="sig-paren">(</span><em class="sig-param">netlistPath</em>, <em class="sig-param">top_ckt_name=None</em>, <em class="sig-param">flat=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_netlist.html#SpiceParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_netlist.SpiceParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Read a spice file (.sp/.cdl) and converts it to a graph.
+Device properties are inherited from BasicElement.py
+You can flatten the circuit by using flag: flat
+The final graph is stored in a yaml file in circuit_graphs folder.</p>
+<dl class="method">
+<dt id="align.compiler.read_netlist.SpiceParser.get_next_line">
+<code class="sig-name descname">get_next_line</code><span class="sig-paren">(</span><em class="sig-param">file_pointer</em>, <em class="sig-param">line_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_netlist.html#SpiceParser.get_next_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_netlist.SpiceParser.get_next_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.read_netlist.SpiceParser.resolve_hierarchy">
+<code class="sig-name descname">resolve_hierarchy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_netlist.html#SpiceParser.resolve_hierarchy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_netlist.SpiceParser.resolve_hierarchy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.read_netlist.SpiceParser.resolve_top_param">
+<code class="sig-name descname">resolve_top_param</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_netlist.html#SpiceParser.resolve_top_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_netlist.SpiceParser.resolve_top_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.read_netlist.SpiceParser.sp_parser">
+<code class="sig-name descname">sp_parser</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/read_netlist.html#SpiceParser.sp_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.read_netlist.SpiceParser.sp_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the defined file line wise</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.util">
+<span id="align-compiler-util-module"></span><h2>align.compiler.util module<a class="headerlink" href="#module-align.compiler.util" title="Permalink to this headline">¶</a></h2>
+<p>Created on Tue Dec 11 11:34:45 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="align.compiler.util.convert_to_unit">
+<code class="sig-prename descclassname">align.compiler.util.</code><code class="sig-name descname">convert_to_unit</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/util.html#convert_to_unit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.util.convert_to_unit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.util.max_connectivity">
+<code class="sig-prename descclassname">align.compiler.util.</code><code class="sig-name descname">max_connectivity</code><span class="sig-paren">(</span><em class="sig-param">G</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/util.html#max_connectivity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.util.max_connectivity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.util.plt_graph">
+<code class="sig-prename descclassname">align.compiler.util.</code><code class="sig-name descname">plt_graph</code><span class="sig-paren">(</span><em class="sig-param">subgraph</em>, <em class="sig-param">sub_block_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/util.html#plt_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.util.plt_graph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler.write_verilog_lef">
+<span id="align-compiler-write-verilog-lef-module"></span><h2>align.compiler.write_verilog_lef module<a class="headerlink" href="#module-align.compiler.write_verilog_lef" title="Permalink to this headline">¶</a></h2>
+<p>Created on Wed Nov 21 13:12:15 2018</p>
+<p>&#64;author: kunal</p>
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.CopyConstFile">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">CopyConstFile</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">working_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#CopyConstFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.CopyConstFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.FindArray">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">FindArray</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#FindArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.FindArray" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.WriteCap">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteCap</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em>, <em class="sig-param">unit_size_cap</em>, <em class="sig-param">all_array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteCap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteCap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.WriteConst">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteConst</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">input_dir</em>, <em class="sig-param">name</em>, <em class="sig-param">ports</em>, <em class="sig-param">stop_points</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteConst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteConst" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="align.compiler.write_verilog_lef.WriteSpice">
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteSpice</code><span class="sig-paren">(</span><em class="sig-param">circuit_graph</em>, <em class="sig-param">circuit_name</em>, <em class="sig-param">inout_pin_names</em>, <em class="sig-param">subckt_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteSpice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteSpice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>write hierarchical verilog file</p>
+<dl class="method">
+<dt id="align.compiler.write_verilog_lef.WriteSpice.check_ports_match">
+<code class="sig-name descname">check_ports_match</code><span class="sig-paren">(</span><em class="sig-param">port</em>, <em class="sig-param">subckt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteSpice.check_ports_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteSpice.check_ports_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.write_verilog_lef.WriteSpice.print_subckt">
+<code class="sig-name descname">print_subckt</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteSpice.print_subckt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteSpice.print_subckt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.compiler.write_verilog_lef.WriteVerilog">
+<em class="property">class </em><code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">WriteVerilog</code><span class="sig-paren">(</span><em class="sig-param">circuit_graph</em>, <em class="sig-param">circuit_name</em>, <em class="sig-param">inout_pin_names</em>, <em class="sig-param">subckt_list</em>, <em class="sig-param">power_pins</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>write hierarchical verilog file</p>
+<dl class="method">
+<dt id="align.compiler.write_verilog_lef.WriteVerilog.check_ports_match">
+<code class="sig-name descname">check_ports_match</code><span class="sig-paren">(</span><em class="sig-param">port</em>, <em class="sig-param">subckt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog.check_ports_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog.check_ports_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.write_verilog_lef.WriteVerilog.map_pins">
+<code class="sig-name descname">map_pins</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog.map_pins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog.map_pins" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.compiler.write_verilog_lef.WriteVerilog.print_module">
+<code class="sig-name descname">print_module</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#WriteVerilog.print_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.WriteVerilog.print_module" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.check_common_centroid">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">check_common_centroid</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">const_path</em>, <em class="sig-param">ports</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#check_common_centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.check_common_centroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads available const in input dir
+Fix cc cap in const and netlist</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.compare_node">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">compare_node</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">node1</em>, <em class="sig-param">node2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#compare_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.compare_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.compare_nodes">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">compare_nodes</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">match_pair</em>, <em class="sig-param">traverced</em>, <em class="sig-param">nodes1</em>, <em class="sig-param">nodes2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#compare_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.compare_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.concat_values">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">concat_values</code><span class="sig-paren">(</span><em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#concat_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.concat_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.connection">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">connection</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">net</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.connection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.generate_lef">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">generate_lef</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">values</em>, <em class="sig-param">available_block_lef</em>, <em class="sig-param">unit_size_mos=12</em>, <em class="sig-param">unit_size_cap=12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#generate_lef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.generate_lef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a shell script to generate parameterized lef</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.match_branches">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">match_branches</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">nodes_dict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#match_branches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.match_branches" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.matching_groups">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">matching_groups</code><span class="sig-paren">(</span><em class="sig-param">G</em>, <em class="sig-param">level1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#matching_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.matching_groups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.print_globals">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">print_globals</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">power</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#print_globals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.print_globals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write global variables</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.print_header">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">print_header</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#print_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.print_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write Verilog header</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="align.compiler.write_verilog_lef.trace_template">
+<code class="sig-prename descclassname">align.compiler.write_verilog_lef.</code><code class="sig-name descname">trace_template</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">similar_node_groups</em>, <em class="sig-param">visited</em>, <em class="sig-param">template</em>, <em class="sig-param">array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/compiler/write_verilog_lef.html#trace_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.compiler.write_verilog_lef.trace_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.compiler">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.compiler" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">align.compiler package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-align.compiler.basic_element">align.compiler.basic_element module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.compiler">align.compiler.compiler module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.match_graph">align.compiler.match_graph module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.merge_nodes">align.compiler.merge_nodes module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.read_lef">align.compiler.read_lef module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.read_netlist">align.compiler.read_netlist module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.util">align.compiler.util module</a></li>
+<li><a class="reference internal" href="#module-align.compiler.write_verilog_lef">align.compiler.write_verilog_lef module</a></li>
+<li><a class="reference internal" href="#module-align.compiler">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/align.compiler.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

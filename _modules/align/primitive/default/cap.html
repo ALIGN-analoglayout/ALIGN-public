@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.primitive.default.cap &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.primitive.default.cap</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">.canvas</span> <span class="kn">import</span> <span class="n">DefaultCanvas</span>
+<span class="kn">from</span> <span class="nn">...cell_fabric.generators</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">...cell_fabric.grid</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CapGenerator"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.cap.CapGenerator">[docs]</a><span class="k">class</span> <span class="nc">CapGenerator</span><span class="p">(</span><span class="n">DefaultCanvas</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdk</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pdk</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Generalize these !!!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m1n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Wire</span><span class="p">(</span> <span class="s1">&#39;m1n&#39;</span><span class="p">,</span> <span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span>
+                                     <span class="n">clg</span><span class="o">=</span><span class="n">ColoredCenterLineGrid</span><span class="p">(</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span><span class="s1">&#39;c2&#39;</span><span class="p">],</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m1Pitch&#39;</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m1Width&#39;</span><span class="p">]),</span>
+                                     <span class="n">spg</span><span class="o">=</span><span class="n">EnclosureGrid</span><span class="p">(</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">],</span> <span class="n">stoppoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">][</span><span class="s1">&#39;VencA_L&#39;</span><span class="p">]</span> <span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Width&#39;</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m2n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Wire</span><span class="p">(</span> <span class="s1">&#39;m2n&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span>
+                                      <span class="n">clg</span><span class="o">=</span><span class="n">ColoredCenterLineGrid</span><span class="p">(</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span><span class="s1">&#39;c2&#39;</span><span class="p">],</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m2Pitch&#39;</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m2Width&#39;</span><span class="p">]),</span>
+                                      <span class="n">spg</span><span class="o">=</span><span class="n">EnclosureGrid</span><span class="p">(</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">],</span> <span class="n">stoppoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V1&#39;</span><span class="p">][</span><span class="s1">&#39;VencA_H&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Width&#39;</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">m3n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Wire</span><span class="p">(</span> <span class="s1">&#39;m3n&#39;</span><span class="p">,</span> <span class="s1">&#39;M3&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span>
+                                     <span class="n">clg</span><span class="o">=</span><span class="n">ColoredCenterLineGrid</span><span class="p">(</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span><span class="s1">&#39;c2&#39;</span><span class="p">],</span> <span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m3Pitch&#39;</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m3Width&#39;</span><span class="p">]),</span>
+                                     <span class="n">spg</span><span class="o">=</span><span class="n">EnclosureGrid</span><span class="p">(</span><span class="n">pitch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">],</span> <span class="n">stoppoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;V2&#39;</span><span class="p">][</span><span class="s1">&#39;VencA_H&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Width&#39;</span><span class="p">]</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Cboundary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Region</span><span class="p">(</span> <span class="s1">&#39;Cboundary&#39;</span><span class="p">,</span> <span class="s1">&#39;Cboundary&#39;</span><span class="p">,</span> <span class="n">h_grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span> <span class="n">v_grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">clg</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">v1_xn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Via</span><span class="p">(</span> <span class="s1">&#39;v1_xn&#39;</span><span class="p">,</span> <span class="s1">&#39;V1&#39;</span><span class="p">,</span> <span class="n">h_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2n</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="o">.</span><span class="n">clg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v1_nx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Via</span><span class="p">(</span> <span class="s1">&#39;v1_nx&#39;</span><span class="p">,</span> <span class="s1">&#39;V1&#39;</span><span class="p">,</span> <span class="n">h_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m1n</span><span class="o">.</span><span class="n">clg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v2_xn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Via</span><span class="p">(</span> <span class="s1">&#39;v2_xn&#39;</span><span class="p">,</span> <span class="s1">&#39;V2&#39;</span><span class="p">,</span> <span class="n">h_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2n</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="o">.</span><span class="n">clg</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">v2_nx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addGen</span><span class="p">(</span> <span class="n">Via</span><span class="p">(</span> <span class="s1">&#39;v2_nx&#39;</span><span class="p">,</span> <span class="s1">&#39;V2&#39;</span><span class="p">,</span> <span class="n">h_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="o">.</span><span class="n">clg</span><span class="p">,</span> <span class="n">v_clg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">m3n</span><span class="o">.</span><span class="n">clg</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CapGenerator.addCap"><a class="viewcode-back" href="../../../../align.primitive.default.html#align.primitive.default.cap.CapGenerator.addCap">[docs]</a>    <span class="k">def</span> <span class="nf">addCap</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">unit_cap</span><span class="p">):</span>
+
+        <span class="n">x_length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">unit_cap</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">y_length</span> <span class="o">=</span> <span class="nb">float</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">unit_cap</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">*</span><span class="mi">1000</span><span class="p">)</span>  
+
+        <span class="n">c_m1_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m1Pitch&#39;</span><span class="p">]</span>
+        <span class="n">c_m1_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m1Width&#39;</span><span class="p">]</span>
+        <span class="n">c_m2_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m2Pitch&#39;</span><span class="p">]</span>
+        <span class="n">c_m2_w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Cap&#39;</span><span class="p">][</span><span class="s1">&#39;m2Width&#39;</span><span class="p">]</span>
+        <span class="n">m1_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+        <span class="n">m2_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Pitches </span><span class="si">{c_m1_p}</span><span class="s2"> </span><span class="si">{c_m2_p}</span><span class="s2"> </span><span class="si">{m1_p}</span><span class="s2"> </span><span class="si">{m2_p}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span> <span class="n">l</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+            <span class="c1"># this is nonsense but if l is a multiple of 2p say 2kp, then 2kp+p-w/(2p) is always k</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span> <span class="mi">2</span><span class="o">*</span><span class="nb">round</span><span class="p">(</span>  <span class="p">(</span><span class="n">l</span><span class="o">+</span><span class="n">p</span><span class="o">-</span><span class="n">w</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">p</span><span class="p">)</span> <span class="p">))</span>
+
+        <span class="n">x_number</span> <span class="o">=</span> <span class="n">compute</span><span class="p">(</span> <span class="n">x_length</span><span class="p">,</span> <span class="n">c_m1_p</span><span class="p">,</span> <span class="n">c_m1_w</span><span class="p">)</span>
+        <span class="n">y_number</span> <span class="o">=</span> <span class="n">compute</span><span class="p">(</span> <span class="n">y_length</span><span class="p">,</span> <span class="n">c_m2_p</span><span class="p">,</span> <span class="n">c_m2_w</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Number of wires </span><span class="si">{x_number}</span><span class="s2"> </span><span class="si">{y_number}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">roundup</span><span class="p">(</span> <span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">p</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">p</span>
+
+        <span class="n">last_y1_track</span> <span class="o">=</span> <span class="n">roundup</span><span class="p">(</span> <span class="p">(</span><span class="n">y_number</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">c_m2_p</span><span class="p">,</span> <span class="n">m2_p</span><span class="p">)</span>
+        <span class="n">last_x1_track</span> <span class="o">=</span> <span class="n">roundup</span><span class="p">(</span> <span class="p">(</span><span class="n">x_number</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">c_m1_p</span><span class="p">,</span> <span class="n">m1_p</span><span class="p">)</span>
+
+        <span class="n">grid_y0</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">grid_y1</span> <span class="o">=</span> <span class="n">grid_y0</span> <span class="o">+</span> <span class="n">last_y1_track</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">x_number</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">grid_x</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">net</span> <span class="o">=</span> <span class="s1">&#39;PLUS&#39;</span> <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;MINUS&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1n</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3n</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+            <span class="n">grid_y</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">grid_y1</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1_nx</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2_nx</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="n">grid_y</span><span class="p">)</span>
+
+        <span class="n">pin</span> <span class="o">=</span> <span class="s1">&#39;PLUS&#39;</span>
+        <span class="c1"># Don&#39;t port m1 per Yaguang instructions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">,</span> <span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">last_x1_track</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># don&#39;t port m3 (or port one or the other)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m3</span><span class="p">,</span> <span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">last_x1_track</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_y0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_y1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">grid_x0</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">grid_x1</span> <span class="o">=</span> <span class="n">grid_x0</span> <span class="o">+</span> <span class="n">last_x1_track</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">y_number</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">grid_x</span> <span class="o">=</span> <span class="p">((</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">grid_x1</span>
+            <span class="n">net</span> <span class="o">=</span> <span class="s1">&#39;PLUS&#39;</span> <span class="k">if</span> <span class="n">i</span><span class="o">%</span><span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;MINUS&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v1_xn</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">v2_xn</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">grid_x</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">pin</span> <span class="o">=</span> <span class="s1">&#39;PLUS&#39;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2n</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">pin</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_x0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_x1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">pin</span> <span class="o">=</span> <span class="s1">&#39;MINUS&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">,</span> <span class="n">pin</span><span class="p">,</span> <span class="n">last_y1_track</span><span class="p">,</span> <span class="p">(</span><span class="n">grid_x0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">grid_x1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">boundary</span><span class="p">,</span> <span class="s1">&#39;Boundary&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="n">last_x1_track</span><span class="p">,</span>
+                        <span class="n">last_y1_track</span><span class="p">)</span>
+
+        <span class="c1">#self.addRegion( self.Cboundary, &#39;Cboundary&#39;, None,</span>
+        <span class="c1">#                    -1, -1,</span>
+        <span class="c1">#                    last_x_track  + x * grid_cell_x_pitch + 1 + p,</span>
+        <span class="c1">#                    last_y1_track + y * grid_cell_y_pitch + 1)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Computed Boundary: </span><span class="si">{self.terminals[-1]}</span><span class="s2"> </span><span class="si">{self.terminals[-1][&#39;rect&#39;][2]}</span><span class="s2"> {self.terminals[-1][&#39;rect&#39;][2]%80}&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

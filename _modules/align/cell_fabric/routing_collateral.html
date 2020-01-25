@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.routing_collateral &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.routing_collateral</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+
+<div class="viewcode-block" id="MetalTemplate"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.routing_collateral.MetalTemplate">[docs]</a><span class="k">class</span> <span class="nc">MetalTemplate</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">m</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spaces</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">colors</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stops</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_offset</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">last_c</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">last_width</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,(</span><span class="n">c</span><span class="p">,</span><span class="n">attrs</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">clg</span><span class="o">.</span><span class="n">grid</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">clg</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">c</span>
+
+            <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span> <span class="o">=</span> <span class="n">attrs</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">color</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">last_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pitch</span> <span class="o">=</span> <span class="n">c</span> <span class="o">-</span> <span class="n">last_c</span>
+                <span class="n">space</span> <span class="o">=</span> <span class="n">pitch</span> <span class="o">-</span> <span class="p">(</span><span class="n">last_width</span> <span class="o">+</span> <span class="n">width</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+
+            <span class="n">last_c</span> <span class="o">=</span> <span class="n">c</span>
+            <span class="n">last_width</span> <span class="o">=</span> <span class="n">width</span>
+
+
+        <span class="n">last_c</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;spg&quot;</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">)</span>
+
+        <span class="n">tuples</span> <span class="o">=</span> <span class="p">[</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="n">pair</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span><span class="n">pair</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span> <span class="k">if</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span> <span class="n">tuples</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tuples</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">tuples</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="n">tuples</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">new_tuple</span> <span class="o">=</span> <span class="p">(</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">idx</span><span class="p">),</span> <span class="n">attrs</span><span class="p">)))</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;new tuple&quot;</span><span class="p">,</span> <span class="n">new_tuple</span><span class="p">)</span>
+            <span class="n">tuples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">new_tuple</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;new tuples:&quot;</span><span class="p">,</span> <span class="n">tuples</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,(</span><span class="n">c</span><span class="p">,</span><span class="n">attrs</span><span class="p">))</span> <span class="ow">in</span> <span class="n">tuples</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stop_offset</span> <span class="o">=</span> <span class="n">c</span>
+
+            <span class="nb">print</span><span class="p">(</span> <span class="n">idx</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">last_c</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">last_c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">last_c</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">c</span> <span class="o">-</span> <span class="n">last_c</span><span class="p">)</span>
+
+            <span class="n">last_c</span> <span class="o">=</span> <span class="n">c</span>
+
+<div class="viewcode-block" id="MetalTemplate.write"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.routing_collateral.MetalTemplate.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span>
+        <span class="n">widths</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">])</span>
+        <span class="n">spaces</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">spaces</span><span class="p">])</span>
+
+        <span class="n">colors_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">:</span>
+            <span class="n">colors_str</span> <span class="o">=</span> <span class="s2">&quot; colors=&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">))</span>
+
+        <span class="n">stops</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stops</span><span class="p">])</span>
+
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;MetalTemplate layer=</span><span class="si">{m.layer}</span><span class="s2"> name=</span><span class="si">{m.nm}</span><span class="s2"> widths=</span><span class="si">{widths}</span><span class="s2"> spaces=</span><span class="si">{spaces}{colors_str}</span><span class="s2"> stops=</span><span class="si">{stops}</span><span class="s2"> stop_offset=</span><span class="si">{self.stop_offset}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="write_metal_templates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.routing_collateral.write_metal_templates">[docs]</a><span class="k">def</span> <span class="nf">write_metal_templates</span><span class="p">(</span> <span class="n">c</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+    <span class="n">mt</span> <span class="o">=</span> <span class="n">MetalTemplate</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">mt</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="n">fp</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gen"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.routing_collateral.gen">[docs]</a><span class="k">def</span> <span class="nf">gen</span><span class="p">(</span> <span class="n">c</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+    <span class="n">dirpath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
+    <span class="n">dirpath</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span> <span class="n">c</span><span class="o">.</span><span class="n">layer_stack</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="p">(</span> <span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="n">m_l</span><span class="p">,</span> <span class="n">m_u</span><span class="p">))</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">layer_stack</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Via </span><span class="si">{v}</span><span class="s2"> Metal below </span><span class="si">{m_l}</span><span class="s2"> Metal above </span><span class="si">{m_u}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">metal_templates</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">generators</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">)</span> <span class="p">})</span>
+    <span class="k">with</span> <span class="n">dirpath</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;metal_templates.txt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">metal_templates</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">write_metal_templates</span><span class="p">(</span> <span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">generators</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

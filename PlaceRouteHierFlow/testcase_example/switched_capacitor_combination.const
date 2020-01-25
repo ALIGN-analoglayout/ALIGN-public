@@ -1,3 +1,0 @@
-CC ( {c0} , {6} , {cap_12f} , {nodummy} )
-CC ( {c1_c3} ,  {3,6}  ,  {cap_12f} )
-SymmBlock ( {c0} , {c1_c3} , {m0_m3} ) 

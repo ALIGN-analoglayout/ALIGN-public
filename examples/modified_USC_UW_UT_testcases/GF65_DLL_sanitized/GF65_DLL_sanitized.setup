@@ -1,4 +1,0 @@
-POWER = VDD
-GND = VSS
-CLOCK = CK_REF CK<1> CK<2> CK<3> CK<4> CK<5> CK<6> CK<7> CK<8>
-DIGITAL = Delay_Unit BUFF20 BUFF6 Delay_Chain

@@ -1,0 +1,934 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric package &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="align-cell-fabric-package">
+<h1>align.cell_fabric package<a class="headerlink" href="#align-cell-fabric-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-align.cell_fabric.canvas">
+<span id="align-cell-fabric-canvas-module"></span><h2>align.cell_fabric.canvas module<a class="headerlink" href="#module-align.cell_fabric.canvas" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.canvas.Canvas">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.canvas.</code><code class="sig-name descname">Canvas</code><span class="sig-paren">(</span><em class="sig-param">pdk=None</em>, <em class="sig-param">gds_layer_map=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addGen">
+<code class="sig-name descname">addGen</code><span class="sig-paren">(</span><em class="sig-param">gen</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addGen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addGen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addRegion">
+<code class="sig-name descname">addRegion</code><span class="sig-paren">(</span><em class="sig-param">region</em>, <em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">grid_x0</em>, <em class="sig-param">grid_y0</em>, <em class="sig-param">grid_x1</em>, <em class="sig-param">grid_y1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addRegion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addRegion" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addVia">
+<code class="sig-name descname">addVia</code><span class="sig-paren">(</span><em class="sig-param">via</em>, <em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">cx</em>, <em class="sig-param">cy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addVia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addVia" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addWire">
+<code class="sig-name descname">addWire</code><span class="sig-paren">(</span><em class="sig-param">wire</em>, <em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">c</em>, <em class="sig-param">bIdx</em>, <em class="sig-param">eIdx</em>, <em class="sig-param">*</em>, <em class="sig-param">bS=None</em>, <em class="sig-param">eS=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addWire"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addWire" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addWireAndMultiViaSet">
+<code class="sig-name descname">addWireAndMultiViaSet</code><span class="sig-paren">(</span><em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">wire</em>, <em class="sig-param">c</em>, <em class="sig-param">listOfPairs</em>, <em class="sig-param">*</em>, <em class="sig-param">bIdx=None</em>, <em class="sig-param">eIdx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addWireAndMultiViaSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addWireAndMultiViaSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.addWireAndViaSet">
+<code class="sig-name descname">addWireAndViaSet</code><span class="sig-paren">(</span><em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">wire</em>, <em class="sig-param">via</em>, <em class="sig-param">c</em>, <em class="sig-param">listOfIndices</em>, <em class="sig-param">*</em>, <em class="sig-param">bIdx=None</em>, <em class="sig-param">eIdx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.addWireAndViaSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.addWireAndViaSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.asciiStickDiagram">
+<code class="sig-name descname">asciiStickDiagram</code><span class="sig-paren">(</span><em class="sig-param">v1</em>, <em class="sig-param">m2</em>, <em class="sig-param">v2</em>, <em class="sig-param">m3</em>, <em class="sig-param">matrix</em>, <em class="sig-param">*</em>, <em class="sig-param">xpitch=4</em>, <em class="sig-param">ypitch=2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.asciiStickDiagram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.asciiStickDiagram" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.checkDesignRules">
+<code class="sig-name descname">checkDesignRules</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.checkDesignRules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.checkDesignRules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.computeBbox">
+<code class="sig-name descname">computeBbox</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.computeBbox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.computeBbox" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.draw_grid">
+<code class="sig-name descname">draw_grid</code><span class="sig-paren">(</span><em class="sig-param">data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.draw_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.draw_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.extractParasitics">
+<code class="sig-name descname">extractParasitics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.extractParasitics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.extractParasitics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.gen_data">
+<code class="sig-name descname">gen_data</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">draw_grid=False</em>, <em class="sig-param">run_drc=True</em>, <em class="sig-param">run_pex=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.gen_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.gen_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.generate_routing_collateral">
+<code class="sig-name descname">generate_routing_collateral</code><span class="sig-paren">(</span><em class="sig-param">dirname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.generate_routing_collateral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.generate_routing_collateral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.hitTopTr">
+<code class="sig-name descname">hitTopTr</code><span class="sig-paren">(</span><em class="sig-param">tr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.hitTopTr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.hitTopTr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.loadPDK">
+<code class="sig-name descname">loadPDK</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.loadPDK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.loadPDK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.popTr">
+<code class="sig-name descname">popTr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.popTr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.popTr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.pushTr">
+<code class="sig-name descname">pushTr</code><span class="sig-paren">(</span><em class="sig-param">tr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.pushTr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.pushTr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.removeDuplicates">
+<code class="sig-name descname">removeDuplicates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.removeDuplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.removeDuplicates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.setBboxFromBoundary">
+<code class="sig-name descname">setBboxFromBoundary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.setBboxFromBoundary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.setBboxFromBoundary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.transform_and_add">
+<code class="sig-name descname">transform_and_add</code><span class="sig-paren">(</span><em class="sig-param">s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.transform_and_add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.transform_and_add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.writeGDS">
+<code class="sig-name descname">writeGDS</code><span class="sig-paren">(</span><em class="sig-param">fp1</em>, <em class="sig-param">timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.writeGDS"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.writeGDS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.Canvas.writeJSON">
+<code class="sig-name descname">writeJSON</code><span class="sig-paren">(</span><em class="sig-param">fp</em>, <em class="sig-param">*</em>, <em class="sig-param">draw_grid=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/canvas.html#Canvas.writeJSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.canvas.Canvas.writeJSON" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.canvas.LayoutDevice">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.canvas.</code><code class="sig-name descname">LayoutDevice</code><span class="sig-paren">(</span><em class="sig-param">parameters</em>, <em class="sig-param">pins</em><span class="sig-paren">)</span><a class="headerlink" href="#align.cell_fabric.canvas.LayoutDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.canvas.LayoutDevice.parameters">
+<em class="property">property </em><code class="sig-name descname">parameters</code><a class="headerlink" href="#align.cell_fabric.canvas.LayoutDevice.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.canvas.LayoutDevice.pins">
+<em class="property">property </em><code class="sig-name descname">pins</code><a class="headerlink" href="#align.cell_fabric.canvas.LayoutDevice.pins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.drc">
+<span id="align-cell-fabric-drc-module"></span><h2>align.cell_fabric.drc module<a class="headerlink" href="#module-align.cell_fabric.drc" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.drc.DesignRuleCheck">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.drc.</code><code class="sig-name descname">DesignRuleCheck</code><span class="sig-paren">(</span><em class="sig-param">canvas</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/drc.html#DesignRuleCheck"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.drc.DesignRuleCheck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.drc.DesignRuleCheck.num_errors">
+<em class="property">property </em><code class="sig-name descname">num_errors</code><a class="headerlink" href="#align.cell_fabric.drc.DesignRuleCheck.num_errors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.drc.DesignRuleCheck.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/drc.html#DesignRuleCheck.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.drc.DesignRuleCheck.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run DRC on self.canvas &amp; report errors if any</p>
+<dl class="simple">
+<dt>Note: self.canvas must already contain ‘rd’</dt><dd><p>(aka removeDuplicates has been run)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.gen_gds_json">
+<span id="align-cell-fabric-gen-gds-json-module"></span><h2>align.cell_fabric.gen_gds_json module<a class="headerlink" href="#module-align.cell_fabric.gen_gds_json" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="align.cell_fabric.gen_gds_json.translate">
+<code class="sig-prename descclassname">align.cell_fabric.gen_gds_json.</code><code class="sig-name descname">translate</code><span class="sig-paren">(</span><em class="sig-param">macro_name</em>, <em class="sig-param">exclude_pattern</em>, <em class="sig-param">pinSwitch</em>, <em class="sig-param">fp</em>, <em class="sig-param">ofile</em>, <em class="sig-param">timestamp=None</em>, <em class="sig-param">p=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_gds_json.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_gds_json.translate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.gen_gds_json.translate_data">
+<code class="sig-prename descclassname">align.cell_fabric.gen_gds_json.</code><code class="sig-name descname">translate_data</code><span class="sig-paren">(</span><em class="sig-param">macro_name</em>, <em class="sig-param">exclude_pattern</em>, <em class="sig-param">pdkfile</em>, <em class="sig-param">pinSwitch</em>, <em class="sig-param">data</em>, <em class="sig-param">via_gen_tbl</em>, <em class="sig-param">timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_gds_json.html#translate_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_gds_json.translate_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.gen_lef">
+<span id="align-cell-fabric-gen-lef-module"></span><h2>align.cell_fabric.gen_lef module<a class="headerlink" href="#module-align.cell_fabric.gen_lef" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="align.cell_fabric.gen_lef.gen_lef_data">
+<code class="sig-prename descclassname">align.cell_fabric.gen_lef.</code><code class="sig-name descname">gen_lef_data</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">fp</em>, <em class="sig-param">macro_name</em>, <em class="sig-param">cell_pin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_lef.html#gen_lef_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_lef.gen_lef_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.gen_lef.gen_lef_json">
+<code class="sig-prename descclassname">align.cell_fabric.gen_lef.</code><code class="sig-name descname">gen_lef_json</code><span class="sig-paren">(</span><em class="sig-param">json_fn</em>, <em class="sig-param">lef_fn</em>, <em class="sig-param">macro_name</em>, <em class="sig-param">cell_pin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_lef.html#gen_lef_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_lef.gen_lef_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.gen_lef.gen_lef_json_fp">
+<code class="sig-prename descclassname">align.cell_fabric.gen_lef.</code><code class="sig-name descname">gen_lef_json_fp</code><span class="sig-paren">(</span><em class="sig-param">json_fp</em>, <em class="sig-param">lef_fp</em>, <em class="sig-param">macro_name</em>, <em class="sig-param">cell_pin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_lef.html#gen_lef_json_fp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_lef.gen_lef_json_fp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.gen_lef.json_lef">
+<code class="sig-prename descclassname">align.cell_fabric.gen_lef.</code><code class="sig-name descname">json_lef</code><span class="sig-paren">(</span><em class="sig-param">input_json</em>, <em class="sig-param">out_lef</em>, <em class="sig-param">cell_pin</em>, <em class="sig-param">blockM</em>, <em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/gen_lef.html#json_lef"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.gen_lef.json_lef" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.generators">
+<span id="align-cell-fabric-generators-module"></span><h2>align.cell_fabric.generators module<a class="headerlink" href="#module-align.cell_fabric.generators" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.generators.Region">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.generators.</code><code class="sig-name descname">Region</code><span class="sig-paren">(</span><em class="sig-param">nm</em>, <em class="sig-param">layer</em>, <em class="sig-param">*</em>, <em class="sig-param">h_grid</em>, <em class="sig-param">v_grid</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.generators.Region.physical_x">
+<code class="sig-name descname">physical_x</code><span class="sig-paren">(</span><em class="sig-param">grid_x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Region.physical_x"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Region.physical_x" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.generators.Region.physical_y">
+<code class="sig-name descname">physical_y</code><span class="sig-paren">(</span><em class="sig-param">grid_y</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Region.physical_y"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Region.physical_y" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.generators.Region.segment">
+<code class="sig-name descname">segment</code><span class="sig-paren">(</span><em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">grid_x0</em>, <em class="sig-param">grid_y0</em>, <em class="sig-param">grid_x1</em>, <em class="sig-param">grid_y1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Region.segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Region.segment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.generators.Via">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.generators.</code><code class="sig-name descname">Via</code><span class="sig-paren">(</span><em class="sig-param">nm</em>, <em class="sig-param">layer</em>, <em class="sig-param">*</em>, <em class="sig-param">h_clg</em>, <em class="sig-param">v_clg</em>, <em class="sig-param">h_ext=1</em>, <em class="sig-param">v_ext=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Via"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Via" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.generators.Via.center_to_metal_edge">
+<code class="sig-name descname">center_to_metal_edge</code><span class="sig-paren">(</span><em class="sig-param">direction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Via.center_to_metal_edge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Via.center_to_metal_edge" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.generators.Via.physical_xs">
+<code class="sig-name descname">physical_xs</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Via.physical_xs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Via.physical_xs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.generators.Via.physical_ys">
+<code class="sig-name descname">physical_ys</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Via.physical_ys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Via.physical_ys" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.generators.Via.segment">
+<code class="sig-name descname">segment</code><span class="sig-paren">(</span><em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">grid_cx</em>, <em class="sig-param">grid_cy</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Via.segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Via.segment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.generators.Wire">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.generators.</code><code class="sig-name descname">Wire</code><span class="sig-paren">(</span><em class="sig-param">nm</em>, <em class="sig-param">layer</em>, <em class="sig-param">direction</em>, <em class="sig-param">*</em>, <em class="sig-param">clg</em>, <em class="sig-param">spg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Wire"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Wire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.generators.Wire.segment">
+<code class="sig-name descname">segment</code><span class="sig-paren">(</span><em class="sig-param">netName</em>, <em class="sig-param">pinName</em>, <em class="sig-param">center</em>, <em class="sig-param">bIdx</em>, <em class="sig-param">eIdx</em>, <em class="sig-param">*</em>, <em class="sig-param">bS=None</em>, <em class="sig-param">eS=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/generators.html#Wire.segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.generators.Wire.segment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.grid">
+<span id="align-cell-fabric-grid-module"></span><h2>align.cell_fabric.grid module<a class="headerlink" href="#module-align.cell_fabric.grid" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.grid.CenterLineGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">CenterLineGrid</code><a class="reference internal" href="_modules/align/cell_fabric/grid.html#CenterLineGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.CenterLineGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.Grid" title="align.cell_fabric.grid.Grid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.Grid</span></code></a></p>
+<dl class="method">
+<dt id="align.cell_fabric.grid.CenterLineGrid.addCenterLine">
+<code class="sig-name descname">addCenterLine</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">width</em>, <em class="sig-param">isLegal=True</em>, <em class="sig-param">*</em>, <em class="sig-param">color=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#CenterLineGrid.addCenterLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.CenterLineGrid.addCenterLine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.CenterLineGrid.semantic">
+<code class="sig-name descname">semantic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#CenterLineGrid.semantic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.CenterLineGrid.semantic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.CenteredGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">CenteredGrid</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">pitch</em>, <em class="sig-param">offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#CenteredGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.CenteredGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.Grid" title="align.cell_fabric.grid.Grid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.Grid</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.ColoredCenterLineGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">ColoredCenterLineGrid</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">colors</em>, <em class="sig-param">pitch</em>, <em class="sig-param">width</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">repeat=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#ColoredCenterLineGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.ColoredCenterLineGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.CenterLineGrid" title="align.cell_fabric.grid.CenterLineGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.CenterLineGrid</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.EnclosureGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">EnclosureGrid</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">clg=None</em>, <em class="sig-param">pitch</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">stoppoint</em>, <em class="sig-param">check=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#EnclosureGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.EnclosureGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.Grid" title="align.cell_fabric.grid.Grid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.Grid</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.Grid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">Grid</code><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.addGridLine">
+<code class="sig-name descname">addGridLine</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">isLegal</em>, <em class="sig-param">attrs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.addGridLine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.addGridLine" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.copyShift">
+<code class="sig-name descname">copyShift</code><span class="sig-paren">(</span><em class="sig-param">shift=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.copyShift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.copyShift" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.inverseBounds">
+<code class="sig-name descname">inverseBounds</code><span class="sig-paren">(</span><em class="sig-param">physical</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.inverseBounds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.inverseBounds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.n">
+<em class="property">property </em><code class="sig-name descname">n</code><a class="headerlink" href="#align.cell_fabric.grid.Grid.n" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.period">
+<em class="property">property </em><code class="sig-name descname">period</code><a class="headerlink" href="#align.cell_fabric.grid.Grid.period" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.semantic">
+<code class="sig-name descname">semantic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.semantic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.semantic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.snapToLegal">
+<code class="sig-name descname">snapToLegal</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">direction</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.snapToLegal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.snapToLegal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.grid.Grid.value">
+<code class="sig-name descname">value</code><span class="sig-paren">(</span><em class="sig-param">idx</em>, <em class="sig-param">check=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#Grid.value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.Grid.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.SingleGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">SingleGrid</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">clg=None</em>, <em class="sig-param">pitch</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">repeat=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#SingleGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.SingleGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.Grid" title="align.cell_fabric.grid.Grid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.Grid</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.grid.UncoloredCenterLineGrid">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.grid.</code><code class="sig-name descname">UncoloredCenterLineGrid</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">pitch</em>, <em class="sig-param">width</em>, <em class="sig-param">offset=0</em>, <em class="sig-param">repeat=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/grid.html#UncoloredCenterLineGrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.grid.UncoloredCenterLineGrid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.grid.CenterLineGrid" title="align.cell_fabric.grid.CenterLineGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.grid.CenterLineGrid</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.lef_parser">
+<span id="align-cell-fabric-lef-parser-module"></span><h2>align.cell_fabric.lef_parser module<a class="headerlink" href="#module-align.cell_fabric.lef_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.lef_parser.LEFParser">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">LEFParser</code><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Implementation of a recursive descent parser for LEF.   Each method
+implements a single grammar rule.</p>
+<p>Use the ._accept() method to test and accept the current lookahead token.
+Use the ._accept_keyword() method to test and accept the current
+lookahead token if it matches the argument.
+Use the ._expect() method to exactly match and discard the next token on
+the input (or raise a SyntaxError if it doesn’t match).</p>
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.cA">
+<code class="sig-name descname">cA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.cA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.cA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.macro">
+<code class="sig-name descname">macro</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.macro"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.macro" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.pA">
+<code class="sig-name descname">pA</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.pA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.pA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.parse">
+<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.ports">
+<code class="sig-name descname">ports</code><span class="sig-paren">(</span><em class="sig-param">pin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.ports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.ports" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.toA">
+<em class="property">static </em><code class="sig-name descname">toA</code><span class="sig-paren">(</span><em class="sig-param">s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.toA"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.toA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.LEFParser.whole">
+<code class="sig-name descname">whole</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#LEFParser.whole"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.LEFParser.whole" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.lef_parser.Macro">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">Macro</code><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Macro"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Macro" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Macro.bbox">
+<em class="property">property </em><code class="sig-name descname">bbox</code><a class="headerlink" href="#align.cell_fabric.lef_parser.Macro.bbox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Macro.prnt">
+<code class="sig-name descname">prnt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Macro.prnt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Macro.prnt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.lef_parser.Obs">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">Obs</code><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Obs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Obs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Obs.prnt">
+<code class="sig-name descname">prnt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Obs.prnt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Obs.prnt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.lef_parser.Pin">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">Pin</code><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Pin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Pin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Pin.prnt">
+<code class="sig-name descname">prnt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#Pin.prnt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.Pin.prnt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.lef_parser.Token">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">Token</code><span class="sig-paren">(</span><em class="sig-param">type</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#align.cell_fabric.lef_parser.Token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Token.type">
+<em class="property">property </em><code class="sig-name descname">type</code><a class="headerlink" href="#align.cell_fabric.lef_parser.Token.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.lef_parser.Token.value">
+<em class="property">property </em><code class="sig-name descname">value</code><a class="headerlink" href="#align.cell_fabric.lef_parser.Token.value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.lef_parser.generate_tokens">
+<code class="sig-prename descclassname">align.cell_fabric.lef_parser.</code><code class="sig-name descname">generate_tokens</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_parser.html#generate_tokens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_parser.generate_tokens" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.lef_to_json">
+<span id="align-cell-fabric-lef-to-json-module"></span><h2>align.cell_fabric.lef_to_json module<a class="headerlink" href="#module-align.cell_fabric.lef_to_json" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="align.cell_fabric.lef_to_json.lef_to_json">
+<code class="sig-prename descclassname">align.cell_fabric.lef_to_json.</code><code class="sig-name descname">lef_to_json</code><span class="sig-paren">(</span><em class="sig-param">fn</em>, <em class="sig-param">nm=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/lef_to_json.html#lef_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.lef_to_json.lef_to_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.pdk">
+<span id="align-cell-fabric-pdk-module"></span><h2>align.cell_fabric.pdk module<a class="headerlink" href="#module-align.cell_fabric.pdk" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.pdk.Pdk">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.pdk.</code><code class="sig-name descname">Pdk</code><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.addMetal">
+<code class="sig-name descname">addMetal</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.addMetal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.addMetal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.addVia">
+<code class="sig-name descname">addVia</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.addVia"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.addVia" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.get_gds_map">
+<code class="sig-name descname">get_gds_map</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.get_gds_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.get_gds_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.get_lef_exclude">
+<code class="sig-name descname">get_lef_exclude</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.get_lef_exclude"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.get_lef_exclude" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.get_via_stack">
+<code class="sig-name descname">get_via_stack</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.get_via_stack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.get_via_stack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.get_via_table">
+<code class="sig-name descname">get_via_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.get_via_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.get_via_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.items"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manage iterators for read-only dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.keys">
+<code class="sig-name descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manage iterators for read-only dict</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.load" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pdk.Pdk.values">
+<code class="sig-name descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pdk.html#Pdk.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pdk.Pdk.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manage iterators for read-only dict</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.pex">
+<span id="align-cell-fabric-pex-module"></span><h2>align.cell_fabric.pex module<a class="headerlink" href="#module-align.cell_fabric.pex" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.pex.ParasiticExtraction">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.pex.</code><code class="sig-name descname">ParasiticExtraction</code><span class="sig-paren">(</span><em class="sig-param">canvas</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.capacitor">
+<code class="sig-name descname">capacitor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.capacitor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.capacitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.compute_dist">
+<em class="property">static </em><code class="sig-name descname">compute_dist</code><span class="sig-paren">(</span><em class="sig-param">p</em>, <em class="sig-param">q</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.compute_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.compute_dist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.pi">
+<code class="sig-name descname">pi</code><span class="sig-paren">(</span><em class="sig-param">t0</em>, <em class="sig-param">t1</em>, <em class="sig-param">R</em>, <em class="sig-param">C</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.pi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.pi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.resistor">
+<code class="sig-name descname">resistor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.resistor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.resistor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run PEX on self.canvas</p>
+<dl class="simple">
+<dt>Note: self.canvas must already contain ‘rd’</dt><dd><p>(aka removeDuplicates has been run)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.tee">
+<code class="sig-name descname">tee</code><span class="sig-paren">(</span><em class="sig-param">t0</em>, <em class="sig-param">t1</em>, <em class="sig-param">R</em>, <em class="sig-param">C</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.tee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.tee" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.pex.ParasiticExtraction.writePex">
+<code class="sig-name descname">writePex</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/pex.html#ParasiticExtraction.writePex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.pex.ParasiticExtraction.writePex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.postprocess">
+<span id="align-cell-fabric-postprocess-module"></span><h2>align.cell_fabric.postprocess module<a class="headerlink" href="#module-align.cell_fabric.postprocess" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.postprocess.PostProcessor">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.postprocess.</code><code class="sig-name descname">PostProcessor</code><a class="reference internal" href="_modules/align/cell_fabric/postprocess.html#PostProcessor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.postprocess.PostProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.postprocess.PostProcessor.register">
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param">layer</em>, <em class="sig-param">func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/postprocess.html#PostProcessor.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.postprocess.PostProcessor.register" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.postprocess.PostProcessor.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">terminals</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/postprocess.html#PostProcessor.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.postprocess.PostProcessor.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.remove_duplicates">
+<span id="align-cell-fabric-remove-duplicates-module"></span><h2>align.cell_fabric.remove_duplicates module<a class="headerlink" href="#module-align.cell_fabric.remove_duplicates" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.remove_duplicates.</code><code class="sig-name descname">RemoveDuplicates</code><span class="sig-paren">(</span><em class="sig-param">canvas</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.build_centerline_tbl">
+<code class="sig-name descname">build_centerline_tbl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.build_centerline_tbl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_centerline_tbl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.build_scan_lines">
+<code class="sig-name descname">build_scan_lines</code><span class="sig-paren">(</span><em class="sig-param">tbl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.build_scan_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.build_scan_lines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.check_opens">
+<code class="sig-name descname">check_opens</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.check_opens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_opens" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_terminals">
+<code class="sig-name descname">check_shorts_induced_by_terminals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.check_shorts_induced_by_terminals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_terminals" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_vias">
+<code class="sig-name descname">check_shorts_induced_by_vias</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.check_shorts_induced_by_vias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.check_shorts_induced_by_vias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.connectPair">
+<code class="sig-name descname">connectPair</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.connectPair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.connectPair" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.containedIn">
+<em class="property">static </em><code class="sig-name descname">containedIn</code><span class="sig-paren">(</span><em class="sig-param">rS</em>, <em class="sig-param">rB</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.containedIn"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.containedIn" title="Permalink to this definition">¶</a></dt>
+<dd><p>rS is contained in rB</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.dump">
+<code class="sig-name descname">dump</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.dump" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.generate_rectangles">
+<code class="sig-name descname">generate_rectangles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.generate_rectangles"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.generate_rectangles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.remove_duplicates">
+<code class="sig-name descname">remove_duplicates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.remove_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.remove_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.setup_layer_structures">
+<code class="sig-name descname">setup_layer_structures</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.setup_layer_structures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.setup_layer_structures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.RemoveDuplicates.touching">
+<em class="property">static </em><code class="sig-name descname">touching</code><span class="sig-paren">(</span><em class="sig-param">rA</em>, <em class="sig-param">rB</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#RemoveDuplicates.touching"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.RemoveDuplicates.touching" title="Permalink to this definition">¶</a></dt>
+<dd><p>rA and rB touch</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.remove_duplicates.Scanline">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.remove_duplicates.</code><code class="sig-name descname">Scanline</code><span class="sig-paren">(</span><em class="sig-param">proto</em>, <em class="sig-param">indices</em>, <em class="sig-param">dIndex</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#Scanline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.Scanline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.Scanline.find_touching">
+<code class="sig-name descname">find_touching</code><span class="sig-paren">(</span><em class="sig-param">via_rect</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#Scanline.find_touching"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.Scanline.find_touching" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.Scanline.isEmpty">
+<code class="sig-name descname">isEmpty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#Scanline.isEmpty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.Scanline.isEmpty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.Scanline.merge_slr">
+<code class="sig-name descname">merge_slr</code><span class="sig-paren">(</span><em class="sig-param">base_slr</em>, <em class="sig-param">new_slr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#Scanline.merge_slr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.Scanline.merge_slr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.Scanline.new_slr">
+<code class="sig-name descname">new_slr</code><span class="sig-paren">(</span><em class="sig-param">rect</em>, <em class="sig-param">netName</em>, <em class="sig-param">*</em>, <em class="sig-param">isPorted=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#Scanline.new_slr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.Scanline.new_slr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.remove_duplicates.ScanlineRect">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.remove_duplicates.</code><code class="sig-name descname">ScanlineRect</code><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#ScanlineRect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.ScanlineRect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#align.cell_fabric.remove_duplicates.UnionFind" title="align.cell_fabric.remove_duplicates.UnionFind"><code class="xref py py-class docutils literal notranslate"><span class="pre">align.cell_fabric.remove_duplicates.UnionFind</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.remove_duplicates.UnionFind">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.remove_duplicates.</code><code class="sig-name descname">UnionFind</code><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#UnionFind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.UnionFind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.UnionFind.connect">
+<code class="sig-name descname">connect</code><span class="sig-paren">(</span><em class="sig-param">other</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#UnionFind.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.UnionFind.connect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.remove_duplicates.UnionFind.root">
+<code class="sig-name descname">root</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/remove_duplicates.html#UnionFind.root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.remove_duplicates.UnionFind.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.routing_collateral">
+<span id="align-cell-fabric-routing-collateral-module"></span><h2>align.cell_fabric.routing_collateral module<a class="headerlink" href="#module-align.cell_fabric.routing_collateral" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.routing_collateral.MetalTemplate">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.routing_collateral.</code><code class="sig-name descname">MetalTemplate</code><span class="sig-paren">(</span><em class="sig-param">m</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/routing_collateral.html#MetalTemplate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.routing_collateral.MetalTemplate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.routing_collateral.MetalTemplate.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/routing_collateral.html#MetalTemplate.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.routing_collateral.MetalTemplate.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.routing_collateral.gen">
+<code class="sig-prename descclassname">align.cell_fabric.routing_collateral.</code><code class="sig-name descname">gen</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">dirname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/routing_collateral.html#gen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.routing_collateral.gen" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="align.cell_fabric.routing_collateral.write_metal_templates">
+<code class="sig-prename descclassname">align.cell_fabric.routing_collateral.</code><code class="sig-name descname">write_metal_templates</code><span class="sig-paren">(</span><em class="sig-param">c</em>, <em class="sig-param">m</em>, <em class="sig-param">fp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/routing_collateral.html#write_metal_templates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.routing_collateral.write_metal_templates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric.transformation">
+<span id="align-cell-fabric-transformation-module"></span><h2>align.cell_fabric.transformation module<a class="headerlink" href="#module-align.cell_fabric.transformation" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="align.cell_fabric.transformation.Rect">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.transformation.</code><code class="sig-name descname">Rect</code><span class="sig-paren">(</span><em class="sig-param">llx=None</em>, <em class="sig-param">lly=None</em>, <em class="sig-param">urx=None</em>, <em class="sig-param">ury=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Rect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Rect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Rect.canonical">
+<code class="sig-name descname">canonical</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Rect.canonical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Rect.canonical" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Rect.toList">
+<code class="sig-name descname">toList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Rect.toList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Rect.toList" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="align.cell_fabric.transformation.Transformation">
+<em class="property">class </em><code class="sig-prename descclassname">align.cell_fabric.transformation.</code><code class="sig-name descname">Transformation</code><span class="sig-paren">(</span><em class="sig-param">oX=0</em>, <em class="sig-param">oY=0</em>, <em class="sig-param">sX=1</em>, <em class="sig-param">sY=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.betterGenTr">
+<code class="sig-name descname">betterGenTr</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">w</em>, <em class="sig-param">h</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.betterGenTr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.betterGenTr" title="Permalink to this definition">¶</a></dt>
+<dd><p>I’d rather it be this.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.genTr">
+<em class="property">static </em><code class="sig-name descname">genTr</code><span class="sig-paren">(</span><em class="sig-param">tag</em>, <em class="sig-param">*</em>, <em class="sig-param">w</em>, <em class="sig-param">h</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.genTr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.genTr" title="Permalink to this definition">¶</a></dt>
+<dd><p>This seems like non-sense but it matches the PnR flow
+It seems that the oX and oY should be swapped.
+N should be the identity, but we need to translate.
+In FN, we mirror the X coord, but somehow offset the Y coord</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.hit">
+<code class="sig-name descname">hit</code><span class="sig-paren">(</span><em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.hit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.hit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.hitRect">
+<code class="sig-name descname">hitRect</code><span class="sig-paren">(</span><em class="sig-param">r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.hitRect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.hitRect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.mult">
+<em class="property">static </em><code class="sig-name descname">mult</code><span class="sig-paren">(</span><em class="sig-param">A</em>, <em class="sig-param">B</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.mult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.mult" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.postMult">
+<code class="sig-name descname">postMult</code><span class="sig-paren">(</span><em class="sig-param">A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.postMult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.postMult" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="align.cell_fabric.transformation.Transformation.preMult">
+<code class="sig-name descname">preMult</code><span class="sig-paren">(</span><em class="sig-param">A</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/align/cell_fabric/transformation.html#Transformation.preMult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#align.cell_fabric.transformation.Transformation.preMult" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-align.cell_fabric">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-align.cell_fabric" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">align.cell_fabric package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.canvas">align.cell_fabric.canvas module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.drc">align.cell_fabric.drc module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.gen_gds_json">align.cell_fabric.gen_gds_json module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.gen_lef">align.cell_fabric.gen_lef module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.generators">align.cell_fabric.generators module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.grid">align.cell_fabric.grid module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.lef_parser">align.cell_fabric.lef_parser module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.lef_to_json">align.cell_fabric.lef_to_json module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.pdk">align.cell_fabric.pdk module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.pex">align.cell_fabric.pex module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.postprocess">align.cell_fabric.postprocess module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.remove_duplicates">align.cell_fabric.remove_duplicates module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.routing_collateral">align.cell_fabric.routing_collateral module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric.transformation">align.cell_fabric.transformation module</a></li>
+<li><a class="reference internal" href="#module-align.cell_fabric">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/align.cell_fabric.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ALIGN 0.9 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

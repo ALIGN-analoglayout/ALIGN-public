@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.primitive.main &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.primitive.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">importlib.util</span>
+
+<span class="kn">from</span> <span class="nn">..cell_fabric</span> <span class="kn">import</span> <span class="n">gen_lef</span>
+<span class="kn">from</span> <span class="nn">..cell_fabric</span> <span class="kn">import</span> <span class="n">gen_gds_json</span>
+<span class="kn">from</span> <span class="nn">..cell_fabric.pdk</span> <span class="kn">import</span> <span class="n">Pdk</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_xcells_pattern"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.get_xcells_pattern">[docs]</a><span class="k">def</span> <span class="nf">get_xcells_pattern</span><span class="p">(</span> <span class="n">primitive</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">primitive</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{x}</span><span class="s1">_&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CM&quot;</span><span class="p">,</span> <span class="s2">&quot;CMFB&quot;</span><span class="p">]):</span>
+        <span class="c1"># Dual transistor (current mirror) primitives</span>
+        <span class="c1"># TODO: Generalize this (pattern is ignored)</span>
+        <span class="n">x_cells</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_cells</span> <span class="o">+</span> <span class="mi">2</span>
+    <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">primitive</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{x}</span><span class="s1">_&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SCM&quot;</span><span class="p">,</span> <span class="s2">&quot;CMC&quot;</span><span class="p">,</span> <span class="s2">&quot;DP&quot;</span><span class="p">,</span> <span class="s2">&quot;CCP&quot;</span><span class="p">,</span> <span class="s2">&quot;LS&quot;</span><span class="p">]):</span>
+        <span class="c1"># Dual transistor primitives</span>
+        <span class="n">x_cells</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">x_cells</span>
+        <span class="c1"># TODO: Fix difficulties associated with CC patterns matching this condition</span>
+        <span class="n">pattern</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">x_cells</span><span class="o">%</span><span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">pattern</span> <span class="c1">### CC is not possible; default is interdigitated</span>
+    <span class="k">return</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">pattern</span></div>
+
+<div class="viewcode-block" id="get_parameters"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.get_parameters">[docs]</a><span class="k">def</span> <span class="nf">get_parameters</span><span class="p">(</span><span class="n">primitive</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">nfin</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="s1">&#39;model&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+        <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NMOS&#39;</span> <span class="k">if</span> <span class="s1">&#39;NMOS&#39;</span> <span class="ow">in</span> <span class="n">primitive</span> <span class="k">else</span> <span class="s1">&#39;PMOS&#39;</span>
+    <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;nfin&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nfin</span>
+    <span class="k">return</span> <span class="n">parameters</span></div>
+
+<span class="c1"># TODO: Pass cell_pin and pattern to this function to begin with</span>
+<div class="viewcode-block" id="generate_MOS_primitive"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.generate_MOS_primitive">[docs]</a><span class="k">def</span> <span class="nf">generate_MOS_primitive</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">primitive</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">nfin</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">pinswitch</span><span class="p">):</span>
+
+    <span class="n">pdk</span> <span class="o">=</span> <span class="n">Pdk</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pdkdir</span> <span class="o">/</span> <span class="s1">&#39;layers.json&#39;</span><span class="p">)</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">get_generator</span><span class="p">(</span><span class="s1">&#39;MOSGenerator&#39;</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">)</span>
+
+    <span class="c1"># TODO: THIS SHOULD NOT BE NEEDED !!!</span>
+    <span class="n">fin</span> <span class="o">=</span> <span class="n">height</span>
+    <span class="n">gateDummy</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1">### Total Dummy gates per unit cell: 2*gateDummy</span>
+    <span class="n">finDummy</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1">### Total Dummy fins per unit cell: 2*finDummy</span>
+    <span class="n">gate</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="n">uc</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">pdk</span><span class="p">,</span> <span class="n">fin</span><span class="p">,</span> <span class="n">finDummy</span><span class="p">,</span> <span class="n">gate</span><span class="p">,</span> <span class="n">gateDummy</span><span class="p">)</span>
+    <span class="n">x_cells</span><span class="p">,</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">get_xcells_pattern</span><span class="p">(</span><span class="n">primitive</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">)</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="n">get_parameters</span><span class="p">(</span><span class="n">primitive</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">nfin</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">gen</span><span class="p">(</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">routing</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;NMOS&#39;</span> <span class="ow">in</span> <span class="n">primitive</span><span class="p">:</span>
+            <span class="n">uc</span><span class="o">.</span><span class="n">addNMOSArray</span><span class="p">(</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">routing</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">uc</span><span class="o">.</span><span class="n">addPMOSArray</span><span class="p">(</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">routing</span><span class="p">,</span> <span class="o">**</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">routing</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Switch_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;Switch_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                            <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                            <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DCL_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;DCL_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                            <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CM_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;CM_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span>      <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CMFB_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;CMFB_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span>      <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;GB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Dummy_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;Dummy_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span>      <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;D&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]})</span>
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Dcap_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;Dcap_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span>      <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Dummy1_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;Dummy1_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span> <span class="mi">3</span><span class="p">,</span>      <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;SCM_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;SCM_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CMC_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;CMC_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;SA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;SB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;G&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CMC_NMOS_S&quot;</span><span class="p">,</span> <span class="s2">&quot;CMC_PMOS_S&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;G&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;DP_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;DP_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;GA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;GB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;LS_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;LS_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;SA&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;SB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CCP_NMOS_S&quot;</span><span class="p">,</span> <span class="s2">&quot;CCP_PMOS_S&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;S&#39;</span><span class="p">:</span>  <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span>
+
+    <span class="k">elif</span> <span class="n">primitive</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;CCP_NMOS&quot;</span><span class="p">,</span> <span class="s2">&quot;CCP_PMOS&quot;</span><span class="p">]:</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">gen</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;SA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;SB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span><span class="s1">&#39;S&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DA&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)],</span>
+                                 <span class="s1">&#39;DB&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;D&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">)]})</span> 
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unrecognized primitive </span><span class="si">{primitive}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">uc</span><span class="p">,</span> <span class="n">cell_pin</span></div>
+
+<div class="viewcode-block" id="generate_Cap"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.generate_Cap">[docs]</a><span class="k">def</span> <span class="nf">generate_Cap</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">unit_cap</span><span class="p">):</span>
+
+    <span class="n">pdk</span> <span class="o">=</span> <span class="n">Pdk</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pdkdir</span> <span class="o">/</span> <span class="s1">&#39;layers.json&#39;</span><span class="p">)</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">get_generator</span><span class="p">(</span><span class="s1">&#39;CapGenerator&#39;</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">)</span>
+
+    <span class="n">uc</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">pdk</span><span class="p">)</span>
+
+    <span class="n">uc</span><span class="o">.</span><span class="n">addCap</span><span class="p">(</span><span class="n">unit_cap</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">uc</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="generate_Res"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.generate_Res">[docs]</a><span class="k">def</span> <span class="nf">generate_Res</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">nfin</span><span class="p">,</span> <span class="n">unit_res</span><span class="p">):</span>
+
+    <span class="n">pdk</span> <span class="o">=</span> <span class="n">Pdk</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pdkdir</span> <span class="o">/</span> <span class="s1">&#39;layers.json&#39;</span><span class="p">)</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">get_generator</span><span class="p">(</span><span class="s1">&#39;ResGenerator&#39;</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">)</span>
+
+    <span class="n">fin</span> <span class="o">=</span> <span class="n">height</span>
+    <span class="n">finDummy</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1">### Total Dummy fins per unit cell: 2*finDummy</span>
+
+    <span class="n">uc</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">pdk</span><span class="p">,</span> <span class="n">fin</span><span class="p">,</span> <span class="n">finDummy</span><span class="p">)</span>
+
+    <span class="n">uc</span><span class="o">.</span><span class="n">addResArray</span><span class="p">(</span><span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">nfin</span><span class="p">,</span> <span class="n">unit_res</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">uc</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;PLUS&#39;</span><span class="p">,</span> <span class="s1">&#39;MINUS&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="get_generator"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.get_generator">[docs]</a><span class="k">def</span> <span class="nf">get_generator</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pdkdir</span><span class="p">):</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">&quot;primitive&quot;</span><span class="p">,</span> <span class="n">pdkdir</span> <span class="o">/</span> <span class="s1">&#39;primitive.py&#39;</span><span class="p">)</span>
+    <span class="n">primitive</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+    <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">primitive</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">primitive</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+<span class="c1"># WARNING: Bad code. Changing these default values breaks functionality.</span>
+<div class="viewcode-block" id="generate_primitive"><a class="viewcode-back" href="../../../align.primitive.html#align.primitive.main.generate_primitive">[docs]</a><span class="k">def</span> <span class="nf">generate_primitive</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="n">primitive</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">x_cells</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">y_cells</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pinswitch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pdkdir</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">(),</span> <span class="n">outputdir</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()):</span>
+
+    <span class="k">assert</span> <span class="n">pdkdir</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="n">pdkdir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">(),</span> <span class="s2">&quot;PDK directory does not exist&quot;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;MOS&#39;</span> <span class="ow">in</span> <span class="n">primitive</span><span class="p">:</span>
+        <span class="n">uc</span><span class="p">,</span> <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">generate_MOS_primitive</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">primitive</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">pinswitch</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="s1">&#39;cap&#39;</span> <span class="ow">in</span> <span class="n">primitive</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">uc</span><span class="p">,</span> <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">generate_Cap</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="n">uc</span><span class="o">.</span><span class="n">setBboxFromBoundary</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="s1">&#39;Res&#39;</span> <span class="ow">in</span> <span class="n">primitive</span><span class="p">:</span>
+        <span class="n">uc</span><span class="p">,</span> <span class="n">cell_pin</span> <span class="o">=</span> <span class="n">generate_Res</span><span class="p">(</span><span class="n">pdkdir</span><span class="p">,</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">x_cells</span><span class="p">,</span> <span class="n">y_cells</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">uc</span><span class="o">.</span><span class="n">setBboxFromBoundary</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unrecognized primitive </span><span class="si">{primitive}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outputdir</span> <span class="o">/</span> <span class="p">(</span><span class="n">block_name</span> <span class="o">+</span> <span class="s1">&#39;.debug.json&#39;</span><span class="p">),</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">uc</span><span class="o">.</span><span class="n">computeBbox</span><span class="p">()</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="p">{</span> <span class="s1">&#39;bbox&#39;</span> <span class="p">:</span> <span class="n">uc</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">toList</span><span class="p">(),</span>
+                     <span class="s1">&#39;globalRoutes&#39;</span> <span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;globalRouteGrid&#39;</span> <span class="p">:</span> <span class="p">[],</span>
+                     <span class="s1">&#39;terminals&#39;</span> <span class="p">:</span> <span class="n">uc</span><span class="o">.</span><span class="n">terminals</span><span class="p">}</span>
+                    <span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outputdir</span> <span class="o">/</span> <span class="p">(</span><span class="n">block_name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">),</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">uc</span><span class="o">.</span><span class="n">writeJSON</span><span class="p">(</span> <span class="n">fp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;Cap&#39;</span> <span class="ow">in</span> <span class="n">primitive</span><span class="p">:</span>
+        <span class="n">blockM</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">blockM</span> <span class="o">=</span> <span class="mi">0</span>         
+    <span class="n">gen_lef</span><span class="o">.</span><span class="n">json_lef</span><span class="p">(</span><span class="n">outputdir</span> <span class="o">/</span> <span class="p">(</span><span class="n">block_name</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span><span class="p">),</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">blockM</span><span class="p">,</span> <span class="n">uc</span><span class="o">.</span><span class="n">pdk</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">outputdir</span> <span class="o">/</span> <span class="p">(</span><span class="n">block_name</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">),</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp0</span><span class="p">,</span> \
+         <span class="nb">open</span><span class="p">(</span> <span class="n">outputdir</span> <span class="o">/</span> <span class="p">(</span><span class="n">block_name</span> <span class="o">+</span> <span class="s2">&quot;.gds.json&quot;</span><span class="p">),</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp1</span><span class="p">:</span>
+        <span class="n">gen_gds_json</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">pinswitch</span><span class="p">,</span> <span class="n">fp0</span><span class="p">,</span> <span class="n">fp1</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span> <span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">uc</span><span class="o">.</span><span class="n">pdk</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">uc</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
