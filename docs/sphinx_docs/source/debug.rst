@@ -238,3 +238,13 @@ Error due to g++ package not updated
     
     Check for errors during “sudo apt-get update”. It can be due to the older Ubuntu version and might need Ubuntu update.
 
+Warnings that can be ignored:
+-------------------------------
+
+* WriteJSON.cpp:144:1: warning: defined but not used [-Wunused-function]
+* GcellDetailRouter.cpp:2550:7: warning: unused variable ‘LLx’ [-Wunused-variable]
+* MNASimulation.cpp:: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+* GcellDetailRouter.cpp:2571:16: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+
+.. note:: 
+    Ignore these warnings
