@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.pex &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.pex</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<div class="viewcode-block" id="ParasiticExtraction"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction">[docs]</a><span class="k">class</span> <span class="nc">ParasiticExtraction</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">canvas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span> <span class="c1"># layer: {scanline: [p1...pn]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_r_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netCells</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span> <span class="c1"># (node1, node2) : (layer, rect)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="ParasiticExtraction.run"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Run PEX on self.canvas</span>
+
+<span class="sd">        Note: self.canvas must already contain &#39;rd&#39;</span>
+<span class="sd">              (aka removeDuplicates has been run)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># Compute Via intersections with metal lines</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compute_via_intersections</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+
+        <span class="c1"># Topological sort of stoppoints</span>
+        <span class="k">for</span> <span class="n">vv</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="c1"># Create OrderedDict with NodeName -&gt; layer, rect mappings</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">store_scan_lines</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">layer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="n">layer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_extract_via_parasitics</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_extract_metal_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">)</span>
+
+        <span class="c1"># Stamp out R, C components</span>
+        <span class="c1"># mode = &quot;Tee&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;Pi&quot;</span>
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">netCells</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="p">((</span><span class="n">t0</span><span class="p">,</span><span class="n">t1</span><span class="p">),(</span><span class="n">ly</span><span class="p">,</span><span class="n">rect</span><span class="p">))</span> <span class="o">=</span> <span class="n">tup</span>
+            <span class="k">if</span> <span class="n">ly</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_dist</span><span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> \
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span> \
+                        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_dist</span><span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pi</span> <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Pi&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">tee</span><span class="p">)(</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s1">&#39;UnitR&#39;</span><span class="p">][</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s1">&#39;UnitC&#39;</span><span class="p">][</span><span class="s1">&#39;Mean&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">dist</span> <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">ly</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resistor</span><span class="p">(),</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s1">&#39;R&#39;</span><span class="p">][</span><span class="s1">&#39;Mean&#39;</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+               <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ly</span></div>
+
+    <span class="k">def</span> <span class="nf">_stamp_port</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">layer</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">x0</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">x0</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x0</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">x1</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">x1</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_via_intersections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                <span class="n">rect</span> <span class="o">=</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">dIndex</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="n">x1</span> <span class="o">=</span> <span class="n">twice_center</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_port</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_port</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_port</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_via_parasitics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_via_netcells</span><span class="p">(</span><span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="p">,</span> <span class="n">slr</span><span class="o">.</span><span class="n">terminal</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_via_netcells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">terminal</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">rect</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="p">(</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="o">*</span><span class="mi">2</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">],</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="n">y</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">],</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">terminal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">node2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">node1</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;net_{terminal[0].replace(&quot;/&quot;, &quot;_&quot;)}_</span><span class="si">{terminal[1]}</span><span class="s1">&#39;</span>
+            <span class="n">node2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netCells</span><span class="p">[</span> <span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)</span> <span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">rect</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{net}</span><span class="s1">_</span><span class="si">{layer}</span><span class="s1">_</span><span class="si">{x}</span><span class="s1">_</span><span class="si">{y}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_metal_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">vv</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_extract_metal_scanline</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">rects</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">dIndex</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_metal_scanline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">slrects</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">slr</span> <span class="ow">in</span> <span class="n">slrects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_extract_metal_rectangle</span><span class="p">(</span><span class="n">slr</span><span class="o">.</span><span class="n">root</span><span class="p">()</span><span class="o">.</span><span class="n">netName</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">slr</span><span class="o">.</span><span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_stamp_netcells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">starti</span><span class="p">,</span> <span class="n">endi</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
+        <span class="n">numcells</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span> <span class="p">(</span><span class="n">endi</span> <span class="o">-</span> <span class="n">starti</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numcells</span><span class="p">):</span>
+            <span class="n">cellstart</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">numcells</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">cellend</span> <span class="o">=</span> <span class="n">endi</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cellend</span> <span class="o">=</span> <span class="n">cellstart</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="s1">&#39;Poly&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+                <span class="n">node1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cellstart</span><span class="p">)</span>
+                <span class="n">node2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cellend</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">node1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">cellstart</span><span class="p">,</span> <span class="n">twice_center</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">node2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_netcell_node_name</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">cellend</span><span class="p">,</span> <span class="n">twice_center</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">cell_rect</span> <span class="o">=</span> <span class="n">rect</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">cell_rect</span><span class="p">[</span><span class="n">dIndex</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellstart</span>
+            <span class="n">cell_rect</span><span class="p">[</span><span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cellend</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">netCells</span><span class="p">[</span> <span class="p">(</span><span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">)</span> <span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">cell_rect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">endi</span>
+
+    <span class="k">def</span> <span class="nf">_extract_metal_rectangle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">starti</span><span class="p">,</span> <span class="n">endi</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="n">dIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">prev_port</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terms</span><span class="p">[</span><span class="n">layer</span><span class="p">][</span><span class="n">twice_center</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">prev_port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">port</span> <span class="o">&gt;</span> <span class="n">starti</span><span class="p">:</span>
+                    <span class="n">prev_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_netcells</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">starti</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">port</span> <span class="o">&gt;</span> <span class="n">endi</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">prev_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_netcells</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">prev_port</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prev_port</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prev_port</span> <span class="o">=</span> <span class="n">starti</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stamp_netcells</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">twice_center</span><span class="p">,</span> <span class="n">prev_port</span><span class="p">,</span> <span class="n">endi</span><span class="p">,</span> <span class="n">rect</span><span class="p">,</span> <span class="n">dIndex</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParasiticExtraction.resistor"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.resistor">[docs]</a>    <span class="k">def</span> <span class="nf">resistor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;r</span><span class="si">{self._r_count}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_r_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="ParasiticExtraction.capacitor"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.capacitor">[docs]</a>    <span class="k">def</span> <span class="nf">capacitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;c</span><span class="si">{self._c_count}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="ParasiticExtraction.compute_dist"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.compute_dist">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">compute_dist</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">q</span><span class="p">)</span><span class="o">/</span><span class="mi">1000</span></div>
+
+<div class="viewcode-block" id="ParasiticExtraction.pi"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.pi">[docs]</a>    <span class="k">def</span> <span class="nf">pi</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resistor</span><span class="p">(),</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">R</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capacitor</span><span class="p">(),</span> <span class="n">t0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">C</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capacitor</span><span class="p">(),</span> <span class="n">t1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">C</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ParasiticExtraction.tee"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.tee">[docs]</a>    <span class="k">def</span> <span class="nf">tee</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">C</span><span class="p">):</span>
+        <span class="n">tm</span> <span class="o">=</span> <span class="n">t0</span><span class="o">+</span><span class="n">t1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resistor</span><span class="p">(),</span> <span class="n">t0</span><span class="p">,</span> <span class="n">tm</span><span class="p">,</span> <span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resistor</span><span class="p">(),</span> <span class="n">tm</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">R</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">capacitor</span><span class="p">(),</span> <span class="n">tm</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ParasiticExtraction.writePex"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pex.ParasiticExtraction.writePex">[docs]</a>    <span class="k">def</span> <span class="nf">writePex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">components</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">nm</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">tup</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{nm}</span><span class="s2"> </span><span class="si">{t0}</span><span class="s2"> </span><span class="si">{t1}</span><span class="s2"> </span><span class="si">{v}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">nm</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">=</span> <span class="n">tup</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{nm}</span><span class="s2"> </span><span class="si">{t0}</span><span class="s2"> </span><span class="si">{t1}</span><span class="s2"> </span><span class="si">{v}</span><span class="s2">f</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="kc">False</span>
+
+        <span class="k">for</span> <span class="n">inst</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">subinsts</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">inst</span> <span class="o">=</span> <span class="n">inst</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">)</span>
+            <span class="n">paramstring</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{x}</span><span class="s1">=</span><span class="si">{y}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{inst}</span><span class="s2">_0 net_</span><span class="si">{inst}</span><span class="s2">_D net_</span><span class="si">{inst}</span><span class="s2">_G net_</span><span class="si">{inst}</span><span class="s2">_diff {&#39;vdd!&#39; if &#39;PMOS&#39; in model.upper() else &#39;gnd!&#39;} </span><span class="si">{model}</span><span class="s2"> </span><span class="si">{paramstring}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{inst}</span><span class="s2">_1 net_</span><span class="si">{inst}</span><span class="s2">_diff net_</span><span class="si">{inst}</span><span class="s2">_G net_</span><span class="si">{inst}</span><span class="s2">_S {&#39;vdd!&#39; if &#39;PMOS&#39; in model.upper() else &#39;gnd!&#39;} </span><span class="si">{model}</span><span class="s2"> </span><span class="si">{paramstring}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.transformation &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.transformation</h1><div class="highlight"><pre>
+<span></span>
+<div class="viewcode-block" id="Rect"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Rect">[docs]</a><span class="k">class</span> <span class="nc">Rect</span><span class="p">:</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">llx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lly</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">urx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ury</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">llx</span> <span class="o">=</span> <span class="n">llx</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">lly</span> <span class="o">=</span> <span class="n">lly</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">urx</span> <span class="o">=</span> <span class="n">urx</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ury</span> <span class="o">=</span> <span class="n">ury</span>
+
+<div class="viewcode-block" id="Rect.canonical"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Rect.canonical">[docs]</a>  <span class="k">def</span> <span class="nf">canonical</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+      <span class="p">[</span><span class="n">llx</span><span class="p">,</span><span class="n">lly</span><span class="p">,</span><span class="n">urx</span><span class="p">,</span><span class="n">ury</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">toList</span><span class="p">()</span>
+      <span class="k">if</span> <span class="n">llx</span> <span class="o">&gt;</span> <span class="n">urx</span><span class="p">:</span> <span class="n">llx</span><span class="p">,</span><span class="n">urx</span> <span class="o">=</span> <span class="n">urx</span><span class="p">,</span><span class="n">llx</span>
+      <span class="k">if</span> <span class="n">lly</span> <span class="o">&gt;</span> <span class="n">ury</span><span class="p">:</span> <span class="n">lly</span><span class="p">,</span><span class="n">ury</span> <span class="o">=</span> <span class="n">ury</span><span class="p">,</span><span class="n">lly</span>
+      <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span> <span class="n">llx</span><span class="p">,</span><span class="n">lly</span><span class="p">,</span><span class="n">urx</span><span class="p">,</span><span class="n">ury</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Rect.toList"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Rect.toList">[docs]</a>  <span class="k">def</span> <span class="nf">toList</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+      <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lly</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ury</span><span class="p">]</span></div>
+
+  <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+      <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toList</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Transformation"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation">[docs]</a><span class="k">class</span> <span class="nc">Transformation</span><span class="p">:</span>
+<div class="viewcode-block" id="Transformation.genTr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.genTr">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">genTr</span><span class="p">(</span> <span class="n">tag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;This seems like non-sense but it matches the PnR flow</span>
+<span class="sd">         It seems that the oX and oY should be swapped.</span>
+<span class="sd">         N should be the identity, but we need to translate.</span>
+<span class="sd">         In FN, we mirror the X coord, but somehow offset the Y coord  </span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="k">if</span>   <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;FN&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span>        <span class="n">oY</span><span class="o">=-</span><span class="n">h</span><span class="p">,</span> <span class="n">sX</span><span class="o">=-</span><span class="mi">1</span>       <span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;FS&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span> <span class="n">oX</span><span class="o">=-</span><span class="n">w</span><span class="p">,</span>               <span class="n">sY</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span> <span class="n">oX</span><span class="o">=-</span><span class="n">w</span><span class="p">,</span> <span class="n">oY</span><span class="o">=-</span><span class="n">h</span>              <span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span>               <span class="n">sX</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sY</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+          <span class="k">assert</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;FN&quot;</span><span class="p">,</span><span class="s2">&quot;FS&quot;</span><span class="p">,</span><span class="s2">&quot;N&quot;</span><span class="p">,</span><span class="s2">&quot;S&quot;</span><span class="p">]</span>
+      <span class="k">return</span> <span class="n">tr</span></div>
+
+<div class="viewcode-block" id="Transformation.betterGenTr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.betterGenTr">[docs]</a>    <span class="k">def</span> <span class="nf">betterGenTr</span><span class="p">(</span> <span class="n">tag</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+      <span class="sd">&quot;&quot;&quot;I&#39;d rather it be this.</span>
+<span class="sd">      &quot;&quot;&quot;</span>
+      <span class="k">if</span>   <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;FN&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span> <span class="n">oX</span><span class="o">=-</span><span class="n">w</span><span class="p">,</span>        <span class="n">sX</span><span class="o">=-</span><span class="mi">1</span>       <span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;FS&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span>        <span class="n">oY</span><span class="o">=-</span><span class="n">h</span><span class="p">,</span>        <span class="n">sY</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;N&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span>                           <span class="p">)</span>
+      <span class="k">elif</span> <span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span>
+          <span class="n">tr</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">(</span> <span class="n">oX</span><span class="o">=-</span><span class="n">w</span><span class="p">,</span> <span class="n">oY</span><span class="o">=-</span><span class="n">h</span><span class="p">,</span> <span class="n">sX</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">sY</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="k">else</span><span class="p">:</span>
+          <span class="k">assert</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;FN&quot;</span><span class="p">,</span><span class="s2">&quot;FS&quot;</span><span class="p">,</span><span class="s2">&quot;N&quot;</span><span class="p">,</span><span class="s2">&quot;S&quot;</span><span class="p">]</span>
+      <span class="k">return</span> <span class="n">tr</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">oX</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">oY</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">sX</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sY</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oX</span> <span class="o">=</span> <span class="n">oX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oY</span> <span class="o">=</span> <span class="n">oY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sX</span> <span class="o">=</span> <span class="n">sX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sY</span> <span class="o">=</span> <span class="n">sY</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+      <span class="k">return</span> <span class="s2">&quot;Transformation(oX=</span><span class="si">%d</span><span class="s2">, oY=</span><span class="si">%d</span><span class="s2">, sX=</span><span class="si">%d</span><span class="s2">, sY=</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">oX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">oY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sY</span><span class="p">)</span> 
+
+<div class="viewcode-block" id="Transformation.hit"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.hit">[docs]</a>    <span class="k">def</span> <span class="nf">hit</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sX</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">oX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sY</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">oY</span></div>
+
+<div class="viewcode-block" id="Transformation.hitRect"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.hitRect">[docs]</a>    <span class="k">def</span> <span class="nf">hitRect</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+        <span class="n">llx</span><span class="p">,</span><span class="n">lly</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hit</span><span class="p">(</span> <span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">llx</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">lly</span><span class="p">))</span>
+        <span class="n">urx</span><span class="p">,</span><span class="n">ury</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hit</span><span class="p">(</span> <span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">urx</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">ury</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span> <span class="n">llx</span><span class="p">,</span> <span class="n">lly</span><span class="p">,</span> <span class="n">urx</span><span class="p">,</span> <span class="n">ury</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Transformation.mult"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.mult">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">mult</span><span class="p">(</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+        <span class="c1"># A.sX 0    A.oX     B.sX 0    B.oX</span>
+        <span class="c1"># 0    A.sY A.oY     0    B.sY B.oY</span>
+        <span class="c1"># 0    0    1        0    0    1</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">Transformation</span><span class="p">()</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">sX</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sX</span> <span class="o">*</span> <span class="n">B</span><span class="o">.</span><span class="n">sX</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">sY</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sY</span> <span class="o">*</span> <span class="n">B</span><span class="o">.</span><span class="n">sY</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">oX</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sX</span> <span class="o">*</span> <span class="n">B</span><span class="o">.</span><span class="n">oX</span> <span class="o">+</span> <span class="n">A</span><span class="o">.</span><span class="n">oX</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">oY</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">sY</span> <span class="o">*</span> <span class="n">B</span><span class="o">.</span><span class="n">oY</span> <span class="o">+</span> <span class="n">A</span><span class="o">.</span><span class="n">oY</span>
+        <span class="k">return</span> <span class="n">C</span></div>
+
+<div class="viewcode-block" id="Transformation.preMult"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.preMult">[docs]</a>    <span class="k">def</span> <span class="nf">preMult</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span> <span class="n">A</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Transformation.postMult"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.transformation.Transformation.postMult">[docs]</a>    <span class="k">def</span> <span class="nf">postMult</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">):</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

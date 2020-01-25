@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.pdk &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.pdk</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<div class="viewcode-block" id="Pdk"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk">[docs]</a><span class="k">class</span> <span class="nc">Pdk</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize empty container dict&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ret</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{key}</span><span class="s2">: </span><span class="si">{value}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Act like a read-only dict&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">,</span> <span class="n">key</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Pdk.items"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Manage iterators for read-only dict&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">items</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Pdk.keys"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Manage iterators for read-only dict&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Pdk.values"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.values">[docs]</a>    <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Manage iterators for read-only dict&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">values</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Pdk.load"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layerfile</span><span class="o">=</span><span class="n">filename</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layerfile</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="s1">&#39;Abstraction&#39;</span> <span class="ow">in</span> <span class="n">j</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;Abstraction&#39;</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot have multiple </span><span class="si">{layer[&#39;Layer&#39;]}</span><span class="s2"> layers with same name&quot;</span>
+            <span class="k">assert</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Layer name </span><span class="si">{layer[&#39;Layer&#39;]}</span><span class="s2"> must start with capitalized letter&quot;</span>
+            <span class="k">if</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addMetal</span><span class="p">(</span><span class="o">**</span><span class="n">layer</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span><span class="o">**</span><span class="n">layer</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="o">**</span><span class="n">layer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{kwargs}</span><span class="s2"> missing one or more of </span><span class="si">{parameters}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="sa">f</span><span class="s2">&quot;Entry </span><span class="si">{kwargs}</span><span class="s2"> has one or more spurious entries (Needs only </span><span class="si">{parameters}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Guarantee one is to one mapping between parameters &amp; kwargs</span>
+        <span class="n">layername</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Layer&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">layername</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;NA&#39;</span> <span class="k">else</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<div class="viewcode-block" id="Pdk.addMetal"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.addMetal">[docs]</a>    <span class="k">def</span> <span class="nf">addMetal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;GdsLayerNo&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;GdsDatatype&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Direction&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Color&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Pitch&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Width&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;MinL&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;MaxL&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;EndToEnd&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Offset&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;UnitC&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;UnitCC&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;UnitR&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Attributes that need additional processing</span>
+        <span class="c1"># 0. Dimensions must be integers or None. Pitch &amp; Width must be even.</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> \
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> \
+            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[5:10]}</span><span class="s2"> not an integer in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">all</span><span class="p">(</span><span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> \
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> \
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span> <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span> \
+            <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[4:6]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2"> not a multiple of two&quot;</span>
+        <span class="c1"># 1. Pitch, Width, MinL, MaxL, EndToEnd of type list</span>
+        <span class="n">list_params</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">5</span><span class="p">:]</span>
+        <span class="n">ll</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">list_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ll</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]))</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;All lists in </span><span class="si">{kwargs}</span><span class="s2"> must of be same length&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ll</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">ll</span> <span class="o">=</span> <span class="n">ll</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">list_params</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="n">param</span><span class="p">]]</span> <span class="o">*</span> <span class="n">ll</span>
+        <span class="c1"># 2. Cast direction must be lowercase &amp; ensure it is either v or h</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Invalid Direction </span><span class="si">{kwargs[&#39;Direction&#39;]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pdk.addVia"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.addVia">[docs]</a>    <span class="k">def</span> <span class="nf">addVia</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Layer&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;GdsLayerNo&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;GdsDatatype&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;Stack&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;SpaceX&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;SpaceY&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;WidthX&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;WidthY&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;VencA_L&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;VencA_H&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;VencP_L&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;VencP_H&#39;</span><span class="p">,</span>
+                  <span class="s1">&#39;MinNo&#39;</span><span class="p">,</span>
+                  <span class="c1">#&#39;DesignRules&#39;,</span>
+                  <span class="s1">&#39;R&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Attributes that need additional processing</span>
+        <span class="c1"># 0. Dimensions</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[3:7]}</span><span class="s2"> not an integer in </span><span class="si">{kwargs}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">params</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">7</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of </span><span class="si">{params[4:7]}</span><span class="s2"> in </span><span class="si">{kwargs}</span><span class="s2"> not a multiple of two&quot;</span>
+        <span class="c1"># 1. Metal Stack</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Parameter &#39;Stack&#39;: </span><span class="si">{kwargs[&#39;Stack&#39;]}</span><span class="s2"> must be a list of size 2&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]),</span> <span class="sa">f</span><span class="s2">&quot;One or more of metals </span><span class="si">{kwargs[&#39;Stack&#39;]}</span><span class="s2"> not yet defined.&quot;</span>
+        <span class="c1"># 2. DesignRules</span>
+        <span class="c1"># TODO: Figure out if we should be specifying positives or negatives</span>
+        <span class="c1"># if isinstance(kwargs[&#39;DesignRules&#39;], list):</span>
+        <span class="c1">#     for rule in kwargs[&#39;DesignRules&#39;]:</span>
+        <span class="c1">#         self._check([&#39;Name&#39;, &#39;Present&#39;, &#39;Absent&#39;], **rule)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pdk.add"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="s1">&#39;Layer&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">,</span> <span class="s1">&#39;&quot;Layer&quot; is required parameter for all layers in PDK abstraction&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pdk.get_via_stack"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_via_stack">[docs]</a>    <span class="k">def</span> <span class="nf">get_via_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layer_stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">):</span>
+                <span class="n">layer_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">]))</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">layer_stack</span></div>
+
+<div class="viewcode-block" id="Pdk.get_lef_exclude"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_lef_exclude">[docs]</a>    <span class="k">def</span> <span class="nf">get_lef_exclude</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="Pdk.get_gds_map"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_gds_map">[docs]</a>    <span class="k">def</span> <span class="nf">get_gds_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="s1">&#39;LayerNo&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="s1">&#39;LayerNo&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">x</span><span class="p">]}</span></div>
+
+<div class="viewcode-block" id="Pdk.get_via_table"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.pdk.Pdk.get_via_table">[docs]</a>    <span class="k">def</span> <span class="nf">get_via_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_direction</span><span class="p">(</span> <span class="n">m</span><span class="p">):</span>
+            <span class="nb">dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="nb">dir</span> <span class="o">==</span> <span class="s1">&#39;V&#39;</span> <span class="ow">or</span> <span class="nb">dir</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="nb">dir</span>
+            <span class="k">return</span> <span class="nb">dir</span>
+
+        <span class="k">def</span> <span class="nf">swap_enc</span><span class="p">(</span> <span class="n">a</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">p</span><span class="p">)</span> <span class="k">if</span> <span class="n">get_direction</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="n">via_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="mi">40</span>
+        <span class="n">hs</span> <span class="o">=</span> <span class="mi">40</span><span class="o">//</span><span class="mi">2</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">e</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;V0&#39;</span><span class="p">:</span>
+                <span class="n">lower</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">upper</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;Stack&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">hs</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;WidthX&#39;</span><span class="p">],</span> <span class="n">hs</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;WidthY&#39;</span><span class="p">])</span>
+                <span class="p">(</span><span class="n">elx</span><span class="p">,</span> <span class="n">ely</span><span class="p">)</span> <span class="o">=</span> <span class="n">swap_enc</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;VencA_L&#39;</span><span class="p">],</span> <span class="n">s</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;VencP_L&#39;</span><span class="p">],</span> <span class="n">lower</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">ehx</span><span class="p">,</span> <span class="n">ehy</span><span class="p">)</span> <span class="o">=</span> <span class="n">swap_enc</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;VencA_H&#39;</span><span class="p">],</span> <span class="n">s</span><span class="o">*</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;VencP_H&#39;</span><span class="p">],</span> <span class="n">upper</span><span class="p">)</span>
+                <span class="n">via_table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span> <span class="p">{</span><span class="n">x</span><span class="p">:(</span><span class="n">x</span><span class="p">,</span> 
+                                      <span class="p">{</span><span class="n">x</span><span class="p">:[</span><span class="o">-</span><span class="n">x0</span><span class="p">,</span><span class="o">-</span><span class="n">y0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">],</span> 
+                                       <span class="n">lower</span><span class="p">:[</span><span class="o">-</span><span class="n">x0</span><span class="o">-</span><span class="n">elx</span><span class="p">,</span><span class="o">-</span><span class="n">y0</span><span class="o">-</span><span class="n">ely</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="n">elx</span><span class="p">,</span> <span class="n">y0</span><span class="o">+</span><span class="n">ely</span><span class="p">],</span>
+                                       <span class="n">upper</span><span class="p">:[</span><span class="o">-</span><span class="n">x0</span><span class="o">-</span><span class="n">ehx</span><span class="p">,</span><span class="o">-</span><span class="n">y0</span><span class="o">-</span><span class="n">ehy</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="n">ehx</span><span class="p">,</span> <span class="n">y0</span><span class="o">+</span><span class="n">ehy</span><span class="p">]</span>
+                                      <span class="p">})})</span>
+        <span class="k">return</span> <span class="n">via_table</span></div></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

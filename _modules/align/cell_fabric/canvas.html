@@ -1,0 +1,392 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.canvas &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.canvas</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transformation</span>
+<span class="kn">from</span> <span class="nn">.remove_duplicates</span> <span class="kn">import</span> <span class="n">RemoveDuplicates</span>
+<span class="kn">from</span> <span class="nn">.drc</span> <span class="kn">import</span> <span class="n">DesignRuleCheck</span>
+<span class="kn">from</span> <span class="nn">.pex</span> <span class="kn">import</span> <span class="n">ParasiticExtraction</span>
+<span class="kn">from</span> <span class="nn">.postprocess</span> <span class="kn">import</span> <span class="n">PostProcessor</span>
+<span class="kn">from</span> <span class="nn">.pdk</span> <span class="kn">import</span> <span class="n">Pdk</span>
+<span class="kn">from</span> <span class="nn">.generators</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.grid</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.gen_gds_json</span> <span class="kn">import</span> <span class="n">translate</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">routing_collateral</span>
+<span class="kn">from</span> <span class="nn">..gdsconv</span> <span class="kn">import</span> <span class="n">json2gds</span>
+
+<span class="n">LayoutDevice</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;LayoutDevice&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;pins&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="Canvas"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas">[docs]</a><span class="k">class</span> <span class="nc">Canvas</span><span class="p">:</span>
+<div class="viewcode-block" id="Canvas.computeBbox"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.computeBbox">[docs]</a>    <span class="k">def</span> <span class="nf">computeBbox</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the bbox based on the extend of the included rectangles. You might not want to do this, instead setting it explicitly&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminals</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span> <span class="o">*</span><span class="n">term</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">llx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">llx</span> <span class="o">&gt;</span> <span class="n">r</span><span class="o">.</span><span class="n">llx</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">llx</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">llx</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">lly</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">lly</span> <span class="o">&gt;</span> <span class="n">r</span><span class="o">.</span><span class="n">lly</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">lly</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">lly</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">urx</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">urx</span> <span class="o">&lt;</span> <span class="n">r</span><span class="o">.</span><span class="n">urx</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">urx</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">urx</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">ury</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">ury</span> <span class="o">&lt;</span> <span class="n">r</span><span class="o">.</span><span class="n">ury</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">ury</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">ury</span></div>
+
+<div class="viewcode-block" id="Canvas.setBboxFromBoundary"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.setBboxFromBoundary">[docs]</a>    <span class="k">def</span> <span class="nf">setBboxFromBoundary</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">term</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Boundary&#39;</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span> <span class="o">*</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;rect&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Canvas.addGen"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addGen">[docs]</a>    <span class="k">def</span> <span class="nf">addGen</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">gen</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">gen</span><span class="o">.</span><span class="n">nm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generators</span><span class="p">,</span> <span class="n">gen</span><span class="o">.</span><span class="n">nm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generators</span><span class="p">[</span><span class="n">gen</span><span class="o">.</span><span class="n">nm</span><span class="p">]</span> <span class="o">=</span> <span class="n">gen</span>
+        <span class="k">return</span> <span class="n">gen</span></div>
+
+<div class="viewcode-block" id="Canvas.transform_and_add"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.transform_and_add">[docs]</a>    <span class="k">def</span> <span class="nf">transform_and_add</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">transformation</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span> <span class="o">*</span><span class="n">s</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">])</span>
+        <span class="n">s</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hitRect</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">.</span><span class="n">canonical</span><span class="p">()</span><span class="o">.</span><span class="n">toList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">s</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.addWire"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addWire">[docs]</a>    <span class="k">def</span> <span class="nf">addWire</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">wire</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">bIdx</span><span class="p">,</span> <span class="n">eIdx</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bS</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eS</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_and_add</span><span class="p">(</span> <span class="n">wire</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">bIdx</span><span class="p">,</span> <span class="n">eIdx</span><span class="p">,</span> <span class="n">bS</span><span class="o">=</span><span class="n">bS</span><span class="p">,</span> <span class="n">eS</span><span class="o">=</span><span class="n">eS</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Canvas.addRegion"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addRegion">[docs]</a>    <span class="k">def</span> <span class="nf">addRegion</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">grid_x0</span><span class="p">,</span> <span class="n">grid_y0</span><span class="p">,</span> <span class="n">grid_x1</span><span class="p">,</span> <span class="n">grid_y1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_and_add</span><span class="p">(</span> <span class="n">region</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">grid_x0</span><span class="p">,</span> <span class="n">grid_y0</span><span class="p">,</span> <span class="n">grid_x1</span><span class="p">,</span> <span class="n">grid_y1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Canvas.addVia"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addVia">[docs]</a>    <span class="k">def</span> <span class="nf">addVia</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_and_add</span><span class="p">(</span> <span class="n">via</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Canvas.addWireAndViaSet"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addWireAndViaSet">[docs]</a>    <span class="k">def</span> <span class="nf">addWireAndViaSet</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">wire</span><span class="p">,</span> <span class="n">via</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">listOfIndices</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bIdx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eIdx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;March through listOfIdx, compute physical coords (including via extensions), keep bounding box, draw wire.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndMultiViaSet</span><span class="p">(</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">wire</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="p">[</span> <span class="p">(</span><span class="n">via</span><span class="p">,</span> <span class="n">listOfIndices</span><span class="p">)],</span> <span class="n">bIdx</span><span class="o">=</span><span class="n">bIdx</span><span class="p">,</span> <span class="n">eIdx</span><span class="o">=</span><span class="n">eIdx</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.addWireAndMultiViaSet"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.addWireAndMultiViaSet">[docs]</a>    <span class="k">def</span> <span class="nf">addWireAndMultiViaSet</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">wire</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">listOfPairs</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bIdx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eIdx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;March through listOfPairs (via, idx), compute physical coords (including via extensions), keep bounding box, draw wire.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Get minimum &amp; maximum via centerpoints (in terms of physical coords)</span>
+        <span class="n">dim_tuples</span> <span class="o">=</span> <span class="p">[(</span><span class="n">via</span><span class="o">.</span><span class="n">v_clg</span> <span class="k">if</span> <span class="n">wire</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span> <span class="k">else</span> <span class="n">via</span><span class="o">.</span><span class="n">h_clg</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="p">(</span><span class="n">via</span><span class="p">,</span><span class="n">listOfIndices</span><span class="p">)</span> <span class="ow">in</span> <span class="n">listOfPairs</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">listOfIndices</span><span class="p">]</span>
+        <span class="n">mnP</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dim_tuples</span><span class="p">)</span>
+        <span class="n">mxP</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">dim_tuples</span><span class="p">)</span>
+
+        <span class="c1"># Adjust for via enclosure &amp; obtain min &amp; max wire coordinates</span>
+        <span class="n">via_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">via</span> <span class="k">for</span> <span class="p">(</span><span class="n">via</span><span class="p">,</span><span class="n">listOfIndices</span><span class="p">)</span> <span class="ow">in</span> <span class="n">listOfPairs</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">listOfIndices</span><span class="p">]</span>
+        <span class="n">mnP</span> <span class="o">-=</span> <span class="n">via_list</span><span class="p">[</span><span class="n">dim_tuples</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">mnP</span><span class="p">)]</span><span class="o">.</span><span class="n">center_to_metal_edge</span><span class="p">(</span><span class="n">wire</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+        <span class="n">mxP</span> <span class="o">+=</span> <span class="n">via_list</span><span class="p">[</span><span class="n">dim_tuples</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">mxP</span><span class="p">)]</span><span class="o">.</span><span class="n">center_to_metal_edge</span><span class="p">(</span><span class="n">wire</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+
+        <span class="c1"># Compute abstract grid coordinates</span>
+        <span class="p">(</span><span class="n">mn</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">wire</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">inverseBounds</span><span class="p">(</span> <span class="n">mnP</span> <span class="p">)</span>
+        <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">mx</span><span class="p">)</span> <span class="o">=</span> <span class="n">wire</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">inverseBounds</span><span class="p">(</span> <span class="n">mxP</span> <span class="p">)</span>
+
+        <span class="c1"># Snap to legal coordinates</span>
+        <span class="n">mn</span> <span class="o">=</span> <span class="n">wire</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">snapToLegal</span><span class="p">(</span><span class="n">mn</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mx</span> <span class="o">=</span> <span class="n">wire</span><span class="o">.</span><span class="n">spg</span><span class="o">.</span><span class="n">snapToLegal</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">via</span><span class="p">,</span><span class="n">listOfIndices</span><span class="p">)</span> <span class="ow">in</span> <span class="n">listOfPairs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">listOfIndices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">wire</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="n">via</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">addVia</span><span class="p">(</span> <span class="n">via</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">addWire</span><span class="p">(</span> <span class="n">wire</span><span class="p">,</span> <span class="n">netName</span><span class="p">,</span> <span class="n">pinName</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">mn</span><span class="p">,</span> <span class="n">mx</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.asciiStickDiagram"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.asciiStickDiagram">[docs]</a>    <span class="k">def</span> <span class="nf">asciiStickDiagram</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="n">matrix</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">xpitch</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ypitch</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="c1"># clean up text input</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">split</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">ncols</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">a</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">ncols</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">xpitch</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="n">nrows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">nrows</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">ypitch</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">paddedA</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">a</span><span class="p">:</span>
+            <span class="n">paddedA</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">row</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">*</span><span class="p">(</span><span class="n">ncols</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)))</span>
+        <span class="k">assert</span> <span class="nb">max</span><span class="p">([</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">paddedA</span><span class="p">])</span> <span class="o">==</span> <span class="n">ncols</span>
+
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncols</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="n">xpitch</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">%</span> <span class="n">ypitch</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">paddedA</span><span class="p">[</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span>
+
+        <span class="c1"># find all metal2</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">nrows</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">ypitch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">paddedA</span><span class="p">[</span><span class="n">nrows</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">y</span><span class="o">*</span><span class="n">ypitch</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+            <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">via1s</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">via2s</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">row</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
+                        <span class="c1"># close off wire</span>
+<span class="c1">#                        assert nm is not None</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndMultiViaSet</span><span class="p">(</span> <span class="n">nm</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">m2</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="p">[</span> <span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">via1s</span><span class="p">),</span> <span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">via2s</span><span class="p">)])</span>
+                        <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">via1s</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">via2s</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;+&#39;</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">]:</span>
+                    <span class="k">assert</span> <span class="n">x</span> <span class="o">%</span> <span class="n">xpitch</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="n">via1s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">x</span><span class="o">//</span><span class="n">xpitch</span><span class="p">)</span>
+                    <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">]:</span>
+                    <span class="k">assert</span> <span class="n">x</span> <span class="o">%</span> <span class="n">xpitch</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="n">via2s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">x</span><span class="o">//</span><span class="n">xpitch</span><span class="p">)</span>
+                    <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;=&#39;</span><span class="p">,</span><span class="s1">&#39;═&#39;</span><span class="p">,</span><span class="s1">&#39;╬&#39;</span><span class="p">]:</span>
+                    <span class="k">assert</span> <span class="n">started</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;|&#39;</span><span class="p">,</span><span class="s1">&#39;║&#39;</span><span class="p">]:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">nm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">nm</span> <span class="o">=</span> <span class="n">c</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">nm</span> <span class="o">=</span> <span class="n">nm</span> <span class="o">+</span> <span class="n">c</span>
+
+        <span class="c1"># find all metal3</span>
+        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">ncols</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">xpitch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span> <span class="n">paddedA</span><span class="p">[</span><span class="n">nrows</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="o">*</span><span class="n">xpitch</span><span class="p">]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">)])</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+            <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">via2s</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">col</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
+                        <span class="c1"># close off wire</span>
+<span class="c1">#                        assert nm is not None</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">addWireAndMultiViaSet</span><span class="p">(</span> <span class="n">nm</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">m3</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span> <span class="p">(</span><span class="n">v2</span><span class="p">,</span> <span class="n">via2s</span><span class="p">)])</span>
+                        <span class="n">started</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">nm</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">via1s</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">via2s</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="s1">&#39;*&#39;</span><span class="p">]:</span>
+                    <span class="k">assert</span> <span class="n">y</span> <span class="o">%</span> <span class="n">ypitch</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="n">via2s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">y</span><span class="o">//</span><span class="n">ypitch</span><span class="p">)</span>
+                    <span class="n">started</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;|&#39;</span><span class="p">,</span><span class="s1">&#39;║&#39;</span><span class="p">,</span><span class="s1">&#39;╬&#39;</span><span class="p">]:</span>
+                    <span class="k">assert</span> <span class="n">started</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;=&#39;</span><span class="p">,</span><span class="s1">&#39;═&#39;</span><span class="p">,</span><span class="s1">&#39;+&#39;</span><span class="p">]:</span>
+                    <span class="k">pass</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1"># walking bottom-to-top (increasing y coord) so construct the name in reverse</span>
+                    <span class="k">if</span> <span class="n">started</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">nm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">nm</span> <span class="o">=</span> <span class="n">c</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">nm</span> <span class="o">=</span> <span class="n">c</span> <span class="o">+</span> <span class="n">nm</span></div>
+
+    <span class="k">def</span> <span class="nf">_initialize_layer_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;layer_stack expects tuple of the form ( via, (metal_vertical, metal_horizontal))&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_stack</span> <span class="o">=</span> <span class="p">[(</span><span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">pl</span><span class="p">,</span> <span class="n">nl</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">nl</span><span class="p">][</span><span class="s1">&#39;Direction&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span> <span class="k">else</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">nl</span><span class="p">,</span> <span class="n">pl</span><span class="p">))</span> \
+            <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="p">(</span><span class="n">pl</span><span class="p">,</span> <span class="n">nl</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="o">.</span><span class="n">get_via_stack</span><span class="p">()</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;V&#39;</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">pdk</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gds_layer_map</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="o">=</span> <span class="n">pdk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">LayoutDevice</span><span class="p">(</span>
+                <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span>
+                <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">postprocessor</span> <span class="o">=</span> <span class="n">PostProcessor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generators</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span> <span class="o">=</span> <span class="p">[</span><span class="n">transformation</span><span class="o">.</span><span class="n">Transformation</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer_stack</span> <span class="o">=</span> <span class="p">[(</span> <span class="s2">&quot;via1&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;M1&quot;</span><span class="p">,</span> <span class="s2">&quot;M2&quot;</span><span class="p">)),</span>
+                            <span class="p">(</span> <span class="s2">&quot;via2&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;M3&quot;</span><span class="p">,</span> <span class="s2">&quot;M2&quot;</span><span class="p">))]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gds_layer_map</span> <span class="o">=</span> <span class="n">gds_layer_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_layer_stack</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Canvas.pushTr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.pushTr">[docs]</a>    <span class="k">def</span> <span class="nf">pushTr</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">tr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">postMult</span><span class="p">(</span> <span class="n">tr</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Canvas.hitTopTr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.hitTopTr">[docs]</a>    <span class="k">def</span> <span class="nf">hitTopTr</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">tr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">postMult</span><span class="p">(</span> <span class="n">tr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.popTr"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.popTr">[docs]</a>    <span class="k">def</span> <span class="nf">popTr</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">trStack</span> <span class="o">!=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="Canvas.removeDuplicates"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.removeDuplicates">[docs]</a>    <span class="k">def</span> <span class="nf">removeDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="o">=</span> <span class="n">RemoveDuplicates</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">remove_duplicates</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Canvas.gen_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.gen_data">[docs]</a>    <span class="k">def</span> <span class="nf">gen_data</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">run_drc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">run_pex</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">computeBbox</span><span class="p">()</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;bbox&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">toList</span><span class="p">(),</span>
+                 <span class="s1">&#39;globalRoutes&#39;</span> <span class="p">:</span> <span class="p">[],</span>
+                 <span class="s1">&#39;globalRouteGrid&#39;</span> <span class="p">:</span> <span class="p">[],</span>
+                 <span class="s1">&#39;terminals&#39;</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">removeDuplicates</span><span class="p">()}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;subinsts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">inst</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">parameters</span> <span class="k">for</span> <span class="n">inst</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subinsts</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">postprocessor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">])</span>
+
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">draw_grid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">draw_grid</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">run_drc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drc</span> <span class="o">=</span> <span class="n">DesignRuleCheck</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">run_pex</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pex</span> <span class="o">=</span> <span class="n">ParasiticExtraction</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pex</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Canvas.writeJSON"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.writeJSON">[docs]</a>    <span class="k">def</span> <span class="nf">writeJSON</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_data</span><span class="p">(</span> <span class="n">draw_grid</span><span class="o">=</span><span class="n">draw_grid</span><span class="p">)</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Canvas.draw_grid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.draw_grid">[docs]</a>    <span class="k">def</span> <span class="nf">draw_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">urx</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bbox</span><span class="o">.</span><span class="n">ury</span>
+
+        <span class="n">ly</span> <span class="o">=</span> <span class="s2">&quot;M1&quot;</span>
+        <span class="k">if</span> <span class="n">ly</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">:</span>
+            <span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s2">&quot;Pitch&quot;</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s2">&quot;Direction&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span>
+            <span class="k">assert</span> <span class="n">pitch</span> <span class="o">==</span> <span class="mi">80</span>
+
+            <span class="k">for</span> <span class="n">ix</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">width</span><span class="o">+</span><span class="n">pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">pitch</span><span class="p">):</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">pitch</span><span class="o">*</span><span class="n">ix</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="n">x</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">]</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">ly</span> <span class="o">+</span> <span class="s1">&#39;_grid&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ly</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span>
+
+
+        <span class="n">ly</span> <span class="o">=</span> <span class="s2">&quot;M2&quot;</span>
+        <span class="k">if</span> <span class="n">ly</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">:</span>
+            <span class="n">pitch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s2">&quot;Pitch&quot;</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">pitch</span> <span class="o">==</span> <span class="mi">84</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span><span class="p">[</span><span class="n">ly</span><span class="p">][</span><span class="s2">&quot;Direction&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span>
+
+            <span class="k">for</span> <span class="n">iy</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span> <span class="p">(</span><span class="n">height</span><span class="o">+</span><span class="n">pitch</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="n">pitch</span><span class="p">):</span>
+                <span class="n">y</span> <span class="o">=</span> <span class="n">pitch</span><span class="o">*</span><span class="n">iy</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">{</span> <span class="s2">&quot;netName&quot;</span><span class="p">:</span> <span class="n">ly</span> <span class="o">+</span> <span class="s1">&#39;_grid&#39;</span><span class="p">,</span> <span class="s2">&quot;layer&quot;</span><span class="p">:</span> <span class="n">ly</span><span class="p">,</span> <span class="s2">&quot;rect&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="Canvas.writeGDS"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.writeGDS">[docs]</a>    <span class="k">def</span> <span class="nf">writeGDS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fp1</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">gds_layer_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">fp0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">writeJSON</span><span class="p">(</span><span class="n">fp0</span><span class="p">)</span>
+            <span class="n">contents</span> <span class="o">=</span> <span class="n">fp0</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span> <span class="n">contents</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp0</span><span class="p">,</span> \
+             <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">fp_tmp</span><span class="p">:</span>
+            <span class="c1"># TODO: Update this</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Translate api has changed but canvas hasn&#39;t been updated&quot;</span><span class="p">)</span>
+            <span class="n">translate</span><span class="p">(</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">fp0</span><span class="p">,</span> <span class="n">fp_tmp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gds_layer_map</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">contents2</span> <span class="o">=</span> <span class="n">fp_tmp</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span> <span class="n">contents2</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp0</span><span class="p">:</span>
+            <span class="n">json2gds</span><span class="o">.</span><span class="n">convert_GDSjson_GDS_fps</span><span class="p">(</span> <span class="n">fp0</span><span class="p">,</span> <span class="n">fp1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.loadPDK"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.loadPDK">[docs]</a>    <span class="k">def</span> <span class="nf">loadPDK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;PDK already loaded. Cannot re-load&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="o">=</span> <span class="n">Pdk</span><span class="p">()</span><span class="o">.</span><span class="n">load</span><span class="p">(</span> <span class="n">filename</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Canvas.checkDesignRules"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.checkDesignRules">[docs]</a>    <span class="k">def</span> <span class="nf">checkDesignRules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;loadPDK() must be run before checkDesignRules()&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;removeDuplicates() must be run before checkDesignRules()&quot;</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="n">DesignRuleCheck</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">errors</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{errors}</span><span class="s2"> DRC Errors! Exiting&quot;</span></div>
+
+<div class="viewcode-block" id="Canvas.extractParasitics"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.extractParasitics">[docs]</a>    <span class="k">def</span> <span class="nf">extractParasitics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;loadPDK() must be run before extractParasitics()&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">rd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;removeDuplicates() must be run before extractParasitics()&quot;</span>
+        <span class="k">return</span> <span class="n">ParasiticExtraction</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Canvas.generate_routing_collateral"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.canvas.Canvas.generate_routing_collateral">[docs]</a>    <span class="k">def</span> <span class="nf">generate_routing_collateral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">routing_collateral</span><span class="o">.</span><span class="n">gen</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,649 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.compiler.match_graph &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.compiler.match_graph</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Fri Nov  2 21:33:22 2018</span>
+
+<span class="sd">@author: kunal</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1">#%%</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">networkx.algorithms</span> <span class="kn">import</span> <span class="n">isomorphism</span>
+
+<span class="kn">from</span> <span class="nn">.merge_nodes</span> <span class="kn">import</span> <span class="n">merge_nodes</span><span class="p">,</span> <span class="n">merged_value</span><span class="p">,</span><span class="n">convert_unit</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">max_connectivity</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1">#%%</span>
+<div class="viewcode-block" id="traverse_hier_in_graph"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.traverse_hier_in_graph">[docs]</a><span class="k">def</span> <span class="nf">traverse_hier_in_graph</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">hier_graph_dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recusively reads all hierachies in the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;sub_graph&quot;</span> <span class="ow">in</span> <span class="n">attr</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;sub_graph&quot;</span><span class="p">]:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Traversing sub graph: </span><span class="si">{node}</span><span class="s1"> </span><span class="si">{attr[&quot;inst_type&quot;]}</span><span class="s1"> </span><span class="si">{attr[&quot;ports&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">sub_ports</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">sub_node</span><span class="p">,</span> <span class="n">sub_attr</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;sub_graph&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s1">&#39;net_type&#39;</span> <span class="ow">in</span> <span class="n">sub_attr</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sub_attr</span><span class="p">[</span><span class="s1">&#39;net_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;external&quot;</span><span class="p">:</span>
+                        <span class="n">sub_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_node</span><span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;external ports: </span><span class="si">{sub_ports}</span><span class="s1">, </span><span class="si">{attr[&quot;connection&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;sub_graph&quot;</span><span class="p">],</span>
+                <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">sub_ports</span><span class="p">,</span>
+                <span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">]</span>
+            <span class="p">}</span>
+            <span class="n">traverse_hier_in_graph</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;sub_graph&quot;</span><span class="p">],</span> <span class="n">hier_graph_dict</span><span class="p">)</span></div>
+
+
+<span class="c1">#%%</span>
+<div class="viewcode-block" id="read_inputs"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.read_inputs">[docs]</a><span class="k">def</span> <span class="nf">read_inputs</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">hier_graph</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    read circuit graphs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hier_graph_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">top_ports</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">hier_graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;source&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">source_nets</span> <span class="ow">in</span> <span class="n">hier_graph</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+                <span class="n">top_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source_nets</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;net_type&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;net_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;external&quot;</span><span class="p">:</span>
+                <span class="n">top_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">top_ports</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">top_ports</span><span class="p">))</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;READING top circuit graph: &quot;</span><span class="p">)</span>
+    <span class="n">hier_graph_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">hier_graph</span><span class="p">,</span>
+        <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">top_ports</span><span class="p">,</span>
+        <span class="s2">&quot;connection&quot;</span><span class="p">:</span> <span class="kc">None</span>
+    <span class="p">}</span>
+    <span class="n">traverse_hier_in_graph</span><span class="p">(</span><span class="n">hier_graph</span><span class="p">,</span> <span class="n">hier_graph_dict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hier_graph_dict</span></div>
+
+
+<span class="c1">#%%</span>
+<div class="viewcode-block" id="read_lib"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.read_lib">[docs]</a><span class="k">def</span> <span class="nf">read_lib</span><span class="p">(</span><span class="n">lib_dir_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    read all library graphs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">library_dir_path</span> <span class="o">=</span> <span class="n">lib_dir_path</span>
+    <span class="n">lib_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">library_dir_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;dont_use_cells.txt&quot;</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Reading Dont Use cells: dont_use_cells.txt&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;dont_use_cells.txt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dont_use_file</span><span class="p">:</span>
+            <span class="n">dont_use_library</span> <span class="o">=</span> <span class="n">dont_use_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dont_use_library</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;no dont use list defined&quot;</span><span class="p">)</span>
+
+    <span class="n">library</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sub_block_name</span> <span class="ow">in</span> <span class="n">lib_files</span><span class="p">:</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">read_yaml</span><span class="p">(</span><span class="n">library_dir_path</span> <span class="o">+</span> <span class="n">sub_block_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sub_block_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dont_use_library</span><span class="p">:</span>
+            <span class="n">subgraph_ports</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="s1">&#39;external&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;net_type&#39;</span><span class="p">]:</span>
+                        <span class="n">subgraph_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="n">library</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">sub_block_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">],</span>
+                <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">graph</span><span class="p">,</span>
+                <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="n">subgraph_ports</span><span class="p">,</span>
+                <span class="s2">&quot;conn&quot;</span><span class="p">:</span> <span class="n">max_connectivity</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+            <span class="p">})</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read lib: </span><span class="si">{sub_block_name}</span><span class="s2">, </span><span class="si">{subgraph_ports}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">library</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="p">[</span><span class="s1">&#39;conn&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="c1">#%%</span>
+<span class="k">def</span> <span class="nf">_mapped_graph_list</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">liblist</span><span class="p">,</span> <span class="n">CLOCK</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">DIGITAL</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    find all matches of library element in the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Matching circuit Graph from library elements&quot;</span><span class="p">)</span>
+    <span class="n">mapped_graph_list</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="n">liblist</span><span class="p">:</span>
+        <span class="n">G2</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">]</span>
+        <span class="c1"># DIgital blocks only transistors:</span>
+        <span class="n">nd</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">()</span>
+                <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">DIGITAL</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">nd</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">sub_block_name</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matching: </span><span class="si">{sub_block_name}</span><span class="s2"> : {&#39; &#39;.join(G2.nodes())}&quot;</span><span class="p">)</span>
+        <span class="n">GM</span> <span class="o">=</span> <span class="n">isomorphism</span><span class="o">.</span><span class="n">GraphMatcher</span><span class="p">(</span>
+            <span class="n">G1</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span>
+            <span class="n">node_match</span><span class="o">=</span><span class="n">isomorphism</span><span class="o">.</span><span class="n">categorical_node_match</span><span class="p">([</span><span class="s1">&#39;inst_type&#39;</span><span class="p">],</span>
+                                                          <span class="p">[</span><span class="s1">&#39;nmos&#39;</span><span class="p">]),</span>
+            <span class="n">edge_match</span><span class="o">=</span><span class="n">isomorphism</span><span class="o">.</span><span class="n">categorical_edge_match</span><span class="p">([</span><span class="s1">&#39;weight&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">if</span> <span class="n">GM</span><span class="o">.</span><span class="n">subgraph_is_isomorphic</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ISOMORPHIC : </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">map_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">Gsub</span> <span class="ow">in</span> <span class="n">GM</span><span class="o">.</span><span class="n">subgraph_isomorphisms_iter</span><span class="p">():</span>
+                <span class="n">all_nd</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Gsub</span>
+                <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;matched inst: </span><span class="si">{all_nd}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_nd</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">dont_touch_clk</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="n">CLOCK</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Discarding match due to clock&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">sub_block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;DP&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sub_block_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;CMC&#39;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">all_nd</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+                        <span class="n">compare_balanced_tree</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;DA&#39;</span><span class="p">),</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;DB&#39;</span><span class="p">))</span> <span class="p">:</span>
+                        <span class="k">if</span> <span class="s1">&#39;SA&#39;</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="ow">and</span> \
+                        <span class="n">compare_balanced_tree</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;SA&#39;</span><span class="p">),</span><span class="n">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="s1">&#39;SB&#39;</span><span class="p">))</span> <span class="p">:</span>
+                            <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: {&#39; &#39;.join(Gsub.values())}&quot;</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: {&#39; &#39;.join(Gsub)}&quot;</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: {&#39; &#39;.join(Gsub.values())}&quot;</span><span class="p">)</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: {&#39; &#39;.join(Gsub)}&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Discarding match </span><span class="si">{sub_block_name}</span><span class="s2">, {G1.nodes[all_nd[0]][&#39;values&#39;]}, {G1.nodes[all_nd[1]][&#39;values&#39;]}&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">map_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Gsub</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Lib: {&#39; &#39;.join(Gsub.values())}&quot;</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched Circuit: {&#39; &#39;.join(Gsub)}&quot;</span><span class="p">)</span>
+            <span class="n">mapped_graph_list</span><span class="p">[</span><span class="n">sub_block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">map_list</span>
+
+    <span class="k">return</span> <span class="n">mapped_graph_list</span>
+<span class="c1">#%%</span>
+<div class="viewcode-block" id="dont_touch_clk"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.dont_touch_clk">[docs]</a><span class="k">def</span> <span class="nf">dont_touch_clk</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span><span class="n">CLOCK</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">CLOCK</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">clk</span> <span class="ow">in</span> <span class="n">CLOCK</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">clk</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+<div class="viewcode-block" id="read_setup"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.read_setup">[docs]</a><span class="k">def</span> <span class="nf">read_setup</span><span class="p">(</span><span class="n">setup_path</span><span class="p">):</span>
+    <span class="n">design_setup</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;POWER&quot;</span><span class="p">:[</span><span class="s1">&#39;vdd&#39;</span><span class="p">],</span>
+            <span class="s2">&quot;GND&quot;</span><span class="p">:[],</span>
+            <span class="s2">&quot;CLOCK&quot;</span><span class="p">:[],</span>
+            <span class="s2">&quot;DIGITAL&quot;</span><span class="p">:[],</span>
+            <span class="s2">&quot;DONT_USE_CELLS&quot;</span><span class="p">:[]</span>
+            <span class="p">}</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">setup_path</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reading setup file: </span><span class="si">{setup_path}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">setup_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">line</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;POWER&quot;</span><span class="p">):</span>
+                <span class="n">power</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;POWER&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">power</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;GND&quot;</span><span class="p">):</span>
+                <span class="n">GND</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;GND&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">GND</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;CLOCK&quot;</span><span class="p">):</span>
+                <span class="n">CLOCK</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">CLOCK</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;DIGITAL&quot;</span><span class="p">):</span>
+                <span class="n">DIGITAL</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">DIGITAL</span>
+            <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;DONT_USE_CELLS&quot;</span><span class="p">):</span>
+                <span class="n">DONT_USE_CELLS</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DONT_USE_CELLS&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">DONT_USE_CELLS</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Non identified values found </span><span class="si">{line}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">line</span><span class="o">=</span><span class="n">fp</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SETUP: </span><span class="si">{design_setup}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no setup file found: </span><span class="si">{setup_path}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">design_setup</span></div>
+
+<div class="viewcode-block" id="get_key"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.get_key">[docs]</a><span class="k">def</span> <span class="nf">get_key</span><span class="p">(</span><span class="n">Gsub</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="nb">list</span><span class="p">(</span><span class="n">Gsub</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="get_next_level"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.get_next_level">[docs]</a><span class="k">def</span> <span class="nf">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">tree_l1</span><span class="p">):</span>
+    <span class="n">tree_next</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tree_l1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">!=</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">tree_next</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                 <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">!=</span><span class="mi">2</span><span class="p">:</span>
+                    <span class="n">tree_next</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nbr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tree_next</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">tree_next</span></div>
+
+<div class="viewcode-block" id="compare_balanced_tree"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.compare_balanced_tree">[docs]</a><span class="k">def</span> <span class="nf">compare_balanced_tree</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">node1</span><span class="p">,</span> <span class="n">node2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    used to remove some false matches for DP and CMC</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checking symmtrical connections for nodes: </span><span class="si">{node1}</span><span class="s2">, </span><span class="si">{node2}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tree1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">node1</span><span class="p">]))</span>
+    <span class="n">tree2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">node2</span><span class="p">]))</span>
+    <span class="c1">#logger.debug(&quot;tree1 %s tree2 %s&quot;,set(tree1),set(tree2))</span>
+    <span class="n">traversed1</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">traversed2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">tree1</span><span class="o">==</span><span class="n">tree2</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;common net or device&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">while</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree1</span><span class="p">))</span><span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tree2</span><span class="p">))):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tree1 </span><span class="si">{tree1}</span><span class="s2"> tree2 </span><span class="si">{tree2}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">tree1</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tree1</span><span class="p">)</span> <span class="o">^</span> <span class="nb">set</span><span class="p">(</span><span class="n">traversed1</span><span class="p">)</span>
+        <span class="n">tree2</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tree2</span><span class="p">)</span> <span class="o">^</span> <span class="nb">set</span><span class="p">(</span><span class="n">traversed2</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;removing traversed tree1 </span><span class="si">{tree1}</span><span class="s2"> tree2 </span><span class="si">{tree2}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1">#type1 = [G.nodes[node][&quot;inst_type&quot;] for node in list(tree1)]</span>
+        <span class="c1">#type2 = [G.nodes[node][&quot;inst_type&quot;] for node in list(tree2)]</span>
+        <span class="k">if</span> <span class="n">tree1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">tree2</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;matched subgraph&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">traversed1</span><span class="o">+=</span><span class="nb">list</span><span class="p">(</span><span class="n">tree1</span><span class="p">)</span>
+            <span class="n">traversed2</span><span class="o">+=</span><span class="nb">list</span><span class="p">(</span><span class="n">tree2</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;traversing:tree1 </span><span class="si">{tree1}</span><span class="s2"> tree2: </span><span class="si">{tree2}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">tree1</span><span class="o">=</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">tree1</span><span class="p">)</span>
+            <span class="n">tree2</span><span class="o">=</span><span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">tree2</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Non symmetrical branches for nets: </span><span class="si">{node1}</span><span class="s2">, </span><span class="si">{node2}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="reduce_graph"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.reduce_graph">[docs]</a><span class="k">def</span> <span class="nf">reduce_graph</span><span class="p">(</span><span class="n">circuit_graph</span><span class="p">,</span> <span class="n">mapped_graph_list</span><span class="p">,</span> <span class="n">liblist</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    merge matched graphs</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;START reducing graph: &quot;</span><span class="p">)</span>
+    <span class="n">G1</span> <span class="o">=</span><span class="n">circuit_graph</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">updated_circuit</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="n">liblist</span><span class="p">:</span>
+        <span class="n">G2</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;graph&#39;</span><span class="p">]</span>
+        <span class="n">sub_block_name</span> <span class="o">=</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sub_block_name</span> <span class="ow">in</span> <span class="n">mapped_graph_list</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reducing ISOMORPHIC sub_block: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">Gsub</span> <span class="ow">in</span> <span class="n">mapped_graph_list</span><span class="p">[</span><span class="n">sub_block_name</span><span class="p">]:</span>
+                <span class="n">already_merged</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">g1_node</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">g1_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="p">:</span>
+                        <span class="n">already_merged</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skip merging. Node absent: </span><span class="si">{g1_node}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">already_merged</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">remove_these_nodes</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">Gsub</span>
+                    <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reduce nodes: {&#39;, &#39;.join(remove_these_nodes)}&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Define ports for subblock</span>
+                <span class="n">matched_ports</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">g1_n</span><span class="p">,</span> <span class="n">g2_n</span> <span class="ow">in</span> <span class="n">Gsub</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g1_n</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]:</span>
+                        <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g1_n</span><span class="p">][</span><span class="s1">&#39;values&#39;</span><span class="p">]</span>
+                        <span class="c1">#if &#39;mos&#39; in G1.nodes[g1_n][&quot;inst_type&quot;] or \</span>
+                        <span class="n">find_body</span> <span class="o">=</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g1_n</span><span class="p">][</span><span class="s1">&#39;real_inst_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;MOS&#39;</span> <span class="ow">in</span> <span class="n">sub_block_name</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">find_body</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="c1">#G1.nodes[g1_n][&#39;real_inst_type&#39;]=find_body[0]</span>
+                            <span class="c1"># Add body pin</span>
+                            <span class="n">matched_ports</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">find_body</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Adding body pin: </span><span class="si">{find_body}</span><span class="s1"> {len(find_body)}&#39;</span><span class="p">)</span>
+                        <span class="c1">#check_values(G2.nodes[g2_node][&#39;values&#39;])</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="s1">&#39;external&#39;</span> <span class="ow">in</span> <span class="n">G2</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">g2_n</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]:</span>
+                        <span class="n">matched_ports</span><span class="p">[</span><span class="n">g2_n</span><span class="p">]</span> <span class="o">=</span> <span class="n">g1_n</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;match: {&#39; &#39;.join(Gsub)}&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched ports: {&#39; &#39;.join(matched_ports)}&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Matched nets : {&#39; &#39;.join(matched_ports.values())}&quot;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remove_these_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;One node element: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span>
+                        <span class="n">remove_these_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sub_block_name</span>
+                    <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span>
+                        <span class="n">remove_these_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matched_ports</span>
+                    <span class="n">updated_values</span> <span class="o">=</span> <span class="n">merged_value</span><span class="p">({},</span> <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_these_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;values&quot;</span><span class="p">])</span>
+                    <span class="n">check_values</span><span class="p">(</span><span class="n">updated_values</span><span class="p">)</span>
+                    <span class="n">G1</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_these_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">updated_values</span>
+                    <span class="k">for</span> <span class="n">local_value</span> <span class="ow">in</span> <span class="n">updated_values</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">local_value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unidentified sizing: {G1.nodes[remove_these_nodes[0]]}&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Multi node element: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="n">reduced_graph</span><span class="p">,</span> <span class="n">subgraph</span> <span class="o">=</span> <span class="n">merge_nodes</span><span class="p">(</span>
+                        <span class="n">G1</span><span class="p">,</span> <span class="n">sub_block_name</span><span class="p">,</span> <span class="n">remove_these_nodes</span><span class="p">,</span> <span class="n">matched_ports</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calling recursive for bock: </span><span class="si">{sub_block_name}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="c1">#print(sub_block_name)</span>
+                    <span class="c1">#print(matched_ports)</span>
+                    <span class="n">mapped_subgraph_list</span> <span class="o">=</span> <span class="n">_mapped_graph_list</span><span class="p">(</span>
+                        <span class="n">G2</span><span class="p">,</span> <span class="p">[</span>
+                            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">liblist</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">sub_block_name</span><span class="p">)</span>
+                        <span class="p">])</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Recursive calling to find sub_sub_ckt&quot;</span><span class="p">)</span>
+                    <span class="n">updated_subgraph_circuit</span><span class="p">,</span> <span class="n">Grest</span> <span class="o">=</span> <span class="n">reduce_graph</span><span class="p">(</span>
+                        <span class="n">G2</span><span class="p">,</span> <span class="n">mapped_subgraph_list</span><span class="p">,</span> <span class="n">liblist</span><span class="p">)</span>
+                    <span class="n">check_nodes</span><span class="p">(</span><span class="n">updated_subgraph_circuit</span><span class="p">)</span>
+
+                    <span class="n">updated_circuit</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">updated_subgraph_circuit</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding new sub_ckt: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">check_nodes</span><span class="p">(</span><span class="n">updated_circuit</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;adding remaining ckt: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                    <span class="n">updated_circuit</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">sub_block_name</span><span class="p">,</span>
+                        <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">Grest</span><span class="p">,</span>
+                        <span class="s2">&quot;ports&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">matched_ports</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                        <span class="s2">&quot;ports_match&quot;</span><span class="p">:</span> <span class="n">matched_ports</span><span class="p">,</span>
+                        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">subgraph</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+                    <span class="p">})</span>
+                    <span class="n">check_nodes</span><span class="p">(</span><span class="n">updated_circuit</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished one branch: </span><span class="si">{sub_block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">updated_circuit</span><span class="p">,</span> <span class="n">G1</span></div>
+<div class="viewcode-block" id="change_SD"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.change_SD">[docs]</a><span class="k">def</span> <span class="nf">change_SD</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node</span><span class="p">):</span>
+    <span class="n">nbr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+    <span class="c1">#No gate change</span>
+    <span class="n">nbr</span> <span class="o">=</span> <span class="p">[</span><span class="n">nr</span> <span class="k">for</span> <span class="n">nr</span> <span class="ow">in</span> <span class="n">nbr</span> <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nr</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">!=</span><span class="mi">2</span><span class="p">]</span>
+    <span class="c1">#Swapping D and S</span>
+    <span class="n">w1</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+    <span class="n">w2</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">w2</span>
+    <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nbr</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">w1</span></div>
+
+<div class="viewcode-block" id="define_SD"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.define_SD">[docs]</a><span class="k">def</span> <span class="nf">define_SD</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">power</span><span class="p">,</span><span class="n">gnd</span><span class="p">,</span><span class="n">clk</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;START checking source and drain in graph: &quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">gotpower</span><span class="o">=</span><span class="n">power</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">gotgnd</span><span class="o">=</span><span class="n">gnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;using power: </span><span class="si">{gotpower}</span><span class="s2"> and ground: </span><span class="si">{gotgnd}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;no power and gnd defination, correct setup file&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">traversed</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">probable_changes_p</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">power</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+        <span class="n">high</span><span class="o">=</span><span class="n">power</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">high</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nxt</span> <span class="o">=</span> <span class="n">high</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">nxt</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="n">nxt</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">clk</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="c1">#logger.debug(&quot;checking node: %s %s&quot;, node, high)</span>
+                    <span class="k">if</span> <span class="s1">&#39;pmos&#39;</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                        <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nxt</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">weight</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">weight</span><span class="o">==</span><span class="mi">3</span> <span class="p">:</span>
+                            <span class="c1">#logger.debug(&quot;changing source drain:%s&quot;,node)</span>
+                            <span class="n">probable_changes_p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="s1">&#39;nmos&#39;</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                    <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nxt</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">weight</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">or</span> <span class="n">weight</span><span class="o">==</span><span class="mi">6</span> <span class="p">:</span>
+                            <span class="c1">#logger.debug(&quot;changing source drain:%s&quot;,node)</span>
+                            <span class="n">probable_changes_p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span>  <span class="n">gnd</span><span class="p">:</span>
+                        <span class="n">high</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All source drain checked: </span><span class="si">{high}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">probable_changes_n</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">if</span> <span class="n">gnd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+        <span class="n">low</span><span class="o">=</span><span class="n">gnd</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">low</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">nxt</span> <span class="o">=</span> <span class="n">low</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">get_next_level</span><span class="p">(</span><span class="n">G</span><span class="p">,[</span><span class="n">nxt</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span><span class="n">nxt</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">clk</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="s1">&#39;pmos&#39;</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                        <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nxt</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">weight</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">or</span> <span class="n">weight</span><span class="o">==</span><span class="mi">6</span> <span class="p">:</span>
+                            <span class="c1">#logger.debug(&quot;changing source drain:%s&quot;,node)</span>
+                            <span class="c1">#change_SD(G,node)</span>
+                            <span class="n">probable_changes_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="s1">&#39;nmos&#39;</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> \
+                    <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span><span class="p">:</span>
+                        <span class="n">weight</span> <span class="o">=</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">nxt</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">weight</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">weight</span><span class="o">==</span><span class="mi">3</span> <span class="p">:</span>
+                            <span class="c1">#logger.debug(&quot;changing source drain:%s&quot;,node)</span>
+                            <span class="c1">#change_SD(G,node)</span>
+                            <span class="n">probable_changes_n</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">traversed</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span>  <span class="n">power</span><span class="p">:</span>
+                        <span class="n">low</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                    <span class="n">traversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All source drain checked: </span><span class="si">{low}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">list</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">probable_changes_n</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">probable_changes_n</span><span class="p">)):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;changing source drain: </span><span class="si">{node}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">change_SD</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="n">node</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="add_parallel_caps"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.add_parallel_caps">[docs]</a><span class="k">def</span> <span class="nf">add_parallel_caps</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;merging all caps, initial graph size: {len(G)}&quot;</span><span class="p">)</span>
+    <span class="n">remove_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;cap&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">next_node</span> <span class="o">==</span> <span class="n">node</span>  <span class="ow">and</span> <span class="n">next_node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span>
+                        <span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span>\
+                        <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">next_node</span><span class="p">)))</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;cap&#39;</span><span class="p">:</span>
+                                <span class="n">c_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">+</span> \
+                                <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;cap&#39;</span><span class="p">]))</span>
+                                <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_node</span><span class="p">)</span>
+                                <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;cap&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">c_val</span>
+                            <span class="k">elif</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
+                                <span class="n">c_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">+</span> \
+                                <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]))</span>
+                                <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_node</span><span class="p">)</span>
+                                <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">c_val</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;removed parallel caps: </span><span class="si">{remove_nodes}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+<div class="viewcode-block" id="add_series_res"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.add_series_res">[docs]</a><span class="k">def</span> <span class="nf">add_series_res</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;merging all series res, initial graph size: {len(G)}&quot;</span><span class="p">)</span>
+    <span class="n">remove_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">net</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">)))</span><span class="o">==</span><span class="mi">2</span> \
+            <span class="ow">and</span> <span class="n">net</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;external&quot;</span><span class="p">:</span>
+            <span class="n">nbr_type</span> <span class="o">=</span><span class="p">[</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">nbr</span><span class="p">][</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">nbr</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">))]</span>
+            <span class="n">combined_r</span><span class="p">,</span><span class="n">remove_r</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">nbr_type</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">nbr_type</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;res&#39;</span><span class="p">:</span>
+                <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+                <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">remove_r</span><span class="p">)</span>
+                <span class="n">new_net</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">remove_r</span><span class="p">))</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">net</span><span class="p">)</span><span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">remove_nodes</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">combined_r</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;res&#39;</span><span class="p">:</span>
+                        <span class="n">r_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">+</span> \
+                        <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_r</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;res&#39;</span><span class="p">]))</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">combined_r</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;res&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">r_val</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">combined_r</span><span class="p">,</span> <span class="n">new_net</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">G</span><span class="p">[</span><span class="n">combined_r</span><span class="p">][</span><span class="n">net</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">])</span>
+                    <span class="k">elif</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                        <span class="n">r_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span><span class="o">+</span> \
+                        <span class="nb">float</span><span class="p">(</span><span class="n">convert_unit</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">remove_r</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;r&#39;</span><span class="p">]))</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">combined_r</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;r&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">r_val</span>
+                        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">combined_r</span><span class="p">,</span> <span class="n">new_net</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">G</span><span class="p">[</span><span class="n">combined_r</span><span class="p">][</span><span class="n">net</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">])</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;removed series r: </span><span class="si">{remove_nodes}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="preprocess_stack"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.preprocess_stack">[docs]</a><span class="k">def</span> <span class="nf">preprocess_stack</span><span class="p">(</span><span class="n">G</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;START reducing  stacks in graph: &quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;initial size of graph: {len(G)}&quot;</span><span class="p">)</span>
+    <span class="c1">#print(&quot;all matches found&quot;)</span>
+    <span class="n">remove_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">modified_edges</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">modified_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;mos&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">net</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+                <span class="n">edge_wt</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">net</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span>
+                <span class="c1">#print(&quot; checking node: %s , %s&quot;,node,edge_wt)</span>
+                <span class="c1">#print(&quot;neighbours:&quot;,list(G.neighbors(net)))</span>
+                <span class="k">if</span> <span class="n">edge_wt</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">next_node</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">net</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; checking nodes: </span><span class="si">{node}</span><span class="s2">, </span><span class="si">{next_node}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">next_node</span> <span class="o">==</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span>
+                                <span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span>
+                                    <span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span>
+                                        <span class="n">next_node</span><span class="p">,</span> <span class="n">net</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">common_nets</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">node</span><span class="p">))</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span>
+                                <span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">next_node</span><span class="p">))</span>
+                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;stacking two transistors: </span><span class="si">{node}</span><span class="s2">, </span><span class="si">{next_node}</span><span class="s2">, </span><span class="si">{common_nets}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="n">source_net</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                                <span class="nb">set</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">next_node</span><span class="p">))</span> <span class="o">-</span> <span class="n">common_nets</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">common_nets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">net</span><span class="p">][</span><span class="s2">&quot;net_type&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;external&quot;</span><span class="p">:</span>
+                                <span class="c1">#source_net = source_net[0]</span>
+                                <span class="n">common_nets</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+                                <span class="n">gate_net</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">common_nets</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span>
+                                        <span class="n">node</span><span class="p">,</span> <span class="n">gate_net</span><span class="p">)[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> \
+                                        <span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="n">next_node</span><span class="p">,</span> <span class="n">gate_net</span><span class="p">)</span>\
+                                        <span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+
+                                    <span class="n">lequivalent</span> <span class="o">=</span> <span class="mi">0</span>
+                                    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span>
+                                            <span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                        <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span>
+                                            <span class="c1">#print(&quot;param1&quot;,node,param,value)</span>
+                                            <span class="n">lequivalent</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
+                                                <span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converted unit of 1st: </span><span class="si">{node}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span>
+                                            <span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                                        <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;l&#39;</span><span class="p">:</span>
+                                            <span class="n">lequivalent</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span>
+                                                <span class="n">convert_unit</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                                            <span class="n">modified_nodes</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+                                                <span class="n">lequivalent</span><span class="p">)</span>
+                                            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converted unit of incr: </span><span class="si">{node}</span><span class="s2">&quot;</span><span class="p">)</span>
+                                    <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+                                    <span class="n">modified_edges</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                                        <span class="n">source_net</span><span class="p">,</span>
+                                        <span class="n">G</span><span class="p">[</span><span class="n">next_node</span><span class="p">][</span><span class="n">source_net</span><span class="p">][</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span>
+                                    <span class="p">]</span>
+                                    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;success&quot;</span><span class="p">)</span>
+                                    <span class="n">remove_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_node</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">modified_edges</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">attr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">attr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">modified_nodes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="s1">&#39;l&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">remove_nodes</span><span class="p">:</span>
+        <span class="n">G</span><span class="o">.</span><span class="n">remove_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;reduced_size after resolving stacked transistor: {len(G)}&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">######################START CREATING HIERARCHY##########################</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="check_values"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.check_values">[docs]</a><span class="k">def</span> <span class="nf">check_values</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">param</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;param, value: </span><span class="si">{param}</span><span class="s2">, </span><span class="si">{value}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="k">continue</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">)),</span> <span class="sa">f</span><span class="s2">&quot;ERROR: Parameter value </span><span class="si">{value}</span><span class="s2"> not defined. Check match log&quot;</span></div>
+
+<div class="viewcode-block" id="check_nodes"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.match_graph.check_nodes">[docs]</a><span class="k">def</span> <span class="nf">check_nodes</span><span class="p">(</span><span class="n">graph_list</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Checking all values&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">local_subckt</span> <span class="ow">in</span> <span class="n">graph_list</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">local_subckt</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;:</span><span class="si">{node}</span><span class="s2">, </span><span class="si">{attr}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span>  <span class="ow">not</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;inst_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;net&quot;</span><span class="p">:</span>
+                <span class="n">check_values</span><span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">])</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

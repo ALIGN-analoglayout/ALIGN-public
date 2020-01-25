@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.pnr.main &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.pnr.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">.db</span> <span class="kn">import</span> <span class="n">hierNode</span>
+<span class="kn">from</span> <span class="nn">.checkers</span> <span class="kn">import</span> <span class="n">gen_viewer_json</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_generate_json</span><span class="p">(</span><span class="n">dbfile</span><span class="p">,</span> <span class="n">variant</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dbfile</span><span class="p">,</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">hN</span> <span class="o">=</span> <span class="n">hierNode</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">))</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">gen_viewer_json</span><span class="p">(</span> <span class="n">hN</span><span class="p">,</span> <span class="n">pdkdir</span><span class="o">=</span><span class="n">pdk_dir</span><span class="p">,</span> <span class="n">draw_grid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">json_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">primitive_dir</span><span class="p">),</span> <span class="n">checkOnly</span><span class="o">=</span><span class="p">(</span><span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span><span class="p">),</span> <span class="n">extract</span><span class="o">=</span><span class="n">extract</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="n">input_dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span><span class="p">:</span>
+        <span class="n">cnv</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">res</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">res</span>
+
+    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{variant}</span><span class="s1">.json&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;json&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span> <span class="n">d</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{variant}</span><span class="s1">.errors&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;SHORT </span><span class="si">{x}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;OPEN </span><span class="si">{x}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">different_widths</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;DIFFERENT WIDTH </span><span class="si">{x}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;DRC ERROR </span><span class="si">{x}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">shorts</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">opens</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">rd</span><span class="o">.</span><span class="n">different_widths</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cnv</span><span class="o">.</span><span class="n">drc</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extract</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{variant}</span><span class="s1">.cir&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">],</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">cnv</span><span class="o">.</span><span class="n">pex</span><span class="o">.</span><span class="n">writePex</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ret</span>
+
+<div class="viewcode-block" id="generate_pnr"><a class="viewcode-back" href="../../../align.pnr.html#align.pnr.main.generate_pnr">[docs]</a><span class="k">def</span> <span class="nf">generate_pnr</span><span class="p">(</span><span class="n">topology_dir</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">effort</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="c1"># Check to make sure pnr_compiler is available to begin with</span>
+    <span class="k">assert</span> <span class="s1">&#39;ALIGN_HOME&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="s2">&quot;ALIGN_HOME not in environment&quot;</span>
+    <span class="n">compiler_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ALIGN_HOME&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span> <span class="o">/</span> <span class="s1">&#39;PlaceRouteHierFlow&#39;</span> <span class="o">/</span> <span class="s1">&#39;pnr_compiler&#39;</span>
+    <span class="k">assert</span> <span class="n">compiler_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{compiler_path}</span><span class="s2"> not found. Has it been built?&quot;</span>
+
+    <span class="c1"># Create working &amp; input directories</span>
+    <span class="n">working_dir</span> <span class="o">=</span> <span class="n">output_dir</span>
+    <span class="n">working_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">input_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;inputs&#39;</span>
+    <span class="n">input_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">results_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;Results&#39;</span>
+
+    <span class="c1"># Generate file name inputs</span>
+    <span class="n">map_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{subckt}</span><span class="s1">.map&#39;</span>
+    <span class="n">lef_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{subckt}</span><span class="s1">.lef&#39;</span>
+    <span class="n">verilog_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{subckt}</span><span class="s1">.v&#39;</span>
+    <span class="n">pdk_file</span> <span class="o">=</span> <span class="s1">&#39;layers.json&#39;</span>
+
+    <span class="c1"># Generate .map &amp; .lef inputs for PnR</span>
+    <span class="k">with</span> <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">map_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mp</span><span class="p">,</span> \
+         <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">lef_file</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lp</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">primitive_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;found files </span><span class="si">{file_}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
+                <span class="n">true_stem</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">mp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{true_stem}</span><span class="s1"> </span><span class="si">{true_stem}</span><span class="s1">.gds</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.lef&#39;</span> <span class="ow">and</span> <span class="n">file_</span><span class="o">.</span><span class="n">stem</span> <span class="o">!=</span> <span class="n">subckt</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;found lef files </span><span class="si">{file_}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">lp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># TODO: Copying is bad ! Consider rewriting C++ code to accept fully qualified paths</span>
+    <span class="c1">#</span>
+
+    <span class="c1"># Copy verilog &amp; const files</span>
+    <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">verilog_file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">((</span><span class="n">topology_dir</span> <span class="o">/</span> <span class="n">verilog_file</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">topology_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffix</span> <span class="o">==</span> <span class="s1">&#39;.const&#39;</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="c1"># Copy pdk file</span>
+    <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">((</span><span class="n">pdk_dir</span> <span class="o">/</span> <span class="n">pdk_file</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="c1"># Copy primitive json files</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">primitive_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
+            <span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+    <span class="c1"># Dump out intermediate states</span>
+    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PNRDB_SAVE_STATE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="c1"># Run pnr_compiler</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="n">compiler_path</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">lef_file</span><span class="p">,</span> <span class="n">verilog_file</span><span class="p">,</span> <span class="n">map_file</span><span class="p">,</span> <span class="n">pdk_file</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="p">,</span> <span class="n">effort</span><span class="p">)]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Dumping output from pnr_compiler</span><span class="se">\n</span><span class="si">{ret.stdout}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Call to &#39;{&#39; &#39;.join(cmd)}&#39; failed. Dumping output from pnr_compiler below:</span><span class="se">\n</span><span class="si">{e.stdout}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">find_variant_names</span><span class="p">(</span> <span class="n">nm</span><span class="p">):</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;^(.*)_(\d+)\.db\.json$&#39;</span><span class="p">)</span>
+        <span class="n">variant_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">match</span><span class="p">(</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span> <span class="ow">and</span> <span class="n">m</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">nm</span><span class="p">:</span>
+                <span class="n">variant_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{nm}</span><span class="s2">_{m.groups()[1]}&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">variant_names</span>
+
+    <span class="k">if</span> <span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span><span class="p">:</span>
+        <span class="k">with</span> <span class="p">(</span><span class="n">results_dir</span> <span class="o">/</span> <span class="s2">&quot;__hierTree.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;Topological order: </span><span class="si">{order}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">order</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">subckt</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Last in topological order should be the subckt </span><span class="si">{subckt}</span><span class="s2"> </span><span class="si">{order}</span><span class="s2">&quot;</span>
+
+        <span class="c1"># Process subblocks as well</span>
+        <span class="k">for</span> <span class="n">nm</span> <span class="ow">in</span> <span class="n">order</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">variant_name</span> <span class="ow">in</span> <span class="n">find_variant_names</span><span class="p">(</span><span class="n">nm</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;variant_name: </span><span class="si">{variant_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">file_</span> <span class="o">=</span> <span class="n">results_dir</span> <span class="o">/</span> <span class="p">(</span> <span class="n">variant_name</span> <span class="o">+</span> <span class="s2">&quot;.db.json&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;subblock: </span><span class="si">{file_.name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Hack: put results in input dir</span>
+                <span class="n">_generate_json</span><span class="p">(</span> <span class="n">file_</span><span class="p">,</span> <span class="n">variant_name</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">extract</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">)</span>
+
+    <span class="n">variants</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">results_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="n">variant</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">variant</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{subckt}</span><span class="s1">_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.gds&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]:</span>
+            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">][</span><span class="s1">&#39;gdsjson&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span>
+        <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.lef&#39;</span><span class="p">]:</span>
+            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">][</span><span class="s1">&#39;lef&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span>
+        <span class="k">elif</span> <span class="n">file_</span><span class="o">.</span><span class="n">suffixes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;.db&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">check</span> <span class="ow">or</span> <span class="n">extract</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;.db.json: </span><span class="si">{file_.name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">variants</span><span class="p">[</span><span class="n">variant</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_generate_json</span><span class="p">(</span><span class="n">file_</span><span class="p">,</span> <span class="n">variant</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">extract</span><span class="p">,</span> <span class="n">input_dir</span><span class="o">=</span><span class="n">working_dir</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">variants</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.compiler.compiler &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.compiler.compiler</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">pprint</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">_write_circuit_graph</span><span class="p">,</span> <span class="n">max_connectivity</span>
+<span class="kn">from</span> <span class="nn">.read_netlist</span> <span class="kn">import</span> <span class="n">SpiceParser</span>
+<span class="kn">from</span> <span class="nn">.match_graph</span> <span class="kn">import</span> <span class="n">read_inputs</span><span class="p">,</span> <span class="n">read_setup</span><span class="p">,</span><span class="n">_mapped_graph_list</span><span class="p">,</span><span class="n">preprocess_stack</span><span class="p">,</span><span class="n">reduce_graph</span><span class="p">,</span><span class="n">define_SD</span><span class="p">,</span><span class="n">check_nodes</span><span class="p">,</span><span class="n">add_parallel_caps</span><span class="p">,</span><span class="n">add_series_res</span>
+<span class="kn">from</span> <span class="nn">.write_verilog_lef</span> <span class="kn">import</span> <span class="n">WriteVerilog</span><span class="p">,</span> <span class="n">WriteSpice</span><span class="p">,</span> <span class="n">print_globals</span><span class="p">,</span><span class="n">print_header</span><span class="p">,</span><span class="n">generate_lef</span>
+<span class="kn">from</span> <span class="nn">.write_verilog_lef</span> <span class="kn">import</span> <span class="n">WriteConst</span><span class="p">,</span> <span class="n">FindArray</span><span class="p">,</span> <span class="n">WriteCap</span><span class="p">,</span> <span class="n">check_common_centroid</span><span class="p">,</span> <span class="n">CopyConstFile</span>
+<span class="kn">from</span> <span class="nn">.read_lef</span> <span class="kn">import</span> <span class="n">read_lef</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="generate_hierarchy"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.compiler.generate_hierarchy">[docs]</a><span class="k">def</span> <span class="nf">generate_hierarchy</span><span class="p">(</span><span class="n">netlist</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">flatten_heirarchy</span><span class="p">,</span> <span class="n">unit_size_mos</span> <span class="p">,</span> <span class="n">unit_size_cap</span><span class="p">):</span>
+    <span class="n">updated_ckt</span><span class="p">,</span><span class="n">library</span> <span class="o">=</span> <span class="n">compiler</span><span class="p">(</span><span class="n">netlist</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">flatten_heirarchy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">compiler_output</span><span class="p">(</span><span class="n">netlist</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">updated_ckt</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">unit_size_mos</span> <span class="p">,</span> <span class="n">unit_size_cap</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="compiler"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.compiler.compiler">[docs]</a><span class="k">def</span> <span class="nf">compiler</span><span class="p">(</span><span class="n">input_ckt</span><span class="p">:</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span> <span class="n">design_name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">Debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting topology identification...&quot;</span><span class="p">)</span>
+    <span class="n">input_dir</span><span class="o">=</span><span class="n">input_ckt</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading subckt </span><span class="si">{input_ckt}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">input_ckt</span><span class="p">,</span> <span class="n">design_name</span><span class="p">,</span> <span class="n">flat</span><span class="p">)</span>
+    <span class="n">circuit</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sp_parser</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">design_setup</span><span class="o">=</span><span class="n">read_setup</span><span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{input_ckt.stem}</span><span class="s1">.setup&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;template parent path: {pathlib.Path(__file__).parent}&quot;</span><span class="p">)</span>
+    <span class="n">lib_path</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;config&#39;</span> <span class="o">/</span> <span class="s1">&#39;basic_template.sp&#39;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;template library path: </span><span class="si">{lib_path}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">basic_lib</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">lib_path</span><span class="p">)</span>
+    <span class="n">library</span> <span class="o">=</span> <span class="n">basic_lib</span><span class="o">.</span><span class="n">sp_parser</span><span class="p">()</span>
+    <span class="n">lib_path</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;config&#39;</span> <span class="o">/</span> <span class="s1">&#39;user_template.sp&#39;</span>
+    <span class="n">user_lib</span> <span class="o">=</span> <span class="n">SpiceParser</span><span class="p">(</span><span class="n">lib_path</span><span class="p">)</span>
+    <span class="n">library</span> <span class="o">+=</span> <span class="n">user_lib</span><span class="o">.</span><span class="n">sp_parser</span><span class="p">()</span>
+    <span class="n">library</span><span class="o">=</span><span class="nb">sorted</span><span class="p">(</span><span class="n">library</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">max_connectivity</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dont use cells: </span><span class="si">{design_setup[&#39;DONT_USE_CELLS&#39;]}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DONT_USE_CELLS&#39;</span><span class="p">])</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">library</span><span class="o">=</span><span class="p">[</span><span class="n">lib_ele</span> <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="n">library</span> <span class="k">if</span> <span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DONT_USE_CELLS&#39;</span><span class="p">]]</span>
+
+    <span class="k">if</span> <span class="n">Debug</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
+        <span class="n">_write_circuit_graph</span><span class="p">(</span><span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">],</span>
+                                     <span class="s2">&quot;./circuit_graphs/&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">lib_circuit</span> <span class="ow">in</span> <span class="n">library</span><span class="p">:</span>
+            <span class="n">_write_circuit_graph</span><span class="p">(</span><span class="n">lib_circuit</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">lib_circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">],</span>
+                                         <span class="s2">&quot;./circuit_graphs/&quot;</span><span class="p">)</span>
+    <span class="n">hier_graph_dict</span><span class="o">=</span><span class="n">read_inputs</span><span class="p">(</span><span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span><span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">])</span>
+
+    <span class="n">UPDATED_CIRCUIT_LIST</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">circuit_name</span><span class="p">,</span> <span class="n">circuit</span> <span class="ow">in</span> <span class="n">hier_graph_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;START MATCHING in circuit: </span><span class="si">{circuit_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">G1</span> <span class="o">=</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">circuit_name</span> <span class="ow">in</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]:</span>
+            <span class="n">mapped_graph_list</span> <span class="o">=</span> <span class="n">_mapped_graph_list</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">],</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">define_SD</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;POWER&#39;</span><span class="p">],</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;GND&#39;</span><span class="p">],</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no of nodes: {len(G1)}&quot;</span><span class="p">)</span>
+            <span class="n">add_parallel_caps</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+            <span class="n">add_series_res</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+            <span class="n">preprocess_stack</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+            <span class="n">initial_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+            <span class="n">delta</span> <span class="o">=</span><span class="mi">1</span>
+            <span class="k">while</span> <span class="n">delta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;CHECKING stacked transistors&quot;</span><span class="p">)</span>
+                <span class="n">preprocess_stack</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="n">initial_size</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+                <span class="n">initial_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">G1</span><span class="p">)</span>
+            <span class="n">mapped_graph_list</span> <span class="o">=</span> <span class="n">_mapped_graph_list</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">],</span> <span class="kc">False</span> <span class="p">)</span>
+        <span class="n">updated_circuit</span><span class="p">,</span> <span class="n">Grest</span> <span class="o">=</span> <span class="n">reduce_graph</span><span class="p">(</span><span class="n">G1</span><span class="p">,</span> <span class="n">mapped_graph_list</span><span class="p">,</span> <span class="n">library</span><span class="p">)</span>
+        <span class="n">check_nodes</span><span class="p">(</span><span class="n">updated_circuit</span><span class="p">)</span>
+        <span class="n">UPDATED_CIRCUIT_LIST</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">updated_circuit</span><span class="p">)</span>
+
+        <span class="n">UPDATED_CIRCUIT_LIST</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">circuit_name</span><span class="p">,</span>
+            <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="n">Grest</span><span class="p">,</span>
+            <span class="s2">&quot;ports&quot;</span><span class="p">:</span><span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;ports_match&quot;</span><span class="p">:</span> <span class="n">circuit</span><span class="p">[</span><span class="s2">&quot;connection&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">Grest</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>
+        <span class="p">})</span>
+    <span class="k">return</span> <span class="n">UPDATED_CIRCUIT_LIST</span><span class="p">,</span> <span class="n">library</span></div>
+
+<div class="viewcode-block" id="compiler_output"><a class="viewcode-back" href="../../../align.compiler.html#align.compiler.compiler.compiler_output">[docs]</a><span class="k">def</span> <span class="nf">compiler_output</span><span class="p">(</span><span class="n">input_ckt</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">updated_ckt</span><span class="p">,</span> <span class="n">design_name</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">,</span> <span class="n">unit_size_mos</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">unit_size_cap</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">result_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing results in dir: </span><span class="si">{result_dir}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">input_dir</span><span class="o">=</span><span class="n">input_ckt</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">VERILOG_FP</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">result_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{design_name}</span><span class="s1">.v&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;writing spice file for cell generator&quot;</span><span class="p">)</span>
+
+    <span class="c1">## File pointer for spice generator</span>
+    <span class="n">SP_FP</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">result_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">design_name</span> <span class="o">+</span> <span class="s1">&#39;_blocks.sp&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">print_header</span><span class="p">(</span><span class="n">VERILOG_FP</span><span class="p">,</span> <span class="n">design_name</span><span class="p">)</span>
+    <span class="n">design_setup</span><span class="o">=</span><span class="n">read_setup</span><span class="p">(</span><span class="n">input_dir</span> <span class="o">/</span> <span class="p">(</span><span class="n">input_ckt</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s1">&#39;.setup&#39;</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">POWER_PINS</span> <span class="o">=</span> <span class="p">[</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;POWER&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;GND&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">POWER_PINS</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;no power and gnd defination, correct setup file&quot;</span><span class="p">)</span>
+
+    <span class="c1">#read lef to not write those modules as macros</span>
+    <span class="n">lef_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s1">&#39;config&#39;</span>
+    <span class="n">ALL_LEF</span> <span class="o">=</span> <span class="n">read_lef</span><span class="p">(</span><span class="n">lef_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Available library cells: {&#39;, &#39;.join(ALL_LEF)}&quot;</span><span class="p">)</span>
+    <span class="c1"># local hack for deisgn vco_dtype,</span>
+    <span class="c1">#there requirement is different size for nmos and pmos</span>
+    <span class="k">if</span> <span class="s1">&#39;vco_dtype_12&#39;</span> <span class="ow">in</span>  <span class="n">design_name</span><span class="p">:</span>
+        <span class="n">unit_size_mos</span><span class="o">=</span><span class="mi">37</span>
+    <span class="n">generated_module</span><span class="o">=</span><span class="p">[]</span>
+    <span class="n">primitives</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">duplicate_modules</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">members</span> <span class="ow">in</span> <span class="n">updated_ckt</span><span class="p">:</span>
+        <span class="c1">#print(members)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">duplicate_modules</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">duplicate_modules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found module: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">inoutpin</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;found ports match: </span><span class="si">{members[&quot;ports_match&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">floating_ports</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">if</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;ports_match&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">POWER_PINS</span><span class="p">:</span>
+                    <span class="n">inoutpin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found module ports kk: </span><span class="si">{members[&quot;ports&quot;]}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">floating_ports</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">inoutpin</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">members</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">])</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;POWER&#39;</span><span class="p">])</span> <span class="o">-</span><span class="nb">set</span><span class="p">(</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;GND&#39;</span><span class="p">]))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">floating_ports</span><span class="p">)</span><span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;floating ports found: </span><span class="si">{name}</span><span class="s2"> </span><span class="si">{floating_ports}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="s1">&#39;Please remove floating ports&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inoutpin</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;ports&quot;</span><span class="p">]</span>
+
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">members</span><span class="p">[</span><span class="s2">&quot;graph&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reading nodes from graph: </span><span class="si">{graph}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="c1">#lef_name = &#39;_&#39;.join(attr[&#39;inst_type&#39;].split(&#39;_&#39;)[0:-1])</span>
+            <span class="k">if</span> <span class="s1">&#39;net&#39;</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]:</span> <span class="k">continue</span>
+            <span class="c1">#Dropping floating ports</span>
+            <span class="c1">#if attr[&#39;ports&#39;</span>
+            <span class="n">lef_name</span> <span class="o">=</span> <span class="n">attr</span><span class="p">[</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;values&quot;</span> <span class="ow">in</span> <span class="n">attr</span> <span class="ow">and</span> <span class="p">(</span><span class="n">lef_name</span> <span class="ow">in</span> <span class="n">ALL_LEF</span><span class="p">):</span>
+                <span class="n">block_name</span><span class="p">,</span> <span class="n">block_args</span> <span class="o">=</span> <span class="n">generate_lef</span><span class="p">(</span>
+                    <span class="n">lef_name</span><span class="p">,</span> <span class="n">attr</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">],</span>
+                    <span class="n">primitives</span><span class="p">,</span> <span class="n">unit_size_mos</span><span class="p">,</span> <span class="n">unit_size_cap</span><span class="p">)</span>
+                <span class="n">block_name_ext</span> <span class="o">=</span> <span class="n">block_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">lef_name</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Created new lef for: </span><span class="si">{block_name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="c1"># Only unit caps are generated</span>
+                <span class="k">if</span>  <span class="n">block_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cap&#39;</span><span class="p">):</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_args</span><span class="p">[</span><span class="s1">&#39;primitive&#39;</span><span class="p">]</span>
+                    <span class="n">block_args</span><span class="p">[</span><span class="s1">&#39;primitive&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">block_name</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">node</span><span class="p">][</span><span class="s1">&#39;inst_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_name</span>
+
+                <span class="k">if</span> <span class="n">block_name</span> <span class="ow">in</span> <span class="n">primitives</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">block_args</span> <span class="o">==</span> <span class="n">primitives</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">primitives</span><span class="p">[</span><span class="n">block_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_args</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No physical information found for: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ALL_LEF</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;writing spice for block: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ws</span> <span class="o">=</span> <span class="n">WriteSpice</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">name</span><span class="o">+</span><span class="n">block_name_ext</span><span class="p">,</span> <span class="n">inoutpin</span><span class="p">,</span> <span class="n">updated_ckt</span><span class="p">)</span>
+            <span class="n">ws</span><span class="o">.</span><span class="n">print_subckt</span><span class="p">(</span><span class="n">SP_FP</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;generated data for </span><span class="si">{name}</span><span class="s2"> : {pprint.pformat(primitives, indent=4)}&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span>  <span class="n">ALL_LEF</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;call verilog writer for block: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">wv</span> <span class="o">=</span> <span class="n">WriteVerilog</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">inoutpin</span><span class="p">,</span> <span class="n">updated_ckt</span><span class="p">,</span> <span class="n">POWER_PINS</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;call array finder for block: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">all_array</span><span class="o">=</span><span class="n">FindArray</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">name</span> <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Copy const file for: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">const_file</span> <span class="o">=</span> <span class="n">CopyConstFile</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">input_dir</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cap constraint gen for block: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">WriteCap</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">unit_size_cap</span><span class="p">,</span><span class="n">all_array</span><span class="p">)</span>
+            <span class="n">check_common_centroid</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span><span class="n">const_file</span><span class="p">,</span><span class="n">inoutpin</span><span class="p">)</span>
+            <span class="c1">##Removinf constraints to fix cascoded cmc</span>
+            <span class="n">lib_names</span><span class="o">=</span><span class="p">[</span><span class="n">lib_ele</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">lib_ele</span> <span class="ow">in</span> <span class="n">library</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lib_names</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;call constraint generator writer for block: </span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">stop_points</span><span class="o">=</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;DIGITAL&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">design_setup</span><span class="p">[</span><span class="s1">&#39;CLOCK&#39;</span><span class="p">]</span>
+                <span class="n">WriteConst</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">inoutpin</span><span class="p">,</span> <span class="n">stop_points</span><span class="p">)</span>
+            <span class="n">wv</span><span class="o">.</span><span class="n">print_module</span><span class="p">(</span><span class="n">VERILOG_FP</span><span class="p">)</span>
+            <span class="n">generated_module</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">POWER_PINS</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">print_globals</span><span class="p">(</span><span class="n">VERILOG_FP</span><span class="p">,</span><span class="n">POWER_PINS</span><span class="p">)</span>
+    <span class="n">SP_FP</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Topology identification done !!!&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT verilog netlist at: </span><span class="si">{result_dir}</span><span class="s2">/</span><span class="si">{design_name}</span><span class="s2">.v&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT spice netlist at: </span><span class="si">{result_dir}</span><span class="s2">/</span><span class="si">{design_name}</span><span class="s2">_blocks.sp&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OUTPUT const file at: </span><span class="si">{result_dir}</span><span class="s2">/</span><span class="si">{design_name}</span><span class="s2">.const&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">primitives</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

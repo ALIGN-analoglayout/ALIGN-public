@@ -1,0 +1,313 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.lef_parser &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.lef_parser</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="c1"># Token specification</span>
+<span class="n">pats</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;(?P&lt;SEMI&gt;;)&#39;</span><span class="p">)</span>
+<span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;(?P&lt;NAME&gt;[a-zA-Z_][a-zA-Z_0-9]*)&#39;</span><span class="p">)</span>
+<span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;(?P&lt;NUM&gt;[-+]?\d*\.\d+|[-+]?\d+\.?)&#39;</span><span class="p">)</span>
+<span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;(?P&lt;LIT&gt;\&quot;.*\&quot;)&#39;</span><span class="p">)</span>
+<span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="sa">r</span><span class="s1">&#39;(?P&lt;WS&gt;\s+)&#39;</span><span class="p">)</span>
+
+<span class="n">master_pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pats</span><span class="p">))</span>
+
+<span class="c1"># Tokenizer</span>
+<span class="n">Token</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Token&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
+
+<div class="viewcode-block" id="generate_tokens"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.generate_tokens">[docs]</a><span class="k">def</span> <span class="nf">generate_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">scanner</span> <span class="o">=</span> <span class="n">master_pat</span><span class="o">.</span><span class="n">scanner</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">scanner</span><span class="o">.</span><span class="n">match</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">tok</span> <span class="o">=</span> <span class="n">Token</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">lastgroup</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">tok</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s1">&#39;WS&#39;</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">tok</span></div>
+
+<div class="viewcode-block" id="Macro"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Macro">[docs]</a><span class="k">class</span> <span class="nc">Macro</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Macro.prnt"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Macro.prnt">[docs]</a>    <span class="k">def</span> <span class="nf">prnt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;macroName </span><span class="si">{self.macroName}</span><span class="s2"> ox </span><span class="si">{self.ox}</span><span class="s2"> oy </span><span class="si">{self.oy}</span><span class="s2"> sx </span><span class="si">{self.sx}</span><span class="s2"> sy </span><span class="si">{self.sy}</span><span class="s2"> bbox </span><span class="si">{self.bbox}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">pin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pins</span><span class="p">:</span>
+            <span class="n">pin</span><span class="o">.</span><span class="n">prnt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">prnt</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ox</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">oy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ox</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">sx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">oy</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Pin"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Pin">[docs]</a><span class="k">class</span> <span class="nc">Pin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Pin.prnt"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Pin.prnt">[docs]</a>    <span class="k">def</span> <span class="nf">prnt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;   pin&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;      port&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Obs"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Obs">[docs]</a><span class="k">class</span> <span class="nc">Obs</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Obs.prnt"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.Obs.prnt">[docs]</a>    <span class="k">def</span> <span class="nf">prnt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;   obs&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s1">&#39;      port&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span></div></div>
+
+
+<span class="c1"># Parser </span>
+<div class="viewcode-block" id="LEFParser"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser">[docs]</a><span class="k">class</span> <span class="nc">LEFParser</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Implementation of a recursive descent parser for LEF.   Each method</span>
+<span class="sd">    implements a single grammar rule.</span>
+
+<span class="sd">    Use the ._accept() method to test and accept the current lookahead token.</span>
+<span class="sd">    Use the ._accept_keyword() method to test and accept the current</span>
+<span class="sd">    lookahead token if it matches the argument.</span>
+<span class="sd">    Use the ._expect() method to exactly match and discard the next token on</span>
+<span class="sd">    the input (or raise a SyntaxError if it doesn&#39;t match).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+<div class="viewcode-block" id="LEFParser.parse"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">text</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span> <span class="o">=</span> <span class="n">generate_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tok</span> <span class="o">=</span> <span class="kc">None</span>             <span class="c1"># Last symbol consumed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span> <span class="o">=</span> <span class="kc">None</span>         <span class="c1"># Next symbol tokenized</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_advance</span><span class="p">()</span>             <span class="c1"># Load first lookahead token</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">whole</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_advance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s1">&#39;Advance one token ahead&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="c1">#        print( self.tok, self.nexttok)</span>
+
+    <span class="k">def</span> <span class="nf">_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">toktype</span><span class="p">):</span>
+        <span class="s1">&#39;Test and consume the next token if it matches toktype&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">toktype</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_advance</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_accept_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+        <span class="s1">&#39;Test and consume the next token if it matches the keyword k&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;NAME&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">k</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_advance</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_expect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">toktype</span><span class="p">):</span>
+        <span class="s1">&#39;Consume next token if it matches toktype or raise SyntaxError&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept</span><span class="p">(</span><span class="n">toktype</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected &#39;</span> <span class="o">+</span> <span class="n">toktype</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_expect_keyword</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+        <span class="s1">&#39;Consume next token if it matches argument or raise SyntaxError&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected keyword&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="c1"># Grammar rules follow</span>
+
+<div class="viewcode-block" id="LEFParser.toA"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.toA">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">toA</span><span class="p">(</span> <span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">),</span><span class="mi">0</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="LEFParser.cA"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.cA">[docs]</a>    <span class="k">def</span> <span class="nf">cA</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LEFParser</span><span class="o">.</span><span class="n">toA</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LEFParser.pA"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.pA">[docs]</a>    <span class="k">def</span> <span class="nf">pA</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NUM&#39;</span><span class="p">)</span>     
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cA</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LEFParser.ports"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.ports">[docs]</a>    <span class="k">def</span> <span class="nf">ports</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pin</span><span class="p">):</span>
+        <span class="n">pin</span><span class="o">.</span><span class="n">ports</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;END&#39;</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;LAYER&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                <span class="n">layer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>    
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;RECT&#39;</span><span class="p">):</span>
+                <span class="n">lst</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>    
+                <span class="k">assert</span> <span class="n">layer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="n">pin</span><span class="o">.</span><span class="n">ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span> <span class="n">layer</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">lst</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected END, LAYER, or RECT keywords.&#39;</span><span class="p">)</span>     </div>
+
+<div class="viewcode-block" id="LEFParser.macro"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.macro">[docs]</a>    <span class="k">def</span> <span class="nf">macro</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Macro</span><span class="p">()</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">pins</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">macroName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span> 
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;END&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect_keyword</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">macroName</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;ORIGIN&#39;</span><span class="p">):</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">ox</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">oy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;FOREIGN&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">foreign_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">fx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">fy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;SIZE&#39;</span><span class="p">):</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">sx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect_keyword</span><span class="p">(</span><span class="s1">&#39;BY&#39;</span><span class="p">)</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">sy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pA</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;PIN&#39;</span><span class="p">):</span>
+                <span class="n">pin</span> <span class="o">=</span> <span class="n">Pin</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                <span class="n">pin</span><span class="o">.</span><span class="n">nm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;END&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect_keyword</span><span class="p">(</span><span class="n">pin</span><span class="o">.</span><span class="n">nm</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;DIRECTION&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                        <span class="n">pin</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tok</span><span class="o">.</span><span class="n">value</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>    
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;USE&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>    
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;PORT&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">(</span><span class="n">pin</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected END, DIRECTION, USE, or PORT keywords.&#39;</span><span class="p">)</span>     
+                <span class="n">m</span><span class="o">.</span><span class="n">pins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pin</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;OBS&#39;</span><span class="p">):</span>
+                <span class="n">m</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">Obs</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ports</span><span class="p">(</span> <span class="n">m</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;PROPERTY&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept</span><span class="p">(</span> <span class="s1">&#39;LIT&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept</span><span class="p">(</span> <span class="s1">&#39;NUM&#39;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>                                
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected LIT or NUM tokens&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">m</span></div>
+
+<div class="viewcode-block" id="LEFParser.whole"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.lef_parser.LEFParser.whole">[docs]</a>    <span class="k">def</span> <span class="nf">whole</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">macros</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span><span class="s1">&#39;END&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span><span class="s1">&#39;LIBRARY&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;VERSION&#39;</span><span class="p">):</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NUM&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;BUSBITCHARS&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;LIT&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;DIVIDERCHAR&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;LIT&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;PROPERTYDEFINITIONS&#39;</span><span class="p">):</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span><span class="s1">&#39;END&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span><span class="s1">&#39;PROPERTYDEFINITIONS&#39;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;MACRO&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_expect</span><span class="p">(</span><span class="s1">&#39;SEMI&#39;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span><span class="s1">&#39;Expected END or MACRO keywords&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_accept_keyword</span><span class="p">(</span> <span class="s1">&#39;MACRO&#39;</span><span class="p">):</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">macro</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">macros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nexttok</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">SyntaxError</span><span class="p">(</span> <span class="sa">f</span><span class="s1">&#39;Expected END, VERSION, BUSBITCHARS, DIVIDERCHAR, PROPERTYDEFINITIONS or MACRO, got </span><span class="si">{self.nexttok}</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

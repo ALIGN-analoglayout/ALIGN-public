@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.grid &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.grid</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transformation</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<div class="viewcode-block" id="Grid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid">[docs]</a><span class="k">class</span> <span class="nc">Grid</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        grid is a list of pairs: the grid coord and associated attributes (e.g., width, color)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Grid.semantic"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.semantic">[docs]</a>    <span class="k">def</span> <span class="nf">semantic</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="Grid.addGridLine"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.addGridLine">[docs]</a>    <span class="k">def</span> <span class="nf">addGridLine</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">isLegal</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">attrs</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">isLegal</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Grid.copyShift"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.copyShift">[docs]</a>    <span class="k">def</span> <span class="nf">copyShift</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">shift</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">attrs</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">c</span><span class="o">+</span><span class="n">shift</span><span class="p">,</span><span class="n">attrs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">period</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Grid.inverseBounds"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.inverseBounds">[docs]</a>    <span class="k">def</span> <span class="nf">inverseBounds</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">physical</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">r</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">physical</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
+        <span class="n">last_lt</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ge</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,(</span><span class="n">c</span><span class="p">,</span><span class="n">_</span><span class="p">))</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">r</span><span class="p">:</span>
+                <span class="n">last_lt</span> <span class="o">=</span> <span class="n">idx</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ge</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="k">break</span>
+        <span class="k">assert</span> <span class="n">ge</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">physical</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">(</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">ge</span><span class="p">),</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">assert</span> <span class="n">last_lt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="p">((</span><span class="n">q</span><span class="p">,</span><span class="n">last_lt</span><span class="p">),</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">ge</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">((</span><span class="n">q</span><span class="p">,</span><span class="n">ge</span><span class="p">),</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="n">ge</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Grid.snapToLegal"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.snapToLegal">[docs]</a>    <span class="k">def</span> <span class="nf">snapToLegal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">le</span><span class="p">,</span> <span class="nb">max</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">op</span><span class="p">,</span> <span class="n">func</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">ge</span><span class="p">,</span> <span class="nb">min</span>
+        <span class="n">legal</span> <span class="o">=</span> <span class="p">{</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span> <span class="k">if</span> <span class="n">op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">legal</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">func</span><span class="p">(</span><span class="n">legal</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">direction</span><span class="p">,</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">idx</span></div>
+
+<div class="viewcode-block" id="Grid.value"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.Grid.value">[docs]</a>    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="n">idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span> <span class="k">else</span> <span class="n">idx</span>
+        <span class="p">(</span><span class="n">whole</span><span class="p">,</span> <span class="n">fract</span><span class="p">)</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">fract</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">whole</span><span class="p">,</span> <span class="n">fract</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">legalIndices</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">attrs</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">fract</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">+=</span> <span class="n">whole</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">attrs</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="CenteredGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.CenteredGrid">[docs]</a><span class="k">class</span> <span class="nc">CenteredGrid</span><span class="p">(</span><span class="n">Grid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span><span class="p">,</span>                     <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">pitch</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span>          <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">pitch</span><span class="p">,</span>             <span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CenterLineGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.CenterLineGrid">[docs]</a><span class="k">class</span> <span class="nc">CenterLineGrid</span><span class="p">(</span><span class="n">Grid</span><span class="p">):</span>
+
+<div class="viewcode-block" id="CenterLineGrid.addCenterLine"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.CenterLineGrid.addCenterLine">[docs]</a>    <span class="k">def</span> <span class="nf">addCenterLine</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">isLegal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">width</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">value</span><span class="p">,</span> <span class="n">isLegal</span><span class="p">,</span> <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">color</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CenterLineGrid.semantic"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.CenterLineGrid.semantic">[docs]</a>    <span class="k">def</span> <span class="nf">semantic</span><span class="p">(</span> <span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="c1"># width and color both need to be the same</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span></div></div>
+
+<div class="viewcode-block" id="UncoloredCenterLineGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.UncoloredCenterLineGrid">[docs]</a><span class="k">class</span> <span class="nc">UncoloredCenterLineGrid</span><span class="p">(</span><span class="n">CenterLineGrid</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repeat</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addCenterLine</span><span class="p">(</span> <span class="n">offset</span><span class="o">+</span><span class="n">i</span><span class="o">*</span><span class="n">pitch</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">semantic</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="ColoredCenterLineGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.ColoredCenterLineGrid">[docs]</a><span class="k">class</span> <span class="nc">ColoredCenterLineGrid</span><span class="p">(</span><span class="n">CenterLineGrid</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">colors</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">repeat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="n">colors</span> <span class="o">*</span> <span class="n">repeat</span><span class="p">)[:</span><span class="n">repeat</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">colors</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">c</span> <span class="o">+</span> <span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addCenterLine</span><span class="p">(</span> <span class="n">offset</span><span class="o">+</span><span class="n">idx</span><span class="o">*</span><span class="n">pitch</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">semantic</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="EnclosureGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.EnclosureGrid">[docs]</a><span class="k">class</span> <span class="nc">EnclosureGrid</span><span class="p">(</span><span class="n">Grid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">clg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stoppoint</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">check</span> <span class="ow">or</span> <span class="mi">2</span><span class="o">*</span><span class="n">stoppoint</span> <span class="o">&lt;=</span> <span class="n">pitch</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span><span class="p">,</span>                     <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">stoppoint</span><span class="p">,</span>         <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">pitch</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span>          <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">pitch</span> <span class="o">-</span> <span class="n">stoppoint</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">pitch</span><span class="p">,</span>             <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">semantic</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SingleGrid"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.grid.SingleGrid">[docs]</a><span class="k">class</span> <span class="nc">SingleGrid</span><span class="p">(</span><span class="n">Grid</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">clg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pitch</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">repeat</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">addGridLine</span><span class="p">(</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">i</span><span class="o">*</span><span class="n">pitch</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">semantic</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

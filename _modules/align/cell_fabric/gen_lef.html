@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.cell_fabric.gen_lef &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.cell_fabric.gen_lef</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+
+<div class="viewcode-block" id="gen_lef_data"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_data">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="mf">10000.0</span><span class="p">)</span>
+
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MACRO </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">macro_name</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  ORIGIN 0 0 ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  FOREIGN </span><span class="si">%s</span><span class="s2"> 0 0 ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">macro_name</span><span class="p">)</span>
+
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  SIZE </span><span class="si">%s</span><span class="s2"> BY </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="n">s</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])))</span>
+
+    <span class="n">exclude_layers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;via0&quot;</span><span class="p">,</span> <span class="s2">&quot;via1&quot;</span><span class="p">,</span> <span class="s2">&quot;via2&quot;</span><span class="p">,</span> <span class="s2">&quot;poly&quot;</span><span class="p">,</span> <span class="s2">&quot;LISD&quot;</span><span class="p">,</span> <span class="s2">&quot;SDT&quot;</span><span class="p">,</span> <span class="s2">&quot;RVT&quot;</span><span class="p">,</span>
+                      <span class="s2">&quot;M0&quot;</span><span class="p">,</span> <span class="s2">&quot;fin&quot;</span><span class="p">,</span> <span class="s2">&quot;polycon&quot;</span><span class="p">,</span> <span class="s2">&quot;GCUT&quot;</span><span class="p">,</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span> <span class="s2">&quot;nselect&quot;</span><span class="p">,</span> <span class="s2">&quot;pselect&quot;</span><span class="p">,</span> <span class="s2">&quot;nwell&quot;</span><span class="p">}</span>
+
+<span class="c1"># O(npins * nsegments) algorithm. Could be O(npins + nsegments) FIX!</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  PIN </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+        <span class="c1">#fp.write( &quot;    DIRECTION %s ;\n&quot; % obj[&#39;ported&#39;])</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    DIRECTION INOUT ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    USE SIGNAL ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  PORT</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="s1">&#39;pin&#39;</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;      LAYER </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">])</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;        RECT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]))</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    END</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  OBS</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;pin&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span> <span class="ow">or</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_layers</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    LAYER </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">])</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;      RECT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                     <span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]))</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  END</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">macro_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gen_lef_json_fp"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json_fp">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json_fp</span><span class="p">(</span><span class="n">json_fp</span><span class="p">,</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
+    <span class="n">gen_lef_data</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">json_fp</span><span class="p">),</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gen_lef_json"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.gen_lef_json">[docs]</a><span class="k">def</span> <span class="nf">gen_lef_json</span><span class="p">(</span><span class="n">json_fn</span><span class="p">,</span> <span class="n">lef_fn</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_fn</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_fp</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">lef_fn</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">lef_fp</span><span class="p">:</span>
+        <span class="n">gen_lef_json_fp</span><span class="p">(</span><span class="n">json_fp</span><span class="p">,</span> <span class="n">lef_fp</span><span class="p">,</span> <span class="n">macro_name</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="json_lef"><a class="viewcode-back" href="../../../align.cell_fabric.html#align.cell_fabric.gen_lef.json_lef">[docs]</a><span class="k">def</span> <span class="nf">json_lef</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="n">out_lef</span><span class="p">,</span> <span class="n">cell_pin</span><span class="p">,</span> <span class="n">blockM</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+
+    <span class="n">exclude_layers</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_lef_exclude</span><span class="p">()</span>
+
+    <span class="n">macro_name</span> <span class="o">=</span> <span class="n">out_lef</span> <span class="o">+</span> <span class="s1">&#39;.lef&#39;</span>
+
+    <span class="k">def</span> <span class="nf">s</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%.4f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="mf">10000.0</span><span class="p">)</span>
+    <span class="c1"># Start: This part converting all negative coordinates into positive</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">object_pairs_hook</span><span class="o">=</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">10</span>
+
+        <span class="k">assert</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">-</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell height not a multiple of the grid </span><span class="si">{j[&#39;bbox&#39;]}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cell width not a multiple of the grid </span><span class="si">{j[&#39;bbox&#39;]}</span><span class="s2">&quot;</span>
+
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">10</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># End:</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_json</span><span class="p">,</span> <span class="s2">&quot;rt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_json</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">macro_name</span><span class="p">,</span> <span class="s2">&quot;wt&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MACRO </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">out_lef</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  ORIGIN 0 0 ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  FOREIGN </span><span class="si">%s</span><span class="s2"> 0 0 ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">out_lef</span><span class="p">)</span>
+
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  SIZE </span><span class="si">%s</span><span class="s2"> BY </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">s</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">]),</span> <span class="n">s</span><span class="p">(</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;bbox&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])))</span>
+        <span class="n">cell_pin</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">cell_pin</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cell_pin</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;PLUS&quot;</span><span class="p">:</span>
+            <span class="c1"># add body contact to the pin list of transistors</span>
+            <span class="n">cell_pin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  PIN </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+            <span class="c1">#fp.write( &quot;    DIRECTION %s ;\n&quot; % obj[&#39;ported&#39;])</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    DIRECTION INOUT ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    USE SIGNAL ;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    PORT</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;pin&#39;</span> <span class="ow">in</span> <span class="n">obj</span> <span class="ow">and</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;      LAYER </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">])</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;        RECT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]))</span>
+                    <span class="c1"># Check Pins are on grid or not</span>
+                    <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M2&#39;</span><span class="p">:</span>
+                        <span class="n">cy</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
+                        <span class="k">assert</span> <span class="n">cy</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M2&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;M2 pin is not on grid </span><span class="si">{cy}</span><span class="s2"> {cy%84}&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M1&#39;</span> <span class="ow">or</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;M3&#39;</span><span class="p">:</span>
+                        <span class="n">cx</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span><span class="o">//</span><span class="mi">2</span>
+                        <span class="k">assert</span> <span class="n">cx</span> <span class="o">%</span> <span class="n">p</span><span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">][</span><span class="s1">&#39;Pitch&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;M1 pin is not on grid </span><span class="si">{cx}</span><span class="s2"> {cx%80}&quot;</span><span class="p">)</span>
+
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    END</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  OBS</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">cap_layers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;M1&#39;</span><span class="p">,</span> <span class="s1">&#39;M2&#39;</span><span class="p">,</span> <span class="s1">&#39;M3&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;terminals&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;pin&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span> <span class="ow">or</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;pin&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cell_pin</span><span class="p">)</span> <span class="ow">and</span> <span class="n">blockM</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_layers</span><span class="p">:</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    LAYER </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">])</span>
+                <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;      RECT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                         <span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]))</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">blockM</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Boundary&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">capL</span> <span class="ow">in</span> <span class="n">cap_layers</span><span class="p">:</span> 
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    LAYER </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">capL</span><span class="p">)</span>
+                    <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;      RECT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="nb">tuple</span><span class="p">([</span><span class="n">s</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">[</span><span class="s1">&#39;rect&#39;</span><span class="p">]]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  END</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;END </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">out_lef</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

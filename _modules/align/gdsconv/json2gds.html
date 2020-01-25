@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.gdsconv.json2gds &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.gdsconv.json2gds</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;JSON to GDSII.&quot;&quot;&quot;</span>
+
+<span class="c1"># Basic dependencies:</span>
+<span class="c1">#   python3</span>
+<span class="c1">#   python-pip</span>
+<span class="c1">#   pip install python-gdsii</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">from</span> <span class="nn">gdsii</span> <span class="kn">import</span> <span class="n">tags</span><span class="p">,</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">gdsii.record</span> <span class="kn">import</span> <span class="n">Record</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<div class="viewcode-block" id="unbracket"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.json2gds.unbracket">[docs]</a><span class="k">def</span> <span class="nf">unbracket</span> <span class="p">(</span><span class="n">l</span><span class="p">):</span>    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="quote"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.json2gds.quote">[docs]</a><span class="k">def</span> <span class="nf">quote</span> <span class="p">(</span><span class="n">s</span><span class="p">):</span>        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span></div>
+
+<div class="viewcode-block" id="convert_GDSjson_GDS_fps"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.json2gds.convert_GDSjson_GDS_fps">[docs]</a><span class="k">def</span> <span class="nf">convert_GDSjson_GDS_fps</span><span class="p">(</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">ofile</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">store_data</span> <span class="p">(</span><span class="n">tag_name</span><span class="p">,</span> <span class="n">idata</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">DICT</span><span class="p">[</span><span class="n">tag_name</span><span class="p">]</span>
+        <span class="n">tag_type</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">type_of_tag</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">idata</span>
+
+        <span class="k">if</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">NODATA</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">ASCII</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">rest</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="c1"># FIXME</span>
+        <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">BITARRAY</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rest</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">REAL8</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">rest</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">INT2</span> <span class="ow">or</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">INT4</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">rest</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported type&#39;</span><span class="p">)</span>
+        <span class="n">rec</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">rec</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span> <span class="p">(</span><span class="n">ifile</span><span class="p">)</span>
+    <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;HEADER&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;bgnlib&#39;</span><span class="p">]:</span>
+        <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;BGNLIB&#39;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]))</span>
+        <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;LIBNAME&#39;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;libname&#39;</span><span class="p">]))</span>
+        <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;UNITS&#39;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">lib</span><span class="p">[</span><span class="s1">&#39;bgnstr&#39;</span><span class="p">]:</span>
+            <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;BGNSTR&#39;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]))</span>
+            <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;STRNAME&#39;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="s1">&#39;strname&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="s1">&#39;elements&#39;</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">cell</span><span class="p">[</span><span class="s1">&#39;elements&#39;</span><span class="p">]:</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="n">elem</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="s1">&#39;boundary&#39;</span><span class="p">:</span>
+                        <span class="n">store_data</span> <span class="p">(</span><span class="s1">&#39;BOUNDARY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;layer&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;LAYER&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;datatype&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>     <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;DATATYPE&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;datatype&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;xy&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>           <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;XY&quot;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;xy&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;propattr&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>     <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;PROPATTR&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;propattr&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;propvalue&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>    <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;PROPVALUE&quot;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;propvalue&#39;</span><span class="p">]))</span>
+                    <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span>
+                        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;TEXT&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;layer&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;LAYER&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;texttype&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>     <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;TEXTTYPE&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;texttype&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;presentation&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span> <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;PRESENTATION&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;presentation&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;strans&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>       <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;STRANS&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;strans&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;mag&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>          <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;MAG&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;mag&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;angle&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;ANGLE&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;xy&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>           <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;XY&quot;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;xy&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;string&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>       <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;STRING&quot;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;string&#39;</span><span class="p">]))</span>
+                    <span class="k">elif</span> <span class="n">t</span> <span class="o">==</span> <span class="s1">&#39;sref&#39;</span><span class="p">:</span>
+                        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;SREF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="s1">&#39;sname&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;SNAME&quot;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;sname&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;strans&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>       <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;STRANS&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;strans&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;angle&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;ANGLE&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]))</span>
+                        <span class="k">if</span> <span class="s1">&#39;xy&#39;</span> <span class="ow">in</span> <span class="n">elem</span><span class="p">:</span>           <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;XY&quot;</span><span class="p">,</span> <span class="n">unbracket</span><span class="p">(</span><span class="n">elem</span><span class="p">[</span><span class="s1">&#39;xy&#39;</span><span class="p">]))</span>
+                    <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;ENDEL&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;ENDSTR&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">store_data</span> <span class="p">(</span><span class="s2">&quot;ENDLIB&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="convert_GDSjson_GDS"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.json2gds.convert_GDSjson_GDS">[docs]</a><span class="k">def</span> <span class="nf">convert_GDSjson_GDS</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">oname</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifile</span><span class="p">,</span> \
+         <span class="nb">open</span> <span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">convert_GDSjson_GDS_fps</span><span class="p">(</span> <span class="n">ifile</span><span class="p">,</span> <span class="n">ofile</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="usage"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.json2gds.usage">[docs]</a><span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="n">prog</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Usage: </span><span class="si">%s</span><span class="s1"> &lt;file.json&gt; &lt;file.gds&gt;&#39;</span> <span class="o">%</span> <span class="n">prog</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">convert_GDSjson_GDS</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">usage</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

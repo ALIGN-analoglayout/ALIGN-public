@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.gdsconv.txt2prettyjson &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.gdsconv.txt2prettyjson</h1><div class="highlight"><pre>
+<span></span><span class="ch">#! /usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;TXT to PRETTY JSON.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">gdsii</span> <span class="kn">import</span> <span class="n">tags</span><span class="p">,</span> <span class="n">types</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<div class="viewcode-block" id="show_data"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.txt2prettyjson.show_data">[docs]</a><span class="k">def</span> <span class="nf">show_data</span><span class="p">(</span><span class="n">tag_type</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Shows data in a human-readable format.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">ASCII</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">BITARRAY</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">REAL8</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">INT2</span> <span class="ow">or</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">INT4</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span> <span class="p">(</span><span class="s1">&#39;Unsupported type&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span></div>
+
+<div class="viewcode-block" id="quote"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.txt2prettyjson.quote">[docs]</a><span class="k">def</span> <span class="nf">quote</span> <span class="p">(</span><span class="n">s</span><span class="p">):</span> <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">s</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span></div>
+
+<div class="viewcode-block" id="isElement"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.txt2prettyjson.isElement">[docs]</a><span class="k">def</span> <span class="nf">isElement</span> <span class="p">(</span><span class="n">e</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;BOUNDARY&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;PATH&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;SREF&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;AREF&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;TEXT&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;NODE&quot;</span> <span class="ow">or</span> <span class="n">e</span> <span class="o">==</span> <span class="s2">&quot;BOX&quot;</span></div>
+
+<div class="viewcode-block" id="convert_GDStxt_GDSprettyjson"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.txt2prettyjson.convert_GDStxt_GDSprettyjson">[docs]</a><span class="k">def</span> <span class="nf">convert_GDStxt_GDSprettyjson</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">oname</span><span class="p">):</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">levelTag</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">256</span>
+    <span class="n">rexp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^(?P&lt;tag&gt;[^:]+)(:\s*(?P&lt;rest&gt;.*))?$&#39;</span><span class="p">)</span>
+    <span class="n">lineno</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">ofile</span> <span class="o">=</span> <span class="nb">open</span> <span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">indent</span> <span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">ofile</span><span class="p">)</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="o">*</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>        <span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>                <span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">ofile</span><span class="p">)</span>
+        <span class="n">indent</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>          <span class="nb">print</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">ofile</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ifile</span><span class="p">:</span>
+        <span class="n">indentPrint</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="s1">&#39;{&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">ifile</span><span class="p">:</span>
+            <span class="n">stripped</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">rexp</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">stripped</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Parse error at line </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lineno</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">tag_name</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;tag&#39;</span><span class="p">)</span>
+            <span class="n">rest</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;rest&#39;</span><span class="p">)</span>
+
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">DICT</span><span class="p">[</span><span class="n">tag_name</span><span class="p">]</span>
+
+            <span class="n">tag_type</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">type_of_tag</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">tag_type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">NODATA</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">isElement</span><span class="p">(</span><span class="n">tag_name</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="s2">&quot;elements&quot;</span><span class="p">),</span> <span class="s2">&quot;: [&quot;</span><span class="p">)</span>
+                        <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_name</span>
+                        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="s2">&quot;{&quot;</span><span class="p">)</span>
+                    <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">),</span> <span class="s2">&quot;: &quot;</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">tag_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;ENDEL&quot;</span> <span class="ow">or</span> <span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;ENDSTR&quot;</span> <span class="ow">or</span> <span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;ENDLIB&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">s</span> <span class="o">=</span> <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span>
+                        <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
+                        <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">tag_name</span> <span class="o">!=</span> <span class="n">s</span><span class="p">:</span>
+                            <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">)</span>
+                            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">)</span>
+                        <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: unrecognized tag:&quot;</span><span class="p">,</span> <span class="n">tag_name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;BGNLIB&quot;</span> <span class="ow">or</span> <span class="n">tag_name</span> <span class="o">==</span> <span class="s2">&quot;BGNSTR&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">tag_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span> <span class="s2">&quot;: [&quot;</span><span class="p">)</span>
+                        <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_name</span>
+                        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="s2">&quot;{&quot;</span><span class="p">)</span>
+                    <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">),</span> <span class="s2">&quot;: &quot;</span><span class="p">,</span> <span class="n">show_data</span><span class="p">(</span><span class="n">tag_type</span><span class="p">,</span> <span class="n">rest</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">indentPrint</span> <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">quote</span><span class="p">(</span><span class="n">tag_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()),</span> <span class="s2">&quot;: &quot;</span><span class="p">,</span> <span class="n">show_data</span><span class="p">(</span><span class="n">tag_type</span><span class="p">,</span> <span class="n">rest</span><span class="p">))</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">levelTag</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">level</span> <span class="o">=</span> <span class="n">level</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">indentPrint</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;]&#39;</span><span class="p">)</span>
+        <span class="n">indentPrint</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="usage"><a class="viewcode-back" href="../../../align.gdsconv.html#align.gdsconv.txt2prettyjson.usage">[docs]</a><span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="n">prog</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Usage: </span><span class="si">%s</span><span class="s1"> &lt;file.txt&gt; &lt;file.json&gt;&#39;</span> <span class="o">%</span> <span class="n">prog</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">convert_GDStxt_GDSprettyjson</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">usage</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

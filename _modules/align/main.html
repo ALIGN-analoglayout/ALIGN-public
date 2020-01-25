@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>align.main &#8212; ALIGN 0.9 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for align.main</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pathlib</span>
+
+<span class="kn">from</span> <span class="nn">.compiler</span> <span class="kn">import</span> <span class="n">generate_hierarchy</span>
+<span class="kn">from</span> <span class="nn">.primitive</span> <span class="kn">import</span> <span class="n">generate_primitive</span>
+<span class="kn">from</span> <span class="nn">.pnr</span> <span class="kn">import</span> <span class="n">generate_pnr</span>
+<span class="kn">from</span> <span class="nn">.gdsconv.json2gds</span> <span class="kn">import</span> <span class="n">convert_GDSjson_GDS</span>
+<span class="kn">from</span> <span class="nn">.utils.gds2png</span> <span class="kn">import</span> <span class="n">generate_png</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="schematic2layout"><a class="viewcode-back" href="../../align.html#align.main.schematic2layout">[docs]</a><span class="k">def</span> <span class="nf">schematic2layout</span><span class="p">(</span><span class="n">netlist_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">netlist_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subckt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">working_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unit_size_mos</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">unit_size_cap</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nvariants</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">effort</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extract</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">generate</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">log_level</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLevelName</span><span class="p">(</span><span class="n">log_level</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">working_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">working_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">working_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Working directory </span><span class="si">{working_dir}</span><span class="s2"> doesn&#39;t exist. Please enter a valid directory path.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such working directory&#39;</span><span class="p">,</span> <span class="n">working_dir</span><span class="p">)</span>
+
+    <span class="n">pdk_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">pdk_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pdk_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PDK directory </span><span class="si">{pdk_dir}</span><span class="s2"> doesn&#39;t exist. Please enter a valid directory path&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such pdk directory&#39;</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">)</span>
+
+    <span class="n">netlist_dir</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">netlist_dir</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">netlist_dir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Netlist directory </span><span class="si">{netlist_dir}</span><span class="s2"> doesn&#39;t exist. Please enter a valid directory path&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such netlist directory&#39;</span><span class="p">,</span> <span class="n">netlist_dir</span><span class="p">)</span>
+
+    <span class="n">netlist_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">netlist_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;.sp&#39;</span><span class="p">,</span> <span class="s1">&#39;.cdl&#39;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">netlist_files</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;No spice files found in netlist directory </span><span class="si">{netlist_dir}</span><span class="s2">. Exiting...&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No matching netlist files&#39;</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{netlist_dir}</span><span class="s1">/*(.sp|.cdl)&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">netlist_file</span><span class="p">:</span>
+        <span class="n">netlist_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">netlist_file</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="n">netlist_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">netlist_files</span> <span class="k">if</span> <span class="n">netlist_file</span> <span class="o">==</span> <span class="n">x</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">netlist_files</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No spice files </span><span class="si">{netlist_file}</span><span class="s2"> found in netlist directory. Exiting...&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;No such netlist file&#39;</span><span class="p">,</span> <span class="n">netlist_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">subckt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">netlist_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Encountered multiple spice files. Cannot infer top-level circuit&quot;</span>
+        <span class="n">subckt</span> <span class="o">=</span> <span class="n">netlist_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stem</span>
+
+    <span class="c1"># Create directories for each stage</span>
+    <span class="n">topology_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;1_topology&#39;</span>
+    <span class="n">topology_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">primitive_dir</span> <span class="o">=</span> <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;2_primitives&#39;</span><span class="p">)</span>
+    <span class="n">primitive_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">pnr_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="s1">&#39;3_pnr&#39;</span>
+    <span class="n">pnr_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">netlist</span> <span class="ow">in</span> <span class="n">netlist_files</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;READ file: </span><span class="si">{netlist}</span><span class="s2"> subckt=</span><span class="si">{subckt}</span><span class="s2">, flat=</span><span class="si">{flatten}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Generate hierarchy</span>
+        <span class="n">primitives</span> <span class="o">=</span> <span class="n">generate_hierarchy</span><span class="p">(</span><span class="n">netlist</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">topology_dir</span><span class="p">,</span> <span class="n">flatten</span><span class="p">,</span> <span class="n">unit_size_mos</span> <span class="p">,</span> <span class="n">unit_size_cap</span><span class="p">)</span>
+        <span class="c1"># Generate primitives</span>
+        <span class="k">for</span> <span class="n">block_name</span><span class="p">,</span> <span class="n">block_args</span> <span class="ow">in</span> <span class="n">primitives</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">generate_primitive</span><span class="p">(</span><span class="n">block_name</span><span class="p">,</span> <span class="o">**</span><span class="n">block_args</span><span class="p">,</span> <span class="n">pdkdir</span><span class="o">=</span><span class="n">pdk_dir</span><span class="p">,</span> <span class="n">outputdir</span><span class="o">=</span><span class="n">primitive_dir</span><span class="p">)</span>
+        <span class="c1"># Copy over necessary collateral &amp; run PNR tool</span>
+        <span class="n">variants</span> <span class="o">=</span> <span class="n">generate_pnr</span><span class="p">(</span><span class="n">topology_dir</span><span class="p">,</span> <span class="n">primitive_dir</span><span class="p">,</span> <span class="n">pdk_dir</span><span class="p">,</span> <span class="n">pnr_dir</span><span class="p">,</span> <span class="n">subckt</span><span class="p">,</span> <span class="n">nvariants</span><span class="p">,</span> <span class="n">effort</span><span class="p">,</span> <span class="n">check</span><span class="p">,</span> <span class="n">extract</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">netlist</span><span class="p">,</span> <span class="n">variants</span><span class="p">))</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">variants</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No layouts were generated for </span><span class="si">{netlist}</span><span class="s2">. Cannot proceed further. See LOG/compiler.log for last error.&quot;</span>
+        <span class="c1"># Generate necessary output collateral into current directory</span>
+        <span class="k">for</span> <span class="n">variant</span><span class="p">,</span> <span class="n">filemap</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">convert_GDSjson_GDS</span><span class="p">(</span><span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;gdsjson&#39;</span><span class="p">],</span> <span class="n">working_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{variant}</span><span class="s1">.gds&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Use KLayout to visualize the generated GDS:&quot;</span><span class="p">,</span><span class="n">working_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{variant}</span><span class="s1">.gds&#39;</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;lef&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;lef&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">check</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;errfile&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">extract</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">working_dir</span> <span class="o">/</span> <span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">filemap</span><span class="p">[</span><span class="s1">&#39;cir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+            <span class="c1"># Generate PNG</span>
+            <span class="k">if</span> <span class="n">generate</span><span class="p">:</span>
+                <span class="n">generate_png</span><span class="p">(</span><span class="n">working_dir</span><span class="p">,</span> <span class="n">variant</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ALIGN 0.9 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Kunal and ALIGN team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
