@@ -1,2 +1,0 @@
-Option name=gr_region_width_in_poly_pitches value=4
-Option name=gr_region_height_in_diff_pitches value=4
