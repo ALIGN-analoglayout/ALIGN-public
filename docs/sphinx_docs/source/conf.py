@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'ALIGN'
-copyright = '2020, Kunal and ALIGN team'
-author = 'Kunal and ALIGN team'
+copyright = '2020, ALIGN team'
+author = 'ALIGN team'
 
 # The full version, including alpha/beta/rc tags
 release = '0.9'
