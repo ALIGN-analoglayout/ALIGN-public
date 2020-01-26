@@ -29,6 +29,7 @@ The ALIGN flow includes the following steps:
     - Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
  * LEF:
     - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
+
 ## Outputs:
  * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
  * Design JSON: Final layout which can be viewed using the ALIGN Viewer.
@@ -45,13 +46,13 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
-#### Native Environment Flow
+### Native Environment Flow
 
 You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-public.github.io/) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
-    - gcc>=4.2
-    - Ubuntu>=18.04/ RedHat
+    - gcc >= 4.2
+    - Ubuntu >= 18.04/ RedHat
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
@@ -77,7 +78,7 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
         % pip install --upgrade pip
         % pip install -e .
 
-#### Docker flow
+### Docker flow
 ALIGN also supports push button flow on docker.
  * Requirements
     - Docker-ce > 17.12
@@ -85,7 +86,7 @@ ALIGN also supports push button flow on docker.
 
 ## Usage
 By default, the design directory is set to the examples directory. This can be modified in the Makefile.
-#### Native environment flow
+### Native environment flow
 * Setup your own work directory
 
         % mkdir $ALIGN_WORK_DIR
@@ -102,7 +103,7 @@ By default, the design directory is set to the examples directory. This can be m
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
-#### Docker based run
+### Docker based run
 
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>

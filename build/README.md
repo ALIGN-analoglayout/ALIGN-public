@@ -25,7 +25,6 @@ the top directory of the ALIGN analog system.
 Second is a working directory ALIGN\_WORK\_DIR, which can either be
 the full path to a working directory or a docker volume name.  
 
-
 ## Native Environment Flow
 
 The second option is to invoke a native Linux environment flow without
