@@ -1,10 +1,13 @@
 #!/bin/bash
-## You should use these set of commands from in ALIGN-public directory 
-## Set align home and work directory ( You can use any path for work directory)
+## Use these set of commands from ALIGN-public directory 
+## Set ALIGN_HOME and ALIGN_WORK_DIR directory ( You can use any path for work directory)
+
 setenv ALIGN_HOME $PWD
 setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 
 ## Install Prerequisite
+#-----------------------
+
 #### Install Packages
 sudo yum update && sudo yum install -yq \
     python3 \
@@ -18,21 +21,23 @@ sudo yum update && sudo yum install -yq \
     curl \
     xvfb \
 &&  sudo yum clean
-#### klayout 
+
+#### Install klayout 
 sudo curl -o /klayout-0.26.3-0.x86_64.rpm https://www.klayout.org/downloads/CentOS_7/klayout-0.26.3-0.x86_64.rpm
 sudo yum install -yq /klayout-0.26.3-0.x86_64.rpm
+#** WSL users would need to install Xming for the display to work
 
-#### install lpsolve
+#### Install lpsolve
 git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
-####  install json
+####  Install json
 git clone https://github.com/nlohmann/json.git
-#### install boost
+#### Install boost
 git clone --recursive https://github.com/boostorg/boost.git
 cd $ALIGN_HOME/boost
 ./bootstrap.sh -prefix=$ALIGN_HOME/boost
 ./b2 headers
 
-#### install googletest
+#### Install googletest
 cd $ALIGN_HOME
 git clone https://github.com/google/googletest
 cd googletest/
@@ -42,7 +47,8 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
-## Set prerequisite path 
+## Set prerequisite paths
+#------------------------
 setenv LP_DIR $ALIGN_HOME/lpsolve
 setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
@@ -50,7 +56,9 @@ setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
 setenv VENV $ALIGN_HOME/general
 
 ## install align 
+#---------------
 
+# Install ALIGN python packages
 cd $ALIGN_HOME
 python3 -m venv $VENV
 source $VENV/bin/activate
@@ -64,6 +72,7 @@ cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 
 ## Run first example
+#---------------------
 #mkdir $ALIGN_WORK_DIR
 #cd $ALIGN_WORK_DIR
 #ln -s $ALIGN_HOME/build/Makefile .

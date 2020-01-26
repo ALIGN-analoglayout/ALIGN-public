@@ -1,5 +1,7 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Documentation Status](https://align-public.github.io)](https://align-public.github.io/)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
 ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&M University, and Intel Corporation. 
@@ -44,10 +46,11 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
 #### Native Linux Environment Flow
-You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [Running_your_first_design](docs/Running_your_first_design.pdf) for detailed explanation and common errors during installation.
+You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-public.github.io/) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
     - gcc>=4.2
+    - Ubuntu>=18.04/ RedHat
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
     - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
@@ -80,7 +83,7 @@ ALIGN also supports push button flow on docker.
     - Docker compose > 3.6
 
 ## Usage
-By default, the design directory is set to the examples directory. This can be modfied in the Makefile.
+By default, the design directory is set to the examples directory. This can be modified in the Makefile.
 #### Native environment flow
 * Setup your own work directory
 
