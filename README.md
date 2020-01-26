@@ -45,7 +45,8 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
-#### Native Linux Environment Flow
+#### Native Environment Flow
+
 You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-public.github.io/) for detailed explanation and common errors during installation.
  * Requirements
     - Python > 3.6
