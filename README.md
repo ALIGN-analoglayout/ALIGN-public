@@ -50,7 +50,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
 
 You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-public.github.io/) for detailed explanation and common errors during installation.
  * Requirements
-    - Python > 3.6
+    - Python >= 3.6
     - gcc >= 4.2
     - Ubuntu >= 18.04/ RedHat
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
