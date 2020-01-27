@@ -55,8 +55,8 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
     - Ubuntu >= 18.04/ RedHat
     - [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
     - [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
-    - [JSON]( https://github.com/nlohmann/json.git)>=3.7.3
-    - [Googletest]( https://github.com/google/googletest)>=1.10
+    - [JSON]( https://github.com/nlohmann/json.git) >= 3.7.3
+    - [Googletest]( https://github.com/google/googletest) >= 1.10
     - Skip these steps if you are using [install.sh](install.sh)
 
  * Setting up local environment variables if installations are not in system search path.
