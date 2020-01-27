@@ -198,6 +198,7 @@ jobs:
 
   build-nightly:
     executor: docker-executor
+    parallelism: 10
     steps:
       - setup_remote_docker
 
