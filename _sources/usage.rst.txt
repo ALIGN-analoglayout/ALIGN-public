@@ -17,7 +17,14 @@ Native environment flow
 	ln -s $ALIGN_HOME/build/Makefile
 		
 .. note:: 
-    Run ALIGN using make flow
+    Run your first design on ALIGN
+
+.. code-block:: bash 
+
+	make VENV=$VENV
+
+.. note:: 
+    Run other design examples on ALIGN
 
 .. code-block:: bash 
 
