@@ -18,18 +18,18 @@ The ALIGN flow includes the following steps:
 
 * A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
 * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
-    * Power and Gnd signals (First power signal is used for global power grid)
-    * Clk signal (optional)
-    * Digital blocks (optional)
+ * Power and Gnd signals (First power signal is used for global power grid)
+ * Clk signal (optional)
+ * Digital blocks (optional)
 * Library:(SPICE format)
-    * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
-    * More library elements can be added in the [user_template library](align/config/user_template.sp).
+ * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+ * More library elements can be added in the [user_template library](align/config/user_template.sp).
 * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
-    * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
-    * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
-    * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
+ * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
+ * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
+ * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
 * LEF:
-    - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
+ * A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 
 ## Outputs
 * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
