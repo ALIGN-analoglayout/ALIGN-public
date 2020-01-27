@@ -22,6 +22,7 @@ The ALIGN flow includes the following steps:
   * Power and Gnd signals (First power signal is used for global power grid)
   * Clk signal (optional)
   * Digital blocks (optional)
+
 * Library:(SPICE format)
   * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
   * More library elements can be added in the [user_template library](align/config/user_template.sp).
@@ -104,7 +105,7 @@ By default, the design directory is set to the examples directory. This can be m
         % mkdir $ALIGN_WORK_DIR
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
-        
+      
 * Run ALIGN using make flow
 
         % make VENV=$VENV DESIGN=<design>
