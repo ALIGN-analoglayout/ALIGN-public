@@ -14,7 +14,8 @@ Error due to gcc version
 .. note:: 
     
     C++ version is old. Please update C++ version > 4.2
-    Inside UMN use “module load gcc/8.2.0” 
+    
+    \**Inside UMN use “module load gcc/8.2.0” 
 
 Error due to LD_LIBRARY_PATH prerequisite missing 
 --------------------------------------------------
@@ -50,7 +51,9 @@ Error due to xvfb library used to generate image of layout
 .. code-block:: none 
 
     ERROR :
-    Call to 'gds2png.sh /ALIGN-public/work/telescopic_ota/telescopic_ota_0.gds /ALIGN-public/work/telescopic_ota/telescopic_ota_0.png /ALIGN-public/align/config/image_png.rb' failed:
+    Call to 'gds2png.sh /ALIGN-public/work/telescopic_ota/telescopic_ota_0.gds 
+    /ALIGN-public/work/telescopic_ota/telescopic_ota_0.png
+    /ALIGN-public/align/config/image_png.rb' failed:
 
 .. note:: 
     
