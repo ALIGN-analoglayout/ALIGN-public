@@ -44,11 +44,11 @@ The ALIGN flow includes the following steps:
 ## Getting started
 
 The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
-Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN\_HOME variable, which should point the top directory of the ALIGN analog system.
+Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.
 
 	    % export ALIGN_HOME=<top of ALIGN source area>
 
-The second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
+The second is a working directory ALIGN_WORK_DIR, which can either be the full path to a working directory or a docker volume name.  
 
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
@@ -107,6 +107,7 @@ By default, the design directory is set to the examples directory. This can be m
         % ln -s $ALIGN_HOME/build/Makefile
 
 * Run your first design "telescopic_ota" on ALIGN
+
         % make VENV=$VENV
 
 * Run different design from [examples](examples) on ALIGN
