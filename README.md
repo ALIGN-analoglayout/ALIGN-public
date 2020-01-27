@@ -106,7 +106,7 @@ By default, the design directory is set to the examples directory. This can be m
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
 
-* Run your first design "telescopic_ota" on ALIGN
+* Run your first design "[telescopic_ota](examples/telescopic_ota/)" on ALIGN
 
         % make VENV=$VENV
 
