@@ -353,7 +353,10 @@ workflows:
             - start
       - finish-nightly:
           requires:
-            - build-nightly
+            - build-nightly1
+            - build-nightly2
+            - build-nightly3
+            - build-nightly4
 
 #  full:
 #    jobs:
