@@ -4,6 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://align-public.github.io/)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
+
 ALIGN is an open source automatic layout generator for analog circuits jointly developed under the DARPA IDEA program by the University of Minnesota, Texas A&M University, and Intel Corporation. 
 
 The goal of ALIGN (Analog Layout, Intelligently Generated from Netlists) is to automatically translate an unannotated (or partially annotated) SPICE netlist of an analog circuit to a GDSII layout. The repository also releases a set of analog circuit designs. 
@@ -34,11 +35,13 @@ The ALIGN flow includes the following steps:
   * A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 
 ## Outputs
+
 * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
 * Design JSON: Final layout which can be viewed using the ALIGN Viewer.
 * Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
 
 ## Getting started
+
 The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
 Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN\_HOME variable, which should point the top directory of the ALIGN analog system.
 
@@ -84,15 +87,18 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
         % pip install -e .
 
 ### Docker flow
+
 ALIGN also supports push button flow on docker.
 * Requirements
   * Docker-ce > 17.12
   * Docker compose > 3.6
 
 ## Usage
+
 By default, the design directory is set to the examples directory. This can be modified in the Makefile.
 
 ### Run native environment flow
+
 * Setup your own work directory
 
         % mkdir $ALIGN_WORK_DIR
