@@ -14,26 +14,27 @@ The ALIGN flow includes the following steps:
 * _Primitive cell generation_ works with primitives, i.e., blocks the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
 * _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
 
-## Inputs:
- * A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
- * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
-    - Power and Gnd signals (First power signal is used for global power grid)
-    - Clk signal (optional)
-    - Digital blocks (optional)
- * Library:(SPICE format)
-    - A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
-    - More library elements can be added in the [user_template library](align/config/user_template.sp).
- * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
-    - A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
-    - A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
-    - Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
- * LEF:
+##Inputs
+
+* A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
+* [Setup file](examples/telescopic_ota/telescopic_ota.setup)
+    * Power and Gnd signals (First power signal is used for global power grid)
+    * Clk signal (optional)
+    * Digital blocks (optional)
+* Library:(SPICE format)
+    * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+    * More library elements can be added in the [user_template library](align/config/user_template.sp).
+* PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
+    * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
+    * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
+    * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
+* LEF:
     - A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 
-## Outputs:
- * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
- * Design JSON: Final layout which can be viewed using the ALIGN Viewer.
- * Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
+## Outputs
+* Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
+* Design JSON: Final layout which can be viewed using the ALIGN Viewer.
+* Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
 
 ## Getting started
 The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
@@ -60,7 +61,7 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
     * [Googletest]( https://github.com/google/googletest) >= 1.10
     * Skip these steps if you are using [install.sh](install.sh)
 
- * Setting up local environment variables if installations are not in system search path.
+* Setting up local environment variables if installations are not in system search path.
 
         % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
         % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
@@ -81,7 +82,7 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
 
 ### Docker flow
 ALIGN also supports push button flow on docker.
- * Requirements
+* Requirements
     * Docker-ce > 17.12
     * Docker compose > 3.6
 
