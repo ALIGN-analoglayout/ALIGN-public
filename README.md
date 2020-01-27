@@ -85,12 +85,13 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
 ### Docker flow
 ALIGN also supports push button flow on docker.
 * Requirements
-    * Docker-ce > 17.12
-    * Docker compose > 3.6
+  * Docker-ce > 17.12
+  * Docker compose > 3.6
 
 ## Usage
 By default, the design directory is set to the examples directory. This can be modified in the Makefile.
-### Native environment flow
+
+### Run: Native environment flow
 * Setup your own work directory
 
         % mkdir $ALIGN_WORK_DIR
@@ -107,7 +108,7 @@ By default, the design directory is set to the examples directory. This can be m
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
-### Docker based run
+### Run: Docker based flow
 
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>
