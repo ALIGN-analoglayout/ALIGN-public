@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'ALIGN'
-copyright = '2020, ALIGN team'
+copyright = '2020, ALIGN team' # pylint: disable=redefined-builtin
 author = 'ALIGN team'
 
 # The full version, including alpha/beta/rc tags
