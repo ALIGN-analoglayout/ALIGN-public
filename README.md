@@ -110,7 +110,7 @@ By default, the design directory is set to the examples directory. This can be m
 
         % make VENV=$VENV
 
-* Run different design from [examples](examples) on ALIGN
+* Run different designs from [example](examples) on ALIGN
 
         % make VENV=$VENV DESIGN=<design>
 
