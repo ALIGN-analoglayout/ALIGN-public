@@ -82,8 +82,8 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
 ### Docker flow
 ALIGN also supports push button flow on docker.
  * Requirements
-    - Docker-ce > 17.12
-    - Docker compose > 3.6
+    * Docker-ce > 17.12
+    * Docker compose > 3.6
 
 ## Usage
 By default, the design directory is set to the examples directory. This can be modified in the Makefile.
