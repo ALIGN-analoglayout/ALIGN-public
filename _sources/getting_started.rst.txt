@@ -7,13 +7,13 @@ Two environment variables must be set to run the Makefile in any environment. Th
 
 .. code-block:: bash 
 
-		export ALIGN\_HOME=<top of ALIGN source area>
+		export ALIGN_HOME=<top of ALIGN source area>
 
 The second is a working directory ALIGN\_WORK\_DIR, which can either be the full path to a working directory or a docker volume name.  
 
 .. code-block:: bash 
 
-		% export ALIGN\_WORK\_DIR=<volumeName for docker flow / full work dir path for native flow>
+		% export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
 		% docker volume create <volumeName>
 
@@ -36,7 +36,7 @@ You can use `install.sh <https://github.com/ALIGN-analoglayout/ALIGN-public/blob
 
 .. comment
 	* `Boost <https://github.com/boostorg/boost.git>`_ >= 1.68.0
-	* `Lpsolve <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp\_solve\_5.5.2.5\_source.tar.gz/download>`_ >= 5.5.2.5
+	* `Lpsolve <https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download>`_ >= 5.5.2.5
 	* `JSON <https://github.com/nlohmann/json.git>`_ =3.7.3
 	* `Googletest <https://github.com/google/googletest>`_ =1.10
 

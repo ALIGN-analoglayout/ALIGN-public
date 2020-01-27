@@ -47,11 +47,11 @@
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <p>The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).</p>
 <p>Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> ALIGN<span class="se">\_</span>HOME<span class="o">=</span>&lt;top of ALIGN <span class="nb">source</span> area&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ALIGN_HOME</span><span class="o">=</span>&lt;top of ALIGN <span class="nb">source</span> area&gt;
 </pre></div>
 </div>
 <p>The second is a working directory ALIGN_WORK_DIR, which can either be the full path to a working directory or a docker volume name.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>% <span class="nb">export</span> ALIGN<span class="se">\_</span>WORK<span class="se">\_</span>DIR<span class="o">=</span>&lt;volumeName <span class="k">for</span> docker flow / full work dir path <span class="k">for</span> native flow&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>% <span class="nb">export</span> <span class="nv">ALIGN_WORK_DIR</span><span class="o">=</span>&lt;volumeName <span class="k">for</span> docker flow / full work dir path <span class="k">for</span> native flow&gt;
 
 % docker volume create &lt;volumeName&gt;
 </pre></div>

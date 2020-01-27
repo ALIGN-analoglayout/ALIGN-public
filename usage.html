@@ -69,14 +69,14 @@ ln -s <span class="nv">$ALIGN_HOME</span>/build/Makefile
 <p>Explore different features of ALIGN using python arguments</p>
 </div>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span> <span class="nv">$VENV</span>/bin/activate
-schematic2layout.py &lt;input<span class="se">\_</span>directory&gt; <span class="se">\-</span>f &lt;spice file&gt; <span class="se">\-</span>s &lt;design<span class="se">\_</span>name&gt; <span class="se">\-</span>p &lt;pdk path&gt; <span class="se">\-</span>flat &lt;<span class="m">0</span>/1&gt; <span class="se">\-</span>c <span class="o">(</span>to check drc<span class="o">)</span> <span class="se">\-</span>g <span class="o">(</span>to generate image of layout<span class="o">)</span>
-e.g., &gt; schematic2layout.py <span class="nv">$ALIGN</span><span class="se">\_</span>HOME/examples/buffer/ <span class="se">\-</span>f <span class="nv">$ALIGN</span><span class="se">\_</span>HOME/examples/buffer/buffer.sp <span class="se">\-</span>s buffer <span class="se">\-</span>p <span class="nv">$ALIGN</span><span class="se">\_</span>HOME/pdks/FinFET14nm<span class="se">\_</span>Mock<span class="se">\_</span>PDK <span class="se">\-</span>flat <span class="m">0</span> <span class="se">\-</span>c <span class="se">\-</span>g
+schematic2layout.py &lt;input_directory&gt; -f &lt;spice file&gt; -s &lt;design_name&gt; -p &lt;pdk path&gt; -flat &lt;<span class="m">0</span>/1&gt; -c <span class="o">(</span>to check drc<span class="o">)</span> -g <span class="o">(</span>to generate image of layout<span class="o">)</span>
+e.g., &gt; schematic2layout.py <span class="nv">$ALIGN_HOME</span>/examples/buffer/ -f <span class="nv">$ALIGN_HOME</span>/examples/buffer/buffer.sp -s buffer -p <span class="nv">$ALIGN_HOME</span>/pdks/FinFET14nm_Mock_PDK -flat <span class="m">0</span> -c -g
 </pre></div>
 </div>
 </div>
 <div class="section" id="docker-based-run">
 <h2>Docker based run<a class="headerlink" href="#docker-based-run" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nv">$ALIGN</span><span class="se">\_</span>HOME/build
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nv">$ALIGN_HOME</span>/build
 make docker <span class="nv">DESIGN</span><span class="o">=</span>&lt;design&gt;
 </pre></div>
 </div>
