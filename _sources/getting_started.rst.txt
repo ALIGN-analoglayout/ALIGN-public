@@ -26,8 +26,8 @@ You can use `install.sh <https://github.com/ALIGN-analoglayout/ALIGN-public/blob
     Requirements
 
 * Python > 3.6
-* gcc>=4.2
-* Ubuntu>=18.04 / RedHat
+* gcc >= 4.2
+* Ubuntu >= 18.04 / RedHat >= RHEL 7
 
 .. code-block:: bash 
     
