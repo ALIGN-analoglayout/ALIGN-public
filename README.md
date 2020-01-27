@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public.svg?style=svg)](https://circleci.com/gh/ALIGN-analoglayout/ALIGN-public)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2aeb84c0f14949909bcd342b19721d01)](https://app.codacy.com/app/ALIGN-analoglayout/ALIGN-public?utm_source=github.com&utm_medium=referral&utm_content=ALIGN-analoglayout/ALIGN-public&utm_campaign=Badge_Grade_Settings)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://align-public.github.io/)
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](https://align-analoglayout.github.io/ALIGN-public/)
 
 # ALIGN: Analog Layout, Intelligently Generated from Netlists
 
@@ -15,7 +15,7 @@ The ALIGN flow includes the following steps:
 * _Primitive cell generation_ works with primitives, i.e., blocks the lowest level of design hierarchy, and generates their layouts. Primitives typically contain a small number of transistor structures (each of which may be implemented using multiple fins and/or fingers). A parameterized instance of a primitive is automatically translated to a GDSII layout in this step.
 * _Placement and routing_ performs block assembly of the hierarchical blocks in the netlist and routes connections between these blocks, while obeying a set of analog layout constraints. At the end of this step, the translation of the input SPICE netlist to a GDSII layout is complete. 
 
-##Inputs
+## Inputs
 
 * A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
 * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
@@ -55,7 +55,7 @@ The second is a working directory ALIGN\_WORK\_DIR, which can either be the full
 
 ### Native Environment Flow
 
-You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-public.github.io/) for detailed explanation and common errors during installation.
+You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation.
 
 * Requirements
   * Python >= 3.6
@@ -106,7 +106,10 @@ By default, the design directory is set to the examples directory. This can be m
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
 
-* Run ALIGN using make flow
+* Run your first design "telescopic_ota" on ALIGN
+        % make VENV=$VENV
+
+* Run different design from [examples](examples) on ALIGN
 
         % make VENV=$VENV DESIGN=<design>
 
