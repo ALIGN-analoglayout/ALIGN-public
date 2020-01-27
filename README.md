@@ -18,20 +18,20 @@ The ALIGN flow includes the following steps:
 
 * A [SPICE netlist](examples/telescopic_ota/telescopic_ota.sp) of the analog circuit
 * [Setup file](examples/telescopic_ota/telescopic_ota.setup)
- * Power and Gnd signals (First power signal is used for global power grid)
- * Clk signal (optional)
- * Digital blocks (optional)
+  * Power and Gnd signals (First power signal is used for global power grid)
+  * Clk signal (optional)
+  * Digital blocks (optional)
 * Library:(SPICE format)
- * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
- * More library elements can be added in the [user_template library](align/config/user_template.sp).
+  * A basic built-in [template library](align/config/basic_template.sp) is provided, which is used to identify hierachies in the design.
+  * More library elements can be added in the [user_template library](align/config/user_template.sp).
 
 * PDK: Abstracted [design rules](pdks/FinFET14nm_Mock_PDK)
- * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
- * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
- * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
+  * A mock FinFET 14nm PDK [rules file](pdks/FinFET14nm_Mock_PDK/layers.json) is provided, which is used by the primitive cell generator and the place and route engine.
+  * A new PDK can be represented using a JSON-format design rule abstraction, similar to mock-PDK design rules file provided.
+  * Primitive cells(NMOS/PMOS/[Resistor](pdks/FinFET14nm_Mock_PDK/fabric_Res.py)/[Capacitor](pdks/FinFET14nm_Mock_PDK/fabric_Cap.py)) must be redefined for any new PDK.
 
 * LEF:
- * A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
+  * A list of parameterized cells supported by cell generator is stored in file [param_lef](align/config/param_lef).
 
 ## Outputs
 * Layout GDS: Final layout of the design. The output GDS can be imported into any GDSII viewer.
@@ -72,7 +72,8 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
         % export VENV= <python virtual environment path, e.g., ./align_venv>
         % Skip these steps if you are using [install.sh](install.sh)
- * Installation
+ 
+* Installation
 
         % cd PlaceRouteHierFlow
         % make
@@ -91,7 +92,7 @@ ALIGN also supports push button flow on docker.
 ## Usage
 By default, the design directory is set to the examples directory. This can be modified in the Makefile.
 
-### Run: Native environment flow
+### Run native environment flow
 * Setup your own work directory
 
         % mkdir $ALIGN_WORK_DIR
@@ -108,16 +109,18 @@ By default, the design directory is set to the examples directory. This can be m
         % schematic2layout.py <input_directory> -f <spice file> -s <design_name> -p <pdk path> -flat <0/1> -c (to check drc) -g (to generate image of layout)
         % e.g., > schematic2layout.py $ALIGN_HOME/examples/buffer/ -f $ALIGN_HOME/examples/buffer/buffer.sp -s buffer -p $ALIGN_HOME/pdks/FinFET14nm_Mock_PDK -flat 0 -c -g
 
-### Run: Docker based flow
+### Run Docker based flow
 
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>
     
 ## Design database:
+
 * [examples](examples): Contains example circuits with netlists running on circleci
 * [CircuitsDatabase](CircuitsDatabase): Contains benchmark circuits
  
 ## Viewer :
+
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
 * [KLayout](https://github.com/KLayout/klayout): GDS viewer (WSL users would need to install xming for display to work)
 * [Viewer](Viewer): Layout viewer to view output JSON file
