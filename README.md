@@ -76,7 +76,7 @@ You can use '[source install.sh](install.sh)' (for bash shell) or '[source insta
         % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
         % export VENV= <python virtual environment path, e.g., ./align_venv>
         % Skip these steps if you are using [install.sh](install.sh)
- 
+
 * Installation
 
         % cd PlaceRouteHierFlow
@@ -105,7 +105,7 @@ By default, the design directory is set to the examples directory. This can be m
         % mkdir $ALIGN_WORK_DIR
         % cd $ALIGN_WORK_DIR
         % ln -s $ALIGN_HOME/build/Makefile
-      
+
 * Run ALIGN using make flow
 
         % make VENV=$VENV DESIGN=<design>
@@ -120,12 +120,12 @@ By default, the design directory is set to the examples directory. This can be m
 
         % cd $ALIGN_HOME/build
         % make docker DESIGN=<design>
-    
+
 ## Design database:
 
 * [examples](examples): Contains example circuits with netlists running on circleci
 * [CircuitsDatabase](CircuitsDatabase): Contains benchmark circuits
- 
+
 ## Viewer :
 
 The final output GDS can be viewed using by importing in virtuoso or any GDS viewer
