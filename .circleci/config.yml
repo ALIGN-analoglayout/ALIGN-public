@@ -207,11 +207,19 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-      - run: |
-          docker run --name align_container3 align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'not s and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
+  run-nightly:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
 
       - run: |
-          docker run --name align_container4 align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 's and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml"
+          docker run --name align_container3 align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'not C and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
+
+      - run: |
+          docker run --name align_container4 align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'C and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml"
 
       - run: |
           docker cp align_container3:test-reports .
@@ -224,7 +232,7 @@ jobs:
           paths:
             - test-reports/align-nightly
 
-  build-nightly1:
+  run-nightly1:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -242,9 +250,9 @@ jobs:
           docker run --name align_container2 align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'San' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2.xml"
 
       - run: |
-          docker cp align_container1:test-reports .
+          docker cp align_container:test-reports .
           docker rm align_container
-          docker cp align_container2:test-reports .
+          docker cp align_container:test-reports .
           docker rm align_container
 
       - persist_to_workspace:
@@ -305,9 +313,12 @@ workflows:
       - build-nightly:
           requires:
             - start
-      - build-nightly1:
+      - run-nightly:
           requires:
-            - start
+            - build-nightly
+      - run-nightly1:
+          requires:
+            - build-nightly
       - finish-nightly:
           requires:
             - build-nightly
