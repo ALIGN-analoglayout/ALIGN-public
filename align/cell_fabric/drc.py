@@ -24,6 +24,7 @@ class DesignRuleCheck():
                 continue
             if self.canvas.rd.layers[layer] == '*':
                 self._check_via_rules(layer, vv)
+                self._check_via_enclosure_rules(layer, vv)
             else:
                 self._check_metal_rules(layer, vv)
         for error in self.errors:
@@ -34,6 +35,38 @@ class DesignRuleCheck():
         '''TODO : Add via pattern checking rules '''
         space = self.canvas.pdk[layer]['SpaceX']
         return space
+
+    def _check_via_enclosure_rules(self, layer, vv):
+        '''Check via enclosures.'''
+        v = self.canvas.pdk[layer]
+        [ly_l,ly_u] = v['Stack']
+        if ly_l is not None:
+            ml_dir = self.canvas.pdk[ly_l]['Direction'].upper()
+            assert ml_dir in ['V','H']
+        if ly_u is not None:
+            mu_dir = self.canvas.pdk[ly_u]['Direction'].upper()
+            assert mu_dir in ['V','H']
+
+        def check_single_metal( r, ly, metal_dir, enclosure_value):
+            o = 1 if metal_dir == 'V' else 0
+            metal_r = self._find_rect_covering_via( r, ly, metal_dir)
+            if metal_r[o+0] > r.rect[o+0] - enclosure_value or metal_r[o+2] < r.rect[o+2] + enclosure_value:
+                self.errors.append( f"ENCLOSURE: {ly} {metal_r} does not sufficiently surround {layer} {r.rect}, {enclosure_value}")
+
+        for _, sl in vv.items():
+            for r in sl.rects:
+                if ly_l is not None: check_single_metal( r, ly_l, ml_dir, v['VencA_L'])
+                if ly_u is not None: check_single_metal( r, ly_u, mu_dir, v['VencA_H'])
+
+    def _find_rect_covering_via( self, r, ly, metal_dir):
+        cx2 = r.rect[0]+r.rect[2]
+        cy2 = r.rect[1]+r.rect[3]
+        c2a,c2p,o = (cx2,cy2,1) if metal_dir == 'V' else (cy2,cx2,0)
+        sl = self.canvas.rd.store_scan_lines[ly][c2a]
+        for metal_r in sl.rects:
+            if metal_r.rect[o+0] <= c2p//2 <= metal_r.rect[o+2]:
+                return metal_r.rect
+        assert False
 
     def _check_metal_rules(self, layer, vv):
         '''Check metal min-length / min-spacing rules'''

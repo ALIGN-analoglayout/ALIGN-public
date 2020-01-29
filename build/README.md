@@ -25,11 +25,30 @@ the top directory of the ALIGN analog system.
 Second is a working directory ALIGN\_WORK\_DIR, which can either be
 the full path to a working directory or a docker volume name.  
 
+## Native Environment Flow
+
+The second option is to invoke a native Linux environment flow without
+using containers, where the same Makefile can be used to issue native
+Linux build commands.  The downside to a native environment is that
+all software requirements must be built into the native environment,
+including handling any version conflicts, and when a new component is
+needed, it and its environment need to be integrated before any
+testing can start. The Makefile expects the Python general/
+environment to be in the working directory.
+
+Here are the sequence of commands needed to invoke make in a native
+environment.
+	
+		% export ALIGN_WORK_DIR=<your Linux working area>
+		% cd $ALIGN_WORK_DIR
+		% ln -s $ALIGN_HOME/build/Makefile .
+		% make DESIGN=<design>
+
+## Docker based flow
 To setup for using a Docker volume in a container-based flow:
 
 		% docker volume create <volumeName>
 		% export ALIGN_WORK_DIR=<volumeName>
-
 To setup for using a working directory in a container-based flow (In WSL,
 this directory must be the full path to a Windows shared directory):
 
@@ -72,24 +91,6 @@ or flush all images and restart:
 
 		% make docker-fulldown
 		
-## Native Environment Flow
-
-The second option is to invoke a native Linux environment flow without
-using containers, where the same Makefile can be used to issue native
-Linux build commands.  The downside to a native environment is that
-all software requirements must be built into the native environment,
-including handling any version conflicts, and when a new component is
-needed, it and its environment need to be integrated before any
-testing can start. The Makefile expects the Python general/
-environment to be in the working directory.
-
-Here are the sequence of commands needed to invoke make in a native
-environment.
-	
-		% export ALIGN_WORK_DIR=<your Linux working area>
-		% cd $ALIGN_WORK_DIR
-		% ln -s $ALIGN_HOME/build/Makefile .
-		% make DESIGN=<design>
 		
 ### A Monolithic Docker Container for the ALIGN flow
 We have provided a Dockerfile in build/Dockerfile.native that builds
