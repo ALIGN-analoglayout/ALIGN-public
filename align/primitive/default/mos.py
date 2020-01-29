@@ -54,7 +54,7 @@ class MOSGenerator(DefaultCanvas):
 
         stoppoint = gateDummy*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Offset']-self.pdk['Pc']['PcExt']-self.pdk['Poly']['Width']//2
         self.pc = self.addGen( Wire( 'pc', 'Pc', 'h',
-                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pc']['PcWidth'], offset=self.pdk['M2']['Pitch']),
+                                         clg=UncoloredCenterLineGrid( pitch=self.pdk['M2']['Pitch'], width=self.pdk['Pc']['PcWidth'], offset=self.pdk['M2']['Pitch']),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.nselect = self.addGen( Region( 'nselect', 'Nselect',
@@ -111,14 +111,13 @@ class MOSGenerator(DefaultCanvas):
 
         def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
-            for j in range(((self.finDummy+3)//2), self.v0.h_clg.n):
+            for j in range(((self.finDummy+3)//2), self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
 
         # Draw FEOL Layers
 
-        self.addWire( self.active, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.pc, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
         self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
 
         for i in range(self.gatesPerUnitCell):
@@ -126,35 +125,47 @@ class MOSGenerator(DefaultCanvas):
 
         # Source, Drain, Gate Connections
 
-        grid_y0 = y*self.m2PerUnitCell + self.finDummy//2-1
-        grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2
+        #grid_y0 = y*self.m2PerUnitCell + self.finDummy//2-1
+        grid_y0 = y*self.m2PerUnitCell + 1
+        grid_y1 = (y+1)*self.m2PerUnitCell-5
+        #grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2-1
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
-        self.addWire( self.m1, None, None, gate_x , (grid_y0, -1), (grid_y1, 1))
-        self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
+        self.addWire( self.m1, None, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
+        self.addWire( self.pc, None, None, grid_y1+1, (x,1), (x+1,-1))
+        #self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
+        self.addVia( self.va, f'{fullname}:G', None, gate_x, grid_y1+2)
         self._xpins[name]['G'].append(gate_x)
         # Connect Source & Drain
         if reflect:
             _connect_diffusion(gate_x + 1, 'S') #S
-            _connect_diffusion(gate_x - 1, 'D') #D
+            _connect_diffusion(gate_x - 1, 'S') #S
+            _connect_diffusion(gate_x, 'D') #D 
         else:
             _connect_diffusion(gate_x - 1, 'S') #S
-            _connect_diffusion(gate_x + 1, 'D') #D
+            _connect_diffusion(gate_x + 1, 'S') #S 
+            _connect_diffusion(gate_x, 'D') #D
 
     def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
+        grid_y1 = (y+1)*self.m2PerUnitCell-5
+        track1 = 0
         for track, (net, conn) in enumerate(connections.items(), start=1):
             contacts = {track for inst, pins in self._xpins.items()
                               for pin, m1tracks in pins.items()
                               for track in m1tracks if (inst, pin) in conn}
             for j in range(self.minvias):
-                current_track = y * self.m2PerUnitCell + len(connections) * j + track
+                if net.startswith('G'):
+                    current_track = grid_y1 + 2 + track1
+                    track1 = track1+1
+                else:
+                    current_track = y * self.m2PerUnitCell + len(connections) * j + track
                 self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
                 self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
-                direction = 1 if current_track > center_track else -1
-                for i in contacts:
-                    self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
+                #direction = 1 if current_track > center_track else -1
+                #for i in contacts:
+                #    self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
 
     def _connectNets(self, x_cells, y_cells): 
