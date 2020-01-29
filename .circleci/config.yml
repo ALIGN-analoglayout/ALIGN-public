@@ -374,13 +374,13 @@ workflows:
             - start
 
   nightly:
-      #    triggers:
-      #      - schedule:
-      #          cron: "0 8 * * *"
-      #          filters:
-      #            branches:
-      #              only:
-      #                - master
+    triggers:
+      - schedule:
+          cron: "0 8 * * *"
+          filters:
+            branches:
+              only:
+                - master
 
     jobs:
       - start
@@ -399,47 +399,47 @@ workflows:
             - build-nightly2
             - build-nightly3
 
-#  full_after_nightly:
-#         triggers:
-#           - schedule:
-#               cron: "0 11 * * *"
-#               filters:
-#                 branches:
-#                   only:
-#                     - master
-#    jobs:
-#      - start
-#      - build-PlaceRouteHierFlow:
-#          requires:
-#            - start
-#      - build-cktgen:
-#          requires:
-#            - start
-#      - build-align:
-#          requires:
-#            - start
-#      - finish:
-#          requires:
-#            - build-align
-#            - build-cktgen
-#            - build-PlaceRouteHierFlow
+  full_after_nightly:
+    triggers:
+      - schedule:
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - start
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start
+      - build-cktgen:
+          requires:
+            - start
+      - build-align:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build-align
+            - build-cktgen
+            - build-PlaceRouteHierFlow
 
 
-#  full:
-#    jobs:
-#      - start
-#      - build-PlaceRouteHierFlow:
-#          requires:
-#            - start
-#      - build-cktgen:
-#          requires:
-#            - start
-#      - build-align:
-#          requires:
-#            - start
-#      - finish:
-#          requires:
-#            - build-align
-#            - build-cktgen
-#            - build-PlaceRouteHierFlow
+  full:
+    jobs:
+      - start
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start
+      - build-cktgen:
+          requires:
+            - start
+      - build-align:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build-align
+            - build-cktgen
+            - build-PlaceRouteHierFlow
 
