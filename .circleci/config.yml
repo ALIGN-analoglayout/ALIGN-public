@@ -301,10 +301,10 @@ jobs:
           docker cp align_container:test-reports .
           docker rm align_container
       
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_13.xml"
-          docker cp align_container:test-reports .
-          docker rm align_container
+          #- run: |
+          #- rudocker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_13.xml"
+          #- rudocker cp align_container:test-reports .
+          #- rudocker rm align_container
 
       - persist_to_workspace:
           root: /work/workspace
@@ -323,7 +323,7 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.base .
 
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'not single_SAR and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'not SAR_ADC_6b_2GSPS not single_SAR and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
 
       - run: |
           docker cp align_container:test-reports .
