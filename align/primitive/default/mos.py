@@ -132,7 +132,7 @@ class MOSGenerator(DefaultCanvas):
         gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
-        self.addWire( self.pc, None, None, grid_y1+2, (x,1), (x+1,-1))
+        self.addWire( self.pc, None, None, grid_y1+1, (x,1), (x+1,-1))
         #self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
         self.addVia( self.va, f'{fullname}:G', None, gate_x, grid_y1+2)
         self._xpins[name]['G'].append(gate_x)
