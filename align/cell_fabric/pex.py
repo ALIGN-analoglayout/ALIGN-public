@@ -1,5 +1,6 @@
 import collections
 import math
+import re
 
 class ParasiticExtraction():
     def __init__(self, canvas):
@@ -163,6 +164,27 @@ class ParasiticExtraction():
         self.components.append( (self.resistor(), t0, tm, R/2))
         self.components.append( (self.resistor(), tm, t1, R/2))
         self.components.append( (self.capacitor(), tm, 0, C))
+
+    def getSummaryCaps( self):
+        p = re.compile( '^(\S+)_M(\d)_(|_)(\d+)_(|_)(\d+)$')
+
+        tbl = {}
+
+        for tup in self.components:
+            if tup[0][0] == 'c':
+                (nm, t0, t1, v) = tup
+                m = p.match( t0)
+                if m:
+                    nm = m.groups()[0]
+                    if nm not in tbl:
+                        tbl[nm] = 0.0
+                    tbl[nm] += v
+            elif tup[0][0] == 'r':
+                pass
+            else:
+                assert False
+
+        return tbl
 
     def writePex(self, fp):
         for tup in self.components:

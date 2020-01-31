@@ -49,8 +49,19 @@ if __name__ == "__main__":
     cnv.bbox = transformation.Rect( *s(d['bbox']))
     cnv.terminals = d['terminals']
 
-    cnv.gen_data(run_pex=False)
-    
+    cnv.gen_data(run_pex=True)
+
+    tbl = cnv.pex.getSummaryCaps()
+    def diffs( n0, n1):
+        a, b = tbl[n0], tbl[n1]
+        s = (a+b)/2
+        return f"{n0},{n1}: {a:.2f}f, {b:.2f}f, {100*(a/s-1):.1f}%, {100*(b/s-1):.1f}%"
+
+    print( diffs( 'vin', 'vip'))
+    print( diffs( 'vin_d', 'vip_d'))
+    print( diffs( 'vin_o', 'vip_o'))
+    print( diffs( 'von', 'vop'))
+
     if False:
         assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
         assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
