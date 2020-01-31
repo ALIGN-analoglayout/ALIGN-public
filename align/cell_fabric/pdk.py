@@ -49,9 +49,11 @@ class Pdk(object):
         return self
 
     @staticmethod
-    def _check(parameters, **kwargs):
+    def _check(parameters, optional_parameters, **kwargs):
         assert all( x in kwargs for x in parameters), f"Entry {kwargs} missing one or more of {parameters}"
-        assert all( x in parameters for x in kwargs.keys()), f"Entry {kwargs} has one or more spurious entries (Needs only {parameters})"
+        
+
+        assert all( (x in parameters) or (x in optional_parameters) for x in kwargs.keys()), f"Entry {kwargs} has one or more spurious entries (Needs only {parameters})"
 
     def _add(self, parameters, **kwargs):
         # Guarantee one is to one mapping between parameters & kwargs
@@ -59,6 +61,7 @@ class Pdk(object):
         self.pdk[layername] = {key: None if value == 'NA' else value for key, value in kwargs.items()}
 
     def addMetal(self, **kwargs):
+        optional_params = ['AdjacentAttacker']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',
@@ -73,7 +76,7 @@ class Pdk(object):
                   'UnitC',
                   'UnitCC',
                   'UnitR']
-        self._check(params, **kwargs)
+        self._check(params, optional_params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions must be integers or None. Pitch & Width must be even.
         assert all(all(isinstance(y, int) for y in kwargs[x] if y is not None) \
@@ -102,7 +105,7 @@ class Pdk(object):
         # 2. Cast direction must be lowercase & ensure it is either v or h
         kwargs['Direction'] = kwargs['Direction'].lower()
         assert kwargs['Direction'] in ('v', 'h'), f"Invalid Direction {kwargs['Direction']} in {kwargs}"
-        self._add(params, **kwargs)
+        self._add(params + optional_params, **kwargs)
 
     def addVia(self, **kwargs):
         params = ['Layer',
@@ -120,7 +123,7 @@ class Pdk(object):
                   'MinNo',
                   #'DesignRules',
                   'R']
-        self._check(params, **kwargs)
+        self._check(params, [], **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
         assert all(isinstance(kwargs[x], int) for x in params[4:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-(cd Intel; python generate_comparator_v2.py)
+(cd Intel; python -m intel_p1222p2.generate_comparator)
 
 docker run --mount source=comparatorInputVol,target=/INPUT --name sam ubuntu
 docker cp Intel/__json sam:INPUT
