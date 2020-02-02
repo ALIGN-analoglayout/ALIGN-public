@@ -1,14 +1,15 @@
 import pathlib
 
 from .compiler import generate_hierarchy
-from .cell_fabric import generate_primitive
+from .primitive import generate_primitive
 from .pnr import generate_pnr
 from .gdsconv.json2gds import convert_GDSjson_GDS
+from .utils.gds2png import generate_png
 
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False):
 
     if log_level:
         logging.getLogger().setLevel(logging.getLevelName(log_level))
@@ -71,11 +72,14 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
+            print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
             if check:
                 if filemap['errors'] > 0:
                     (working_dir / filemap['errfile'].name).write_text(filemap['errfile'].read_text())
             if extract:
                 (working_dir / filemap['cir'].name).write_text(filemap['cir'].read_text())
-
+            # Generate PNG
+            if generate:
+                generate_png(working_dir, variant)
     return results

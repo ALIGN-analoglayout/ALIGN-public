@@ -5,7 +5,7 @@ from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .write_verilog_lef import WriteConst,FindArray,WriteCap,check_common_centroid
+from .write_verilog_lef import WriteConst, FindArray, WriteCap, check_common_centroid, CopyConstFile
 from .read_lef import read_lef
 
 import logging
@@ -124,9 +124,10 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     inoutpin.append(key)
             if members["ports"]:
                 logger.debug(f'Found module ports kk: {members["ports"]}')
-                floating_ports = list(set(inoutpin) - set(members["ports"]))
+                floating_ports = list(set(inoutpin) - set(members["ports"]) - set(design_setup['POWER']) -set(design_setup['GND']))
                 if len(floating_ports)> 0:
-                    logger.warning(f"floating port found: {floating_ports}")
+                    logger.error(f"floating ports found: {name} {floating_ports}")
+                    raise SystemExit('Please remove floating ports')
         else:
             inoutpin = members["ports"]
 
@@ -144,16 +145,17 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                     primitives, unit_size_mos, unit_size_cap)
                 block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
-                if block_name in primitives:
-                    assert block_args == primitives[block_name]
-                else:
-                    primitives[block_name] = block_args
                 # Only unit caps are generated
-                if 'Cap' in block_name:
+                if  block_name.lower().startswith('cap'):
                     graph.nodes[node]['inst_type'] = block_args['primitive']
                     block_args['primitive']=block_name
                 else:
                     graph.nodes[node]['inst_type'] = block_name
+
+                if block_name in primitives:
+                    assert block_args == primitives[block_name]
+                else:
+                    primitives[block_name] = block_args
             else:
                 logger.info(f"No physical information found for: {name}")
 
@@ -167,9 +169,10 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
         if name not in  ALL_LEF:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
-            const_file = (result_dir / (name + '.const'))
             logger.debug(f"call array finder for block: {name}")
             all_array=FindArray(graph, input_dir, name )
+            logger.debug(f"Copy const file for: {name}")
+            const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
             WriteCap(graph, result_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
@@ -178,7 +181,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
-                WriteConst(graph, input_dir, name, inoutpin, result_dir,stop_points)
+                WriteConst(graph, result_dir, name, inoutpin, stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)
     if len(POWER_PINS)>0:

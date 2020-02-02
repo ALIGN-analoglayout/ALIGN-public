@@ -91,7 +91,13 @@
       { layer: "metal4", master: "M4" },
       { layer: "metal5", master: "M5" },
       { layer: "metal6", master: "M6" },
-      { layer: "boundary", master: "diearea" }
+      { layer: "boundary", master: "diearea" },
+      { layer: "diffcon", master: "Diffcon" },
+      { layer: "polycon", master: "Polycon" },
+      { layer: "poly", master: "Poly" },
+      { layer: "tcn", master: "Diffcon" },
+      { layer: "gcn", master: "Polycon" },
+
     ];
 
     var metalStack = [
@@ -124,7 +130,11 @@
       { layer: "GCUT", tag: "CUT", color: "purple" },
       { layer: "cellarea", tag: "C", color: colorbrewer.Reds[3][1] },
       { layer: "diearea", tag: "D", color: colorbrewer.Greens[3][1] },
-      { layer: "nwell", tag: "NW", color: colorbrewer.Greens[3][1] }
+      { layer: "nwell", tag: "NW", color: colorbrewer.Greens[3][1] },
+      { layer: "basepitchid", tag: "BPID", color: "yellow" },
+      { layer: "devflavn1id", tag: "DFNID", color: "yellow" },
+      { layer: "devflavp1id", tag: "DFPID", color: "yellow" },
+      { layer: "devtype1id", tag: "DTID", color: "yellow" }
     ];
 
     function color(d) {
@@ -448,7 +458,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gs.append("title").text(d => `${d.netName},${d.layer}`);
+      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
 
       /*========================*/
 
@@ -484,7 +494,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gt.append("title").text(d => `${d.netName},${d.layer}`);
+      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
     }
   }
 </script>

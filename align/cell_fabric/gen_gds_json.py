@@ -66,11 +66,14 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   if exclude_pattern != '':
     pat = re.compile( exclude_pattern)
 
+  def exclude_based_on_name( nm):
+    return pat and nm is not None and pat.match( nm)
+
   # non-vias
   for obj in data['terminals']:
       k = obj['layer']
       if k in via_gen_tbl: continue
-      if pat and pat.match( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue
 
       strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
                         "datatype" : j[k]['GdsDatatype']['Draw'],
@@ -88,7 +91,7 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   for obj in data['terminals']:
       k = obj['layer']
       if k not in via_gen_tbl: continue
-      if pat and pat.match( obj['netName']): continue
+      if exclude_based_on_name( obj['netName']): continue
 
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
@@ -101,9 +104,5 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
 
   return top
 
-def translate( macro_name, exclude_pattern, pdkfile, pinSwitch, fp, ofile, via_gen_tbl=None, timestamp=None):
-
-  if via_gen_tbl is None:
-    via_gen_tbl = {}
-
-  json.dump(translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, json.load(fp), via_gen_tbl, timestamp), ofile, indent=4)
+def translate( macro_name, exclude_pattern, pinSwitch, fp, ofile, timestamp=None, p=None):
+  json.dump(translate_data( macro_name, exclude_pattern, p.layerfile, pinSwitch, json.load(fp), p.get_via_table(), timestamp), ofile, indent=4)

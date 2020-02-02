@@ -1005,15 +1005,14 @@ XI18 VDD VSS VCTL0<0> VCTLIN<0> VCN VCP / SwitchCap_1X
 + RTUNE<4> RTUNE<3> RTUNE<2> RTUNE<1> RTUNE<0> VSS
 *.PININFO R2CAP:I RTUNE<7>:I RTUNE<6>:I RTUNE<5>:I RTUNE<4>:I RTUNE<3>:I 
 *.PININFO RTUNE<2>:I RTUNE<1>:I RTUNE<0>:I VSS:B
-XR12 VSS VSS rppolys l=LM w=WH m=1
-XR7 RTUNE<7> RTUNE<6> rppolys l=LL w=WG m=1
-XR6 RTUNE<6> RTUNE<5> rppolys l=LK w=WG m=1
-XR5 RTUNE<5> RTUNE<4> rppolys l=LJ w=WF m=1
-XR4 RTUNE<4> RTUNE<3> rppolys l=LI w=WF m=1
-XR3 RTUNE<3> RTUNE<2> rppolys l=LJ w=WF m=1
-XR2 RTUNE<2> RTUNE<1> rppolys l=LK w=WG m=1
-XR1 RTUNE<1> RTUNE<0> rppolys l=LL w=WG m=1
-XR0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
+R7 RTUNE<7> RTUNE<6> rppolys l=LL w=WG m=1
+R6 RTUNE<6> RTUNE<5> rppolys l=LK w=WG m=1
+R5 RTUNE<5> RTUNE<4> rppolys l=LJ w=WF m=1
+R4 RTUNE<4> RTUNE<3> rppolys l=LI w=WF m=1
+R3 RTUNE<3> RTUNE<2> rppolys l=LJ w=WF m=1
+R2 RTUNE<2> RTUNE<1> rppolys l=LK w=WG m=1
+R1 RTUNE<1> RTUNE<0> rppolys l=LL w=WG m=1
+R0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
 .ENDS
 
 ************************************************************************
@@ -1026,15 +1025,14 @@ XR0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
 + RTUNE<5> RTUNE<4> RTUNE<3> RTUNE<2> RTUNE<1> RTUNE<0> VSS
 *.PININFO R2CAP:I RTUNE<7>:I RTUNE<6>:I RTUNE<5>:I RTUNE<4>:I RTUNE<3>:I 
 *.PININFO RTUNE<2>:I RTUNE<1>:I RTUNE<0>:I VSS:B
-XR12 VSS VSS rppolys l=LM w=WH m=1
-XR7 RTUNE<7> RTUNE<6> rppolys l=LL w=WG m=1
-XR6 RTUNE<6> RTUNE<5> rppolys l=LK w=WG m=1
-XR5 RTUNE<5> RTUNE<4> rppolys l=LJ w=WF m=1
-XR4 RTUNE<4> RTUNE<3> rppolys l=LI w=WF m=1
-XR3 RTUNE<3> RTUNE<2> rppolys l=LJ w=WF m=1
-XR2 RTUNE<2> RTUNE<1> rppolys l=LK w=WG m=1
-XR1 RTUNE<1> RTUNE<0> rppolys l=LL w=WG m=1
-XR0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
+R7 RTUNE<7> RTUNE<6> rppolys l=LL w=WG m=1
+R6 RTUNE<6> RTUNE<5> rppolys l=LK w=WG m=1
+R5 RTUNE<5> RTUNE<4> rppolys l=LJ w=WF m=1
+R4 RTUNE<4> RTUNE<3> rppolys l=LI w=WF m=1
+R3 RTUNE<3> RTUNE<2> rppolys l=LJ w=WF m=1
+R2 RTUNE<2> RTUNE<1> rppolys l=LK w=WG m=1
+R1 RTUNE<1> RTUNE<0> rppolys l=LL w=WG m=1
+R0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
 .ENDS
 
 ************************************************************************
@@ -1059,7 +1057,7 @@ XR0 RTUNE<0> R2CAP rppolys l=LN w=WH m=1
 XI2 VDLPF_N VDLPF_P VCTL0<8> VCTL0<7> VCTL0<6> VCTL0<5> VCTL0<4> VCTL0<3> 
 + VCTL0<2> VCTL0<1> VCTL0<0> VCTLIN<8> VCTLIN<7> VCTLIN<6> VCTLIN<5> VCTLIN<4> 
 + VCTLIN<3> VCTLIN<2> VCTLIN<1> VCTLIN<0> VDD VSS / SwitchCapArray_V2
-XC0 VDLPF_P VDLPF_N VDD crtmom nv=20 nh=42 w=100n s=100n stm=2 spm=7 m=8
+C0 VDLPF_P VDLPF_N cap_mom nv=20 nh=42 w=100n s=100n stm=2 spm=7 m=8
 XI0 VDLPF_P INPHASE<7> INPHASE<6> INPHASE<5> INPHASE<4> INPHASE<3> INPHASE<2> 
 + INPHASE<1> INPHASE<0> VSS / TunableRes_nonUniform_Layout_Final
 XI3 VDLPF_N OUTPHASE<7> OUTPHASE<6> OUTPHASE<5> OUTPHASE<4> OUTPHASE<3> 

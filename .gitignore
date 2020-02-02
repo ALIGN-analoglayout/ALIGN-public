@@ -9,5 +9,8 @@ __pycache__/
 *.gds.json
 *.json
 *.lef
+*.gds
 *_cand
 *.pyc
+tmp/
+LOG/

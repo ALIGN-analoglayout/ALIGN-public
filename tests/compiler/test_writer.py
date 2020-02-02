@@ -8,7 +8,6 @@ def test_verilog_writer():
     unit_cap = 12
     unit_mos = 12
     VERILOG_FP = open(pathlib.Path(__file__).parent / 'ota.v', 'w')
-    LEF_FP = open(pathlib.Path(__file__).parent / 'ota_lef.sh', 'w')
     SP_FP = open(pathlib.Path(__file__).parent / 'ota_blocks.sp', 'w')
     available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS', 'CMC_PMOS_S', 'DCL_NMOS']
     for subckt in subckts:
@@ -22,11 +21,10 @@ def test_verilog_writer():
         if subckt["name"] in available_cell_generator:
             ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts)
             ws.print_subckt(SP_FP)
-        WriteConst(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"], subckt['ports'], pathlib.Path(__file__).parent,[])
+        WriteConst(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"], subckt['ports'],[])
         all_array=FindArray(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"] )
         WriteCap(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"],  unit_cap,all_array)   
     VERILOG_FP.close()
-    LEF_FP.close()
     SP_FP.close()
 
 def find_ports(graph):
