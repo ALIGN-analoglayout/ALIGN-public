@@ -166,19 +166,20 @@ class ParasiticExtraction():
         self.components.append( (self.capacitor(), tm, 0, C))
 
     def getSummaryCaps( self):
-        p = re.compile( '^(\S+)_M(\d)_(|_)(\d+)_(|_)(\d+)$')
+        p = re.compile( r'^(\S+)_M(\d)_(|_)(\d+)_(|_)(\d+)$')
 
         tbl = {}
 
         for tup in self.components:
             if tup[0][0] == 'c':
                 (nm, t0, t1, v) = tup
+                assert t1 == 0
                 m = p.match( t0)
-                if m:
-                    nm = m.groups()[0]
-                    if nm not in tbl:
-                        tbl[nm] = 0.0
-                    tbl[nm] += v
+                assert m
+                nm = m.groups()[0]
+                if nm not in tbl:
+                    tbl[nm] = 0.0
+                tbl[nm] += v
             elif tup[0][0] == 'r':
                 pass
             else:

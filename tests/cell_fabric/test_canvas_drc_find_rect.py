@@ -1,7 +1,7 @@
 import pytest
 import pathlib
 
-from align.cell_fabric import Canvas, Pdk, Wire, Via
+from align.cell_fabric import Canvas, Pdk, Wire
 from align.cell_fabric.drc import DesignRuleCheck
 from align.cell_fabric.remove_duplicates import ScanlineRect
 
