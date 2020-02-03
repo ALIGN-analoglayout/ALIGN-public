@@ -5,11 +5,14 @@
 export ALIGN_HOME=$PWD
 export ALIGN_WORK_DIR=$ALIGN_HOME/work
 
+export SUDO=sudo
+export SUDO=
+
 ## Install Prerequisite
 #-----------------------
 
 #### Install Packages
-sudo apt-get update && sudo apt-get install -yq \
+$SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
@@ -20,11 +23,11 @@ sudo apt-get update && sudo apt-get install -yq \
     gnuplot \
     curl \
     xvfb \
-&&  sudo apt-get clean
+&&  $SUDO apt-get clean
 
 #### Install klayout 
-sudo curl -o /klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
-sudo apt-get install -yq /klayout_0.26.3-1_amd64.deb
+$SUDO curl -o /klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+$SUDO apt-get install -yq /klayout_0.26.3-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
 
 #### Install lpsolve
