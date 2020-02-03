@@ -424,7 +424,17 @@ struct SinkDataComp {
    {
       if(lhs.coord[0].x==rhs.coord[0].x) {
         if(lhs.coord[0].y==rhs.coord[0].y) {
+          if(lhs.metalIdx==rhs.metalIdx){
+            if (lhs.coord.size() > 1 && lhs.coord.size() > 1) {
+              if(lhs.coord[1].x==rhs.coord[1].x) {
+                return lhs.coord[1].y < rhs.coord[1].y;
+              } else {
+                return lhs.coord[1].x < rhs.coord[1].x;
+              }
+            }
+          } else {
             return lhs.metalIdx<rhs.metalIdx;
+          }
         } else {
           return lhs.coord[0].y<rhs.coord[0].y;
         }
