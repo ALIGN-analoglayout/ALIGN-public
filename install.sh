@@ -6,7 +6,7 @@ export ALIGN_HOME=$PWD
 export ALIGN_WORK_DIR=$ALIGN_HOME/work
 
 export SUDO=sudo
-export SUDO=
+#export SUDO=
 
 ## Install Prerequisite
 #-----------------------
@@ -35,10 +35,10 @@ git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
 ####  Install json
 git clone https://github.com/nlohmann/json.git
 #### Install boost
-git clone --recursive https://github.com/boostorg/boost.git
-cd $ALIGN_HOME/boost
-./bootstrap.sh -prefix=$ALIGN_HOME/boost
-./b2 headers
+#git clone --recursive https://github.com/boostorg/boost.git
+#cd $ALIGN_HOME/boost
+#./bootstrap.sh -prefix=$ALIGN_HOME/boost
+#./b2 headers
 
 #### Install googletest
 cd $ALIGN_HOME
@@ -53,7 +53,7 @@ cp -r lib googletest/mybuild/.
 ## Set prerequisite paths
 #------------------------
 export LP_DIR=$ALIGN_HOME/lpsolve
-export BOOST_LP=$ALIGN_HOME/boost
+#export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
 export VENV=$ALIGN_HOME/general
