@@ -1,0 +1,254 @@
+// Generated for: spectre
+// Design library name: PhasedArray_WB_copy
+// Design cell name: tb_BPF_10G_2BITS
+// Design view name: schematic
+simulator lang=spectre
+global 0
+parameters Fin=2G prf=0.14 trf=50p TW_bpf=0 1 2 3 TW_vco=0  vdd_bpf=0.5 \
+    vdd_vco=0.5 vtune_bpf=0.1 vtune_vco=0 vdd_iloin=1 TW_bpf_DUM=1 \
+    vtune_bpf_DUM=0.4 vcm_bpf=0.5
+
+// INCLUDE YOUR MODEL PATH HERE
+include "MODEL_PATH"
+
+// Library name: PhasedArray_WB_copy
+// Cell name: res_24K
+// View name: schematic
+subckt res_24K t1 t2 vss
+    R4 (t2 net05 vss) res l=8u w=500n m=1  
+    R2 (net06 net05 vss) res l=8u w=500n m=1  
+    R1 (net06 net6 vss) res l=8u w=500n m=1  
+    R0 (t1 net6 vss) res l=8u w=500n m=1  
+ends res_24K
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: capbank_gp_lowC_noLSB_9u_2BITS
+// View name: schematic
+subckt capbank_gp_lowC_noLSB_9u_2BITS B\<3\> B\<2\> B\<1\> B\<0\> LEFT \
+        RIGHT VDD VSS
+    C3 (RIGHT net3 VSS) mimcap lt=9u wt=9u lay=7 m=2   \
+         
+    C2 (LEFT net1 VSS) mimcap lt=9u wt=9u lay=7 m=2   \
+         
+    C1 (RIGHT net4 VSS) mimcap lt=9u wt=9u lay=7 m=1   \
+         
+    C0 (LEFT net2 VSS) mimcap lt=9u wt=9u lay=7 m=1   \
+         
+    M1 (net1 b1_buf net3 VSS) nmos lr=60n wr=2u nr=20 sigma=1 m=2 \
+         
+    M0 (net2 b0_buf net4 VSS) nmos lr=60n wr=2u nr=20 sigma=1 m=1 \
+         
+    M44 (net0155 net0120 VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M40 (net0120 B\<3\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M37 (net0159 net0104 VSS VSS) nmos l=60n w=1u m=1 nf=1
+    M36 (net0158 net0105 VSS VSS) nmos l=60n w=1u m=1 nf=1
+    M35 (net0157 net0106 VSS VSS) nmos l=60n w=1u m=1 nf=1
+    M31 (net0104 B\<2\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M30 (net0105 B\<1\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M29 (net0106 B\<0\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M18 (b3_buf b3_inv VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M16 (b3_inv B\<3\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M15 (b2_inv B\<2\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M13 (b2_buf b2_inv VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M11 (b1_buf b1_inv VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M9 (b1_inv B\<1\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M7 (b0_buf b0_inv VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M4 (b0_inv B\<0\> VSS VSS) nmos l=60n w=1u m=1 nf=1 
+    M42 (net0155 net0120 VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M38 (net0120 B\<3\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M34 (net0159 net0104 VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M33 (net0158 net0105 VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M32 (net0157 net0106 VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M28 (net0104 B\<2\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M27 (net0105 B\<1\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M26 (net0106 B\<0\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M19 (b3_inv B\<3\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M17 (b3_buf b3_inv VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M14 (b2_buf b2_inv VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M12 (b2_inv B\<2\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M10 (b1_buf b1_inv VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M8 (b1_inv B\<1\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M6 (b0_buf b0_inv VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    M5 (b0_inv B\<0\> VDD VDD) pmos l=60n w=1u m=1 nf=1 
+    I16 (b1_inv net3 VSS) res_24K
+    I17 (b1_inv net1 VSS) res_24K
+    I18 (b0_inv net2 VSS) res_24K
+    I19 (b0_inv net4 VSS) res_24K
+ends capbank_gp_lowC_noLSB_9u_2BITS
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: BPF6_10G_2BITS
+// View name: schematic
+subckt BPF6_10G_2BITS DIG_BPF\<3\> DIG_BPF\<2\> DIG_BPF\<1\> DIG_BPF\<0\> \
+        INM INP OUTM OUTP VDDSW VDD_BPF0P5 VSS VTUNE
+    C4 (OUTM VTUNE VSS) MOSCAP wr=2u lr=500n br=4 gr=4 m=1
+    C0 (OUTP VTUNE VSS) MOSCAP wr=2u lr=500n br=4 gr=4 m=1
+    M20 (OUTP OUTM VSS VSS) nmos lr=120.0n wr=2.5u nr=10 sigma=1 m=1 \
+         
+    M19 (OUTM OUTP VSS VSS) nmos lr=120.0n wr=2.5u nr=10 sigma=1 m=1 \
+         
+    M2 (OUTP INM VSS VSS) nmos lr=120.0n wr=2.5u nr=8 sigma=1 m=1 \
+         
+    M8 (OUTM INP VSS VSS) nmos lr=120.0n wr=2.5u nr=8 sigma=1 m=1 \
+         
+    I5 (DIG_BPF\<3\> DIG_BPF\<2\> DIG_BPF\<1\> DIG_BPF\<0\> OUTM OUTP \
+        VDDSW VSS) capbank_gp_lowC_noLSB_9u_2BITS
+    L4 (OUTM OUTP VSS VDD_BPF0P5) inductor w=9u nr=2 rad=35.5u \
+        lay=9 spacing=3u gdis=10u m=1
+ends BPF6_10G_2BITS
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: vcobuf50
+// View name: schematic
+subckt vcobuf50 INM INP OUTM OUTP VDD VSS
+    M1 (OUTP INM VSS VSS) nmos lr=60n wr=2u nr=16 sigma=1 m=1 \
+         
+    M0 (OUTM INP VSS VSS) nmos lr=60n wr=2u nr=16 sigma=1 m=1 \
+         
+    R1 (VDD OUTP VSS) res l=12.915u w=4u m=1  
+    R0 (VDD OUTM VSS) res l=12.915u w=4u m=1  
+ends vcobuf50
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: RES80K_BUF
+// View name: schematic
+subckt RES80K_BUF t1 t2 vss
+    R4 (net8 t2 vss) res l=10u w=500n m=1  
+    R3 (net8 net7 vss) res l=10u w=500n m=1  
+    R2 (net6 net7 vss) res l=10u w=500n m=1  
+    R1 (net6 net5 vss) res l=10u w=500n m=1  
+    R0 (t1 net5 vss) res l=10u w=500n m=1  
+ends RES80K_BUF
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: VCO_BUFF_LIN_2OUTS_v2_FINAL
+// View name: schematic
+subckt VCO_BUFF_LIN_2OUTS_v2_FINAL I625U IN OUT1 OUT2 VDD VSS
+    M5 (OUT2 net11 VDD VDD) pmos lr=60n wr=2u nr=16 sigma=1 m=1 \
+         
+    M15 (OUT1 net11 VDD VDD) pmos lr=60n wr=2u nr=16 sigma=1 m=1 \
+         
+    M3 (OUT2 net11 VSS VSS) nmos lr=60n wr=2u nr=8 sigma=1 m=1 \
+         
+    M17 (VDD net7 net023 net023) nmos lr=60n wr=2u nr=16 sigma=1 m=4 \
+         
+    M20 (net023 I625U VSS VSS) nmos lr=120.0n wr=2u nr=4 sigma=1 m=8 \
+         
+    M21 (I625U I625U VSS VSS) nmos lr=120.0n wr=2u nr=4 sigma=1 m=1 \
+         
+    M14 (OUT1 net11 VSS VSS) nmos lr=60n wr=2u nr=8 sigma=1 m=1 \
+         
+    R3 (net11 OUT2 VSS) res l=10.5u w=4u m=1  
+    R0 (net11 OUT1 VSS) res l=10.5u w=4u m=1  
+    C2 (VDD VSS) nmoscap lr=12.0u wr=16.0u m=2
+    C0 (IN net7 VSS) mimcap lt=40u wt=10u lay=7 m=1   \
+         
+    C1 (net023 net11 VSS) mimcap lt=40u wt=10u lay=7 m=1 \
+           
+    I0 (VDD net7 VSS) RES80K_BUF
+ends VCO_BUFF_LIN_2OUTS_v2_FINAL
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: VCO_10G_2BITS
+// View name: schematic
+subckt VCO_10G_2BITS DIG_VCO\<3\> DIG_VCO\<2\> DIG_VCO\<1\> DIG_VCO\<0\> \
+        OUTM OUTP VDDSW VDD_VCO0P5 VSS VTUNE
+    C4 (OUTM VTUNE VSS) MOSCAP wr=2u lr=500n br=4 gr=4 m=1
+    C0 (OUTP VTUNE VSS) MOSCAP wr=2u lr=500n br=4 gr=4 m=1
+    M0 (OUTP OUTM VSS VSS) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    M1 (OUTM OUTP VSS VSS) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    I10 (DIG_VCO\<3\> DIG_VCO\<2\> DIG_VCO\<1\> DIG_VCO\<0\> OUTM OUTP \
+        VDDSW VSS) capbank_gp_lowC_noLSB_9u_2BITS
+    L0 (OUTP OUTM VSS VDD_VCO0P5) inductor w=9u nr=2 rad=35.5u \
+        lay=9 spacing=3u gdis=10u m=1
+ends VCO_10G_2BITS
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: ILO_IN_V5_CROSS
+// View name: schematic
+subckt ILO_IN_V5_CROSS IN OUT OUT_AUX VDDSW VSS
+    C2 (IN net3 VSS) mimcap lt=20u wt=20u lay=7 m=1   \
+         
+    R4 (VSS net08 VSS) res l=6u w=1u m=1  
+    R3 (VSS net3 VSS) res l=12.0u w=1u m=1  
+    R2 (net3 VDDSW VSS) res l=12.0u w=1u m=1  
+    M0 (OUT_AUX net3 net08 net08) nmos lr=60n wr=2u nr=18 sigma=1 m=1 \
+         
+    M3 (OUT net3 VSS VSS) nmos lr=60n wr=2u nr=20 sigma=1 m=1 \
+         
+ends ILO_IN_V5_CROSS
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: ILO_10G_2BITS
+// View name: schematic
+subckt ILO_10G_2BITS DIG_VCO\<3\> DIG_VCO\<2\> DIG_VCO\<1\> DIG_VCO\<0\> \
+        INM INP OUTM OUTP VDDSW VDD_VCO0P5 VSS VTUNE
+    I11 (DIG_VCO\<3\> DIG_VCO\<2\> DIG_VCO\<1\> DIG_VCO\<0\> OUTM OUTP \
+        VDDSW VDD_VCO0P5 VSS VTUNE) VCO_10G_2BITS
+    I12 (INP OUTM OUTP VDDSW VSS) ILO_IN_V5_CROSS
+    I13 (INM OUTP OUTM VDDSW VSS) ILO_IN_V5_CROSS
+ends ILO_10G_2BITS
+// End of subcircuit definition.
+
+// Library name: PhasedArray_WB_copy
+// Cell name: tb_BPF_10G_2BITS
+// View name: schematic
+V22 (net029 0) vsource mag=500.0m type=pulse val0=0 val1=1 period=1/Fin \
+        rise=trf fall=trf width=prf/Fin-trf
+V21 (net030 0) vsource mag=-500m type=pulse val0=1 val1=0 period=1/Fin \
+        rise=trf fall=trf width=prf/Fin-trf
+I7 (DIG_BPF\<3\> DIG_BPF\<2\> DIG_BPF\<1\> DIG_BPF\<0\> net037 net038 \
+        BPF_OUTM_C0_3 BPF_OUTP_C0_3 vddSW vdd_bpf 0 net04) BPF6_10G_2BITS
+I37 (AVDD_ILOBUF IBUF625\<0\>) isource dc=625u type=dc
+I36 (AVDD_ILOBUF IBUF625\<1\>) isource dc=625u type=dc
+I64 (net019 net028 net026 net027 AVDD_ILOBUF AVSS) vcobuf50
+V31 (net037 0) vsource dc=500.0m mag=-500m type=dc
+V30 (net038 0) vsource dc=500.0m mag=500m type=dc
+V8 (net022 0) vsource dc=TW_vco type=dc
+V2 (vddSW 0) vsource dc=1 type=dc
+V1 (vdd_bpf 0) vsource dc=vdd_bpf type=dc
+V12 (vdd_vco 0) vsource dc=vdd_vco type=dc
+V13 (net015 0) vsource dc=vtune_vco type=dc
+V17 (AVSS 0) vsource dc=0 type=dc
+V9 (net023 0) vsource dc=TW_bpf type=dc
+V15 (net04 0) vsource dc=vtune_bpf type=dc
+V16 (AVDD_ILOBUF 0) vsource dc=1 type=dc
+I10 (net022 DIG_VCO\<5\> DIG_VCO\<4\> DIG_VCO\<3\> DIG_VCO\<2\> \
+        DIG_VCO\<1\> DIG_VCO\<0\>) Dec2bin_6bit vdd=1
+I6 (net023 DIG_BPF\<5\> DIG_BPF\<4\> DIG_BPF\<3\> DIG_BPF\<2\> \
+        DIG_BPF\<1\> DIG_BPF\<0\>) Dec2bin_6bit vdd=1
+I4 (IBUF625\<0\> out0 LO_OUTP_C0 LO_OUTP_INT_C0 AVDD_ILOBUF AVSS) \
+        VCO_BUFF_LIN_2OUTS_v2_FINAL
+I35 (IBUF625\<1\> out180 LO_OUTM_C0 LO_OUTM_INT_C0 AVDD_ILOBUF AVSS) \
+        VCO_BUFF_LIN_2OUTS_v2_FINAL
+NPORT5 ( BPF_OUTP_C0_3 AVSS BPF_OUTM_C0_3 AVSS net028 AVSS net019 AVSS) \
+        nport imptrunc=1.0e-6 datafmt=touchstone \
+        file="./OUTWIRE.s4p" \
+        dcextrap=unwrap hfextrap=linear interp=spline
+I3 (DIG_VCO\<3\> DIG_VCO\<2\> DIG_VCO\<1\> DIG_VCO\<0\> BPF_OUTM_C0_3 \
+        BPF_OUTP_C0_3 out180 out0 vddSW vdd_vco 0 net015) ILO_10G_2BITS
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
+    tnom=27 scalem=1.0 scale=1.0 gmin=1e-12 rforce=1 maxnotes=5 maxwarns=5 \
+    digits=5 cols=80 pivrel=1e-3 sensfile="../psf/sens.output" \
+    checklimitdest=psf 
+tran tran stop=10n write="spectre.ic" writefinal="spectre.fc" \
+    annotate=status maxiters=5 
+finalTimeOP info what=oppoint where=rawfile
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts  where=rawfile
+saveOptions options save=allpub
+ahdl_include "./IdealDAC.va"

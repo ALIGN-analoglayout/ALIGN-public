@@ -1,0 +1,33 @@
+// VerilogA for veriloga_modules, Dec2bin_6bit, veriloga
+
+`include "constants.vams"
+`include "disciplines.vams"
+
+module Dec2bin_6bit(binary);
+
+output [5:0] binary;
+
+electrical decimal;
+electrical [5:0] binary;
+
+integer result[5:0], result_current, result_previous, remainder;
+genvar i;
+parameter real vdd = 1;
+parameter real ctrl_word=0;
+
+analog begin
+	
+		
+		result_previous = ctrl_word;
+		for (i=0; i<=5; i=i+1) begin
+			result_current = result_previous/2;
+			remainder = result_previous%2;
+			result[i] = remainder;
+			result_previous = result_current;
+		end
+		for (i=0; i<=5; i=i+1) begin		
+			V(binary[i]) <+ vdd*result[i];
+		end
+	
+end
+endmodule
