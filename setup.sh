@@ -6,7 +6,7 @@ export ALIGN_HOME=$PWD
 export ALIGN_WORK_DIR=$ALIGN_HOME/work
 
 export LP_DIR=$ALIGN_HOME/lpsolve
-export BOOST_LP=$ALIGN_HOME/boost
+#export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
 export VENV=$ALIGN_HOME/general

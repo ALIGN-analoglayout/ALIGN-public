@@ -5,7 +5,7 @@ setenv ALIGN_HOME $PWD
 setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 
 setenv LP_DIR $ALIGN_HOME/lpsolve
-setenv BOOST_LP $ALIGN_HOME/boost
+#setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
 setenv VENV $ALIGN_HOME/general
