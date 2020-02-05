@@ -347,7 +347,6 @@ class ADNetlist:
 
     for (r,l) in self.kors:
       assert l in ["metal1","metal2","metal3","via1","via2"], l
-      if l == "via2": continue
       netl.newWire( '!kor', r, l)
       
     for p in self.ports:
@@ -360,7 +359,6 @@ class ADNetlist:
         netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
 
     for p in self.preroutes:
-      print( "Preroute", p)
       netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
 class Rect:
@@ -454,54 +452,6 @@ class Netlist:
     self.instances = OrderedDict()
     self.wire_cache = {}
 
-
-  def semantic( self):
-    def is_horiz( ly):
-      return ly in ["metal2","metal4","metal6"]
-    def is_vert( ly):
-      return ly in ["metal1","metal2","metal3"]
-
-    for (k,net) in self.nets.items():
-      print("Net",k)
-      for gr in net.grs:
-        gr_r = [ v*10*840 + 5*840 for v in gr.rect.toList()]
-        print("GR", gr.layer, gr.rect, gr_r)
-        p_nticks = 2
-        q_nticks = 10
-
-        def pnt( theta, rlst, ly):
-          if is_horiz(ly):
-            y = (rlst[1]+rlst[3])//2
-            x = rlst[0]*(1.0-theta) + rlst[2]*theta
-            return (x,y)
-          elif is_vert(ly):
-            x = (rlst[0]+rlst[2])//2
-            y = rlst[1]*(1.0-theta) + rlst[3]*theta
-            return (x,y)
-          else:
-            assert False, ly
-
-        def dist( w, p, q):
-          gx,gy = pnt( p, gr_r, gr.layer)
-          x,y = pnt( q, w.rect.toList(), w.layer)
-
-          return math.sqrt((x-gx)**2 + (y-gy)**2)
-
-        for p in range(p_nticks):
-          argmin = None
-        
-          for (_,lst) in net.ces.items():
-            for w in lst:
-              for q in range(q_nticks):
-                cand = dist( w, p/(p_nticks-1), q/(q_nticks-1))
-                #pylint: disable=used-before-assignment
-                if argmin is None or cand < best:
-                  argmin,best = w,cand
-              
-          if best < 840*10:
-            print( "    " + json.dumps( {"layer": "M2", "rect": [v//5 for v in argmin.rect.toList()]}))
-
-
   def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
@@ -548,20 +498,6 @@ class Netlist:
 
 
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
-
-      ys = set()
-      ys2 = set()
-
-      for term in data['terminals']:
-        if isinstance( term, Wire):
-          if term.layer == 'M2':
-            r = term.rect
-            yc = (r.lly+r.ury)//2
-            ys.add(yc)
-            ys2.add(yc%840)
-
-      print(sorted(list(ys)))
-      print(sorted(list(ys2)))
 
   def newWire( self, netName, r, l, *, ceName=None):
     """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire
@@ -660,19 +596,7 @@ Option name=upper_layer                          value=metal3
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
       for (_,v) in self.nets.items():
         for w in v.wires:
-          #SMB Hack because of via2 sizing error
-          if w.layer == "via2": continue
           fp.write( str(w) + "\n")
-
-      #SMB Generalize this
-      #metal1 obstruction
-      if False:
-       for x in range(1, (self.bbox.urx-160-1)//800):
-        xc = x*800
-        y0 = self.bbox.lly+420
-        y1 = self.bbox.ury-420
-        fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")
-        
 
   def write_global_routing_file( self, fn):
     global_gr_id = 0
