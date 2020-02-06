@@ -349,14 +349,8 @@ class ADNetlist:
       assert l in ["metal1","metal2","metal3","via1","via2"], l
       netl.newWire( '!kor', r, l)
       
-    for p in self.ports:
-      print( "Port", p)
-      r = p['rect']
-      ly = p['layer']
-      if ly in ["metal1","metal3","metal5"]:
-        netl.newWire( p['net_name'], Rect( r[0]*720-200, r[1]*720-360, r[2]*720+200, r[3]*720+360), ly)
-      if ly in ["metal2","metal4","metal6"]:
-        netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
+# ports no longer used
+    assert self.ports == []
 
     for p in self.preroutes:
       netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
@@ -598,7 +592,7 @@ Option name=upper_layer                          value=metal3
         for w in v.wires:
           fp.write( str(w) + "\n")
 
-  def write_global_routing_file( self, fn):
+  def write_global_routing_file( self, tech, fn):
     global_gr_id = 0
 
     with open( fn, "w") as fp:
@@ -669,8 +663,11 @@ Option name=upper_layer                          value=metal3
 
             fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
         else:
-          # connect everything
+          # connect everything (no via preroutes)
+          skip_via_set = set(["via1","via2","via3","via4"])
           for w in v.wires:
+            ly = w.layer
+            if ly in skip_via_set: continue
             fp.write( "ConnectedEntity terms=%s\n" % w.gid)
 
         grs = []
@@ -700,14 +697,30 @@ Option name=upper_layer                          value=metal3
                 if cand in self.wire_cache:
                   wire = self.wire_cache[cand]
                   fp.write( "Tie term0=%d gr0=%d\n" % (wire.gid, gr.gid))
-        else:
+        elif True:
+          dx = tech.pitchPoly*tech.halfXGRGrid*2
+          dy = tech.pitchDG  *tech.halfYGRGrid*2
           for gr in v.grs:
-            if gr.layer != "metal3": continue
-            x = (gr.rect.llx + gr.rect.urx)*840*10//2
-            print( "SMB", x, gr.rect, w.rect)
-            for w in v.wires:
-              if w.rect.llx <= x <= w.rect.urx:
-                fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+            if gr.layer == "metal3":
+              assert gr.rect.llx == gr.rect.urx
+              x0 = gr.rect.llx*dx - dx//2
+              x1 = gr.rect.urx*dx + dx//2
+              y0 = gr.rect.lly*dy - dy//2
+              y1 = gr.rect.ury*dy + dy//2
+              print( "Metal GR:", x0, x1, y0, y1, gr.rect)
+              for w in v.wires:
+                if w.layer == "metal2":
+                  cy = (w.rect.lly+w.rect.ury)//2
+                  check1 = y0 <= cy <= y1
+                  check2 = x0 <= w.rect.urx and w.rect.llx <= x1
+                  if check1 and check2:
+                    fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+                if w.layer == "metal1":
+                  cx = (w.rect.llx+w.rect.urx)//2
+                  check1 = y0 <= w.rect.ury and w.rect.lly <= y1
+                  check2 = x0 <= cx <= x1
+                  if check1 and check2:
+                    fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
 
         fp.write( "#end of net %s\n" % k)
 
@@ -728,7 +741,7 @@ Option name=upper_layer                          value=metal3
 
 
     self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
-    self.write_global_routing_file( dirname + "/" + self.nm + "_dr_globalrouting.txt")
+    self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
 
