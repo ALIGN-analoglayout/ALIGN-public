@@ -581,7 +581,7 @@ Option name=create_fake_metal_template_instances value={1 if show_metal_template
 Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal3
+Option name=upper_layer                          value=metal5
 """)
 
 
@@ -700,26 +700,42 @@ Option name=upper_layer                          value=metal3
         elif True:
           dx = tech.pitchPoly*tech.halfXGRGrid*2
           dy = tech.pitchDG  *tech.halfYGRGrid*2
+          def touching( r0, r1):
+            check1 = r0.lly <= r1.ury and r1.lly <= r0.ury
+            check2 = r0.llx <= r1.urx and r1.llx <= r0.urx
+            return check1 and check2
+
           for gr in v.grs:
+            x0 = gr.rect.llx*dx - dx//2
+            x1 = gr.rect.urx*dx + dx//2
+            y0 = gr.rect.lly*dy - dy//2
+            y1 = gr.rect.ury*dy + dy//2
+            print( "Metal GR:", x0, x1, y0, y1, gr.rect)
             if gr.layer == "metal3":
-              assert gr.rect.llx == gr.rect.urx
-              x0 = gr.rect.llx*dx - dx//2
-              x1 = gr.rect.urx*dx + dx//2
-              y0 = gr.rect.lly*dy - dy//2
-              y1 = gr.rect.ury*dy + dy//2
-              print( "Metal GR:", x0, x1, y0, y1, gr.rect)
               for w in v.wires:
                 if w.layer == "metal2":
                   cy = (w.rect.lly+w.rect.ury)//2
                   check1 = y0 <= cy <= y1
                   check2 = x0 <= w.rect.urx and w.rect.llx <= x1
-                  if check1 and check2:
+                  assert touching( Rect( x0, y0, x1, y1), w.rect) == (check1 and check2)
+
+                  if touching( Rect( x0, y0, x1, y1), w.rect):
                     fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
                 if w.layer == "metal1":
                   cx = (w.rect.llx+w.rect.urx)//2
                   check1 = y0 <= w.rect.ury and w.rect.lly <= y1
                   check2 = x0 <= cx <= x1
-                  if check1 and check2:
+                  assert touching( Rect( x0, y0, x1, y1), w.rect) == (check1 and check2)
+                  if touching( Rect( x0, y0, x1, y1), w.rect):
+                    fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+            if gr.layer == "metal4":
+              for w in v.wires:
+                if w.layer == "metal3":
+                  cx = (w.rect.llx+w.rect.urx)//2
+                  check1 = y0 <= w.rect.ury and w.rect.lly <= y1
+                  check2 = x0 <= cx <= x1
+                  assert touching( Rect( x0, y0, x1, y1), w.rect) == (check1 and check2)
+                  if touching( Rect( x0, y0, x1, y1), w.rect):
                     fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
 
         fp.write( "#end of net %s\n" % k)
