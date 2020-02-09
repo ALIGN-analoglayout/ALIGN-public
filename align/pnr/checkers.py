@@ -37,15 +37,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
               "M4": "m4", "M5": "m5", "M6": "m6"}
 
-    def add_terminal( netName, layer, b):
+    def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
-        def f( gen, value, tag=""):
+        def f( gen, value, tag=None):
             # value is in 2x units
             if value%2 != 0:
-                txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
+                txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two. {tag}"
                 errors.append( txt)
                 logger.error( txt)
             else:
@@ -68,7 +68,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             else:
                 center = None
             if center is not None:
-                f( cnv.generators[t_tbl[layer]], center)
+                f( cnv.generators[t_tbl[layer]], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -175,12 +175,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     for n in hN.Nets:
         logger.debug( f"Net: {n.name}")
 
-        def addt( obj, con):
+        def addt( obj, con, tag=None):
             b = con.placedBox
             if obj == n:
-                add_terminal( obj.name, con.metal, b)
+                add_terminal( obj.name, con.metal, b, tag=tag)
             else:
-                add_terminal( obj, con.metal, b)
+                add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
             if c.type == 'Block':
@@ -193,8 +193,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
                 tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
                 logger.debug( f'\t{tag}')
+
+# 59700, 12210, 59899, 16590
+
+
                 for con in pin.pinContacts:
-                    addt( n, con)
+                    addt( n, con, "blockPin")
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
@@ -207,15 +211,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
         for metal in n.path_metal:
             con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
+            add_terminal( n.name, con.metal, con.placedBox, "path_metal")
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "path_via")
 
         for via in n.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "intervia")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
