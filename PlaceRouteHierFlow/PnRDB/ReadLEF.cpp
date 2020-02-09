@@ -1,9 +1,20 @@
 #include "PnRdatabase.h"
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <assert.h>
+
+static double parse_and_scale( const std::string& s, double unitScale)
+{
+  double scaled = stod(s)*unitScale;
+  double result = round(scaled);
+  if ( fabs( scaled - result) > 0.001) {
+    std::cout << "ERROR: parse_and_scale " << s << " " << unitScale << " Rounded result differs too much from unrounded result (" << result << "," << scaled << ")" << std::endl;
+  }
+  return result;
+}
 
 bool PnRdatabase::ReadLEF(string leffile) {
   cout<<"PnRDB-Info: reading LEF file "<<leffile<<endl;
@@ -46,8 +57,8 @@ bool PnRdatabase::ReadLEF(string leffile) {
       } else if (stage==1) { // within MACRO
         if((found=def.find("SIZE"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
-          width=int(stod(temp[1])*unitScale);
-          height=int(stod(temp[3])*unitScale);
+          width=parse_and_scale( temp[1], unitScale);
+          height=parse_and_scale( temp[3], unitScale);
           //cout<<"Stage "<<stage<<" @ W "<<width<<"; H "<<height<<endl;
         } else if((found=def.find("PIN"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
@@ -96,10 +107,10 @@ bool PnRdatabase::ReadLEF(string leffile) {
 	  }
         } else if((found=def.find("RECT"))!=string::npos) {
           temp=get_true_word(found,def,0,';',p);
-          int LLx=int(stod(temp[1])*unitScale);
-          int LLy=int(stod(temp[2])*unitScale);
-          int URx=int(stod(temp[3])*unitScale);
-          int URy=int(stod(temp[4])*unitScale);
+          int LLx=parse_and_scale( temp[1], unitScale);
+          int LLy=parse_and_scale( temp[2], unitScale);
+          int URx=parse_and_scale( temp[3], unitScale);
+          int URy=parse_and_scale( temp[4], unitScale);
           PnRDB::bbox oBox; PnRDB::point tp;
           tp.x=LLx; tp.y=LLy;
           oBox.LL=tp;
@@ -142,10 +153,10 @@ bool PnRdatabase::ReadLEF(string leffile) {
         } else if((found=def.find("RECT"))!=string::npos) {
           //Metal_Flag = true;
           temp=get_true_word(found,def,0,';',p);
-          int LLx=int(stod(temp[1])*unitScale);
-          int LLy=int(stod(temp[2])*unitScale);
-          int URx=int(stod(temp[3])*unitScale);
-          int URy=int(stod(temp[4])*unitScale);
+          int LLx=parse_and_scale( temp[1], unitScale);
+          int LLy=parse_and_scale( temp[2], unitScale);
+          int URx=parse_and_scale( temp[3], unitScale);
+          int URy=parse_and_scale( temp[4], unitScale);
           PnRDB::bbox oBox; PnRDB::point tp;
           tp.x=LLx; tp.y=LLy;
           oBox.LL=tp;
