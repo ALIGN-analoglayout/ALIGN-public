@@ -38,9 +38,9 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = height
-    gateDummy = 0 ### Total Dummy gates per unit cell: 2*gateDummy
-    finDummy = 8  ### Total Dummy fins per unit cell: 2*finDummy
-    gate = 2
+    gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
+    finDummy = 4  ### Total Dummy fins per unit cell: 2*finDummy
+    gate = 1
 
     uc = generator(pdk, fin, finDummy, gate, gateDummy)
     x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
