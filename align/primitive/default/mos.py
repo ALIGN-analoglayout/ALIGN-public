@@ -20,7 +20,7 @@ class MOSGenerator(DefaultCanvas):
         assert self.finsPerUnitCell % 4 == 0
         assert fin > 3, "number of fins in the transistor must be more than 2"
         assert finDummy % 2 == 0
-        assert gateDummy > 0
+        #assert gateDummy > 0
         self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
@@ -38,10 +38,10 @@ class MOSGenerator(DefaultCanvas):
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
                                       spg=SingleGrid( offset=0, pitch=unitCellLength)))
 
-        stoppoint = (gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset']
+        stoppoint = (3-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset']
         self.active = self.addGen( Wire( 'active', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
-                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=stoppoint, stoppoint=-self.pdk['Poly']['Pitch'], check=True)))
 
         self.RVT = self.addGen( Wire( 'RVT', 'Rvt', 'h',
                                       clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
@@ -119,9 +119,16 @@ class MOSGenerator(DefaultCanvas):
 
         self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
         self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
-
+        if x == 0:
+            for ii in range(3):
+                self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+ii,   (y,0), (y,1))
+        elif x == 3:
+            for ii in range(3):
+                self.addWire( self.pl, None, None, self.gatesPerUnitCell*(x+1)+ii+3,   (y,0), (y,1))
+        else:
+            pass
         for i in range(self.gatesPerUnitCell):
-            self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i,   (y,0), (y,1))
+            self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+i+3,   (y,0), (y,1))
 
         # Source, Drain, Gate Connections
 
@@ -129,7 +136,7 @@ class MOSGenerator(DefaultCanvas):
         grid_y0 = y*self.m2PerUnitCell + 1
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         #grid_y1 = grid_y0+(self.finsPerUnitCell - 2*self.finDummy + 2)//2-1
-        gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
+        gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2+3
         # Connect Gate (gate_x)
         self.addWire( self.m1, None, None, gate_x , (grid_y1+2, -1), (grid_y1+4, 1))
         self.addWire( self.pc, None, None, grid_y1+1, (x,1), (x+1,-1))
