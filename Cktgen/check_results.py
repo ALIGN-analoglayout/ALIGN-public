@@ -49,6 +49,10 @@ if __name__ == "__main__":
         if ly in skip_layers:
             continue
         nm = term['netName'] if 'netName' in term else term['net_name']
+#
+# !kor and !float signals might be need. Right now, just excluding them.
+#
+        if nm in ['!kor', '!float']: continue
         if nm is not None and p.match(nm): continue
         term['layer'] = layer_tbl.get( ly, ly)
         term['rect'] = s(term['rect'])
