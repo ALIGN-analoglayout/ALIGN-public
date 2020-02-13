@@ -394,7 +394,6 @@ def main(args, tech):
       adnetl.addPort( p)
 
   if 'preroutes' in placer_results:
-    print("SMB: Found some preroutes")
     preroutes = placer_results['preroutes']
     for preroute in preroutes:
       adnetl.addPreroute( preroute)
