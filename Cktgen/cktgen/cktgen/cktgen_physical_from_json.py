@@ -396,7 +396,6 @@ def main(args, tech):
   if 'preroutes' in placer_results:
     preroutes = placer_results['preroutes']
     for preroute in preroutes:
-      print( "PREROUTE", preroute['layer'])
       adnetl.addPreroute( preroute)
 
   adnetl.genNetlist( netl)
