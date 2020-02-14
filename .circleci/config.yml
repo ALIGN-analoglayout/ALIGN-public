@@ -382,13 +382,13 @@ workflows:
             - start
 
   nightly:
-    triggers:
-      - schedule:
-          cron: "0 8 * * *"
-          filters:
-            branches:
-              only:
-                - master
+      #triggers:
+      #tr- schedule:
+      #tr    cron: "0 8 * * *"
+      #tr    filters:
+      #tr      branches:
+      #tr        only:
+      #tr          - master
 
     jobs:
       - start
