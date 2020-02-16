@@ -146,12 +146,12 @@ m1 vss clkb2 vss vss nfet w=w30 l=l7
 m0 vss clkb1 vss vss nfet w=w30 l=l7
 xi164 vo1p vo1m vss C1
 xi128 outm outp net072 net071 vddd vss SR_Latch
-xc6 vo3p vo3m cap cap=10f
-xc3 net074 net073 cap cap=10f
-xr16 vip vo1p res res=100
-xr51 net073 vo2m res res=100
-xr25 vo2p net074 res res=100
-xr47 vim vo1m res res=100
+c6 vo3p vo3m cap cap=10f
+c3 net074 net073 cap cap=10f
+r16 vip vo1p res res=100
+r51 net073 vo2m res res=100
+r25 vo2p net074 res res=100
+r47 vim vo1m res res=100
 xi161 ibias2 vdda vo2m vo2p vo3p vo3m vss Gm1_v5_Practice
 xi88 net062 clk rstb net052 vdda vss DFCNQD2BWP
 xi97 outp clkb1 rstb net062 vdda vss DFCNQD2BWP

@@ -4,8 +4,8 @@ import pprint
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
-from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .write_verilog_lef import WriteConst, FindArray, WriteCap, check_common_centroid, CopyConstFile
+from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef,WriteCap,check_common_centroid
+from .write_constraint import WriteConst, FindArray, CopyConstFile
 from .read_lef import read_lef
 
 import logging
@@ -71,6 +71,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         UPDATED_CIRCUIT_LIST.append({
             "name": circuit_name,
             "graph": Grest,
+            "mos_body": circuit["mos_body"],
             "ports":circuit["ports"],
             "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
@@ -108,7 +109,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     primitives = {}
     duplicate_modules =[]
     for members in updated_ckt:
-        #print(members)
+        #print(members["graph"].nodes(data=True))
         name = members["name"]
         if name in duplicate_modules:
             continue
@@ -123,9 +124,12 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if members["ports"]:
-                logger.debug(f'Found module ports kk: {members["ports"]}')
-                floating_ports = list(set(inoutpin) - set(members["ports"]) - set(design_setup['POWER']) -set(design_setup['GND']))
-                if len(floating_ports)> 0:
+                logger.debug(f'Found module ports: {members["ports"]}')
+                floating_ports = set(inoutpin) - set(members["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
+                if 'mos_body' in members:
+                    floating_ports = floating_ports - set(members["mos_body"])
+
+                if len(list(floating_ports))> 0:
                     logger.error(f"floating ports found: {name} {floating_ports}")
                     raise SystemExit('Please remove floating ports')
         else:
@@ -164,6 +168,9 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt)
             ws.print_subckt(SP_FP)
             continue
+        else:
+            ws = WriteSpice(graph, name, inoutpin, updated_ckt)
+            ws.print_subckt(SP_FP)
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF:

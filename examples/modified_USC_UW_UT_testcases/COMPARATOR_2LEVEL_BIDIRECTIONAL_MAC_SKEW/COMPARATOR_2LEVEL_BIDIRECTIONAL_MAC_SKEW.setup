@@ -1,4 +1,4 @@
-POWER = vdd
+POWER = vdd vmid
 GND = gnd 
-CLOCK = 
+CLOCK = clk clkn
 DIGITAL = INVD0BWP

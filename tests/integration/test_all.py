@@ -34,5 +34,5 @@ def test_A( pdk_dir, design_dir):
         for (k,v) in variants.items():
             print(k,v)
             assert 'errors' in v, "No Layouts were generated"
-            assert v['errors'] == 0, "Number DRC errorrs=" + str(v['errors'])
+            assert v['errors'] == 0, "Number of DRC errorrs for design "+nm + "="+ str(v['errors'])
 

@@ -25,15 +25,19 @@ def traverse_hier_in_graph(G, hier_graph_dict):
         if "sub_graph" in attr and attr["sub_graph"]:
             logger.debug(f'Traversing sub graph: {node} {attr["inst_type"]} {attr["ports"]}')
             sub_ports = []
+            mos_body =[]
             for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
+                elif 'body_pin' in sub_attr:
+                    mos_body.append(sub_attr['body_pin'])
 
             logger.debug(f'external ports: {sub_ports}, {attr["connection"]}')
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
+                "mos_body": mos_body,
                 "connection": attr["connection"]
             }
             traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
@@ -46,6 +50,7 @@ def read_inputs(name,hier_graph):
     """
     hier_graph_dict = {}
     top_ports = []
+    mos_body =[]
     for node, attr in hier_graph.nodes(data=True):
         if 'source' in attr['inst_type']:
             for source_nets in hier_graph.neighbors(node):
@@ -53,12 +58,16 @@ def read_inputs(name,hier_graph):
         elif 'net_type' in attr:
             if attr['net_type'] == "external":
                 top_ports.append(node)
+        elif 'body_pin' in attr:
+            mos_body.append(attr['body_pin'])
+
     top_ports = list(set(top_ports))
 
     logger.debug("READING top circuit graph: ")
     hier_graph_dict[name] = {
         "graph": hier_graph,
         "ports": top_ports,
+        "mos_body": mos_body,
         "connection": None
     }
     traverse_hier_in_graph(hier_graph, hier_graph_dict)
@@ -206,6 +215,8 @@ def get_key(Gsub, value):
 def get_next_level(G, tree_l1):
     tree_next=[]
     for node in list(tree_l1):
+        if node not in G.nodes:
+            continue
         if 'mos' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if G.get_edge_data(node, nbr)['weight']!=2:
@@ -232,7 +243,7 @@ def compare_balanced_tree(G, node1, node2):
     if tree1==tree2:
         logger.debug("common net or device")
         return True
-    while(len(list(tree1))== len(list(tree2))):
+    while(len(list(tree1))== len(list(tree2)) > 0):
         logger.debug(f"tree1 {tree1} tree2 {tree2}")
         tree1 = set(tree1) ^ set(traversed1)
         tree2 = set(tree2) ^ set(traversed2)
@@ -286,13 +297,13 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                 for g1_n, g2_n in Gsub.items():
                     if 'net' not in G1.nodes[g1_n]["inst_type"]:
                         G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
-                        #if 'mos' in G1.nodes[g1_n]["inst_type"] or \
-                        find_body = G1.nodes[g1_n]['real_inst_type'].split('_')
-                        if 'MOS' in sub_block_name and len(find_body) > 1:
+                        if 'mos' in G1.nodes[g1_n]['inst_type']:
+                            find_body = G1.nodes[g1_n]['body_pin']
+                        if 'MOS' in sub_block_name and 'find_body' in locals():
                             #G1.nodes[g1_n]['real_inst_type']=find_body[0]
                             # Add body pin
-                            matched_ports['B'] = find_body[-1]
-                            logger.debug(f'Adding body pin: {find_body} {len(find_body)}')
+                            matched_ports['B'] = find_body
+                            logger.debug(f'Adding body pin: {find_body}')
                         #check_values(G2.nodes[g2_node]['values'])
                         continue
                     if 'external' in G2.nodes[g2_n]["net_type"]:
@@ -454,9 +465,10 @@ def add_parallel_caps(G):
                                 float(convert_unit(G.nodes[next_node]["values"]['c']))
                                 remove_nodes.append(next_node)
                                 G.nodes[node]["values"]['c']=c_val
-    logger.debug(f"removed parallel caps: {remove_nodes}")
-    for node in remove_nodes:
-        G.remove_node(node)
+    if len(remove_nodes)>0:
+        logger.debug(f"removed parallel caps: {remove_nodes}")
+        for node in remove_nodes:
+            G.remove_node(node)
 def add_series_res(G):
     logger.debug(f"merging all series res, initial graph size: {len(G)}")
     remove_nodes = []
@@ -480,9 +492,10 @@ def add_series_res(G):
                         float(convert_unit(G.nodes[remove_r]["values"]['r']))
                         G.nodes[combined_r]["values"]['r']=r_val
                         G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
-    logger.debug(f"removed series r: {remove_nodes}")
-    for node in remove_nodes:
-        G.remove_node(node)
+    if len(remove_nodes)>0:
+        logger.debug(f"removed series r: {remove_nodes}")
+        for node in remove_nodes:
+            G.remove_node(node)
 
 def preprocess_stack(G):
     logger.debug("START reducing  stacks in graph: ")
