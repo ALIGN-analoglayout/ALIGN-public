@@ -70,8 +70,8 @@ def json_lef(input_json, out_lef, cell_pin, blockM, p):
 
         assert (j['bbox'][3]-j['bbox'][1]
                 ) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
-        assert (j['bbox'][2]-j['bbox'][0]
-                ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+        #assert (j['bbox'][2]-j['bbox'][0]
+        #        ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
 
         for obj in j['terminals']:
             for i in range(4):
@@ -123,11 +123,20 @@ def json_lef(input_json, out_lef, cell_pin, blockM, p):
             fp.write("    END\n")
             fp.write("  END %s\n" % i)
         fp.write("  OBS\n")
+        cap_layers = ['M1', 'M2', 'M3']
         for obj in j['terminals']:
-            if ('pin' not in obj or obj['pin'] not in cell_pin or blockM == 1) and obj['layer'] not in exclude_layers:
+            if ('pin' not in obj or obj['pin'] not in cell_pin) and blockM == 0 and obj['layer'] not in exclude_layers:
                 fp.write("    LAYER %s ;\n" % obj['layer'])
                 fp.write("      RECT %s %s %s %s ;\n" %
                          tuple([s(x) for x in obj['rect']]))
+            elif (blockM == 1) and obj['layer'] == 'Boundary':
+                for capL in cap_layers: 
+                    fp.write("    LAYER %s ;\n" % capL)
+                    fp.write("      RECT %s %s %s %s ;\n" %
+                             tuple([s(x) for x in obj['rect']]))
+            else:
+                pass
+
         fp.write("  END\n")
 
         fp.write("END %s\n" % out_lef)
