@@ -95,19 +95,19 @@ I0 (VDD VSS on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> \
         on\<8\> op\<1\> vbias) VCO_type2_65 _ar0=fin_n_vco_type_2 \
         _ar1=wnnn _ar2=fnnn _ar3=fin_p_vco_type_2 _ar4=fppp \
         _ar5=wpppn
-R0\<1\> (op\<1\> on\<2\>) resistor r=2000
-R0\<2\> (op\<2\> on\<3\>) resistor r=2000
-R0\<3\> (op\<3\> on\<4\>) resistor r=2000
-R0\<4\> (op\<4\> on\<5\>) resistor r=2000
-R0\<5\> (op\<5\> on\<6\>) resistor r=2000
-R0\<6\> (op\<6\> on\<7\>) resistor r=2000
-R0\<7\> (op\<7\> on\<8\>) resistor r=2000
-R1\<1\> (on\<1\> op\<2\>) resistor r=2000
-R1\<2\> (on\<2\> op\<3\>) resistor r=2000
-R1\<3\> (on\<3\> op\<4\>) resistor r=2000
-R1\<4\> (on\<4\> op\<5\>) resistor r=2000
-R1\<5\> (on\<5\> op\<6\>) resistor r=2000
-R1\<6\> (on\<6\> op\<7\>) resistor r=2000
-R1\<7\> (on\<7\> op\<8\>) resistor r=2000
+R0\<1\> (op\<1\> on\<2\>) resistor r=5000
+R0\<2\> (op\<2\> on\<3\>) resistor r=5000
+R0\<3\> (op\<3\> on\<4\>) resistor r=5000
+R0\<4\> (op\<4\> on\<5\>) resistor r=5000
+R0\<5\> (op\<5\> on\<6\>) resistor r=5000
+R0\<6\> (op\<6\> on\<7\>) resistor r=5000
+R0\<7\> (op\<7\> on\<8\>) resistor r=5000
+R1\<1\> (on\<1\> op\<2\>) resistor r=5000
+R1\<2\> (on\<2\> op\<3\>) resistor r=5000
+R1\<3\> (on\<3\> op\<4\>) resistor r=5000
+R1\<4\> (on\<4\> op\<5\>) resistor r=5000
+R1\<5\> (on\<5\> op\<6\>) resistor r=5000
+R1\<6\> (on\<6\> op\<7\>) resistor r=5000
+R1\<7\> (on\<7\> op\<8\>) resistor r=5000
 ends vco_dtype_12_hierarchical_res
 
