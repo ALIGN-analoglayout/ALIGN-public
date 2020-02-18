@@ -38,16 +38,20 @@ class MOSGenerator(DefaultCanvas):
 
         self.fin = self.addGen( Wire( 'fin', 'Fin', 'h',
                                       clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
-                                      spg=SingleGrid( offset=0, pitch=unitCellLength+self.pdk['Poly']['Pitch']+40)))
+                                      spg=SingleGrid( offset=0, pitch=unitCellLength)))
+
+        self.fin_diff = self.addGen( Wire( 'fin_diff', 'Fin', 'h',
+                                      clg=UncoloredCenterLineGrid( pitch= self.pdk['Fin']['Pitch'], width= self.pdk['Fin']['Width'], offset= self.pdk['Fin']['Offset']),
+                                      spg=SingleGrid( offset=0, pitch=self.pdk['Poly']['Pitch']))) 
 
         stoppoint = (self.gateDummy-1)* self.pdk['Poly']['Pitch'] +  self.pdk['Poly']['Offset']
         self.active = self.addGen( Wire( 'active', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
-                                         spg=EnclosureGrid( pitch=unitCellLength+20, offset=stoppoint*self.shared_diff, stoppoint=stoppoint*(1-self.shared_diff), check=True)))
+                                         spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         self.RVT = self.addGen( Wire( 'RVT', 'Rvt', 'h',
                                       clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
-                                      spg=EnclosureGrid( pitch=unitCellLength, offset=stoppoint*self.shared_diff, stoppoint=stoppoint*(1-self.shared_diff), check=True)))
+                                      spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
 
         stoppoint = activeOffset-activeWidth//2
         self.LISD = self.addGen( Wire( 'LISD', 'Lisd', 'v',
@@ -70,6 +74,14 @@ class MOSGenerator(DefaultCanvas):
                                             v_grid=CenteredGrid( offset= self.pdk['Poly']['Pitch']//2, pitch= self.pdk['Poly']['Pitch']),
                                             h_grid=self.fin.clg))
 
+        self.active_diff = self.addGen( Wire( 'active_diff', 'Active', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=activeWidth, offset=activeOffset),
+                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
+        
+        self.RVT_diff = self.addGen( Wire( 'RVT_diff', 'Rvt', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=RVTWidth, offset=activeOffset),
+                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))         
+ 
         stoppoint = unitCellLength//2-self.pdk['Active']['activebWidth_H']//2
         offset_active_body = (self.lFin//2)*self.pdk['Fin']['Pitch']+self.unitCellHeight-self.pdk['Fin']['Pitch']//2
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
@@ -119,10 +131,18 @@ class MOSGenerator(DefaultCanvas):
             self._xpins[name][pin].append(i)
 
         # Draw FEOL Layers
-
-        self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
-        self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
         x_cells = 3
+        if self.shared_diff == 1 and x == x_cells:  
+            self.addWire( self.active_diff, None, None, y, 0, 2*(x_cells+1)+1)
+            self.addWire( self.RVT_diff,  None, None, y, 0, 2*(x_cells+1)+1)  
+        else:
+            pass
+        if self.shared_diff == 0:
+            self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
+            self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
+        else:
+            pass
+
         for i in range(self.gatesPerUnitCell):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
 
