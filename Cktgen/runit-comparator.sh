@@ -19,3 +19,9 @@ docker cp sam:INPUT/mydesign_dr_globalrouting.json comparator.json
 docker rm sam
 
 cp comparator.json $ALIGN_HOME/Viewer/INPUT
+
+python ./check_results.py --circuit comparator --power vcc_0p9 --ground vssx
+
+cp comparator_drc.json $ALIGN_HOME/Viewer/INPUT 
+
+
