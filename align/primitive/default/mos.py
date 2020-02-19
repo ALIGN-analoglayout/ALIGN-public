@@ -87,6 +87,10 @@ class MOSGenerator(DefaultCanvas):
         self.activeb = self.addGen( Wire( 'activeb', 'Active', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Active']['activebWidth'], offset= offset_active_body),
                                          spg=EnclosureGrid( pitch=unitCellLength, offset=0, stoppoint=stoppoint, check=True)))
+         
+        self.activeb_diff = self.addGen( Wire( 'activeb_diff', 'Active', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Active']['activebWidth'], offset=offset_active_body),
+                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
@@ -119,7 +123,7 @@ class MOSGenerator(DefaultCanvas):
 
         self.postprocessor.register('V0', single_centered_via)
 
-    def _addMOS( self, x, y, name='M1', reflect=False, **parameters):
+    def _addMOS( self, x, y, x_cells, name='M1', reflect=False, **parameters):
 
         fullname = f'{name}_X{x}_Y{y}'
         self.subinsts[fullname].parameters.update(parameters)
@@ -131,10 +135,10 @@ class MOSGenerator(DefaultCanvas):
             self._xpins[name][pin].append(i)
 
         # Draw FEOL Layers
-        x_cells = 3
-        if self.shared_diff == 1 and x == x_cells:  
-            self.addWire( self.active_diff, None, None, y, 0, 2*(x_cells+1)+1)
-            self.addWire( self.RVT_diff,  None, None, y, 0, 2*(x_cells+1)+1)  
+        #print(x_cells)
+        if self.shared_diff == 1 and x == x_cells-1:  
+            self.addWire( self.active_diff, None, None, y, 0, 2*x_cells+1)
+            self.addWire( self.RVT_diff,  None, None, y, 0, 2*x_cells+1)  
         else:
             pass
         if self.shared_diff == 0:
@@ -146,8 +150,8 @@ class MOSGenerator(DefaultCanvas):
         for i in range(self.gatesPerUnitCell):
             self.addWire( self.pl, None, None, self.gatesPerUnitCell*x+self.gateDummy*self.shared_diff+i,   (y,0), (y,1))
 
-        if self.shared_diff == 1 and (x == 0 or x == x_cells):
-            dummy_gates = self.gatesPerUnitCell*(x_cells+1)+self.gateDummy if x == x_cells else 0
+        if self.shared_diff == 1 and (x == 0 or x == x_cells-1):
+            dummy_gates = self.gatesPerUnitCell*x_cells+self.gateDummy if x == x_cells-1 else 0
             for i in range(self.gateDummy):
                 self.addWire( self.pl, None, None, dummy_gates+i,   (y,0), (y,1))
         # Source, Drain, Gate Connections
@@ -226,17 +230,19 @@ class MOSGenerator(DefaultCanvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell, -1))
+        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+4, -1))
 
-    def _addBodyContact(self, x, y, yloc=None, name='M1'):
+    def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
         if yloc is not None:
             y = yloc
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
-        gate_x = x*gu + gu // 2
+        gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
+        #gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
-        self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
+        #self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
+        self.addWire( self.activeb_diff, None, None, y, 0, 2*x_cells+1)
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
@@ -257,27 +263,27 @@ class MOSGenerator(DefaultCanvas):
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, x_cells, names[0], False, **parameters)
-                    self._addBodyContact(x, y, y_cells - 1, names[0])
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[0])
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
-                    self._addMOS(x, y, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2, **parameters)
-                    self._addBodyContact(x, y, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
+                    self._addMOS(x, y, x_cells, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2, **parameters)
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, x_cells, names[((x % 2) + (y % 2)) % 2], False, **parameters)
-                    self._addBodyContact(x, y, y_cells - 1, names[((x % 2) + (y % 2)) % 2])
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2])
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False, **parameters)
-                    self._addBodyContact(x, y, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
                 else:
                     assert False, "Unknown pattern"
             self._connectDevicePins(y, connections)
