@@ -152,7 +152,10 @@ def _mapped_graph_list(G1, liblist, design_setup, DIGITAL=False):
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                        elif 'S' in Gsub.values() and get_key(Gsub,'S') not in design_setup["POWER"]:
+                        # remove pseudo diff pair
+                        elif  sub_block_name.startswith('DP') and get_key(Gsub,'S') in design_setup["POWER"]:
+                            logger.debug(f"skipping DP: {' '.join(Gsub)}")
+                        else
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
