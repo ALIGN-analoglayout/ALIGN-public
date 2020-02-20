@@ -434,11 +434,15 @@ workflows:
       - build-nightly3:
           requires:
             - start
+      - build-nightly4:
+          requires:
+            - start
       - finish-nightly:
           requires:
             - build-nightly
             - build-nightly2
             - build-nightly3
+            - build-nightly4
 
   full_after_nightly:
     triggers:
