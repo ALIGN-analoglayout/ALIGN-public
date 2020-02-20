@@ -70,8 +70,8 @@ def json_lef(input_json, out_lef, cell_pin, blockM, p):
 
         assert (j['bbox'][3]-j['bbox'][1]
                 ) % p['M2']['Pitch'] == 0, f"Cell height not a multiple of the grid {j['bbox']}"
-        #assert (j['bbox'][2]-j['bbox'][0]
-        #        ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
+        assert (j['bbox'][2]-j['bbox'][0]
+                ) % p['M1']['Pitch'] == 0, f"Cell width not a multiple of the grid {j['bbox']}"
 
         for obj in j['terminals']:
             for i in range(4):
