@@ -18,7 +18,7 @@ class MOSGenerator(default.MOSGenerator):
             for i in range(1,  self.finsPerUnitCell):
                 self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1) 
 
-        gate_x = x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2
+        gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2         
         self.addWire( self.LISD, None, None, gate_x - 1, (y, 1), (y+1, -1))
         self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1))
 
@@ -28,7 +28,7 @@ class MOSGenerator(default.MOSGenerator):
             y = yloc
         h = self.m2PerUnitCell
         gu = self.gatesPerUnitCell
-        gate_x = x*gu + gu // 2
+        gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         if self.shared_diff == 1:
             for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):

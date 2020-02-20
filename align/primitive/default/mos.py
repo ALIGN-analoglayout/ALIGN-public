@@ -92,6 +92,10 @@ class MOSGenerator(DefaultCanvas):
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Active']['activebWidth'], offset=offset_active_body),
                                          spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2)))
 
+        self.pb_diff = self.addGen( Wire( 'pb_diff', 'Pb', 'h',
+                                         clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pb']['pbWidth'], offset= offset_active_body),
+                                         spg=SingleGrid( pitch=self.pdk['Poly']['Pitch'], offset=(self.gateDummy-1)*self.pdk['Poly']['Pitch']+self.pdk['Poly']['Pitch']//2))) 
+
         stoppoint = unitCellLength//2-self.pdk['Pb']['pbWidth_H']//2
         self.pb = self.addGen( Wire( 'pb', 'Pb', 'h',
                                          clg=UncoloredCenterLineGrid( pitch=activePitch, width=self.pdk['Pb']['pbWidth'], offset= offset_active_body),
@@ -110,7 +114,7 @@ class MOSGenerator(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
-        v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
+        v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch'] 
         for i in range(activeWidth // v0pitch + 1):
             self.v0.h_clg.addCenterLine(i*v0pitch,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
@@ -133,7 +137,7 @@ class MOSGenerator(DefaultCanvas):
             for j in range(((self.finDummy+3)//2), self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
-
+            
         # Draw FEOL Layers
         if self.shared_diff == 0:
             self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
@@ -237,9 +241,10 @@ class MOSGenerator(DefaultCanvas):
         self._xpins[name]['B'].append(gate_x)
         if self.shared_diff == 0:
             self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1)) 
+            self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
         else:
             self.addWire( self.activeb_diff, None, None, y, 0, 2*x_cells+1)
-        self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
+            self.addWire( self.pb_diff, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
         self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
