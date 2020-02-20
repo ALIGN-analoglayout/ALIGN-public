@@ -6,7 +6,6 @@ Created on Fri Nov  2 21:33:22 2018
 """
 #%%
 import os
-import pickle
 import networkx as nx
 from networkx.algorithms import isomorphism
 
@@ -110,7 +109,7 @@ def read_lib(lib_dir_path):
 
 
 #%%
-def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
+def _mapped_graph_list(G1, liblist, design_setup, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
@@ -142,7 +141,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
                 key for key in Gsub
                 if 'net' not in G1.nodes[key]["inst_type"]]
                 logger.debug(f"matched inst: {all_nd}")
-                if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
+                if len(all_nd)>1 and dont_touch_clk(Gsub,design_setup["CLOCK"]):
                     logger.debug("Discarding match due to clock")
                     continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
@@ -153,7 +152,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                        else:
+                        elif 'S' in Gsub.values() and get_key(Gsub,'S') not in design_setup["POWER"]:
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
@@ -263,7 +262,7 @@ def compare_balanced_tree(G, node1, node2):
     logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False
 
-def reduce_graph(circuit_graph, mapped_graph_list, liblist):
+def reduce_graph(circuit_graph, mapped_graph_list, design_setup, liblist):
     """
     merge matched graphs
     """
@@ -327,7 +326,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                 else:
                     logger.debug(f"Multi node element: {sub_block_name}")
 
-                    reduced_graph, subgraph = merge_nodes(
+                    _, subgraph = merge_nodes(
                         G1, sub_block_name, remove_these_nodes, matched_ports)
                     logger.debug(f'Calling recursive for bock: {sub_block_name}')
                     #print(sub_block_name)
@@ -336,10 +335,10 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                         G2, [
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
-                        ])
+                        ],design_setup)
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
-                        G2, mapped_subgraph_list, liblist)
+                        G2, mapped_subgraph_list,design_setup, liblist)
                     check_nodes(updated_subgraph_circuit)
 
                     updated_circuit.extend(updated_subgraph_circuit)
