@@ -64,7 +64,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup, False )
-        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, design_setup, library)
+        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, library,design_setup)
         check_nodes(updated_circuit)
         UPDATED_CIRCUIT_LIST.extend(updated_circuit)
 

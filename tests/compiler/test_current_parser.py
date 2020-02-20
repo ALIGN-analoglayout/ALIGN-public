@@ -32,7 +32,7 @@ def test_parser3():
 
 def test_match():
     g,lib_list =test_parser3()
-    mapped_graph_list = _mapped_graph_list(g, lib_list)
+    mapped_graph_list = _mapped_graph_list(g, lib_list,)
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
     assert 'CMC_PMOS_S' in mapped_graph_list.keys()

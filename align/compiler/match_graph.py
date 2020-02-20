@@ -109,7 +109,7 @@ def read_lib(lib_dir_path):
 
 
 #%%
-def _mapped_graph_list(G1, liblist, design_setup, DIGITAL=False):
+def _mapped_graph_list(G1, liblist, design_setup={"DIGITAL":None,"POWER":None,"CLOCK":None}, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
@@ -153,9 +153,9 @@ def _mapped_graph_list(G1, liblist, design_setup, DIGITAL=False):
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                         # remove pseudo diff pair
-                        elif  sub_block_name.startswith('DP') and get_key(Gsub,'S') in design_setup["POWER"]:
+                        elif  sub_block_name.startswith('DP') and design_setup["POWER"] is not None and get_key(Gsub,'S') in design_setup["POWER"]:
                             logger.debug(f"skipping DP: {' '.join(Gsub)}")
-                        else
+                        else:
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
@@ -265,7 +265,7 @@ def compare_balanced_tree(G, node1, node2):
     logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False
 
-def reduce_graph(circuit_graph, mapped_graph_list, design_setup, liblist):
+def reduce_graph(circuit_graph, mapped_graph_list,liblist, design_setup={"DIGITAL":None,"POWER":None,"CLOCK":None}):
     """
     merge matched graphs
     """
@@ -341,7 +341,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, design_setup, liblist):
                         ],design_setup)
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
-                        G2, mapped_subgraph_list,design_setup, liblist)
+                        G2, mapped_subgraph_list, liblist,design_setup)
                     check_nodes(updated_subgraph_circuit)
 
                     updated_circuit.extend(updated_subgraph_circuit)
