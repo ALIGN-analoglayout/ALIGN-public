@@ -1,7 +1,7 @@
 import pathlib
 
 from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteCap
-from align.compiler.write_constraint import WriteConst, FindArray, CopyConstFile
+from align.compiler.write_constraint import WriteConst, FindArray
 from test_current_parser import test_match
 
 def test_verilog_writer():

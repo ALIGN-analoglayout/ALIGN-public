@@ -4,8 +4,6 @@ Created on Wed Feb 21 13:12:15 2020
 
 @author: kunal
 """
-from .util import convert_to_unit
-from .merge_nodes import merge_nodes
 
 from collections import Counter
 
