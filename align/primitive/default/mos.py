@@ -135,12 +135,6 @@ class MOSGenerator(DefaultCanvas):
             self._xpins[name][pin].append(i)
 
         # Draw FEOL Layers
-        #print(x_cells)
-        if self.shared_diff == 1 and x == x_cells-1:  
-            self.addWire( self.active_diff, None, None, y, 0, 2*x_cells+1)
-            self.addWire( self.RVT_diff,  None, None, y, 0, 2*x_cells+1)  
-        else:
-            pass
         if self.shared_diff == 0:
             self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
             self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
@@ -230,7 +224,7 @@ class MOSGenerator(DefaultCanvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+4, -1))
+        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1))
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
@@ -241,8 +235,10 @@ class MOSGenerator(DefaultCanvas):
         gate_x = self.gateDummy*self.shared_diff + x*gu + gu // 2
         #gate_x = x*gu + gu // 2
         self._xpins[name]['B'].append(gate_x)
-        #self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1))
-        self.addWire( self.activeb_diff, None, None, y, 0, 2*x_cells+1)
+        if self.shared_diff == 0:
+            self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1)) 
+        else:
+            self.addWire( self.activeb_diff, None, None, y, 0, 2*x_cells+1)
         self.addWire( self.pb, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
@@ -258,6 +254,11 @@ class MOSGenerator(DefaultCanvas):
         self._nets = collections.defaultdict(lambda: collections.defaultdict(list)) # net:m2track:m1contacts (Updated by self._connectDevicePins)
         for y in range(y_cells):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
+            if self.shared_diff == 1: 
+                self.addWire( self.active_diff, None, None, y, 0, 2*x_cells+1)
+                self.addWire( self.RVT_diff,  None, None, y, 0, 2*x_cells+1)
+            else:
+                pass
             for x in range(x_cells):
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
