@@ -142,7 +142,6 @@ class WriteSpice:
             if 'source' in attr['inst_type']:
                 continue
             if 'net' not in attr['inst_type']:
-                print(attr)
                 if len(attr['inst_type'].split('_'))>2 and attr['inst_type'].split('_')[0]+'_'+attr['inst_type'].split('_')[1] in  self.lib_names:
                     self.all_mos.append({"name":attr['inst_type'], "model": 'nmos_rvt',"values": attr['values']})
                     line= "\nx" + node + ' '

@@ -72,7 +72,6 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(argv) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
-            #print("deleting node",pins)
             G.remove_node(pins)
     for node in argv:
         G.remove_node(node)
@@ -92,95 +91,22 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 #    for node in subgraph:
 #        print(node,"subg node",subgraph.nodes[node])
 #        print(node,"main node",g_copy.nodes[node])
-
-    graph_match = isomorphism.GraphMatcher(
-        g_copy,
-        subgraph,
-        node_match=isomorphism.categorical_node_match(['inst_type'],
-                                                      ['metal', 1]))
-    #    GM = isomorphism.GraphMatcher(g_copy,subgraph)
-
-    if not graph_match.subgraph_is_isomorphic():
-        logger.warning("isomorphism check fail")
+#    print(subgraph.nodes(data=True))
+#    graph_match = isomorphism.GraphMatcher(
+#        g_copy,
+#        subgraph,
+#        node_match=isomorphism.categorical_node_match(['inst_type'],
+#                                                      ['metal', 1]))
+#    #    GM = isomorphism.GraphMatcher(g_copy,subgraph)
+#
+#    if not graph_match.subgraph_is_isomorphic():
+#        logger.warning("isomorphism check fail")
     #print("checking sub graph")
     check_nodes(subgraph)
 
     return G, subgraph
 
-#%%
-#def merged_value(values1, values2):
-#    if [param for param in values1.keys() if 'fin' in param.lower()]:
-#        value = {'nfin': find_max_transistor_size(values1, values2)}
-#    elif [param for param in values2.keys() if 'r' == param.lower()]:
-#        value = {'res': calc_res(values2)}
-#    elif [param for param in values2.keys() if 'c' == param.lower()]:
-#        value = {'cap': calc_cap(values2)}
-#    elif [param for param in values2.keys() if 'fin' in param.lower()]:
-#        value = {'nfin': calc_total_fin(values2)}
-#    else:
-#        value = calc_value(values2)
-#    #print(value)
-#    return value
-#
-#
-#def find_max_transistor_size(values1, values2):
-#    val_1 = calc_total_fin(values1)
-#    val_2 = calc_total_fin(values1)
-#    return max(val_1, val_2)
-#
-#
-#def calc_total_fin(values):
-#    total_fin = 1
-#    #print(values)
-#    for param, value in values.items():
-#        if 'fin' in param:
-#            total_fin = total_fin * int(value)
-#        elif 'nf' in param:
-#            total_fin = total_fin * int(value)
-#        elif 'M' in param:
-#            total_fin = total_fin * int(value)
-#    #print("total fin", total_fin)
-#    return total_fin
-#
-#
-#def calc_res(values):
-#    for param, value in values.items():
-#        if 'r' in param:
-#            float_value = convert_unit(value)
-#    total_res = float_value
-#
-#    return total_res
-#
-#
-#def calc_cap(values):
-#    for param, value in values.items():
-#        if 'c' in param:
-#            float_value = convert_unit(value)
-#    value = float_value * 1e15
-#
-#    return value
-#
-#def calc_value(values):
-#    #print(values)
-#    total_val =1
-#    for param, value in values.items():
-#        if value == '0' or  'flag' in param:
-#            continue
-#        elif 'l' in param:
-#            length = convert_unit(value)
-#            total_val = total_val *length
-#        elif 'w' in param:
-#            width = convert_unit(value)
-#            total_val = total_val *width
-#        elif 'm' == param:
-#            multiplier = convert_unit(value)
-#            total_val = total_val *multiplier
-#        else:
-#            convert_unit(value)
-#       # print (param, total_val)
-#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val }
-#    #print(length*1E9)
-#    return {'total_val': int(length*1E9) }
+
 
 #%%
 def convert_unit(value):

@@ -202,5 +202,5 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
-    print("compliation stage done")
+    print("compilation stage done")
     return primitives

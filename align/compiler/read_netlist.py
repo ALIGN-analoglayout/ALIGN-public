@@ -236,6 +236,10 @@ class SpiceParser:
         logger.debug(f'started reading subckt: {line.strip()}')
         subckt_nodes = line.strip().split()
         subckt_name = subckt_nodes[1]
+        
+        #added to avoid assertion for string in PnR
+        if subckt_name[0].isdigit():
+            subckt_name = "align_"+subckt_name
         line = self.get_next_line(fp_l, 1)
         nodes, params = self._parse_subckt(line, fp_l)
 

@@ -286,6 +286,10 @@ def _parse_inst(line):
         elif  device["inst_type"]=="dummy":
             #device = None
             logger.error(f"Removing dummy transistor: {line}")
+        #added to avoid assertion for string in PnR
+        if device["inst_type"][0].isdigit():
+            device["inst_type"] = "align_"+device["inst_type"]
+
     elif line.startswith('*'):
         logger.info(f"comment: {line}")
     else:
