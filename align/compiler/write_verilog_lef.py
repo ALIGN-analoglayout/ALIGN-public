@@ -115,12 +115,23 @@ class WriteVerilog:
 class WriteSpice:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, lib_names):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = inout_pin_names
         self.subckt_list = subckt_list
+        self.lib_names = lib_names
+        self.all_mos = []
+    def print_mos_subckt(self,fp,printed_mos):
+        for mos in self.all_mos:
+            if mos["name"] not in printed_mos:
+                fp.write("\n.subckt " + mos["name"] + " D G S B")
+                fp.write("\nm0 D G S1 B " + mos['model'] + ' '+ concat_values(mos["values"]))
+                fp.write("\nm1 S1 G S B " + mos['model'] + ' '+ concat_values(mos["values"]))
+                fp.write("\n.ends "+mos["name"]+'\n')
+                printed_mos.append(mos["name"])
+        return printed_mos
 
     def print_subckt(self, fp):
         logger.debug(f"Writing spice module : {self.circuit_name}")
@@ -131,7 +142,14 @@ class WriteSpice:
             if 'source' in attr['inst_type']:
                 continue
             if 'net' not in attr['inst_type']:
-                fp.write("\n" + node + ' ')
+                if attr['inst_type'].split('_')[0]+'_'+attr['inst_type'].split('_')[1] in  self.lib_names:
+                    #print(attr)
+                    self.all_mos.append({"name":attr['inst_type'], "model": 'nmos_rvt',"values": attr['values']})
+                    line= "\nx" + node + ' '
+                elif attr['real_inst_type'] in ['cap', 'res', '']:
+                    line= "\n" + node + ' '                    
+                else:
+                    line= "\n" + node + ' '
                 ports = []
                 nets = []
                 if "ports_match" in attr:
@@ -167,7 +185,8 @@ class WriteSpice:
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) +' '+ attr['inst_type'] + ' '+ concat_values(attr['values']) )
+                line +=' '.join(nets) +' '+ attr['inst_type']
+                fp.write(line)
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
 

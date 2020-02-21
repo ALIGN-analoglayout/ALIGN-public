@@ -109,7 +109,7 @@ def read_lib(lib_dir_path):
 
 
 #%%
-def _mapped_graph_list(G1, liblist, design_setup={"DIGITAL":None,"POWER":None,"CLOCK":None}, DIGITAL=False):
+def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
@@ -141,7 +141,7 @@ def _mapped_graph_list(G1, liblist, design_setup={"DIGITAL":None,"POWER":None,"C
                 key for key in Gsub
                 if 'net' not in G1.nodes[key]["inst_type"]]
                 logger.debug(f"matched inst: {all_nd}")
-                if len(all_nd)>1 and dont_touch_clk(Gsub,design_setup["CLOCK"]):
+                if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
                     logger.debug("Discarding match due to clock")
                     continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
@@ -153,7 +153,7 @@ def _mapped_graph_list(G1, liblist, design_setup={"DIGITAL":None,"POWER":None,"C
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                         # remove pseudo diff pair
-                        elif  sub_block_name.startswith('DP') and design_setup["POWER"] is not None and get_key(Gsub,'S') in design_setup["POWER"]:
+                        elif  sub_block_name.startswith('DP') and POWER is not None and get_key(Gsub,'S') in POWER:
                             logger.debug(f"skipping DP: {' '.join(Gsub)}")
                         else:
                             map_list.append(Gsub)
@@ -265,7 +265,7 @@ def compare_balanced_tree(G, node1, node2):
     logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False
 
-def reduce_graph(circuit_graph, mapped_graph_list,liblist, design_setup={"DIGITAL":None,"POWER":None,"CLOCK":None}):
+def reduce_graph(circuit_graph, mapped_graph_list,liblist, DIGITAL=None,POWER=None,CLOCK=None):
     """
     merge matched graphs
     """
@@ -338,10 +338,10 @@ def reduce_graph(circuit_graph, mapped_graph_list,liblist, design_setup={"DIGITA
                         G2, [
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
-                        ],design_setup)
+                        ],)
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
-                        G2, mapped_subgraph_list, liblist,design_setup)
+                        G2, mapped_subgraph_list, liblist)
                     check_nodes(updated_subgraph_circuit)
 
                     updated_circuit.extend(updated_subgraph_circuit)

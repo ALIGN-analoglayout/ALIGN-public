@@ -283,14 +283,7 @@ jobs:
       
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1600 -k 'Sanitized_TX_8l12b' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_13.xml"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1600 -k 'Santized_12b_ADC_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_14.xml"
+            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1600 -k 'Santized_12b_ADC_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_15.xml"
               docker cp align_container:test-reports .
               docker rm align_container
           no_output_timeout: 30m
@@ -345,10 +338,10 @@ jobs:
 
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'sc_dc_dc' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml"
+            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=14000 -k 'sc_dc_dc' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml"
             docker cp align_container:test-reports .
             docker rm align_container
-          no_output_timeout: 120m
+          no_output_timeout: 260m
 
       - persist_to_workspace:
           root: /work/workspace
@@ -425,6 +418,28 @@ jobs:
           paths:
             - test-reports/align-nightly
 
+  build-nightly8:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -t align_image -f ./build/Dockerfile.base .
+
+      - run:
+          command: |
+            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=14000 -k 'Sanitized_TX_8l12b' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit8.xml"
+              docker cp align_container:test-reports .
+              docker rm align_container
+          no_output_timeout: 260m
+      
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-nightly
   finish:
     executor: git-executor
 
@@ -496,6 +511,9 @@ workflows:
       - build-nightly7:
           requires:
             - start
+      - build-nightly8:
+          requires:
+            - start
       - finish-nightly:
           requires:
             - build-nightly
@@ -505,6 +523,7 @@ workflows:
             - build-nightly5
             - build-nightly6
             - build-nightly7
+            - build-nightly8
 
   full_after_nightly:
     triggers:

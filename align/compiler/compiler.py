@@ -84,7 +84,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     logger.debug(f"Writing results in dir: {result_dir}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
-
+    printed_mos = []
     logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
@@ -163,17 +163,21 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             else:
                 logger.info(f"No physical information found for: {name}")
 
+        lib_names=[lib_ele['name'] for lib_ele in library]
         if name in ALL_LEF:
             logger.debug(f"writing spice for block: {name}")
-            ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt)
+            ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt, lib_names)
             ws.print_subckt(SP_FP)
+            ws.print_mos_subckt(SP_FP,printed_mos)
+
             continue
-        else:
-            ws = WriteSpice(graph, name, inoutpin, updated_ckt)
-            ws.print_subckt(SP_FP)
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF:
+            ws = WriteSpice(graph, name, inoutpin, updated_ckt, lib_names)
+            ws.print_subckt(SP_FP)
+            ws.print_mos_subckt(SP_FP,printed_mos)
+
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt, POWER_PINS)
             logger.debug(f"call array finder for block: {name}")
@@ -184,7 +188,6 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
             WriteCap(graph, result_dir, name, unit_size_cap,all_array)
             check_common_centroid(graph,const_file,inoutpin)
             ##Removinf constraints to fix cascoded cmc
-            lib_names=[lib_ele['name'] for lib_ele in library]
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['DIGITAL']+design_setup['CLOCK']

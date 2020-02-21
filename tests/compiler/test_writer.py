@@ -20,7 +20,7 @@ def test_verilog_writer():
         wv = WriteVerilog(subckt["graph"],subckt["name"]  , subckt["ports"], subckts,['vdd!','vss'])
         wv.print_module(VERILOG_FP)
         if subckt["name"] in available_cell_generator:
-            ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts)
+            ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts,available_cell_generator)
             ws.print_subckt(SP_FP)
         WriteConst(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"], subckt['ports'],[])
         all_array=FindArray(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"] )
