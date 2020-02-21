@@ -1,6 +1,7 @@
 import pathlib
 
-from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteConst,FindArray,WriteCap
+from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef,WriteCap
+from align.compiler.write_constraint import WriteConst, FindArray
 from test_current_parser import test_match
 
 def test_verilog_writer():
@@ -19,7 +20,7 @@ def test_verilog_writer():
         wv = WriteVerilog(subckt["graph"],subckt["name"]  , subckt["ports"], subckts,['vdd!','vss'])
         wv.print_module(VERILOG_FP)
         if subckt["name"] in available_cell_generator:
-            ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts)
+            ws = WriteSpice(subckt["graph"],subckt["name"]+block_name_ext  , subckt["ports"], subckts,available_cell_generator)
             ws.print_subckt(SP_FP)
         WriteConst(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"], subckt['ports'],[])
         all_array=FindArray(subckt["graph"], pathlib.Path(__file__).parent, subckt["name"] )
