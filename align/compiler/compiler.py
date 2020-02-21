@@ -49,7 +49,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         logger.debug(f"START MATCHING in circuit: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name in design_setup['DIGITAL']:
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup, True )
+            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER'] ,design_setup['CLOCK'], True )
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logger.debug(f"no of nodes: {len(G1)}")
@@ -63,7 +63,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                 preprocess_stack(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup, False )
+            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER'] ,design_setup['CLOCK'], False )
         updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, library,design_setup)
         check_nodes(updated_circuit)
         UPDATED_CIRCUIT_LIST.extend(updated_circuit)
@@ -202,5 +202,5 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
     logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
-
+    print("compliation stage done")
     return primitives

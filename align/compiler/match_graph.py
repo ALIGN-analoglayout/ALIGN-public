@@ -170,7 +170,7 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
     return mapped_graph_list
 #%%
 def dont_touch_clk(Gsub,CLOCK):
-    if CLOCK:
+    if CLOCK and CLOCK is not None:
         for clk in CLOCK:
             if clk in Gsub:
                 return True
@@ -338,7 +338,7 @@ def reduce_graph(circuit_graph, mapped_graph_list,liblist, DIGITAL=None,POWER=No
                         G2, [
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
-                        ],)
+                        ])
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
                         G2, mapped_subgraph_list, liblist)
