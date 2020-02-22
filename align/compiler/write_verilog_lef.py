@@ -224,21 +224,30 @@ def generate_lef(name, values, available_block_lef,
         #print("all val",values)
         if 'cap' in values.keys():
             size = '%g'%(round(values["cap"]*1E15,4))
+            num_of_unit = float(size)/unit_size_cap
         elif 'c' in values.keys():
             size = '%g'%(round(values["c"]*1E15,4))
+            num_of_unit = float(size)/unit_size_cap
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
+            num_of_unit=1
         logger.debug(f"Found cap with size: {size}, {unit_size_cap}")
         block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
         unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name}, {size}')
-        return unit_block_name, {
-            'primitive': block_name,
-            'value': unit_size_cap
-        }
+        if  num_of_unit > 128:
+            return block_name, {
+                'primitive': block_name,
+                'value': float(size)
+            }
+        else:
+            return unit_block_name, {
+                'primitive': block_name,
+                'value': unit_size_cap
+            }
 
     # elif name.lower().startswith('res_array_8'):
     #     if 'res' in values.keys():
@@ -355,20 +364,7 @@ def generate_lef(name, values, available_block_lef,
     raise NotImplementedError(f"Could not generate LEF for {name}")
 
 
-def connection(graph,net):
-    conn =[]
-    for nbr in list(graph.neighbors(net)):
-        if "ports_match" in graph.nodes[nbr]:
-            logger.debug("ports match:%s",graph.nodes[nbr]["ports_match"].items())
-            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
-        elif "connection" in graph.nodes[nbr]:
-            logger.debug("connection:%s",graph.nodes[nbr]["connection"].items())
-            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
-    if graph.nodes[net]["net_type"]=="external":
-        conn.append(net)
-    return conn
+
 
 def check_common_centroid(graph,const_path,ports):
     """ Reads available const in input dir
@@ -383,7 +379,7 @@ def check_common_centroid(graph,const_path,ports):
         line = const_fp.readline()
         while line:
             logger.info("checking cc constraint for caps:%s",line)
-            if line.startswith("CC") and len(line.strip().split(','))>=5:
+            if line.startswith("CC") and len(line[line.find("{")+1:line.find("}")].split(','))>=2:
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 updated_cap = caps_in_line.replace(',','_')
                 cap_blocks = caps_in_line.strip().split(',')
@@ -393,7 +389,6 @@ def check_common_centroid(graph,const_path,ports):
                     conn = list(graph.neighbors(cap_block))
                     matched_ports['MINUS'+str(idx)] = conn[0]
                     matched_ports['PLUS'+str(idx)]= conn[1]
-                #print("matched_ports",cc_pair,matched_ports)
                 line = line.replace(caps_in_line,updated_cap)
                 graph, _ = merge_nodes(
                         graph, 'Cap_cc',cap_blocks , matched_ports)
@@ -472,9 +467,13 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 size = attr['values']["c"]*1E15
             else:
                 size = unit_size_cap
-            n_cap = str(ceil(size/unit_size_cap))
-            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
-            cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
+            n_cap = ceil(size/unit_size_cap)
+            if n_cap > 128:
+                unit_block_name = '} , {Cap_' + str(round(size,1)) + 'f} )\n'
+                n_cap=1
+            else:
+                unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
+            cap_line = "CC ( {"+node+"} , {"+str(n_cap)+unit_block_name
             logger.debug("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)
             available_cap_const.append(node)

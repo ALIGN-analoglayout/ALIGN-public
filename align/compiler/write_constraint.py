@@ -25,7 +25,6 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
         for node1 in list(G.neighbors(nodes1)):
             if node1 not in traverced:
                 logger.debug(node1)
-                #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
                 match_pair[node1]=node1
                 traverced.append(node1)
                 compare_nodes(G,match_pair,traverced,node1,node1)
@@ -36,10 +35,7 @@ def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
                 if node1 != node2 and node2 not in traverced:
                     if compare_node(G,node1,node2):
                         if G.get_edge_data(nodes1,node1)['weight'] == G.get_edge_data(nodes2,node2)['weight']:
-                            #match_pair[nodes1][1].append(node1)
-                            #match_pair[nodes2][2].append(node2)
                             match_pair[node1]=node2
-                            #print(node1,node2)
                             traverced.append(node1)
                             traverced.append(node2)
                             compare_nodes(G,match_pair,traverced,node1,node2)
@@ -68,7 +64,6 @@ def matching_groups(G,level1):
             if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2):
                 found_flag=0
                 #logger.debug("similar_group %s",similar_groups)
-                #print(l1_node1,l1_node2)
                 for index, sublist in enumerate(similar_groups):
                     if l1_node1 in sublist and l1_node2 in sublist:
                         found_flag=1
@@ -76,13 +71,11 @@ def matching_groups(G,level1):
                     if l1_node1 in sublist:
                         similar_groups[index].append(l1_node2)
                         found_flag=1
-                        #print("found match")
 
                         break
                     elif l1_node2 in sublist:
                         similar_groups[index].append(l1_node1)
                         found_flag=1
-                        #print("found match")
                         break
                 if found_flag==0:
                     similar_groups.append([l1_node1,l1_node2])
@@ -93,9 +86,7 @@ def trace_template(graph, similar_node_groups,visited,template,array):
     for source,groups in similar_node_groups.items():
         next_match[source]=[]
         for node in groups:
-            #print(node)
             level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            #level1=[l1 for l1 in level_1a if l1 not in visited]
             next_match[source] +=level1
             visited +=level1
         if len(next_match[source])==0:
@@ -111,14 +102,11 @@ def trace_template(graph, similar_node_groups,visited,template,array):
 
 
 def match_branches(graph,nodes_dict):
-    #print("matching branches",nodes_dict)
-    #match_pair={}
     nbr_values = {}
     for node, nbrs in nodes_dict.items():
         #super_dict={}
         super_list=[]
         for nbr in nbrs:
-            #print("checking nbr",nbr,graph.nodes[nbr])
             if graph.nodes[nbr]['inst_type']== 'net':
                 super_list.append('net')
                 super_list.append(graph.nodes[nbr]['net_type'])
@@ -126,13 +114,11 @@ def match_branches(graph,nodes_dict):
                 super_list.append(graph.nodes[nbr]['inst_type'])
                 for v in graph.nodes[nbr]['values'].values():
                     #super_dict.setdefault(k,[]).append(v)
-                    #print("value",k,v
                     super_list.append(v)
         nbr_values[node]=Counter(super_list)
     _,main=nbr_values.popitem()
     for node, val in nbr_values.items():
         if val == main:
-            #print("found values",list(val.elements()))
             continue
         else:
             return False
@@ -145,7 +131,6 @@ def FindArray(graph,input_dir,name):
     all_array = {}
 
     for node, attr in graph.nodes(data=True):
-        #print("node data",graph.nodes[node])
         if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
             level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
             array_of_node[node]=matching_groups(graph,level1)
@@ -175,14 +160,13 @@ def CopyConstFile(name, input_dir, working_dir):
     return const_file
 
 def WriteConst(graph, input_dir, name, ports, stop_points):
-
     const_file = (input_dir / (name + '.const'))
 
     #check_common_centroid(graph,const_file,ports)
     logger.debug("writing constraints: %s",const_file)
     #const_fp.write(str(ports))
     #const_fp.write(str(graph.nodes()))
-    traverced =stop_points
+    traverced =stop_points.copy()
     all_match_pairs={}
     for port1 in sorted(ports):
         if port1 in graph.nodes() and port1 not in traverced:
@@ -223,10 +207,9 @@ def WriteConst(graph, input_dir, name, ports, stop_points):
     if len(list(all_match_pairs.keys()))>0:
         symmBlock = "SymmBlock ("
         for key, value in all_match_pairs.items():
-            if key in stop_points:
+            if key in stop_points or key in symmBlock or value in symmBlock:
                 continue
             if graph.nodes[key]["inst_type"]!="net" and \
-                key not in symmBlock and value not in symmBlock and \
                 'Dcap' not in graph.nodes[key]["inst_type"] :
                 if key !=value:
                     symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
@@ -242,8 +225,26 @@ def WriteConst(graph, input_dir, name, ports, stop_points):
             if graph.nodes[key]["inst_type"]!="net" and 'Dcap' not in graph.nodes[key]["inst_type"] :
                 if key ==value and key not in symmBlock:
                     symmBlock = symmBlock+' {'+key+ '} ,'
-
-        symmBlock = symmBlock[:-1]+')\n'
+        if len(symmBlock) > 11:
+            symmBlock = symmBlock[:-1]+')\n'
         if not existing_SymmBlock:
             const_fp.write(symmBlock)
         const_fp.close()
+
+def connection(graph,net):
+    conn =[]
+    for nbr in list(graph.neighbors(net)):
+        try:
+            if "ports_match" in graph.nodes[nbr]:
+                logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
+                idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
+                conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+            elif "connection" in graph.nodes[nbr]:
+                logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
+                idx=list(graph.nodes[nbr]["connection"].values()).index(net)
+                conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
+        except ValueError:
+            logger.debug("internal net")
+    if graph.nodes[net]["net_type"]=="external":
+        conn.append(net)
+    return conn
