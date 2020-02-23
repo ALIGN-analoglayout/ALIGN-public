@@ -249,7 +249,6 @@ def _parse_inst(line):
         if '(' in line:
             line = line.replace('(', '').replace(')', '')
 
-
         if line:
             all_nodes = line.strip().split()
             hier_nodes = []

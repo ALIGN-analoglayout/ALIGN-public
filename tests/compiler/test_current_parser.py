@@ -44,6 +44,7 @@ def test_match():
             "name": "ota",
             "graph":reduced_graph ,
             "ports":find_ports(reduced_graph),
+            "ports_weight":find_ports_weight(reduced_graph),
             "size": len(reduced_graph.nodes())
         })
     print(reduced_graph.nodes())
@@ -57,3 +58,13 @@ def find_ports(graph):
             if attr['net_type'] == "external":
                 ports.append(node)
     return ports
+
+def find_ports_weight(graph):
+    ports=find_ports(graph)
+    ports_weight = {}
+    for port in ports:
+        ports_weight[port] = []
+        for nbr in list(graph.neighbors(port)):
+            ports_weight[port].append(graph.get_edge_data(nbr,port)['weight'])
+    return ports_weight
+

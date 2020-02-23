@@ -5,7 +5,7 @@ Created on Thu Nov 29 22:19:39 2018
 @author: kunal
 """
 import networkx as nx
-from networkx.algorithms import isomorphism
+#from networkx.algorithms import isomorphism
 
 import logging
 logger = logging.getLogger(__name__)
@@ -14,12 +14,12 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     """ Merges the  given nodes in argv and returns a
      reduced graph. It also returns a subgraph(not used anymore)"""
 
-    g_copy = G.copy()
+    #g_copy = G.copy()
     for node in argv:
         if not G.nodes[node]:
             logger.debug("node not in graph anymore")
             return G, nx.Graph
-    #print("Is input bipartite",nx.is_bipartite(G))
+    logger.debug(f"Is input bipartite: {nx.is_bipartite(G)}")
     assert len(argv) > 1
     #  print("Merging nodes",argv)
     new_node = ""
@@ -35,10 +35,8 @@ def merge_nodes(G, hier_type, argv, matched_ports):
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=merged_value({},G.nodes[node]['values']))
 
-        #max_value.extend(G.nodes[node]['values'])
         max_value = merged_value(max_value, G.nodes[node]['values'])
-        #if max_value.values()
-        #print(G.nodes[node])
+
         nbr = G.neighbors(node)
         for ele in nbr:
             if ele not in subgraph.nodes():
@@ -54,21 +52,14 @@ def merge_nodes(G, hier_type, argv, matched_ports):
             else:
                 ports[ele] = G[node][ele]["weight"]
 
-        #G.add_edge(new_node,ele,weight=wt)
-    #models = {G.nodes[node]["real_inst_type"] for node in argv}
-    #if '' in models:
-    #    models.remove('')
-    #if len(models) == 1:
-    #    max_value['model'] = models.pop()
+
     new_node = new_node[1:]
     G.add_node(new_node,
                inst_type=hier_type,
                real_inst_type=hier_type,
                ports_match=matched_ports,
                values=max_value)
-    #print("max_value",max_value)
-    #if [val for val in max_value.values() if isinstance(val, str)]
-    #    print("wrong value type",new_node)
+    logger.debug(f"creating a super node of combination of nodes: {hier_type}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(argv) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
@@ -77,31 +68,8 @@ def merge_nodes(G, hier_type, argv, matched_ports):
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
-        #print("new ports",pins,ports[pins])
+        logger.debug(f"new ports: {pins},{ports[pins]}")
 
-    #nx.write_yaml(subgraph,"subgraph.yaml")
-    #nx.write_yaml(g_copy,"graph.yaml")
-
-    #print("Is output bipartite",nx.is_bipartite(G))
-    #print("Is subgraph bipartite",nx.is_bipartite(G))
-
-
-#    for node in g_copy:
-#        print(g_copy[node])
-#    for node in subgraph:
-#        print(node,"subg node",subgraph.nodes[node])
-#        print(node,"main node",g_copy.nodes[node])
-#    print(subgraph.nodes(data=True))
-#    graph_match = isomorphism.GraphMatcher(
-#        g_copy,
-#        subgraph,
-#        node_match=isomorphism.categorical_node_match(['inst_type'],
-#                                                      ['metal', 1]))
-#    #    GM = isomorphism.GraphMatcher(g_copy,subgraph)
-#
-#    if not graph_match.subgraph_is_isomorphic():
-#        logger.warning("isomorphism check fail")
-    #print("checking sub graph")
     check_nodes(subgraph)
 
     return G, subgraph
@@ -166,12 +134,33 @@ def check_values(values):
         assert(type(value)==int or type(value)==float)
 
 def check_nodes(graph):
-    """ Checking all values"""
+    """ Checking node paramters to be dict type"""
     for node, attr in graph.nodes(data=True):
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
 
 def merged_value(values1, values2):
+    """
+    combines values of different devices:
+        right now since primitive generator takes only one value we use max value
+    try:
+    #val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
+    #merged_value(val1,val2)   
+
+    Parameters
+    ----------
+    values1 : TYPE. dict
+        DESCRIPTION. dict of parametric values
+    values2 : TYPE. dict
+        DESCRIPTION.dict of parametric values
+
+    Returns
+    -------
+    merged_vals : TYPE dict
+        DESCRIPTION. max of each parameter value
+
+    """
     merged_vals={}
     if values1:
         for param,value in values1.items():
@@ -183,6 +172,4 @@ def merged_value(values1, values2):
             merged_vals[param] = convert_unit(value)
     check_values(merged_vals)
     return merged_vals
-#val1={'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-#val2 = {'res': '13.6962k', 'l': '8u', 'w': '500n', 'm': '1'}
-#merged_value(val1,val2)
+

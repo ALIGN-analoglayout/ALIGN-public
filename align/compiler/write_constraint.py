@@ -9,59 +9,82 @@ from collections import Counter
 
 import logging
 logger = logging.getLogger(__name__)
-def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
-    #logger.debug("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
-    #logger.debug("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
-    #match_pair={}
-    #logger.debug("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
-    if 'net' in G.nodes[nodes1]['inst_type'] and \
-        G.nodes[nodes1]['net_type'] == 'external':
-            port=True
+def compare_nodes(G,match_pair,traverced,node1,node2, ports_weight):
+    """
+
+    Parameters
+    ----------
+    G : networkx graph
+        reduced hierarchical circuit graph.
+    match_pair : dict type
+        stores list of matched pairs.
+    traverced : list of nodes already traversed, to avoid retracing
+    node1,node2 : start points to create trees for comparison
+    ports_weight :TYPE. dict
+        dictionary of port weights
+    Returns
+    -------
+    match_pair : dict type
+        stores list of matched pairs.
+
+    """
+    logger.debug("comparing %s,%s,%s%s, traversed %s %s",node1,G.nodes[node1],node2,G.nodes[node2],traverced,list(G.neighbors(node1)))
+    if 'net' in G.nodes[node1]['inst_type'] and \
+        G.nodes[node1]['net_type'] == 'external':
+        port = True
+        logger.debug(f"starting from port: {node1}, {node2}")
     else:
         port = False
-    if (not port and len(list(G.neighbors(nodes1))) <=2 and \
-        set(G.neighbors(nodes1)) == set(G.neighbors(nodes2)) ) or\
-        (port and len(list(G.neighbors(nodes1))) ==1):
-        for node1 in list(G.neighbors(nodes1)):
-            if node1 not in traverced:
-                logger.debug(node1)
-                match_pair[node1]=node1
-                traverced.append(node1)
-                compare_nodes(G,match_pair,traverced,node1,node1)
-    for node1 in list(G.neighbors(nodes1)):
-        if node1 not in traverced and \
-                node1 not in match_pair.keys():
-            for node2 in list(G.neighbors(nodes2)):
-                if node1 != node2 and node2 not in traverced:
-                    if compare_node(G,node1,node2):
-                        if G.get_edge_data(nodes1,node1)['weight'] == G.get_edge_data(nodes2,node2)['weight']:
-                            match_pair[node1]=node2
-                            traverced.append(node1)
-                            traverced.append(node2)
-                            compare_nodes(G,match_pair,traverced,node1,node2)
+    if not port and len(list(G.neighbors(node1))) <=2 and \
+        (port and set(G.neighbors(node1)) == set(G.neighbors(node2)) ) or\
+         (port and len(list(G.neighbors(node1))) ==1):
+        for nbr_node1 in list(G.neighbors(node1)):
+            logger.debug(f"neighbour:{nbr_node1}")
+            if nbr_node1 not in traverced:
+                logger.debug(f"traversing single branch {node1}")
+                match_pair[nbr_node1]=nbr_node1
+                traverced.append(nbr_node1)
+                compare_nodes(G,match_pair,traverced,nbr_node1,nbr_node1,ports_weight)
+    for nbr_node1 in list(G.neighbors(node1)):
+        if nbr_node1 not in traverced and \
+                nbr_node1 not in match_pair.keys():
+            for nbr_node2 in list(G.neighbors(node2)):
+                if nbr_node1 != nbr_node2 and nbr_node2 not in traverced:
+                    if compare_node(G,nbr_node1,nbr_node2,ports_weight):
+                        if G.get_edge_data(node1,nbr_node1)['weight'] == G.get_edge_data(node2,nbr_node2)['weight']:
+                            logger.debug(f"traversing binary branch {nbr_node1, nbr_node2}")
+                            match_pair[nbr_node1]=nbr_node2
+                            traverced.append(nbr_node1)
+                            traverced.append(nbr_node2)
+                            compare_nodes(G,match_pair,traverced,nbr_node1,nbr_node2,ports_weight)
     return match_pair
-def compare_node(G,node1,node2):
+def compare_node(G,node1,node2,ports_weight):
+    logger.debug("comparing_nodes, %s %s ",node1,node2)
+   
     if G.nodes[node1]["inst_type"]=="net" and \
-            G.nodes[node2]["inst_type"]=="net" and \
-            len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
-            G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
-        #logger.debug("comparing_nodes, %s %s True",node1,node2)
+        G.nodes[node2]["inst_type"]=="net" and \
+        len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
+        G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
+        if G.nodes[node1]["net_type"] == 'external' and ports_weight[node1] != ports_weight[node2]:
+            logger.debug("False")
+            return False            
+        logger.debug("True")
         return True
     elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
         'values' in G.nodes[node1].keys() and
          G.nodes[node1]["values"]==G.nodes[node2]["values"] and
         len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
-        #logger.debug("comparing_nodes, %s %s True",node1,node2)
+        logger.debug(" True")
         return True
     else:
-        logger.debug("comparing_nodes, %s %s False",node1,node2)
+        logger.debug(" False")
         return False
-def matching_groups(G,level1):
+def matching_groups(G,level1,ports_weight):
     similar_groups=[]
     logger.debug("matching groups for all neighbors: %s", level1)
     for l1_node1 in level1:
         for l1_node2 in level1:
-            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2):
+            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2,ports_weight):
                 found_flag=0
                 #logger.debug("similar_group %s",similar_groups)
                 for index, sublist in enumerate(similar_groups):
@@ -124,7 +147,7 @@ def match_branches(graph,nodes_dict):
             return False
     return True
 
-def FindArray(graph,input_dir,name):
+def FindArray(graph,input_dir,name,ports_weight):
     templates = {}
     array_of_node = {}
     visited =[]
@@ -133,7 +156,7 @@ def FindArray(graph,input_dir,name):
     for node, attr in graph.nodes(data=True):
         if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
             level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            array_of_node[node]=matching_groups(graph,level1)
+            array_of_node[node]=matching_groups(graph,level1,ports_weight)
             logger.debug("finding array:%s,%s",node,array_of_node[node])
             if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
                 similar_node_groups = {}
@@ -159,24 +182,22 @@ def CopyConstFile(name, input_dir, working_dir):
             const_file.write_text(input_const_file.read_text())
     return const_file
 
-def WriteConst(graph, input_dir, name, ports, stop_points):
+def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
     const_file = (input_dir / (name + '.const'))
-
-    #check_common_centroid(graph,const_file,ports)
     logger.debug("writing constraints: %s",const_file)
-    #const_fp.write(str(ports))
-    #const_fp.write(str(graph.nodes()))
+    logger.debug(f"ports weight: {ports_weight}")
+
     traverced =stop_points.copy()
     all_match_pairs={}
     for port1 in sorted(ports):
         if port1 in graph.nodes() and port1 not in traverced:
             for port2 in sorted(ports):
-                if port2 in graph.nodes() and sorted(ports).index(port2)>=sorted(ports).index(port1) and port2 not in traverced:
-            #while len(list(graph.neighbors(port)-set(traverced)))==1:
-            #nbr = list(graph.neighbors(port))
+                if port2 in graph.nodes() and port2 not in traverced \
+                    and ports_weight[port1] == ports_weight[port2] \
+                    and sorted(ports).index(port2)>=sorted(ports).index(port1):
                     pair ={}
                     traverced.append(port1)
-                    compare_nodes(graph, pair, traverced, port1, port2)
+                    compare_nodes(graph, pair, traverced, port1, port2,ports_weight)
                     if pair:
                         all_match_pairs.update(pair)
                         logging.info("Symmetric blocks found: %s",pair)
