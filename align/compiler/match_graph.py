@@ -30,14 +30,14 @@ def traverse_hier_in_graph(G, hier_graph_dict):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
-                        ports_weight[node] = []
-                        for nbr in list(G.neighbors(node)):
-                            ports_weight[node].append(G.get_edge_data(node, nbr)['weight'])
+                        ports_weight[sub_node] = []
+                        for nbr in list(attr["sub_graph"].neighbors(sub_node)):
+                            ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
                 elif 'body_pin' in sub_attr:
                     mos_body.append(sub_attr['body_pin'])
 
 
-            logger.debug(f'external ports: {sub_ports}, {attr["connection"]}')
+            logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
@@ -45,6 +45,8 @@ def traverse_hier_in_graph(G, hier_graph_dict):
                 "mos_body": mos_body,
                 "connection": attr["connection"]
             }
+            print("port_weight",ports_weight)
+
             traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
 
 
