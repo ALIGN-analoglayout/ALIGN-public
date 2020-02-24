@@ -242,7 +242,7 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
             ##Removinf constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
-                stop_points=design_setup['DIGITAL']+design_setup['CLOCK']
+                stop_points=design_setup['POWER']+design_setup['GND']
                 WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], stop_points)
             wv.print_module(VERILOG_FP)
             generated_module.append(name)

@@ -35,9 +35,8 @@ def compare_nodes(G,match_pair,traverced,node1,node2, ports_weight):
         logger.debug(f"starting from port: {node1}, {node2}")
     else:
         port = False
-    if not port and len(list(G.neighbors(node1))) <=2 and \
-        (port and set(G.neighbors(node1)) == set(G.neighbors(node2)) ) or\
-         (port and len(list(G.neighbors(node1))) ==1):
+    if not port and len(list(G.neighbors(node1))) <=2 or \
+        (port and set(G.neighbors(node1)) == set(G.neighbors(node2)) ) :
         for nbr_node1 in list(G.neighbors(node1)):
             logger.debug(f"neighbour:{nbr_node1}")
             if nbr_node1 not in traverced:
@@ -57,6 +56,10 @@ def compare_nodes(G,match_pair,traverced,node1,node2, ports_weight):
                             traverced.append(nbr_node1)
                             traverced.append(nbr_node2)
                             compare_nodes(G,match_pair,traverced,nbr_node1,nbr_node2,ports_weight)
+                    # else:
+                    #     logger.debug(f"Non symmetrical pairs {nbr_node1, nbr_node2}")
+                    #     traverced.append(nbr_node1)
+                    #     traverced.append(nbr_node2)
     return match_pair
 def compare_node(G,node1,node2,ports_weight):
     logger.debug("comparing_nodes, %s %s ",node1,node2)
@@ -185,13 +188,14 @@ def CopyConstFile(name, input_dir, working_dir):
 def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
     const_file = (input_dir / (name + '.const'))
     logger.debug("writing constraints: %s",const_file)
-    logger.debug(f"ports weight: {ports_weight}")
+    logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
     traverced =stop_points.copy()
     all_match_pairs={}
     for port1 in sorted(ports):
         if port1 in graph.nodes() and port1 not in traverced:
             for port2 in sorted(ports):
+                traverced =stop_points.copy()
                 if port2 in graph.nodes() and port2 not in traverced \
                     and ports_weight[port1] == ports_weight[port2] \
                     and sorted(ports).index(port2)>=sorted(ports).index(port1):
@@ -199,7 +203,11 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
                     traverced.append(port1)
                     compare_nodes(graph, pair, traverced, port1, port2,ports_weight)
                     if pair:
-                        all_match_pairs.update(pair)
+                        if port1==port2:
+                            all_match_pairs.update(pair)
+                        else:
+                            #pair[port1]=port2
+                            all_match_pairs.update(pair)                           
                         logging.info("Symmetric blocks found: %s",pair)
     existing_SymmBlock =[]
     existing_SymmNet = False

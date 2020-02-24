@@ -45,7 +45,6 @@ def traverse_hier_in_graph(G, hier_graph_dict):
                 "mos_body": mos_body,
                 "connection": attr["connection"]
             }
-            print("port_weight",ports_weight)
 
             traverse_hier_in_graph(attr["sub_graph"], hier_graph_dict)
 
@@ -81,7 +80,6 @@ def read_inputs(name,hier_graph):
         "mos_body": mos_body,
         "connection": None
     }
-    print("port_weight",ports_weight)
     traverse_hier_in_graph(hier_graph, hier_graph_dict)
     return hier_graph_dict
 
