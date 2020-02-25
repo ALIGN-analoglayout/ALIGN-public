@@ -48,7 +48,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
             subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
 
             if ele in ports:
-                ports[ele] += G[node][ele]["weight"]
+                ports[ele] = G[node][ele]["weight"] # had to remove addition as combination of weight for cmc caused gate to be considered source
             else:
                 ports[ele] = G[node][ele]["weight"]
 
