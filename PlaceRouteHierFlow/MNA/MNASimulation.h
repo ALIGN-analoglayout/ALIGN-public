@@ -16,6 +16,7 @@
 #include <vector>
 #include <set>
 #include "Mdatatype.h"
+#include "slu_ddefs.h"
 #include "../PnRDB/datatype.h"
 #include "../router/Rdatatype.h"
 
@@ -35,6 +36,7 @@ class MNASimulation {
 	double result;
 	std::vector<MDB::device> Power_Grid_devices_Vdd;
 	std::vector<MDB::device> Power_Grid_devices_Gnd;
+        SuperMatrix A;
 
 
 
@@ -59,6 +61,7 @@ class MNASimulation {
       void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices_Vdd, std::vector<MDB::device> &Power_Grid_devices_Gnd);
       void Print_Devices(std::vector<MDB::device> &temp_devices);
       double Return_Worst_Voltage(){return result;};
+      void Test_superlu();
 
 };
 
