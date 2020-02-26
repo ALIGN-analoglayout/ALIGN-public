@@ -93,14 +93,36 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
                         compare_nodes(G,match_pair,traversed,nbr_node1,nbr_node2,ports_weight)
 
     return match_pair
-def compare_node(G,node1,node2,ports_weight):
+
+def compare_node(G,node1:str,node2:str ,ports_weight):
+    """
+    compare two node properties. It uses 1st level of neighbourhood for comparison of nets
+
+    Parameters
+    ----------
+    G : TYPE, networkx graph
+        DESCRIPTION. it consist of all subckt properties
+    node1, node2 : TYPE  string
+        DESCRIPTION. node name
+    ports_weight : TYPE list
+        DESCRIPTION. port weights 
+
+    Returns
+    -------
+    bool
+        DESCRIPTION. True for matching node
+
+    """
     logger.debug("comparing_nodes, %s %s ",node1,node2)
    
-    if G.nodes[node1]["inst_type"]=="net" and \
-        G.nodes[node2]["inst_type"]=="net" and \
-        len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
+    if G.nodes[node1]["inst_type"]== G.nodes[node2]["inst_type"]=="net" and \
         G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
-            
+        # set of neibhours is used to allow gate connections 
+        nbrs_node1 =set([G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(node1))])
+        nbrs_node2 = set([G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(node2))])
+       
+        if nbrs_node1  != nbrs_node2:
+            return False
         if G.nodes[node1]["net_type"] == 'external':
             if ports_weight[node1] == ports_weight[node2]:
                 logger.debug("True")
@@ -265,8 +287,9 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
                     
     written_symmetries = 'all'
     const_fp = open(const_file, 'a+')
+    const_fp.write("// ALIGN generated automatic constraints")
     for pairs in sorted(all_match_pairs.values(), key=lambda k: len (k.keys()), reverse=True):
-        print(pairs,written_symmetries)
+        #print(pairs,written_symmetries)
         symmBlock='\nSymmBlock ('
         for key, value in pairs.items():    
             if key in stop_points or key in written_symmetries or value in written_symmetries :
@@ -281,9 +304,10 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
             elif 'Dcap' not in graph.nodes[key]["inst_type"] :
                 nbrs_key = [graph.get_edge_data(key, nbr)['weight'] for nbr in list(set(graph.neighbors(key)))]
                 nbrs_val = [graph.get_edge_data(value, nbr)['weight'] for nbr in list(set(graph.neighbors(value)))]
-                if nbrs_key != nbrs_val:
+                # second constraint was added due to ports coming as extra from connection function
+                if nbrs_key != nbrs_val and connection(graph,key)!=connection(graph,value) :
                     logger.info(f"filtering nets which came due to S/D traversal {key} {value}{nbrs_key} {nbrs_val}")
-                if len(connection(graph,key))<=3 and key!=value  :
+                elif key!=value  :
                     symmNet = "\nSymmNet ( {"+key+','+','.join(connection(graph,key)) + \
                             '} , {'+value+','+','.join(connection(graph,value)) +'} )'
                     const_fp.write(symmNet)
