@@ -29,17 +29,14 @@ def setup():
                 'VencP_H': 0
     }
 
-    v2 = p['V2']
-    m3 = p['M3']
-
     c = Canvas(p)
 
     m2 = c.addGen( Wire( nm='m2', layer='M2', direction='h',
-                         clg=UncoloredCenterLineGrid( width=p['M2']['Width'], pitch=p['M2']['Pitch'], repeat=5),
+                         clg=UncoloredCenterLineGrid( width=p['M2']['Width'], pitch=p['M2']['Pitch']),
                          spg=EnclosureGrid( pitch=p['M3']['Pitch'], stoppoint=p['M3']['Pitch']//2)))
 
     m3 = c.addGen( Wire( nm='m3', layer='M3', direction='v',
-                         clg=UncoloredCenterLineGrid( width=p['M3']['Width'], pitch=p['M3']['Pitch'], repeat=2),
+                         clg=UncoloredCenterLineGrid( width=p['M3']['Width'], pitch=p['M3']['Pitch']),
                          spg=EnclosureGrid( pitch=p['M2']['Pitch'], stoppoint=p['M2']['Pitch']//2)))
 
 
@@ -49,7 +46,7 @@ def setup():
     gridlines = list(range(n))
 
     for i in gridlines:
-        c.addWire( m3, 'a', None, i, (0,1), (n+2,-1)) 
+        c.addWire( m3, 'a', None, i, (0,1), (n+1,-1)) 
 
     for j in gridlines:
         c.addWireAndViaSet( 'a', None, m2, v2, j+1, gridlines)
