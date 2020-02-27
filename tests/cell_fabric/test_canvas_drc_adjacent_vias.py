@@ -58,10 +58,10 @@ def setup():
 
 
 def test_adjacent_ok(setup):
-    c,n = setup
+    c,_ = setup
     data = c.gen_data(run_pex=False)
 
-    if True:
+    if False:
         with open( "__json_hack", "wt") as fp:
             json.dump( data, fp=fp, indent=2)
 
@@ -71,7 +71,7 @@ def test_adjacent_violate_x(setup):
     c,n = setup
     c.pdk['V2']['SpaceX'] += 1
 
-    data = c.gen_data(run_pex=False)
+    c.gen_data(run_pex=False)
 
     assert c.drc.num_errors == n*(n-1)
 
@@ -79,7 +79,7 @@ def test_adjacent_violate_y(setup):
     c,n = setup
     c.pdk['V2']['SpaceY'] += 1
 
-    data = c.gen_data(run_pex=False)
+    c.gen_data(run_pex=False)
 
     assert c.drc.num_errors == n*(n-1)
 

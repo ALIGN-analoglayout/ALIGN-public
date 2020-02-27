@@ -40,7 +40,7 @@ class DesignRuleCheck():
             if space_y is not None: 
                 # Since vias are stored as vertical wires in the scan lines, this is the easy case 
                 # find closest via with same X centerline with higher Y value
-                for (cx0, sl0) in vv.items():
+                for (_, sl0) in vv.items():
                     for slr0 in sl0.rects:
                         for slr1 in sl0.rects:
                             if slr0 == slr1: continue
@@ -51,10 +51,10 @@ class DesignRuleCheck():
             space_x = self.canvas.pdk[layer]['SpaceX']
             if space_x is not None: 
                 # This is harder
-                # find closest via with same X centerline with higher Y value
-                for (cy0, sl0) in vv.items():
-                    for (cy1, sl1) in vv.items():
-                        if cy0 >= cy1: continue
+                # find closest via with same Y coords and with a higher X value
+                for (cx0, sl0) in vv.items():
+                    for (cx1, sl1) in vv.items():
+                        if cx0 >= cx1: continue
                         for slr0 in sl0.rects:
                             for slr1 in sl1.rects:
                                 if slr0.rect[1] == slr1.rect[1] and slr0.rect[3] == slr1.rect[3]:
