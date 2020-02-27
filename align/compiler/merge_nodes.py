@@ -5,28 +5,46 @@ Created on Thu Nov 29 22:19:39 2018
 @author: kunal
 """
 import networkx as nx
-#from networkx.algorithms import isomorphism
 
 import logging
 logger = logging.getLogger(__name__)
 
-def merge_nodes(G, hier_type, argv, matched_ports):
-    """ Merges the  given nodes in argv and returns a
-     reduced graph. It also returns a subgraph(not used anymore)"""
+def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: list, matched_ports: dict):
 
-    #g_copy = G.copy()
-    for node in argv:
+    """
+    Merges the  given nodes in list_of_nodes and returns a
+     reduced graph.
+     
+    Parameters
+    ----------
+    G : netowrkx graph
+        DESCRIPTION. Bipartite graph of circuit
+    new_inst_type : str
+        DESCRIPTION. name of new subckt to be created, 
+        A super node is created in graph havinge a subgraph in its values
+    list_of_nodes : list
+        DESCRIPTION.
+    matched_ports : dict
+        DESCRIPTION. dictionary of {subkt port: connected net} be added in dubckt
+
+    Returns
+    -------
+    G : nx.classes.graph.Graph
+        returns updated graph.
+
+    """
+    for node in list_of_nodes:
         if not G.nodes[node]:
             logger.debug("node not in graph anymore")
             return G, nx.Graph
     logger.debug(f"Is input bipartite: {nx.is_bipartite(G)}")
-    assert len(argv) > 1
-    #  print("Merging nodes",argv)
+    assert len(list_of_nodes) > 1
+    #  print("Merging nodes",list_of_nodes)
     new_node = ""
     ports = {}
     subgraph = nx.Graph()
     max_value = {}
-    for node in argv:
+    for node in list_of_nodes:
         new_node += '_' + node
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
@@ -48,23 +66,24 @@ def merge_nodes(G, hier_type, argv, matched_ports):
             subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
 
             if ele in ports:
-                ports[ele] = G[node][ele]["weight"] # had to remove addition as combination of weight for cmc caused gate to be considered source
+                # had to remove addition as combination of weight for cmc caused gate to be considered source
+                ports[ele] = G[node][ele]["weight"] 
             else:
                 ports[ele] = G[node][ele]["weight"]
 
 
     new_node = new_node[1:]
     G.add_node(new_node,
-               inst_type=hier_type,
-               real_inst_type=hier_type,
+               inst_type=new_inst_type,
+               real_inst_type=new_inst_type,
                ports_match=matched_ports,
                values=max_value)
-    logger.debug(f"creating a super node of combination of nodes: {hier_type}")
+    logger.debug(f"creating a super node of combination of nodes: {new_inst_type}")
     for pins in list(ports):
-        if set(G.neighbors(pins)) <= set(argv) and G.nodes[pins]["net_type"]=='internal':
+        if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
             G.remove_node(pins)
-    for node in argv:
+    for node in list_of_nodes:
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
@@ -77,8 +96,20 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 
 
 #%%
-def convert_unit(value):
-    #print("checking value",value)
+def convert_unit(value:str):
+    """
+
+    Parameters
+    ----------
+    value : str
+        DESCRIPTION.
+
+    Returns
+    -------
+    float
+        DESCRIPTION. converts values to equivalent values
+
+    """
     mult =1
     if type(value)==float or type(value)== int:
         value = value

@@ -5,14 +5,11 @@ Created on Wed Nov 21 13:12:15 2018
 @author: kunal
 """
 import os
-import sys
-import json
 from math import sqrt, ceil
 
 from .util import convert_to_unit
 from .merge_nodes import merge_nodes
 
-from collections import Counter
 
 import logging
 logger = logging.getLogger(__name__)

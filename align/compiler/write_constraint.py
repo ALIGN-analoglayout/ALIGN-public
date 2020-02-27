@@ -272,10 +272,8 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
 
 
     # Read contents of input constraint file
-    """
-    Check if there are any other constraints except cap constraints
-    No constraints are written in case constraints are provided
-    """
+    # Check if there are any other constraints except cap constraints
+    # No constraints are written in case constraints are provided
     logger.info("input const file: %s", const_file)
     if const_file.exists() and const_file.is_file():
         with open(const_file) as f:
