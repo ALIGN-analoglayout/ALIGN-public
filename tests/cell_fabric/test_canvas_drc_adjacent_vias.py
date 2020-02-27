@@ -45,7 +45,7 @@ def setup():
 
     v2 = c.addGen( Via( nm='v2', layer='V2', h_clg=m2.clg, v_clg=m3.clg))
 
-    n = 100
+    n = 40
     gridlines = list(range(n))
 
     for i in gridlines:
