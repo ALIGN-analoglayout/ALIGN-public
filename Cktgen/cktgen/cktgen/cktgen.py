@@ -543,7 +543,7 @@ class Netlist:
     else:
       if nets_not_to_route is None:
         nets_not_to_route = []
-      routes_str = f"Option name=nets_not_to_route value={','.join(nets_not_to_route + ['kor'])}"
+      routes_str = f"Option name=nets_not_to_route value={','.join(nets_not_to_route + ['!kor'])}"
 
     with open( fn, "w") as fp:
       fp.write( f"""# circuit-independent technology collateral
