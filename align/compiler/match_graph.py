@@ -157,9 +157,9 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
                     continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
                     if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
-                        compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB')) :
+                        compare_balanced_tree(G1,get_key(Gsub,'DA'),get_key(Gsub,'DB'),[all_nd[0]],[all_nd[1]]) :
                         if 'SA' in Gsub.values() and \
-                        compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB')) :
+                        compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB'),[all_nd[0]],[all_nd[1]]) :
                             map_list.append(Gsub)
                             logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
@@ -230,6 +230,7 @@ def get_next_level(G, tree_l1):
     for node in list(tree_l1):
         if node not in G.nodes:
             continue
+        #logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
         if 'mos' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if G.get_edge_data(node, nbr)['weight']!=2:
@@ -237,13 +238,16 @@ def get_next_level(G, tree_l1):
         elif 'net' in G.nodes[node]["inst_type"]:
             for nbr in list(G.neighbors(node)):
                 if 'mos' in G.nodes[nbr]["inst_type"] and \
-                 G.get_edge_data(node, nbr)['weight']!=2:
+                G.get_edge_data(node, nbr)['weight']!=2:
                     tree_next.append(nbr)
+                elif 'mos' not in G.nodes[nbr]["inst_type"]:
+                    tree_next.append(nbr)               
         else:
-            tree_next=list(G.neighbors(node))
+            tree_next.extend(list(G.neighbors(node)))
     return tree_next
 
-def compare_balanced_tree(G, node1, node2):
+
+def compare_balanced_tree(G, node1:str, node2:str, traversed1:list, traversed2:list):
     """
     used to remove some false matches for DP and CMC
     """
@@ -251,16 +255,16 @@ def compare_balanced_tree(G, node1, node2):
     tree1 = set(get_next_level(G,[node1]))
     tree2 = set(get_next_level(G,[node2]))
     #logger.debug("tree1 %s tree2 %s",set(tree1),set(tree2))
-    traversed1 = []
-    traversed2 = []
+    traversed1.append(node1)
+    traversed2.append(node2)
     if tree1==tree2:
         logger.debug("common net or device")
         return True
     while(len(list(tree1))== len(list(tree2)) > 0):
-        logger.debug(f"tree1 {tree1} tree2 {tree2}")
-        tree1 = set(tree1) ^ set(traversed1)
-        tree2 = set(tree2) ^ set(traversed2)
-        logger.debug(f"removing traversed tree1 {tree1} tree2 {tree2}")
+        logger.debug(f"tree1 {tree1} tree2 {tree2} traversed1 {traversed1} traversed2 {traversed2}")
+        tree1 = set(tree1) - set(traversed1)
+        tree2 = set(tree2) - set(traversed2)
+        logger.debug(f"removed traversed elements tree1 {tree1} tree2 {tree2}")
         #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
         #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
         if tree1.intersection(tree2):
@@ -269,9 +273,9 @@ def compare_balanced_tree(G, node1, node2):
         else:
             traversed1+=list(tree1)
             traversed2+=list(tree2)
-            logger.debug(f"traversing:tree1 {tree1} tree2: {tree2}")
-            tree1=get_next_level(G,tree1)
-            tree2=get_next_level(G,tree2)
+            tree1=set(get_next_level(G,tree1))
+            tree2=set(get_next_level(G,tree2))
+            logger.debug(f"checking next level:tree1 {tree1} tree2: {tree2}")
 
     logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False

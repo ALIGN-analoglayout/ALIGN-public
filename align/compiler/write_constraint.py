@@ -9,6 +9,97 @@ from collections import Counter
 
 import logging
 logger = logging.getLogger(__name__)
+
+def trace_template(graph, similar_node_groups,visited,template,array):
+    next_match={}
+    for source,groups in similar_node_groups.items():
+        next_match[source]=[]
+        for node in groups:
+            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
+            next_match[source] +=level1
+            visited +=level1
+        if len(next_match[source])==0:
+            del next_match[source]
+
+    if len(next_match.keys())> 0 and match_branches(graph,next_match) :
+        for source in array.keys():
+            if source in next_match.keys():
+                array[source]+=next_match[source]
+        template +=next_match[list(next_match.keys())[0]]
+        logger.debug("found matching level: %s,%s",template,similar_node_groups)
+        trace_template(graph, next_match,visited,template,array)
+
+
+def match_branches(graph,nodes_dict):
+    nbr_values = {}
+    for node, nbrs in nodes_dict.items():
+        #super_dict={}
+        super_list=[]
+        for nbr in nbrs:
+            if graph.nodes[nbr]['inst_type']== 'net':
+                super_list.append('net')
+                super_list.append(graph.nodes[nbr]['net_type'])
+            else:
+                super_list.append(graph.nodes[nbr]['inst_type'])
+                for v in graph.nodes[nbr]['values'].values():
+                    super_list.append(v)
+        nbr_values[node]=Counter(super_list)
+    _,main=nbr_values.popitem()
+    for node, val in nbr_values.items():
+        if val == main:
+            continue
+        else:
+            return False
+    return True
+
+def FindArray(graph,input_dir,name,ports_weight):
+    templates = {}
+    array_of_node = {}
+    visited =[]
+    all_array = {}
+
+    for node, attr in graph.nodes(data=True):
+        if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
+            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
+            array_of_node[node]=matching_groups(graph,level1,ports_weight)
+            logger.debug("finding array:%s,%s",node,array_of_node[node])
+            if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
+                similar_node_groups = {}
+                for el in array_of_node[node][0]:
+                    similar_node_groups[el]=[el]
+                templates[node]=[list(similar_node_groups.keys())[0]]
+                visited=array_of_node[node][0]+[node]
+                array=similar_node_groups
+                trace_template(graph,similar_node_groups,visited,templates[node],array)
+                logger.debug("similar groups final, %s",array)
+                all_array[node]=array
+    return all_array
+
+def matching_groups(G,level1,ports_weight):
+    similar_groups=[]
+    logger.debug("matching groups for all neighbors: %s", level1)
+    for l1_node1 in level1:
+        for l1_node2 in level1:
+            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2,ports_weight):
+                found_flag=0
+                #logger.debug("similar_group %s",similar_groups)
+                for index, sublist in enumerate(similar_groups):
+                    if l1_node1 in sublist and l1_node2 in sublist:
+                        found_flag=1
+                        break
+                    if l1_node1 in sublist:
+                        similar_groups[index].append(l1_node2)
+                        found_flag=1
+
+                        break
+                    elif l1_node2 in sublist:
+                        similar_groups[index].append(l1_node1)
+                        found_flag=1
+                        break
+                if found_flag==0:
+                    similar_groups.append([l1_node1,l1_node2])
+    return similar_groups
+
 def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     """
 
@@ -69,28 +160,31 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             logger.debug(f" multiple blocks symmetry to be done {set(G.neighbors(node1))} {set(traversed) }{nbrs} {SD_nbrs}")
             logger.debug(f"nbr weights: {nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs  ]}")
             
-    elif (set(G.neighbors(node1)) - set(traversed) == set(G.neighbors(node2)) - set(traversed)):
+    elif len(set(G.neighbors(node1)) - set(traversed)) > 0 and \
+        (set(G.neighbors(node1)) - set(traversed) == set(G.neighbors(node2)) - set(traversed)):
         nbrs= list(set(G.neighbors(node1)) - set(traversed))
         logger.debug(f"traversing converging branch {node1} {node2}")
         match_pair[node1]=node2
         traversed.extend([node1,node2])
         for nbr1 in nbrs:
             for nbr2 in nbrs:
+                logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
                 compare_nodes(G,match_pair,traversed,nbr1,nbr2,ports_weight)
 
     elif compare_node(G,node1,node2,ports_weight):
-        """
-        Traversing binary branch
-        """
+        # Traversing binary branch
         logger.debug(f"traversing binary branch {node1} {node2}")
         match_pair[node1]=node2
         traversed.extend([node1,node2])       
-        for nbr_node1 in list(G.neighbors(node1)):
-            if nbr_node1 not in traversed and \
-                    nbr_node1 not in match_pair.keys():
-                for nbr_node2 in list(G.neighbors(node2)):
-                    if nbr_node1 != nbr_node2 and nbr_node2 not in traversed:
-                        compare_nodes(G,match_pair,traversed,nbr_node1,nbr_node2,ports_weight)
+        for nbr1 in list(G.neighbors(node1)):
+            if nbr1 not in traversed and \
+                    nbr1 not in match_pair.keys():
+                for nbr2 in list(G.neighbors(node2)):
+                    if nbr1 != nbr2 and nbr2 not in traversed:
+                        logger.debug(f"recursive call from binary {nbr1} {nbr2}")
+                        compare_nodes(G,match_pair,traversed,nbr1,nbr2,ports_weight)
+    else:
+        logger.debug("end of recursion branch")
 
     return match_pair
 
@@ -146,108 +240,8 @@ def compare_node(G,node1:str,node2:str ,ports_weight):
     else:
         logger.debug(" False")
         return False
-def matching_groups(G,level1,ports_weight):
-    similar_groups=[]
-    logger.debug("matching groups for all neighbors: %s", level1)
-    for l1_node1 in level1:
-        for l1_node2 in level1:
-            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2,ports_weight):
-                found_flag=0
-                #logger.debug("similar_group %s",similar_groups)
-                for index, sublist in enumerate(similar_groups):
-                    if l1_node1 in sublist and l1_node2 in sublist:
-                        found_flag=1
-                        break
-                    if l1_node1 in sublist:
-                        similar_groups[index].append(l1_node2)
-                        found_flag=1
-
-                        break
-                    elif l1_node2 in sublist:
-                        similar_groups[index].append(l1_node1)
-                        found_flag=1
-                        break
-                if found_flag==0:
-                    similar_groups.append([l1_node1,l1_node2])
-    return similar_groups
-
-def trace_template(graph, similar_node_groups,visited,template,array):
-    next_match={}
-    for source,groups in similar_node_groups.items():
-        next_match[source]=[]
-        for node in groups:
-            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            next_match[source] +=level1
-            visited +=level1
-        if len(next_match[source])==0:
-            del next_match[source]
-
-    if len(next_match.keys())> 0 and match_branches(graph,next_match) :
-        for source in array.keys():
-            if source in next_match.keys():
-                array[source]+=next_match[source]
-        template +=next_match[list(next_match.keys())[0]]
-        logger.debug("found matching level: %s,%s",template,similar_node_groups)
-        trace_template(graph, next_match,visited,template,array)
 
 
-def match_branches(graph,nodes_dict):
-    nbr_values = {}
-    for node, nbrs in nodes_dict.items():
-        #super_dict={}
-        super_list=[]
-        for nbr in nbrs:
-            if graph.nodes[nbr]['inst_type']== 'net':
-                super_list.append('net')
-                super_list.append(graph.nodes[nbr]['net_type'])
-            else:
-                super_list.append(graph.nodes[nbr]['inst_type'])
-                for v in graph.nodes[nbr]['values'].values():
-                    #super_dict.setdefault(k,[]).append(v)
-                    super_list.append(v)
-        nbr_values[node]=Counter(super_list)
-    _,main=nbr_values.popitem()
-    for node, val in nbr_values.items():
-        if val == main:
-            continue
-        else:
-            return False
-    return True
-
-def FindArray(graph,input_dir,name,ports_weight):
-    templates = {}
-    array_of_node = {}
-    visited =[]
-    all_array = {}
-
-    for node, attr in graph.nodes(data=True):
-        if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
-            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            array_of_node[node]=matching_groups(graph,level1,ports_weight)
-            logger.debug("finding array:%s,%s",node,array_of_node[node])
-            if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
-                similar_node_groups = {}
-                for el in array_of_node[node][0]:
-                    similar_node_groups[el]=[el]
-                templates[node]=[list(similar_node_groups.keys())[0]]
-                visited=array_of_node[node][0]+[node]
-                array=similar_node_groups
-                trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logger.debug("similar groups final, %s",array)
-                all_array[node]=array
-    return all_array
-                #match_branches(graph,nodes_dict)
-
-def CopyConstFile(name, input_dir, working_dir):
-    # Copy const file to working directory if needed
-    input_const_file = (input_dir / (name + '.const'))
-    const_file = (working_dir / (name + '.const'))
-    if input_const_file.exists() and input_const_file.is_file():
-        if const_file == input_const_file:
-            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
-        else:
-            const_file.write_text(input_const_file.read_text())
-    return const_file
 
 def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
     const_file = (input_dir / (name + '.const'))
@@ -265,6 +259,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
                     and sorted(ports).index(port2)>=sorted(ports).index(port1):
                     pair ={}
                     traversed.append(port1)
+                    logger.debug(f"symmetry start point {port1} {port2}")
                     compare_nodes(graph, pair, traversed, port1, port2,ports_weight)
                     if pair:
                         all_match_pairs[port1+port2]=pair                         
@@ -290,7 +285,9 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
         #print(pairs,written_symmetries)
         symmBlock='\nSymmBlock ('
         for key, value in pairs.items():    
-            if key in stop_points or key in written_symmetries or value in written_symmetries :
+            if key in stop_points or key in written_symmetries or \
+            value in written_symmetries or graph.nodes[key]["inst_type"]!=graph.nodes[value]["inst_type"]:
+                logger.debug(f"skipping symmetry b/w {key} {value}")
                 continue
             if graph.nodes[key]["inst_type"]!="net" and \
                 'Dcap' not in graph.nodes[key]["inst_type"] :
@@ -334,3 +331,14 @@ def connection(graph,net):
     if graph.nodes[net]["net_type"]=="external":
         conn.append(net)
     return conn
+
+def CopyConstFile(name, input_dir, working_dir):
+    # Copy const file to working directory if needed
+    input_const_file = (input_dir / (name + '.const'))
+    const_file = (working_dir / (name + '.const'))
+    if input_const_file.exists() and input_const_file.is_file():
+        if const_file == input_const_file:
+            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
+        else:
+            const_file.write_text(input_const_file.read_text())
+    return const_file
