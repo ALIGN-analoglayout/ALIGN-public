@@ -36,26 +36,18 @@ def cmdline():
     def b( value, tag):
         return f" {tag}" if value else ""
 
-    #    route = " --route" if args.skipactualrouting else ""
     route = b( args.skipactualrouting, "--route")
-    #    placer_json = f" --placer_json {args.placer_json}" if args.placer_json != "" else ""
     placer_json = c( args.placer_json, "--placer_json")
+    gr_json = c( args.gr_json, "--gr_json")
+    source = c( args.source, "--source")
+    small = b( args.small, "--small")
+    no_interface = b( args.no_interface, "--no_interface")
 
-    gr_json = f" --gr_json {args.gr_json}" if args.gr_json != "" else ""
+    showglobalroutes = b( args.showglobalroutes, "--show_global_routes")
+    showmetaltemplates = b( args.showmetaltemplates, "--show_metal_templates")
 
-    source = f" --source {args.source}" if args.source != "" else ""
-
-    small = " --small" if args.small else ""
-    no_interface = " --no_interface" if args.no_interface else ""
-
-    showglobalroutes = " --show_global_routes" if args.showglobalroutes else ""
-    showmetaltemplates = " --show_metal_templates" if args.showmetaltemplates else ""
-
-
-    nets_to_route = f" --nets_to_route {args.nets_to_route}" if args.nets_to_route != "" else ""
-
-    nets_not_to_route = f" --nets_not_to_route {args.nets_not_to_route}" if args.nets_not_to_route else ""
-
+    nets_to_route = c( args.nets_to_route, "--nets_to_route")
+    nets_not_to_route = c( args.nets_not_to_route, "--nets_not_to_route")
 
     print( f"SCRIPT  = {args.script}")
     print( f"PORT    = {args.port}")
