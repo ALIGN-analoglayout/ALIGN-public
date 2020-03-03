@@ -30,13 +30,10 @@ def cmdline():
 
     args = parser.parse_args()
 
-    def c( value, tag):
-        return f" {tag} {value}" if value != "" else ""
+    def b( value, tag): return f" {tag}" if value else ""
+    def c( value, tag): return f" {tag} {value}" if value != "" else ""
 
-    def b( value, tag):
-        return f" {tag}" if value else ""
-
-    route = b( args.skipactualrouting, "--route")
+    route = b( not args.skipactualrouting, "--route")
     placer_json = c( args.placer_json, "--placer_json")
     gr_json = c( args.gr_json, "--gr_json")
     source = c( args.source, "--source")
@@ -71,52 +68,35 @@ def cmdline():
     M_out = f"--mount source={args.outputvol},target=/Cktgen/out"
     M_DR_COLLATERAL = f"--mount source={args.routervol},target=/Cktgen/DR_COLLATERAL"
 
-    ret = subprocess.run( [f'docker volume rm -f {args.routervol}'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-    print(ret)
-    if ret.returncode != 0:
-        print( f"ERROR: Failed to remove volume {args.routervol}")
-        exit(ret.returncode)
+    def run_sh( cmd, tag=None):
+        ret = subprocess.run( [cmd],  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
+        print(ret)
+        print(ret.stdout)
+        if ret.returncode != 0:
+            if tag is not None:
+                print( f"ERROR: Failed to {tag}")
+            exit(ret.returncode)
 
-    ret = subprocess.run( [f'(cd {args.techdir} && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-    print(ret)
 
-    if ret.returncode != 0:
-        print( "ERROR: Failed to create DR_COLLATERAL")
-        exit(ret.returncode)
+    ret = run_sh( f'docker volume rm -f {args.routervol}', f'remove volume {args.routervol}')
+
+    ret = run_sh( f'(cd {args.techdir} && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"', 'create DR_COLLATERAL')
 
     if not args.skipgenerate:
-        ret = subprocess.run( [f'docker volume rm -f {args.outputvol}'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)        
-        if ret.returncode != 0:
-            print( f"ERROR: Failed to remove volume {args.outputvol}")
-            exit(ret.returncode)
+        ret = run_sh( f'docker volume rm -f {args.outputvol}',
+                      f'remove volume {args.outputvol}')
 
-        ret = subprocess.run( [f'docker run --rm {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python {args.script} -n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}"'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-        print(ret)
-        if ret.returncode != 0:
-            print( "ERROR: Failed to run Cktgen")
-            exit(ret.returncode)
+        ret = run_sh( f'docker run --rm {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python {args.script} -n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}"', 'run Cktgen')
 
     if not args.skiprouter:
         #ROUTER_IMAGE="darpaalign/detailed_router"
         #ROUTER_IMAGE="stevenmburns/intel_detailed_router"
         ROUTER_IMAGE="nikolai_router"
-        ret = subprocess.run( [f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-        print(ret)
-        if ret.returncode != 0:
-            print( "ERROR: Failed to run detailed_router")
-            exit(ret.returncode)
-        ret = subprocess.run( [f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python {args.script} --consume_results -n mydesign {source}{placer_json}{small}{no_interface}"'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-        print(ret)
-        if ret.returncode != 0:
-            print( "ERROR: Failed to run Cktgen (consume)")
-            exit(ret.returncode)
+        ret = run_sh( f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
+        ret = run_sh( f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python {args.script} --consume_results -n mydesign {source}{placer_json}{small}{no_interface}"', 'run Cktgen (consume)')
 
     if "STARTVIEWER" in os.environ and os.envion["STARTVIEWER"] == "YES":
-        ret = subprocess.run( [f'docker run --rm {M_INPUT_VIEWER} -p{args.port}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"'], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-        print(ret)
-        if ret.returncode != 0:
-            print( "ERROR: Failed to run viewer_image")
-            exit(ret.returncode)
+        ret = run_sh( f'docker run --rm {M_INPUT_VIEWER} -p{args.port}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"', 'run viewer_image')
 
 if __name__ == "__main__":
     cmdline()
