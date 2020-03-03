@@ -79,25 +79,47 @@ def cmdline():
             exit(ret.returncode)
 
 
-    ret = run_sh( f'docker volume rm -f {args.routervol}', f'remove volume {args.routervol}')
-
-    ret = run_sh( f'(cd {args.techdir} && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"', 'create DR_COLLATERAL')
+    ret = run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
+    ret = run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
 
     if not args.skipgenerate:
-        ret = run_sh( f'docker volume rm -f {args.outputvol}',
-                      f'remove volume {args.outputvol}')
+        run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
 
-        ret = run_sh( f'docker run --rm {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate && cd /Cktgen && python {args.script} -n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}"', 'run Cktgen')
+        #ret = run_sh( f'rm -rf INPUT', "Remove old INPUT directory")
+        ret = run_sh( f'mkdir -p INPUT')
+
+        ret = run_sh( f'python {args.script} -n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}', 'run Cktgen')
 
     if not args.skiprouter:
+
+        ret = run_sh( f'rm -fr out', "Remove old out directory")        
+
+        ret = run_sh( f'docker volume rm -f {args.inputvol}', f'remove volume {args.inputvol}')
+        ret = run_sh( f'(cd INPUT && tar cvf - .) | docker run --rm {M_INPUT} -i ubuntu bash -c "cd /Cktgen/INPUT && tar xvf -"', 'create INPUT')
+
+        ret = run_sh( f'docker volume rm -f {args.routervol}', f'remove volume {args.routervol}')
+        ret = run_sh( f'(cd DR_COLLATERAL && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"', 'create DR_COLLATERAL')
+
+        ret = run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
+
         #ROUTER_IMAGE="darpaalign/detailed_router"
         #ROUTER_IMAGE="stevenmburns/intel_detailed_router"
         ROUTER_IMAGE="nikolai_router"
-        ret = run_sh( f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
-        ret = run_sh( f'docker run --rm {M_out} {M_INPUT} {M_DR_COLLATERAL} cktgen bash -c "source /general/bin/activate; cd /Cktgen && python {args.script} --consume_results -n mydesign {source}{placer_json}{small}{no_interface}"', 'run Cktgen (consume)')
+
+        ret = run_sh( f'docker run --name sam {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
+
+        ret = run_sh( f'docker cp sam:/Cktgen/out .', 'copy output directory')  
+        ret = run_sh( f'docker rm sam', 'remove detailed_router container')
+
+        ret = run_sh( f'python {args.script} --consume_results -n mydesign {source}{placer_json}{small}{no_interface}', 'run Cktgen (consume)')
+
 
     if "STARTVIEWER" in os.environ and os.envion["STARTVIEWER"] == "YES":
-        ret = run_sh( f'docker run --rm {M_INPUT_VIEWER} -p{args.port}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"', 'run viewer_image')
+        ret = run_sh( f'docker run --name viewer_container --rm {M_INPUT_VIEWER} -p{args.port}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"', 'run viewer_image')
+
+
+    if args.source != "":
+        ret = run_sh( f'docker cp INPUT/mydesign_dr_globalrouting.json viewer_container:/public/INPUT/{args.source}.json', "copy final JSON")        
 
 if __name__ == "__main__":
     cmdline()
