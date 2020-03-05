@@ -998,7 +998,7 @@ def parse_args( command_line_args=None):
 
   if args.consume_results:
     consume_results(args,tech)
-    exit()
+#    exit()
 
   return args,tech
 

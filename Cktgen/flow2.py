@@ -4,10 +4,54 @@ import argparse
 import subprocess
 import os
 
+from cktgen import cktgen, cktgen_physical_from_json
+
+def run_sh( cmd, tag=None):
+    ret = subprocess.run( [cmd],  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
+    print(ret.stdout)
+    print(ret.args[0])
+    print( f"Return code: {ret.returncode}")
+    if ret.returncode != 0:
+        if tag is not None:
+            print( f"ERROR: Failed to {tag}")
+        exit(ret.returncode)
+
+def run_router_in_container( args):
+    M_INPUT = f"--mount source={args.inputvol},target=/Cktgen/INPUT"
+    M_INPUT_VIEWER = f"--mount source={args.inputvol},target=/public/INPUT"
+    M_out = f"--mount source={args.outputvol},target=/Cktgen/out"
+    M_DR_COLLATERAL = f"--mount source={args.routervol},target=/Cktgen/DR_COLLATERAL"
+
+    run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
+    run_sh( f'rm -fr out', "Remove old out directory")        
+
+    run_sh( f'docker volume rm -f {args.inputvol}', f'remove volume {args.inputvol}')
+    run_sh( f'(cd INPUT && tar cvf - .) | docker run --rm {M_INPUT} -i ubuntu bash -c "cd /Cktgen/INPUT && tar xvf -"', 'create INPUT')
+
+    run_sh( f'docker volume rm -f {args.routervol}', f'remove volume {args.routervol}')
+    run_sh( f'(cd {args.techdir} && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"', 'create DR_COLLATERAL')
+
+    run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
+
+    #ROUTER_IMAGE="darpaalign/detailed_router"
+    #ROUTER_IMAGE="stevenmburns/intel_detailed_router"
+    ROUTER_IMAGE="nikolai_router"
+
+    run_sh( f'docker run --name sam {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
+
+    run_sh( f'docker cp sam:/Cktgen/out .', 'copy output directory')  
+    run_sh( f'docker rm sam', 'remove detailed_router container')
+
+def run_router_executable( args):
+    run_sh( f'{args.router_executable} -file INPUT/ctrl.txt', 'run detailed_router')
+
+
 def cmdline():
     parser = argparse.ArgumentParser( description="Run ADR flow")
-    parser.add_argument( "-s", "--script", type=str, default="cktgen.py")
-    parser.add_argument( "-p", "--port", type=str, default="8082")
+
+    parser.add_argument( "--viewer_input_dir", type=str, default="")
+    parser.add_argument( "--router_executable", type=str, default="")
+
     parser.add_argument( "-td", "--techdir", type=str, default="../DetailedRouter/DR_COLLATERAL_Generator/strawman1")
     parser.add_argument( "-tf", "--techfile", type=str, default="Process.json")
     parser.add_argument( "-iv", "--inputvol", type=str, default="inputVol")
@@ -19,7 +63,7 @@ def cmdline():
     parser.add_argument( "-sgr", "--showglobalroutes", action='store_true')
     parser.add_argument( "-smt", "--showmetaltemplates", action='store_true')
     parser.add_argument( "-sar", "--skipactualrouting", action='store_true')
-
+ 
     parser.add_argument( "-pj", "--placer_json", type=str, default="")
     parser.add_argument( "-gj", "--gr_json", type=str, default="")
     parser.add_argument( "-src", "--source", type=str, default="")
@@ -29,6 +73,9 @@ def cmdline():
     parser.add_argument( "--nets_not_to_route", type=str, default="")
 
     args = parser.parse_args()
+
+    if args.viewer_input_dir == "" and "ALIGN_HOME" in os.environ:
+        args.viewer_input_dir = os.environ["ALIGN_HOME"] + "/Viewer/INPUT"
 
     def b( value, tag): return f" {tag}" if value else ""
     def c( value, tag): return f" {tag} {value}" if value != "" else ""
@@ -46,8 +93,6 @@ def cmdline():
     nets_to_route = c( args.nets_to_route, "--nets_to_route")
     nets_not_to_route = c( args.nets_not_to_route, "--nets_not_to_route")
 
-    print( f"SCRIPT  = {args.script}")
-    print( f"PORT    = {args.port}")
     print( f"TECHDIR = {args.techdir}")
     print( f"TECHFILE = {args.techfile}")
     print( f"INPUTVOL = {args.inputvol}")
@@ -63,63 +108,31 @@ def cmdline():
     print( f"NETS_TO_ROUTE = {args.nets_to_route}")
     print( f"NETS_NOT_TO_ROUTE = {args.nets_not_to_route}")
 
-    M_INPUT = f"--mount source={args.inputvol},target=/Cktgen/INPUT"
-    M_INPUT_VIEWER = f"--mount source={args.inputvol},target=/public/INPUT"
-    M_out = f"--mount source={args.outputvol},target=/Cktgen/out"
-    M_DR_COLLATERAL = f"--mount source={args.routervol},target=/Cktgen/DR_COLLATERAL"
-
-    def run_sh( cmd, tag=None):
-        ret = subprocess.run( [cmd],  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-        print(ret.stdout)
-        print(ret.args[0])
-        print( f"Return code: {ret.returncode}")
-        if ret.returncode != 0:
-            if tag is not None:
-                print( f"ERROR: Failed to {tag}")
-            exit(ret.returncode)
-
-
-    ret = run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
-    ret = run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
+    run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
+    run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
 
     if not args.skipgenerate:
-        run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
+        #run_sh( f'rm -rf INPUT', "Remove old INPUT directory")
+        run_sh( f'mkdir -p INPUT')
 
-        #ret = run_sh( f'rm -rf INPUT', "Remove old INPUT directory")
-        ret = run_sh( f'mkdir -p INPUT')
-
-        ret = run_sh( f'python {args.script} -n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}', 'run Cktgen')
+        cmd = f'-n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}'
+        cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
+        cktgen_physical_from_json.main( *cktgen.parse_args( cmdlist))
 
     if not args.skiprouter:
+        if args.router_executable != '':
+            run_router_executable( args)
+        else:
+            run_router_in_container( args)
 
-        ret = run_sh( f'rm -fr out', "Remove old out directory")        
+        cmd = f'--consume_results -n mydesign {source}{placer_json}{small}{no_interface}'
+        cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
+        cktgen.parse_args( cmdlist)
 
-        ret = run_sh( f'docker volume rm -f {args.inputvol}', f'remove volume {args.inputvol}')
-        ret = run_sh( f'(cd INPUT && tar cvf - .) | docker run --rm {M_INPUT} -i ubuntu bash -c "cd /Cktgen/INPUT && tar xvf -"', 'create INPUT')
-
-        ret = run_sh( f'docker volume rm -f {args.routervol}', f'remove volume {args.routervol}')
-        ret = run_sh( f'(cd DR_COLLATERAL && tar cvf - .) | docker run --rm {M_DR_COLLATERAL} -i ubuntu bash -c "cd /Cktgen/DR_COLLATERAL && tar xvf -"', 'create DR_COLLATERAL')
-
-        ret = run_sh( f'docker volume rm -f {args.outputvol}', f'remove volume {args.outputvol}')
-
-        #ROUTER_IMAGE="darpaalign/detailed_router"
-        #ROUTER_IMAGE="stevenmburns/intel_detailed_router"
-        ROUTER_IMAGE="nikolai_router"
-
-        ret = run_sh( f'docker run --name sam {M_out} {M_INPUT} {M_DR_COLLATERAL} {ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"', 'run detailed_router')
-
-        ret = run_sh( f'docker cp sam:/Cktgen/out .', 'copy output directory')  
-        ret = run_sh( f'docker rm sam', 'remove detailed_router container')
-
-        ret = run_sh( f'python {args.script} --consume_results -n mydesign {source}{placer_json}{small}{no_interface}', 'run Cktgen (consume)')
-
-
-    if "STARTVIEWER" in os.environ and os.envion["STARTVIEWER"] == "YES":
-        ret = run_sh( f'docker run --name viewer_container --rm {M_INPUT_VIEWER} -p{args.port}:8000 -d viewer_image /bin/bash -c "source /sympy/bin/activate && cd /public && python -m http.server"', 'run viewer_image')
-
-
-    if args.source != "":
-        ret = run_sh( f'docker cp INPUT/mydesign_dr_globalrouting.json viewer_container:/public/INPUT/{args.source}.json', "copy final JSON")        
+    print( args)
+    if args.viewer_input_dir != "" and args.source != "":
+        print( args)
+        run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.viewer_input_dir + "/" + args.source + ".json"}')
 
 if __name__ == "__main__":
     cmdline()

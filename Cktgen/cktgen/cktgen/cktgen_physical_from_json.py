@@ -257,6 +257,7 @@ def hack_gr( results, bbox):
 
 
 def main(args, tech):
+  if args.consume_results: return
   
   assert args.source != ''
   src = args.source
