@@ -28,6 +28,8 @@ class MOSGenerator(DefaultCanvas):
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
         activeWidth =  self.pdk['Fin']['Pitch']*fin
         activeOffset = activeWidth//2 + finDummy*self.pdk['Fin']['Pitch']-self.pdk['Fin']['Pitch']//2
+        print(activeOffset-activeWidth//2)
+        print(activeOffset+activeWidth//2)
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
 
@@ -114,11 +116,11 @@ class MOSGenerator(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
-        v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch'] 
-        for i in range(activeWidth // v0pitch + 1):
-            self.v0.h_clg.addCenterLine(i*v0pitch,    self.pdk['V0']['WidthY'], True)
+        v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
+        v0Offset = ((self.finDummy+3)//2)*self.pdk['M2']['Pitch'] 
+        for i in range((activeWidth-2*self.pdk['M2']['Pitch']) // v0pitch + 1):
+            self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
-
         info = self.pdk['V0']
         def single_centered_via(rect):
             xpos = ( rect[0] + rect[2] ) // 2
@@ -134,7 +136,7 @@ class MOSGenerator(DefaultCanvas):
 
         def _connect_diffusion(i, pin):
             self.addWire( self.m1, None, None, i, (grid_y0, -1), (grid_y1, 1))
-            for j in range(((self.finDummy+3)//2), self.v0.h_clg.n): ## self.v0.h_clg.n??
+            for j in range(1,self.v0.h_clg.n): ## self.v0.h_clg.n??
                 self.addVia( self.v0, f'{fullname}:{pin}', None, i, (y, j))
             self._xpins[name][pin].append(i)
             
@@ -178,27 +180,32 @@ class MOSGenerator(DefaultCanvas):
     def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
         grid_y1 = (y+1)*self.m2PerUnitCell-5
-        track1 = 0
-        for track, (net, conn) in enumerate(connections.items(), start=1):
-            contacts = {track for inst, pins in self._xpins.items()
+        gate_track = 0
+        diff_track = 1
+        for (net, conn) in connections.items():
+            contactsx = {(track, pin) for inst, pins in self._xpins.items()
                               for pin, m1tracks in pins.items()
                               for track in m1tracks if (inst, pin) in conn}
-            for j in range(self.minvias):
-                if net.startswith('G'):
-                    current_track = grid_y1 + 2 + track1
-                    track1 = track1+1
-                else:
-                    current_track = y * self.m2PerUnitCell + len(connections) * j + track
-                self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
-                self._nets[net][current_track] = contacts
+            pins = {x[1] for x in contactsx}
+            for pin in pins:
+                contacts = {x[0] for x in contactsx if x[1]==pin}
+                          
+                for j in range(self.minvias):
+                    if pin == 'G':
+                        current_track = grid_y1 + 2 + gate_track
+                        gate_track = gate_track+1
+                    else:
+                        current_track = y * self.m2PerUnitCell + len(connections) * j + diff_track
+                        diff_track = diff_track + 1
+                    self.addWireAndViaSet(net, None, self.m2, self.v1, current_track, contacts)
+                    self._nets[net][current_track] = contacts
                 # Extend m1 if needed. TODO: Should we draw longer M1s to begin with?
                 #direction = 1 if current_track > center_track else -1
                 #for i in contacts:
                 #    self.addWire( self.m1, net, None, i, (center_track, -1 * direction), (current_track, direction))
 
 
-    def _connectNets(self, x_cells, y_cells): 
-
+    def _connectNets(self, x_cells, y_cells):
         def _get_wire_terminators(intersecting_tracks):
             minx, maxx = min(intersecting_tracks), max(intersecting_tracks)
             # BEGIN: Quick & dirty MinL DRC error fix.
@@ -298,7 +305,6 @@ class MOSGenerator(DefaultCanvas):
     def addNMOSArray( self, x_cells, y_cells, pattern, connections, **parameters):
 
         self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
-
         #####   Nselect Placement   #####
         self.addRegion( self.nselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.lFin) 
 
