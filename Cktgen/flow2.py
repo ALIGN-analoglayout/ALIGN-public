@@ -18,7 +18,6 @@ def run_sh( cmd, tag=None):
 
 def run_router_in_container( args):
     M_INPUT = f"--mount source={args.inputvol},target=/Cktgen/INPUT"
-    M_INPUT_VIEWER = f"--mount source={args.inputvol},target=/public/INPUT"
     M_out = f"--mount source={args.outputvol},target=/Cktgen/out"
     M_DR_COLLATERAL = f"--mount source={args.routervol},target=/Cktgen/DR_COLLATERAL"
 
@@ -93,26 +92,10 @@ def cmdline():
     nets_to_route = c( args.nets_to_route, "--nets_to_route")
     nets_not_to_route = c( args.nets_not_to_route, "--nets_not_to_route")
 
-    print( f"TECHDIR = {args.techdir}")
-    print( f"TECHFILE = {args.techfile}")
-    print( f"INPUTVOL = {args.inputvol}")
-    print( f"OUTPUTVOL = {args.outputvol}")
-    print( f"ROUTERVOL = {args.routervol}")
-    print( f"SKIPROUTER = {args.skiprouter}")
-    print( f"SKIPGENERATE = {args.skipgenerate}")
-    print( f"STARTVIEWER = {args.startviewer}")
-    print( f"PLACERJSON = {args.placer_json}")
-    print( f"GRJSON = {args.gr_json}")
-    print( f"SOURCE = {args.source}")
-    print( f"SMALL = {args.small}")
-    print( f"NETS_TO_ROUTE = {args.nets_to_route}")
-    print( f"NETS_NOT_TO_ROUTE = {args.nets_not_to_route}")
-
     run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
     run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
 
     if not args.skipgenerate:
-        #run_sh( f'rm -rf INPUT', "Remove old INPUT directory")
         run_sh( f'mkdir -p INPUT')
 
         cmd = f'-n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}'
@@ -129,9 +112,7 @@ def cmdline():
         cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
         cktgen.parse_args( cmdlist)
 
-    print( args)
     if args.viewer_input_dir != "" and args.source != "":
-        print( args)
         run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.viewer_input_dir + "/" + args.source + ".json"}')
 
 if __name__ == "__main__":
