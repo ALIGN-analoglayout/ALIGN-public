@@ -5,11 +5,14 @@
 setenv ALIGN_HOME $PWD
 setenv ALIGN_WORK_DIR $ALIGN_HOME/work
 
+setenv SUDO sudo
+#setenv SUDO
+
 ## Install Prerequisite
 #-----------------------
 
 #### Install Packages
-sudo yum update && sudo yum install -yq \
+$SUDO yum update && $SUDO yum install -yq \
     python3 \
     python3-pip \
     python3-venv \
@@ -20,11 +23,11 @@ sudo yum update && sudo yum install -yq \
     gnuplot \
     curl \
     xvfb \
-&&  sudo yum clean
+&&  $SUDO yum clean
 
 #### Install klayout 
-sudo curl -o /klayout-0.26.3-0.x86_64.rpm https://www.klayout.org/downloads/CentOS_7/klayout-0.26.3-0.x86_64.rpm
-sudo yum install -yq /klayout-0.26.3-0.x86_64.rpm
+$SUDO curl -o /klayout-0.26.3-0.x86_64.rpm https://www.klayout.org/downloads/CentOS_7/klayout-0.26.3-0.x86_64.rpm
+$SUDO yum install -yq /klayout-0.26.3-0.x86_64.rpm
 #** WSL users would need to install Xming for the display to work
 
 #### Install lpsolve
@@ -32,10 +35,10 @@ git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git
 ####  Install json
 git clone https://github.com/nlohmann/json.git
 #### Install boost
-git clone --recursive https://github.com/boostorg/boost.git
-cd $ALIGN_HOME/boost
-./bootstrap.sh -prefix=$ALIGN_HOME/boost
-./b2 headers
+#git clone --recursive https://github.com/boostorg/boost.git
+#cd $ALIGN_HOME/boost
+#./bootstrap.sh -prefix=$ALIGN_HOME/boost
+#./b2 headers
 
 #### Install googletest
 cd $ALIGN_HOME
@@ -50,7 +53,7 @@ cp -r lib googletest/mybuild/.
 ## Set prerequisite paths
 #------------------------
 setenv LP_DIR $ALIGN_HOME/lpsolve
-setenv BOOST_LP $ALIGN_HOME/boost
+#setenv BOOST_LP $ALIGN_HOME/boost
 setenv JSON $ALIGN_HOME/json
 setenv GTEST_DIR $ALIGN_HOME/googletest/googletest/
 setenv VENV $ALIGN_HOME/general
