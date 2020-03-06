@@ -41,8 +41,8 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     finDummy = 8  ### Total Dummy fins per unit cell: 2*finDummy
     gate = 2
-
-    uc = generator(pdk, fin, finDummy, gate, gateDummy)
+    shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS","CMC","CCP"]) else 1
+    uc = generator(pdk, fin, finDummy, gate, gateDummy, shared_diff)
     x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
     parameters = get_parameters(primitive, parameters, nfin)
 
@@ -83,7 +83,6 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     elif primitive in ["SCM_NMOS", "SCM_PMOS"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 #'DA_G': [('M1', 'G'), ('M2', 'G')],
                                  'DB': [('M2', 'D')]})
 
     elif primitive in ["CMC_NMOS", "CMC_PMOS"]:

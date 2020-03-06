@@ -7,13 +7,13 @@ logger = logging.getLogger(__name__)
 
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, fin, finDummy, gate, gateDummy):
+    def __init__(self, pdk, fin, finDummy, gate, gateDummy,shared_diff):
         super().__init__(pdk)
         assert   3*self.pdk['Fin']['Pitch'] < 2*self.pdk['M2']['Pitch']
 
         ######### Derived Parameters ############
-        self.shared_diff = 1
-        self.gateDummy = 3
+        self.shared_diff = shared_diff
+        self.gateDummy = gateDummy
         self.gatesPerUnitCell = gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finsPerUnitCell = fin + 2*finDummy
         self.finDummy = finDummy
@@ -28,8 +28,6 @@ class MOSGenerator(DefaultCanvas):
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
         activeWidth =  self.pdk['Fin']['Pitch']*fin
         activeOffset = activeWidth//2 + finDummy*self.pdk['Fin']['Pitch']-self.pdk['Fin']['Pitch']//2
-        print(activeOffset-activeWidth//2)
-        print(activeOffset+activeWidth//2)
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
 
