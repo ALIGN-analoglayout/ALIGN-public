@@ -217,7 +217,7 @@ class MOSGenerator(DefaultCanvas):
             return (minx, maxx)
 
         center_track = (x_cells * self.gatesPerUnitCell) // 2
-        m3start = self.shared_diff+(x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
+        m3start = 1*self.shared_diff+(x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
         for track, (net, conn) in enumerate(self._nets.items(), start=1):
             for j in range(self.minvias):
                 current_track = m3start + len(self._nets) * j + track
