@@ -210,7 +210,7 @@
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
-"Pitch": 144,
+"Pitch": 120,
 "Width": 64,
 "MinL": 360,
 "MaxL": null,
