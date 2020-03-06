@@ -1,0 +1,283 @@
+// Generated for: spectre
+// Design cell name: tb_qvco
+// Design view name: schematic
+simulator lang=spectre
+global 0
+parameters TuningWord=8 vdd_vco=450m vbias=vdd_vco*0.5
+
+// INCLUDE YOUR MODEL PATH HERE
+include "MODEL_PATH"
+
+
+// Library name: QVCO_GP
+// Cell name: RES1K_BUF
+// View name: schematic
+subckt RES1K_BUF t1 t2 vss
+    R9 (net15 net6 vss) res l=6.5u w=1u m=1  
+    R8 (net9 net6 vss) res l=6.5u w=1u m=1  
+    R7 (net9 net11 vss) res l=6.5u w=1u m=1  
+    R6 (net13 net11 vss) res l=6.5u w=1u m=1  
+    R5 (net13 t2 vss) res l=6.5u w=1u m=1  
+    R4 (net15 net14 vss) res l=6.5u w=1u m=1  
+    R3 (net12 net14 vss) res l=6.5u w=1u m=1  
+    R2 (net12 net10 vss) res l=6.5u w=1u m=1  
+    R1 (net8 net10 vss) res l=6.5u w=1u m=1  
+    R0 (net8 t1 vss) res l=6.5u w=1u m=1  
+ends RES1K_BUF
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: RES2K_BUF
+// View name: schematic
+subckt RES2K_BUF t1 t2 vss
+    I1 (net3 t2 vss) RES1K_BUF
+    I0 (t1 net3 vss) RES1K_BUF
+ends RES2K_BUF
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: RES80K_BUF
+// View name: schematic
+subckt RES80K_BUF t1 t2 vss
+    R4 (net8 t2 vss) res l=10u w=500n m=1  
+    R3 (net8 net7 vss) res l=10u w=500n m=1  
+    R2 (net6 net7 vss) res l=10u w=500n m=1  
+    R1 (net6 net5 vss) res l=10u w=500n m=1  
+    R0 (t1 net5 vss) res l=10u w=500n m=1  
+ends RES80K_BUF
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: VCO_BUFF_LIN_2OUTS_v2
+// View name: schematic
+subckt VCO_BUFF_LIN_2OUTS_v2 i625u in out1 out2 vdd vss
+    M1 (out2 net11 vdd vdd) pmos lr=60n wr=2u nr=4 sigma=1 m=4 \
+         
+    M15 (out1 net11 vdd vdd) pmos lr=60n wr=2u nr=4 sigma=1 m=4 \
+         
+    M0 (out2 net11 vss vss) nmos lr=60n wr=2u nr=2 sigma=1 m=4 \
+         
+    M17 (vdd net7 net023 net023) nmos lr=60n wr=2u nr=16 sigma=1 m=4 \
+         
+    M20 (net023 i625u vss vss) nmos lr=120.0n wr=2u nr=2 sigma=1 m=16 \
+         
+    M21 (i625u i625u vss vss) nmos lr=120.0n wr=2u nr=2 sigma=1 m=2 \
+         
+    M14 (out1 net11 vss vss) nmos lr=60n wr=2u nr=2 sigma=1 m=4 \
+         
+    I3 (net11 out2 vss) RES2K_BUF
+    I2 (net11 out1 vss) RES2K_BUF
+    C0 (in net7 vss) mimcap lt=20u wt=20u lay=7 m=1
+         
+    C1 (net023 net11 vss) mimcap lt=32.5u wt=32.5u lay=7 m=1  
+    I0 (vdd net7 vss) RES80K_BUF
+ends VCO_BUFF_LIN_2OUTS_v2
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: res_24K
+// View name: schematic
+subckt res_24K t1 t2 vss
+    R4 (t2 net05 vss) res l=8u w=500n m=1  
+    R2 (net06 net05 vss) res l=8u w=500n m=1  
+    R1 (net06 net6 vss) res l=8u w=500n m=1  
+    R0 (t1 net6 vss) res l=8u w=500n m=1  
+ends res_24K
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: capbank_gp
+// View name: schematic
+subckt capbank_gp b\<4\> b\<3\> b\<2\> b\<1\> b\<0\> left right vdd vss
+    C15 (vss vss vss) mimcap lt=14.15u wt=14.15u lay=7 m=1  
+    C14 (vss vss vss) mimcap lt=14.15u wt=14.15u lay=7 m=1   
+    C13 (vss vss vss) mimcap lt=14.15u wt=14.15u lay=7 m=1  
+    C12 (vss vss vss) mimcap lt=14.15u wt=14.15u lay=7 m=1   
+    C11 (right net016 vss) mimcap lt=10u wt=10u lay=7 m=1   
+    C10 (left net011 vss) mimcap lt=10u wt=10u lay=7 m=1   
+    C9 (left net02 vss) mimcap lt=27.8u wt=27.8u lay=7 m=2   
+    C8 (right net06 vss) mimcap lt=27.8u wt=27.8u lay=7 m=2   
+    C5 (right net07 vss) mimcap lt=27.8u wt=27.8u lay=7 m=1   
+    C4 (left net010 vss) mimcap lt=27.8u wt=27.8u lay=7 m=1   
+    C3 (right net3 vss) mimcap lt=14.15u wt=14.15u lay=7 m=2   
+    C2 (left net1 vss) mimcap lt=14.15u wt=14.15u lay=7 m=2   
+    C1 (right net4 vss) mimcap lt=14.15u wt=14.15u lay=7 m=1   
+    C0 (left net2 vss) mimcap lt=14.15u wt=14.15u lay=7 m=1   
+    M25 (net011 b0_buf net016 vss) nmos lr=60n wr=2u nr=10 sigma=1 m=1          
+    M3 (net02 b4_buf net06 vss) nmos lr=60n wr=2u nr=20 sigma=1 m=10          
+    M2 (net010 b3_buf net07 vss) nmos lr=60n wr=2u nr=20 sigma=1 m=5          
+    M1 (net1 b2_buf net3 vss) nmos lr=60n wr=2u nr=20 sigma=1 m=2          
+    M0 (net2 b1_buf net4 vss) nmos lr=60n wr=2u nr=20 sigma=1 m=1          
+    I21 (b0_inv net011 vss) res_24K
+    I20 (b0_inv net016 vss) res_24K
+    I12 (b4_inv net06 vss) res_24K
+    I13 (b4_inv net02 vss) res_24K
+    I14 (b3_inv net010 vss) res_24K
+    I15 (b3_inv net07 vss) res_24K
+    I16 (b2_inv net3 vss) res_24K
+    I17 (b2_inv net1 vss) res_24K
+    I18 (b1_inv net2 vss) res_24K
+    I19 (b1_inv net4 vss) res_24K
+    M45 (net0156 net0119 vss vss) nmos l=60n w=1u m=1 nf=1 
+    M44 (net0155 net0120 vss vss) nmos l=60n w=1u m=1 nf=1 
+    M41 (net0119 b\<4\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M40 (net0120 b\<3\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M37 (net0159 net0104 vss vss) nmos l=60n w=1u m=1 nf=1 
+    M36 (net0158 net0105 vss vss) nmos l=60n w=1u m=1 nf=1 
+    M35 (net0157 net0106 vss vss) nmos l=60n w=1u m=1 nf=1 
+    M31 (net0104 b\<2\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M30 (net0105 b\<1\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M29 (net0106 b\<0\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M22 (b4_buf b4_inv vss vss) nmos l=60n w=1u m=1 nf=1 
+    M21 (b4_inv b\<4\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M18 (b3_buf b3_inv vss vss) nmos l=60n w=1u m=1 nf=1 
+    M16 (b3_inv b\<3\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M15 (b2_inv b\<2\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M13 (b2_buf b2_inv vss vss) nmos l=60n w=1u m=1 nf=1 
+    M11 (b1_buf b1_inv vss vss) nmos l=60n w=1u m=1 nf=1 
+    M9 (b1_inv b\<1\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M7 (b0_buf b0_inv vss vss) nmos l=60n w=1u m=1 nf=1 
+    M4 (b0_inv b\<0\> vss vss) nmos l=60n w=1u m=1 nf=1 
+    M43 (net0156 net0119 vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M42 (net0155 net0120 vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M39 (net0119 b\<4\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M38 (net0120 b\<3\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M34 (net0159 net0104 vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M33 (net0158 net0105 vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M32 (net0157 net0106 vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M28 (net0104 b\<2\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M27 (net0105 b\<1\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M26 (net0106 b\<0\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M24 (b4_buf b4_inv vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M23 (b4_inv b\<4\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M19 (b3_inv b\<3\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M17 (b3_buf b3_inv vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M14 (b2_buf b2_inv vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M12 (b2_inv b\<2\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M10 (b1_buf b1_inv vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M8 (b1_inv b\<1\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M6 (b0_buf b0_inv vdd vdd) pmos l=60n w=1u m=1 nf=1 
+    M5 (b0_inv b\<0\> vdd vdd) pmos l=60n w=1u m=1 nf=1 
+ends capbank_gp
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: res_60K
+// View name: schematic
+subckt res_60K t1 t2 vss
+    R12 (vss vss vss) res l=8u w=500n m=1  
+    R11 (vss vss vss) res l=8u w=500n m=1  
+    R10 (vss vss vss) res l=8u w=500n m=1  
+    R9 (vss vss vss) res l=8u w=500n m=1  
+    R8 (t2 net012 vss) res l=8u w=500n m=1  
+    R7 (net010 net012 vss) res l=8u w=500n m=1  
+    R6 (net010 net07 vss) res l=8u w=500n m=1  
+    R5 (net014 net07 vss) res l=8u w=500n m=1  
+    R4 (net014 net05 vss) res l=8u w=500n m=1  
+    R2 (net06 net05 vss) res l=8u w=500n m=1  
+    R1 (net06 net6 vss) res l=8u w=500n m=1  
+    R0 (t1 net6 vss) res l=8u w=500n m=1  
+ends res_60K
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: QVCO_CC_GP
+// View name: schematic
+subckt QVCO_CC_GP dig\<4\> dig\<3\> dig\<2\> dig\<1\> dig\<0\> out0 out180 \
+        out270 out90 vdd vddSW vss
+    L3 (out270 out90 vss vdd) inductor w=9u nr=1 rad=90u lay=9 \
+        spacing=3u gdis=10u m=1
+    L4 (out180 out0 vss vdd) inductor w=9u nr=1 rad=90u lay=9 \
+        spacing=3u gdis=10u m=1
+    I1 (dig\<4\> dig\<3\> dig\<2\> dig\<1\> dig\<0\> out90 out270 vddSW \
+        vss) capbank_gp
+    I0 (dig\<4\> dig\<3\> dig\<2\> dig\<1\> dig\<0\> out180 out0 vddSW \
+        vss) capbank_gp
+    M3 (out270 out90 net8 vss) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    M1 (out0 out180 net3 vss) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    M0 (out180 out0 net3 vss) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    M2 (out90 out270 net8 vss) nmos lr=60n wr=1u nr=25 sigma=1 m=2 \
+         
+    M8 (out180 net5 vdd vddSW) pmos lr=60n wr=1u nr=16 sigma=1 m=1 \
+         
+    M6 (out270 net10 vdd vddSW) pmos lr=60n wr=1u nr=16 sigma=1 m=1 \
+         
+    M9 (out90 net6 vdd vddSW) pmos lr=60n wr=1u nr=16 sigma=1 m=1 \
+         
+    M4 (out0 net1 vdd vddSW) pmos lr=60n wr=1u nr=16 sigma=1 m=1 \
+         
+    C0 (out90 net5 vss) mimcap lt=20u wt=5u lay=7 m=1 \
+        mimflag=3  
+    C5 (out180 net10 vss) mimcap lt=20u wt=5u lay=7 m=1 \
+        mimflag=3  
+    C4 (out0 net6 vss) mimcap lt=20u wt=5u lay=7 m=1 mimflag=3 \
+         
+    C12 (out270 net1 vss) mimcap lt=20u wt=5u lay=7 m=1 \
+        mimflag=3  
+    I10 (vdd net10 vss) res_60K
+    I8 (vdd net5 vss) res_60K
+    I9 (vdd net6 vss) res_60K
+    I7 (vdd net1 vss) res_60K
+    I4 (vss net6 vss) res_60K
+    I6 (vss net10 vss) res_60K
+    I3 (vss net5 vss) res_60K
+    I2 (vss net1 vss) res_60K
+    L10 (net8 vss vss) inductor w=3u rad=15.0u nr=2.25 lay=9 \
+        spacing=4u gdis=30u m=1
+    L7 (net3 vss vss) inductor w=3u rad=15.0u nr=2.25 lay=9 \
+        spacing=4u gdis=30u m=1
+ends QVCO_CC_GP
+// End of subcircuit definition.
+
+// Library name: QVCO_GP
+// Cell name: tb_qvco
+// View name: schematic
+I9 (net017 out180 net012 net09 vddbuf 0) VCO_BUFF_LIN_2OUTS_v2
+I8 (net019 out0 net011 net010 vddbuf 0) VCO_BUFF_LIN_2OUTS_v2
+I12 (net015 out90 net08 net06 vddbuf 0) VCO_BUFF_LIN_2OUTS_v2
+I13 (net013 out270 net05 net07 vddbuf 0) VCO_BUFF_LIN_2OUTS_v2
+I7 (dig\<4\> dig\<3\> dig\<2\> dig\<1\> dig\<0\> out0 out180 out270 out90 \
+        vdd vddSW 0) QVCO_CC_GP
+I15 (vddbuf net017) isource dc=625u type=dc
+I14 (vddbuf net019) isource dc=625u type=dc
+I16 (vddbuf net015) isource dc=625u type=dc
+I17 (vddbuf net013) isource dc=625u type=dc
+C3 (net09 0) capacitor c=200f
+C6 (net05 0) capacitor c=200f
+C7 (net06 0) capacitor c=200f
+C0 (net011 0) capacitor c=200f
+C1 (net010 0) capacitor c=200f
+C2 (net012 0) capacitor c=200f
+C5 (net07 0) capacitor c=200f
+C4 (net08 0) capacitor c=200f
+V2 (vddSW 0) vsource dc=1 type=dc
+V1 (vdd 0) vsource dc=vdd_vco type=dc
+V4 (vddbuf 0) vsource dc=1 type=dc
+I5 (dig\<5\> dig\<4\> dig\<3\> dig\<2\> dig\<1\> dig\<0\>) Dec2bin_6bit \
+        vdd=1.2 ctrl_word=TuningWord
+ic out270=0.55 out90=0.55 out180=0.54 out0=0.56 
+simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
+    tnom=27 scalem=1.0 scale=1.0 gmin=1e-12 rforce=1 maxnotes=5 maxwarns=5 \
+    digits=5 cols=80 pivrel=1e-3 sensfile="../psf/sens.output" \
+    checklimitdest=psf 
+tran tran stop=30n errpreset=conservative write="spectre.ic" \
+    writefinal="spectre.fc" annotate=status maxiters=5 
+finalTimeOP info what=oppoint where=rawfile
+dcOp dc write="spectre.dc" maxiters=150 maxsteps=10000 annotate=status
+dcOpInfo info what=oppoint where=rawfile
+pss  (  out0  out180  )  pss  fund=5G  harms=15
++    errpreset=conservative  tstab=30n  saveinit=yes  annotate=status
+pnoise  (  out0  out180  )  pnoise  relharmnum=1  start=1M
++       stop=10M  dec=50  maxsideband=13  annotate=status
+modelParameter info what=models where=rawfile
+element info what=inst where=rawfile
+outputParameter info what=output where=rawfile
+designParamVals info what=parameters where=rawfile
+primitives info what=primitives where=rawfile
+subckts info what=subckts  where=rawfile
+save V1:p 
+saveOptions options save=allpub
+ahdl_include "./IdealDAC.va"

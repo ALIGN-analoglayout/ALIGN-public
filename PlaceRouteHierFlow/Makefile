@@ -15,7 +15,7 @@ OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
+export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)

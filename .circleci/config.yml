@@ -196,7 +196,8 @@ jobs:
       - store_artifacts:
           path: coverage-reports
 
-  build-nightly:
+
+  build-nightly1:
     executor: docker-executor
     steps:
       - setup_remote_docker
@@ -207,8 +208,10 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --timeout=300; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly"
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
 
+      - run: |
           docker cp align_container:test-reports .
           docker rm align_container
 
@@ -217,6 +220,119 @@ jobs:
           paths:
             - test-reports/align-nightly
 
+  build-nightly2:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -t align_image -f ./build/Dockerfile.base .
+
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_5b_ADC' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_1.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_CDAC_SW_Coarse' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_2.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_civiR_DLDO_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_3.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+          #      - run: |
+          #          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_CK_Divider8' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_4.xml"
+          #          docker cp align_container:test-reports .
+          #          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_Comp_CK' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_5.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_SAR_Logic' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_6.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_DLPF_RCFilter' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_7.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_EdgeComparator' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_8.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_LevelCrossingDetector' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_9.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_model3x_MDLL_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_10.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_11.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_TempSensor' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_12.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_TX_8l12b' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_13.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Santized_12b_ADC_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_14.xml"
+          docker cp align_container:test-reports .
+          docker rm align_container
+      
+          #- run: |
+          #- rudocker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'single_SAR' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_13.xml"
+          #- rudocker cp align_container:test-reports .
+          #- rudocker rm align_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-nightly
+
+  build-nightly3:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -t align_image -f ./build/Dockerfile.base .
+
+      - run: |
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'not SAR_ADC_6b_2GSPS and not single_SAR and not San and not BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml"
+
+      - run: |
+          docker cp align_container:test-reports .
+          docker rm align_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/align-nightly  
 
   finish:
     executor: git-executor
@@ -268,12 +384,46 @@ workflows:
 
     jobs:
       - start
-      - build-nightly:
+      - build-nightly1:
+          requires:
+            - start
+      - build-nightly2:
+          requires:
+            - start
+      - build-nightly3:
           requires:
             - start
       - finish-nightly:
           requires:
-            - build-nightly
+            - build-nightly1
+            - build-nightly2
+            - build-nightly3
+
+  full_after_nightly:
+    triggers:
+      - schedule:
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - start
+      - build-PlaceRouteHierFlow:
+          requires:
+            - start
+      - build-cktgen:
+          requires:
+            - start
+      - build-align:
+          requires:
+            - start
+      - finish:
+          requires:
+            - build-align
+            - build-cktgen
+            - build-PlaceRouteHierFlow
+
 
   full:
     jobs:

@@ -9,12 +9,16 @@ import re
 import logging
 logger = logging.getLogger(__name__)
 
-def rational_scaling( d, *, mul=1, div=1):
+def rational_scaling( d, *, mul=1, div=1, errors=None):
     assert all( (mul*c) % div == 0 for c in d['bbox'])
     d['bbox'] = [ (mul*c) //div for c in d['bbox']]
     for term in d['terminals']:
         if not all( (mul*c) % div == 0 for c in term['rect']):
-            logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
+            txt = f"Terminal {term} not a multiple of {div} (mul={mul})."
+            if errors is not None:
+                errors.append( txt)
+            logger.error( txt)
+
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
 def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
@@ -28,22 +32,28 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     subinsts = {}
 
+    errors = []
+
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
               "M4": "m4", "M5": "m5", "M6": "m6"}
 
-    def add_terminal( netName, layer, b):
+    def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
-        def f( gen, value, tag=""):
+        def f( gen, value, tag=None):
             # value is in 2x units
             if value%2 != 0:
-                logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two.")
+                txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
+                errors.append( txt)
+                logger.error( txt)
             else:
                 p = gen.clg.inverseBounds( value//2)
                 if p[0] != p[1]:
-                    logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}")
+                    txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
+                    errors.append( txt)
+                    logger.error( txt)
 
         if layer == "cellarea":
             f( cnv.m1, b.LL.x, "LL.x")
@@ -58,7 +68,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             else:
                 center = None
             if center is not None:
-                f( cnv.generators[t_tbl[layer]], center)
+                f( cnv.generators[t_tbl[layer]], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -121,7 +131,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             with pth.open( "rt") as fp:
                 d = json.load( fp)
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            rational_scaling( d, div=5)
+            rational_scaling( d, div=5, errors=errors)
 
             tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
 
@@ -165,12 +175,12 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     for n in hN.Nets:
         logger.debug( f"Net: {n.name}")
 
-        def addt( obj, con):
+        def addt( obj, con, tag=None):
             b = con.placedBox
             if obj == n:
-                add_terminal( obj.name, con.metal, b)
+                add_terminal( obj.name, con.metal, b, tag=tag)
             else:
-                add_terminal( obj, con.metal, b)
+                add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
             if c.type == 'Block':
@@ -183,8 +193,9 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
                 tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
                 logger.debug( f'\t{tag}')
+
                 for con in pin.pinContacts:
-                    addt( n, con)
+                    addt( n, con, "blockPin")
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
@@ -197,15 +208,15 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
         for metal in n.path_metal:
             con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
+            add_terminal( n.name, con.metal, con.placedBox, "path_metal")
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "path_via")
 
         for via in n.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "intervia")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
@@ -282,12 +293,13 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     if checkOnly:
         # divide by two be make it be in CellFabric units (nanometer)
-        rational_scaling( d, div=2)
+        rational_scaling( d, div=2, errors=errors)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
             cnv.subinsts[inst].parameters.update(parameters)
         cnv.gen_data(run_pex=extract)
+
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
@@ -317,10 +329,13 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         #             d['terminals'].append( term)
 
         # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=10)
+        rational_scaling( d, mul=10, errors=errors)
+
+        for e in errors:
+            cnv.drc.errors.append( e)
 
         return (cnv, d)
     else:
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=5)
+        rational_scaling( d, mul=5, errors=errors)
         return d

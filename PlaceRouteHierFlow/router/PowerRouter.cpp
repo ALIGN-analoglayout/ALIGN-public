@@ -74,6 +74,13 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
            RouterDB::Pin temp_pin = PowerNets[i].pins[j];
            std::vector<RouterDB::SinkData> temp_source, temp_dest;
 
+           if(Vdd_grid.metals.size()==0 or Gnd_grid.metals.size()==0){
+             std::cout<<"Placement Area is too small, no space to create power grid"<<std::endl;
+             assert(0);
+             //continue;
+           }
+
+
            if(PowerNets[i].power ==1){
                //Q1
                SetSrcDest(temp_pin, Vdd_grid, temp_source, temp_dest);

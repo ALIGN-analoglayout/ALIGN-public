@@ -458,7 +458,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gs.append("title").text(d => `${d.netName},${d.layer}`);
+      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
 
       /*========================*/
 
@@ -494,7 +494,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gt.append("title").text(d => `${d.netName},${d.layer}`);
+      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
     }
   }
 </script>

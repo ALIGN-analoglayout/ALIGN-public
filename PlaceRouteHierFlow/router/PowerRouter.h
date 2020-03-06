@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <assert.h>
 #include <sstream>
 #include <set>
 #include <cmath>

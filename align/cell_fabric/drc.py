@@ -27,6 +27,7 @@ class DesignRuleCheck():
                 self._check_via_enclosure_rules(layer, vv)
             else:
                 self._check_metal_rules(layer, vv)
+                self._check_adjacent_metals( layer, vv)
         for error in self.errors:
             logger.warning(pprint.pformat(error))
         return self.num_errors
@@ -51,22 +52,62 @@ class DesignRuleCheck():
             o = 1 if metal_dir == 'V' else 0
             metal_r = self._find_rect_covering_via( r, ly, metal_dir)
             if metal_r[o+0] > r.rect[o+0] - enclosure_value or metal_r[o+2] < r.rect[o+2] + enclosure_value:
-                self.errors.append( f"ENCLOSURE: {ly} {metal_r} does not sufficiently surround {layer} {r.rect}, {enclosure_value}")
+                self.errors.append( f"Enclosure violation on {ly}-{layer}: {metal_r} does not sufficiently surround {r.rect}, {enclosure_value}")
 
         for _, sl in vv.items():
             for r in sl.rects:
                 if ly_l is not None: check_single_metal( r, ly_l, ml_dir, v['VencA_L'])
                 if ly_u is not None: check_single_metal( r, ly_u, mu_dir, v['VencA_H'])
 
+    def _check_adjacent_metals( self, layer, vv):
+        m = self.canvas.pdk[layer]
+        if 'AdjacentAttacker' not in m: return
+        
+        dist = m['AdjacentAttacker']
+
+        dr = m['Direction'].upper()
+        assert dr in ['V','H']
+
+        o = 0 if dr == 'H' else 1
+
+        for cx0,v0 in vv.items():
+            for cx1 in [cx0-2*m['Pitch'], cx0+2*m['Pitch']]:
+                if cx1 in vv:
+                    v1 = vv[cx1]
+                    for slr0 in v0.rects:
+                        for slr1 in v1.rects:
+                            if 0 < slr1.rect[o+0] - slr0.rect[o+2] <= dist:
+                                self.errors.append( f"Adjacent metal attacker {layer}: {slr0.rect} too close to {slr1.rect} dist: {dist}")
+
+
     def _find_rect_covering_via( self, r, ly, metal_dir):
         cx2 = r.rect[0]+r.rect[2]
         cy2 = r.rect[1]+r.rect[3]
-        c2a,c2p,o = (cx2,cy2,1) if metal_dir == 'V' else (cy2,cx2,0)
-        sl = self.canvas.rd.store_scan_lines[ly][c2a]
-        for metal_r in sl.rects:
-            if metal_r.rect[o+0] <= c2p//2 <= metal_r.rect[o+2]:
-                return metal_r.rect
-        assert False
+        c2a,c2p,o = (cx2,cy2,0) if metal_dir == 'H' else (cy2,cx2,1)
+        sl = self.canvas.rd.store_scan_lines[ly][c2p]
+
+        def binary_search( l, u, v):
+            if l == u:
+                return None
+            elif l+1 == u:
+                if sl.rects[l].rect[o+0] <= v <= sl.rects[l].rect[o+2]:
+                    return sl.rects[l].rect
+                else:
+                    return None
+            else:
+                m = (l+u+1)//2
+                if sl.rects[m].rect[o+0] <= v:
+                    return binary_search( m, u, v)
+                else:
+                    return binary_search( l, m, v)
+
+        result = binary_search( 0, len(sl.rects), c2a//2)
+        if result is not None:
+            return result
+        else:
+            assert False, f"No rectangle on {ly} covering via at {r.rect}"
+
+
 
     def _check_metal_rules(self, layer, vv):
         '''Check metal min-length / min-spacing rules'''
