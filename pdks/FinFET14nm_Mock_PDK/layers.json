@@ -112,7 +112,7 @@
 "Width": 40,
 "MinL": 210,
 "MaxL": null,
-"EndToEnd": 48,
+"EndToEnd": 40,
 "Offset": 0,
 "UnitC": {"L_3Sigma":0.16, "Mean":0.2, "U_3Sigma":0.24},
 "UnitCC": {"L_3Sigma":0.08, "Mean":0.1, "U_3Sigma":0.12},
