@@ -22,7 +22,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3,1)
 
     terminals = []
 
