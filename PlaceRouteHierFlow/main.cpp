@@ -157,25 +157,47 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
 }
 
-void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode){
+void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int idx, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode){
+  //recursively DFS hiertree
   string current_node_name = current_node.name;
   for (unsigned int bit = 0; bit < current_node.Blocks.size();bit++){
     if(current_node.Blocks[bit].child==-1)
       continue;
     int idx = current_node.Blocks[bit].child;
     //get and update childnode from parent
+    //1.copy childnode of current_node.blocks[i]
     PnRDB::hierNode childnode = DB.hierTree[idx];
     string child_node_name = childnode.name;
-    childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL;
-    childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR;
-    DB.TransformNode(childnode);
+    //2.childnode.LL = current_node.LL + block[i].placed.LL, orient = blocks[i].orient
+    childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL + current_node.LL;
+    childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR + current_node.LL;
+    //3.transform (shift and rotate) all points and rects of childnode into topnode coordinate
+    DB.TransformNode(childnode);//all rects and points in childnode shift by (childnode.LL.x, childnode.LL.y),
+                                //current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
+    //4.complete all children of childnode recursively
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)
     {
-      route_top_down(DB, drcInfo, childnode, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+      route_top_down(DB, drcInfo, childnode, idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
     }
+
+    //5.transform (shift only) all points and rects of childnode into current_node coordinate
+    //all rects and points in childnode shift by (-current_node.LL.x, -current_node.LL.y),
+    //-> in current_node coord
+
+    //6.update current_node.blocks[i].intermetal/via/blockpin
+    DB.CheckinChildnodetoBlock(idx, bit, childnode);//check in childnode into block
+
+    //7.transform (shift and rotate) childnode into childnode coordinate
+    //undo transform current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL
+    //and current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
+
+    //8.pushback childnode into hiertree
+    // hiertree.push_back(childnode);
+    //9.current_node.Blocks[bit].child links to childnode
+    // current_node.Blocks[bit].child=hiertree.size();
   }
   //route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
-  //DB.CheckinHierNode(idx, current_node);
+  //DB.CheckinHierNode(parent, current_node);//check in current node into hiertree
 }
 
 
@@ -284,7 +306,7 @@ int main(int argc, char** argv ){
   }
 
   for (unsigned int lidx = 0; lidx < DB.hierTree[Q.back()].numPlacement;lidx++){
-    route_top_down(DB, drcInfo, DB.hierTree[Q.back()], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+    route_top_down(DB, drcInfo, DB.hierTree[Q.back()], Q.back(), lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
 
   /**

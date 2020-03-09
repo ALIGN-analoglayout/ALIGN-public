@@ -174,7 +174,7 @@ void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal> &terminals, Pn
 
 void PnRdatabase::TransformBlock(PnRDB::block &block, PnRDB::point LL){
   int width = block.width, height = block.height;
-  PnRDB::Omark ort = block.orient;
+  PnRDB::Omark ort = PnRDB::N;//block.orient;
   TransformBbox(block.placedBox, LL, width, height, ort);
   TransformPoint(block.placedCenter, LL, width, height, ort);
   TransformPins(block.blockPins, LL, width, height, ort);
@@ -334,6 +334,24 @@ void PnRdatabase::TransformPoint(PnRDB::point &p, PnRDB::point LL,int width, int
     break;
   }
   p = p + LL;
+}
+
+void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode){
+  //update updateNode into hiertree[nodeID].blocks[blockID]
+  //update (updatenode.intermetal,intervia,blockpins) into blocks[blockid]
+
+  //update pathmetal into block internal metal
+  PnRDB::contact metal_contact;
+  for(int nit=0;nit<updatedNode.Nets.size();nit++){
+    for(int mit=0;mit<updatedNode.Nets[nit].path_metal.size();mit++){
+        //metal_contact.metal = updatedNode.Nets[nit].path_metal[mit].MetalIdx;
+        //metal_contact.placedBox = ;
+        //metal_contact.placedCenter = ;
+        //hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interMetals.push_back
+    }
+  }
+
+  //update pathvia into block internal metal and via
 }
 
 // [RA] need further modification for hierarchical issue - wbxu
