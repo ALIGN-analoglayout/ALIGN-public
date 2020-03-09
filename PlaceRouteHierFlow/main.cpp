@@ -169,31 +169,35 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     PnRDB::hierNode childnode = DB.hierTree[idx];
     PnRDB::Omark childnode_orient = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient;
     string child_node_name = childnode.name;
+
     //2.childnode.LL = current_node.LL + block[i].placed.LL, orient = blocks[i].orient
     childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL + current_node.LL;
     childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR + current_node.LL;
-    //3.transform (shift and rotate) all points and rects of childnode into topnode coordinate
-    DB.TransformNode(childnode, childnode_orient);//all rects and points in childnode shift by (childnode.LL.x, childnode.LL.y),
+
+    //3.transform (translate and rotate) all points and rects of childnode into topnode coordinate;
+    DB.TransformNode(childnode, childnode_orient);//all rects and points in childnode translate by (childnode.LL.x, childnode.LL.y),
                                 //current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
+
     //4.complete all children of childnode recursively
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)
     {
       route_top_down(DB, drcInfo, childnode, idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
     }
 
-    //5.transform (shift only) all points and rects of childnode into current_node coordinate
-    //all rects and points in childnode shift by (-current_node.LL.x, -current_node.LL.y),
-    //-> in current_node coord
+    // 5.transform (shift only) all points and rects of childnode into current_node coordinate
+    // all rects and points in childnode translate by (-current_node.LL.x, -current_node.LL.y) -> into current_node coord;
+    DB.TranslateNode(childnode, PnRDB::point(-current_node.LL.x, -current_node.LL.y));
 
     //6.update current_node.blocks[i].intermetal/via/blockpin
     DB.CheckinChildnodetoBlock(idx, bit, childnode);//check in childnode into block
 
-    //7.transform (shift and rotate) childnode into childnode coordinate
+    //7.transform (translate and rotate) childnode into childnode coordinate
     //undo transform current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL
     //and current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
 
     //8.pushback childnode into hiertree
     // hiertree.push_back(childnode);
+
     //9.current_node.Blocks[bit].child links to childnode
     // current_node.Blocks[bit].child=hiertree.size();
   }

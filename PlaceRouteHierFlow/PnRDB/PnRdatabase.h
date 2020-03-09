@@ -118,22 +118,27 @@ class PnRdatabase
 
     //these functions are used to transform inside info of nodes
     void TransformNode(PnRDB::hierNode& updatedNode, PnRDB::Omark ort); //transform inside info of node
-    void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBlock(PnRDB::block &block, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformPoint(PnRDB::point &point, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBbox(PnRDB::bbox &bbox, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformContact(PnRDB::contact &contact, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformVia(PnRDB::Via &via, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformPin(PnRDB::pin &pin, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
-    void TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBlock(PnRDB::block &block, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformPoint(PnRDB::point &point, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBbox(PnRDB::bbox &bbox, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformContact(PnRDB::contact &contact, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformVia(PnRDB::Via &via, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformPin(PnRDB::pin &pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformMetal(PnRDB::Metal &metal, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformMetals(std::vector<PnRDB::Metal> &metals, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformNet(PnRDB::net &net, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformNets(std::vector<PnRDB::net> &nets, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate);
 
     void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);

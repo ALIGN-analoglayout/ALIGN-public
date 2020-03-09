@@ -157,87 +157,90 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::Omark ort) 
   TransformVias(updatedNode.interVias, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::contact>::iterator cit = terminal.termContacts.begin(); cit != terminal.termContacts.end(); cit++) {
-    TransformContacts(terminal.termContacts, LL, width, height, ort);
+    TransformContacts(terminal.termContacts, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal>& terminals, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal>& terminals, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::terminal>::iterator tit = terminals.begin(); tit != terminals.end(); tit++) {
-    TransformTerminal(*tit, LL, width, height, ort);
+    TransformTerminal(*tit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   // PnRDB::Omark ort = PnRDB::N;  // block.orient;
-  TransformBbox(block.placedBox, LL, width, height, ort);
-  TransformPoint(block.placedCenter, LL, width, height, ort);
-  TransformPins(block.blockPins, LL, width, height, ort);
-  TransformContacts(block.interMetals, LL, width, height, ort);
-  TransformVias(block.interVias, LL, width, height, ort);
-  TransformPins(block.dummy_power_pin, LL, width, height, ort);
+  TransformBbox(block.placedBox, translate, width, height, ort);
+  TransformPoint(block.placedCenter, translate, width, height, ort);
+  TransformPins(block.blockPins, translate, width, height, ort);
+  TransformContacts(block.interMetals, translate, width, height, ort);
+  TransformVias(block.interVias, translate, width, height, ort);
+  TransformPins(block.dummy_power_pin, translate, width, height, ort);
 }
 
-void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::block>::iterator bit = blocks.begin(); bit != blocks.end(); bit++) {
-    TransformBlock(*bit, LL, width, height, ort);
+    TransformBlock(*bit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex>& bcs, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex>& bcs, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::blockComplex>::iterator bit = bcs.begin(); bit != bcs.end(); bit++) {
-    TransformBlockComplex(*bit, LL, width, height, ort);
+    TransformBlockComplex(*bit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex& bc, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
-  TransformBlocks(bc.instance, LL, width, height, ort);
+void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex& bc, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  TransformBlocks(bc.instance, translate, width, height, ort);
 }
 
-void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::pin>::iterator pit = pins.begin(); pit != pins.end(); pit++) {
-    TransformPin(*pit, LL, width, height, ort);
+    TransformPin(*pit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
-  TransformContacts(pin.pinContacts, LL, width, height, ort);
-  TransformVias(pin.pinVias, LL, width, height, ort);
+void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  TransformContacts(pin.pinContacts, translate, width, height, ort);
+  TransformVias(pin.pinVias, translate, width, height, ort);
 }
 
-void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::Via>::iterator vit = vias.begin(); vit != vias.end(); vit++) {
-    TransformVia(*vit, LL, width, height, ort);
+    TransformVia(*vit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformVia(PnRDB::Via& via, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
-  TransformPoint(via.placedpos, LL, width, height, ort);
-  TransformContact(via.UpperMetalRect, LL, width, height, ort);
-  TransformContact(via.LowerMetalRect, LL, width, height, ort);
-  TransformContact(via.ViaRect, LL, width, height, ort);
+void PnRdatabase::TransformVia(PnRDB::Via& via, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  TransformPoint(via.placedpos, translate, width, height, ort);
+  TransformPoint(via.originpos, translate, width, height, ort);
+  TransformContact(via.UpperMetalRect, translate, width, height, ort);
+  TransformContact(via.LowerMetalRect, translate, width, height, ort);
+  TransformContact(via.ViaRect, translate, width, height, ort);
 }
 
-void PnRdatabase::TransformContacts(std::vector<PnRDB::contact>& contacts, PnRDB::point LL, int width, int height,
+void PnRdatabase::TransformContacts(std::vector<PnRDB::contact>& contacts, PnRDB::point translate, int width, int height,
                                     PnRDB::Omark ort) {
   for (std::vector<PnRDB::contact>::iterator cit = contacts.begin(); cit != contacts.end(); cit++) {
-    TransformContact(*cit, LL, width, height, ort);
+    TransformContact(*cit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformContact(PnRDB::contact& contact, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
-  TransformBbox(contact.placedBox, LL, width, height, ort);
-  TransformPoint(contact.placedCenter, LL, width, height, ort);
+void PnRdatabase::TransformContact(PnRDB::contact& contact, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  TransformBbox(contact.placedBox, translate, width, height, ort);
+  TransformBbox(contact.originBox, translate, width, height, ort);
+  TransformPoint(contact.placedCenter, translate, width, height, ort);
+  TransformPoint(contact.originCenter, translate, width, height, ort);
 }
 
-void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox>& bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox>& bboxs, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::bbox>::iterator bit = bboxs.begin(); bit != bboxs.end(); bit++) {
-    TransformBbox(*bit, LL, width, height, ort);
+    TransformBbox(*bit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   int WW = width, HH = height;
   PnRDB::point tempLL = box.LL, tempUR = box.UR;
   switch (ort) {
@@ -288,17 +291,17 @@ void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point LL, int width, in
       box.UR = tempUR;
       break;
   }
-  box.LL = box.LL + LL;
-  box.UR = box.UR + LL;
+  box.LL = box.LL + translate;
+  box.UR = box.UR + translate;
 }
 
-void PnRdatabase::TransformPoints(std::vector<PnRDB::point>& points, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformPoints(std::vector<PnRDB::point>& points, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   for (std::vector<PnRDB::point>::iterator pit = points.begin(); pit != points.end(); pit++) {
-    TransformPoint(*pit, LL, width, height, ort);
+    TransformPoint(*pit, translate, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
   int WW = width, HH = height, X = p.x, Y = p.y;
   switch (ort) {
     case PnRDB::N:
@@ -338,7 +341,43 @@ void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point LL, int width, in
       p.y = Y;
       break;
   }
-  p = p + LL;
+  p = p + translate;
+}
+
+void PnRdatabase::TransformMetal(PnRDB::Metal& metal, PnRDB::point translate, int width, int height, PnRDB::Omark ort){
+  TransformPoints(metal.LinePoint, translate, width, height, ort);
+  TransformContact(metal.MetalRect, translate, width, height, ort);
+};
+
+void PnRdatabase::TransformMetals(std::vector<PnRDB::Metal>& metals, PnRDB::point translate, int width, int height, PnRDB::Omark ort){
+  for (std::vector<PnRDB::Metal>::iterator mit = metals.begin(); mit != metals.end();mit++){
+    TransformMetal(*mit, translate, width, height, ort);
+  }
+};
+
+void PnRdatabase::TransformNet(PnRDB::net& net, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  TransformMetals(net.path_metal, translate, width, height, ort);
+  TransformVias(net.path_via, translate, width, height, ort);
+}
+
+void PnRdatabase::TransformNets(std::vector<PnRDB::net>& nets, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::net>::iterator nit = nets.begin(); nit != nets.end();nit++){
+    TransformNet(*nit, translate, width, height, ort);
+  }
+}
+
+void PnRdatabase::TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate) { 
+  //translate all points and rect by translate
+  PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
+  int width = UR.x - LL.x, height = UR.y - LL.y;
+  TransformBlockComplexs(updatedNode.Blocks, translate, width, height, PnRDB::Omark::N);
+  TransformTerminals(updatedNode.Terminals, translate, width, height, PnRDB::Omark::N);
+  TransformPins(updatedNode.blockPins, translate, width, height, PnRDB::Omark::N);
+  TransformContacts(updatedNode.interMetals, translate, width, height, PnRDB::Omark::N);
+  TransformVias(updatedNode.interVias, translate, width, height, PnRDB::Omark::N);
+  TransformNets(updatedNode.Nets, translate, width, height, PnRDB::Omark::N);
+  TransformPoint(updatedNode.LL, translate, width, height, PnRDB::Omark::N);
+  TransformPoint(updatedNode.UR, translate, width, height, PnRDB::Omark::N);
 }
 
 void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode) {
