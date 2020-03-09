@@ -117,13 +117,13 @@ class PnRdatabase
     void updatePowerPins(PnRDB::pin &temp_pin);
 
     //these functions are used to transform inside info of nodes
-    void TransformNode(PnRDB::hierNode& updatedNode); //transform inside info of node
-    void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL);
-    void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL);
-    void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL);
-    void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL);
-    void TransformBlock(PnRDB::block &block, PnRDB::point LL);
-    void TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL);
+    void TransformNode(PnRDB::hierNode& updatedNode, PnRDB::Omark ort); //transform inside info of node
+    void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBlock(PnRDB::block &block, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
+    void TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
     void TransformPoint(PnRDB::point &point, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
     void TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort);
     void TransformBbox(PnRDB::bbox &bbox, PnRDB::point LL, int width, int height, PnRDB::Omark ort);

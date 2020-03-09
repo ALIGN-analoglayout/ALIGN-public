@@ -167,12 +167,13 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     //get and update childnode from parent
     //1.copy childnode of current_node.blocks[i]
     PnRDB::hierNode childnode = DB.hierTree[idx];
+    PnRDB::Omark childnode_orient = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient;
     string child_node_name = childnode.name;
     //2.childnode.LL = current_node.LL + block[i].placed.LL, orient = blocks[i].orient
     childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL + current_node.LL;
     childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR + current_node.LL;
     //3.transform (shift and rotate) all points and rects of childnode into topnode coordinate
-    DB.TransformNode(childnode);//all rects and points in childnode shift by (childnode.LL.x, childnode.LL.y),
+    DB.TransformNode(childnode, childnode_orient);//all rects and points in childnode shift by (childnode.LL.x, childnode.LL.y),
                                 //current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
     //4.complete all children of childnode recursively
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)

@@ -144,37 +144,33 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 
 };
 
-void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode){
-  //this function transform all points and inside the node
-  //according to LL and orient
-  //it recursively call other transform functions
-  PnRDB::point LL = updatedNode.LL;
-  std::vector<PnRDB::blockComplex>::iterator bit;
-  TransformBlockComplexs(updatedNode.Blocks, LL);
-  TransformTerminals(updatedNode.Terminals, LL);
-  TransformPins(updatedNode.blockPins, LL, 0, 0, PnRDB::Omark::N);
-  TransformContacts(updatedNode.interMetals, LL, 0, 0, PnRDB::Omark::N);
-  TransformVias(updatedNode.interVias, LL, 0, 0, PnRDB::Omark::N);
+void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::Omark ort) {
+  // this function transform all points and inside the node
+  // according to LL and orient
+  // it recursively call other transform functions
+  PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
+  int width = UR.x - LL.x, height = UR.y - LL.y;
+  TransformBlockComplexs(updatedNode.Blocks, LL, width, height, ort);
+  TransformTerminals(updatedNode.Terminals, LL, width, height, ort);
+  TransformPins(updatedNode.blockPins, LL, width, height, ort);
+  TransformContacts(updatedNode.interMetals, LL, width, height, ort);
+  TransformVias(updatedNode.interVias, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformTerminal(PnRDB::terminal &terminal, PnRDB::point LL){
-  for (std::vector<PnRDB::contact>::iterator cit = terminal.termContacts.begin(); cit != terminal.termContacts.end(); cit++)
-  {
-    cit->placedBox = cit->placedBox + LL;
-    cit->placedCenter = cit->placedCenter + LL;
+void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::contact>::iterator cit = terminal.termContacts.begin(); cit != terminal.termContacts.end(); cit++) {
+    TransformContacts(terminal.termContacts, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point LL){
-  for (std::vector<PnRDB::terminal>::iterator tit = terminals.begin(); tit != terminals.end(); tit++)
-  {
-    TransformTerminal(*tit, LL);
+void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal>& terminals, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::terminal>::iterator tit = terminals.begin(); tit != terminals.end(); tit++) {
+    TransformTerminal(*tit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlock(PnRDB::block &block, PnRDB::point LL){
-  int width = block.width, height = block.height;
-  PnRDB::Omark ort = PnRDB::N;//block.orient;
+void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  // PnRDB::Omark ort = PnRDB::N;  // block.orient;
   TransformBbox(block.placedBox, LL, width, height, ort);
   TransformPoint(block.placedCenter, LL, width, height, ort);
   TransformPins(block.blockPins, LL, width, height, ort);
@@ -183,175 +179,184 @@ void PnRdatabase::TransformBlock(PnRDB::block &block, PnRDB::point LL){
   TransformPins(block.dummy_power_pin, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformBlocks(std::vector<PnRDB::block> &blocks, PnRDB::point LL){
-  for (std::vector<PnRDB::block>::iterator bit = blocks.begin(); bit != blocks.end();bit++){
-    TransformBlock(*bit, LL);
+void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::block>::iterator bit = blocks.begin(); bit != blocks.end(); bit++) {
+    TransformBlock(*bit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex> &bcs, PnRDB::point LL){
-  for (std::vector<PnRDB::blockComplex>::iterator bit = bcs.begin(); bit != bcs.end();bit++){
-    TransformBlockComplex(*bit, LL);
+void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex>& bcs, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::blockComplex>::iterator bit = bcs.begin(); bit != bcs.end(); bit++) {
+    TransformBlockComplex(*bit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex &bc, PnRDB::point LL){
-  TransformBlocks(bc.instance, LL);
+void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex& bc, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  TransformBlocks(bc.instance, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformPins(std::vector<PnRDB::pin> &pins, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
-  for (std::vector<PnRDB::pin>::iterator pit = pins.begin(); pit != pins.end();pit++){
+void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::pin>::iterator pit = pins.begin(); pit != pins.end(); pit++) {
     TransformPin(*pit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformPin(PnRDB::pin &pin, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
   TransformContacts(pin.pinContacts, LL, width, height, ort);
   TransformVias(pin.pinVias, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformVias(std::vector<PnRDB::Via> &vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
-  for (std::vector<PnRDB::Via>::iterator vit = vias.begin(); vit != vias.end();vit++){
+void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::Via>::iterator vit = vias.begin(); vit != vias.end(); vit++) {
     TransformVia(*vit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformVia(PnRDB::Via &via, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+void PnRdatabase::TransformVia(PnRDB::Via& via, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
   TransformPoint(via.placedpos, LL, width, height, ort);
   TransformContact(via.UpperMetalRect, LL, width, height, ort);
   TransformContact(via.LowerMetalRect, LL, width, height, ort);
   TransformContact(via.ViaRect, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformContacts(std::vector<PnRDB::contact> &contacts, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
-  for (std::vector<PnRDB::contact>::iterator cit = contacts.begin(); cit != contacts.end();cit++){
+void PnRdatabase::TransformContacts(std::vector<PnRDB::contact>& contacts, PnRDB::point LL, int width, int height,
+                                    PnRDB::Omark ort) {
+  for (std::vector<PnRDB::contact>::iterator cit = contacts.begin(); cit != contacts.end(); cit++) {
     TransformContact(*cit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformContact(PnRDB::contact &contact, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+void PnRdatabase::TransformContact(PnRDB::contact& contact, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
   TransformBbox(contact.placedBox, LL, width, height, ort);
   TransformPoint(contact.placedCenter, LL, width, height, ort);
 }
 
-void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox> &bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
-  for (std::vector<PnRDB::bbox>::iterator bit = bboxs.begin(); bit != bboxs.end();bit++){
+void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox>& bboxs, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::bbox>::iterator bit = bboxs.begin(); bit != bboxs.end(); bit++) {
     TransformBbox(*bit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformBbox(PnRDB::bbox &box, PnRDB::point LL,int width, int height, PnRDB::Omark ort){
+void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
   int WW = width, HH = height;
   PnRDB::point tempLL = box.LL, tempUR = box.UR;
-  switch (ort)
-  {
-  case PnRDB::N://key same
-    box.LL = tempLL;
-    box.UR = tempUR;
-    break;
-  case PnRDB::S://rotate 180 degree
-    box.LL.x = WW - tempUR.x, box.LL.y = HH - tempUR.y;
-    box.UR.x = WW - tempLL.x, box.UR.y = HH - tempLL.y;
-    break;
-  case PnRDB::W://rotate 90 degree counter clockwise
-    box.LL.x = HH - tempUR.y, box.LL.y = tempLL.x;
-    box.UR.x = HH - tempLL.y, box.UR.y = tempUR.x;
-    break;
-  case PnRDB::E://rotate 90 degree clockwise
-    box.LL.x = tempLL.y, box.LL.y = WW - tempUR.x;
-    box.UR.x = tempUR.y, box.UR.y = WW - tempLL.x;
-    break;
-  case PnRDB::FN://flip horizontally
-    box.LL.x = WW - tempUR.x;
-    box.UR.x = WW - tempLL.x;
-    break;
-  case PnRDB::FS://flip vertically
-    box.LL.y = HH - tempUR.y;
-    box.UR.y = HH - tempLL.y;
-    break;
-  case PnRDB::FW://flip along 45 degree axis
-    box.LL.x = tempLL.y, box.LL.y = tempLL.x;
-    box.UR.x = tempUR.y, box.UR.y = tempUR.x;
-    break;
-  case PnRDB::FE://
-    box.LL.x = HH - tempUR.y, box.LL.y = WW - tempUR.x;
-    box.UR.x = HH - tempLL.y, box.UR.y = WW - tempLL.x;
-    break;
-  default:
-    box.LL = tempLL;
-    box.UR = tempUR;
-    break;
+  switch (ort) {
+    case PnRDB::N:  // keep same
+      box.LL = tempLL;
+      box.UR = tempUR;
+      break;
+    case PnRDB::S:  // rotate 180 degree
+      box.LL.x = WW - tempUR.x;
+      box.LL.y = HH - tempUR.y;
+      box.UR.x = WW - tempLL.x;
+      box.UR.y = HH - tempLL.y;
+      break;
+    case PnRDB::W:  // rotate 90 degree counter clockwise
+      box.LL.x = HH - tempUR.y;
+      box.LL.y = tempLL.x;
+      box.UR.x = HH - tempLL.y;
+      box.UR.y = tempUR.x;
+      break;
+    case PnRDB::E:  // rotate 90 degree clockwise
+      box.LL.x = tempLL.y;
+      box.LL.y = WW - tempUR.x;
+      box.UR.x = tempUR.y;
+      box.UR.y = WW - tempLL.x;
+      break;
+    case PnRDB::FN:  // flip horizontally
+      box.LL.x = WW - tempUR.x;
+      box.UR.x = WW - tempLL.x;
+      break;
+    case PnRDB::FS:  // flip vertically
+      box.LL.y = HH - tempUR.y;
+      box.UR.y = HH - tempLL.y;
+      break;
+    case PnRDB::FW:  // flip along 45 degree axis
+      box.LL.x = tempLL.y;
+      box.LL.y = tempLL.x;
+      box.UR.x = tempUR.y;
+      box.UR.y = tempUR.x;
+      break;
+    case PnRDB::FE:  //flip along 135 degree axis
+      box.LL.x = HH - tempUR.y;
+      box.LL.y = WW - tempUR.x;
+      box.UR.x = HH - tempLL.y;
+      box.UR.y = WW - tempLL.x;
+      break;
+    default:
+      box.LL = tempLL;
+      box.UR = tempUR;
+      break;
   }
   box.LL = box.LL + LL;
   box.UR = box.UR + LL;
 }
 
-void PnRdatabase::TransformPoints(std::vector<PnRDB::point> &points, PnRDB::point LL, int width, int height, PnRDB::Omark ort){
-  for (std::vector<PnRDB::point>::iterator pit = points.begin(); pit != points.end();pit++){
+void PnRdatabase::TransformPoints(std::vector<PnRDB::point>& points, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
+  for (std::vector<PnRDB::point>::iterator pit = points.begin(); pit != points.end(); pit++) {
     TransformPoint(*pit, LL, width, height, ort);
   }
 }
 
-void PnRdatabase::TransformPoint(PnRDB::point &p, PnRDB::point LL,int width, int height, PnRDB::Omark ort) {
+void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point LL, int width, int height, PnRDB::Omark ort) {
   int WW = width, HH = height, X = p.x, Y = p.y;
-  switch (ort)
-  {
-  case PnRDB::N:
-    p.x = X;
-    p.y = Y;
-    break;
-  case PnRDB::S:
-    p.x = WW - X;
-    p.y = HH - Y;
-    break;
-  case PnRDB::W:
-    p.x = HH - Y;
-    p.y = X;
-    break;
-  case PnRDB::E:
-    p.x = Y;
-    p.y = WW - X;
-    break;
-  case PnRDB::FN:
-    p.x = WW - X;
-    p.y = Y;
-    break;
-  case PnRDB::FS:
-    p.x = X;
-    p.y = HH - Y;
-    break;
-  case PnRDB::FW:
-    p.x = Y;
-    p.y = X;
-    break;
-  case PnRDB::FE:
-    p.x = HH - Y;
-    p.y = WW - X;
-    break;
-  default:
-    p.x = X;
-    p.y = Y;
-    break;
+  switch (ort) {
+    case PnRDB::N:
+      p.x = X;
+      p.y = Y;
+      break;
+    case PnRDB::S:
+      p.x = WW - X;
+      p.y = HH - Y;
+      break;
+    case PnRDB::W:
+      p.x = HH - Y;
+      p.y = X;
+      break;
+    case PnRDB::E:
+      p.x = Y;
+      p.y = WW - X;
+      break;
+    case PnRDB::FN:
+      p.x = WW - X;
+      p.y = Y;
+      break;
+    case PnRDB::FS:
+      p.x = X;
+      p.y = HH - Y;
+      break;
+    case PnRDB::FW:
+      p.x = Y;
+      p.y = X;
+      break;
+    case PnRDB::FE:
+      p.x = HH - Y;
+      p.y = WW - X;
+      break;
+    default:
+      p.x = X;
+      p.y = Y;
+      break;
   }
   p = p + LL;
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode){
-  //update updateNode into hiertree[nodeID].blocks[blockID]
-  //update (updatenode.intermetal,intervia,blockpins) into blocks[blockid]
+void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode) {
+  // update updateNode into hiertree[nodeID].blocks[blockID]
+  // update (updatenode.intermetal,intervia,blockpins) into blocks[blockid]
 
-  //update pathmetal into block internal metal
+  // update pathmetal into block internal metal
   PnRDB::contact metal_contact;
-  for(int nit=0;nit<updatedNode.Nets.size();nit++){
-    for(int mit=0;mit<updatedNode.Nets[nit].path_metal.size();mit++){
-        //metal_contact.metal = updatedNode.Nets[nit].path_metal[mit].MetalIdx;
-        //metal_contact.placedBox = ;
-        //metal_contact.placedCenter = ;
-        //hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interMetals.push_back
+  for (int nit = 0; nit < updatedNode.Nets.size(); nit++) {
+    for (int mit = 0; mit < updatedNode.Nets[nit].path_metal.size(); mit++) {
+      // metal_contact.metal = updatedNode.Nets[nit].path_metal[mit].MetalIdx;
+      // metal_contact.placedBox = ;
+      // metal_contact.placedCenter = ;
+      // hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interMetals.push_back
     }
   }
 
-  //update pathvia into block internal metal and via
+  // update pathvia into block internal metal and via
 }
 
 // [RA] need further modification for hierarchical issue - wbxu
