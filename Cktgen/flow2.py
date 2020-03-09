@@ -3,13 +3,14 @@
 import argparse
 import subprocess
 import os
+import sys
 
 from cktgen import cktgen, cktgen_physical_from_json
 
 def run_sh( cmd, tag=None):
     ret = subprocess.run( [cmd],  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-    print(ret.stdout)
     print(ret.args[0])
+    print(ret.stdout)
     print( f"Return code: {ret.returncode}")
     if ret.returncode != 0:
         if tag is not None:
@@ -45,7 +46,7 @@ def run_router_executable( args):
     run_sh( f'{args.router_executable} -file INPUT/ctrl.txt', 'run detailed_router')
 
 
-def cmdline():
+def cmdline( argv):
     parser = argparse.ArgumentParser( description="Run ADR flow")
 
     parser.add_argument( "--viewer_input_dir", type=str, default="")
@@ -71,13 +72,15 @@ def cmdline():
     parser.add_argument( "--nets_to_route", type=str, default="")
     parser.add_argument( "--nets_not_to_route", type=str, default="")
 
-    args = parser.parse_args()
+    args = parser.parse_args( argv)
+
+    assert not args.skipgenerate
 
     if args.viewer_input_dir == "" and "ALIGN_HOME" in os.environ:
         args.viewer_input_dir = os.environ["ALIGN_HOME"] + "/Viewer/INPUT"
 
     def b( value, tag): return f" {tag}" if value else ""
-    def c( value, tag): return f" {tag} {value}" if value != "" else ""
+    def c( value, tag): return f" {tag} {value}" if value else ""
 
     route = b( not args.skipactualrouting, "--route")
     placer_json = c( args.placer_json, "--placer_json")
@@ -95,25 +98,22 @@ def cmdline():
     run_sh( f'rm -rf DR_COLLATERAL', "Remove old DR_COLLATERAL directory")
     run_sh( f'cp -pr {args.techdir} DR_COLLATERAL')
 
-    if not args.skipgenerate:
-        run_sh( f'mkdir -p INPUT')
+    run_sh( f'mkdir -p INPUT')
 
-        cmd = f'-n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}'
-        cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
-        cktgen_physical_from_json.main( *cktgen.parse_args( cmdlist))
+    cmd = f'-n mydesign {route}{showglobalroutes}{showmetaltemplates}{source}{placer_json}{gr_json}{small}{nets_to_route}{nets_not_to_route}{no_interface}'
+    cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
+    cktgen_args, tech = cktgen.parse_args( cmdlist)
+    cktgen_physical_from_json.main( cktgen_args, tech)
 
     if not args.skiprouter:
-        if args.router_executable != '':
+        if args.router_executable:
             run_router_executable( args)
         else:
             run_router_in_container( args)
+        cktgen.consume_results( cktgen_args, tech)
 
-        cmd = f'--consume_results -n mydesign {source}{placer_json}{small}{no_interface}'
-        cmdlist = list(filter( lambda x: x != '', cmd.split( ' ')))
-        cktgen.parse_args( cmdlist)
-
-    if args.viewer_input_dir != "" and args.source != "":
+    if args.viewer_input_dir and args.source:
         run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.viewer_input_dir + "/" + args.source + ".json"}')
 
 if __name__ == "__main__":
-    cmdline()
+    cmdline( sys.argv[1:])
