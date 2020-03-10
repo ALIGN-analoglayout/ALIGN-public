@@ -155,6 +155,10 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::Omark ort) 
   TransformPins(updatedNode.blockPins, LL, width, height, ort);
   TransformContacts(updatedNode.interMetals, LL, width, height, ort);
   TransformVias(updatedNode.interVias, LL, width, height, ort);
+  PnRDB::bbox box(LL - LL, UR - LL);
+  TransformBbox(box, LL, width, height, ort);
+  updatedNode.LL = box.LL;
+  updatedNode.UR = box.UR;
 }
 
 void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort) {
