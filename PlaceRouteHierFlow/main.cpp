@@ -175,8 +175,9 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR + current_node.LL;
 
     //3.transform (translate and rotate) all points and rects of childnode into topnode coordinate;
-    DB.TransformNode(childnode, childnode_orient);//all rects and points in childnode translate by (childnode.LL.x, childnode.LL.y),
-                                //current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
+    DB.TransformNode(childnode, childnode.LL, childnode_orient, PnRDB::TransformType::Forward);
+    //all rects and points in childnode rotate by current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
+    //and translate by (childnode.LL.x, childnode.LL.y)
 
     //4.complete all children of childnode recursively
     for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++)

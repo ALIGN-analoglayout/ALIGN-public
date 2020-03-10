@@ -50,6 +50,7 @@ enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
 enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
+enum TransformType { Forward, Backward };
 
 /// Part 2: declaration of sturctures for placer and router
 struct point {
