@@ -4,18 +4,30 @@ import argparse
 import subprocess
 import os
 import sys
+import logging
 
 from cktgen import cktgen, cktgen_physical_from_json
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+logger.addHandler(logging.StreamHandler(sys.stdout))
+
 def run_sh( cmd, tag=None):
-    ret = subprocess.run( [cmd],  shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', check=True)
-    print(ret.args[0])
-    print(ret.stdout)
-    print( f"Return code: {ret.returncode}")
-    if ret.returncode != 0:
-        if tag is not None:
-            print( f"ERROR: Failed to {tag}")
-        exit(ret.returncode)
+    tagstr = '' if tag is None else f' {tag}'
+    logger.info( f'Calling{tagstr} {cmd}')
+    # bufsize=1 means line buffered
+    with subprocess.Popen( [cmd], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, encoding='utf-8', universal_newlines=True, bufsize=1) as p:
+        for line in p.stdout:
+            line = line.rstrip( '\n')
+            logger.info(line)
+        p.wait()
+        if p.returncode != 0:
+            logger.info( f'Failed {p.returncode}{tagstr} {cmd}')
+            exit(p.returncode)
+        else:
+            logger.info( f'Finished{tagstr} {cmd}')
 
 def run_router_in_container( args):
     M_INPUT = f"--mount source={args.inputvol},target=/Cktgen/INPUT"
