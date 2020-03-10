@@ -123,6 +123,7 @@ def cmdline( argv):
         else:
             run_router_in_container( args)
         cktgen.consume_results( cktgen_args, tech)
+        run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.source + ".json"}')
 
     if args.viewer_input_dir and args.source:
         run_sh( f'cp INPUT/mydesign_dr_globalrouting.json {args.viewer_input_dir + "/" + args.source + ".json"}')
