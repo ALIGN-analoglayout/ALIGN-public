@@ -1,7 +1,7 @@
 //
-parameters nfin=14 rres=2k lastt=60n fin_n_diff2sing=4 fin_p_diff2sing=6 \
-    width_n_diff2sing=10 width_p_diff2sing=15 fin_n_vco_type_2=4 \
-    fin_p_vco_type_2=6 fnnn=25 fppp=4 VDD=0.8 VBIAS=0.7 wpppn=1 wnnn=1
+parameters nfin=14 rres=2k lastt=60n fin_n_diff2sing=12 fin_p_diff2sing=12 \
+    width_n_diff2sing=10 width_p_diff2sing=15 fin_n_vco_type_2=12 \
+    fin_p_vco_type_2=12 fnnn=36 fppp=8 VDD=0.8 VBIAS=0.7 wpppn=1 wnnn=1
 
 // Library name: CAD_modules
 // Cell name: diff2sing_v1
@@ -54,37 +54,56 @@ parameters _ar0 _ar1 _ar2 _ar3 _ar4 _ar5
 ends VCO_type2_65
 // End of subcircuit definition.
 
+subckt vco_res on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> op\<6\> op\<7\> op\<8\>
+    R0\<1\> (op\<1\> on\<2\>) resistor r=5000
+    R0\<2\> (op\<2\> on\<3\>) resistor r=5000
+    R0\<3\> (op\<3\> on\<4\>) resistor r=5000
+    R0\<4\> (op\<4\> on\<5\>) resistor r=5000
+    R0\<5\> (op\<5\> on\<6\>) resistor r=5000
+    R0\<6\> (op\<6\> on\<7\>) resistor r=5000
+    R0\<7\> (op\<7\> on\<8\>) resistor r=5000
+    R1\<1\> (on\<1\> op\<2\>) resistor r=5000
+    R1\<2\> (on\<2\> op\<3\>) resistor r=5000
+    R1\<3\> (on\<3\> op\<4\>) resistor r=5000
+    R1\<4\> (on\<4\> op\<5\>) resistor r=5000
+    R1\<5\> (on\<5\> op\<6\>) resistor r=5000
+    R1\<6\> (on\<6\> op\<7\>) resistor r=5000
+    R1\<7\> (on\<7\> op\<8\>) resistor r=5000
+ends vco_res
+
+subckt vco_buffer_amp VDD VSS oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \
+oo\<8\> on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> \ 
+op\<6\> op\<7\> op\<8\> 
+    I6\<1\> (VSS VDD VSS on\<1\> op\<1\> oo\<1\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<2\> (VSS VDD VSS on\<2\> op\<2\> oo\<2\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<3\> (VSS VDD VSS on\<3\> op\<3\> oo\<3\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<4\> (VSS VDD VSS on\<4\> op\<4\> oo\<4\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<5\> (VSS VDD VSS on\<5\> op\<5\> oo\<5\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<6\> (VSS VDD VSS on\<6\> op\<6\> oo\<6\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<7\> (VSS VDD VSS on\<7\> op\<7\> oo\<7\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+    I6\<8\> (VSS VDD VSS on\<8\> op\<8\> oo\<8\>) diff2sing_v1 \
+        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
+        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
+ends vco_buffer_amp
 
 // Main body of circuit:
 subckt vco_dtype_12_hierarchical_res VDD VSS vbias oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \
 oo\<8\> on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> \ 
 op\<6\> op\<7\> op\<8\> 
-
-
-I6\<1\> (VSS VDD VSS on\<1\> op\<1\> oo\<1\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<2\> (VSS VDD VSS on\<2\> op\<2\> oo\<2\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<3\> (VSS VDD VSS on\<3\> op\<3\> oo\<3\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<4\> (VSS VDD VSS on\<4\> op\<4\> oo\<4\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<5\> (VSS VDD VSS on\<5\> op\<5\> oo\<5\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<6\> (VSS VDD VSS on\<6\> op\<6\> oo\<6\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<7\> (VSS VDD VSS on\<7\> op\<7\> oo\<7\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-I6\<8\> (VSS VDD VSS on\<8\> op\<8\> oo\<8\>) diff2sing_v1 \
-        _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
-        _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
 
 I1 (VDD VSS op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> op\<6\> op\<7\> \
         op\<8\> on\<1\> vbias) VCO_type2_65 _ar0=fin_n_vco_type_2 \
@@ -95,19 +114,11 @@ I0 (VDD VSS on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> \
         on\<8\> op\<1\> vbias) VCO_type2_65 _ar0=fin_n_vco_type_2 \
         _ar1=wnnn _ar2=fnnn _ar3=fin_p_vco_type_2 _ar4=fppp \
         _ar5=wpppn
-R0\<1\> (op\<1\> on\<2\>) resistor r=5000
-R0\<2\> (op\<2\> on\<3\>) resistor r=5000
-R0\<3\> (op\<3\> on\<4\>) resistor r=5000
-R0\<4\> (op\<4\> on\<5\>) resistor r=5000
-R0\<5\> (op\<5\> on\<6\>) resistor r=5000
-R0\<6\> (op\<6\> on\<7\>) resistor r=5000
-R0\<7\> (op\<7\> on\<8\>) resistor r=5000
-R1\<1\> (on\<1\> op\<2\>) resistor r=5000
-R1\<2\> (on\<2\> op\<3\>) resistor r=5000
-R1\<3\> (on\<3\> op\<4\>) resistor r=5000
-R1\<4\> (on\<4\> op\<5\>) resistor r=5000
-R1\<5\> (on\<5\> op\<6\>) resistor r=5000
-R1\<6\> (on\<6\> op\<7\>) resistor r=5000
-R1\<7\> (on\<7\> op\<8\>) resistor r=5000
+
+I2 (on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> op\<6\> op\<7\> op\<8\>) vco_res
+
+I3 (VDD VSS oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \
+oo\<8\> on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> \ 
+op\<6\> op\<7\> op\<8\>) vco_buffer_amp
 ends vco_dtype_12_hierarchical_res
 
