@@ -145,9 +145,15 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 };
 
 void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
-  // this function transform all points and inside the node
-  // according to LL and orient
-  // it recursively call other transform functions
+  /*
+  this function transform all points and inside the node according to translate and orient,
+  it recursively call other transform functions
+  Inputs:
+    updatedNode: node needs updating
+    translate: translate reference point
+    ort: current_node absolute orientation
+    transform_type: Forward (orientate and translate), Backward (undo orientate and translate)
+  */
   PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
   int width, height;
   if (ort == PnRDB::N || ort == PnRDB::FN || ort == PnRDB::S || ort == PnRDB::FS) {
@@ -177,7 +183,6 @@ void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal>& terminals, Pn
 }
 
 void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
-  // PnRDB::Omark ort = PnRDB::N;  // block.orient;
   TransformBbox(block.placedBox, translate, width, height, ort, transform_type);
   TransformPoint(block.placedCenter, translate, width, height, ort, transform_type);
   TransformPins(block.blockPins, translate, width, height, ort, transform_type);
@@ -469,7 +474,11 @@ void PnRdatabase::TransformNets(std::vector<PnRDB::net>& nets, PnRDB::point tran
 }
 
 void PnRdatabase::TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate) { 
-  //translate all points and rect by translate
+  /*
+  Inputs:
+    updatedNode: node needs updating
+    translate: translate reference point, all points will be subtracted by this point
+  */
   PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
   int width = UR.x - LL.x, height = UR.y - LL.y;
   TransformBlockComplexs(updatedNode.Blocks, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
@@ -482,6 +491,62 @@ void PnRdatabase::TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   TransformPoint(updatedNode.UR, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
 }
 
+PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort) {
+  /*
+  Inputs:
+    current_node_ort: current_node's absolute orientation in topnode
+    childnode_ort: childnode's relative orientation in current_node
+  Outputs:
+    childnode's absolute orientation in topnode
+
+  coordinate definition: Z = X × Y
+  Y
+  ↑
+  ⊙Z →X
+  transform matrix:
+  N:  1  0  0
+      0  1  0 
+      0  0  1
+  S: -1  0  0
+      0 -1  0
+      0  0  1
+  W:  0 -1  0
+      1  0  0
+      0  0  1
+  E:  0  1  0
+     -1  0  0
+      0  0  1
+  F: -1  0  0
+      0  1  0
+      0  0 -1
+  FN: F × N = F
+    =-1  0  0
+      0  1  0
+      0  0 -1
+  FS: F × S 
+    = 1  0  0
+      0 -1  0
+      0  0 -1
+  FW: F × W
+      0  1  0
+      1  0  0
+      0  0 -1
+  FE: F × E
+      0 -1  0
+     -1  0  0
+      0  0 -1
+  */
+  const PnRDB::Omark TransformTable[8][8] = {{PnRDB::N, PnRDB::S, PnRDB::W, PnRDB::E, PnRDB::FN, PnRDB::FS, PnRDB::FW, PnRDB::FE},
+                                             {PnRDB::S, PnRDB::N, PnRDB::E, PnRDB::W, PnRDB::FS, PnRDB::FN, PnRDB::FE, PnRDB::FW},
+                                             {PnRDB::W, PnRDB::E, PnRDB::S, PnRDB::N, PnRDB::FE, PnRDB::FW, PnRDB::FN, PnRDB::FS},
+                                             {PnRDB::E, PnRDB::W, PnRDB::N, PnRDB::S, PnRDB::FW, PnRDB::FE, PnRDB::FS, PnRDB::FN},
+                                             {PnRDB::FN, PnRDB::FS, PnRDB::FW, PnRDB::FE, PnRDB::N, PnRDB::S, PnRDB::W, PnRDB::E},
+                                             {PnRDB::FS, PnRDB::FN, PnRDB::FE, PnRDB::FW, PnRDB::S, PnRDB::N, PnRDB::E, PnRDB::W},
+                                             {PnRDB::FW, PnRDB::FE, PnRDB::FS, PnRDB::FN, PnRDB::E, PnRDB::W, PnRDB::N, PnRDB::S},
+                                             {PnRDB::FE, PnRDB::FW, PnRDB::FN, PnRDB::FS, PnRDB::W, PnRDB::E, PnRDB::S, PnRDB::N}};
+  return TransformTable[current_node_ort][childnode_ort];
+}
+
 void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode) {
   // update updateNode into hiertree[nodeID].blocks[blockID]
   // update (updatenode.intermetal,intervia,blockpins) into blocks[blockid]
@@ -489,6 +554,8 @@ void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::
   hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interVias = updatedNode.interVias;
   hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].blockPins = updatedNode.blockPins;
 }
+
+
 
 // [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){

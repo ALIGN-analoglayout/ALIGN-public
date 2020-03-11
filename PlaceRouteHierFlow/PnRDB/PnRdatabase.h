@@ -116,7 +116,7 @@ class PnRdatabase
     void CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode &updatedNode);
     void updatePowerPins(PnRDB::pin &temp_pin);
 
-    //these functions are used to transform inside info of nodes
+    //these functions are used to transform internal info of nodes
     void TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformTerminal(PnRDB::terminal &terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformTerminals(std::vector<PnRDB::terminal> &terminals, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
@@ -139,6 +139,7 @@ class PnRdatabase
     void TransformNet(PnRDB::net &net, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformNets(std::vector<PnRDB::net> &nets, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate);
+    PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
 
     void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);
