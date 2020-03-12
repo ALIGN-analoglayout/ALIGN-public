@@ -113,7 +113,7 @@ class PnRdatabase
     PnRDB::hierNode CheckoutHierNode(int nodeID); // check out data of specific hierarchical node
     std::vector<PnRDB::hierNode> CheckoutHierNodeVec(int nodeID);//checkout nodeVec, which consists of different placement
     void CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode); // check out data of specific hierarchical node
-    void CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode &updatedNode);
+    void CheckinChildnodetoBlock(PnRDB::hierNode parent, int blockID, const PnRDB::hierNode &updatedNode);
     void updatePowerPins(PnRDB::pin &temp_pin);
 
     //these functions are used to transform internal info of nodes

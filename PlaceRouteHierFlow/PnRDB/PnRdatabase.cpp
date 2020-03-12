@@ -150,17 +150,17 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   it recursively call other transform functions
   Inputs:
     updatedNode: node needs updating
-    translate: translate reference point
+    translate: translate vector
     ort: current_node absolute orientation
     transform_type: Forward (orientate and translate), Backward (undo orientate and translate)
   */
   PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
-  int width, height;
+  int width, height;//here width and height are in updated node coordinate
   if (ort == PnRDB::N || ort == PnRDB::FN || ort == PnRDB::S || ort == PnRDB::FS) {
     width = UR.x - LL.x;
     height = UR.y - LL.y;
   } else if (ort == PnRDB::W || ort == PnRDB::FW || ort == PnRDB::E || ort == PnRDB::FE){
-    width = UR.y - LL.y; //origin width and placed width are different
+    width = UR.y - LL.y; 
     height = UR.x - LL.x;
   }
   TransformBlockComplexs(updatedNode.Blocks, translate, width, height, ort, transform_type);
@@ -322,14 +322,14 @@ void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int wi
         break;
       case PnRDB::W:  // rotate 90 degree counter clockwise
         box.LL.x = tempLL.y;
-        box.LL.y = WW - tempUR.x;
+        box.LL.y = HH - tempUR.x;
         box.UR.x = tempUR.y;
-        box.UR.y = WW - tempLL.x;
+        box.UR.y = HH - tempLL.x;
         break;
       case PnRDB::E:  // rotate 90 degree clockwise
-        box.LL.x = HH - tempUR.y;
+        box.LL.x = WW - tempUR.y;
         box.LL.y = tempLL.x;
-        box.UR.x = HH - tempLL.y;
+        box.UR.x = WW - tempLL.y;
         box.UR.y = tempUR.x;
         break;
       case PnRDB::FN:  // flip horizontally
@@ -347,10 +347,10 @@ void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int wi
         box.UR.y = tempUR.x;
         break;
       case PnRDB::FE:  //flip along 135 degree axis
-        box.LL.x = HH - tempUR.y;
-        box.LL.y = WW - tempUR.x;
-        box.UR.x = HH - tempLL.y;
-        box.UR.y = WW - tempLL.x;
+        box.LL.x = WW - tempUR.y;
+        box.LL.y = HH - tempUR.x;
+        box.UR.x = WW - tempLL.y;
+        box.UR.y = HH - tempLL.x;
         break;
       default:
         box.LL = tempLL;
@@ -421,10 +421,10 @@ void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int wi
         break;
       case PnRDB::W:
         p.x = Y;
-        p.y = WW - X;
+        p.y = HH - X;
         break;
       case PnRDB::E:
-        p.x = HH - Y;
+        p.x = WW - Y;
         p.y = X;
         break;
       case PnRDB::FN:// flip horizontally
@@ -440,8 +440,8 @@ void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int wi
         p.y = X;
         break;
       case PnRDB::FE:// flip along 135 degree axis
-        p.x = HH - Y;
-        p.y = WW - X;
+        p.x = WW - Y;
+        p.y = HH - X;
         break;
       default:
         p.x = X;
@@ -547,12 +547,12 @@ PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Om
   return TransformTable[current_node_ort][childnode_ort];
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(int nodeID, int blockID, const PnRDB::hierNode& updatedNode) {
-  // update updateNode into hiertree[nodeID].blocks[blockID]
-  // update (updatenode.intermetal,intervia,blockpins) into blocks[blockid]
-  hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interMetals = updatedNode.interMetals;
-  hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].interVias = updatedNode.interVias;
-  hierTree[nodeID].Blocks[blockID].instance[hierTree[nodeID].Blocks[blockID].selectedInstance].blockPins = updatedNode.blockPins;
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode parent, int blockID, const PnRDB::hierNode& child) {
+  // update child into parent.blocks[blockID]
+  // update (child.intermetal,intervia,blockpins) into blocks[blockid]
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = child.interMetals;
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = child.interVias;
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins = child.blockPins;
 }
 
 
