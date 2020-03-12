@@ -531,10 +531,33 @@ void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec,
     for(int y=LLy_cc; y<URy; y+=this->y_unit) {
       RouterDB::point tmpp; 
       std::cout<<"Or check "<<x<<" , "<<y<<std::endl;
-      if ( x+this->x_unit > this->UR.x ) { tmpp.x=x+(this->UR.x-x)/2;
-      } else { tmpp.x=x+this->x_unit/2; }
-      if ( y+this->y_unit > this->UR.y) { tmpp.y=y+(this->UR.y-y)/2;
-      } else { tmpp.y=y+this->y_unit/2; }
+      if (x < this->LL.x) {
+        if (x + this->x_unit > this->UR.x) {
+          tmpp.x = this->LL.x + (this->UR.x - this->LL.x) / 2;
+        } else {
+          tmpp.x = this->LL.x + (x + this->x_unit - this->LL.x) / 2;
+        }
+      } else {
+        if (x + this->x_unit > this->UR.x) {
+          tmpp.x = x + (this->UR.x - x) / 2;
+        } else {
+          tmpp.x = x + this->x_unit / 2;
+        }
+      }
+      if (y < this->LL.y) {
+        if (y + this->y_unit > this->UR.y) {
+          tmpp.y = this->LL.y + (this->UR.y - this->LL.y) / 2;
+        } else {
+          tmpp.y = this->LL.y + (y + this->y_unit - this->LL.y) / 2;
+        }
+      } else {
+        if (y + this->y_unit > this->UR.y) {
+          tmpp.y = y + (this->UR.y - y) / 2;
+        } else {
+          tmpp.y = y + this->y_unit / 2;
+        }
+      }
+
       std::cout<<"check "<<tmpp.x<<" , "<<tmpp.y<<std::endl;
       std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit=this->XYmap.at(layerIdx).find(tmpp);
       if(mit!=this->XYmap.at(layerIdx).end()) {

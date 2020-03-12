@@ -199,7 +199,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     // 7.current_node.Blocks[bit].child links to childnode
     current_node.Blocks[bit].child = new_childnode_idx;
   }
-  // route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+  route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
   // undo transform current_node.LL and current_node_ort
