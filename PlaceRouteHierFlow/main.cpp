@@ -174,8 +174,9 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
   string current_node_name = current_node.name;
   current_node.LL = bounding_box.LL;
   current_node.UR = bounding_box.UR;
+  current_node.abs_orient = current_node_ort;
   // 2.transform (translate and rotate) all points and rects of current_node into topnode coordinate;
-  DB.TransformNode(current_node, current_node.LL, current_node_ort, PnRDB::TransformType::Forward);
+  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Forward);
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
     if (current_node.Blocks[bit].child == -1) continue;
     int child_idx = current_node.Blocks[bit].child;
@@ -202,7 +203,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
   // undo transform current_node.LL and current_node_ort
-  DB.TransformNode(current_node, current_node.LL, current_node_ort, PnRDB::TransformType::Backward);
+  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
@@ -317,11 +318,10 @@ int main(int argc, char** argv ){
     jsonStream.close();
   }
 
-  queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
-  std::vector<int> TraverseOrder; //save traverse order, same as Q
+  queue<int> Q = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
+  std::vector<int> TraverseOrder;        // save traverse order, same as Q
   int Q_size = Q.size();
-  for (int i = 0; i < Q_size;i++)
-  {//copy Q to TraverseOrder
+  for (int i = 0; i < Q_size; i++) {  // copy Q to TraverseOrder
     TraverseOrder.push_back(Q.front());
     Q.pop();
     Q.push(TraverseOrder.back());

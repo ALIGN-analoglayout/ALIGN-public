@@ -331,8 +331,9 @@ struct hierNode {
   bool isIntelGcellGlobalRouter=false;
   int width=0;
   int height=0;
-  point LL;
-  point UR;
+  point LL;                 // hiernode absolute LL in topnode coordinate
+  point UR;                 // hiernode absolute UR in topnode coordinate
+  PnRDB::Omark abs_orient;  // hiernode absolute orient in topnode coordinate
   int numPlacement = 0;
   string name = "";
   string gdsFile="";
