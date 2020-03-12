@@ -524,41 +524,26 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::B
 void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int LLx, int LLy, int URx, int URy) {
   int layerIdx=this->metal2tile[metalIdx];
   std::cout<<"Convert block pin {"<<LLx<<","<<LLy<<"} {"<<URx<<","<<URy<<"} @metal "<<metalIdx<<std::endl;
-  int LLx_cc=floor(double(LLx)/this->x_unit)*this->x_unit;
-  int LLy_cc=floor(double(LLy)/this->y_unit)*this->y_unit;
+  int LLx_cc = floor(double(LLx - this->LL.x) / this->x_unit) * this->x_unit + this->LL.x;
+  int LLy_cc = floor(double(LLy - this->LL.y) / this->y_unit) * this->y_unit + this->LL.y;
   std::cout<<"LLx_cc "<<LLx_cc<<" LLy_cc "<<LLy_cc<<std::endl;
   for(int x=LLx_cc; x<URx; x+=this->x_unit) {
     for(int y=LLy_cc; y<URy; y+=this->y_unit) {
       RouterDB::point tmpp; 
       std::cout<<"Or check "<<x<<" , "<<y<<std::endl;
-      if (x < this->LL.x) {
-        if (x + this->x_unit > this->UR.x) {
-          tmpp.x = this->LL.x + (this->UR.x - this->LL.x) / 2;
-        } else {
-          tmpp.x = this->LL.x + (x + this->x_unit - this->LL.x) / 2;
-        }
+      if (x + this->x_unit > this->UR.x) {
+        tmpp.x = x + (this->UR.x - x) / 2;
       } else {
-        if (x + this->x_unit > this->UR.x) {
-          tmpp.x = x + (this->UR.x - x) / 2;
-        } else {
-          tmpp.x = x + this->x_unit / 2;
-        }
-      }
-      if (y < this->LL.y) {
-        if (y + this->y_unit > this->UR.y) {
-          tmpp.y = this->LL.y + (this->UR.y - this->LL.y) / 2;
-        } else {
-          tmpp.y = this->LL.y + (y + this->y_unit - this->LL.y) / 2;
-        }
-      } else {
-        if (y + this->y_unit > this->UR.y) {
-          tmpp.y = y + (this->UR.y - y) / 2;
-        } else {
-          tmpp.y = y + this->y_unit / 2;
-        }
+        tmpp.x = x + this->x_unit / 2;
       }
 
-      std::cout<<"check "<<tmpp.x<<" , "<<tmpp.y<<std::endl;
+      if (y + this->y_unit > this->UR.y) {
+        tmpp.y = y + (this->UR.y - y) / 2;
+      } else {
+        tmpp.y = y + this->y_unit / 2;
+      }
+
+      std::cout << "check " << tmpp.x << " , " << tmpp.y << std::endl;
       std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit=this->XYmap.at(layerIdx).find(tmpp);
       if(mit!=this->XYmap.at(layerIdx).end()) {
         sSet.insert(mit->second);
