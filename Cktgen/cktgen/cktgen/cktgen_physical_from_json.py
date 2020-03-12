@@ -280,8 +280,8 @@ def main(args, tech):
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
-  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
-  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,5) }
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,7) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,6) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
 
   print("Layer map:", layer_map)

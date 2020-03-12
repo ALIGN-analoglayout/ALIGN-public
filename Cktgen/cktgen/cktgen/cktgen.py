@@ -346,7 +346,7 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3","via1","via2"], l
+      assert l in ["metal1","metal2","metal3","metal4","metal5","metal6","via1","via2","via3","via4","via5"], l
       netl.newWire( '!kor', r, l)
       
 # ports no longer used
@@ -581,7 +581,7 @@ Option name=create_fake_metal_template_instances value={1 if show_metal_template
 Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal5
+Option name=upper_layer                          value=metal6
 """)
 
 
