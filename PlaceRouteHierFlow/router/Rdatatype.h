@@ -241,6 +241,7 @@ struct Net{
   std::vector<connectNode> connected; // list of connected components
   std::string priority=""; // critical net constraint			
   std::vector<Metal> path_metal;
+  std::vector<int> extend_label;
   std::vector<Via> path_via;
   std::vector<SteinerTree> STs;
   std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
@@ -423,7 +424,17 @@ struct SinkDataComp {
    {
       if(lhs.coord[0].x==rhs.coord[0].x) {
         if(lhs.coord[0].y==rhs.coord[0].y) {
+          if(lhs.metalIdx==rhs.metalIdx){
+            if (lhs.coord.size() > 1 && lhs.coord.size() > 1) {
+              if(lhs.coord[1].x==rhs.coord[1].x) {
+                return lhs.coord[1].y < rhs.coord[1].y;
+              } else {
+                return lhs.coord[1].x < rhs.coord[1].x;
+              }
+            }
+          } else {
             return lhs.metalIdx<rhs.metalIdx;
+          }
         } else {
           return lhs.coord[0].y<rhs.coord[0].y;
         }

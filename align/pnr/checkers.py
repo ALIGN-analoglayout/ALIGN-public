@@ -1,4 +1,5 @@
-from ..cell_fabric import transformation
+from ..cell_fabric import transformation, pdk
+from .. import primitive
 import json
 import importlib
 import sys
@@ -8,43 +9,51 @@ import re
 import logging
 logger = logging.getLogger(__name__)
 
-def rational_scaling( d, *, mul=1, div=1):
+def rational_scaling( d, *, mul=1, div=1, errors=None):
     assert all( (mul*c) % div == 0 for c in d['bbox'])
     d['bbox'] = [ (mul*c) //div for c in d['bbox']]
     for term in d['terminals']:
         if not all( (mul*c) % div == 0 for c in term['rect']):
-            logger.error( f"Terminal {term} not a multiple of {div} (mul={mul}).")
+            txt = f"Terminal {term} not a multiple of {div} (mul={mul})."
+            if errors is not None:
+                errors.append( txt)
+            logger.error( txt)
+
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.parent / "pdks" / "FinFET14nm_Mock_PDK", draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
-    sys.path.append(str(pathlib.Path(pdk).parent.resolve()))
-    pdkpkg = pathlib.Path(pdk).name
-    canvas = importlib.import_module(f'{pdkpkg}.canvas')
+    generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = getattr(canvas, f'{pdkpkg}_Canvas')(12, 4, 2, 3)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
 
     terminals = []
 
     subinsts = {}
 
+    errors = []
+
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
               "M4": "m4", "M5": "m5", "M6": "m6"}
 
-    def add_terminal( netName, layer, b):
+    def add_terminal( netName, layer, b, tag=None):
 
         r = [ b.LL.x, b.LL.y, b.UR.x, b.UR.y]
         terminals.append( { "netName": netName, "layer": layer, "rect": r})
 
-        def f( gen, value, tag=""):
+        def f( gen, value, tag=None):
             # value is in 2x units
             if value%2 != 0:
-                logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two.")
+                txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} (in 2x units) is not divisible by two."
+                errors.append( txt)
+                logger.error( txt)
             else:
                 p = gen.clg.inverseBounds( value//2)
                 if p[0] != p[1]:
-                    logger.error( f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}")
+                    txt = f"Off grid:{tag} {layer} {netName} {r} {r[2]-r[0]} {r[3]-r[1]}: {value} doesn't land on grid, lb and ub are: {p}"
+                    errors.append( txt)
+                    logger.error( txt)
 
         if layer == "cellarea":
             f( cnv.m1, b.LL.x, "LL.x")
@@ -59,7 +68,7 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
             else:
                 center = None
             if center is not None:
-                f( cnv.generators[t_tbl[layer]], center)
+                f( cnv.generators[t_tbl[layer]], center, tag)
 
     if not checkOnly and draw_grid:
         m1_pitch = 2*cnv.pdk['M1']['Pitch']
@@ -96,29 +105,33 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
         blk = cblk.instance[cblk.selectedInstance]
         found = False
         if json_dir is not None:
-            pth = pathlib.Path( json_dir + "/" + blk.master + ".json") 
+            pth = pathlib.Path( json_dir + "/" + blk.master + ".json")
             if not pth.is_file():
-                logger.warning( f"{pth} is not available; not importing subblock rectangles")
+                logger.info( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
+
+
         if not found and input_dir is not None:
+
+            logger.debug( f"blk.gdsFile: {blk.gdsFile} {found} {input_dir}")
             p = re.compile( r"^\./Results/(\S+)\.gds$")
             m = p.match( blk.gdsFile)
             if m:
-                pth = pathlib.Path( input_dir + "/" + m.groups()[0] + ".json")
+                pth = input_dir / (m.groups()[0] + ".json")
                 if not pth.is_file():
-                    logger.warning( f"{pth} not found in input_dir")
+                    logger.error( f"{pth} not found in input_dir")
                 else:
-                    logger.warning( f"{pth} found in input_dir")
+                    logger.info( f"{pth} found in input_dir")
                     found = True
             else:
-                logger.warning( f"{blk.gdsFile} does not end in .gds")
+                logger.error( f"{blk.gdsFile} does not end in .gds")
 
         if found:
             with pth.open( "rt") as fp:
                 d = json.load( fp)
             # Scale to PnRDB coords (seems like 10x um, but PnRDB is 2x um, so divide by 5
-            rational_scaling( d, div=5)
+            rational_scaling( d, div=5, errors=errors)
 
             tr = transformation.Transformation.genTr( blk.orient, w=blk.width, h=blk.height)
 
@@ -140,7 +153,9 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
+                    assert len(term['terminal']) == 2
                     term['netName'] = f"{blk.name}/{':'.join(term['terminal'])}"
+                    term['terminal'] = [f"{blk.name}/{term['terminal'][0]}", term['terminal'][1]]
                 if term['layer'] not in ["boundary"]:
                     terminals.append( term)
 
@@ -158,14 +173,14 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
             add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
     for n in hN.Nets:
-        print( f"Net: {n.name}")
+        logger.debug( f"Net: {n.name}")
 
-        def addt( obj, con):
+        def addt( obj, con, tag=None):
             b = con.placedBox
             if obj == n:
-                add_terminal( obj.name, con.metal, b)
+                add_terminal( obj.name, con.metal, b, tag=tag)
             else:
-                add_terminal( obj, con.metal, b)
+                add_terminal( obj, con.metal, b, tag=tag)
 
         for c in n.connected:
             if c.type == 'Block':
@@ -177,30 +192,31 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
                 formal_name = pin.name
 
                 tag = f'Block formal_index: {c.iter},{formal_name} block_index: {c.iter2},{block_name},{master_name}'
-                print( f'\t{tag}')
+                logger.debug( f'\t{tag}')
+
                 for con in pin.pinContacts:
-                    addt( n, con)
+                    addt( n, con, "blockPin")
             else:
                 term = hN.Terminals[c.iter]
                 terminal_name = term.name
                 assert terminal_name == n.name
                 tag = f'Terminal formal_index: {c.iter},{terminal_name}'
-                print( f'\t{tag}')
+                logger.debug( f'\t{tag}')
                 for con in term.termContacts:
                     pass
 #                    addt( n, con)
 
         for metal in n.path_metal:
             con = metal.MetalRect
-            add_terminal( n.name, con.metal, con.placedBox)
+            add_terminal( n.name, con.metal, con.placedBox, "path_metal")
 
         for via in n.path_via:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "path_via")
 
         for via in n.interVias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con)
+                addt( n, con, "intervia")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
@@ -277,40 +293,49 @@ def gen_viewer_json( hN, *, pdk=pathlib.Path(__file__).resolve().parent.parent.p
 
     if checkOnly:
         # divide by two be make it be in CellFabric units (nanometer)
-        rational_scaling( d, div=2)
+        rational_scaling( d, div=2, errors=errors)
         cnv.bbox = transformation.Rect( *d["bbox"])
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
             cnv.subinsts[inst].parameters.update(parameters)
         cnv.gen_data(run_pex=extract)
 
+
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals
 
-        for (idx,sh) in enumerate(cnv.rd.shorts):
-            if isinstance( sh, tuple) and len(sh) == 2:
-                p0, p1 = sh
-                logger.info( f"SH: {p0} {p1}")
-                term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
-                d['terminals'].append( term)
-                term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
-                d['terminals'].append( term)
-            else:
-                logger.error( f"Unknown short type: {sh}")
+        #
+        # Experiment for visualizing shorts and opens
+        #
+
+        # for (idx,sh) in enumerate(cnv.rd.shorts):
+        #     if isinstance( sh, tuple) and len(sh) == 2:
+        #         p0, p1 = sh
+        #         logger.info( f"SH: {p0} {p1}")
+        ## "M0" doesn't always exist
+        #         term = { "layer": "M0", "netName": f"SH{idx}_{p0.netName}", "rect": p0.rect}
+        #         d['terminals'].append( term)
+        #         term = { "layer": "M0", "netName": f"SH{idx}_{p1.netName}", "rect": p1.rect}
+        #         d['terminals'].append( term)
+        #     else:
+        #         logger.error( f"Unknown short type: {sh}")
 
 
-        for (nm,lst) in cnv.rd.opens:
-            logger.info( f"OP: {nm} {lst}")            
-            for (jdx,l) in enumerate(lst):
-                for (ly,r) in l:
-                    term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
-                    d['terminals'].append( term)
+        # for (nm,lst) in cnv.rd.opens:
+        #     logger.info( f"OP: {nm} {lst}")
+        #     for (jdx,l) in enumerate(lst):
+        #         for (ly,r) in l:
+        #             term = { "layer": ly, "netName": f"OP_{nm}_{jdx}", "rect": r}
+        #             d['terminals'].append( term)
 
         # multiply by ten make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=10)
+        rational_scaling( d, mul=10, errors=errors)
+
+        for e in errors:
+            cnv.drc.errors.append( e)
 
         return (cnv, d)
     else:
         # multiply by five make it be in JSON file units (angstroms) This is a mess!
-        rational_scaling( d, mul=5)
+        rational_scaling( d, mul=5, errors=errors)
         return d

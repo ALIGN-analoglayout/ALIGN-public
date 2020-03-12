@@ -17,7 +17,13 @@
   if (params.has("design")) {
     design = params.get("design");
   }
-  var filename = "INPUT/" + design + "_dr_globalrouting.json";
+  //  var suffix = "_dr_globalrouting";
+  var suffix = "";
+  if (params.has("suffix")) {
+    suffix = params.get("suffix");
+  }
+
+  var filename = "INPUT/" + design + suffix + ".json";
 
   console.log(design);
   console.log(filename);
@@ -85,7 +91,13 @@
       { layer: "metal4", master: "M4" },
       { layer: "metal5", master: "M5" },
       { layer: "metal6", master: "M6" },
-      { layer: "boundary", master: "diearea" }
+      { layer: "boundary", master: "diearea" },
+      { layer: "diffcon", master: "Diffcon" },
+      { layer: "polycon", master: "Polycon" },
+      { layer: "poly", master: "Poly" },
+      { layer: "tcn", master: "Diffcon" },
+      { layer: "gcn", master: "Polycon" },
+
     ];
 
     var metalStack = [
@@ -118,14 +130,18 @@
       { layer: "GCUT", tag: "CUT", color: "purple" },
       { layer: "cellarea", tag: "C", color: colorbrewer.Reds[3][1] },
       { layer: "diearea", tag: "D", color: colorbrewer.Greens[3][1] },
-      { layer: "nwell", tag: "NW", color: colorbrewer.Greens[3][1] }
+      { layer: "nwell", tag: "NW", color: colorbrewer.Greens[3][1] },
+      { layer: "basepitchid", tag: "BPID", color: "yellow" },
+      { layer: "devflavn1id", tag: "DFNID", color: "yellow" },
+      { layer: "devflavp1id", tag: "DFPID", color: "yellow" },
+      { layer: "devtype1id", tag: "DTID", color: "yellow" }
     ];
 
     function color(d) {
       var ly = d.layer;
-      var results = layer_synonyms.filter( dd =>  dd.layer == ly);
-      if ( results.length == 1) {
-         ly = results[0].master;
+      var results = layer_synonyms.filter(dd => dd.layer == ly);
+      if (results.length == 1) {
+        ly = results[0].master;
       }
       results = metalStack.filter(dd => dd.layer == ly);
       if (results.length == 1) {
@@ -222,34 +238,51 @@
 
     var nets = Object.keys(netMap).sort();
 
-    d3.select("#netControls")
-      .selectAll("button")
-      .data(nets)
-      .enter()
-      .append("button")
-      .attr("id", (d, i) => "buttonIdNet" + i)
-      .on("click", buttonClickNets)
-      .html(d => d)
-      .style("border", "none")
-      .style("border-radius", "6px");
+    function redraw_net_names(nets) {
+      d3.select("#netControls")
+        .selectAll("button")
+        .data([])
+        .exit()
+        .remove();
 
-    d3.select("#netControls")
-      .append("button")
-      .attr("id", "buttonIdNetAll")
-      .on("click", buttonClickNetsAll)
-      .html("All")
-      .style("border-width", "1px")
-      .style("border-color", "black")
-      .style("border-radius", "6px");
+      d3.select("#netControls")
+        .selectAll("button")
+        .data(nets)
+        .enter()
+        .append("button")
+        .attr("id", (d, i) => "buttonIdNet" + i)
+        .on("click", buttonClickNets)
+        .html(d => d)
+        .style("border", "none")
+        .style("border-radius", "6px");
 
-    d3.select("#netControls")
-      .append("button")
-      .attr("id", "buttonIdNetNone")
-      .on("click", buttonClickNetsNone)
-      .html("None")
-      .style("border-width", "1px")
-      .style("border-color", "black")
-      .style("border-radius", "6px");
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdNetAll")
+        .on("click", buttonClickNetsAll)
+        .html("All")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdNetNone")
+        .on("click", buttonClickNetsNone)
+        .html("None")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+
+      d3.select("#netControls")
+        .append("button")
+        .attr("id", "buttonIdTerm")
+        .on("click", buttonClickTerm)
+        .html("Term")
+        .style("border-width", "1px")
+        .style("border-color", "black")
+        .style("border-radius", "6px");
+    }
 
     var visibleNets = {};
 
@@ -272,6 +305,38 @@
       }
       redraw();
     }
+
+    var show_terminals = true;
+
+    function buttonClickTerm() {
+      show_terminals = !show_terminals;
+
+      if (show_terminals) {
+         showable_nets = nets;
+         for (i = 0; i < nets.length; ++i) {
+            net = nets[i];
+            if ( net.includes(":")) {			 
+               visibleNets[net] = true;
+            }
+         }
+      } else {
+         for (i = 0; i < nets.length; ++i) {
+            net = nets[i];
+            if ( net.includes(":")) {			 
+               visibleNets[net] = false;
+            }
+         }
+         showable_nets = nets.filter(function(value) {
+			 if (!value.includes(":")) {
+		      return value;
+		      }
+		      });
+      }
+      redraw_net_names(showable_nets);
+      redraw();
+    }
+
+    buttonClickTerm();
 
     function buttonClickNets(d, i) {
       var button = d3.select("#buttonIdNet" + i);
@@ -393,7 +458,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gs.append("title").text(d => `${d.netName},${d.layer}`);
+      gs.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
 
       /*========================*/
 
@@ -429,7 +494,7 @@
         .attr("fill-opacity", 0.5)
         .attr("stroke", "black");
 
-      gt.append("title").text(d => `${d.netName},${d.layer}`);
+      gt.append("title").text(d => `${d.netName},${d.layer},${d.rect}`);
     }
   }
 </script>

@@ -279,17 +279,20 @@ def main(args, tech):
 #  wires = gr_hints(placer_results)
 #  global_router_results = { "wires": wires}
 
-  print("SMB")
-
   metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,5) }
   via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,5) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
 
-  print(layer_map)
+  print("Layer map:", layer_map)
 
   for leaf in placer_results['leaves']:
+  # Modify leaf terminals to only include terminals in the layer_map
+    terminals = []
     for term in leaf['terminals']:
-      term['layer'] = layer_map[term['layer']]
+      if term['layer'] in layer_map:
+        term['layer'] = layer_map[term['layer']]
+        terminals.append(term)
+    leaf['terminals'] = terminals
 
   if False:
     #
@@ -391,7 +394,6 @@ def main(args, tech):
       adnetl.addPort( p)
 
   if 'preroutes' in placer_results:
-    print("SMB: Found some preroutes")
     preroutes = placer_results['preroutes']
     for preroute in preroutes:
       adnetl.addPreroute( preroute)

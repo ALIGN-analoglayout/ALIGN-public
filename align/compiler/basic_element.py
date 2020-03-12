@@ -4,8 +4,9 @@ Created on Wed Oct 10 13:18:49 2018
 
 @author: kunal
 """
-#%% creating basic element
-from .util import logging
+
+import logging
+logger = logging.getLogger(__name__)
 
 class BasicElement:
     """
@@ -41,7 +42,7 @@ class BasicElement:
                 else:
                     self.pins.append(word)
             self.num_pins = len(self.pins)
-            
+
         else:
             self.num_pins = num_pins
             self.pins = self.line.strip().split()[1:1+self.num_pins]
@@ -49,7 +50,7 @@ class BasicElement:
             if any ('=' in pin_name for pin_name in self.pins):
                 self.pins=None
                 self.num_pins=0
-        if len(self.line.strip().split()) > self.num_pins+2:      
+        if len(self.line.strip().split()) > self.num_pins+2:
             self.value = self.line.strip().split()[self.num_pins+2:]
             self.real_inst_type = self.line.strip().split()[self.num_pins+1]
         else :
@@ -61,7 +62,7 @@ class BasicElement:
                     self.pins[n]='vss'
 
 
-        logging.info("real inst type from netlist: %s",self.real_inst_type)
+        logger.debug(f"real inst type from netlist: {self.real_inst_type}")
         start = 1
         multiple = 2
         self.pin_weight = [start*multiple**i for i in range(self.num_pins)]
@@ -156,7 +157,7 @@ class BasicElement:
              The assumption is 3 port network
              pins = [drain, gate, source]
         """
-        #print("querying transistor",self.line)
+        logger.debug(f"Querying transistor {self.line}")
         self.get_elements(4)
         if not self.pins:
             return None
@@ -165,13 +166,11 @@ class BasicElement:
         elif 'p' in self.real_inst_type.lower():
             inst_type = "pmos"
         else:
-            print("Error: undefined inst format", self.line)
-
-        #print( self.line,self.real_inst_type,self.pins[3])
+            logger.error(f"Undefined inst format {self.line}")
 
         #if self.pins[0] == self.pins[2]:
         #    inst_type = "dummy"
-        #self.pin_weight[0] = self.pin_weight[2]     
+        #self.pin_weight[0] = self.pin_weight[2]
         return {
             "inst": self.inst,
             "inst_type": inst_type,
@@ -192,7 +191,7 @@ def parse_value(all_param, vtype=None):
                 param = all_param[idx - 1]
             if not value:
                 value = all_param[idx + 1]
-            logging.info('Found device values: %s, value:%s', param, value)
+            logger.debug(f'Found device values: {param}, value: {value}')
             device_param_list[param] = value
     if not device_param_list and len(all_param)>0:
         device_param_list[vtype] =all_param[0]
@@ -201,11 +200,10 @@ def parse_value(all_param, vtype=None):
 
 def _parse_inst(line):
     """ PARSE instance lines"""
-    logging.basicConfig(filename='./LOG/instances.log', level=logging.DEBUG)
 
     #line = line.replace("(", "").replace(")", "")
     element = BasicElement(line)
-    #logging.info('READ line:'+line)
+    #logger.debug('READ line:'+line)
     device = None
     if not line.strip():
         return device
@@ -218,28 +216,28 @@ def _parse_inst(line):
             or line.strip().startswith('xp') \
             or (line.strip().startswith('I') and 'mos' in line) \
             or line.strip().lower().startswith('t'):
-        logging.debug('FOUND transistor : %s', line.strip())
+        logger.debug(f'FOUND transistor : {line.strip()}')
         device = element.transistor()
     elif line.strip().lower().startswith('v'):
-        logging.debug('FOUND v_source: %s', line.strip())
+        logger.debug(f'FOUND v_source: {line.strip()}')
         device = element.v_source()
     elif line.strip().lower().startswith('e'):
-        logging.debug('FOUND vcvs_source: %s', line.strip())
+        logger.debug(f'FOUND vcvs_source: {line.strip()}')
         device = element.vcvs_source()
     elif line.strip().startswith('i'):
-        logging.debug('FOUND i_source: %s', line.strip())
+        logger.debug(f'FOUND i_source: {line.strip()}')
         device = element.i_source()
     elif line.strip().lower().startswith('c') \
             or ( line.strip().lower().startswith('xc') \
             and 'cap' in  line.strip().split()[3].lower()):
-        #DESIGN=Sanitized_TX_8l12b has XC for caps 
-        logging.debug('FOUND cap: %s', line.strip())
+        #DESIGN=Sanitized_TX_8l12b has XC for caps
+        logger.debug(f'FOUND cap: {line.strip()}')
         device = element.capacitor()
     elif line.strip().lower().startswith('r') or line.strip().lower().startswith('xr'):
-        logging.debug('FOUND resistor: %s', line.strip())
+        logger.debug(f'FOUND resistor: {line.strip()}')
         device = element.resistor()
     elif line.strip().lower().startswith('l'):
-        logging.debug("inductance: %s", line.strip())
+        logger.debug(f"inductance: {line.strip()}")
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
             or line.strip().startswith('I'):
@@ -263,8 +261,7 @@ def _parse_inst(line):
                     if not value:
                         value = all_nodes[idx + 1]
                         pass
-                    logging.info('Found subckt parameter values: %s, value:%s',
-                                 param, value)
+                    logger.debug(f'Found subckt parameter values: {param}, value: {value}')
                     device_param_list[param] = value
 
                 else:
@@ -278,18 +275,19 @@ def _parse_inst(line):
             "edge_weight": list(range(len(hier_nodes[1:-1]))),
             "values": device_param_list
         }
-        logging.debug('FOUND subckt instance: %s, type %s ', device["inst"],
-                      device["inst_type"])
+        logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')
 
     if device:
         if '=' in device["inst"] or '=' in device[
                 "inst_type"] or '=' in ' '.join(device["ports"]):
             device = None
-            logging.error("RECHECK unidentified Device: %s", line)
+            logger.error(f"RECHECK unidentified Device: {line}")
         elif  device["inst_type"]=="dummy":
             #device = None
-            logging.error("Removing dummy transistor: %s", line)
+            logger.error(f"Removing dummy transistor: {line}")
+    elif line.startswith('*'):
+        logger.info(f"comment: {line}")
     else:
-        logging.error("Extraction error: %s (unidentified line)", line)
+        logger.warning(f"Extraction error: {line} (unidentified line)")
 
     return device

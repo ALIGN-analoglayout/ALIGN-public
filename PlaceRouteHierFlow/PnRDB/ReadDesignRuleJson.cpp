@@ -27,6 +27,8 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           if(lname.front()=='M') {
             // metal layer
             #ifdef FinFET_MOCK_PDK
+            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
+            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             int Pinnum=layer["GdsDatatype"]["Pin"];
@@ -37,6 +39,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             #endif
             std::string ldir=layer["Direction"];
             int lpitch=-1;
+            std::cout<<"Reading Json PDK on "<<"Pitch"<<std::endl;
             json pdata=layer["Pitch"];
             if(pdata.is_array()) {
               json::iterator pit=pdata.begin();
@@ -45,6 +48,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
               lpitch=pdata;
             }
             int lwidth=-1;
+            std::cout<<"Reading Json PDK on "<<"Width"<<std::endl;
             json wdata=layer["Width"];
             if(wdata.is_array()) {
               json::iterator wit=wdata.begin();
@@ -52,13 +56,16 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             } else if (wdata.is_number()) {
               lwidth=wdata;
             }
+            std::cout<<"Reading Json PDK on "<<"MinL"<<std::endl;
             int lminL=layer["MinL"];
             //int lmaxL=layer["MaxL"];
+            std::cout<<"Reading Json PDK on "<<"EndToEnd"<<std::endl;
             int le2e=layer["EndToEnd"];
 
             double unit_C = 0;
             double unit_CC = 0;
             double unit_R = 0;
+            std::cout<<"Reading Json PDK on "<<"Units, C, CC, R"<<std::endl;
             #ifdef FinFET_MOCK_PDK
             if(layer["UnitC"]["Mean"].is_number()){unit_C=layer["UnitC"]["Mean"];}
             if(layer["UnitCC"]["Mean"].is_number()){unit_CC=layer["UnitCC"]["Mean"];}
@@ -103,20 +110,31 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           std::string lname=layer["Layer"];
           if(lname.front()=='V') {
             // via layer
+            std::cout<<"Reading Json PDK on "<<lname<<std::endl;
             #ifdef FinFET_MOCK_PDK
+            std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
             int lnum=layer["GdsLayerNo"];
             int Drawnum=layer["GdsDatatype"]["Draw"];
             #else
             int lnum=layer["LayerNo"];
             #endif
+            std::cout<<"Reading Json PDK on "<<"Stack"<<std::endl;
             json stackAry = layer["Stack"];
+            std::cout<<"Reading Json PDK on "<<"WidthX"<<std::endl;
             int lwidthx= layer["WidthX"];
+            std::cout<<"Reading Json PDK on "<<"WidthY"<<std::endl;
             int lwidthy= layer["WidthY"];
+            std::cout<<"Reading Json PDK on "<<"SpaceX"<<std::endl;
             int lspacex= layer["SpaceX"];
+            std::cout<<"Reading Json PDK on "<<"SpaceY"<<std::endl;
             int lspacey= layer["SpaceY"];
+            std::cout<<"Reading Json PDK on "<<"VencA_L"<<std::endl;
             int lvencal= layer["VencA_L"];
+            std::cout<<"Reading Json PDK on "<<"VencA_H"<<std::endl;
             int lvencah= layer["VencA_H"];
+            std::cout<<"Reading Json PDK on "<<"VencP_L"<<std::endl;
             int lvencpl= layer["VencP_L"];
+            std::cout<<"Reading Json PDK on "<<"VencP_H"<<std::endl;
             int lvencph= layer["VencP_H"];
 
             double R = 0;
@@ -253,21 +271,22 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 */
 	     {
 	       auto& mi = DRC_info.Metal_info[temp_viamodel.LowerIdx];
+               int width = mi.width;
 	       //LL LowerRect
 	       if(mi.direct==0){ //Vertical metal
-		 temp_point.x = 0-vi.width/2-vi.cover_l_P;
+		 temp_point.x = std::min(0-vi.width/2-vi.cover_l_P,-width/2);
 		 temp_point.y = 0-vi.width_y/2-vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
 		 //UR
-		 temp_point.x = 0+vi.width/2+vi.cover_l_P;
+		 temp_point.x = std::max(0+vi.width/2+vi.cover_l_P,width/2);
 		 temp_point.y = 0+vi.width_y/2+vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
 	       }else{  //Horizontal metal
-		 temp_point.y = 0-vi.width_y/2-vi.cover_l_P;
+		 temp_point.y = std::min(0-vi.width_y/2-vi.cover_l_P,-width/2);
 		 temp_point.x = 0-vi.width/2-vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
 		 //UR
-		 temp_point.y = 0+vi.width_y/2+vi.cover_l_P;
+		 temp_point.y = std::max(0+vi.width_y/2+vi.cover_l_P,width/2);
 		 temp_point.x = 0+vi.width/2+vi.cover_l;
 		 temp_viamodel.LowerRect.push_back(temp_point);
 	       } 
@@ -275,22 +294,22 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
              
 	     {
 	       auto& mi = DRC_info.Metal_info[temp_viamodel.UpperIdx];
-
+               int width = mi.width;
 	       //LL UpperRect
 	       if(mi.direct==0){
-		 temp_point.x = 0-vi.width/2-vi.cover_u_P;
+		 temp_point.x = std::min(0-vi.width/2-vi.cover_u_P,-width/2);
 		 temp_point.y = 0-vi.width_y/2-vi.cover_u;
 		 temp_viamodel.UpperRect.push_back(temp_point);
 		 //UR
-		 temp_point.x = 0+vi.width/2+vi.cover_u_P;
+		 temp_point.x = std::max(0+vi.width/2+vi.cover_u_P,width/2);
 		 temp_point.y = 0+vi.width_y/2+vi.cover_u;
 		 temp_viamodel.UpperRect.push_back(temp_point);
 	       }else{
-		 temp_point.y = 0-vi.width_y/2-vi.cover_u_P;
+		 temp_point.y = std::min(0-vi.width_y/2-vi.cover_u_P,-width/2);
 		 temp_point.x = 0-vi.width/2-vi.cover_u;
 		 temp_viamodel.UpperRect.push_back(temp_point);
 		 //UR
-		 temp_point.y = 0+vi.width_y/2+vi.cover_u_P;
+		 temp_point.y = std::max(0+vi.width_y/2+vi.cover_u_P,width/2);
 		 temp_point.x = 0+vi.width/2+vi.cover_u;
 		 temp_viamodel.UpperRect.push_back(temp_point);
 	       } 

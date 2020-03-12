@@ -171,18 +171,21 @@ class RemoveDuplicates():
             isPorted = 'pin' in d
             if isPorted:
                 assert netName == d['pin'], f"{netName} does not match {d['pin']}"
-
             if layer in self.skip_layers: continue
 
-            assert layer in self.layers, (self.layers, layer)
-            twice_center = sum(rect[index]
-                               for index in self.indicesTbl[self.layers[layer]][0])
+            if layer in self.layers:
+                twice_center = sum(rect[index]
+                                   for index in self.indicesTbl[self.layers[layer]][0])
+                tbl[layer][twice_center].append((rect, netName, isPorted))
+            else:
+                logger.warning( f"Layer {layer} not in {self.layers}")
 
-            tbl[layer][twice_center].append((rect, netName, isPorted))
         return tbl
 
 
     def build_scan_lines( self, tbl):
+        skip_layers_for_different_widths = ['Active']
+
         self.store_scan_lines = defaultdict(dict)
 
         for (layer, dir) in self.layers.items():
@@ -198,7 +201,8 @@ class RemoveDuplicates():
                         widths = set()
                         for (r, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
-                        self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
+                        if layer not in skip_layers_for_different_widths:
+                            self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 

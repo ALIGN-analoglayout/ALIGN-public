@@ -1,0 +1,44 @@
+************************************************************************
+* auCdl Netlist:
+* 
+* Library Name:  OTA_class
+* Top Cell Name: Fully_differential_telescopic
+* View Name:     schematic
+* Netlisted on:  Sep 11 21:03:54 2019
+************************************************************************
+
+*.BIPOLAR
+*.RESI = 2000 
+*.RESVAL
+*.CAPVAL
+*.DIOPERI
+*.DIOAREA
+*.EQUATION
+*.SCALE METER
+*.MEGA
+.PARAM
+
+*.GLOBAL gnd!
++        vdd!
+
+*.PIN gnd!
+*+    vdd!
+
+************************************************************************
+* Library Name: OTA_class
+* Cell Name:    Fully_differential_telescopic
+* View Name:    schematic
+************************************************************************
+
+.SUBCKT Fully_differential_telescopic Vbiasn Vbiasp1 Vbiasp2 Vinn Vinp Voutn 
++ Voutp
+*.PININFO Vbiasn:I Vbiasp1:I Vbiasp2:I Vinn:I Vinp:I Voutn:O Voutp:O
+MM5 Voutp Vbiasp2 net18 net18 pmos w=WA l=LA nfin=nA
+MM6 Voutn Vbiasp2 net13 net13 pmos w=WA l=LA nfin=nA
+MM1 net18 Vbiasp1 vdd! vdd! pmos w=WA l=LA nfin=nA
+MM2 net13 Vbiasp1 vdd! vdd! pmos w=WA l=LA nfin=nA
+MM3 Voutp Vinp net16 gnd! nmos w=WA l=LA nfin=nA
+MM0 Voutn Vinn net16 gnd! nmos w=WA l=LA nfin=nA
+MM4 net16 Vbiasn gnd! gnd! nmos w=WA l=LA nfin=nA
+.ENDS
+

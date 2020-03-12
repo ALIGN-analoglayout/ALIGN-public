@@ -10,6 +10,8 @@
 #   % ln -sf $ALIGN_HOME/build/Makefile $ALIGN_WORK_DIR
 #   % make DESIGN=<design in $ALIGN_HOME/examples"
 
+VENV=/opt/venv
+
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
@@ -29,13 +31,9 @@ else
 	export TOP = ${ALIGN_HOME}
 endif
 
-# Convert output to PNG
-${OUTPUT_DIR}/${DESIGN}_0.png:	${OUTPUT_DIR}/${DESIGN}_0.gds
-	$(call execute, klayoutconvert-service, /bin/bash -c "cd $(TOP)/build/ThirdParty/Klayout && ./gds2png.sh `pwd`/$< `pwd`/$@")
-
-# Convert schematic to GDS
-${OUTPUT_DIR}/${DESIGN}_0.gds:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source /opt/venv/bin/activate && cd ${DESIGN} && schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT}")
+# Convert schematic to gds & PNG
+${OUTPUT_DIR}/${DESIGN}_0.png:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g")
 
 ${DESIGN}:
 	mkdir ${DESIGN}
@@ -69,8 +67,8 @@ docker-dir-type.yml:	${ALIGN_HOME}/build/docker-dir-type.yml
 docker-core.yml:	${ALIGN_HOME}/build/docker-core.yml
 	cp $< .
 
-docker:	volume services make-docker-service
-	docker-compose exec make-docker-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN}"
+docker:	volume align-service
+	docker-compose exec align-service bash -c "make -f /ALIGN-public/build/Makefile DESIGN=${DESIGN} FLAT=${FLAT}"
 
 services:	transfer-service align-service \
 		klayoutconvert-service

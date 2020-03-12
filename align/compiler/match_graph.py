@@ -6,14 +6,15 @@ Created on Fri Nov  2 21:33:22 2018
 """
 #%%
 import os
-import logging
 import pickle
 import networkx as nx
 from networkx.algorithms import isomorphism
 
 from .merge_nodes import merge_nodes, merged_value,convert_unit
-from .util import max_connectivity, logging
+from .util import max_connectivity
 
+import logging
+logger = logging.getLogger(__name__)
 
 #%%
 def traverse_hier_in_graph(G, hier_graph_dict):
@@ -22,14 +23,14 @@ def traverse_hier_in_graph(G, hier_graph_dict):
     """
     for node, attr in G.nodes(data=True):
         if "sub_graph" in attr and attr["sub_graph"]:
-            logging.info("Traversing sub graph:%s %s %s", node, attr["inst_type"],attr["ports"] )
+            logger.debug(f'Traversing sub graph: {node} {attr["inst_type"]} {attr["ports"]}')
             sub_ports = []
             for sub_node, sub_attr in attr["sub_graph"].nodes(data=True):
                 if 'net_type' in sub_attr:
                     if sub_attr['net_type'] == "external":
                         sub_ports.append(sub_node)
-             
-            logging.info("external ports:%s,%s",sub_ports,attr["connection"])
+
+            logger.debug(f'external ports: {sub_ports}, {attr["connection"]}')
             hier_graph_dict[attr["inst_type"]] = {
                 "graph": attr["sub_graph"],
                 "ports": sub_ports,
@@ -54,7 +55,7 @@ def read_inputs(name,hier_graph):
                 top_ports.append(node)
     top_ports = list(set(top_ports))
 
-    logging.info("READING top circuit graph: ")
+    logger.debug("READING top circuit graph: ")
     hier_graph_dict[name] = {
         "graph": hier_graph,
         "ports": top_ports,
@@ -72,12 +73,12 @@ def read_lib(lib_dir_path):
     library_dir_path = lib_dir_path
     lib_files = os.listdir(library_dir_path)
     if os.path.isfile("dont_use_cells.txt"):
-        logging.info("Reading Dont Use cells: dont_use_cells.txt")
+        logger.debug("Reading Dont Use cells: dont_use_cells.txt")
         with open('dont_use_cells.txt') as dont_use_file:
             dont_use_library = dont_use_file.read().splitlines()
     else:
         dont_use_library = []
-        logging.info("no dont use list defined")
+        logger.debug("no dont use list defined")
 
     library = []
     for sub_block_name in lib_files:
@@ -94,7 +95,7 @@ def read_lib(lib_dir_path):
                 "ports": subgraph_ports,
                 "conn": max_connectivity(graph)
             })
-            logging.info("Read lib:%s%s",sub_block_name,subgraph_ports)
+            logger.debug(f"Read lib: {sub_block_name}, {subgraph_ports}")
 
     return sorted(library, key=lambda k: k['conn'], reverse=True)
 
@@ -104,8 +105,8 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
     """
     find all matches of library element in the graph
     """
-    
-    logging.info("Matching circuit Graph from library elements")
+
+    logger.debug("Matching circuit Graph from library elements")
     mapped_graph_list = {}
 
     for lib_ele in liblist:
@@ -117,9 +118,7 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
             continue
 
         sub_block_name = lib_ele['name']
-        #print("Matching:",sub_block_name)
-        logging.info("Matching: %s : %s", sub_block_name,
-                     str(' '.join(G2.nodes())))
+        logger.debug(f"Matching: {sub_block_name} : {' '.join(G2.nodes())}")
         GM = isomorphism.GraphMatcher(
             G1, G2,
             node_match=isomorphism.categorical_node_match(['inst_type'],
@@ -127,13 +126,15 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
             edge_match=isomorphism.categorical_edge_match(['weight'], [1]))
 
         if GM.subgraph_is_isomorphic():
-            logging.info("ISOMORPHIC : %s", sub_block_name)
+            logger.debug(f"ISOMORPHIC : {sub_block_name}")
             map_list = []
             for Gsub in GM.subgraph_isomorphisms_iter():
                 all_nd = [
                 key for key in Gsub
                 if 'net' not in G1.nodes[key]["inst_type"]]
+                logger.debug(f"matched inst: {all_nd}")
                 if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
+                    logger.debug("Discarding match due to clock")
                     continue
                 if sub_block_name.startswith('DP') or sub_block_name.startswith('CMC'):
                     if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
@@ -141,17 +142,18 @@ def _mapped_graph_list(G1, liblist, CLOCK=None, DIGITAL=False):
                         if 'SA' in Gsub.values() and \
                         compare_balanced_tree(G1,get_key(Gsub,'SA'),get_key(Gsub,'SB')) :
                             map_list.append(Gsub)
-                            logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                            logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                            logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
                         else:
                             map_list.append(Gsub)
-                            logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                            logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
-
+                            logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                            logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
+                    else:
+                        logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
                 else:
                     map_list.append(Gsub)
-                    logging.info("Matched Lib: %s",str(' '.join(Gsub.values())))
-                    logging.info("Matched Circuit: %s", str(' '.join(Gsub)))
+                    logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
+                    logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
             mapped_graph_list[sub_block_name] = map_list
 
     return mapped_graph_list
@@ -167,10 +169,11 @@ def read_setup(setup_path):
             "POWER":['vdd'],
             "GND":[],
             "CLOCK":[],
-            "DIGITAL":[]
+            "DIGITAL":[],
+            "DONT_USE_CELLS":[]
             }
     if os.path.isfile(setup_path):
-        print('Reading setup file:', setup_path)
+        logger.debug(f'Reading setup file: {setup_path}')
         fp = open(setup_path, "r")
         line = fp.readline()
         while line:
@@ -186,62 +189,74 @@ def read_setup(setup_path):
             elif line.strip().startswith("DIGITAL"):
                 DIGITAL = line.strip().split('=')[1].split()
                 design_setup['DIGITAL']=DIGITAL
+            elif line.strip().startswith("DONT_USE_CELLS"):
+                DONT_USE_CELLS = line.strip().split('=')[1].split()
+                design_setup['DONT_USE_CELLS']=DONT_USE_CELLS
             else:
-                print("Non identified values found",line)
+                logger.warning(f"Non identified values found {line}")
             line=fp.readline()
-        logging.info("SETUP:%s",design_setup)
+        logger.debug(f"SETUP: {design_setup}")
     else:
-        print("no setup file found:",setup_path)
+        logger.warning(f"no setup file found: {setup_path}")
     return design_setup
-            
+
 def get_key(Gsub, value):
     return list(Gsub.keys())[list(Gsub.values()).index(value)]
 
 def get_next_level(G, tree_l1):
     tree_next=[]
     for node in list(tree_l1):
-        tree_next+=list(G.neighbors(node))
-    #print(tree_next)
+        if 'mos' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if G.get_edge_data(node, nbr)['weight']!=2:
+                    tree_next.append(nbr)
+        elif 'net' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if 'mos' in G.nodes[nbr]["inst_type"] and \
+                 G.get_edge_data(node, nbr)['weight']!=2:
+                    tree_next.append(nbr)
+        else:
+            tree_next=list(G.neighbors(node))
     return tree_next
-             
-#%% 
+
 def compare_balanced_tree(G, node1, node2):
     """
     used to remove some false matches for DP and CMC
     """
-    logging.info("checking symmtrical connections for nodes: %s, %s",node1, node2)
-    tree1 = set(G.neighbors(node1))
-    tree2 = set(G.neighbors(node2))
-    #logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
-    traversed1 = [] 
-    traversed2 = [] 
+    logger.debug(f"checking symmtrical connections for nodes: {node1}, {node2}")
+    tree1 = set(get_next_level(G,[node1]))
+    tree2 = set(get_next_level(G,[node2]))
+    #logger.debug("tree1 %s tree2 %s",set(tree1),set(tree2))
+    traversed1 = []
+    traversed2 = []
     if tree1==tree2:
-        logging.info("common net or device")
+        logger.debug("common net or device")
         return True
     while(len(list(tree1))== len(list(tree2))):
-        logging.info("tree1 %s tree2 %s",list(tree1),list(tree2))
+        logger.debug(f"tree1 {tree1} tree2 {tree2}")
         tree1 = set(tree1) ^ set(traversed1)
         tree2 = set(tree2) ^ set(traversed2)
-        logging.info("tree1 %s tree2 %s",set(tree1),set(tree2))
+        logger.debug(f"removing traversed tree1 {tree1} tree2 {tree2}")
         #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
         #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
         if tree1.intersection(tree2):
-            logging.info("matched subgraph")
+            logger.debug("matched subgraph")
             return True
         else:
             traversed1+=list(tree1)
             traversed2+=list(tree2)
-            logging.info("traversing:tree1 %s tree2: %s",tree1,tree2)
+            logger.debug(f"traversing:tree1 {tree1} tree2: {tree2}")
             tree1=get_next_level(G,tree1)
             tree2=get_next_level(G,tree2)
+
+    logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False
 
-#%%
 def reduce_graph(circuit_graph, mapped_graph_list, liblist):
     """
     merge matched graphs
     """
-    logging.info("START reducing graph: ")
+    logger.debug("START reducing graph: ")
     G1 =circuit_graph.copy()
     updated_circuit = []
     for lib_ele in liblist:
@@ -249,14 +264,14 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
         sub_block_name = lib_ele['name']
 
         if sub_block_name in mapped_graph_list:
-            logging.info("Reducing ISOMORPHIC sub_block: %s", sub_block_name)
-            
+            logger.debug(f"Reducing ISOMORPHIC sub_block: {sub_block_name}")
+
             for Gsub in mapped_graph_list[sub_block_name]:
                 already_merged = 0
                 for g1_node in Gsub:
                     if g1_node not in G1:
                         already_merged = 1
-                        logging.info("Skip merging. Node absent: %s",g1_node)
+                        logger.debug(f"Skip merging. Node absent: {g1_node}")
                         break
 
                 if already_merged:
@@ -264,7 +279,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                 remove_these_nodes = [
                     key for key in Gsub
                     if 'net' not in G1.nodes[key]["inst_type"]]
-                logging.info("Reduce nodes: %s",', '.join(remove_these_nodes))
+                logger.debug(f"Reduce nodes: {', '.join(remove_these_nodes)}")
 
                 # Define ports for subblock
                 matched_ports = {}
@@ -277,18 +292,17 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                             #G1.nodes[g1_n]['real_inst_type']=find_body[0]
                             # Add body pin
                             matched_ports['B'] = find_body[-1]
-                            logging.info('Adding body pin:%s %s',find_body,len(find_body))
+                            logger.debug(f'Adding body pin: {find_body} {len(find_body)}')
                         #check_values(G2.nodes[g2_node]['values'])
                         continue
                     if 'external' in G2.nodes[g2_n]["net_type"]:
                         matched_ports[g2_n] = g1_n
-                logging.info("match: %s",str(' '.join(Gsub)))
-                logging.info("Matched ports: %s", str(' '.join(matched_ports)))
-                logging.info("Matched nets : %s",
-                             str(' '.join(matched_ports.values())))
+                logger.debug(f"match: {' '.join(Gsub)}")
+                logger.debug(f"Matched ports: {' '.join(matched_ports)}")
+                logger.debug(f"Matched nets : {' '.join(matched_ports.values())}")
 
                 if len(remove_these_nodes) == 1:
-                    logging.info("One node element: %s",sub_block_name)
+                    logger.debug(f"One node element: {sub_block_name}")
                     G1.nodes[
                         remove_these_nodes[0]]["inst_type"] = sub_block_name
                     G1.nodes[
@@ -297,16 +311,14 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                     check_values(updated_values)
                     G1.nodes[remove_these_nodes[0]]["values"] = updated_values
                     for local_value in updated_values.values():
-                        if not isinstance(local_value, int):
-                            logging.error("unidentified sizing: %s", G1.nodes[remove_these_nodes[0]])
-
+                        if not isinstance(local_value, float):
+                            logger.error(f"unidentified sizing: {G1.nodes[remove_these_nodes[0]]}")
                 else:
-                    logging.info("Multi node element: %s",sub_block_name)
+                    logger.debug(f"Multi node element: {sub_block_name}")
 
                     reduced_graph, subgraph = merge_nodes(
                         G1, sub_block_name, remove_these_nodes, matched_ports)
-                    logging.info('Calling recursive for bock: %s',
-                                 sub_block_name)
+                    logger.debug(f'Calling recursive for bock: {sub_block_name}')
                     #print(sub_block_name)
                     #print(matched_ports)
                     mapped_subgraph_list = _mapped_graph_list(
@@ -314,16 +326,16 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
                         ])
-                    logging.info("Recursive calling to find sub_sub_ckt")
+                    logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
                         G2, mapped_subgraph_list, liblist)
                     check_nodes(updated_subgraph_circuit)
 
                     updated_circuit.extend(updated_subgraph_circuit)
-                    logging.info("adding new sub_ckt: %s",sub_block_name)
+                    logger.debug(f"adding new sub_ckt: {sub_block_name}")
                     check_nodes(updated_circuit)
-                    logging.info("adding remaining ckt: %s",sub_block_name)
-                    
+                    logger.debug(f"adding remaining ckt: {sub_block_name}")
+
                     updated_circuit.append({
                         "name": sub_block_name,
                         "graph": Grest,
@@ -332,7 +344,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist):
                         "size": len(subgraph.nodes())
                     })
                     check_nodes(updated_circuit)
-    logging.info("Finished one branch:%s", sub_block_name)
+    logger.debug(f"Finished one branch: {sub_block_name}")
 
     return updated_circuit, G1
 def change_SD(G,node):
@@ -346,42 +358,135 @@ def change_SD(G,node):
     G.get_edge_data(node, nbr[1])['weight'] = w1
 
 def define_SD(G,power,gnd,clk):
-    logging.info("START checking source and drain in graph: ")
+    logger.debug("START checking source and drain in graph: ")
+    try:
+        gotpower=power[0]
+        gotgnd=gnd[0]
+        logger.debug(f"using power: {gotpower} and ground: {gotgnd}")
+
+    except (IndexError, ValueError):
+        logger.error("no power and gnd defination, correct setup file")
+        return False
+
     traversed = []
+    probable_changes_p=[]
     if power[0] in G.nodes():
-        while power:
+        high=power.copy()
+        while high:
             try:
-                nxt = power[0]
-                power = power[1:]
-                high=get_next_level(G,[nxt]) 
-                #logging.info("next,power: %s %s %s %s",nxt,power,high,traversed)
-                for node in high:
+                nxt = high.pop(0)
+                for node in get_next_level(G,[nxt]):
                     if G.get_edge_data(node,nxt)==2:
                         continue
                     if set(G.neighbors(node)) & set(clk):
                         continue
-                    #logging.info("checking node: %s %s", node, power)
+                    #logger.debug("checking node: %s %s", node, high)
                     if 'pmos' == G.nodes[node]["inst_type"] and \
-                        node not in traversed: 
+                        node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 1 or weight==3 :
-                            logging.info("changing source drain:%s",node)
-                            change_SD(G,node)
+                            #logger.debug("changing source drain:%s",node)
+                            probable_changes_p.append(node)
                     elif 'nmos' == G.nodes[node]["inst_type"] and \
                     node not in traversed:
                         weight =G.get_edge_data(node, nxt)['weight']
                         if weight == 4 or weight==6 :
-                            logging.info("changing source drain:%s",node)
-                            change_SD(G,node)
+                            #logger.debug("changing source drain:%s",node)
+                            probable_changes_p.append(node)
                     if node not in traversed and node not in  gnd:
-                        power.append(node)
+                        high.append(node)
                     traversed.append(node)
             except (TypeError, ValueError):
-                logging.info("All source drain checked:%s",power)
-                
+                logger.debug(f"All source drain checked: {high}")
+    probable_changes_n=[]
+    if gnd[0] in G.nodes():
+        low=gnd.copy()
+        while low:
+            try:
+                nxt = low.pop(0)
+                for node in get_next_level(G,[nxt]):
+                    if G.get_edge_data(node,nxt)==2:
+                        continue
+                    if set(G.neighbors(node)) & set(clk):
+                        continue
+                    if 'pmos' == G.nodes[node]["inst_type"] and \
+                        node not in traversed:
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 4 or weight==6 :
+                            #logger.debug("changing source drain:%s",node)
+                            #change_SD(G,node)
+                            probable_changes_n.append(node)
+                    elif 'nmos' == G.nodes[node]["inst_type"] and \
+                    node not in traversed:
+                        weight =G.get_edge_data(node, nxt)['weight']
+                        if weight == 1 or weight==3 :
+                            #logger.debug("changing source drain:%s",node)
+                            #change_SD(G,node)
+                            probable_changes_n.append(node)
+                    if node not in traversed and node not in  power:
+                        low.append(node)
+                    traversed.append(node)
+            except (TypeError, ValueError):
+                logger.debug(f"All source drain checked: {low}")
+    for node in list (set(probable_changes_n) & set(probable_changes_n)):
+        logger.warning(f"changing source drain: {node}")
+        change_SD(G,node)
+
+
+def add_parallel_caps(G):
+    logger.debug(f"merging all caps, initial graph size: {len(G)}")
+    remove_nodes = []
+    for node, attr in G.nodes(data=True):
+        if 'cap' in attr["inst_type"] and node not in remove_nodes:
+            for net in G.neighbors(node):
+                for next_node in G.neighbors(net):
+                    if not next_node == node  and next_node not in remove_nodes and G.nodes[next_node][
+                        "inst_type"] == G.nodes[node]["inst_type"] and\
+                        len(set(G.neighbors(node)) & set(G.neighbors(next_node)))==2:
+                        for param, value in G.nodes[node]["values"].items():
+                            if param == 'cap':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['cap']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['cap']=c_val
+                            elif param == 'c':
+                                c_val = float(convert_unit(value))+ \
+                                float(convert_unit(G.nodes[next_node]["values"]['c']))
+                                remove_nodes.append(next_node)
+                                G.nodes[node]["values"]['c']=c_val
+    logger.debug(f"removed parallel caps: {remove_nodes}")
+    for node in remove_nodes:
+        G.remove_node(node)
+def add_series_res(G):
+    logger.debug(f"merging all series res, initial graph size: {len(G)}")
+    remove_nodes = []
+    for net, attr in G.nodes(data=True):
+        if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
+            and net not in remove_nodes and attr["net_type"]!="external":
+            nbr_type =[G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(net))]
+            combined_r,remove_r=list(G.neighbors(net))
+            if nbr_type[0]==nbr_type[1]=='res':
+                remove_nodes.append(net)
+                remove_nodes.append(remove_r)
+                new_net=list(set(G.neighbors(remove_r))-set(net)-set(remove_nodes))[0]
+                for param, value in G.nodes[combined_r]["values"].items():
+                    if param == 'res':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['res']))
+                        G.nodes[combined_r]["values"]['res']=r_val
+                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
+                    elif param == 'r':
+                        r_val = float(convert_unit(value))+ \
+                        float(convert_unit(G.nodes[remove_r]["values"]['r']))
+                        G.nodes[combined_r]["values"]['r']=r_val
+                        G.add_edge(combined_r, new_net, weight=G[combined_r][net]["weight"])
+    logger.debug(f"removed series r: {remove_nodes}")
+    for node in remove_nodes:
+        G.remove_node(node)
+
 def preprocess_stack(G):
-    logging.info("START reducing  stacks in graph: ")
-    logging.debug("initial size of graph:%s", len(G))
+    logger.debug("START reducing  stacks in graph: ")
+    logger.debug(f"initial size of graph: {len(G)}")
     #print("all matches found")
     remove_nodes = []
     modified_edges = {}
@@ -394,14 +499,14 @@ def preprocess_stack(G):
                 #print("neighbours:",list(G.neighbors(net)))
                 if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
-                        logging.info(" checking nodes: %s , %s",node,next_node)
+                        logger.debug(f" checking nodes: {node}, {next_node}")
                         if not next_node == node and G.nodes[next_node][
                                 "inst_type"] == G.nodes[node][
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set(
                                 G.neighbors(next_node))
-                            logging.info("stacking two transistors: %s , %s,%s",node,next_node,common_nets)
+                            logger.debug(f"stacking two transistors: {node}, {next_node}, {common_nets}")
                             source_net = list(
                                 set(G.neighbors(next_node)) - common_nets)[0]
                             if len(common_nets) == 2 and G.nodes[net]["net_type"]!="external":
@@ -420,7 +525,7 @@ def preprocess_stack(G):
                                             #print("param1",node,param,value)
                                             lequivalent = float(
                                                 convert_unit(value))
-                                            logging.info("converted unit of 1st: %s",node)
+                                            logger.debug(f"converted unit of 1st: {node}")
                                     for param, value in G.nodes[node][
                                             "values"].items():
                                         if param == 'l':
@@ -428,13 +533,13 @@ def preprocess_stack(G):
                                                 convert_unit(value))
                                             modified_nodes[node] = str(
                                                 lequivalent)
-                                            logging.info("converted unit of incr: %s",node)
+                                            logger.debug(f"converted unit of incr: {node}")
                                     remove_nodes.append(net)
                                     modified_edges[node] = [
                                         source_net,
                                         G[next_node][source_net]["weight"]
                                     ]
-                                    logging.info("success")
+                                    logger.debug("success")
                                     remove_nodes.append(next_node)
     for node, attr in modified_edges.items():
         G.add_edge(node, attr[0], weight=attr[1])
@@ -445,25 +550,21 @@ def preprocess_stack(G):
     for node in remove_nodes:
         G.remove_node(node)
 
-    logging.debug("reduced_size after resolving stacked transistor:%s", len(G))
-    logging.debug(
+    logger.debug(f"reduced_size after resolving stacked transistor: {len(G)}")
+    logger.debug(
         "\n######################START CREATING HIERARCHY##########################\n"
     )
 
 def check_values(values):
     for param,value in values.items():
-        logging.debug("param,value:%s,%s", param,value)
+        logger.debug(f"param, value: {param}, {value}")
         if param == 'model': continue
-        try:
-            assert(isinstance(value, int) or isinstance(value, float))
-        except AssertionError:
-            print("ERROR: Parameter value",value, "not defined. Check match log")
-            exit()
-            
+        assert(isinstance(value, int) or isinstance(value, float)), f"ERROR: Parameter value {value} not defined. Check match log"
+
 def check_nodes(graph_list):
-    logging.debug("Checking all values")
+    logger.debug("Checking all values")
     for local_subckt in graph_list:
         for node, attr in local_subckt["graph"].nodes(data=True):
-            logging.debug(":%s,%s", node,attr)
+            logger.debug(f":{node}, {attr}")
             if  not attr["inst_type"] == "net":
                 check_values(attr["values"])

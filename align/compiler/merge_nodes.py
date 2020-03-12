@@ -7,6 +7,9 @@ Created on Thu Nov 29 22:19:39 2018
 import networkx as nx
 from networkx.algorithms import isomorphism
 
+import logging
+logger = logging.getLogger(__name__)
+
 def merge_nodes(G, hier_type, argv, matched_ports):
     """ Merges the  given nodes in argv and returns a
      reduced graph. It also returns a subgraph(not used anymore)"""
@@ -14,7 +17,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     g_copy = G.copy()
     for node in argv:
         if not G.nodes[node]:
-            print("node not in graph anymore")
+            logger.debug("node not in graph anymore")
             return G, nx.Graph
     #print("Is input bipartite",nx.is_bipartite(G))
     assert len(argv) > 1
@@ -97,7 +100,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
     #    GM = isomorphism.GraphMatcher(g_copy,subgraph)
 
     if not graph_match.subgraph_is_isomorphic():
-        print("isomorphism check fail")
+        logger.warning("isomorphism check fail")
     #print("checking sub graph")
     check_nodes(subgraph)
 
@@ -113,7 +116,7 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 #        value = {'cap': calc_cap(values2)}
 #    elif [param for param in values2.keys() if 'fin' in param.lower()]:
 #        value = {'nfin': calc_total_fin(values2)}
-#    else: 
+#    else:
 #        value = calc_value(values2)
 #    #print(value)
 #    return value
@@ -174,10 +177,10 @@ def merge_nodes(G, hier_type, argv, matched_ports):
 #        else:
 #            convert_unit(value)
 #       # print (param, total_val)
-#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val } 
+#    #return {'len': length , 'width':width, 'multiplier':multiplier, 'total_val': total_val }
 #    #print(length*1E9)
-#    return {'total_val': int(length*1E9) } 
-        
+#    return {'total_val': int(length*1E9) }
+
 #%%
 def convert_unit(value):
     #print("checking value",value)
@@ -200,7 +203,7 @@ def convert_unit(value):
         is_val =False
     if isinstance(value, float) or isinstance(value, int):
         value = value
-    elif value.endswith('k') and is_val: 
+    elif value.endswith('k') and is_val:
         value = float(value.replace('k', ""))
         value = value * 1000
     elif 'K' in value and is_val:
@@ -226,10 +229,8 @@ def convert_unit(value):
         try:
             value = float(value)
         except ValueError:
-            print("ERROR: Parameter",value, "not defined. \
-                  using value=10n. Please fix netlist")
+            logger.error(f"Parameter {value} not defined. Using value=12n. Please fix netlist")
             value = 1e-8
-    #print()
     return mult*value
 
 def check_values(values):
@@ -242,7 +243,7 @@ def check_nodes(graph):
     for node, attr in graph.nodes(data=True):
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
-            
+
 def merged_value(values1, values2):
     merged_vals={}
     if values1:

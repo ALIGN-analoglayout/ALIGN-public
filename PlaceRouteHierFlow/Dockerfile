@@ -13,4 +13,4 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
 WORKDIR /PlaceRouteHierFlow
 
 RUN \
-    make -j4
+    make -j4 -s

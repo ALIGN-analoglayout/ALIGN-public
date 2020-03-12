@@ -6,33 +6,28 @@ Created on Tue Dec 11 11:34:45 2018
 """
 import os
 import pathlib
-import logging
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
 
-logdir = pathlib.Path.cwd() / "LOG"
-if not os.path.exists(logdir):
-    os.mkdir(logdir)
-elif os.path.exists(logdir / "compiler.log"):
-    os.rename(logdir / "compiler.log", logdir / "compiler.log1")
-logging.basicConfig(filename=logdir / "compiler.log", level=logging.WARNING)
+import logging
+logger = logging.getLogger(__name__)
 
 #library_graphs = glob.glob("L1*.yaml")
 def max_connectivity(G):
-    conn_value =0 
+    conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]
     for (u, v, wt) in G.edges.data('weight'):
         if G.nodes[u]['inst_type']=='net' and len(G.edges(u)) >1:
             if 'mos' in G.nodes[v]['inst_type'] and wt >3:
                 conn_value-=2
             conn_value +=wt
-            #print (u,conn_value)         
+            #print (u,conn_value)
         elif G.nodes[v]['inst_type']=='net' and len(G.edges(v)) >1:
             if 'mos' in G.nodes[u]['inst_type'] and wt >3:
                 conn_value-=2
             conn_value +=wt
-            #print (v,conn_value)         
+            #print (v,conn_value)
     return conn_value
 def plt_graph(subgraph,sub_block_name):
     #print(sub_block_name,subgraph.nodes())
@@ -56,7 +51,7 @@ def plt_graph(subgraph,sub_block_name):
     nx.draw(copy_graph,with_labels=True,pos=nx.spring_layout(copy_graph))
     plt.title(Title, fontsize=20)
     #fig.savefig(Title+'.png', dpi=fig.dpi)
-    
+
     #plt.show()
     #plt.show(block=False)
     #plt.pause(0.3) # pause how many seconds
@@ -91,11 +86,8 @@ def _show_circuit_graph(filename, graph, dir_path):
         plt.savefig(dir_path+'/'+ filename + "_" +
                     str(no_of_subgraph) + '.png')
         plt.close()
-        #logging.info("Plot saved in graph images directory")
 
 def _show_bipartite_circuit_graph(filename, graph, dir_path):
-    #logging.info("Saving bipartite graph: %s", filename)
-    #print(graph)
     no_of_subgraph = 0
     for subgraph in nx.connected_component_subgraphs(graph):
         no_of_subgraph += 1
@@ -129,28 +121,23 @@ def _show_bipartite_circuit_graph(filename, graph, dir_path):
         plt.savefig(dir_path+'/' + filename + "_" +
                     str(no_of_subgraph) + '.png')
         plt.close()
-        #logging.info("Bipartite graph plot saved in graph images directory")
-
 
 def _write_circuit_graph(filename, graph,dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
     nx.write_yaml(graph, dir_path+'/' + filename + ".yaml")
-    #logging.info("Graph saved in circuit_graphs directory")
-    
+
 def convert_to_unit(values):
     for param in values:
         if values[param]>= 1 :
-            values[param]=int(values[param])                 
+            values[param]=int(values[param])
         elif values[param]*1E3> 1 :
-            values[param]=str(int(values[param]*1E3))+'m'                                   
+            values[param]=str(int(values[param]*1E3))+'m'
         elif values[param]*1E6>1 :
-            values[param]=str(int(values[param]*1E6))+'u'               
+            values[param]=str(int(values[param]*1E6))+'u'
         elif values[param]*1E9>1:
             values[param]=str(int(values[param]*1E9))+'n'
         elif values[param]*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
         else:
-            print("ERROR:WRONG value, %s",values)
-            
-            
+            logger.error(f"WRONG value, {values}")

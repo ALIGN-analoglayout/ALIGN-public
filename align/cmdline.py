@@ -1,9 +1,17 @@
 import argparse
 from .main import schematic2layout
+from . import __version__
+
+import logging
+logger = logging.getLogger(__name__)
+
+import os
 
 class CmdlineParser():
 
     def __init__(self, *args, **kwargs):
+        align_home = os.environ.get( 'ALIGN_HOME', None)
+
         parser = argparse.ArgumentParser(*args, **kwargs,
             description="directory path for input circuits")
         parser.add_argument("netlist_dir",
@@ -12,7 +20,8 @@ class CmdlineParser():
         parser.add_argument("-p",
                             "--pdk_dir",
                             type=str,
-                            required=True,
+                            required=align_home is None,
+                            default=None if align_home is None else align_home + '/pdks/FinFET14nm_Mock_PDK',
                             help='Path to PDK directory')
         parser.add_argument("-w",
                             "--working_dir",
@@ -29,7 +38,7 @@ class CmdlineParser():
                             "--subckt",
                             type=str,
                             default=None,
-                            help='Top subckt defination in file.\
+                            help='Top subckt definition in file.\
                             \nIf no name given it takes file name as subckt name. \
                             \nIf there are instances at top level,\
                             a new subckt is created of name filename')
@@ -42,12 +51,12 @@ class CmdlineParser():
         parser.add_argument("-U_mos",
                             "--unit_size_mos",
                             type=int,
-                            default=10,
+                            default=12,
                             help='no of fins in unit size')
         parser.add_argument("-U_cap",
                             "--unit_size_cap",
                             type=int,
-                            default=10,
+                            default=12,
                             help='no of fins in unit size')
         parser.add_argument("-n",
                             "--nvariants",
@@ -67,8 +76,24 @@ class CmdlineParser():
                             "--extract",
                             action='store_true',
                             help='Set to true to extract post-layout netlist')
+        parser.add_argument( "-g", "--generate",
+                            action='store_true',
+                            help="Set the true to generate png")
+        parser.add_argument( "-l", "--log",
+                            dest="log_level",
+                            choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                            default='WARNING',
+                            help="Set the logging level (default: %(default)s)")
+        parser.add_argument('--version',
+                            action='version',
+                            version='%(prog)s ' + __version__)
+
         self.parser = parser
 
     def parse_args(self, *args, **kwargs):
         arguments = self.parser.parse_args(*args, **kwargs)
-        schematic2layout(**vars(arguments))
+        try:
+            return schematic2layout(**vars(arguments))
+        except Exception:
+            logger.exception("Fatal Error. Cannot proceed")
+            return None

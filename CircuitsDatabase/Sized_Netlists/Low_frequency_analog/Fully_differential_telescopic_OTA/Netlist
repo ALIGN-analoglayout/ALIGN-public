@@ -1,0 +1,40 @@
+** Generated for: hspiceD
+** Generated on: Nov 19 16:37:16 2018
+** Design library name: DC_converter
+** Design cell name: 
+** Design view name: schematic
+.GLOBAL vdd!
+
+.AC DEC 100 1.0 1e11
+
+.TRAN 1e-9 50e-6 START=1e-9
+
+.OP
+
+.PSS
+
+.TEMP 25.0
+.OPTION INGOLD=2 ARTIST=2 PSF=2 MEASOUT=1 PARHIER=LOCAL PROBE=0 MARCH=2 ACCURACY=1 POST
+
+** Library name: DC_converter
+** Cell name: 2018_11_09_current_mirror_ota
+** View name: schematic
+.subckt DC_converter_2018_11_09_telescopic_ota_schematic vbiasnd vinn vinp voutn voutp D1
+
+m9 voutn vbiasn net8 0 nmos w=270e-9 l=20e-9 nfin=25
+m8 voutp vbiasn net014 0 nmos w=270e-9 l=20e-9 nfin=25
+m5 D1 D1 0 0 nmos w=270e-9 l=20e-9 nfin=10
+m4 net10 vbiasnd 0 0 nmos w=270e-9 l=20e-9 nfin=50
+m3 net014 vinn net10 0 nmos w=270e-9 l=20e-9 nfin=70
+m0 net8 vinp net10 0 nmos w=270e-9 l=20e-9 nfin=70
+m7 voutp vbiasp net012 net012 pmos w=270e-9 l=20e-9 nfin=15
+m6 voutn vbiasp net06 net06 pmos w=270e-9 l=20e-9 nfin=15
+m2 net012 vbiasp1 vdd! vdd! pmos w=270e-9 l=20e-9 nfin=10
+m1 net06 vbiasp1 vdd! vdd! pmos w=270e-9 l=20e-9 nfin=10
+c2 voutp 0 60e-15
+c3 voutn 0 60e-15
+.ends DC_converter_2018_11_09_telescopic_ota_schematic
+** End of subcircuit definition.
+
+.END
+

@@ -8,7 +8,7 @@ using std::istream;
 using std::ostream;
 
 enum class TokenType {
-           EndOfFile=0, EndOfLine=1, NAME=2, Undefined=3, NUMBER=4,
+           EndOfFile=0, EndOfLine=1, NAME=2, Undefined=3,
 	   COMMA=',', LPAREN='(', RPAREN=')', BACKQUOTE='`', 
 	   SEMICOLON=';', PERIOD='.'
       };
@@ -23,8 +23,6 @@ inline ostream& operator<<( ostream& os, const TokenType& tt) {
       str = "NAME";
     } else if ( tt == TokenType::Undefined) {
       str = "Undefined";
-    } else if ( tt == TokenType::NUMBER) {
-      str = "NAME";
     } else {
       str = "' '";
       str[1] = static_cast<char>( tt);
@@ -101,6 +99,7 @@ public:
     Lexer( istream& sin, bool skip_EOLN = 0) :
        s(sin), skip_EndOfLine_tokens(skip_EOLN) {
       is_first_in_name.add_is_alpha();
+      is_first_in_name.add_is_digit();
       is_first_in_name.add_extra( "_");
 
       is_not_first_in_name.add_is_alpha();
@@ -167,15 +166,6 @@ public:
 	current_token.tt = static_cast<TokenType>( line[cursor]);
 	current_token.value.push_back( line[cursor]);
 	++cursor;
-      } else if ( isdigit( line[cursor])) {
-	current_token.tt = TokenType::NUMBER;	
-	current_token.value.push_back( line[cursor]);
-	++cursor;
-	while ( cursor < line.size() &&
-		isdigit( line[cursor])) {
-	  current_token.value.push_back( line[cursor]);
-	  ++cursor;
-	}
       } else if ( is_first_in_name(line[cursor])) {
 	current_token.tt = TokenType::NAME;
 	current_token.value.push_back( line[cursor]);

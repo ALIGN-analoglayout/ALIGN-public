@@ -132,28 +132,17 @@ M0 (S G S B) NMOS w=w l=90n
 M0 (S G S B) PMOS w=w l=90n
 .ends Dcap_PMOS
 
-.subckt Dcap1_NMOS S
+.subckt Dummy1_NMOS S
 M0 (S S S B) NMOS w=w l=90n
-.ends Dcap1_NMOS
+.ends Dummy1_NMOS
 
-.subckt Dcap1_PMOS S
+.subckt Dummy1_PMOS S
 M0 (S S S B) PMOS w=w l=90n
-.ends Dcap1_PMOS
+.ends Dummy1_PMOS
 
 .subckt Res PLUS MINUS
 RR1 PLUS MINUS res res=10k
 .ends Res
 
-
-.subckt spiral_ind PLUS MINUS BULK CTAP
-L0 PLUS MINUS BULK CTAP spiral_sym_ct_mu_z w=9u
-.ends spiral_ind
-
-.subckt stage2_inv G1 G2 SN SP
-MM0 G1 D SN SN NMOS l=60n w=1u m=1
-MM1 D G2 SN SN NMOS l=60n w=1u m=1
-MM2 G1 D SP SP PMOS l=60n w=1u m=1
-MM3 D G2 SP SP PMOS l=60n w=1u m=1
-.ends stage2_inv
 
 

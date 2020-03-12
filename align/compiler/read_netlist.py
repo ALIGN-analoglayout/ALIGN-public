@@ -6,11 +6,12 @@ Created on Wed Oct 10 13:04:45 2018
 """
 
 import os
-import logging
 import networkx as nx
 
-from .util import logging
 from .basic_element import _parse_inst
+
+import logging
+logger = logging.getLogger(__name__)
 
 class SpiceParser:
     """
@@ -34,15 +35,15 @@ class SpiceParser:
         self.next_line = None
         self.prev_line = None
         self.check_next_line = None
-        logging.info('creating an instance of SpiceParser: %s',self.top_ckt_name)
+        logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name}')
 
     def sp_parser(self):
         """Parse the defined file line wise"""
 
         if not os.path.isfile(self.netlist):
-            print("File doesn't exist",self.netlist)
+            logger.warning(f"File doesn't exist {self.netlist}")
         else:
-            logging.info("File exist: %s", self.netlist)
+            logger.debug(f"File exist: {self.netlist}")
             fp_l = open(self.netlist, "r")
             line = self.get_next_line(fp_l, 1)
             while ".END" not in line:
@@ -56,7 +57,7 @@ class SpiceParser:
                     self._parse_global(line, fp_l)
                 elif ".temp" in line.lower():
                     temp_line = line
-                    logging.info("Temp line: %s", temp_line)
+                    logger.debug(f"Temp line: {temp_line}")
                 elif ".option" in line.lower():
                     self._parse_option(line, fp_l)
                 elif "subckt" in line.lower() and not "subckts" in line.lower():
@@ -77,23 +78,22 @@ class SpiceParser:
                 line = self.get_next_line(fp_l, 1)
                 if not line:
                     break
-            print("INFO: PARSING INPUT NETLIST FILE DONE")
+            logger.debug("PARSING INPUT NETLIST FILE DONE")
             if self.params:
                 for param, value in self.params.items():
-                    logging.info('Found top_param: %s, value:%s', param, value)
+                    logger.debug(f'Found top_param: {param}, value:{value}')
             elif self.option:
                 self.option = filter(lambda a: a != '+', self.option)
             elif self._global:
                 self._global = filter(lambda a: a != '+', self._global)
-            logging.info("List of subckts in design: %s \n",
-                " ".join(self.subckts))
+            logger.debug(f"List of subckts in design: {' '.join(self.subckts)}")
 
 # %%
             ## remove source from testbench circuit
             self._remove_source()
 
             if not self.top_ckt_name :
-                logging.info("No top circuit name provided, returning multiple graphs")
+                logger.debug("No top circuit name provided, returning multiple graphs")
                 for name in self.subckts:
                     design = self._hier_circuit(name)
                     subckt_graph = self._create_bipartite_circuit_graph(
@@ -101,13 +101,13 @@ class SpiceParser:
                     self.circuits_list.append({
                         "name": name,
                         "graph": subckt_graph,
-                        "ports": self.subckts[name]["ports"], 
+                        "ports": self.subckts[name]["ports"],
                     })
             elif self.top_insts and self.top_ckt_name not in self.subckts.keys():
-                logging.info(
-                    'Instances found at top, adding dummy subckt: %s', self.top_ckt_name)
+                logger.debug(
+                    f'Instances found at top, adding dummy subckt: {self.top_ckt_name}')
                 if self.params:
-                    resolve_top_param()
+                    self.resolve_top_param()
 
                 self.subckts[self.top_ckt_name] = {
                      "ports": [],
@@ -125,7 +125,7 @@ class SpiceParser:
                 self.circuits_list.append({
                     "name": self.top_ckt_name,
                     "graph": circuit_graph,
-                    "ports": self.subckts[self.top_ckt_name]["ports"], 
+                    "ports": self.subckts[self.top_ckt_name]["ports"],
                 })
 
             elif self.top_ckt_name in self.subckts.keys():
@@ -136,29 +136,29 @@ class SpiceParser:
                 self.circuits_list.append({
                     "name": self.top_ckt_name,
                     "graph": circuit_graph,
-                    "ports": self.subckts[self.top_ckt_name]["ports"], 
+                    "ports": self.subckts[self.top_ckt_name]["ports"],
                 })
             else:
-                logging.error("No design found")
+                logger.error("No design found")
                 return 0
 
-            logging.info(
+            logger.debug(
                 "################### PARSING DONE \
                 #################### \n")
 
-            logging.info(
+            logger.debug(
                 "\n###################\
                 FINAL CIRCUIT AFTER initialization\
                 #################### \n"
             )
             for node in design:
-                logging.info(node)
+                logger.debug(node)
 
             #self._show_circuit_graph("circuit", self.circuit_graph,"./circuit_graph_images/")
             return self.circuits_list
     def resolve_hierarchy(self):
         if self.flat:
-            logging.info("Flatten circuit: %s ", self.top_ckt_name)
+            logger.debug(f"Flatten circuit: {self.top_ckt_name}")
             design = self._flatten_circuit(self.top_ckt_name)
         else:
             design = self._hier_circuit(self.top_ckt_name)
@@ -167,10 +167,9 @@ class SpiceParser:
     def resolve_top_param(self):
         for index, node in enumerate(self.top_insts):
             if "values" in node.keys():
-                #print(node)
                 for param, value in node["values"].items():
                     if '*' in value:
-                        logging.info ("found function in values")
+                        logger.debug ("found function in values")
                         value_function = value.split('*')
                         for val in value_function:
                             try:
@@ -186,12 +185,10 @@ class SpiceParser:
                         else:
                             self.top_insts[index]["values"][param] =  str(mult)+'*'+self.top_insts[index]["values"][param]
                             del mult
-                        logging.info(
-                            'assigning top parameter %s value %s to node: %s',
-                            param, self.top_insts[index]["values"][param],
-                            node["inst"])
+                        logger.debug(
+                            f'assigning top parameter {param} value {self.top_insts[index]["values"][param]} to node: {node["inst"]}')
             else:
-                logging.error("No sizing info:%s",node["inst"])
+                logger.error(f'No sizing info:{node["inst"]}')
     def _remove_source(self):
         no_of_source = 0
         #source_ports = []
@@ -208,9 +205,8 @@ class SpiceParser:
                 self.subckts[ckt_name]["nodes"]) - len(reduced_subckt)
             self.subckts[ckt_name]["nodes"] = reduced_subckt
             self.subckts[ckt_name]["ports"] += source_ports
-            #print(source_ports)
         if no_of_source >0:
-            logging.warning('REMOVED %i sources from circuit.\n', no_of_source)
+            logger.warning(f'REMOVED {no_of_source} sources from circuit.')
 
     def get_next_line(self, file_pointer, line_type):
         if line_type == 1:
@@ -222,18 +218,13 @@ class SpiceParser:
                 self.next_line = self.check_next_line
 
             self.check_next_line = file_pointer.readline()
-            #print("Read line",self.next_line,self.check_next_line)
             while self.next_line.strip().endswith('\\') or \
                 self.check_next_line.strip().startswith('+') \
                 or (self.check_next_line and not self.check_next_line.strip()):
-                #print("reading next line", self.check_next_line)
                 self.next_line += self.check_next_line
                 self.check_next_line = file_pointer.readline().strip()
-                #exit(0)
             self.next_line = self.next_line.replace('+', '')
             self.next_line = self.next_line.replace('\\','')
-
-            #print("Read line:",self.next_line)
         elif line_type == -1:
             self.next_line = self.prev_line
         elif line_type == 0:
@@ -242,7 +233,7 @@ class SpiceParser:
 
     def _parse_subckt_info(self, line, fp_l):
         """ Read subckt line """
-        logging.info('started reading subckt: %s', line.strip())
+        logger.debug(f'started reading subckt: {line.strip()}')
         subckt_nodes = line.strip().split()
         subckt_name = subckt_nodes[1]
         line = self.get_next_line(fp_l, 1)
@@ -253,7 +244,7 @@ class SpiceParser:
             "nodes": nodes,
             "params": params
         }
-        logging.info('Finished reading subckt: %s\n', subckt_name)
+        logger.debug(f'Finished reading subckt: {subckt_name}')
 
     def _parse_subckt(self, line, fp_l):
         """ Read all lines in subckt"""
@@ -272,7 +263,7 @@ class SpiceParser:
                     else:
                         subckt_param_all = subckt_param
                     #for param,value in subckt_param.items():
-                    #    logging.info('Found subckt param: %s, value:%s', param, value);
+                    #    logger.debug('Found subckt param: %s, value:%s', param, value);
                 line = self.get_next_line(fp_l, 1)
             else:
                 node1 = _parse_inst(line)
@@ -285,7 +276,7 @@ class SpiceParser:
     def _parse_param(self, line, fp_l):
         """Reads and store all parameters"""
         param_list = {}
-        logging.info("param: %s", line)
+        logger.debug(f"param: {line}")
         all_param = line.strip().split()
         for idx, individual_param in enumerate(all_param):
             if '=' in individual_param:
@@ -294,31 +285,30 @@ class SpiceParser:
                     param = all_param[idx - 1]
                 if not value:
                     value = all_param[idx + 1]
-                logging.info('Found parameters: %s, value:%s', param,
-                             value)
+                logger.debug(f'Found parameters: {param}, value: {value}')
                 param_list[param] = value
         return param_list
 
     def _parse_global(self, line, fp_l):
         """ Read all global lines"""
-        logging.info("global: %s", line)
+        logger.debug(f"global: {line}")
         self._global = line.strip().split()
 
     def _parse_include(self, line, fp_l):
-        logging.info("include: %s", line)
+        logger.debug(f"include: {line}")
         self.include.append(line.strip())
 
     def _parse_option(self, line, fp_l):
-        logging.info("option: %s", line)
+        logger.debug(f"option: {line}")
         self.option = line.strip().split()
 
     def _resolve_param(self, inherited_param, node, values):
-        logging.info("inherited parameter: %s", inherited_param )
+        logger.debug(f"inherited parameter: {inherited_param}" )
         if "values" in node.keys():
             for param, value in node["values"].items():
-                logging.info("checking parameter: %s= %s", param, value)
+                logger.debug(f"checking parameter: {param} = {value}")
                 if '*' in value:
-                    logging.info ("found function in values")
+                    logger.debug ("found function in values")
                     value_function = value.split('*')
                     for val in value_function:
                         try:
@@ -326,9 +316,7 @@ class SpiceParser:
                         except ValueError:
                             value=val
 
-
                 if value in inherited_param.keys():
-                    #print(node)
                     values[param] = inherited_param[value]
                     try:
                         mult
@@ -336,9 +324,8 @@ class SpiceParser:
                         values[param] =values[param]
                     else:
                         values[param] *=  mult
-                    logging.info(
-                        'assigning inherited parameter:%s, %s to device: %s',
-                        param, inherited_param[value], node["inst"])
+                    logger.debug(
+                        f'assigning inherited parameter:{param}, {inherited_param[value]} to device: {node["inst"]}')
                 else:
                     values[param] = value
 
@@ -356,27 +343,22 @@ class SpiceParser:
             inherited_param = { **self.subckts[subckt_name]["params"],**inherited_param}
             #inherited_param = {**inherited_param, **self.subckts[subckt_name]["params"]}
 
-        logging.info("flattening the circuits below: %s, %s, %s,%s",
-                     subckt_name, subckt_inst, connected_nets, inherited_param)
+        logger.debug(f"flattening the circuits below: {subckt_name}, {subckt_inst}, {connected_nets}, {inherited_param}")
         ### node is not local copy and modifying it modifies dictionary
         for node in self.subckts[subckt_name]["nodes"]:
-            logging.info("checking nets of node: %s ports:%s", node["inst"],
-                         ' '.join(node["ports"]))
+            logger.debug(f"checking nets of node: {node['inst']} ports:{' '.join(node['ports'])}")
             modified_ports = []
             for net_name in node["ports"]:
                 if net_name not in self.subckts[subckt_name]["ports"]:
                     net_name = subckt_inst + net_name
-                    logging.info("Net internal to subckt %s: %s", subckt_name,
-                                 net_name)
+                    logger.debug(f"Net internal to subckt {subckt_name}: {net_name}")
                 elif connected_nets:
                     net_name = connected_nets[self.subckts[subckt_name]
                                               ["ports"].index(net_name)]
-                    logging.info("Net is part of higher level subckt: %s",
-                                 net_name)
+                    logger.debug(f"Net is part of higher level subckt: {net_name}")
                 else:
-                    logging.info(
-                        "net lies in top level net in: %s net_name: %s",
-                        node["inst"], net_name)
+                    logger.debug(
+                        f'net lies in top level net in: {node["inst"]} net_name: {net_name}')
                 modified_ports.append(net_name)
             values = node["values"].copy()
             if inherited_param:
@@ -384,13 +366,11 @@ class SpiceParser:
 
 
             if node["inst_type"] in self.subckts:
-
                 flatdesign.extend(
                     self._flatten_circuit(node["inst_type"],
                                           subckt_inst + node["inst"] + '|',
                                           list(modified_ports), values))
             else:
-                #print("FLAT NODE:", subckt_inst + node["inst"],modified_ports)
                 flat_node = {
                     "inst": subckt_inst + node["inst"],
                     "inst_type": node["inst_type"],
@@ -399,20 +379,17 @@ class SpiceParser:
                     "values": values,
                     "edge_weight": node["edge_weight"]
                 }
-
                 flatdesign.append(flat_node)
-                logging.debug("Updated Node name: %s, type: %s",
-                              flat_node["inst"], flat_node["inst_type"])
+                logger.debug(f'Updated Node name: {flat_node["inst"]}, type: {flat_node["inst_type"]}')
 
-        logging.info("Total no of nodes in design %s = %i", subckt_name,
-                     len(flatdesign))
+        logger.debug(f"Total no of nodes in design {subckt_name} = {len(flatdesign)}")
         return flatdesign
 
     def _hier_circuit(self,
                       subckt_name,
                       connected_nets="",
                       inherited_param=None):
-        logging.info ("subcktparameters:%s", inherited_param)
+        logger.debug (f"subcktparameters: {inherited_param}")
         hier_design = []
         ## FIX for UT Austin circuit
         if not inherited_param:
@@ -421,15 +398,15 @@ class SpiceParser:
             inherited_param = {**self.params, **inherited_param}
             inherited_param = { **self.subckts[subckt_name]["params"],**inherited_param}
 
-        logging.info("making hierarchical circuits: %s params: %s", subckt_name,inherited_param)
+        logger.debug(f"making hierarchical circuits: {subckt_name} params: {inherited_param}")
         for node in self.subckts[subckt_name]["nodes"]:
-            logging.info("node info: %s",node)
+            logger.debug(f"node info: {node}")
             values = node["values"].copy()
             if inherited_param:
                 self._resolve_param(inherited_param, node, values)
-                logging.info("updated circuit params are: %s ", inherited_param)
+                logger.debug(f"updated circuit params are: {inherited_param}")
             if node["inst_type"] in self.subckts:
-                logging.info("FOUND hier_node: %s", node["inst_type"])
+                logger.debug(f'FOUND hier_node: {node["inst_type"]}')
                 hier_node = {
                     "inst": node["inst"],
                     "inst_type": node["inst_type"],
@@ -446,7 +423,7 @@ class SpiceParser:
         return hier_design
 
     def _create_bipartite_circuit_graph(self, all_nodes, inout_ports):
-        logging.info("Creating bipartitie graph, devices:%i", len(all_nodes))
+        logger.debug(f"Creating bipartitie graph, devices:{len(all_nodes)}")
         circuit_graph = nx.Graph()
         for node in all_nodes:
             if "hier_nodes" in node.keys():
@@ -457,11 +434,11 @@ class SpiceParser:
                 connection = {}
                 for idx, pin in enumerate(self.subckts[node["inst_type"]]["ports"]):
                         connection[pin] = node['ports'][idx]
-                logging.info("Creating sub-graph for node:%s", node)
+                logger.debug(f"Creating sub-graph for node: {node}")
             else:
                 subgraph = None
                 connection=None
-            logging.info("Reading node: %s", node)
+            logger.debug(f"Reading node: {node}")
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
                                    real_inst_type=node["real_inst_type"],
@@ -476,14 +453,12 @@ class SpiceParser:
                 #if net not in ["0", "vdd!", "gnd!"]:
                 if "edge_weight" in node.keys():
                     edge_wt = node["edge_weight"][wt_index]
-                    logging.info("Using existing weights %s for net:%s",
-                                 edge_wt, net)
+                    logger.debug(f"Using existing weights {edge_wt} for net: {net}")
                 else:
                     edge_wt = 2 ^ wt_index
-                    logging.error("no existing weights using dummy weights:%s",
-                                  edge_wt)
+                    logger.error(f"no existing weights using dummy weights: {edge_wt}")
                 if net not in circuit_graph:
-                    logging.info("Adding net node:%s", net)
+                    logger.debug(f"Adding net node: {net}")
                     if net in inout_ports:
                         circuit_graph.add_node(net,
                                                inst_type="net",
@@ -496,18 +471,14 @@ class SpiceParser:
                     node_name = node["inst"]
                     edge_wt = edge_wt + circuit_graph.get_edge_data(
                         node_name, net)['weight']
-                    logging.info(
-                        "Multiple connection b/w net and node:%s, %s. new weight: %s",
-                        net, node_name, edge_wt)
+                    logger.debug(
+                        f"Multiple connection b/w net and node: {net}, {node_name}. new weight: {edge_wt}")
                 else:
-                    logging.info("New connection found b/w nod %s, and net %s",
-                                 node["inst"], net)
+                    logger.debug(f"New connection found b/w nod {node['inst']}, and net {net}")
                 circuit_graph.add_edge(node["inst"], net, weight=edge_wt)
-                logging.info("added edge with weight:%s", edge_wt)
+                logger.debug(f"added edge with weight: {edge_wt}")
 
-        logging.info(
-            "Created bipartitie graph with Total no of Nodes: %i edges: %i",
-            len(circuit_graph), circuit_graph.number_of_edges())
-        #print(circuit_graph.nodes['xM03|MN0']["ports"])
+        logger.debug(
+            f"Created bipartitie graph with Total no of Nodes: {len(circuit_graph)} edges: {circuit_graph.number_of_edges()}")
 
         return circuit_graph

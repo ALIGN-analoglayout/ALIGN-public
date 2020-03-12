@@ -2,10 +2,11 @@
 
 import json
 import argparse
-import logging
 #import cProfile
 
 from align.pnr import hierNode, gen_viewer_json
+
+import logging
 
 def main():
     parser = argparse.ArgumentParser( description="Visualize PnR database")
@@ -23,10 +24,9 @@ def main():
     parser.add_argument( "-l", "--log", dest="logLevel", choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'], default='INFO', help="Set the logging level (default: %(default)s)")
     parser.add_argument( "--global_route_json", type=str, default=None)
     parser.add_argument( "--json_dir", type=str, default=None)
- 
-    args = parser.parse_args()
 
-    logging.basicConfig(level=logging.getLevelName(args.logLevel))
+    args = parser.parse_args()
+    logging.getLogger().setLevel(logging.getLevelName(args.logLevel))
 
     fn = args.input_dir + "/" + args.block + "_" + args.variant + ".db.json"
 
@@ -50,7 +50,6 @@ def main():
             with open( args.output_dir + "/" + args.block + "_" + args.variant + "_dr_globalrouting.json", "wt") as fp:
                 json.dump( d, fp=fp, indent=2)
         if args.extract:
-            print(args.output_dir + "/" + args.block + ".cir")
             with open(args.output_dir + "/" + args.block + ".cir", 'wt') as fp:
                 cnv.pex.writePex(fp)
 

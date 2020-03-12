@@ -347,20 +347,12 @@ class ADNetlist:
 
     for (r,l) in self.kors:
       assert l in ["metal1","metal2","metal3","via1","via2"], l
-      if l == "via2": continue
       netl.newWire( '!kor', r, l)
       
-    for p in self.ports:
-      print( "Port", p)
-      r = p['rect']
-      ly = p['layer']
-      if ly in ["metal1","metal3","metal5"]:
-        netl.newWire( p['net_name'], Rect( r[0]*720-200, r[1]*720-360, r[2]*720+200, r[3]*720+360), ly)
-      if ly in ["metal2","metal4","metal6"]:
-        netl.newWire( p['net_name'], Rect( r[0]*720-360, r[1]*720-200, r[2]*720+360, r[3]*720+200), ly)
+# ports no longer used
+    assert self.ports == []
 
     for p in self.preroutes:
-      print( "Preroute", p)
       netl.newWire( p['net_name'], Rect( *p['rect']), p['layer'])
 
 class Rect:
@@ -454,54 +446,6 @@ class Netlist:
     self.instances = OrderedDict()
     self.wire_cache = {}
 
-
-  def semantic( self):
-    def is_horiz( ly):
-      return ly in ["metal2","metal4","metal6"]
-    def is_vert( ly):
-      return ly in ["metal1","metal2","metal3"]
-
-    for (k,net) in self.nets.items():
-      print("Net",k)
-      for gr in net.grs:
-        gr_r = [ v*10*840 + 5*840 for v in gr.rect.toList()]
-        print("GR", gr.layer, gr.rect, gr_r)
-        p_nticks = 2
-        q_nticks = 10
-
-        def pnt( theta, rlst, ly):
-          if is_horiz(ly):
-            y = (rlst[1]+rlst[3])//2
-            x = rlst[0]*(1.0-theta) + rlst[2]*theta
-            return (x,y)
-          elif is_vert(ly):
-            x = (rlst[0]+rlst[2])//2
-            y = rlst[1]*(1.0-theta) + rlst[3]*theta
-            return (x,y)
-          else:
-            assert False, ly
-
-        def dist( w, p, q):
-          gx,gy = pnt( p, gr_r, gr.layer)
-          x,y = pnt( q, w.rect.toList(), w.layer)
-
-          return math.sqrt((x-gx)**2 + (y-gy)**2)
-
-        for p in range(p_nticks):
-          argmin = None
-        
-          for (_,lst) in net.ces.items():
-            for w in lst:
-              for q in range(q_nticks):
-                cand = dist( w, p/(p_nticks-1), q/(q_nticks-1))
-                #pylint: disable=used-before-assignment
-                if argmin is None or cand < best:
-                  argmin,best = w,cand
-              
-          if best < 840*10:
-            print( "    " + json.dumps( {"layer": "M2", "rect": [v//5 for v in argmin.rect.toList()]}))
-
-
   def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
 # mimic what flatmap would do
@@ -549,20 +493,6 @@ class Netlist:
 
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
-      ys = set()
-      ys2 = set()
-
-      for term in data['terminals']:
-        if isinstance( term, Wire):
-          if term.layer == 'M2':
-            r = term.rect
-            yc = (r.lly+r.ury)//2
-            ys.add(yc)
-            ys2.add(yc%840)
-
-      print(sorted(list(ys)))
-      print(sorted(list(ys2)))
-
   def newWire( self, netName, r, l, *, ceName=None):
     """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire
 """
@@ -607,7 +537,14 @@ class Netlist:
 
     return gr
 
-  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates):
+  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates, *, nets_to_route=None, nets_not_to_route=None):
+    if nets_to_route is not None:
+      routes_str = f"Option name=nets_to_route value={','.join(nets_to_route)}"
+    else:
+      if nets_not_to_route is None:
+        nets_not_to_route = []
+      routes_str = f"Option name=nets_not_to_route value={','.join(nets_not_to_route + ['!kor'])}"
+
     with open( fn, "w") as fp:
       fp.write( f"""# circuit-independent technology collateral
 Option name=layer_file          value=DR_COLLATERAL/layers.txt
@@ -630,17 +567,7 @@ Option name=solver_type value=glucose
 Option name=allow_opens value=1
 
 # custom routing options
-#Option name=nets_to_route value=voutp,vbiasp,vbiasnd,vbiasn,net16,net27
-#Option name=nets_to_route value=vin_o,vip_o
-#Option name=nets_to_route value=clk
-#Option name=nets_to_route value=von,vop
-#Option name=nets_to_route value=vssx
-#Option name=nets_to_route value=vcc_0p9
-
-Option name=nets_not_to_route value=!kor,vssx,vcc_0p9
-#Option name=nets_not_to_route value=!kor
-
-#Option name=nets_not_to_route value=!kor,id,net16,net24,net27,net8b,net9b,vbiasn,vbiasnd,vbiasp,vdd,vss,vinn,vinp,voutp
+{routes_str}
 
 #Option name=opt_maximize_ties_between_trunks_and_terminals value=0
 #Option name=opt_minimize_preroute_extensions value=0
@@ -654,7 +581,7 @@ Option name=create_fake_metal_template_instances value={1 if show_metal_template
 Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal3
+Option name=upper_layer                          value=metal5
 """)
 
 
@@ -663,21 +590,9 @@ Option name=upper_layer                          value=metal3
       fp.write( "Cell name=%s bbox=%s\n" % (self.nm, self.bbox))
       for (_,v) in self.nets.items():
         for w in v.wires:
-          #SMB Hack because of via2 sizing error
-          if w.layer == "via2": continue
           fp.write( str(w) + "\n")
 
-      #SMB Generalize this
-      #metal1 obstruction
-      if False:
-       for x in range(1, (self.bbox.urx-160-1)//800):
-        xc = x*800
-        y0 = self.bbox.lly+420
-        y1 = self.bbox.ury-420
-        fp.write( f"Wire net=!kor layer=metal1 rect={xc-160}:{y0}:{xc+160}:{y1}\n")
-        
-
-  def write_global_routing_file( self, fn):
+  def write_global_routing_file( self, tech, fn):
     global_gr_id = 0
 
     with open( fn, "w") as fp:
@@ -748,8 +663,11 @@ Option name=upper_layer                          value=metal3
 
             fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
         else:
-          # connect everything
+          # connect everything (no via preroutes)
+          skip_via_set = set(["via1","via2","via3","via4"])
           for w in v.wires:
+            ly = w.layer
+            if ly in skip_via_set: continue
             fp.write( "ConnectedEntity terms=%s\n" % w.gid)
 
         grs = []
@@ -779,22 +697,53 @@ Option name=upper_layer                          value=metal3
                 if cand in self.wire_cache:
                   wire = self.wire_cache[cand]
                   fp.write( "Tie term0=%d gr0=%d\n" % (wire.gid, gr.gid))
-        else:
+        elif True:
+          dx = tech.pitchPoly*tech.halfXGRGrid*2
+          dy = tech.pitchDG  *tech.halfYGRGrid*2
+          def touching( r0, r1):
+# (not touching) r0.lly > r1.ury or r1.lly > r0.ury
+            check1 = r0.lly <= r1.ury and r1.lly <= r0.ury
+            check2 = r0.llx <= r1.urx and r1.llx <= r0.urx
+            return check1 and check2
+
           for gr in v.grs:
-            if gr.layer != "metal3": continue
-            x = (gr.rect.llx + gr.rect.urx)*840*10//2
-            print( "SMB", x, gr.rect, w.rect)
-            for w in v.wires:
-              if w.rect.llx <= x <= w.rect.urx:
-                fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+            x0 = gr.rect.llx*dx - dx//2
+            x1 = gr.rect.urx*dx + dx//2
+            y0 = gr.rect.lly*dy - dy//2
+            y1 = gr.rect.ury*dy + dy//2
+            gr_r = Rect( x0, y0, x1, y1)
+            print( "Metal GR:", gr_r, gr.rect)
+
+            tuples = [("metal3", ["metal1","metal2"]),
+                      ("metal4", ["metal2","metal3"])]
+
+            for gr_layer, w_layers in tuples:
+              if gr.layer == gr_layer:
+                for w in v.wires:
+                  if w.layer in w_layers:
+                    if touching( gr_r, w.rect):
+                      fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
 
         fp.write( "#end of net %s\n" % k)
 
 
   def write_files( self, tech, dirname, args):
-    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates)
+
+    if args.nets_to_route == '':
+      nets_to_route = None
+    else:
+      nets_to_route = args.nets_to_route.split(',')
+
+    if args.nets_not_to_route == '':
+      nets_not_to_route = None
+    else:
+      nets_not_to_route = args.nets_not_to_route.split(',')
+
+    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates, nets_to_route=nets_to_route, nets_not_to_route=nets_not_to_route)
+
+
     self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
-    self.write_global_routing_file( dirname + "/" + self.nm + "_dr_globalrouting.txt")
+    self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
 
@@ -1023,176 +972,7 @@ def removeDuplicates( data):
 
     return terminals
 
-
-def consume_results(args,tech):
-    with open( 'out/' + args.block_name + '.lgf', 'rt') as fp:  
-      netl = parse_lgf( fp)
-
-    placer_results = None  
-    if args.placer_json != "":
-      with open( args.placer_json, 'rt') as fp:  
-        placer_results = json.load( fp)
-
-        
-    terminals = []
-    if placer_results is not None:
-      if args.no_interface:
-        globalScale = transformation.Transformation( 0, 0, 1, 1)
-      else:        
-        globalScale = transformation.Transformation( 0, 0, tech.halfXADTGrid*tech.pitchPoly, tech.halfYADTGrid*tech.pitchDG)
-
-      leaves_map = { leaf['template_name'] : leaf for leaf in placer_results['leaves']}
-
-      for inst in placer_results['instances']:
-        leaf = leaves_map[inst['template_name']]
-        tr = inst['transformation']
-        trans = transformation.Transformation( tr['oX'], tr['oY'], tr['sX'], tr['sY'])
-        r = globalScale.hitRect( trans.hitRect( Rect( *leaf['bbox'])).canonical())
-
-        nm = placer_results['nm'] + '/' + inst['instance_name'] + ':' + inst['template_name']
-        terminals.append( { "netName" : nm, "layer" : "cellarea", "rect" : r.toList()})
-      
-    netl.write_input_file( netl.nm + "_xxx.txt")
-
-    netl.dumpGR( tech, "INPUT/" + args.block_name + "_dr_globalrouting.json", cell_instances=terminals, no_grid=args.small)
-
-    if args.no_interface:
-      return
-
-    leaf = {}
-
-    design_name = netl.nm
-    if args.source != "":
-      design_name = args.source
-
-    leaf['template_name'] = design_name
-
-#
-# A lot to do here. This should be moved to the technology file
-#
-#
-# First assume there is only one metal template per layer
-# And only one wire width and space
-#
-    layer2MetalTemplate = {}
-    for obj in tech.metalTemplates:
-      assert obj.layer not in layer2MetalTemplate
-      layer2MetalTemplate[obj.layer] = obj
-
-    def pgd_pitch(mt):
-      assert len(mt.widths) == 2 and len(mt.spaces) == 1
-      assert mt.widths[0] == mt.widths[1]
-      return mt.widths[0] + mt.spaces[0]
-
-    def pgd_width(mt):
-      assert len(mt.widths) == 2 and len(mt.spaces) == 1
-      assert mt.widths[0] == mt.widths[1]
-      return mt.widths[0]
-
-    def ogd_pitch(mt):
-      assert len(mt.stops) == 1
-      return mt.stops[0]
-
-    def ogd_offset(mt):
-      assert len(mt.stops) == 1
-      return mt.stop_offset
-
-
-#
-# Use metal1 and metal2 for bbox grid
-#
-    shrinkX = pgd_pitch(layer2MetalTemplate['metal1'])
-    shrinkY = pgd_pitch(layer2MetalTemplate['metal2'])
-    
-    bbox = netl.bbox
-    assert bbox.llx == 0
-    assert bbox.lly == 0
-    assert bbox.urx % shrinkX == 0
-    assert bbox.ury % shrinkY == 0
-
-    leaf['bbox'] = [ bbox.llx // shrinkX, bbox.lly // shrinkY, bbox.urx // shrinkX, bbox.ury // shrinkY]
-
-    leaf['terminals'] = []
-    leaf['layout'] = []
-
-    p = re.compile('^MTI_.*|^.*_gr$')
-
-#
-# Need to do this first since via enclosure don't necessary land on the stopping point grid
-#
-    layout = []
-    for (_,wire) in netl.wire_cache.items():
-      if p.match(wire.netName): continue
-      layout.append( {
-        "net_name": wire.netName,
-        "layer": wire.layer,
-        "rect": wire.rect.toList()
-      })
-    layout = removeDuplicates(layout)
-
-    for obj in layout:
-      netName = obj['net_name']
-      rect = Rect( *obj['rect'])
-      layer = obj['layer']
-
-      if p.match(netName): continue
-
-      if layer in ["metal3","metal5","metal7"]:
-        mt = layer2MetalTemplate[layer]
-        halfWidth = pgd_width(mt) // 2
-        pgdPitch = pgd_pitch(mt)
-        ogdPitch = ogd_pitch(mt)
-        ogdOffset = ogd_offset(mt)
-
-        assert (rect.llx+halfWidth) % pgdPitch == 0
-        assert rect.lly % ogdPitch == ogdOffset, (rect.lly, rect.lly % ogdPitch)
-        assert (rect.urx-halfWidth) % pgdPitch == 0
-        assert rect.ury % ogdPitch == ogdOffset, (rect.ury, rect.ury % ogdPitch)
-
-        cx = (rect.urx + rect.llx) // (2*pgdPitch)
-        # shrink to abstract grid
-        y0 = (rect.lly + ogdOffset) // ogdPitch
-        y1 = (rect.ury - ogdOffset) // ogdPitch
-
-        leaf['terminals'].append({
-          "net_name": netName,
-          "layer": layer,
-          "rect": [ cx, y0, cx, y1]
-        })
-
-      if layer in ["metal2","metal4","metal6"]:
-        mt = layer2MetalTemplate[layer]
-        halfWidth = pgd_width(mt) // 2
-        pgdPitch = pgd_pitch(mt)
-        ogdPitch = ogd_pitch(mt)
-        ogdOffset = ogd_offset(mt)
-
-        assert (rect.lly+halfWidth) % pgdPitch == 0
-        assert rect.llx % ogdPitch == ogdOffset, (rect.llx, rect.llx % ogdPitch)
-        assert (rect.ury-halfWidth) % pgdPitch == 0
-        assert rect.urx % ogdPitch == ogdOffset, (rect.urx, rect.urx % ogdPitch)
-
-        cy = (rect.ury + rect.lly) // (2*pgdPitch)
-        # shrink to abstract grid
-        x0 = (rect.llx + ogdOffset) // ogdPitch
-        x1 = (rect.urx - ogdOffset) // ogdPitch
-
-        leaf['terminals'].append({
-          "net_name": netName,
-          "layer": layer,
-          "rect": [ x0, cy, x1, cy]
-        })
-
-    leaf['terminals'] = removeDuplicates(leaf['terminals'])
-    leaf['layout'] = layout
-
-    interface_fn = "INPUT/interface.json"
-    if args.source != '':
-      interface_fn = "INPUT/" + args.source + "_interface.json"
-
-    with open( interface_fn, "wt") as fp:
-      fp.write( json.dumps( { "leaves": [ leaf ]}, indent=2) + "\n")
-
+from .consume_results import consume_results
 
 def parse_args( command_line_args=None):
   parser = argparse.ArgumentParser( description="Generates input files for amsr (Analog router)")
@@ -1208,6 +988,8 @@ def parse_args( command_line_args=None):
   parser.add_argument( "-tf", "--technology_file", type=str, default="DR_COLLATERAL/Process.json")
   parser.add_argument( "-s", "--source", type=str, default='')
   parser.add_argument( "--small", action='store_true')
+  parser.add_argument( "--nets_to_route", type=str, default='')
+  parser.add_argument( "--nets_not_to_route", type=str, default='')
 
   args = parser.parse_args( args=command_line_args)
 

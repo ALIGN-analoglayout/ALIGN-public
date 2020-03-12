@@ -288,10 +288,7 @@ void ReadVerilogHelper::parse_module( Lexer &l, bool celldefine_mode)
 	  string direction_tag = l.last_token.value;
 	  if ( !l.have( TokenType::SEMICOLON)) {
 	      do {
-		  if ( l.have( TokenType::NUMBER)) {
-		  } else {
-		      l.mustbe( TokenType::NAME);
-		  }
+  		  l.mustbe( TokenType::NAME);
 		  string temp_name = l.last_token.value;
 		  PnRDB::blockComplex temp_blockComplex;
 		  temp_blockComplex.instance.resize(1);

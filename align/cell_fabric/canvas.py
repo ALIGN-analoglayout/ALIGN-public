@@ -121,7 +121,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -157,7 +157,7 @@ class Canvas:
                     if started:
                         # close off wire
 #                        assert nm is not None
-                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)]) 
+                        self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)])
                         started = False
                         nm = None
                         via1s = []
@@ -216,7 +216,9 @@ class Canvas:
         return self.rd.remove_duplicates()
 
     def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True):
+
         self.computeBbox()
+        self.postprocessor.run(self.terminals)
 
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
@@ -225,9 +227,6 @@ class Canvas:
 
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
-
-        data['terminals'] = self.postprocessor.run(data['terminals'])
-
 
         if self.pdk is not None:
             if draw_grid:
@@ -262,7 +261,7 @@ class Canvas:
                 r = [ x-1, 0, x+1, height]
                 data['terminals'].append( { "netName": ly + '_grid', "layer": ly, "rect": r})
 
-            
+
         ly = "M2"
         if ly in self.pdk:
             pitch = self.pdk[ly]["Pitch"]
@@ -311,4 +310,3 @@ class Canvas:
 
     def generate_routing_collateral(self, dirname):
         return routing_collateral.gen( self, dirname)
-

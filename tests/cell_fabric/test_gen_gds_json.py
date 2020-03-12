@@ -20,8 +20,8 @@ def test_one():
 
     with open( mydir / (json_file_name + "_cand"), "rt") as fp0, \
          open( mydir / (json_file_name + "_gds_cand"), 'wt') as fp1:
-        gen_gds_json.translate(  block_name, '', pdkfile, 0, fp0, fp1, via_gen_tbl,
-                                            datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate(  block_name, '', 0, fp0, fp1,
+                                            datetime.datetime( 2019, 1, 1, 0, 0, 0), p)
 
     with open( mydir / (json_file_name + "_gds_cand"), "rt") as fp0, \
          open( mydir / (json_file_name + "_gds_gold"), "rt") as fp1:
@@ -36,8 +36,8 @@ def test_gds():
 
     with open( mydir / (json_file_name + "_cand"), "rt") as fp0, \
          open( mydir / (json_file_name + "_gds_cand"), 'wt') as fp1:
-        gen_gds_json.translate(  block_name, '', pdkfile, 0, fp0, fp1, via_gen_tbl,
-                                            datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate(  block_name, '', 0, fp0, fp1,
+                                            datetime.datetime( 2019, 1, 1, 0, 0, 0), p)
 
     with open( mydir / (json_file_name + "_gds_cand"), "rt") as fp0, \
          open( mydir / "test_gds.gds", 'wb') as fp1:
@@ -52,8 +52,8 @@ def test_gds_stringio():
 
     with open( mydir / (json_file_name + "_cand"), "rt") as fp0, \
          io.StringIO() as fp1:
-        gen_gds_json.translate( block_name, '', pdkfile, 0, fp0, fp1, via_gen_tbl,
-                                            datetime.datetime( 2019, 1, 1, 0, 0, 0))
+        gen_gds_json.translate(  block_name, '', 0, fp0, fp1,
+                                            datetime.datetime( 2019, 1, 1, 0, 0, 0), p)
         contents = fp1.getvalue()
 
     with io.StringIO( contents) as fp0, \
