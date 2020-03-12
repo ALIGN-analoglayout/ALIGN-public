@@ -254,8 +254,8 @@ void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox>& bboxs, PnRDB::point t
 
 void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   int WW = width, HH = height;
-  PnRDB::point tempLL = box.LL, tempUR = box.UR;
   if (transform_type == PnRDB::TransformType::Forward) {
+    PnRDB::point tempLL = box.LL, tempUR = box.UR;
     switch (ort) {
       case PnRDB::N:  // keep same
         box.LL = tempLL;
@@ -309,6 +309,7 @@ void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int wi
   }else if(transform_type==PnRDB::TransformType::Backward){
     box.LL = box.LL - translate;
     box.UR = box.UR - translate;
+    PnRDB::point tempLL = box.LL, tempUR = box.UR;
     switch (ort) {
       case PnRDB::N:  // keep same
         box.LL = tempLL;
@@ -367,8 +368,9 @@ void PnRdatabase::TransformPoints(std::vector<PnRDB::point>& points, PnRDB::poin
 }
 
 void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
-  int WW = width, HH = height, X = p.x, Y = p.y;
+  int WW = width, HH = height;
   if (transform_type == PnRDB::TransformType::Forward) {
+    int X = p.x, Y = p.y;
     switch (ort) {
       case PnRDB::N:
         p.x = X;
@@ -410,6 +412,7 @@ void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int wi
     p = p + translate;
   } else if (transform_type == PnRDB::TransformType::Backward) {
     p = p - translate;
+    int X = p.x, Y = p.y;
     switch (ort) {
       case PnRDB::N:
         p.x = X;

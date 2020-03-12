@@ -201,6 +201,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
   // undo transform current_node.LL and current_node_ort
+  DB.TransformNode(current_node, current_node.LL, current_node_ort, PnRDB::TransformType::Backward);
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
