@@ -550,7 +550,7 @@ PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Om
   return TransformTable[current_node_ort][childnode_ort];
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode parent, int blockID, const PnRDB::hierNode& child) {
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
   parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = child.interMetals;

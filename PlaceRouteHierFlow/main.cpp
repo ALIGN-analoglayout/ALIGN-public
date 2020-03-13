@@ -382,11 +382,15 @@ int main(int argc, char** argv ){
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
 
+  if(disable_io)std::cout.setstate(std::ios_base::failbit);
   int new_topnode_idx = 0;
   for (unsigned int lidx = 0; lidx < DB.hierTree[Q.back()].numPlacement; lidx++) {
-    route_top_down(DB, drcInfo, PnRDB::bbox(DB.hierTree[Q.back()].LL, DB.hierTree[Q.back()].UR), PnRDB::N, Q.back(), new_topnode_idx, lidx,
-                   opath, binary_directory, skip_saving_state, adr_mode);
+    route_top_down(
+        DB, drcInfo,
+        PnRDB::bbox(PnRDB::point(0, 0), PnRDB::point(DB.hierTree[Q.back()].PnRAS[0].width, DB.hierTree[Q.back()].PnRAS[0].height)),
+        PnRDB::N, Q.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
+  if(disable_io)std::cout.clear();
 
   /**
   for (int i = 0; i < Q_size; i++)
