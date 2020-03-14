@@ -537,13 +537,16 @@ class Netlist:
 
     return gr
 
-  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates, *, nets_to_route=None, nets_not_to_route=None):
+  def write_ctrl_file( self, fn, route, show_global_routes, show_metal_templates, *, nets_to_route=None, nets_not_to_route=None, topmetal=''):
     if nets_to_route is not None:
       routes_str = f"Option name=nets_to_route value={','.join(nets_to_route)}"
     else:
       if nets_not_to_route is None:
         nets_not_to_route = []
       routes_str = f"Option name=nets_not_to_route value={','.join(nets_not_to_route + ['!kor'])}"
+
+    if topmetal == '':
+      topmetal = 'metal6'
 
     with open( fn, "w") as fp:
       fp.write( f"""# circuit-independent technology collateral
@@ -581,7 +584,7 @@ Option name=create_fake_metal_template_instances value={1 if show_metal_template
 Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
-Option name=upper_layer                          value=metal6
+Option name=upper_layer                          value={topmetal}
 """)
 
 
@@ -739,7 +742,7 @@ Option name=upper_layer                          value=metal6
     else:
       nets_not_to_route = args.nets_not_to_route.split(',')
 
-    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates, nets_to_route=nets_to_route, nets_not_to_route=nets_not_to_route)
+    self.write_ctrl_file( dirname + "/ctrl.txt", args.route, args.show_global_routes, args.show_metal_templates, nets_to_route=nets_to_route, nets_not_to_route=nets_not_to_route, topmetal=args.topmetal)
 
 
     self.write_input_file( dirname + "/" + self.nm + "_dr_netlist.txt")
@@ -990,6 +993,7 @@ def parse_args( command_line_args=None):
   parser.add_argument( "--small", action='store_true')
   parser.add_argument( "--nets_to_route", type=str, default='')
   parser.add_argument( "--nets_not_to_route", type=str, default='')
+  parser.add_argument( "-tm", "--topmetal", type=str, default='')
 
   args = parser.parse_args( args=command_line_args)
 
