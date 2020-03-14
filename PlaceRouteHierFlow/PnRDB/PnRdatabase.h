@@ -139,6 +139,9 @@ class PnRdatabase
     void TransformNet(PnRDB::net &net, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TransformNets(std::vector<PnRDB::net> &nets, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType tranform_type);
     void TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate);
+    void TransformBlockPinsOriginToPlaced(std::vector<PnRDB::pin> &blockPins, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformIntermetalsOriginToPlaced(std::vector<PnRDB::contact> &interMetals, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
+    void TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& interVias, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
     PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
 
     void ReadVerilog(istream &inps, const string &fpath, const string &topcell);

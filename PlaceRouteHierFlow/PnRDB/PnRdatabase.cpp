@@ -550,23 +550,107 @@ PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Om
   return TransformTable[current_node_ort][childnode_ort];
 }
 
-void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
-  // update child into parent.blocks[blockID]
-  // update (child.intermetal,intervia,blockpins) into blocks[blockid]
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = child.interMetals;
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = child.interVias;
-  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
-    for (unsigned int q = 0; q < child.blockPins.size(); q++) {
-      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == child.blockPins[q].name) {
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = child.blockPins[q].pinContacts;
-        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = child.blockPins[q].pinVias;
-        break;
-      }
+void PnRdatabase::TransformBlockPinsOriginToPlaced(std::vector<PnRDB::pin>& blockPins, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    blockPins: blockpins to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformPins(blockPins, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::pin> blockPins_copy = blockPins;
+  TransformPins(blockPins, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int pit = 0; pit < blockPins.size(); pit++) {
+    for (unsigned int cit = 0; cit < blockPins[pit].pinContacts.size(); cit++) {
+      blockPins[pit].pinContacts[cit].placedBox = blockPins_copy[pit].pinContacts[cit].originBox;
+      blockPins[pit].pinContacts[cit].placedCenter = blockPins_copy[pit].pinContacts[cit].originCenter;
+    }
+    for (unsigned int vit = 0; vit < blockPins[pit].pinVias.size(); vit++){
+      blockPins[pit].pinVias[vit].placedpos = blockPins_copy[pit].pinVias[vit].originpos;
+      blockPins[pit].pinVias[vit].UpperMetalRect.placedBox = blockPins_copy[pit].pinVias[vit].UpperMetalRect.originBox;
+      blockPins[pit].pinVias[vit].UpperMetalRect.placedCenter = blockPins_copy[pit].pinVias[vit].UpperMetalRect.originCenter;
+      blockPins[pit].pinVias[vit].LowerMetalRect.placedBox = blockPins_copy[pit].pinVias[vit].LowerMetalRect.originBox;
+      blockPins[pit].pinVias[vit].LowerMetalRect.placedCenter = blockPins_copy[pit].pinVias[vit].LowerMetalRect.originCenter;
+      blockPins[pit].pinVias[vit].ViaRect.placedBox = blockPins_copy[pit].pinVias[vit].ViaRect.originBox;
+      blockPins[pit].pinVias[vit].ViaRect.placedCenter = blockPins_copy[pit].pinVias[vit].ViaRect.originCenter;
     }
   }
 }
 
+void PnRdatabase::TransformIntermetalsOriginToPlaced(std::vector<PnRDB::contact>& interMetals, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    interMetals: intermetals to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformContacts(interMetals, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::contact> interMetals_copy = interMetals;
+  TransformContacts(interMetals, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int mit = 0; mit < interMetals.size(); mit++) {
+    interMetals[mit].placedBox = interMetals_copy[mit].originBox;
+    interMetals[mit].placedCenter = interMetals_copy[mit].originCenter;
+  }
+}
 
+void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& interVias, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    interVias: intervias to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformVias(interVias, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::Via> interVias_copy = interVias;
+  TransformVias(interVias, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int vit = 0; vit < interVias.size(); vit++){
+      interVias[vit].placedpos = interVias_copy[vit].originpos;
+      interVias[vit].UpperMetalRect.placedBox = interVias_copy[vit].UpperMetalRect.originBox;
+      interVias[vit].UpperMetalRect.placedCenter = interVias_copy[vit].UpperMetalRect.originCenter;
+      interVias[vit].LowerMetalRect.placedBox = interVias_copy[vit].LowerMetalRect.originBox;
+      interVias[vit].LowerMetalRect.placedCenter = interVias_copy[vit].LowerMetalRect.originCenter;
+      interVias[vit].ViaRect.placedBox = interVias_copy[vit].ViaRect.originBox;
+      interVias[vit].ViaRect.placedCenter = interVias_copy[vit].ViaRect.originCenter;
+    }
+}
+
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
+  // update child into parent.blocks[blockID]
+  // update (child.intermetal,intervia,blockpins) into blocks[blockid]
+  PnRDB::Omark ort = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].orient;
+  int width = child.UR.x - child.LL.x;
+  int height = child.UR.y - child.LL.y;
+  PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
+
+  // transform child blockpins orginals into placed in parent coordinate
+  std::vector<PnRDB::pin> blockPins = child.blockPins;
+  TransformBlockPinsOriginToPlaced(blockPins, translate, width, height, ort);
+  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
+    for (unsigned int q = 0; q < child.blockPins.size(); q++) {
+      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == blockPins[q].name) {
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = blockPins[q].pinContacts;
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = blockPins[q].pinVias;
+        break;
+      }
+    }
+  }
+
+  //transform child intermetals originals into placed in parent coordinate
+  std::vector<PnRDB::contact> interMetals = child.interMetals;
+  TransformIntermetalsOriginToPlaced(interMetals, translate, width, height, ort);
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = interMetals;
+
+  //transform child intervias originals into placed in parent coordinate
+  std::vector<PnRDB::Via> interVias = child.interVias;
+  TransformInterviasOriginToPlaced(interVias, translate, width, height, ort);
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
+}
 
 // [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
