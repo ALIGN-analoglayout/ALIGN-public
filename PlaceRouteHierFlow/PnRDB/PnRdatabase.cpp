@@ -555,7 +555,15 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
   parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = child.interMetals;
   parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = child.interVias;
-  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins = child.blockPins;
+  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
+    for (unsigned int q = 0; q < child.blockPins.size(); q++) {
+      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == child.blockPins[q].name) {
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = child.blockPins[q].pinContacts;
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = child.blockPins[q].pinVias;
+        break;
+      }
+    }
+  }
 }
 
 
