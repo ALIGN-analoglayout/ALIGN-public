@@ -627,6 +627,7 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
   PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].gdsFile = child.gdsFile;
 
   // transform child blockpins orginals into placed in parent coordinate
   std::vector<PnRDB::pin> blockPins = child.blockPins;
