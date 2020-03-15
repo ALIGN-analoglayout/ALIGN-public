@@ -164,6 +164,7 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
     height = UR.x - LL.x;
   }
   TransformBlockComplexs(updatedNode.Blocks, translate, width, height, ort, transform_type);
+  TransformNets(updatedNode.Nets, translate, width, height, ort, transform_type);
   TransformTerminals(updatedNode.Terminals, translate, width, height, ort, transform_type);
   TransformPins(updatedNode.blockPins, translate, width, height, ort, transform_type);
   TransformContacts(updatedNode.interMetals, translate, width, height, ort, transform_type);

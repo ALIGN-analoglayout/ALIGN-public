@@ -64,7 +64,13 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
-    DB.WriteGcellGlobalRoute(current_node, current_node.name+"_GcellGlobalRoute_"+std::to_string(lidx)+".json", opath);
+    PnRDB::hierNode current_node_copy = current_node;
+    DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+    DB.WriteGcellGlobalRoute(
+        current_node_copy,
+        current_node_copy.name + "_GcellGlobalRoute_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".json",
+        opath);
+    //DB.WriteGcellGlobalRoute(current_node, current_node.name + "_GcellGlobalRoute_" + std::to_string(lidx) + ".json", opath);
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
@@ -86,8 +92,13 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
-  DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
-  //DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
+  PnRDB::hierNode current_node_copy = current_node;
+  DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+  DB.WriteJSON(current_node_copy, true, true, false, false,
+               current_node_copy.name + "_DR_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+  current_node.gdsFile = current_node_copy.gdsFile;
+  // DB.WriteJSON(current_node, true, true, false, false, current_node.name + "_DR_" + std::to_string(lidx), drcInfo, opath);
+  // DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
 
   //double worst=0;
   //double th = 0.1;
@@ -118,20 +129,35 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 
-    DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
-        
+    PnRDB::hierNode current_node_copy = current_node;
+    DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+    DB.WriteJSON(current_node_copy, true, true, false, true,
+                 current_node_copy.name + "_PG_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+    current_node.gdsFile = current_node_copy.gdsFile;
+    // DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
+
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
     curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
-    DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
-    DB.Write_Router_Report(current_node,opath);
-        
+    current_node_copy = current_node;
+    DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+    DB.WriteJSON(current_node_copy, true, false, true, true,
+                 current_node_copy.name + "_PR_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+    current_node.gdsFile = current_node_copy.gdsFile;
+    // DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
+    DB.Write_Router_Report(current_node, opath);
   }
 
-  DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
-  std::cout<<"Check point : before checkin\n";
+  // transform current_node into current_node coordinate
+  current_node_copy = current_node;
+  DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+  DB.WriteJSON(current_node_copy, true, true, true, true,
+               current_node_copy.name + "_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+  current_node.gdsFile = current_node_copy.gdsFile;
+  // DB.WriteJSON(current_node, true, true, true, true, current_node.name + "_" + std::to_string(lidx), drcInfo, opath);
+  std::cout << "Check point : before checkin\n";
   DB.PrintHierNode(current_node);
       
   save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state);
@@ -171,6 +197,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
   */
   // 1.copy current_node from hiertree[idx]
   PnRDB::hierNode current_node = DB.hierTree[idx];
+  DB.hierTree[idx].n_copy += 1;
   string current_node_name = current_node.name;
   current_node.LL = bounding_box.LL;
   current_node.UR = bounding_box.UR;

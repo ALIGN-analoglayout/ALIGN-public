@@ -334,6 +334,7 @@ struct hierNode {
   point LL;                 // hiernode absolute LL in topnode coordinate
   point UR;                 // hiernode absolute UR in topnode coordinate
   PnRDB::Omark abs_orient;  // hiernode absolute orient in topnode coordinate
+  int n_copy = 0;           // number of hiernodes of the same type used in the whole design 
   int numPlacement = 0;
   string name = "";
   string gdsFile="";
