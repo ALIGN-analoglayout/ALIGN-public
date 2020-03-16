@@ -9,6 +9,23 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 
 <img align = "center" width="90%" src="Flow.png">
 
+
+The top down route flow (recursive) is as below:  
+```key
+top_down_route(topnode)  
+    1.copy current_node from hiertree  
+    2.transform all points and rects of current_node into topnode coordinate (absolute coordinate)  
+    for childnode in current_node.blocks  
+        3.calculate childnode's orientation and bounding box (in topnode coordinate)  
+        4.top_down_route(childnode)  
+        5.update childnode into current_node.block(in topnode coordinate)  
+        6.link current_node to the childnode  
+    7.route current_node (in topnode coordinate) and write gds.json (in current_node coordinate)  
+    8.transform all points and rects of current_node into current_node coordinate  
+    9.add current_node to hiertree
+```
+
+
 ## Software description
 
 Inputs:
