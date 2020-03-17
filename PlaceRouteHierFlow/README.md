@@ -94,7 +94,7 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## To-do
 
-1) Top-down placement optimization.
+1) Top-down placement and router optimization.
 
 The top down route flow (recursive) is shown as below: 
 top_down_route(topnode)  
