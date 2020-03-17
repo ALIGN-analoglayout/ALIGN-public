@@ -9,23 +9,6 @@ The Hierarchical Placer and Router Flow automatically generates layouts for cons
 
 <img align = "center" width="90%" src="Flow.png">
 
-
-The top down route flow (recursive) is as below:  
-```key
-top_down_route(topnode)  
-    1.copy current_node from hiertree  
-    2.transform all points and rects of current_node into topnode coordinate (absolute coordinate)  
-    for childnode in current_node.blocks  
-        3.calculate childnode's orientation and bounding box (in topnode coordinate)  
-        4.top_down_route(childnode)  
-        5.update childnode into current_node.block(in topnode coordinate)  
-        6.link current_node to the childnode  
-    7.route current_node (in topnode coordinate) and write gds.json (in current_node coordinate)  
-    8.transform all points and rects of current_node into current_node coordinate  
-    9.add current_node to hiertree
-```
-
-
 ## Software description
 
 Inputs:
@@ -111,7 +94,21 @@ If the flow is run locally, the operations listed below are necessary:
 
 ## To-do
 
-1) Top-down placement optimization.
+1) Top-down placement and router optimization.
+
+The top down route flow (recursive) is shown as below: 
+top_down_route(topnode)  
+* copy current_node from hiertree  
+* transform all points and rects of current_node into topnode coordinate (absolute coordinate) for childnode in current_node.blocks  
+* calculate childnode's orientation and bounding box (in topnode coordinate)  
+* top_down_route(childnode)  
+* update childnode into current_node.block(in topnode coordinate)  
+* link current_node to the childnode  
+* route current_node (in topnode coordinate) and write gds.json (in current_node coordinate)  
+* transform all points and rects of current_node into current_node coordinate  
+* add current_node to hiertree
+
+
 2) Guard ring insertion.
 3) Data structure optimization.
 4) Detailed router code optimization.
