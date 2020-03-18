@@ -40,8 +40,8 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
 
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
-  std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
-  DB.Extract_RemovePowerPins(current_node);
+  //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+  //DB.Extract_RemovePowerPins(current_node);
 
   std::cout<<"Checkpoint : before route"<<std::endl;
   DB.PrintHierNode(current_node);
@@ -428,6 +428,8 @@ int main(int argc, char** argv ){
     }
     **/
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      DB.Extract_RemovePowerPins(nodeVec[lidx]);
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
