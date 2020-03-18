@@ -222,7 +222,7 @@ def generate_lef(name, values, available_block_lef,
             size = float('%g'%(round(values["cap"]*1E15,4)))
             num_of_unit = float(size)/unit_size_cap
         elif 'c' in values.keys():
-            size = float('%g'%(round(values["c"]*1E15,4)))()
+            size = float('%g'%(round(values["c"]*1E15,4)))
             num_of_unit = float(size)/unit_size_cap
         else:
             convert_to_unit(values)
