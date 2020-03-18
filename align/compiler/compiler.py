@@ -5,7 +5,7 @@ from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .cc_cap_constraint import WriteCap, check_common_centroid
+from .common_centroid_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, FindArray, CopyConstFile
 from .read_lef import read_lef
 
@@ -238,8 +238,7 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
             logger.debug(f"Copy const file for: {name}")
             const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")
-            #WriteCap(graph, result_dir, name, unit_size_cap,all_array)
-            #check_common_centroid(graph,const_file,inoutpin)
+
             ##Removinf constraints to fix cascoded cmc
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
