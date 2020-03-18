@@ -5,7 +5,7 @@ from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
-from .cc_cap_constraint import WriteCap,check_common_centroid
+from .cc_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, FindArray, CopyConstFile
 from .read_lef import read_lef
 
