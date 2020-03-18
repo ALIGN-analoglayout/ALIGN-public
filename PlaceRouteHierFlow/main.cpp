@@ -218,6 +218,11 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     new_currentnode_idx: index of current_node copy in hiertree, after routing
     lidx: number of layouts, now is one.
   */
+  //Q: current top down flow works when lidx = 1. Yaguang -- 3/17/2020
+  //Q: Conflict here when lidx != 1. childnode only stores last update in bottom-up (maybe 2), while the selected block might be 1. When doing top-down, mismatch happens. Yaguang -- 3/17/2020
+  //Q: solution should be refresh the content of childnode by childnode.PnRAS[current_node.Blocks.selectedInstance]. Yaguang -- 3/17/2020
+  //Q: power routing does not change, still do power routing when it comes to top level. Yaguang -- 3/17/2020
+  //Q: Power routing dose not work when lidx != 1. Need double check? Yaguang -- 3/17/2020
   // 1.copy current_node from hiertree[idx]
   PnRDB::hierNode current_node = DB.hierTree[idx];
   DB.hierTree[idx].n_copy += 1;
