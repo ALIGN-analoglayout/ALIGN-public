@@ -318,7 +318,7 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly  
-
+  # wont run as circle ci kills it
   build-nightly4:
     executor: docker-executor
     steps:
@@ -492,9 +492,6 @@ workflows:
       - build-nightly3:
           requires:
             - start
-      - build-nightly4:
-          requires:
-            - start
       - build-nightly5:
           requires:
             - start
@@ -512,7 +509,6 @@ workflows:
             - build-nightly
             - build-nightly2
             - build-nightly3
-            - build-nightly4
             - build-nightly5
             - build-nightly6
             - build-nightly7
