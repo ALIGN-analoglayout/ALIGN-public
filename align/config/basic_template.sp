@@ -16,15 +16,15 @@ M0 (DA DA S B) PMOS w=w l=90n
 M1 (DB DA S B) PMOS w=w l=90n
 .ends SCM_PMOS
 
-.subckt CMFB_NMOS DA DB GB S
-M0 (DA DA S B) NMOS w=w l=90n
-M1 (DB GB S B) NMOS w=w l=90n
-.ends CMFB_NMOS
-
-.subckt CMFB_PMOS DA DB GB S
-M0 (DA DA S B) PMOS w=w l=90n
-M1 (DB GB S B) PMOS w=w l=90n
-.ends CMFB_PMOS
+**.subckt CMFB_NMOS DA DB GB S
+**M0 (DA DA S B) NMOS w=w l=90n
+**M1 (DB GB S B) NMOS w=w l=90n
+**.ends CMFB_NMOS
+**
+**.subckt CMFB_PMOS DA DB GB S
+**M0 (DA DA S B) PMOS w=w l=90n
+**M1 (DB GB S B) PMOS w=w l=90n
+**.ends CMFB_PMOS
 
 .subckt CASCODED_CMC_PMOS DA GA DB S
 M0 DA GA SA B PMOS w=27e-9 l=20e-9 nfin=120

@@ -81,6 +81,7 @@ def read_inputs(name,hier_graph):
         "connection": None
     }
     traverse_hier_in_graph(hier_graph, hier_graph_dict)
+    logger.debug(f"read graph {hier_graph_dict}")
     return hier_graph_dict
 
 

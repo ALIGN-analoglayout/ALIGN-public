@@ -67,7 +67,8 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
 
             if ele in ports:
                 # had to remove addition as combination of weight for cmc caused gate to be considered source
-                ports[ele] = G[node][ele]["weight"] 
+                # changed to bitwise and as all connections of CMB were considered as gate
+                ports[ele] = ports[ele] | G[node][ele]["weight"] 
             else:
                 ports[ele] = G[node][ele]["weight"]
 
