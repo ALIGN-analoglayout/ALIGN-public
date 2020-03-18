@@ -298,7 +298,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
                     traversed.append(port1)
                     recursive_start_points(graph,all_match_pairs,traversed,port1,port2, ports_weight)
 
-    print(all_match_pairs)
+    #print(all_match_pairs)
     # Read contents of input constraint file
     # Check if there are any other constraints except cap constraints
     # No constraints are written in case constraints are provided
@@ -315,7 +315,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
     const_fp = open(const_file, 'a+')
     const_fp.write("// ALIGN generated automatic constraints")
     for pairs in sorted(all_match_pairs.values(), key=lambda k: len (k.keys()), reverse=True):
-        print(pairs,written_symmetries)
+        #print(pairs,written_symmetries)
         symmBlock='\nSymmBlock ('
         for key, value in pairs.items():    
             if key in stop_points or key in written_symmetries or \
@@ -343,8 +343,9 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, stop_points):
                     written_symmetries += ' '+ key+ ','+value
                 else:
                     logger.debug(f"TBD:multiple connections of net need proper handle {key}")
-        if len(symmBlock) > 13:
+        if ',' in symmBlock[:-1]:
             symmBlock = symmBlock[:-1]+')'
+            written_symmetries.replace(key,'')
             const_fp.write(symmBlock)
     const_fp.close()
 

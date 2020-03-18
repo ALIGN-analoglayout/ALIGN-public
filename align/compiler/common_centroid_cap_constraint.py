@@ -117,7 +117,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 size = unit_size_cap
             n_cap = ceil(size/unit_size_cap)
             if n_cap > 128:
-                unit_block_name = '} , {Cap_' + str(round(size,1)) + 'f} )'
+                unit_block_name = '} , {Cap_' + str(int(round(size,1))) + 'f} )'
                 n_cap=1
             else:
                 unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )'
