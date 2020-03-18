@@ -257,6 +257,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
+  //Q: the master name should be changed for the new generated current_node, otherwise when writing gds file, old gds file will be covered by new gds file -- Yaguang, 3/17/2020
   DB.hierTree.push_back(current_node);
   new_currentnode_idx = DB.hierTree.size() - 1;
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
