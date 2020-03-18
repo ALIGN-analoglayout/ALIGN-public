@@ -175,23 +175,21 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     """
     logger.debug("comparing %s,%s,%s%s, traversed %s %s",node1,G.nodes[node1],node2,G.nodes[node2],traversed,list(G.neighbors(node1)))
 
-    """ 
-    Traversing single branch for symmetry
-    condition 1, Single branch: both ports/ nets are same and connected to two or more ports
-    condition 2, Converging branch: two nets are diffrent but connected to single device node
-    condition 3: Two parallel branches
-    condition 3: Two branches with multiple fanout will create new start points
-    condition 4: Diverging branch with more than 2 fanout, check all pairs
-    """
+    #Traversing single branch for symmetry
+    #condition 1, Single branch: both ports/ nets are same and connected to two or more ports
+    #condition 2, Converging branch: two nets are diffrent but connected to single device node
+    #condition 3: Two parallel branches
+    #condition 3: Two branches with multiple fanout will create new start points
+    #condition 4: Diverging branch with more than 2 fanout, check all pairs
+    
     #if not port and len(list(G.neighbors(node1))) <=2 or \
     #   (port and set(G.neighbors(node1)) == set(G.neighbors(node2)) ) :
     if node1 == node2:
         nbrs = list(set(G.neighbors(node1))- set(traversed))
         logger.debug(f"single node {node1}, nbrs {nbrs}, nbr_weight {[G.get_edge_data(node1,nbr) for nbr in nbrs]}")
         SD_nbrs= [nbr for nbr in nbrs if G.get_edge_data(node1, nbr)['weight'] !=2]
-        """
-        TBD: filter based on primitive constraints
-        Right now will try to figure out S/D paths """
+        ## TBD: filter based on primitive constraints
+        ## Right now will try to figure out S/D paths
         if len(nbrs) ==1:
             logger.debug(f"traversing single path from port {node1} ")
             #match_pair[node1]=node1 
