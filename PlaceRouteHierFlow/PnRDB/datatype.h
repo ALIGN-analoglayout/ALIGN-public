@@ -266,6 +266,7 @@ struct block {
   //int SBidx;
   //int counterpart;
   // Block pin
+  vector<PowerNet> PowerNets;
   vector<pin> blockPins;
   vector<contact> interMetals;
   vector<Via> interVias;
