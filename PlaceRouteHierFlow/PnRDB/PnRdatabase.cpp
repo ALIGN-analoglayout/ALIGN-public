@@ -159,9 +159,13 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   if (ort == PnRDB::N || ort == PnRDB::FN || ort == PnRDB::S || ort == PnRDB::FS) {
     width = UR.x - LL.x;
     height = UR.y - LL.y;
-  } else if (ort == PnRDB::W || ort == PnRDB::FW || ort == PnRDB::E || ort == PnRDB::FE){
+    updatedNode.width = width;
+    updatedNode.height = height;
+  } else if (ort == PnRDB::W || ort == PnRDB::FW || ort == PnRDB::E || ort == PnRDB::FE) {
     width = UR.y - LL.y; 
     height = UR.x - LL.x;
+    updatedNode.width = width;
+    updatedNode.height = height;
   }
   TransformBlockComplexs(updatedNode.Blocks, translate, width, height, ort, transform_type);
   TransformNets(updatedNode.Nets, translate, width, height, ort, transform_type);
