@@ -64,6 +64,7 @@ struct point {
   point operator - (const point& other) const { return point (x - other.x, y - other.y); }
   point& operator += (const point& other) { x += other.x; y += other.y; return *this; }
   point& operator -= (const point& other) { x -= other.x; y -= other.y; return *this; }
+  point& operator = (const point& other) { x = other.x; y = other.y; return *this; }
   
   bool operator == (const point& other) const { return x == other.x and y == other.y; }
   point scale (const int scx, const int scy) const { return point (x * scx, y * scy); }

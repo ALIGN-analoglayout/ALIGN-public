@@ -542,10 +542,11 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
   this->topName=node.name;
   this->width=node.width;
   this->height=node.height;
-  this->LL.x=0; this->LL.y=0;
-  this->UR.x=node.width;
-  this->UR.y=node.height;
-  this->path_number=1; // number of candidates
+  this->LL.x = node.LL.x;
+  this->LL.y = node.LL.y;
+  this->UR.x = node.UR.x;
+  this->UR.y = node.UR.y;
+  this->path_number = 1;  // number of candidates
   //int max_width = node.width;
   //int max_height = node.height;
   lowest_metal = Lmetal;
