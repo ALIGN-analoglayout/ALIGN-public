@@ -859,6 +859,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
           }
         }
 
+/*
     std::cout<<"Start Update power pin in parent"<<std::endl;
      //update power pin information
 
@@ -915,6 +916,96 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
             }
         }
      std::cout<<"End update power pin in parent"<<std::endl;
+*/
+
+    std::cout<<"Start Update power pin in parent"<<std::endl;
+     //update power pin information
+
+    for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+       auto& lhs = parent_node.Blocks[j];
+       auto& b = lhs.instance.back();
+       if(b.master.compare(updatedNode.name)==0){
+         for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
+            int found = 0;
+            for(unsigned int l =0;l<b.PowerNets.size();l++){
+               if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
+                 found = 1;
+                 for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                    PnRDB::connectNode temp_connectNode;
+                    temp_connectNode.iter2 = j;
+                    temp_connectNode.iter = b.dummy_power_pin.size();
+                    //here is the problem
+                    b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                    //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                    //need move the dummy_connected into block level
+                    PnRDB::pin temp_pin;
+                    temp_pin=updatedNode.PowerNets[k].Pins[p];
+                    updatePowerPins(temp_pin);
+                    b.dummy_power_pin.push_back(temp_pin);
+                 }
+                 
+               }
+            }
+
+            if(found ==0){
+               PnRDB::PowerNet temp_PowerNet;
+               temp_PowerNet = updatedNode.PowerNets[k];
+               temp_PowerNet.connected.clear();
+               temp_PowerNet.dummy_connected.clear();
+               temp_PowerNet.Pins.clear();
+                      
+               for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                   PnRDB::pin temp_pin;
+                   PnRDB::connectNode temp_connectNode;
+                   temp_connectNode.iter2 = j;
+                   temp_connectNode.iter = b.dummy_power_pin.size();
+                   temp_pin = updatedNode.PowerNets[k].Pins[p];
+                   updatePowerPins(temp_pin);
+                   b.dummy_power_pin.push_back(temp_pin);
+                   //here is the problem too
+                   temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+                   //temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+                   //here is the problem too
+                   }                     
+                b.PowerNets.push_back(temp_PowerNet);
+               }                      
+           }
+         }
+      }
+
+      std::cout<<"Extract dummy power connection into parent"<<std::endl;
+
+      for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+         parent_node.PowerNets[k].dummy_connected.clear();
+      }
+
+      for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+         auto& lhs = parent_node.Blocks[j];
+         auto& b = lhs.instance.back();
+         for(unsigned int l =0;l<b.PowerNets.size();l++){
+            int found = 0;
+            for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+               if(b.PowerNets[l].name==parent_node.PowerNets[k].name){
+                  found = 1;
+                  for(unsigned int h = 0;h < b.PowerNets[l].dummy_connected.size();h++){
+                      parent_node.PowerNets[k].dummy_connected.push_back(b.PowerNets[l].dummy_connected[h]);
+                     }
+                 }
+            }
+            if(found ==0){
+               PnRDB::PowerNet temp_PowerNet;
+               temp_PowerNet = b.PowerNets[l];
+               temp_PowerNet.connected.clear();
+               //temp_PowerNet.dummy_connected.clear();
+               temp_PowerNet.Pins.clear();
+               parent_node.PowerNets.push_back(temp_PowerNet);
+            }
+         }
+      }
+
+      std::cout<<"End update power pin in parent"<<std::endl;
+
+
      }
 
   std::cout<<"End update blocks in parent"<<std::endl;
