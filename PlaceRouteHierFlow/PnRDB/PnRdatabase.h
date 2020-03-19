@@ -143,6 +143,7 @@ class PnRdatabase
     void TransformIntermetalsOriginToPlaced(std::vector<PnRDB::contact> &interMetals, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
     void TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& interVias, PnRDB::point translate, int width, int height, PnRDB::Omark ort);
     PnRDB::Omark RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort);
+    void ExtractPinsToPowerPins(PnRDB::hierNode &updatedNode);
 
     void ReadVerilog(istream &inps, const string &fpath, const string &topcell);
     bool ReadVerilog(const string &fpath, const string &vname, const string &topcell);

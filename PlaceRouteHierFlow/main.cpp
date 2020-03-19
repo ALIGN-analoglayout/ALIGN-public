@@ -131,6 +131,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
        
     }
 */
+    
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
@@ -254,6 +255,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     // 7.current_node.Blocks[bit].child links to childnode
     current_node.Blocks[bit].child = new_childnode_idx;
   }
+  DB.ExtractPinsToPowerPins(current_node);
   route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
 
   // 8.transform (translate and rotate) current_node into current_node coordinate
@@ -262,7 +264,6 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 
   // 9.pushback current_node into hiertree, update current_node copy's index
   // update hiertree[blocks.*.child].parent = new_currentnode_idx
-  //Q: the master name should be changed for the new generated current_node, otherwise when writing gds file, old gds file will be covered by new gds file -- Yaguang, 3/17/2020
   DB.hierTree.push_back(current_node);
   new_currentnode_idx = DB.hierTree.size() - 1;
   for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
@@ -270,54 +271,6 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     DB.hierTree[current_node.Blocks[bit].child].parent[0] = new_currentnode_idx;
   }
   return;
-
-  /**
-  string current_node_name = current_node.name;
-  for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
-    if (current_node.Blocks[bit].child == -1) continue;
-    int idx = current_node.Blocks[bit].child;
-    // get and update childnode from parent
-    // 1.copy childnode of current_node.blocks[i]
-    PnRDB::hierNode childnode = DB.hierTree[idx];
-    // calculate childnode's orientation in topnode
-    PnRDB::Omark childnode_orient =
-        DB.RelOrt2AbsOrt(current_node_ort, current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient);
-    string child_node_name = childnode.name;
-
-    // 2.childnode.LL = current_node.LL + block[i].placed.LL, orient = blocks[i].orient
-    childnode.LL = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL;//  +current_node.LL;
-    childnode.UR = current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.UR;//  +current_node.LL;
-
-    // 3.transform (translate and rotate) all points and rects of childnode into topnode coordinate;
-    DB.TransformNode(childnode, childnode.LL, childnode_orient, PnRDB::TransformType::Forward);
-    // all rects and points in childnode rotate by current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
-    // and translate by (childnode.LL.x, childnode.LL.y)
-
-    // 4.complete all children of childnode recursively
-    for (unsigned int lidx = 0; lidx < childnode.numPlacement; lidx++) {
-      route_top_down(DB, drcInfo, childnode, childnode_orient, idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
-    }
-
-    // 5.transform (shift only) all points and rects of childnode into current_node coordinate
-    // all rects and points in childnode translate by (-current_node.LL.x, -current_node.LL.y) -> into current_node coord;
-    //DB.TranslateNode(childnode, current_node.LL);
-
-    // 6.update current_node.blocks[i].intermetal/via/blockpin, absolute position and rect
-    DB.CheckinChildnodetoBlock(idx, bit, childnode);  // check in childnode into block
-
-    // 7.transform (translate and rotate) childnode into childnode coordinate
-    // undo transform current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].placedBox.LL
-    // and current_node.Blocks[bit].instance[current_node.Blocks[bit].selectedInstance].orient
-
-    // 8.pushback childnode into hiertree
-    // hiertree.push_back(childnode);
-
-    // 9.current_node.Blocks[bit].child links to childnode
-    // current_node.Blocks[bit].child=hiertree.size();
-  }
-  // route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
-  // DB.CheckinHierNode(parent, current_node);//check in current node into hiertree
-  **/
 }
 
 int main(int argc, char** argv ){
@@ -411,22 +364,6 @@ int main(int argc, char** argv ){
     }
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    /**
-    if(multi_thread){
-      std::thread t[nodeVec.size()];
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
-                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
-      }
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        t[lidx].join();
-      }
-    }else{
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
-      }
-    }
-    **/
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
@@ -449,48 +386,6 @@ int main(int argc, char** argv ){
         PnRDB::N, Q.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
   }
   if(disable_io)std::cout.clear();
-
-  /**
-  for (int i = 0; i < Q_size; i++)
-  {
-    int idx = TraverseOrder[i];
-    cout << "Main-Info: start to work on node " << idx << endl;
-    if (disable_io)
-      std::cout.setstate(std::ios_base::failbit);
-
-    std::vector<PnRDB::hierNode> nodeVec = DB.CheckoutHierNodeVec(idx);
-    //std::vector<PnRDB::hierNode> nodeVec = TreeVec[idx];
-    if (multi_thread)
-    {
-      std::thread t[nodeVec.size()];
-      for (unsigned int lidx = 0; lidx < nodeVec.size(); ++lidx)
-      {
-        t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx,
-                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
-      }
-      for (unsigned int lidx = 0; lidx < nodeVec.size(); ++lidx)
-      {
-        t[lidx].join();
-      }
-    }
-    else
-    {
-      for (unsigned int lidx = 0; lidx < nodeVec.size(); ++lidx)
-      {
-        route_single_variant(DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
-      }
-    }
-
-    for (unsigned int lidx = 0; lidx < nodeVec.size(); ++lidx)
-    {
-      DB.CheckinHierNode(idx, nodeVec[lidx]);
-    }
-
-    //Q.pop();
-    if (disable_io)
-      std::cout.clear();
-    cout << "Main-Info: complete node " << idx << endl;
-  }**/
 
   return 0;
 }

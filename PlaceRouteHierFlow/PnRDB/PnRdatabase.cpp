@@ -656,6 +656,18 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
 }
 
+void PnRdatabase::ExtractPinsToPowerPins(PnRDB::hierNode& updatedNode) {
+  for (unsigned int i = 0; i < updatedNode.PowerNets.size(); i++) {
+    for (unsigned int j = 0; j < updatedNode.PowerNets[i].connected.size(); j++) {
+      PnRDB::pin temp_pin;
+      int iter = updatedNode.PowerNets[i].connected[j].iter;
+      int iter2 = updatedNode.PowerNets[i].connected[j].iter2;
+      temp_pin = updatedNode.Blocks[iter2].instance[updatedNode.Blocks[iter2].selectedInstance].blockPins[iter];
+      updatedNode.PowerNets[i].Pins[j] = temp_pin;
+    }
+  }
+}
+
 // [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.
