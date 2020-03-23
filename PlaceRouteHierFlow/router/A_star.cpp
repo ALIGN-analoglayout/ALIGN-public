@@ -106,12 +106,10 @@ int A_star::Manhattan_distan(int sindex, Grid& grid){
   
 };
 
-void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, const std::set<int> &S_or_D, int left_up, int right_down){
+void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list){
   
-  std::vector<int> left_up_node, right_down_node;
   for(int i=0;i<(int)source.size();i++){
 
-      //if(Check_Parallel_SD(left_up, right_down, source[i], left_up_node, right_down_node, grid, S_or_D)){
          int Mdis = Manhattan_distan(source[i], grid);
          grid.vertices_total[source[i]].Cost = 0;
          int dis = grid.vertices_total[source[i]].Cost + Mdis;
@@ -119,7 +117,6 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
          temp_pair.first = dis;
          temp_pair.second = source[i];
          L_list.insert(temp_pair);
-        //}
 
      }
 
@@ -550,11 +547,8 @@ bool A_star::found_near_node_S(int left_up, int right_down, int current_node, Gr
       }
 };
 
-bool A_star::found_near_node(int left_up, int right_down, int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> dest_set){
+bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node){
 
-    std::vector<int> left_up_node;
-    std::vector<int> right_down_node;
-    int parallel_parameter = Check_Parallel_Rule(left_up, right_down, current_node, left_up_node, right_down_node, grid);
     
     std::vector<int> north_node, south_node, east_node, west_node, up_node, down_node;
     bool north_found, south_found, east_found, west_found, up_found, down_found;
@@ -582,92 +576,42 @@ bool A_star::found_near_node(int left_up, int right_down, int current_node, Grid
     //std::cout<<"expand node checkout point7"<<std::endl;
 
 
-    if(parallel_parameter){
+
     if(north_found){
        for(int i=0;i<(int)north_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       if(dest_set.find(north_node[i])==dest_set.end() and Check_Parallel_Rule(left_up, right_down, north_node[i], left_up_node1, right_down_node1, grid)){
-         //std::cout<<"expand node checkout point7.1"<<std::endl;
          candidate_node.push_back(north_node[i]);
-       }else if(dest_set.find(north_node[i])!=dest_set.end() and Check_Parallel_Rule(left_up, right_down, north_node[i], left_up_node1, right_down_node1, grid) and Check_S_Connection_L( left_up_node1, right_down_node1, dest_set, grid) ){
-         candidate_node.push_back(north_node[i]);
-       }
        }
       }
     //std::cout<<"expand node checkout point8"<<std::endl;
     if(south_found){
        for(int i=0;i<(int)south_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       if(dest_set.find(south_node[i])==dest_set.end() and Check_Parallel_Rule(left_up, right_down, south_node[i], left_up_node1, right_down_node1, grid)){
-         //std::cout<<"expand node checkout point8.1"<<std::endl;
          candidate_node.push_back(south_node[i]);
-         }else if(dest_set.find(south_node[i])!=dest_set.end() and Check_Parallel_Rule(left_up, right_down, south_node[i], left_up_node1, right_down_node1, grid) and Check_S_Connection_L( left_up_node1, right_down_node1, dest_set, grid) ){
-         candidate_node.push_back(south_node[i]);
-       }
        }
       }
     //std::cout<<"expand node checkout point9"<<std::endl;
     if(west_found){
        for(int i=0;i<(int)west_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       if(dest_set.find(west_node[i])==dest_set.end() and Check_Parallel_Rule(left_up, right_down, west_node[i], left_up_node1, right_down_node1, grid)){
-         //std::cout<<"expand node checkout point9.1"<<std::endl;
          candidate_node.push_back(west_node[i]);
-         }else if(dest_set.find(west_node[i])!=dest_set.end() and Check_Parallel_Rule(left_up, right_down, west_node[i], left_up_node1, right_down_node1, grid) and Check_S_Connection_L( left_up_node1, right_down_node1, dest_set, grid) ){
-         candidate_node.push_back(west_node[i]);
-       }
        }
       }
     //std::cout<<"expand node checkout point10"<<std::endl;
     if(east_found){
        for(int i=0;i<(int)east_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       if(dest_set.find(east_node[i])==dest_set.end() and Check_Parallel_Rule(left_up, right_down, east_node[i], left_up_node1, right_down_node1, grid)){
-         //std::cout<<"expand node checkout point10.1"<<std::endl;
-         candidate_node.push_back(east_node[i]);
-         }else if(dest_set.find(east_node[i])!=dest_set.end() and Check_Parallel_Rule(left_up, right_down, east_node[i], left_up_node1, right_down_node1, grid) and Check_S_Connection_L( left_up_node1, right_down_node1, dest_set, grid) ){
          candidate_node.push_back(east_node[i]);
        }
-       }
       }
-      }
+
     //std::cout<<"expand node checkout point11"<<std::endl;
     if(up_found){
        for(int i=0;i<(int)up_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       //std::cout<<"expand node checkout point11.1"<<std::endl;
-       if(dest_set.find(up_node[i])==dest_set.end() and parallel_parameter and Check_Parallel_Rule(left_up, right_down, up_node[i], left_up_node1, right_down_node1, grid)){
-          //std::cout<<"expand node checkout point11.2"<<std::endl;
-          if(Check_Connection_Rule(left_up_node, right_down_node, left_up_node1, right_down_node1, grid)){
-              //std::cout<<"expand node checkout point11.3"<<std::endl;
-              candidate_node.push_back(up_node[i]);
-            }
-         }else if(dest_set.find(up_node[i])!=dest_set.end() and parallel_parameter and Check_S_Connection( left_up_node, right_down_node, dest_set, grid) ){
          candidate_node.push_back(up_node[i]);
-       }
        }
       }
 
     //std::cout<<"expand node checkout point12"<<std::endl;
     if(down_found){
        for(int i=0;i<(int)down_node.size();i++){
-       std::vector<int> left_up_node1;
-       std::vector<int> right_down_node1;
-       //std::cout<<"expand node checkout point12.1"<<std::endl;
-       if(dest_set.find(down_node[i])==dest_set.end() and parallel_parameter and Check_Parallel_Rule(left_up, right_down, down_node[i], left_up_node1, right_down_node1, grid)){
-          //std::cout<<"expand node checkout point12.2"<<std::endl;
-          if(Check_Connection_Rule(left_up_node, right_down_node, left_up_node1, right_down_node1, grid)){
-              //std::cout<<"expand node checkout point12.3"<<std::endl;
-              candidate_node.push_back(down_node[i]);
-            }
-         }else if(dest_set.find(down_node[i])!=dest_set.end() and parallel_parameter and  Check_S_Connection( left_up_node, right_down_node, dest_set, grid) ){
          candidate_node.push_back(down_node[i]);
-       }
        }
       }
     //std::cout<<"expand node checkout point13"<<std::endl;
@@ -1374,6 +1318,461 @@ bool A_star::Check_via_AV(int first_node_same_layer,int current_node,int length,
 
 };
 
+bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+
+  int interval_number = 1;
+  temp_nodes.push_back(node);
+  int current_node = -1;
+  while(number!=0){
+
+     int current_node = temp_nodes.back();
+     int temp_number = interval_number;
+     
+     while(temp_number!=0){
+
+        if(grid.vertices_total[current_node].north.size()>0){
+           n = grid.vertices_total[current_node].north[0];
+        }else{
+           n = -1;
+        }
+        if(n==-1){
+          return false;
+        }else{
+          current_node = n;
+        }
+        
+        temp_number = temp_number - 1;
+     }
+     
+     temp_nodes.push_back(n);
+
+     number = number - 1;
+
+  }
+
+  reverse(temp_nodes.begin(),temp_nodes.end());
+  temp_node.pop_back();
+  return true;
+
+};
+
+bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+
+  int interval_number = 1;
+  temp_nodes.push_back(node);
+  int current_node = -1;
+  while(number!=0){
+
+     int current_node = temp_nodes.back();
+     int temp_number = interval_number;
+     
+     while(temp_number!=0){
+
+        if(grid.vertices_total[current_node].east.size()>0){
+           n = grid.vertices_total[current_node].east[0];
+        }else{
+           n = -1;
+        }
+        if(n==-1){
+          return false;
+        }else{
+          current_node = n;
+        }
+        
+        temp_number = temp_number - 1;
+     }
+     
+     temp_nodes.push_back(n);
+
+     number = number - 1;
+
+  }
+
+  reverse(temp_nodes.begin(),temp_nodes.end());
+  temp_node.pop_back();
+  return true;
+
+};
+
+bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+
+  int interval_number = 1;
+  temp_nodes.push_back(node);
+  int current_node = -1;
+  while(number!=0){
+
+     int current_node = temp_nodes.back();
+     int temp_number = interval_number;
+     
+     while(temp_number!=0){
+
+        if(grid.vertices_total[current_node].west.size()>0){
+           n = grid.vertices_total[current_node].west[0];
+        }else{
+           n = -1;
+        }
+        if(n==-1){
+          return false;
+        }else{
+          current_node = n;
+        }
+        
+        temp_number = temp_number - 1;
+     }
+     
+     temp_nodes.push_back(n);
+
+     number = number - 1;
+
+  }
+
+  reverse(temp_nodes.begin(),temp_nodes.end());
+  temp_node.pop_back();
+  return true;
+
+};
+
+bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+
+  int interval_number = 1;
+  temp_nodes.push_back(node);
+  int current_node = -1;
+  while(number!=0){
+
+     int current_node = temp_nodes.back();
+     int temp_number = interval_number;
+     
+     while(temp_number!=0){
+
+        if(grid.vertices_total[current_node].south.size()>0){ //QQQ: might use full grid?
+           n = grid.vertices_total[current_node].south[0];
+        }else{
+           n = -1;
+        }
+        if(n==-1){
+          return false;
+        }else{
+          current_node = n;
+        }
+        
+        temp_number = temp_number - 1;
+     }
+     
+     temp_nodes.push_back(n);
+
+     number = number - 1;
+
+  }
+
+  reverse(temp_nodes.begin(),temp_nodes.end());
+  temp_node.pop_back();
+  return true;
+
+};
+
+bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes){
+
+  bool exist = 0;
+  if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1){//h
+
+    vector<int> temp_nodes;
+    int exist;
+    if(mode==0){
+      exist = find_nodes_south(grid, current_node, left, temp_nodes);
+    }else{
+      exist = find_nodes_west(grid, current_node, left, temp_nodes);
+    }
+
+    if(exist){
+      nodes.insert(nodes.end(),temp_nodes.begin(),temp_nodes.end());
+    }else{
+     return false;
+    }
+    
+  }else{
+
+    vector<int> temp_nodes;
+    int exist;
+    if(mode==0){
+      exist = find_nodes_west(grid, current_node, left, temp_nodes);
+    }else{
+      exist = find_nodes_south(grid, current_node, left, temp_nodes);
+    }
+
+    if(exist){
+      nodes.insert(nodes.end(),temp_nodes.begin(),temp_nodes.end());
+    }else{
+     return false;
+    }
+
+  }
+
+  nodes.push_back(current_node);
+
+
+  if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1){//h
+
+    vector<int> temp_nodes;
+    int exist;
+    if(mode==0){
+      exist = find_nodes_north(grid, current_node, right, temp_nodes);
+    }else{
+      exist = find_nodes_east(grid, current_node, right, temp_nodes);
+    }
+
+    if(exist){
+      nodes.insert(nodes.end(),temp_nodes.begin(),temp_nodes.end());
+    }else{
+     return false;
+    }
+    
+  }else{
+
+    vector<int> temp_nodes;
+    int exist;
+    if(mode==0){
+      exist = find_nodes_east(grid, current_node, right, temp_nodes);
+    }else{
+      exist = find_nodes_north(grid, current_node, right, temp_nodes);
+    }
+
+    if(exist){
+      nodes.insert(nodes.end(),temp_nodes.begin(),temp_nodes.end());
+    }else{
+     return false;
+    }
+
+  }
+
+  return true;
+
+};
+
+std::vector<int> A_star::parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &source_index, std::set<int> &dest_index){
+
+  std::vector<int> start_points;
+  std::vector<int> end_points;
+  bool found_s;
+  bool found_e;  
+
+  if(source_index.find(current_node)!=source_index.end()){
+    int mode = 0; //succsive
+    found_s = find_succsive_parallel_node(current_node, left, right, mode, start_points);
+  }else{
+    int mode = 1; //parallel
+    found_s = find_succsive_parallel_node(current_node, left, right, mode, start_points);
+  }
+
+  if(dest_index.find(next_node)!=dest_index.end()){
+    int mode = 0; //succsive
+    found_e = find_succsive_arallel_node(next_node, left, right, mode, end_points);
+  }else{
+    int mode = 1; //parallel
+    found_e = find_succsive_parallel_node(next_node, left, right, mode, end_points);
+  }
+
+  if(found_s and found_e){
+     L_shape_Connection_Check(start_points,end_points);
+  }else{
+    return false;
+  }
+
+};
+
+
+bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std::vector<int> &end_points){
+
+  for(int i=0;i<start_points;i++){
+
+      int s_node = start_points[i];
+      int e_node = end_points[i];
+      bool connection = L_shape_Connection_Check(grid,s_node,e_node);
+      if(!connection){return false;}
+
+  }
+
+  return true;
+
+};
+
+
+bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_points){
+
+  std::vector<int> node_set_up;
+  node_set_up.push_back(start_points);
+
+  while(node_set_up.back()!=end_points){ // QQQ: might be stacked here
+
+    int current_node = node_set_up.back();
+    int x = grid.vertices_total[current_node].x - grid.vertices_total[end_points].x;
+    if(x>0){x=1;}else{x=-1};
+    int y = grid.vertices_total[current_node].y - grid.vertices_total[end_points].y;
+    if(y>0){y=1;}else{y=-1};
+    int metal = grid.vertices_total[current_node].metal - grid.vertices_total[end_points].metal;
+    if(metal>0){metal=1;}else{metal=-1};
+    int dummy_layer = 1; // go up
+    int next = find_next_node(current_node, x, y, layer, dummy_layer);
+    if(next==-1){
+      return false;
+    }else if(next>0 and next< grid.vertices_total.size() ){
+      grid.vertices_total[next].parent = current_node;
+      node_set_up.push_back(next); 
+    }else{
+      std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
+      assert(0);
+    }
+    
+  }
+
+
+  std::vector<int> node_set_down;
+  node_set_down.push_back(start_points);
+
+  while(node_set_down.back()!=end_points){ // QQQ: might be stacked here
+
+    int current_node = node_set_down.back();
+    int x = grid.vertices_total[current_node].x - grid.vertices_total[end_points].x;
+    if(x>0){x=1;}else{x=-1};
+    int y = grid.vertices_total[current_node].y - grid.vertices_total[end_points].y;
+    if(y>0){y=1;}else{y=-1};
+    int metal = grid.vertices_total[current_node].metal - grid.vertices_total[end_points].metal;
+    if(metal>0){metal=1;}else{metal=-1};
+    int dummy_layer = -1; // go down
+    int next = find_next_node(current_node, x, y, layer, dummy_layer);
+    if(next==-1){
+      return false;
+    }else if(next>0 and next< grid.vertices_total.size() ){
+      grid.vertices_total[next].parent = current_node;
+      node_set_down.push_back(next); 
+    }else{
+      std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
+      assert(0);
+    }
+    
+  }
+
+  
+  bool extend_up = Extention_checks(grid, node_set_up);
+  bool extend_down = Extention_checks(grid, node_set_down);
+
+  bool activa_up = Check_activa_via_activa(grid, node_set_up);
+  bool activa_down = Check_activa_via_activa(grid, node_set_down);
+
+  
+
+
+};
+
+
+bool A_star::Extention_checks(Grid& grid, std::vector<int> &nodes){
+
+  for(int i=0;i<nodes.size();i++){
+     if(!Extention_check(grid, nodes[i])){
+        return false
+     }
+  }
+
+  return true;
+
+};
+
+bool A_star::Extention_check(Grid& grid, int current_node){
+
+  int parent = grid.vertices_total[current_node].parent;
+
+  if(parent==-1){
+    return true;
+  }
+
+  if(parent>0 and parent<grid.vertices_total.size()-1){
+
+    if(grid.vertices_total[current_node].metal==grid.vertices_total[parent].metal){
+      return true;
+    }else{
+
+       int node_same_layer = trace_back(parent,grid);
+       int metal = grid.vertices_total[parent].metal;
+       int length = abs(grid.vertices_total[parent].x - grid.vertices_total[node_same_layer].x) + abs(grid.vertices_total[parent].y - grid.vertices_total[node_same_layer].y);
+       int minL = drc_info.Metal_info[metal].minL;
+       int delta_length = length - minL;
+/*
+       int current_node_length = 0;
+       int next_node_length = 0;
+       int current_node_expand = 0;
+       int next_node_expand = 0;
+
+       if(grid.vertices_total[current_node].metal<grid.vertices_total[next_node].metal){
+
+         int via_index = grid.vertices_total[current_node].metal;
+         int metal_direct = drc_info.Metal_info[via_index].direct;
+         std::vector<PnRDB::point> temp_points_lower = drc_info.Via_model[via_index].LowerRect;
+         std::vector<PnRDB::point> temp_points_upper = drc_info.Via_model[via_index].UpperRect;
+         current_node_expand = drc_info.Metal_info[via_index].dist_ee;
+         next_node_expand = drc_info.Metal_info[via_index+1].dist_ee;
+         if(metal_direct==1){//H
+           current_node_length = temp_points_lower[1].x - temp_points_lower[0].x;
+           next_node_length = temp_points_upper[1].y - temp_points_upper[0].y;
+         }else{
+           current_node_length = temp_points_lower[1].y - temp_points_lower[0].y;
+           next_node_length = temp_points_upper[1].x - temp_points_upper[0].x;
+         }
+
+       }else{
+
+         int via_index = grid.vertices_total[next_node].metal;
+         int metal_direct = drc_info.Metal_info[via_index].direct;
+         std::vector<PnRDB::point> temp_points_lower = drc_info.Via_model[via_index].LowerRect;
+         std::vector<PnRDB::point> temp_points_upper = drc_info.Via_model[via_index].UpperRect;
+         current_node_expand = drc_info.Metal_info[via_index+1].dist_ee;
+         next_node_expand = drc_info.Metal_info[via_index].dist_ee;
+         
+         if(metal_direct==1){//H
+           current_node_length = temp_points_upper[1].y - temp_points_upper[0].y;
+           next_node_length = temp_points_lower[1].x - temp_points_lower[0].x;
+         }else{
+           current_node_length = temp_points_upper[1].x - temp_points_upper[0].x;
+           next_node_length = temp_points_lower[1].y - temp_points_lower[0].y;
+         }
+
+       }
+       current_node_length = 2*current_node_expand + current_node_length;
+       next_node_length = 2*next_node_expand + next_node_length;
+*/
+
+       if(delta_length<0){
+           bool feasible = CheckExendable_With_Certain_Length(node_same_layer,parent,length,minL,grid);
+           //Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
+           //Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
+           if(feasible){
+               return true;
+             }else{
+               std::cout<<"Length infeasible"<<std::endl;
+               return false;
+             }           
+
+         }else{
+            bool feasible = 1;
+            //Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
+            //Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
+            if(feasible){
+              return true;
+             }else{
+              std::cout<<"Length infeasible"<<std::endl;
+              return false;
+             }
+         }
+
+    }
+ 
+  }else{
+    std::cout<<"Extention check bug parent node is out of grid"<<std::endl;
+    assert(0);
+  }
+
+};
+
+
+
 std::vector<int> A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
 
   // how to back trace?
@@ -1401,7 +1800,7 @@ std::vector<int> A_star::A_star_algorithm(Grid& grid, int left_up, int right_dow
 
   //initial source  Q1//jugde whether source works
   //initial_source(grid, L_list);
-  initial_source(grid, L_list, src_index, left_up, right_down);
+  initial_source(grid, L_list, src_index);
 
   bool found = 0;
   int current_node = -1;
@@ -1425,20 +1824,17 @@ std::vector<int> A_star::A_star_algorithm(Grid& grid, int left_up, int right_dow
     std::vector<int> candidate_node;
     //std::cout<<"A start checkout point3"<<std::endl;
     //std::cout<<"check point near node 1"<<std::endl;
-    bool near_node_exist;
-    if(src_index.find(current_node)==src_index.end()){
-        near_node_exist =found_near_node(left_up, right_down, current_node, grid, candidate_node, dest_index);
-       }else{
-        near_node_exist =found_near_node_S(left_up, right_down, current_node, grid, candidate_node, src_index, dest_index);
-       }
+    bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    
     //std::cout<<"check point near node 2"<<std::endl;
     if(!near_node_exist){
        continue;
-      }else{
-      //       std::cout<<"near_node_exist"<<std::endl;
       }
+
+    parallel_routing();
+
     //std::cout<<"A start checkout point3.1"<<std::endl;
-  //for sheilding and multi-connection
+    //for sheilding and multi-connection
     CheckExtendable(candidate_node, current_node, grid); //new code
     //for each node judge whether can be expand or not; Q3 expandable?
     //bool expandable = 0;

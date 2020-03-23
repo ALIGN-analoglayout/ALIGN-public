@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
+#include <algorithm>
 
 class A_star {
 
@@ -27,11 +28,11 @@ class A_star {
     A_star(Grid& grid, bool shielding);
     bool FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down);
     int Manhattan_distan(int sindex, Grid& grid);
-    void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, const std::set<int> &S_or_D, int left_up, int right_down);
+    void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list);
     bool expand_node(std::vector<int> &direction, std::vector<int> &temp_node, Grid &grid);
     bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
     //bool expand_node_d(int direction, std::vector<int> &temp_node, Grid &grid);
-    bool found_near_node(int left_up, int right_down, int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> dest_set);
+    bool found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node);
     bool found_near_node_S(int left_up, int right_down, int current_node, Grid &grid, std::vector<int> &candidate_node, std::set<int> src_set, std::set<int> dest_set);
     std::vector<int> A_star_algorithm(Grid& grid, int left_up, int right_down);
     bool Check_Parallel_SD(int left_up, int right_down, int node_index, std::vector<int> &left_up_node, std::vector<int> &right_down_node, Grid& gird, std::set<int> S_or_D);
