@@ -895,8 +895,8 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::vector<int> temp_candidate_node;
     for(int i=0;i<candidate_node.size();i++){
        std::cout<<"parallel_routing start"<<std::endl;
-       //bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
-       bool parallel = 1;
+       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
+       //bool parallel = 1;
        if(parallel){
          std::cout<<"parallel find "<<std::endl;
          //assert(0);
@@ -920,7 +920,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
        grid.vertices_total[candidate_node[i]].Cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal);
        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
-       grid.vertices_total[candidate_node[i]].parent = current_node;
+       //grid.vertices_total[candidate_node[i]].parent = current_node;
        temp_pair.first = dis;
        temp_pair.second = candidate_node[i];
        L_list.insert(temp_pair);
