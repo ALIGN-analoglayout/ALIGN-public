@@ -612,14 +612,17 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   while(node_set_up.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_up.back();
-    int x = grid.vertices_total[current_node].x - grid.vertices_total[end_points].x;
+    int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
     if(x>0){x=1;}else{x=-1;}
-    int y = grid.vertices_total[current_node].y - grid.vertices_total[end_points].y;
+    int y = grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
     if(y>0){y=1;}else{y=-1;}
-    int metal = grid.vertices_total[current_node].metal - grid.vertices_total[end_points].metal;
+    int metal = grid.vertices_total[end_points].metal - grid.vertices_total[current_node].metal;
     if(metal>0){metal=1;}else{metal=-1;}
     int dummy_layer = 1; // go up
+    //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
+    //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
+    //assert(0);
     if(next==-1){
       return false;
     }else if(next>0 and next< grid.vertices_total.size() ){
@@ -639,14 +642,17 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   while(node_set_down.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_down.back();
-    int x = grid.vertices_total[current_node].x - grid.vertices_total[end_points].x;
+    int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
     if(x>0){x=1;}else{x=-1;}
-    int y = grid.vertices_total[current_node].y - grid.vertices_total[end_points].y;
+    int y =  grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
     if(y>0){y=1;}else{y=-1;}
-    int metal = grid.vertices_total[current_node].metal - grid.vertices_total[end_points].metal;
+    int metal = grid.vertices_total[end_points].metal- grid.vertices_total[current_node].metal;
     if(metal>0){metal=1;}else{metal=-1;}
     int dummy_layer = -1; // go down
+    //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
+    //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
+    //assert(0);
     if(next==-1){
       return false;
     }else if(next>0 and next< grid.vertices_total.size() ){
