@@ -54,6 +54,7 @@ class A_star {
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
     int trace_back_node(int current_node, Grid& grid);
     std::vector<std::vector<int>> GetPath();
+    bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
 };
 
 #endif

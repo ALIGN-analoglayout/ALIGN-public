@@ -120,6 +120,20 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
 
 };
 
+bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid){
+
+  if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
+     temp_node.push_back(direction);
+    }
+
+  if((int)temp_node.size()>0){
+    return true;
+    }else{
+    return false;
+    }
+
+};
+
 bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node){
 
     
@@ -135,6 +149,20 @@ bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &can
     //std::cout<<"expand node checkout point4"<<std::endl;
     west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
     //std::cout<<"expand node checkout point5"<<std::endl;
+
+    //if(grid.vertices_total[current_node].via_active_up){
+    if(1){
+       up_found = expand_node_ud(grid.vertices_total[current_node].up, up_node, grid);
+    }else{
+       up_found = false;
+    }
+    //std::cout<<"expand node checkout point6"<<std::endl;
+    //if(grid.vertices_total[current_node].via_active_down){
+    if(1){
+      down_found = expand_node_ud(grid.vertices_total[current_node].down, down_node, grid);
+    }else{
+      down_found = false;
+    }
 
     if(north_found){
        for(int i=0;i<(int)north_node.size();i++){
@@ -555,7 +583,7 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   bool found_s;
   bool found_e;  
 
-  std::cout<<"find succsive or parallel node start"<<std::endl;
+  //std::cout<<"find succsive or parallel node start"<<std::endl;
   if(source_index.find(current_node)!=source_index.end()){
     int mode = 0; //succsive
     found_s = find_succsive_parallel_node(grid, current_node, left, right, mode, start_points, source_index, dest_index);
@@ -571,12 +599,12 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
     int mode = 1; //parallel
     found_e = find_succsive_parallel_node(grid, next_node, left, right, mode, end_points, source_index, dest_index);
   }
-  std::cout<<"find succsive or parallel node end"<<std::endl;
+  //std::cout<<"find succsive or parallel node end"<<std::endl;
 
   if(found_s and found_e){
-     std::cout<<"L shape connection start"<<std::endl;
+     //std::cout<<"L shape connection start"<<std::endl;
      return L_shape_Connection(grid, start_points, end_points);
-     std::cout<<"L shape connection end"<<std::endl;
+     //std::cout<<"L shape connection end"<<std::endl;
   }else{
     return false;
   }
@@ -590,11 +618,11 @@ bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std:
 
       int s_node = start_points[i];
       int e_node = end_points[i];
-      std::cout<<"L_shape_Connection_Check start"<<std::endl;
+      //std::cout<<"L_shape_Connection_Check start"<<std::endl;
       std::cout<<"start node "<<s_node<<std::endl;
       std::cout<<"end node "<<e_node<<std::endl;
       bool connection = L_shape_Connection_Check(grid,s_node,e_node);
-      std::cout<<"L_shape_Connection_Check end"<<std::endl;
+      //std::cout<<"L_shape_Connection_Check end"<<std::endl;
       if(!connection){return false;}
 
   }
@@ -668,13 +696,21 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   
   bool extend_up = Extention_checks(grid, node_set_up);
   bool extend_down = Extention_checks(grid, node_set_down);
+  //bool extend_up = 1;
+  //bool extend_down = 1;
 
   bool activa_up = Check_activa_via_active(grid, node_set_up);
   bool activa_down = Check_activa_via_active(grid, node_set_down);
+  //bool activa_up = 1;
+  //bool activa_down = 1;
 
   if( (extend_up and activa_up) or (extend_down and activa_down)){
+    //std::cout<<"L shape flags "<<extend_up<<" "<<activa_up<<" "<<extend_down<<" "<<activa_down<<std::endl;
+    //assert(0);
     return true;
   }else{
+    //std::cout<<"L shape flags "<<extend_up<<" "<<activa_up<<" "<<extend_down<<" "<<activa_down<<std::endl;
+    //assert(0);
     return false;
   }
 
@@ -805,6 +841,11 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   std::pair<int,int> temp_pair; 
 
   std::set<int> src_index;
+  
+  std::cout<<"source size "<<source.size()<<std::endl;
+  std::cout<<"dest size "<<dest.size()<<std::endl;
+  
+
   for(int i=0;i<(int)source.size();i++){
     
       src_index.insert(source[i]);
@@ -819,6 +860,8 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
      }
 
   initial_source(grid, L_list, source);
+
+  std::cout<<"L list size "<<L_list.size()<<std::endl;
 
   bool found = 0;
   int current_node = -1;
@@ -843,6 +886,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::cout<<"A start checkout point3"<<std::endl;
     std::cout<<"check point near node 1"<<std::endl;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    std::cout<<"candidate node size "<<near_node_exist<<" "<<candidate_node.size()<<std::endl;
     std::cout<<"check point near node 2"<<std::endl;
     if(!near_node_exist){
        continue;
@@ -851,8 +895,11 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::vector<int> temp_candidate_node;
     for(int i=0;i<candidate_node.size();i++){
        std::cout<<"parallel_routing start"<<std::endl;
-       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
+       //bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
+       bool parallel = 1;
        if(parallel){
+         std::cout<<"parallel find "<<std::endl;
+         //assert(0);
          temp_candidate_node.push_back(candidate_node[i]);
        }
        std::cout<<"parallel_routing end"<<std::endl;
@@ -908,6 +955,7 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   for(int i=0;i<nodes.size();i++){
      std::vector<int> temp_path = Trace_Back_Path(grid, nodes[i]);
      if(temp_path.size()<2){
+        std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
         std::cout<<"Trace_Back_Paths bug 2 "<<std::endl;
         assert(0);      
      }
