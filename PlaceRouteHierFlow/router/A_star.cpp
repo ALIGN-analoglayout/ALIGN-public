@@ -619,8 +619,8 @@ bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std:
       int s_node = start_points[i];
       int e_node = end_points[i];
       //std::cout<<"L_shape_Connection_Check start"<<std::endl;
-      std::cout<<"start node "<<s_node<<std::endl;
-      std::cout<<"end node "<<e_node<<std::endl;
+      std::cout<<"start node "<<s_node<<" "<<grid.vertices_total[s_node].x<<" "<<grid.vertices_total[s_node].y<<" "<<grid.vertices_total[s_node].metal<<std::endl;
+      std::cout<<"end node "<<e_node<<" "<<grid.vertices_total[e_node].x<<" "<<grid.vertices_total[e_node].y<<" "<<grid.vertices_total[e_node].metal<<std::endl;
       bool connection = L_shape_Connection_Check(grid,s_node,e_node);
       //std::cout<<"L_shape_Connection_Check end"<<std::endl;
       if(!connection){return false;}
@@ -640,13 +640,15 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   while(node_set_up.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_up.back();
+    std::cout<<"current node "<<current_node<<std::endl;
     int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
-    if(x>0){x=1;}else{x=-1;}
+    if(x>0){x=1;}else if(x<0){x=-1;}
     int y = grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
-    if(y>0){y=1;}else{y=-1;}
+    if(y>0){y=1;}else if(y<0){y=-1;}
     int metal = grid.vertices_total[end_points].metal - grid.vertices_total[current_node].metal;
-    if(metal>0){metal=1;}else{metal=-1;}
+    if(metal>0){metal=1;}else if(metal<0){metal=-1;}
     int dummy_layer = 1; // go up
+    std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
@@ -671,11 +673,11 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
 
     int current_node = node_set_down.back();
     int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
-    if(x>0){x=1;}else{x=-1;}
-    int y =  grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
-    if(y>0){y=1;}else{y=-1;}
-    int metal = grid.vertices_total[end_points].metal- grid.vertices_total[current_node].metal;
-    if(metal>0){metal=1;}else{metal=-1;}
+    if(x>0){x=1;}else if(x<0){x=-1;}
+    int y = grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
+    if(y>0){y=1;}else if(y<0){y=-1;}
+    int metal = grid.vertices_total[end_points].metal - grid.vertices_total[current_node].metal;
+    if(metal>0){metal=1;}else if(metal<0){metal=-1;}
     int dummy_layer = -1; // go down
     //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
@@ -734,7 +736,7 @@ int A_star::find_next_node( Grid& grid, int current_node, int x, int y, int laye
     }else{
       next_node = grid.vertices_total[current_node].down;
     }
-  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y!=0){//h
+  }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y!=0){//v
     next_node = current_node + y;
   }else if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0 and y==0 and layer!=0){
     if(layer>0){
