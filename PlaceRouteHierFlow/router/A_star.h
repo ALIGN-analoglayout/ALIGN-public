@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <assert.h>
 #include "Grid.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
@@ -28,7 +29,7 @@ class A_star {
     A_star(Grid& grid, bool shielding);
     bool FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_down);
     int Manhattan_distan(int sindex, Grid& grid);
-    void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list);
+    void initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::pairComp>& L_list, std::vector<int> &source);
     bool expand_node(std::vector<int> &direction, std::vector<int> &temp_node, Grid &grid);
     bool find_nodes_north(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
     bool find_nodes_east(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
@@ -44,16 +45,15 @@ class A_star {
     bool Check_activa_via_active(Grid& grid, std::vector<int> &nodes);
     bool Extention_checks(Grid& grid, std::vector<int> &nodes);
     bool Extention_check(Grid& grid, int current_node);
-    std::vector<int> A_star_algorithm(Grid& grid, int left_up, int right_down);
+    std::vector<std::vector<int> > A_star_algorithm(Grid& grid, int left_up, int right_down);
     std::vector<std::vector<int> > Trace_Back_Paths(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
     std::vector<int> Trace_Back_Path(Grid& grid, int current_node);
     std::vector<std::vector<RouterDB::Metal> > ConvertPathintoPhysical(Grid& grid);
-    void CovertToShieldingNet(Grid& grid, std::vector<int> &real_path, std::vector<int> &temp_path);
+    std::vector<int> CovertToShieldingNet(Grid& grid, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
     int trace_back_node(int current_node, Grid& grid);
     std::vector<std::vector<int>> GetPath();
-    bool found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node);
 };
 
 #endif
