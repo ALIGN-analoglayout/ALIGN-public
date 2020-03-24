@@ -555,6 +555,7 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   bool found_s;
   bool found_e;  
 
+  std::cout<<"find succsive or parallel node start"<<std::endl;
   if(source_index.find(current_node)!=source_index.end()){
     int mode = 0; //succsive
     found_s = find_succsive_parallel_node(grid, current_node, left, right, mode, start_points, source_index, dest_index);
@@ -570,9 +571,12 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
     int mode = 1; //parallel
     found_e = find_succsive_parallel_node(grid, next_node, left, right, mode, end_points, source_index, dest_index);
   }
+  std::cout<<"find succsive or parallel node end"<<std::endl;
 
   if(found_s and found_e){
+     std::cout<<"L shape connection start"<<std::endl;
      return L_shape_Connection(grid, start_points, end_points);
+     std::cout<<"L shape connection end"<<std::endl;
   }else{
     return false;
   }
@@ -586,7 +590,11 @@ bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std:
 
       int s_node = start_points[i];
       int e_node = end_points[i];
+      std::cout<<"L_shape_Connection_Check start"<<std::endl;
+      std::cout<<"start node "<<s_node<<std::endl;
+      std::cout<<"end node "<<e_node<<std::endl;
       bool connection = L_shape_Connection_Check(grid,s_node,e_node);
+      std::cout<<"L_shape_Connection_Check end"<<std::endl;
       if(!connection){return false;}
 
   }
@@ -809,10 +817,10 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   bool found = 0;
   int current_node = -1;
 
-  //std::cout<<"A start checkout point2"<<std::endl;
+  std::cout<<"A start checkout point2"<<std::endl;
   
   while(!L_list.empty() and !found){
-    //std::cout<<"L_list size"<<L_list.size()<<std::endl;
+    std::cout<<"L_list size"<<L_list.size()<<std::endl;
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
@@ -826,20 +834,22 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
     //found the candidates nodes
     std::vector<int> candidate_node;
-    //std::cout<<"A start checkout point3"<<std::endl;
-    //std::cout<<"check point near node 1"<<std::endl;
+    std::cout<<"A start checkout point3"<<std::endl;
+    std::cout<<"check point near node 1"<<std::endl;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    //std::cout<<"check point near node 2"<<std::endl;
+    std::cout<<"check point near node 2"<<std::endl;
     if(!near_node_exist){
        continue;
       }
 
     std::vector<int> temp_candidate_node;
     for(int i=0;i<candidate_node.size();i++){
+       std::cout<<"parallel_routing start"<<std::endl;
        bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
        if(parallel){
          temp_candidate_node.push_back(candidate_node[i]);
        }
+       std::cout<<"parallel_routing end"<<std::endl;
     }
 
     candidate_node = temp_candidate_node;
@@ -848,7 +858,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        continue;
       }
 
-    //std::cout<<"A start checkout point3.1"<<std::endl;
+    std::cout<<"A start checkout point3.1"<<std::endl;
 
     //std::vector<int> expand_candidate_node;
     for(int i=0;i<(int)candidate_node.size();i++){
@@ -864,14 +874,14 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        }
 
   }
-  //std::cout<<"A start checkout point4"<<std::endl;
+  std::cout<<"A start checkout point4"<<std::endl;
   std::vector<std::vector<int> > temp_path; //Q4 return sheilding and parallel path?  sheild and parallel should be recovered in outer loop???
   if(found==0){
      std::cout<<"A_star fails to find a feasible path"<<std::endl;
     }else{
      temp_path = Trace_Back_Paths(grid, current_node, left_up, right_down, src_index, dest_index);
     }
-   //std::cout<<"A start checkout point5"<<std::endl;
+   std::cout<<"A start checkout point5"<<std::endl;
    refreshGrid(grid);
 
 
