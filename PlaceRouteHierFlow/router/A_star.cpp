@@ -17,7 +17,6 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
   for(int i =0;i<pathNo;++i){
     
      std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
-     //find one shortest path
 
      std::vector<std::vector<int> > temp_path;
      
@@ -26,11 +25,9 @@ bool A_star::FindFeasiblePath(Grid& grid, int pathNo, int left_up, int right_dow
      temp_path = A_star_algorithm(grid, left_up, right_down);// grid.Source grid.dest
      
      std::cout<<"end A_star"<<std::endl; 
+
      if((int)temp_path.size()>0) {
-     Path = temp_path;
-     //return the shortest path
-     //Path.push_back(temp_path);
-     //CopyPath(grid, left_up, right_down);
+       Path = temp_path;
      mark=true;
      } else {
        mark=(mark or false);
@@ -123,6 +120,67 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
 
 };
 
+bool A_star::found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node){
+
+    
+    std::vector<int> north_node, south_node, east_node, west_node, up_node, down_node;
+    bool north_found, south_found, east_found, west_found, up_found, down_found;
+
+    //std::cout<<"expand node checkout point1"<<std::endl;
+    north_found = expand_node(grid.vertices_total[current_node].north, north_node, grid);
+    //std::cout<<"expand node checkout point2"<<std::endl;
+    south_found = expand_node(grid.vertices_total[current_node].south, south_node, grid);
+    //std::cout<<"expand node checkout point3"<<std::endl;
+    east_found = expand_node(grid.vertices_total[current_node].east, east_node, grid);
+    //std::cout<<"expand node checkout point4"<<std::endl;
+    west_found = expand_node(grid.vertices_total[current_node].west, west_node, grid);
+    //std::cout<<"expand node checkout point5"<<std::endl;
+
+    if(north_found){
+       for(int i=0;i<(int)north_node.size();i++){
+         candidate_node.push_back(north_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point8"<<std::endl;
+    if(south_found){
+       for(int i=0;i<(int)south_node.size();i++){
+         candidate_node.push_back(south_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point9"<<std::endl;
+    if(west_found){
+       for(int i=0;i<(int)west_node.size();i++){
+         candidate_node.push_back(west_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point10"<<std::endl;
+    if(east_found){
+       for(int i=0;i<(int)east_node.size();i++){
+         candidate_node.push_back(east_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point11"<<std::endl;
+    if(up_found){
+       for(int i=0;i<(int)up_node.size();i++){
+         candidate_node.push_back(up_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point12"<<std::endl;
+    if(down_found){
+       for(int i=0;i<(int)down_node.size();i++){
+         candidate_node.push_back(down_node[i]);
+       }
+      }
+    //std::cout<<"expand node checkout point13"<<std::endl;
+    if((int)candidate_node.size()>0){
+       //std::cout<<"candidate node Found"<<std::endl;
+       return true;
+      }else{
+       //std::cout<<"candidate node not Found"<<std::endl;
+       return false;
+      }
+};
+
 bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_node, Grid &grid){
 
   for(int i=0;i<(int)direction.size();i++){
@@ -144,7 +202,7 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 
 int A_star::trace_back_node(int current_node, Grid& grid){
 
-  int first_node_same_layer = current_node; //maybe src...
+  int first_node_same_layer = current_node;
 
   bool trace_back_flag = true;
 
@@ -244,7 +302,7 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
 
 };
 
-bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
   int interval_number = 1;
   temp_nodes.push_back(node);
@@ -256,8 +314,8 @@ bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>
      
      while(temp_number!=0){
 
-        if(grid.vertices_total[current_node].north.size()>0){
-           n = grid.vertices_total[current_node].north[0];
+        if(grid.vertices_total_full_connected[current_node].north.size()>0){ // vertices_total_full_connected // vertices_total
+           n = grid.vertices_total_full_connected[current_node].north[0];
         }else{
            n = -1;
         }
@@ -282,7 +340,7 @@ bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>
 
 };
 
-bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
   int interval_number = 1;
   temp_nodes.push_back(node);
@@ -294,8 +352,8 @@ bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int> 
      
      while(temp_number!=0){
 
-        if(grid.vertices_total[current_node].east.size()>0){
-           n = grid.vertices_total[current_node].east[0];
+        if(grid.vertices_total_full_connected[current_node].east.size()>0){
+           n = grid.vertices_total_full_connected[current_node].east[0];
         }else{
            n = -1;
         }
@@ -320,7 +378,7 @@ bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int> 
 
 };
 
-bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
   int interval_number = 1;
   temp_nodes.push_back(node);
@@ -332,8 +390,8 @@ bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int> 
      
      while(temp_number!=0){
 
-        if(grid.vertices_total[current_node].west.size()>0){
-           n = grid.vertices_total[current_node].west[0];
+        if(grid.vertices_total_full_connected[current_node].west.size()>0){
+           n = grid.vertices_total_full_connected[current_node].west[0];
         }else{
            n = -1;
         }
@@ -358,7 +416,7 @@ bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int> 
 
 };
 
-bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int> temp_nodes){
+bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
   int interval_number = 1;
   temp_nodes.push_back(node);
@@ -370,8 +428,8 @@ bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int>
      
      while(temp_number!=0){
 
-        if(grid.vertices_total[current_node].south.size()>0){ //QQQ: might use full grid?
-           n = grid.vertices_total[current_node].south[0];
+        if(grid.vertices_total_full_connected[current_node].south.size()>0){
+           n = grid.vertices_total_full_connected[current_node].south[0];
         }else{
            n = -1;
         }
@@ -490,7 +548,7 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
 
 };
 
-std::vector<int> A_star::parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &source_index, std::set<int> &dest_index, std::set<int> &src_index, std::set<int> &dest_index){
+bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &source_index, std::set<int> &dest_index, std::set<int> &src_index, std::set<int> &dest_index){
 
   std::vector<int> start_points;
   std::vector<int> end_points;
@@ -727,14 +785,10 @@ bool A_star::Extention_check(Grid& grid, int current_node){
 
 std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
 
-  // how to back trace?
-
   int via_expand_effort = 100;
 
-  //std::cout<<"A start checkout point1"<<std::endl;
-
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
-  std::pair<int,int> temp_pair; //temp_pair.first is the cost, temp_pair.second is the index of graph
+  std::pair<int,int> temp_pair; 
 
   std::set<int> src_index;
   for(int i=0;i<(int)source.size();i++){
@@ -750,8 +804,6 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
      }
 
-  //initial source  Q1//jugde whether source works
-  //initial_source(grid, L_list);
   initial_source(grid, L_list, src_index);
 
   bool found = 0;
@@ -777,17 +829,27 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     //std::cout<<"A start checkout point3"<<std::endl;
     //std::cout<<"check point near node 1"<<std::endl;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
-    
     //std::cout<<"check point near node 2"<<std::endl;
     if(!near_node_exist){
        continue;
       }
 
-    parallel_routing();
+    std::vector<int> temp_candidate_node;
+    for(int i=0;i<candidate_node.size();i++){
+       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index);
+       if(parallel){
+         temp_candidate_node.push_back(candidate_node[i]);
+       }
+    }
+
+    candidate_node = temp_candidate_node;
+    
+    if(candidate_node==0){
+       continue;
+      }
 
     //std::cout<<"A start checkout point3.1"<<std::endl;
-    //for sheilding and multi-connection
-    CheckExtendable(candidate_node, current_node, grid); //new code
+
     //for each node judge whether can be expand or not; Q3 expandable?
     //bool expandable = 0;
     //std::vector<int> expand_candidate_node;
