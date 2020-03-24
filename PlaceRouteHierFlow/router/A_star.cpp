@@ -836,7 +836,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
     std::vector<int> temp_candidate_node;
     for(int i=0;i<candidate_node.size();i++){
-       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index);
+       bool parallel = parallel_routing(grid, current_node, candidate_node[i], left_up, right_down, src_index, dest_index); //check parents
        if(parallel){
          temp_candidate_node.push_back(candidate_node[i]);
        }
@@ -850,16 +850,11 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
     //std::cout<<"A start checkout point3.1"<<std::endl;
 
-    //for each node judge whether can be expand or not; Q3 expandable?
-    //bool expandable = 0;
     //std::vector<int> expand_candidate_node;
     for(int i=0;i<(int)candidate_node.size();i++){
-       //judge whether this node can be expanded or not
-       // not all node can be expanded?
-       // if()?
-       //std::cout<<"A start checkout point3.2"<<std::endl;
+
        int M_dis = Manhattan_distan(candidate_node[i], grid);
-       //std::cout<<"A start checkout point3.3"<<std::endl;
+
        grid.vertices_total[candidate_node[i]].Cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal);
        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
        grid.vertices_total[candidate_node[i]].parent = current_node;
@@ -949,7 +944,7 @@ std::vector<int> A_star::CovertToShieldingNet(Grid& grid, std::vector<int> &temp
 
      }
 
-  //missing L shape remove
+  //missing L shape remove visually
 
   std::cout<<"temp shielding number "<<temp_shielding_path.size()<<std::endl;
 
