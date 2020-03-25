@@ -602,8 +602,10 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   //std::cout<<"find succsive or parallel node end"<<std::endl;
 
   if(found_s and found_e){
+  //if(1){
      //std::cout<<"L shape connection start"<<std::endl;
      return L_shape_Connection(grid, start_points, end_points);
+     //return true;
      //std::cout<<"L shape connection end"<<std::endl;
   }else{
     return false;
@@ -648,7 +650,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int metal = grid.vertices_total[end_points].metal - grid.vertices_total[current_node].metal;
     if(metal>0){metal=1;}else if(metal<0){metal=-1;}
     int dummy_layer = 1; // go up
-    std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
+    //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     //std::cout<<"direction x, y layer "<<x<<" "<<y<<" "<<metal<<std::endl;
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
@@ -696,15 +698,15 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   }
 
   
-  bool extend_up = Extention_checks(grid, node_set_up);
-  bool extend_down = Extention_checks(grid, node_set_down);
-  //bool extend_up = 1;
-  //bool extend_down = 1;
+  //bool extend_up = Extention_checks(grid, node_set_up);
+  //bool extend_down = Extention_checks(grid, node_set_down);
+  bool extend_up = 1;
+  bool extend_down = 1;
 
-  bool activa_up = Check_activa_via_active(grid, node_set_up);
-  bool activa_down = Check_activa_via_active(grid, node_set_down);
-  //bool activa_up = 1;
-  //bool activa_down = 1;
+  //bool activa_up = Check_activa_via_active(grid, node_set_up);
+  //bool activa_down = Check_activa_via_active(grid, node_set_down);
+  bool activa_up = 1;
+  bool activa_down = 1;
 
   if( (extend_up and activa_up) or (extend_down and activa_down)){
     //std::cout<<"L shape flags "<<extend_up<<" "<<activa_up<<" "<<extend_down<<" "<<activa_down<<std::endl;
@@ -771,9 +773,9 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      int current_metal = grid.vertices_total[nodes[i]].metal;
      if(parent_metal == current_metal and !grid.vertices_total[nodes[i]].active){
        return false;
-     }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up)){
+     }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
        return false;
-     }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down)){
+     }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
        return false;
      }
      
@@ -922,7 +924,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
 
        grid.vertices_total[candidate_node[i]].Cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal);
        int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
-       //grid.vertices_total[candidate_node[i]].parent = current_node;
+       grid.vertices_total[candidate_node[i]].parent = current_node;
        temp_pair.first = dis;
        temp_pair.second = candidate_node[i];
        L_list.insert(temp_pair);
