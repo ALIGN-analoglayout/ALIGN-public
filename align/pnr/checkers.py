@@ -218,6 +218,22 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 addt( n, con, "intervia")
 
+    for pn in hN.PowerNets:
+        def addt( obj, con, tag=None):
+            b = con.placedBox
+            if obj == pn:
+                add_terminal( obj.name, con.metal, b, tag=tag)
+            else:
+                add_terminal( obj, con.metal, b, tag=tag)
+
+        for metal in pn.path_metal:
+            con = metal.MetalRect
+            add_terminal( pn.name, con.metal, con.placedBox, "path_metal")
+
+        for via in pn.path_via:
+            for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
+                addt( pn, con, "path_via")
+
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
             gr_json = json.load( fp)
