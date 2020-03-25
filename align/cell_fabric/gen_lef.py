@@ -7,11 +7,15 @@ def gen_lef_data(data, fp, macro_name, cell_pin):
     def s(x):
         return "%.4f" % (x/10000.0)
 
-    fp.write("MACRO %s\n" % macro_name)
-    fp.write("  ORIGIN 0 0 ;\n")
-    fp.write("  FOREIGN %s 0 0 ;\n" % macro_name)
+    ox = data['bbox'][0]
+    oy = data['bbox'][1]
+    dx = data['bbox'][2] - ox
+    dy = data['bbox'][3] - oy
 
-    fp.write("  SIZE %s BY %s ;\n" % (s(data['bbox'][2]), s(data['bbox'][3])))
+    fp.write( f"MACRO {macro_name}\n")
+    fp.write( f"  ORIGIN {s(ox)} {s(oy)} ;\n")
+    fp.write( f"  FOREIGN {macro_name} 0 0 ;\n")
+    fp.write( f"  SIZE {s(dx)} BY {s(dy)} ;\n")
 
     exclude_layers = {"via0", "via1", "via2", "poly", "LISD", "SDT", "RVT",
                       "M0", "fin", "polycon", "GCUT", "active", "nselect", "pselect", "nwell"}
