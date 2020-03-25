@@ -496,7 +496,6 @@ bool A_star::Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest){
 
 bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index, std::set<int> &dest_index){
 
-  bool exist = 0;
   if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==1){//h
 
     vector<int> temp_nodes;
@@ -587,17 +586,33 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   if(source_index.find(current_node)!=source_index.end()){
     int mode = 0; //succsive
     found_s = find_succsive_parallel_node(grid, current_node, left, right, mode, start_points, source_index, dest_index);
+    if(0){
+       std::cout<<"source succsive"<<std::endl;
+       assert(0);
+      }
   }else{
     int mode = 1; //parallel
     found_s = find_succsive_parallel_node(grid, current_node, left, right, mode, start_points, source_index, dest_index);
+    if(found_s){
+       std::cout<<"source parallel"<<std::endl;
+       assert(0);
+      }
   }
 
   if(dest_index.find(next_node)!=dest_index.end()){
     int mode = 0; //succsive
     found_e = find_succsive_parallel_node(grid, next_node, left, right, mode, end_points, source_index, dest_index);
+    if(found_e){
+       std::cout<<"dest succsive"<<std::endl;
+       assert(0);
+      }
   }else{
     int mode = 1; //parallel
     found_e = find_succsive_parallel_node(grid, next_node, left, right, mode, end_points, source_index, dest_index);
+    if(0){
+       std::cout<<"dest parallel"<<std::endl;
+       assert(0);
+      }
   }
   //std::cout<<"find succsive or parallel node end"<<std::endl;
 
