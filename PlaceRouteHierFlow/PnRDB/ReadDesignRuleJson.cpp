@@ -21,11 +21,13 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         std::map<int, PnRDB::via_info> viaSet;
         std::unordered_map<string, int> name2ViaLayerMap;
         // 1. Extract metal info
+        int metal_index = 0;
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
           std::string lname=layer["Layer"];
           if(lname.front()=='M') {
             // metal layer
+            metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
             std::cout<<"Reading Json PDK on "<<lname<<std::endl;
             std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
@@ -95,7 +97,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
             tmp_metal.unit_R = unit_R*rc_scale;
             tmp_metal.unit_C = unit_C*rc_scale;
             tmp_metal.unit_CC = unit_CC*rc_scale;
-            metalSet.insert( std::pair<int, PnRDB::metal_info>(lnum, tmp_metal) );
+            metalSet.insert( std::pair<int, PnRDB::metal_info>(metal_index, tmp_metal) );
             }
         }
         for(std::map<int, PnRDB::metal_info>::iterator it=metalSet.begin(); it!=metalSet.end(); ++it) {
@@ -105,11 +107,13 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
         // 2. Extract via info
+        int via_index = 0;
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
           json layer = *lit;
           std::string lname=layer["Layer"];
           if(lname.front()=='V') {
             // via layer
+            via_index = via_index + 1;
             std::cout<<"Reading Json PDK on "<<lname<<std::endl;
             #ifdef FinFET_MOCK_PDK
             std::cout<<"Reading Json PDK on "<<"GdsLayerNo"<<std::endl;
@@ -178,9 +182,9 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
 		tmp_via.lower_metal_index = metal_stack_indices[0];
 		tmp_via.upper_metal_index = metal_stack_indices[1];
 		assert( viaSet.find( lnum) == viaSet.end());
-		viaSet.insert( std::pair<int, PnRDB::via_info>(lnum, tmp_via) );
+		viaSet.insert( std::pair<int, PnRDB::via_info>(via_index, tmp_via) );
 		assert( name2ViaLayerMap.find( tmp_via.name) == name2ViaLayerMap.end());
-		name2ViaLayerMap[tmp_via.name] = lnum;
+		name2ViaLayerMap[tmp_via.name] = via_index;
 	      }
 	    }
           }

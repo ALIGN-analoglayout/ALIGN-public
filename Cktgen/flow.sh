@@ -166,7 +166,8 @@ if [ ${SKIPGENERATE} = "NO" ]; then
 fi
 
 #ROUTER_IMAGE=darpaalign/detailed_router
-ROUTER_IMAGE=stevenmburns/intel_detailed_router
+#ROUTER_IMAGE=stevenmburns/intel_detailed_router
+ROUTER_IMAGE=nikolai_router
 
 if [ ${SKIPROUTER} = "NO" ]; then
     docker run --rm ${M_out} ${M_INPUT} ${M_DR_COLLATERAL} ${ROUTER_IMAGE} bash -c "cd /Cktgen && amsr.exe -file INPUT/ctrl.txt"
