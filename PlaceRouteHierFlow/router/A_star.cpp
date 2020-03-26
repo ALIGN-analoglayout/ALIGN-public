@@ -754,6 +754,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
       return false;
     }else if(next>0 and next< grid.vertices_total.size() ){
       grid.vertices_total[next].parent = current_node;
+      std::cout<<"next node "<<next<<" "<<grid.vertices_total[next].x<<" "<<grid.vertices_total[next].y<<" "<<grid.vertices_total[next].metal<<std::endl;
       node_set_up.push_back(next); 
     }else{
       std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
@@ -1086,19 +1087,20 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
 std::vector<int> A_star::Trace_Back_Path(Grid& grid, int current_node){
 
   std::vector<int> temp_path;
-  std::set<int> temp_parents;
-  temp_path.push_back(current_node);
-  int temp_parent = grid.vertices_total[current_node].parent;
+  //std::set<int> temp_parents;
+  //temp_path.push_back(current_node);
+  int temp_parent = current_node;
   //temp_parents.insert(temp_parent);
   std::cout<<"start trace back"<<std::endl;
-  //int count = 0;
-  while(temp_parent!=-1 and temp_parents.find(temp_parent)!=temp_parents.end()){
+  int count = 0;
+  while(temp_parent!=-1){
       std::cout<<"parents "<<temp_parent<<std::endl;
-      //if(count == 20) assert(0);
-      //count = count + 1;
-      temp_parents.insert(temp_parent);
+      if(count == 20) assert(0);
+      count = count + 1;
+      //temp_parents.insert(temp_parent);
       temp_path.push_back(temp_parent);
       temp_parent = grid.vertices_total[temp_parent].parent;
+      //temp_parent = grid.vertices_total[temp_parent].parent;
       }
 
   std::cout<<"End trace back"<<std::endl;
