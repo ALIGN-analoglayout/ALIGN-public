@@ -704,21 +704,27 @@ Option name=upper_layer                          value={topmetal}
           dx = tech.pitchPoly*tech.halfXGRGrid*2
           dy = tech.pitchDG  *tech.halfYGRGrid*2
           def touching( r0, r1):
-# (not touching) r0.lly > r1.ury or r1.lly > r0.ury
+            # (not touching) r0.lly > r1.ury or r1.lly > r0.ury
             check1 = r0.lly <= r1.ury and r1.lly <= r0.ury
             check2 = r0.llx <= r1.urx and r1.llx <= r0.urx
             return check1 and check2
 
           for gr in v.grs:
-            x0 = gr.rect.llx*dx - dx//2
-            x1 = gr.rect.urx*dx + dx//2
-            y0 = gr.rect.lly*dy - dy//2
-            y1 = gr.rect.ury*dy + dy//2
+            x0 =   (gr.rect.llx)*dx + self.bbox.llx
+            x1 = (1+gr.rect.urx)*dx + self.bbox.llx
+            y0 =   (gr.rect.lly)*dy + self.bbox.lly
+            y1 = (1+gr.rect.ury)*dy + self.bbox.lly
             gr_r = Rect( x0, y0, x1, y1)
-            print( "Metal GR:", gr_r, gr.rect)
+            print( "Metal GR:", gr, gr_r)
 
-            tuples = [("metal3", ["metal1","metal2"]),
-                      ("metal4", ["metal2","metal3"])]
+            tuples = [
+              ("metal1", ["metal1"]),
+              ("metal2", ["metal2","metal1"]),
+              ("metal3", ["metal3","metal2","metal1"]),
+              ("metal4", ["metal4","metal3","metal2"]),
+              ("metal5", ["metal5","metal4","metal3"]),
+              ("metal6", ["metal6","metal5"])
+              ]
 
             for gr_layer, w_layers in tuples:
               if gr.layer == gr_layer:
@@ -726,6 +732,7 @@ Option name=upper_layer                          value={topmetal}
                   if w.layer in w_layers:
                     if touching( gr_r, w.rect):
                       fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
+                      print( "Tie", gr, gr_r, w)
 
         fp.write( "#end of net %s\n" % k)
 
