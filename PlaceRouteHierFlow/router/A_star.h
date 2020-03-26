@@ -37,7 +37,7 @@ class A_star {
     bool find_nodes_west(Grid& grid, int node, int number, std::vector<int>& temp_nodes);
     bool found_near_node(int current_node, Grid &grid, std::vector<int> &candidate_node);
     bool Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest);
-    bool find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index, std::set<int> &dest_index);
+    bool find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index);
     bool parallel_routing(Grid& grid, int current_node, int next_node, int left, int right, std::set<int> &source_index, std::set<int> &dest_index);
     bool L_shape_Connection(Grid& grid, std::vector<int> &start_points, std::vector<int> &end_points);
     bool L_shape_Connection_Check(Grid& grid, int start_points, int end_points);
