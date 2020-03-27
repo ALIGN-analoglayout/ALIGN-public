@@ -563,6 +563,7 @@ Option name=metal_template_file value=INPUT/{self.nm}_dr_metal_templates.txt
 Option name=global_routing_file value=INPUT/{self.nm}_dr_globalrouting.txt
 Option name=input_file          value=INPUT/{self.nm}_dr_netlist.txt
 Option name=option_file         value=INPUT/{self.nm}_dr_mti.txt
+Option name=gr_merge_global_routes  value=0
 
 # primary synthesis options
 Option name=route       value={1 if route else 0}
