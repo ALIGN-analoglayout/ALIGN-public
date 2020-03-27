@@ -30,7 +30,6 @@ def trace_template(graph, similar_node_groups,visited,template,array):
         logger.debug("found matching level: %s,%s",template,similar_node_groups)
         trace_template(graph, next_match,visited,template,array)
 
-
 def match_branches(graph,nodes_dict):
     nbr_values = {}
     for node, nbrs in nodes_dict.items():
