@@ -166,6 +166,7 @@ struct SteinerTree{
 //};
 
 struct PowerGrid{
+  std::string name;
   std::vector<Metal> metals;
   std::vector<Via> vias;
   bool power = 1; //1 is vdd, 0 is gnd

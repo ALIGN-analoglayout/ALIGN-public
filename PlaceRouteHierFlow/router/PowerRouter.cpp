@@ -23,8 +23,10 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      CreatePowerGrid(node, drc_info, Lmetal, Hmetal, rate);
      std::cout<<"CheckPoint 2"<<std::endl;
      Physical_metal_via_power_grid(Vdd_grid);
+     Vdd_grid.name = "vss";
      std::cout<<"CheckPoint 3"<<std::endl;
      Physical_metal_via_power_grid(Gnd_grid);
+     Gnd_grid.name = "vdd";
      std::cout<<"CheckPoint 4"<<std::endl;
      ReturnPowerGridData(node);   
      std::cout<<"CheckPoint 5"<<std::endl;  
@@ -1002,6 +1004,8 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
       ConvertToViaPnRDB_Placed_Placed(temp_via,Vdd_grid.vias[i]);
       node.Vdd.vias.push_back(temp_via);
      }
+  node.Vdd.name = Vdd_grid.name;
+  std::cout<<"Power grid name "<<node.Vdd.name<<std::endl;
 //Gnd
   for(unsigned int i=0;i<Gnd_grid.metals.size();i++){
       PnRDB::Metal temp_metal;
@@ -1014,7 +1018,8 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
       ConvertToViaPnRDB_Placed_Placed(temp_via,Gnd_grid.vias[i]);
       node.Gnd.vias.push_back(temp_via);
      }
-
+  node.Gnd.name = Gnd_grid.name;
+  std::cout<<"Power grid name "<<node.Gnd.name<<std::endl;
 
 };
 
