@@ -211,7 +211,7 @@ class RemoveDuplicates():
                     if sl.isEmpty():
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
                     elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
-                        if self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
+                        if self.connectPair(layer,current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
                             sl.merge_slr(current_slr, sl.rects.pop())
                         else:
                             current_slr = sl.rects[-1]
@@ -234,10 +234,10 @@ class RemoveDuplicates():
                         if mh is not None:
                             metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
                             metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                            self.connectPair( metal_rect_v.root(), via_rect.root())
-                            self.connectPair( via_rect.root(), metal_rect_h.root())
+                            self.connectPair( via, metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via, via_rect.root(), metal_rect_h.root())
                         else:
-                            self.connectPair( metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via, metal_rect_v.root(), via_rect.root())
 
     def check_shorts_induced_by_terminals( self):
         for instance, v in self.subinsts.items():
@@ -246,7 +246,7 @@ class RemoveDuplicates():
                 if len(names) > 1:
                     self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
 
-    def connectPair( self, a, b):
+    def connectPair( self, layer, a, b):
         numshorts = len(self.shorts)
         if a.netName is None:
             a.netName = b.netName
@@ -255,7 +255,7 @@ class RemoveDuplicates():
             b.netName = a.netName
             a.connect( b)
         else:
-            self.shorts.append( (a, b) )
+            self.shorts.append( f'CONNECTPAIR {layer} {a} {b}' )
         if a.terminal is None and b.terminal is None:
             return numshorts == len(self.shorts)
         else:
