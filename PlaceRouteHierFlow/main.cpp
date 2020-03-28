@@ -49,13 +49,6 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   //int power_grid_metal_l = max_metal_layer_index - 2;
   //int power_grid_metal_u = max_metal_layer_index;
   //int power_routing_metal_l = min_metal_layer_index;
-
-  int signal_routing_metal_l = 0;
-  int signal_routing_metal_u = 5;
-  int power_grid_metal_l = 5;
-  int power_grid_metal_u = 6;
-  int power_routing_metal_l = 0;
-  int power_routing_metal_u = 5;
   
 
   std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
@@ -70,6 +63,9 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
   bool NEW_GLOBAL_ROUTER = 1;
   double rate = 0.1;
+
+  int signal_routing_metal_l = 0;
+  int signal_routing_metal_u = 5;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
@@ -131,6 +127,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
        
     }
 */
+
+    int power_grid_metal_l = 5;
+    int power_grid_metal_u = 6;
+    int power_routing_metal_l = 0;
+    int power_routing_metal_u = 5;
+
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, rate);
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
