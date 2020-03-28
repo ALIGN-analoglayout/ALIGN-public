@@ -41,17 +41,15 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
 
-/* 
-  int max_metal_layer_index = drcInfo.Metal_info.size()-1;
-  int min_metal_layer_index = 0;
+  //routing metal configuration
+  //int max_metal_layer_index = drcInfo.Metal_info.size()-1;
+  //int min_metal_layer_index = 0;
+  //int signal_routing_metal_l = min_metal_layer_index;
+  //int signal_routing_metal_u = max_metal_layer_index - 3;
+  //int power_grid_metal_l = max_metal_layer_index - 2;
+  //int power_grid_metal_u = max_metal_layer_index;
+  //int power_routing_metal_l = min_metal_layer_index;
 
-  int signal_routing_metal_l = min_metal_layer_index;
-  int signal_routing_metal_u = max_metal_layer_index - 3;
-  int power_grid_metal_l = max_metal_layer_index - 2;
-  int power_grid_metal_u = max_metal_layer_index;
-  int power_routing_metal_l = min_metal_layer_index;
-  int power_routing_metal_u = power_grid_metal_l;
-*/
   int signal_routing_metal_l = 0;
   int signal_routing_metal_u = 5;
   int power_grid_metal_l = 5;
