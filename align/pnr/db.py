@@ -157,9 +157,9 @@ abstract_structs = [
                           ("child",None),
                           ("instNum",None)
            ]),
-           ("PowerGrid",[("metals",(list,"Metal")),
-                       ("vias",(list,"Via")),
-                       ("power",None)
+           ("PowerGrid",[("name",None),
+                         ("metals",(list,"Metal")),
+                       ("vias",(list,"Via"))
            ]),
            ("PowerNet",[("name",None),
                       ("power",None),

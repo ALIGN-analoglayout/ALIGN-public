@@ -222,14 +222,13 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                     addt( n, con, "intervia")
 
-    for (nm,pg) in [('vdd',hN.Gnd), ('vss',hN.Vdd)]:
-        print( "Powergrid", nm, pg.power)
+    for pg in [hN.Gnd, hN.Vdd]:
         for metal in pg.metals:
             con = metal.MetalRect
-            add_terminal( nm, con.metal, con.placedBox, "power grid metal")
+            add_terminal( pg.name, con.metal, con.placedBox, "power grid metal")
         for via in pg.vias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                add_terminal( nm, con.metal, con.placedBox, "power grid via")
+                add_terminal( pg.name, con.metal, con.placedBox, "power grid via")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:

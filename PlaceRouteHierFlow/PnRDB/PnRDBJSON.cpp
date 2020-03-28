@@ -399,15 +399,15 @@ namespace PnRDB {
   }
 
   void to_json(json& j, const PowerGrid& v) {
+    j["name"] = json(v.name);
     j["metals"] = json(v.metals);
     j["vias"] = json(v.vias);
-    j["power"] = v.power;
   }
 
   void from_json(const json& j, PowerGrid& v) {
+    j["name"].get_to( v.name);
     j["metals"].get_to( v.metals);
     j["vias"].get_to( v.vias);
-    j["power"].get_to( v.power);
   }
 
   void to_json(json& j, const PowerNet& v) {

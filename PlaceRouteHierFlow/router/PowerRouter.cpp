@@ -640,7 +640,7 @@ void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
 
 
   //Vdd_grid
-  Vdd_grid.power = node.Vdd.power;
+  Vdd_grid.power = 1;
 
   for(unsigned int i =0;i<node.Vdd.metals.size();i++){
        RouterDB::Metal temp_metal;
@@ -655,7 +655,8 @@ void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
      }
 
   //Gnd_grid
-  Gnd_grid.power = node.Gnd.power;
+  // Gnd_grid.power = 0; // SMB: should be this
+  Gnd_grid.power = 1;
 
   for(unsigned int i =0;i<node.Gnd.metals.size();i++){
        RouterDB::Metal temp_metal;
