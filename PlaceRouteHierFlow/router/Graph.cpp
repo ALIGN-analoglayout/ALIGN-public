@@ -156,14 +156,22 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                  int graph_index = grid.total2graph[temp_index];
                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
                    { 
-                     temp_via.model_index = grid.vertices_graph[i].metal;
+                     if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
+                        temp_via.model_index = grid.vertices_graph[i].metal;
+                       }else{
+                        temp_via.model_index = grid.vertices_graph[graph_index].metal;
+                       }
                      VddVia_Set.insert(temp_via);
                      //VddPower_Set.insert(temp_metal);
                    }
 
                  if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
                    { 
-                     temp_via.model_index = grid.vertices_graph[i].metal; 
+                       if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
+                        temp_via.model_index = grid.vertices_graph[i].metal;
+                       }else{
+                        temp_via.model_index = grid.vertices_graph[graph_index].metal;
+                       }
                      GndVia_Set.insert(temp_via);
                      //GndPower_Set.insert(temp_metal);
                    }

@@ -74,13 +74,6 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
            RouterDB::Pin temp_pin = PowerNets[i].pins[j];
            std::vector<RouterDB::SinkData> temp_source, temp_dest;
 
-           if(Vdd_grid.metals.size()==0 or Gnd_grid.metals.size()==0){
-             std::cout<<"Placement Area is too small, no space to create power grid"<<std::endl;
-             assert(0);
-             //continue;
-           }
-
-
            if(PowerNets[i].power ==1){
                //Q1
                SetSrcDest(temp_pin, Vdd_grid, temp_source, temp_dest);
@@ -531,6 +524,12 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
 
   for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       utilization.push_back(rate); 
+     }
+	//utilization[7] = 0.6;
+	//utilization[6] = 0.6;
+
+for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
+      std::cout<<"utility["<<i<<"]= " << utilization[i] <<std::endl;
      }
   std::cout<<"Checkpoint get Data 8"<<std::endl;
 };

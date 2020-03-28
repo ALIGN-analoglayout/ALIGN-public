@@ -18,6 +18,8 @@ namespace MDB {
     int start_point_index;
     int end_point_index;
     double value;
+    int metal_layer;
+   // int metal_layer2;
   };
 
   struct metal_point{
@@ -25,11 +27,11 @@ namespace MDB {
     int y;
     int metal_layer;
     mutable int index;
-    int power;
+	int power;
   };
 
   struct Compare_metal_point {
-    bool operator() (const metal_point& lhs, const metal_point& rhs) const{
+bool operator() (const metal_point& lhs, const metal_point& rhs) const{
       if(lhs.x==rhs.x){
          if(lhs.y==rhs.y){
            if(lhs.power==rhs.power){
@@ -45,6 +47,7 @@ namespace MDB {
          }
     }
   };
+
 
 }
 

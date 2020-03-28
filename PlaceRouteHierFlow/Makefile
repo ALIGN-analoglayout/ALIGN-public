@@ -1,4 +1,3 @@
-
 MAKE=make
 
 
@@ -14,7 +13,7 @@ COVERAGE?=
 OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
-SuperLu?=/home/grads/l/liyg/Research/superlu/SuperLU_5.2.1/SRC/
+SuperLu?=/home/grads/x/xurishang/research/test/superlu/SuperLU_5.2.1/SRC/
 
 export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include 
 export CXX=g++
@@ -28,8 +27,8 @@ placer_path=placer
 router_path=router
 MNA_path=MNA
 
-SuperLu_path1=/home/grads/l/liyg/Research/superlu/SuperLU_5.2.1/build/SRC
-SuperLu_path2=/home/grads/l/liyg/Research/superlu/SuperLU_5.2.1/build/CBLAS
+SuperLu_path1=/home/grads/x/xurishang/research/test/superlu/SuperLU_5.2.1/build/SRC
+SuperLu_path2=/home/grads/x/xurishang/research/test/superlu/SuperLU_5.2.1/build/CBLAS
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
