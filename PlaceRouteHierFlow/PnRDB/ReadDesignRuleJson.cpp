@@ -106,6 +106,24 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           DRC_info.Metalmap[it->second.name] = DRC_info.Metal_info.size()-1;
         }
         DRC_info.MaxLayer = DRC_info.Metal_info.size()-1;
+
+        // add Boundary
+        for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit){
+          json layer = *lit;
+          std::string lname=layer["Layer"];
+          if(lname.compare("Boundary")==0){//
+             PnRDB::Boundary temp_boundary;
+             temp_boundary.layerNo = layer["GdsLayerNo"];
+             temp_boundary.gds_datatype.Draw=layer["GdsDatatype"]["Draw"];
+             //temp_boundary.gds_datatype.Pin=layer["GdsDatatype"]["Pin"];
+             //temp_boundary.gds_datatype.Label=layer["GdsDatatype"]["Label"];
+             //temp_boundary.gds_datatype.Blockage=layer["GdsDatatype"]["Blockage"];
+             DRC_info.top_boundary = temp_boundary;
+          }
+        }
+
+        std::cout<<"Boundary test "<<DRC_info.top_boundary.name<<" "<<DRC_info.top_boundary.layerNo<<" "<<DRC_info.top_boundary.gds_datatype.Draw<<std::endl;
+
         // 2. Extract via info
         int via_index = 0;
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit) {
