@@ -70,7 +70,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   Router curr_route;
 
   bool NEW_GLOBAL_ROUTER = 1;
-  double rate = 0.5;
+  double rate = 0.1;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
