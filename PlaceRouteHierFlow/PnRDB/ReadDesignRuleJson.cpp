@@ -26,6 +26,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           json layer = *lit;
           std::string lname=layer["Layer"];
           if(lname.front()=='M') {
+            metal_index = metal_index + 1;
             // metal layer
             metal_index = metal_index + 1;
             #ifdef FinFET_MOCK_PDK
@@ -130,6 +131,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
           json layer = *lit;
           std::string lname=layer["Layer"];
           if(lname.front()=='V') {
+            via_index = via_index + 1;
             // via layer
             via_index = via_index + 1;
             std::cout<<"Reading Json PDK on "<<lname<<std::endl;
