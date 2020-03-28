@@ -84,7 +84,7 @@ def main( name, generate=False, args=None):
         g = importlib.import_module( f'intel_p1222p2.generate_{name}')
         g.generate()
 
-    td = '/dataVolume/git/analog-placer-22nm/DR_COLLATERAL_Generator/22nm'
+    td = f'{ALIGN_HOME}/Cktgen/Intel/DR_COLLATERAL_Generator/22nm'
 
     cmd = f'-sgr -src {name} -td {td} --placer_json __json --gr_json __json_grs --no_interface'
 

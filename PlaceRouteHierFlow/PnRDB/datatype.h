@@ -43,6 +43,7 @@ struct PowerNet;
 struct PortPos;
 struct Router_report;
 struct routing_net;
+struct Boundary;
 
 
 /// Part 1: declaration of enum types
@@ -527,6 +528,12 @@ struct via_info {
   GdsDatatype gds_datatype;
 };
 
+struct Boundary{
+  string name = "Boundary";
+  int layerNo;
+  GdsDatatype gds_datatype;
+};
+
 struct Drc_info {
   int MaxLayer; //index
   map<string, int> Metalmap, Viamap; // map from metal/via's name(M1, M2, V1...) to metal/via's index in the below vectors
@@ -536,7 +543,10 @@ struct Drc_info {
   vector<ViaModel> Via_model;
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
+  Boundary top_boundary;
 };
+
+
 
 struct routing_net{
    
