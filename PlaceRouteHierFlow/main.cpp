@@ -43,12 +43,20 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
   int max_metal_layer_index = drcInfo.Metal_info.size()-1;
   int min_metal_layer_index = 0;
+/*
   int signal_routing_metal_l = min_metal_layer_index;
   int signal_routing_metal_u = max_metal_layer_index - 3;
   int power_grid_metal_l = max_metal_layer_index - 2;
   int power_grid_metal_u = max_metal_layer_index;
   int power_routing_metal_l = min_metal_layer_index;
   int power_routing_metal_u = power_grid_metal_l;
+*/
+  int signal_routing_metal_l = 0;
+  int signal_routing_metal_u = 5;
+  int power_grid_metal_l = 5;
+  int power_grid_metal_u = 6;
+  int power_routing_metal_l = 0;
+  int power_routing_metal_u = 5;
   
 
   std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
