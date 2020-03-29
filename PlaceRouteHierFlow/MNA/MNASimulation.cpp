@@ -1,4 +1,5 @@
 	#include "MNASimulation.h"
+	#include <iostream>
 #include "/home/grads/x/xurishang/research/test/superlu/SuperLU_5.2.1/SRC/slu_ddefs.h"
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
@@ -14,7 +15,8 @@ this->I = out_I;
 //Test_superlu();
 
 //ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
-ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point);
+std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
+ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set);
   
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
   std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
@@ -351,6 +353,8 @@ std::cout<<"check point8"<<std::endl;
   double*      dp;
   double*       volt;
   dp = (double*) Bstore->nzval;
+
+
   int vol_count = 0;
 if (!(volt = doubleMalloc(n)))    ABORT("Malloc fails for volt[].")
 std::cout<<"check point9"<<std::endl;  
@@ -366,6 +370,9 @@ for (i = 0; i < n; ++i) {
 for (k = 0; k < B.nrow; ++k){
 std::cout<<"dp[" << k << "]=" << dp[k] <<std::endl;
 }
+
+ Print_Result(point_set, dp);
+
 /*	
 for (int j = 0; j < n; j++){
  std::cout<<"volt[" << j << "]=" << volt[j] <<std::endl;
@@ -413,6 +420,18 @@ std::cout<<"check point11"<<std::endl;
 
 //result = 0.9;
 };
+
+void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,double* dp){
+
+  std::ofstream pythonfile;
+  pythonfile.open("Powergridresult.txt");
+  for(auto it = point_set.begin(); it != point_set.end(); it++){
+	 pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+  }
+  pythonfile.close();
+};
+
+
 
 void MNASimulation::Print_Devices(std::vector<MDB::device> &temp_devices){
 
@@ -841,10 +860,10 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
 
 
 
-void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point){
+void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set){
 
   
-  std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
+  //std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
  // std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
 
   int highest_metal = INT_MIN;

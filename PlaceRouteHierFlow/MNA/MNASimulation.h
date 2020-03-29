@@ -57,6 +57,7 @@ class MNASimulation {
 	int MaxX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
 	int MapY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
 	int MapX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
+	void Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double* dp);
 
       //added by yg
      void Clear_Power_Grid(PnRDB::PowerGrid &temp_grid);
@@ -64,7 +65,7 @@ class MNASimulation {
       //void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set);
       void ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,int power);
       void ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,int power);
-      void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point);
+      void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set);
       void Print_Devices(std::vector<MDB::device> &temp_devices);
       double Return_Worst_Voltage(){return result;};
       void Test_superlu();
