@@ -99,7 +99,6 @@ def check_convergence(match:dict):
         else:
             vals+=val
             
-
 def match_branches(graph,nodes_dict):
     logger.debug(f"matching next level branches {nodes_dict}")
     nbr_values = {}
