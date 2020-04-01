@@ -36,17 +36,137 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      std::cout<<"CheckPoint 7"<<std::endl;
      Physical_metal_via(); 
      std::cout<<"CheckPoint 8"<<std::endl;
+     ExtendMetal();  // need to change this part
+     std::cout<<"CheckPoint 8.5"<<std::endl;
      ReturnPowerNetData(node);
      std::cout<<"CheckPoint 9"<<std::endl;
     }
   
 };
 
+void PowerRouter::ExtendMetal(){
+
+
+  for(unsigned int i=0;i<PowerNets.size();i++){
+
+     if(PowerNets[i].path_metal.size()!=PowerNets[i].extend_label.size()){assert(0);}
+
+     for(unsigned int j=0;j<PowerNets[i].path_metal.size();j++){
+
+         if(PowerNets[i].extend_label[j]==0){continue;}
+
+         int current_metal = PowerNets[i].path_metal[j].MetalIdx;
+
+         int direction = drc_info.Metal_info[current_metal].direct;
+
+         int minL = drc_info.Metal_info[current_metal].minL;
+         
+         int current_length = abs( PowerNets[i].path_metal[j].LinePoint[0].x - PowerNets[i].path_metal[j].LinePoint[1].x) + abs( PowerNets[i].path_metal[j].LinePoint[0].y - PowerNets[i].path_metal[j].LinePoint[1].y);
+
+         if(current_length<minL){
+
+            int extend_dis = ceil(minL - current_length)/2;
+   
+            if(direction==1){//h
+             
+               ExtendX(PowerNets[i].path_metal[j], extend_dis);
+               
+            }else{//v
+              
+               ExtendY(PowerNets[i].path_metal[j], extend_dis);
+              
+            }
+
+
+         }
+     }
+  }
+
+
+};
+
+void PowerRouter::ExtendX(RouterDB::Metal &temp_metal, int extend_dis){
+
+  //extend
+  if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+
+     temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x - extend_dis;
+     temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x + extend_dis;
+     //rewrite contact
+
+    }else{
+
+     temp_metal.LinePoint[0].x = temp_metal.LinePoint[0].x + extend_dis;
+     temp_metal.LinePoint[1].x = temp_metal.LinePoint[1].x - extend_dis;
+
+    }
+
+    UpdateMetalContact(temp_metal);
+  
+};
+
+void PowerRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
+
+  //extend
+  if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){
+
+     temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y - extend_dis;
+     temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y + extend_dis;
+     //rewrite contact
+
+    }else{
+
+     temp_metal.LinePoint[0].y = temp_metal.LinePoint[0].y + extend_dis;
+     temp_metal.LinePoint[1].y = temp_metal.LinePoint[1].y - extend_dis;
+
+    }
+
+    UpdateMetalContact(temp_metal);
+  
+};
+
+void PowerRouter::UpdateMetalContact(RouterDB::Metal &temp_metal){
+
+  temp_metal.MetalRect.metal = temp_metal.MetalIdx;
+  temp_metal.MetalRect.placedCenter.x = (temp_metal.LinePoint[0].x+temp_metal.LinePoint[1].x)/2;
+  temp_metal.MetalRect.placedCenter.y = (temp_metal.LinePoint[0].y+temp_metal.LinePoint[1].y)/2;
+
+  if(temp_metal.LinePoint[0].y==temp_metal.LinePoint[1].y){
+
+     if(temp_metal.LinePoint[0].x<temp_metal.LinePoint[1].x){
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[0].x;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[0].y-temp_metal.width/2;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[1].x;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[1].y+temp_metal.width/2;
+     }else{
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[1].x;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[1].y-temp_metal.width/2;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[0].x;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[0].y+temp_metal.width/2;
+     }
+
+  }else{
+
+     if(temp_metal.LinePoint[0].y<temp_metal.LinePoint[1].y){               
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[0].x-temp_metal.width/2;;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[0].y;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[1].x+temp_metal.width/2;;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[1].y;  
+       }else{
+        temp_metal.MetalRect.placedLL.x =  temp_metal.LinePoint[1].x-temp_metal.width/2;;
+        temp_metal.MetalRect.placedLL.y =  temp_metal.LinePoint[1].y;
+        temp_metal.MetalRect.placedUR.x =  temp_metal.LinePoint[0].x+temp_metal.width/2;;
+        temp_metal.MetalRect.placedUR.y =  temp_metal.LinePoint[0].y;
+       }
+  }
+
+};
+
 //write PowerGrid in top level
 //write PowerNet in each level or top level???
 
 void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
-
+  rate = 1.0; //for power routing, rate should be 1.0
   GetData(node, drc_info, Lmetal, Hmetal, rate);
   
   std::vector<std::vector<RouterDB::point> > plist;
@@ -69,7 +189,8 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
   for(unsigned int i=0;i<PowerNets.size();i++){
 
-       for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
+      for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
+
            std::vector<std::vector<RouterDB::point> > add_plist;
            add_plist.resize(this->layerNo);
 
@@ -89,27 +210,28 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
               }else{
                SetSrcDest(temp_pin, Gnd_grid, temp_source, temp_dest);
               }
-              
+
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
+            grid.Full_Connected_Vertex();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
             std::cout<<"start inactive plist"<<std::endl;
             grid.InactivePointlist_Power(pinplist);
             std::cout<<"End inactive plist"<<std::endl;
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
-            //std::vector<RouterDB::contact> Terminal_contact=grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
+            
             grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
             grid.ActivateSourceDest();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_net, LL, UR);
             grid.InactivePointlist_Power(netplist);
-            //Terminal_contact=grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
+       
             grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
-            grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
-            Graph graph(grid);
-            bool pathMark= graph.FindFeasiblePath(grid, this->path_number);
-            std::vector<std::vector<RouterDB::Metal> > physical_path;
+            A_star a_star(grid, 0); // no sheilding
+            int multi_number = 0;
+            bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+            std::vector<std::vector<RouterDB::Metal>> physical_path;
             std::cout<<"power routing pathMark "<<pathMark<<std::endl;
             if(pathMark) {
-                 physical_path=graph.ConvertPathintoPhysical(grid);
+                 physical_path=a_star.ConvertPathintoPhysical(grid);
                  lastmile_source_new(physical_path,temp_source);
                  lastmile_dest_new(physical_path,temp_dest);
                  returnPath(physical_path, PowerNets[i]);
@@ -118,10 +240,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
                  std::cout<<PowerNets[i].netName<<std::endl;
                }
              UpdatePlistNets(physical_path, add_plist);
-             InsertPlistToSet_x(Set_net, add_plist);
-          }
-     }
+             InsertPlistToSet_x(Set_net, add_plist);           
 
+         }
+     }
 
 };
 
@@ -191,7 +313,11 @@ void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_pat
   for(unsigned int i=0;i<temp_path.size();i++){
        
      for(unsigned int j=0;j<temp_path[i].size();j++){
-
+         if(j==0 or j==temp_path[i].size()-1){
+           temp_net.extend_label.push_back(0);
+         }else{
+           temp_net.extend_label.push_back(1);
+         }
          temp_net.path_metal.push_back(temp_path[i][j]);
      
         }
