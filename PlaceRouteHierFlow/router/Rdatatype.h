@@ -182,6 +182,7 @@ struct PowerNet{
   std::vector<Pin> pins;
   std::vector<Metal> path_metal;
   std::vector<Via> path_via;
+  std::vector<int> extend_label;
  
 };
 
