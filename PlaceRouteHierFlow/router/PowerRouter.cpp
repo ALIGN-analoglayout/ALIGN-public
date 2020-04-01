@@ -169,6 +169,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
   rate = 1.0; //for power routing, rate should be 1.0
   GetData(node, drc_info, Lmetal, Hmetal, rate);
   
+  // bug missing via space check?
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
 
