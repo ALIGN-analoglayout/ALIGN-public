@@ -17,7 +17,7 @@ def check_results(ckt_name):
     with open( ckt_name, "rt") as fp:
         d = json.load(fp)
 
-    skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn"])
+    skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "polycon", "diffcon"])
 
     layer_tbl = { "diffcon": "Diffcon",
                   "polycon": "Polycon",
@@ -42,7 +42,7 @@ def check_results(ckt_name):
     terminals = []
     for term in d['terminals']:
         ly = term['layer']
-        if ly in skip_layers:
+        if str(ly).lower() in skip_layers:
             continue
         nm = term['netName'] if 'netName' in term else term['net_name']
         #

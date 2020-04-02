@@ -293,6 +293,7 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
 void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
 
   //ViaRect
+  std::cout<<"Test 1"<<std::endl;
   temp_via.ViaRect.metal = temp_via.model_index;
   temp_via.ViaRect.placedCenter = temp_via.position;
   temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
@@ -300,6 +301,7 @@ void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
   temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
   temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
   //LowerMetalRect
+  std::cout<<"Test 2"<<std::endl;
   temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
   temp_via.LowerMetalRect.placedCenter = temp_via.position;
   temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
@@ -307,6 +309,7 @@ void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
   temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
   temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
   //UpperMetalRect
+  std::cout<<"Test 3"<<std::endl;
   temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
   temp_via.UpperMetalRect.placedCenter = temp_via.position;
   temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
@@ -384,7 +387,10 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
        //temp_via.model_index = temp_metal_index;
        RouterDB::Via temp_via;
        temp_via = temp_grid.vias[i];
+       std::cout<<"before update via"<<std::endl;
+       std::cout<<"temp via "<<temp_via.model_index<<std::endl;
        UpdateVia(temp_via);
+       std::cout<<"after update via"<<std::endl;
        temp_grid.vias[i]=temp_via;
      
      }

@@ -53,6 +53,9 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   bool NEW_GLOBAL_ROUTER = 1;
   double rate = 0.1;
 
+  int signal_routing_metal_l = 0;
+  int signal_routing_metal_u = 5;
+
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Starting Gcell Global Routing", skip_saving_state);
@@ -82,7 +85,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   } else {
     // Global Routing (old version)
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
-    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
@@ -91,7 +94,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     // Detail Routing
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
-    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 6, binary_directory, rate);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
@@ -109,7 +112,6 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   //double worst=0;
   //double th = 0.1;
   //bool Power_mesh_optimize = 0;
-  rate = 0.1;
 
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
