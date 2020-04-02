@@ -307,6 +307,35 @@ addOABoundaries (json& jsonElements, int width, int height) {
 
 }
 
+void
+addTop_OABoundaries (json& jsonElements, int width, int height, const PnRDB::Drc_info& drc_info) {
+  int off_set = drc_info.Metal_info.back().width;
+  int x[5],y[5];
+  x[0]=y[0]=x[1]=y[3]=x[4]=y[4]=0-off_set; x[2]=x[3]=width+off_set; y[1]=y[2]=height+off_set;
+  json bound1;
+  bound1["type"] = "boundary";
+  bound1["layer"]=drc_info.top_boundary.layerNo;
+  bound1["datatype"]=drc_info.top_boundary.gds_datatype.Draw;
+  json xy = json::array();
+  for (size_t i = 0; i < 5; i++) {
+      xy.push_back (x[i]);
+      xy.push_back (y[i]);
+  }
+  bound1["xy"] = xy;
+  bound1["propattr"]=126;
+  bound1["propvalue"]="oaBoundary:pr";
+  jsonElements.push_back (bound1);
+//   boundary
+//       layer 235
+//       datatype 5
+//       xy   5   0 0   0 1608   8640 1608   8640 0
+//                0 0
+//       propattr 126
+//       propvalue "oaBoundary:pr"
+//       endel
+
+}
+
 
 static void addViaBoundaries (json& jsonElements, struct PnRDB::Via& via, const PnRDB::Drc_info& drc_info, double unit) {
     int x[5], y[5];
@@ -592,6 +621,9 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
     }
 
     addOABoundaries (jsonElements, unitScale * node.width, unitScale * node.height);
+    if(node.isTop){
+      addTop_OABoundaries(jsonElements, unitScale * node.width, unitScale * node.height, drc_info);
+    }
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
     jsonLib["bgnstr"] = jsonStrAry;
