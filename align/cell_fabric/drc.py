@@ -78,7 +78,9 @@ class DesignRuleCheck():
         def check_single_metal( r, ly, metal_dir, enclosure_value):
             o = 1 if metal_dir == 'V' else 0
             metal_r = self._find_rect_covering_via( r, ly, metal_dir)
-            if metal_r[o+0] > r.rect[o+0] - enclosure_value or metal_r[o+2] < r.rect[o+2] + enclosure_value:
+            if metal_r is None:
+                self.errors.append( f"Enclosure violation on {ly}-{layer}: No metal found surrounding {r.rect}, {enclosure_value}")
+            elif metal_r[o+0] > r.rect[o+0] - enclosure_value or metal_r[o+2] < r.rect[o+2] + enclosure_value:
                 self.errors.append( f"Enclosure violation on {ly}-{layer}: {metal_r} does not sufficiently surround {r.rect}, {enclosure_value}")
 
         for _, sl in vv.items():
@@ -132,9 +134,8 @@ class DesignRuleCheck():
         if result is not None:
             return result
         else:
-            assert False, f"No rectangle on {ly} covering via at {r.rect}"
-
-
+            #assert False, f"No rectangle on {ly} covering via at {r.rect}"
+            return result
 
     def _check_metal_rules(self, layer, vv):
         '''Check metal min-length / min-spacing rules'''

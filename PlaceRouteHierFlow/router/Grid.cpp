@@ -867,11 +867,13 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
     if(drc_info.Metal_info.at(i).direct==0) { //vertical
       //layer_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x;
       this->x_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x*grid_scale;
-      this->y_min.at(i)=this->x_unit.at(i)/2;
+      //this->y_min.at(i)=this->x_unit.at(i)/2;
+      this->y_min.at(i)=1;
     } else if (drc_info.Metal_info.at(i).direct==1) { // horizontal
       //layer_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y;
       this->y_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y*grid_scale;
-      this->x_min.at(i)=this->y_unit.at(i)/2;
+      //this->x_min.at(i)=this->y_unit.at(i)/2;
+      this->x_min.at(i)=1;
     } else {
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }
@@ -885,6 +887,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
     if(drc_info.Metal_info.at(i).direct==0) { // if vertical layer
       int curlayer_unit=x_unit.at(i); // current layer direction: vertical
       int nexlayer_unit; // neighboring layer direction: horizontal
+      //int LLx = int(ceil(double(LL.x)/curlayer_unit))
       int LLx=(LL.x%curlayer_unit==0)?(LL.x):( (LL.x/curlayer_unit)*curlayer_unit<LL.x ? (LL.x/curlayer_unit+1)*curlayer_unit : (LL.x/curlayer_unit)*curlayer_unit ); // X lower boudary
       int LLy; // Y lower boundary
       if(i==0) { // if lowest layer
