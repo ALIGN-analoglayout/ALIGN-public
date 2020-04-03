@@ -23,11 +23,11 @@
 #include "Graph.h"
 #include "RawRouter.h"
 #include "Rdatatype.h"
-#include "DetailRouter.h"
+#include "GcellDetailRouter.h"
 #include "../PnRDB/datatype.h"
 #include "A_star.h"
 
-class PowerRouter : public DetailRouter {
+class PowerRouter : public GcellDetailRouter {
 
   friend class Grid;
 
@@ -78,6 +78,8 @@ class PowerRouter : public DetailRouter {
     void UpdateMetalContact(RouterDB::Metal &temp_metal);
     void ExtendY(RouterDB::Metal &temp_metal, int extend_dis);
     void ExtendX(RouterDB::Metal &temp_metal, int extend_dis);
+    void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num);
+
 
 };
 
