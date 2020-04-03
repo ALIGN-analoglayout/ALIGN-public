@@ -553,6 +553,7 @@ namespace PnRDB {
     j["cap_ratio"] = v.cap_ratio;
     j["cap_r"] = v.cap_r;
     j["cap_s"] = v.cap_s;
+    j["dummy_flag"] = v.dummy_flag;
   }
 
   void from_json(const json& j, CCCap& v) {
@@ -562,6 +563,7 @@ namespace PnRDB {
     j["cap_ratio"].get_to( v.cap_ratio);
     j["cap_r"].get_to( v.cap_r);
     j["cap_s"] .get_to( v.cap_s);
+    j["dummy_flag"] .get_to( v.dummy_flag);
   }
 
   void to_json(json& j, const R_const& v) {
@@ -590,6 +592,28 @@ namespace PnRDB {
     j["start_pin"].get_to( v.start_pin);
     j["end_pin"].get_to( v.end_pin);
     j["C"].get_to( v.C);
+  }
+
+  void to_json(json& j, const routing_net& v) {
+    j["net_name"] = v.net_name;
+    j["pin_name"] = json(v.pin_name);
+    j["pin_access"] = json(v.pin_access);
+  }
+
+  void from_json(const json& j, routing_net& v) {
+    j["net_name"].get_to( v.net_name);
+    j["pin_name"].get_to( v.pin_name);
+    j["pin_access"].get_to( v.pin_access);
+  }
+
+  void to_json(json& j, const Router_report& v) {
+    j["node_name"] = v.node_name;
+    j["routed_net"] = json(v.routed_net);
+  }
+
+  void from_json(const json& j, Router_report& v) {
+    j["node_name"].get_to( v.node_name);
+    j["routed_net"].get_to( v.routed_net);
   }
 
   void to_json(json& j, const hierNode& v) {
@@ -627,6 +651,7 @@ namespace PnRDB {
     j["C_Constraints"] = json(v.C_Constraints);
     j["bias_Hgraph"] = json(v.bias_Hgraph);
     j["bias_Vgraph"] = json(v.bias_Vgraph);
+    j["router_report"] = json(v.router_report);
   }
 
   void from_json(const json& j, hierNode& v) {
@@ -666,6 +691,7 @@ namespace PnRDB {
 
     j["bias_Hgraph"].get_to( v.bias_Hgraph);
     j["bias_Vgraph"].get_to( v.bias_Vgraph);
+    j["router_report"].get_to( v.router_report);
   }
 
 };
