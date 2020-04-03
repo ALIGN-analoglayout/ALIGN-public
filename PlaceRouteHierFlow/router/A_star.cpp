@@ -1147,8 +1147,27 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
        int length = abs(grid.vertices_total[current_node].x - grid.vertices_total[first_node_same_layer].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[first_node_same_layer].y);
        int minL = drc_info.Metal_info[metal].minL;
        int delta_length = length - minL;
-
+       int via_space_length = 0;
        int current_node_length = 0;
+       int temp_parent = grid.vertices_total[first_node_same_layer].parent;
+       if(temp_parent != -1){
+          if(grid.vertices_total[current_node].metal == grid.vertices_total[next_node].metal){
+            int via_index = 0;
+            int metal_index = grid.vertices_total[current_node].metal;
+            int metal_direct =  drc_info.Metal_info[metal_index].direct;;
+            if(grid.vertices_total[current_node].metal<grid.vertices_total[next_node].metal){
+                via_index = grid.vertices_total[current_node].metal;
+              }else{
+                via_index = grid.vertices_total[next_node].metal;
+              }
+            if(metal_direct==1){//H
+                via_space_length = drc_info.Via_info[via_index].width + drc_info.Via_info[via_index].dist_ss;
+              }else{
+                via_space_length = drc_info.Via_info[via_index].width_y + drc_info.Via_info[via_index].dist_ss_y;
+              }
+          }
+       }
+       
        int next_node_length = 0;
        int current_node_expand = 0;
        int next_node_expand = 0;
@@ -1192,7 +1211,7 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
        next_node_length = 2*next_node_expand + next_node_length;
        std::cout<<"check via current_node_length "<<current_node_length<<std::endl;
        std::cout<<"check via next_length "<<next_node_length<<std::endl;
-       if(delta_length<0){
+       if(delta_length<0 and length >= via_space_length){
            //std::cout<<"start CheckExendable_With_Certain_Length"<<std::endl;
            bool feasible = CheckExendable_With_Certain_Length(first_node_same_layer,current_node,length,minL,grid);
            if(feasible==0){
@@ -1207,7 +1226,7 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
                std::cout<<"Up/down infeasible case 1"<<std::endl;
              }           
 
-         }else{
+         }else if(length >= via_space_length){
             bool feasible = 1;
             //Check_via_AV(current_node,current_node,0,current_node_length,grid,feasible);
             //Check_via_AV(next_node,next_node,0,next_node_length,grid,feasible);
