@@ -55,6 +55,7 @@ class A_star {
     int trace_back_node(int current_node, Grid& grid);
     std::vector<std::vector<int>> GetPath();
     bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
+    void erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate);
 };
 
 #endif

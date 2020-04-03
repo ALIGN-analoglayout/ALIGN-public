@@ -122,7 +122,8 @@ void A_star::initial_source(Grid& grid, std::set<std::pair<int,int>, RouterDB::p
 
 bool A_star::expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid){
 
-  if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
+  //if( direction!= -1 and grid.vertices_total[direction].active and grid.vertices_total[direction].Cost==-1){
+  if( direction!= -1 and grid.vertices_total[direction].active){
      temp_node.push_back(direction);
     }
 
@@ -213,7 +214,8 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 
   for(int i=0;i<(int)direction.size();i++){
  
-       if(grid.vertices_total[direction[i]].active and grid.vertices_total[direction[i]].Cost==-1){
+       //if(grid.vertices_total[direction[i]].active and grid.vertices_total[direction[i]].Cost==-1){
+       if(grid.vertices_total[direction[i]].active){
        temp_node.push_back(direction[i]);
        }
      }
@@ -931,13 +933,29 @@ bool A_star::Extention_check(Grid& grid, int current_node){
 
 };
 
+void A_star::erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate){
 
+  std::vector<int> temp_candidate;
+
+  for(int i = 0;i < candidate.size();i++){
+
+     if(Close_set.find(candidate[i])==Close_set.end()){
+         
+         temp_candidate.push_back(candidate[i]);
+     }
+
+  }
+
+  candidate = temp_candidate;
+
+};
 
 std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up, int right_down){
 
   int via_expand_effort = 100;
 
   std::set<std::pair<int,int>, RouterDB::pairComp> L_list;
+  std::set<int> close_set;
   std::pair<int,int> temp_pair; 
 
   std::set<int> src_index;
@@ -974,6 +992,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
+    close_set.insert(current_node = it->second);
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
@@ -986,6 +1005,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::cout<<"A start checkout point3"<<std::endl;
     std::cout<<"check point near node 1"<<std::endl;
     bool near_node_exist =found_near_node(current_node, grid, candidate_node);
+    erase_candidate_node(close_set, candidate_node);
     std::cout<<"candidate node size "<<near_node_exist<<" "<<candidate_node.size()<<std::endl;
     std::cout<<"check point near node 2"<<std::endl;
     if(!near_node_exist){
@@ -1095,7 +1115,7 @@ std::vector<int> A_star::Trace_Back_Path(Grid& grid, int current_node){
   int count = 0;
   while(temp_parent!=-1){
       std::cout<<"parents "<<temp_parent<<std::endl;
-      if(count == 20) assert(0);
+      //if(count == 20) assert(0);
       count = count + 1;
       //temp_parents.insert(temp_parent);
       temp_path.push_back(temp_parent);
