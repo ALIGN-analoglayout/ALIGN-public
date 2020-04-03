@@ -24,27 +24,23 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      std::cout<<"CheckPoint 2"<<std::endl;
      Physical_metal_via_power_grid(Vdd_grid);
 
-     if ( node.PowerNets.size() == 2) {
-       if ( node.PowerNets[0].power == 1) {
-	 Vdd_grid.name = node.PowerNets[0].name;
-       } else if ( node.PowerNets[1].power == 1) {
-	 Vdd_grid.name = node.PowerNets[1].name;
+     Vdd_grid.name = "vdd";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 1) {
+	 Vdd_grid.name = node.PowerNets[idx].name;
+	 break;
        }
-     } else {
-       Vdd_grid.name = "vdd";
      }
 
      std::cout<<"CheckPoint 3"<<std::endl;
      Physical_metal_via_power_grid(Gnd_grid);
 
-     if ( node.PowerNets.size() == 2) {
-       if ( node.PowerNets[0].power == 0) {
-	 Gnd_grid.name = node.PowerNets[0].name;
-       } else if ( node.PowerNets[1].power == 0) {
-	 Gnd_grid.name = node.PowerNets[1].name;
+     Gnd_grid.name = "vss";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 0) {
+	 Gnd_grid.name = node.PowerNets[idx].name;
+	 break;
        }
-     } else {
-       Gnd_grid.name = "vss";
      }
 
      std::cout<<"CheckPoint 4"<<std::endl;
