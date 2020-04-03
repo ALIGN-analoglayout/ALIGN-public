@@ -62,7 +62,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   Router curr_route;
 
   bool NEW_GLOBAL_ROUTER = 1;
-  double rate = 0.1;
+  double rate = 0.2;
 
   int signal_routing_metal_l = 0;
   int signal_routing_metal_u = 5;
