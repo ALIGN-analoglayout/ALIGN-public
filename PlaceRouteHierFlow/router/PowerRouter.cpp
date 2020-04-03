@@ -349,8 +349,20 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
 
   int dis = INT_MAX;
   int index = -1;
+  int lowest_metal_index = INT_MAX;
+  for(unsigned int j=0;j<Vdd_grid.metals.size();j++){
+
+        if(Vdd_grid.metals[j].MetalIdx < lowest_metal_index){
+              lowest_metal_index = Vdd_grid.metals[j].MetalIdx;
+          }
+
+     }
+  
+
+
   RouterDB::point source_point;
   RouterDB::point dest_point;
+  std::map<int, int> dist_pair;
   //here we can use a set to find all the vdd in some region
   for(unsigned int i=0;i<temp_source.size();i++){
       source_point.x = (temp_source[i].coord[0].x + temp_source[i].coord[1].x)/2;
@@ -358,23 +370,33 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
       for(unsigned int j=0;j<Vdd_grid.metals.size();j++){
           dest_point.x = (Vdd_grid.metals[j].LinePoint[0].x + Vdd_grid.metals[j].LinePoint[1].x)/2;
           dest_point.y = (Vdd_grid.metals[j].LinePoint[0].y + Vdd_grid.metals[j].LinePoint[1].y)/2;
-          if(abs(source_point.x-dest_point.x)+abs(source_point.y-dest_point.y)<dis){
+          if(Vdd_grid.metals[j].MetalIdx == lowest_metal_index){
               dis = abs(source_point.x-dest_point.x)+abs(source_point.y-dest_point.y);
-              index = j;
+              std::pair<int,int> value(dis,j);
+              dist_pair.insert(value);
             }
 
          }
      }
   
-  temp_sink.coord.clear();
-  temp_sink.metalIdx = Vdd_grid.metals.at(index).MetalIdx;
-  temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedLL.x;
-  temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedLL.y;
-  temp_sink.coord.push_back(temp_point);
-  temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedUR.x;
-  temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedUR.y;
-  temp_sink.coord.push_back(temp_point);
-  temp_dest.push_back(temp_sink);
+  int src_index_number = 7;
+  int count = 0;
+  for(auto it = dist_pair.begin();it!=dist_pair.end();++it){
+      if(count < src_index_number){
+        index = it->second;
+        temp_sink.coord.clear();
+        temp_sink.metalIdx = Vdd_grid.metals.at(index).MetalIdx;
+        temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedLL.x;
+        temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedLL.y;
+        temp_sink.coord.push_back(temp_point);
+        temp_point.x = Vdd_grid.metals.at(index).MetalRect.placedUR.x;
+        temp_point.y = Vdd_grid.metals.at(index).MetalRect.placedUR.y;
+        temp_sink.coord.push_back(temp_point);
+        temp_dest.push_back(temp_sink);
+        }
+        count = count + 1;
+  
+     }
 
   RouterDB::point temp_ll,temp_ur;
   temp_ll.x = INT_MAX;
