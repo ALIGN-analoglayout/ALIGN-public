@@ -246,8 +246,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
            if(PowerNets[i].power ==1){
                //Q1
                SetSrcDest(temp_pin, Vdd_grid, temp_source, temp_dest);
+               Vdd_grid.name = PowerNets[i].netName;
               }else{
                SetSrcDest(temp_pin, Gnd_grid, temp_source, temp_dest);
+               Gnd_grid.name = PowerNets[i].netName;
               }
 
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
