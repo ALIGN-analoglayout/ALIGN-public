@@ -729,17 +729,17 @@ void GcellDetailRouter::create_detailrouter(){
       //assert(pathMark);
       if (pathMark)
       {
+        physical_path = a_star.ConvertPathintoPhysical(grid);
+        lastmile_source_new(physical_path, temp_source);
+        lastmile_dest_new(physical_path, temp_dest);
+        returnPath(physical_path, Nets[i]);
+
         //insert via center into Pset
         InsertRoutingVia(a_star, grid, Pset_current_net_via);
         InsertRoutingVia(a_star, grid, Pset_via);
         //add path metal to set_current_net_contact
         //add via conatct to set_current_net_contact
         InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
-
-        physical_path = a_star.ConvertPathintoPhysical(grid);
-        lastmile_source_new(physical_path, temp_source);
-        lastmile_dest_new(physical_path, temp_dest);
-        returnPath(physical_path, Nets[i]);
       }
       else
       {
@@ -892,9 +892,9 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
   //1.Set physical rect
   GetPhsical_Metal_Via(net_num);
   //2.insert routing contact
-  RouterDB::SinkData contact;
   for (std::vector<RouterDB::Metal>::const_iterator pit = Nets[net_num].path_metal.begin(); pit != Nets[net_num].path_metal.end(); pit++)
   {
+    RouterDB::SinkData contact;
     RouterDB::point LL, UR;
     LL = pit->MetalRect.placedLL;
     UR = pit->MetalRect.placedUR;
@@ -905,6 +905,7 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
   }
   for (std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>::const_iterator vit = Pset_via.begin(); vit != Pset_via.end();vit++){
     //do lower contact
+    RouterDB::SinkData contact;
     contact.metalIdx = vit->first;
     RouterDB::point LL, UR;
     LL.x = vit->second.x + drc_info.Via_model[vit->first].LowerRect[0].x;
@@ -920,6 +921,7 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
     LL.y = vit->second.y + drc_info.Via_model[vit->first].UpperRect[0].y;
     UR.x = vit->second.x + drc_info.Via_model[vit->first].UpperRect[1].x;
     UR.y = vit->second.y + drc_info.Via_model[vit->first].UpperRect[1].y;
+    contact.coord.clear();
     contact.coord.push_back(LL);
     contact.coord.push_back(UR);
     contacts.insert(contact);
@@ -1118,8 +1120,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
   //block via to avoid
-  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+  grid.InactivePointlist_via(Pset_via_lower_metal, false); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, true); //inactive metal's lower via
   //***************block vias around metal******************
 };
 
@@ -1143,8 +1145,8 @@ void GcellDetailRouter::AddViaSpacing(std::set<std::pair<int, RouterDB::point>, 
   //convert vector into set
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
-  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive via's lower metal
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive via's upper metal
 };
 
 void GcellDetailRouter::SinkData_contact(RouterDB::SinkData &temp_contact, RouterDB::contact & result_contact){
