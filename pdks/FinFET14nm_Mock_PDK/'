@@ -114,8 +114,7 @@ class MOSGenerator(DefaultCanvas):
                                     v_clg=self.m1.clg))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
-        #v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
-        v0pitch = 3*self.pdk['Fin']['Pitch']
+        v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
         v0Offset = ((self.finDummy+3)//2)*self.pdk['M2']['Pitch'] 
         for i in range((activeWidth-2*self.pdk['M2']['Pitch']) // v0pitch + 1):
             self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
@@ -218,7 +217,7 @@ class MOSGenerator(DefaultCanvas):
             return (minx, maxx)
 
         center_track = (x_cells * self.gatesPerUnitCell) // 2
-        m3start = self.shared_diff+(x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
+        m3start = 1*self.shared_diff+(x_cells * self.gatesPerUnitCell - len(self._nets) * self.minvias) // 2
         for track, (net, conn) in enumerate(self._nets.items(), start=1):
             for j in range(self.minvias):
                 current_track = m3start + len(self._nets) * j + track
@@ -312,5 +311,5 @@ class MOSGenerator(DefaultCanvas):
         self._addMOSArray(x_cells, y_cells, pattern, connections, **parameters)
 
         #####   Pselect and Nwell Placement   #####
-        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.lFin)
-        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.lFin)
+        self.addRegion( self.pselect, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
+        self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell, -1), y_cells* self.finsPerUnitCell+self.lFin)
