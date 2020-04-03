@@ -40,7 +40,7 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      if ( node.PowerNets.size() == 2) {
        if ( node.PowerNets[0].power == 0) {
 	 Gnd_grid.name = node.PowerNets[0].name;
-       } else if ( node.PowerNets[1].power == 1) {
+       } else if ( node.PowerNets[1].power == 0) {
 	 Gnd_grid.name = node.PowerNets[1].name;
        }
      } else {
