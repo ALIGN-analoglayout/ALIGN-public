@@ -23,10 +23,26 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      CreatePowerGrid(node, drc_info, Lmetal, Hmetal, rate);
      std::cout<<"CheckPoint 2"<<std::endl;
      Physical_metal_via_power_grid(Vdd_grid);
+
      Vdd_grid.name = "vdd";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 1) {
+	 Vdd_grid.name = node.PowerNets[idx].name;
+	 break;
+       }
+     }
+
      std::cout<<"CheckPoint 3"<<std::endl;
      Physical_metal_via_power_grid(Gnd_grid);
+
      Gnd_grid.name = "vss";
+     for (unsigned int idx = 0; idx < node.PowerNets.size(); ++idx) {
+       if ( node.PowerNets[idx].power == 0) {
+	 Gnd_grid.name = node.PowerNets[idx].name;
+	 break;
+       }
+     }
+
      std::cout<<"CheckPoint 4"<<std::endl;
      ReturnPowerGridData(node);   
      std::cout<<"CheckPoint 5"<<std::endl;  
