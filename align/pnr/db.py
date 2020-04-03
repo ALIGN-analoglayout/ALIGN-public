@@ -101,7 +101,8 @@ abstract_structs = [
                    ("Unit_capacitor",None),
                    ("cap_ratio",None),
                    ("cap_r",None),
-                   ("cap_s",None)
+                   ("cap_s",None),
+                   ("dummy_flag",None)
            ]),
            ("R_const",[("net_name",None),
                    ("start_pin",(list,None)),
@@ -157,9 +158,9 @@ abstract_structs = [
                           ("child",None),
                           ("instNum",None)
            ]),
-           ("PowerGrid",[("metals",(list,"Metal")),
-                       ("vias",(list,"Via")),
-                       ("power",None)
+           ("PowerGrid",[("name",None),
+                         ("metals",(list,"Metal")),
+                       ("vias",(list,"Via"))
            ]),
            ("PowerNet",[("name",None),
                       ("power",None),
@@ -175,6 +176,15 @@ abstract_structs = [
                       ("Blocks",(list,"blockComplex")),
                       ("Nets",(list,"net")),
                       ("Terminals",(list,"terminal"))
+           ]),
+
+           ("routing_net",[("net_name",None),
+                           ("pin_name",(list,None)),
+                           ("pin_access",(list,None))
+           ]),
+
+           ("Router_report",[("node_name",None),
+                             ("routed_net",(list,"routing_net"))
            ]),
 
           ("hierNode",[("isCompleted",None),
@@ -208,7 +218,8 @@ abstract_structs = [
                       ("R_Constraints",(list,"R_const")),
                       ("C_Constraints",(list,"C_const")),
                       ("bias_Hgraph",None),
-                      ("bias_Vgraph",None)
+                      ("bias_Vgraph",None),
+                      ("router_report",(list,"Router_report")) 
            ])
 ]
 
