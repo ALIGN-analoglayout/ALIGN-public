@@ -2,6 +2,7 @@
 #define RDATATYPE_H_
 
 #include <vector>
+#include <limits.h>
 #include <string>
 //#include <iostream>
 //#include <utility>
@@ -86,7 +87,8 @@ struct vertex{
   int x=-1;
   int y=-1;
   int metal=-1;
-  int Cost = -1;
+  int Cost = INT_MAX;
+  //int Cost = -1;
   bool active=false;
   bool via_active_down = true;
   bool via_active_up = true;

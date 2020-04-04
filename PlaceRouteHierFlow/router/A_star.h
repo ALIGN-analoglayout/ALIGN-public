@@ -3,6 +3,7 @@
 
 #include <climits>
 #include <vector>
+#include <limits.h>
 #include <string>
 #include <set>
 #include <assert.h>

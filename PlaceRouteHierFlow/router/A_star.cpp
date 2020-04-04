@@ -1037,13 +1037,18 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     for(int i=0;i<(int)candidate_node.size();i++){
 
        int M_dis = Manhattan_distan(candidate_node[i], grid);
+       int temp_cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal);
+       if(temp_cost < grid.vertices_total[candidate_node[i]].Cost ){
 
-       grid.vertices_total[candidate_node[i]].Cost = grid.vertices_total[current_node].Cost + abs(grid.vertices_total[current_node].x - grid.vertices_total[candidate_node[i]].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[candidate_node[i]].y) + via_expand_effort*abs(grid.vertices_total[candidate_node[i]].metal-grid.vertices_total[current_node].metal);
-       int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
-       grid.vertices_total[candidate_node[i]].parent = current_node;
-       temp_pair.first = dis;
-       temp_pair.second = candidate_node[i];
-       L_list.insert(temp_pair);
+          grid.vertices_total[candidate_node[i]].Cost = temp_cost;
+          int dis = grid.vertices_total[candidate_node[i]].Cost + M_dis;
+          grid.vertices_total[candidate_node[i]].parent = current_node;
+          temp_pair.first = dis;
+          temp_pair.second = candidate_node[i];
+          L_list.insert(temp_pair);
+
+         }
+      
        }
 
   }
@@ -1156,7 +1161,7 @@ std::vector<int> A_star::CovertToShieldingNet(Grid& grid, std::vector<int> &temp
 void A_star::refreshGrid(Grid& grid){
 
   for(int i=0;i<(int)grid.vertices_total.size();i++){
-       grid.vertices_total[i].Cost = -1;
+       grid.vertices_total[i].Cost = INT_MAX;
        grid.vertices_total[i].parent = -1;
      }
 };
