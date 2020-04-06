@@ -25,6 +25,8 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
 def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
+    logger.info( 'Checking', hN.name)
+
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
@@ -85,6 +87,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             y = m2_pitch*iy
             r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
+
+    global_power_names = set( [ n.name for n in hN.PowerNets])
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -152,7 +156,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 nm = term['netName']
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
-                    term['netName'] = fa_map.get( formal_name, formal_name)
+                    default_name = nm if nm in global_power_names else formal_name
+                    term['netName'] = fa_map.get( formal_name, default_name)
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
