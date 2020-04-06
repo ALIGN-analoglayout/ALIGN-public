@@ -1117,6 +1117,69 @@ void A_star::compact_path(std::vector<std::vector<int> > &Node_Path){
 
 };
 
+
+void A_star::rm_cycle_path(std::vector<std::vector<int> > &Node_Path){
+
+  compact_path(Node_Path);
+  std::vector<std::vector<int> > temp_Node_Path;
+  std::cout<<"rm cycle path size "<<Node_Path.size()<<std::endl;
+
+  for(int i=0; i<Node_Path.size(); i++){
+     std::cout<<"rm cycle path size "<<Node_Path[i].size()<<std::endl;
+     std::vector<int> temp_path;
+     std::vector<int> circle_path_flag(Node_Path[i].size(),0);
+     std::set<int> unit_set;
+     std::set<int> cycle_set;
+     
+     for(int j =0; j < Node_Path[i].size(); j++){
+         std::cout<<Node_Path[i][j]<<" ";
+         if(unit_set.find(Node_Path[i][j])==unit_set.end()){
+            unit_set.insert(Node_Path[i][j]);
+         }else{
+            cycle_set.insert(Node_Path[i][j]);
+         }
+     }
+
+     for(auto it = cycle_set.begin();it!=cycle_set.end();++it){
+
+        int first_node = -1;
+        int end_node = -1;
+        for(int j =0; j < Node_Path[i].size(); j++){
+           if(Node_Path[i][j]==*it and first_node==-1){
+              first_node = j+1;
+           }else if(Node_Path[i][j]==*it){
+              end_node = j;
+           }  
+        }
+
+        for(int j =first_node; j <= end_node; j++){
+         circle_path_flag[j] = 1;
+        }  
+
+        std::cout<<"first node "<<first_node<<" end_node "<<end_node<<std::endl;
+      
+      }
+
+     for(int j =0; j < circle_path_flag.size(); j++){
+         if(circle_path_flag[j]==0){
+           temp_path.push_back(Node_Path[i][j]);
+         }
+     }      
+     std::cout<<std::endl;
+     std::cout<<"temp path"<<std::endl;
+     for(int j =0;j<temp_path.size();j++){
+        std::cout<<temp_path[j]<<" ";
+     }
+     
+     std::cout<<std::endl;
+     temp_Node_Path.push_back(temp_path);
+     std::cout<<"temp path after cycle "<<temp_path.size()<<std::endl;
+  }
+
+  Node_Path = temp_Node_Path;
+};
+
+/*
 void A_star::rm_cycle_path(std::vector<std::vector<int> > &Node_Path){
 
   compact_path(Node_Path);
@@ -1160,7 +1223,7 @@ void A_star::rm_cycle_path(std::vector<std::vector<int> > &Node_Path){
 
   Node_Path = temp_Node_Path;
 };
-
+*/
 void A_star::lable_father(Grid& grid, std::vector<std::vector<int> > &Node_Path){
 
   for(int i =0; i<Node_Path.size();i++){
