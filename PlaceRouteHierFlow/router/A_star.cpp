@@ -740,11 +740,16 @@ bool A_star::L_shape_Connection(Grid& grid, std::vector<int> &start_points, std:
 bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_points, std::vector<int> &node_set){
 
   std::vector<int> node_set_up;
+  std::set<int> unit_node_set_up;
   node_set_up.push_back(start_points);
-
+  int count = 10;
   while(node_set_up.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_up.back();
+    if(unit_node_set_up.find(current_node)!=unit_node_set_up.end()){
+       return false;
+    }
+    unit_node_set_up.insert(current_node);
     std::cout<<"L shape current node "<<current_node<<" "<<grid.vertices_total[current_node].x<<" "<<grid.vertices_total[current_node].y<<" "<<grid.vertices_total[current_node].metal<<std::endl;
     int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
     if(x>0){x=1;}else if(x<0){x=-1;}
@@ -773,11 +778,17 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
 
 
   std::vector<int> node_set_down;
+  std::set<int> unit_node_set_down;
   node_set_down.push_back(start_points);
 
   while(node_set_down.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_down.back();
+    if(unit_node_set_down.find(current_node)!=unit_node_set_down.end()){
+       return false;
+    }
+    unit_node_set_down.insert(current_node);
+
     int x = grid.vertices_total[end_points].x - grid.vertices_total[current_node].x;
     if(x>0){x=1;}else if(x<0){x=-1;}
     int y = grid.vertices_total[end_points].y - grid.vertices_total[current_node].y;
