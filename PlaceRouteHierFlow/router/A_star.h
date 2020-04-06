@@ -60,7 +60,7 @@ class A_star {
     void Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
     void rm_cycle_path(std::vector<std::vector<int> > &Node_Path);
     void lable_father(Grid& grid, std::vector<std::vector<int> > &Node_Path);
-    
+    void compact_path(std::vector<std::vector<int> > &Node_Path);
 };
 
 #endif
