@@ -25,7 +25,7 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
 def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
 
-    logger.info( 'Checking', hN.name)
+    logger.info( f'Checking: {hN.name}')
 
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
