@@ -48,7 +48,7 @@ class A_star {
     bool Extention_check(Grid& grid, int current_node);
     std::vector<std::vector<int> > A_star_algorithm(Grid& grid, int left_up, int right_down);
     std::vector<std::vector<int> > Trace_Back_Paths(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
-    std::vector<int> Trace_Back_Path(Grid& grid, int current_node);
+    std::vector<int> Trace_Back_Path(Grid& grid, int current_node, std::set<int> &src_index);
     std::vector<std::vector<RouterDB::Metal> > ConvertPathintoPhysical(Grid& grid);
     std::vector<int> CovertToShieldingNet(Grid& grid, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);

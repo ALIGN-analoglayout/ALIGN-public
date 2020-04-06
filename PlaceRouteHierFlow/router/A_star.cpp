@@ -531,14 +531,6 @@ bool A_star::Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest){
 
   for(int i=0;i<nodes.size();i++){
      if(src_dest.find(nodes[i])==src_dest.end()){
-
-       //std::cout<<"src_dest ";
-       //for(auto j = src_dest.begin();j!=src_dest.end();j++){
-          //std::cout<<*j<<" ";
-       //}       
-       //std::cout<<std::endl;
-       bool flag = src_dest.find(nodes[i])==src_dest.end();
-       //std::cout<<"find source dest, return false "<<nodes[i]<<" "<<flag<<std::endl;
        return false;
      }
   }
@@ -701,12 +693,12 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
   }
   //std::cout<<"find succsive or parallel node end"<<std::endl;
   std::cout<<start_points.size()<<" start and end node "<<end_points.size()<<std::endl;
-  bool found = L_shape_Connection(grid, start_points, end_points, node_L_path);
+
   std::cout<<"node L path size "<<node_L_path.size()<<std::endl;
   if(found_s and found_e){
      //std::cout<<"L shape Connection begin "<<std::endl;
      //assert(0);
-     return found;
+     return L_shape_Connection(grid, start_points, end_points, node_L_path);;
   }else{
     return false;
   }
@@ -765,11 +757,12 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     //assert(0);
     if(next==-1){
       return false;
-    }else if(next>0 and next< grid.vertices_total.size() ){
+    }else if(next>=0 and next< grid.vertices_total.size() ){
       //grid.vertices_total[next].parent = current_node;
       //std::cout<<"next node "<<next<<" "<<grid.vertices_total[next].x<<" "<<grid.vertices_total[next].y<<" "<<grid.vertices_total[next].metal<<std::endl;
       node_set_up.push_back(next); 
     }else{
+      //std::cout<<" bug node "<<grid.vertices_total.size()<<" "<<next<<std::endl;
       std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
       assert(0);
     }
@@ -802,7 +795,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     //assert(0);
     if(next==-1){
       return false;
-    }else if(next>0 and next< grid.vertices_total.size() ){
+    }else if(next>=0 and next< grid.vertices_total.size() ){
       //grid.vertices_total[next].parent = current_node;
       node_set_down.push_back(next); 
     }else{
@@ -1100,18 +1093,23 @@ void A_star::compact_path(std::vector<std::vector<int> > &Node_Path){
 
   std::vector<std::vector<int> > temp_Node_Path;
 
+  std::cout<<"compact path"<<std::endl;
   for(int i=0;i<Node_Path.size();i++){
+   
     std::vector<int> temp_path;
     if(Node_Path[i].size()==0){
       std::cout<<"Node path bug"<<std::endl;
       assert(0);
     }
     temp_path.push_back(Node_Path[i][0]);
+    std::cout<<Node_Path[i][0]<<" ";
     for(int j =1;j<Node_Path[i].size();j++){
+       std::cout<<Node_Path[i][j]<<" ";
        if(Node_Path[i][j]!=Node_Path[i][j-1]){
           temp_path.push_back(Node_Path[i][j]);
        }
     }
+    std::cout<<std::endl;
     temp_Node_Path.push_back(temp_path);
   }
   
@@ -1177,7 +1175,9 @@ void A_star::lable_father(Grid& grid, std::vector<std::vector<int> > &Node_Path)
 
 void A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index){
 
-  std::vector<int> temp_path = Trace_Back_Path(grid, current_node);
+  std::cout<<"In pre trace back"<<std::endl;
+  std::vector<int> temp_path = Trace_Back_Path(grid, current_node, src_index);
+  std::cout<<"In pre trace back"<<std::endl;
 
   std::cout<<"temp_path start"<<std::endl;
   for(int i = 0 ;i <temp_path.size(); i ++){
@@ -1230,7 +1230,7 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   std::cout<<"trace back flag3"<<std::endl;
   for(int i=0;i<nodes.size();i++){
      std::cout<<"trace back flag3.1"<<std::endl;
-     std::vector<int> temp_path = Trace_Back_Path(grid, nodes[i]);
+     std::vector<int> temp_path = Trace_Back_Path(grid, nodes[i], src_index);
      std::cout<<"trace back flag3.2"<<std::endl;
      if(temp_path.size()<2){
         std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
@@ -1254,22 +1254,33 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
 
 };
 
-std::vector<int> A_star::Trace_Back_Path(Grid& grid, int current_node){
+std::vector<int> A_star::Trace_Back_Path(Grid& grid, int current_node, std::set<int> &src_index){
 
   std::vector<int> temp_path;
   //std::set<int> temp_parents;
-  //temp_path.push_back(current_node);
+  temp_path.push_back(current_node);
   int temp_parent = current_node;
   //temp_parents.insert(temp_parent);
   std::cout<<"start trace back"<<std::endl;
   int count = 0;
-  while(temp_parent!=-1){
-      std::cout<<"parents "<<temp_parent<<std::endl;
+  //src_index.insert(-1);
+  while(src_index.find(temp_parent)==src_index.end()){
+  //while(temp_parent!=-1){
+      /*
+      std::cout<<"Trace_Back_Path current node "<<current_node<<std::endl;
+      std::cout<<"Trace_Back_Path parents "<<temp_parent<<" "<<grid.vertices_total[temp_parent].x<<" "<<grid.vertices_total[temp_parent].y<<" "<<grid.vertices_total[temp_parent].metal<<std::endl;
+      std::cout<<"src index ";
+      for(auto it=src_index.begin();it!=src_index.end();++it){
+         std::cout<<*it<<" ";
+      }
+      std::cout<<std::endl;
+      */
       //if(count == 20) assert(0);
       count = count + 1;
       //temp_parents.insert(temp_parent);
-      temp_path.push_back(temp_parent);
       temp_parent = grid.vertices_total[temp_parent].parent;
+      temp_path.push_back(temp_parent);
+      //temp_parent = grid.vertices_total[temp_parent].parent;
       //temp_parent = grid.vertices_total[temp_parent].parent;
       }
 
