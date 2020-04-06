@@ -688,5 +688,7 @@ endmodule
   EXPECT_EQ( db.hierTree.size(), 3);
 
   EXPECT_EQ( rvh.get_Supply_node().Blocks.size(), 2);
+  EXPECT_EQ( rvh.get_Supply_node().Blocks.at(0).instance.at(0).name, "analog_gnd");
+  EXPECT_EQ( rvh.get_Supply_node().Blocks.at(1).instance.at(0).name, "analog_vdd");
 
 }
