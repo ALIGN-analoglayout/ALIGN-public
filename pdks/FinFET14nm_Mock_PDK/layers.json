@@ -92,11 +92,11 @@
 "Stack": ["M1", "M2"],
 "SpaceX": 48,
 "SpaceY": 52,
-"WidthX": 32,
+"WidthX": 30,
 "WidthY": 32,
 "VencA_L": 20,
 "VencA_H": 20,
-"VencP_L": 0,
+"VencP_L": -1,
 "VencP_H": 0,
 "MinNo":1,
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}

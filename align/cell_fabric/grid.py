@@ -119,8 +119,8 @@ class ColoredCenterLineGrid(CenterLineGrid):
         self.semantic()
 
 class EnclosureGrid(Grid):
-    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=False):
-        assert not check or 2*stoppoint <= pitch
+    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=True):
+        # assert not check or 2*stoppoint <= pitch
 
         super().__init__()
         self.addGridLine( offset,                     False)

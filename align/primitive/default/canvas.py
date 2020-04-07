@@ -71,6 +71,12 @@ class DefaultCanvas(Canvas):
                     spg_pitch, spg_stop, spg_offset = (nm_pitch,
                                                        self._get_via_ext(base_layer, nv),
                                                        self._get_metal_offset(nm))
+
+                if False:
+                    spg_stop = max(self._get_via_ext(base_layer, nv), self._get_via_ext(base_layer, pv)) 
+
+            logger.debug(f"Enclosure grid for {layer}, pitch={spg_pitch}, offset={spg_offset}, stop={spg_stop}")
+
             layer = layer.lower()
             if len(info['Color']) == 0:
                 clg = UncoloredCenterLineGrid(pitch=self._get_metal_pitch(base_layer),
