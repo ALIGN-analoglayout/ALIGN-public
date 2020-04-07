@@ -811,10 +811,10 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   bool extend_up = 1;
   bool extend_down = 1;
 
-  //bool activa_up = Check_activa_via_active(grid, node_set_up);
-  //bool activa_down = Check_activa_via_active(grid, node_set_down);
-  bool activa_up = 1;
-  bool activa_down = 1;
+  bool activa_up = Check_activa_via_active(grid, node_set_up);
+  bool activa_down = Check_activa_via_active(grid, node_set_down);
+  //bool activa_up = 1;
+  //bool activa_down = 1;
 
   
 
@@ -875,6 +875,7 @@ int A_star::find_next_node( Grid& grid, int current_node, int x, int y, int laye
 
 };
 
+/*
 bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
 
   for(int i=0;i<nodes.size();i++){
@@ -895,6 +896,38 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
        return false;
      }
      
+  }
+  
+  return true;
+  
+
+};
+*/
+
+bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
+
+  if(nodes.size()==0 or !grid.vertices_total[nodes[0]].active){
+    return false;
+  }
+
+  for(int i=1;i<nodes.size();i++){
+
+     if(nodes[i]<0 or nodes[i]>grid.vertices_total.size() -1 or !grid.vertices_total[nodes[i]].active){
+        return false;
+     } 
+
+     int parent = nodes[i-1];
+     int parent_metal = grid.vertices_total[parent].metal;
+     int current_metal = grid.vertices_total[nodes[i]].metal;
+/*
+     if(parent_metal == current_metal and !grid.vertices_total[nodes[i]].active){
+       return false;
+     }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
+       return false;
+     }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
+       return false;
+     }
+*/     
   }
   
   return true;
