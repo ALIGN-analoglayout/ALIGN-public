@@ -1151,7 +1151,7 @@ void A_star::CheckExtendable(std::vector<int> &candidate_node, int current_node,
        int current_node_length = 0;
        int temp_parent = grid.vertices_total[first_node_same_layer].parent;
        if(temp_parent != -1){
-          if(grid.vertices_total[current_node].metal == grid.vertices_total[next_node].metal){
+          if(grid.vertices_total[temp_parent].metal==grid.vertices_total[next_node].metal){
             int via_index = 0;
             int metal_index = grid.vertices_total[current_node].metal;
             int metal_direct =  drc_info.Metal_info[metal_index].direct;;
