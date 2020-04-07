@@ -211,11 +211,11 @@ class Canvas:
         self.trStack.pop()
         assert self.trStack != []
 
-    def removeDuplicates( self):
-        self.rd = RemoveDuplicates( self)
-        return self.rd.remove_duplicates()
+    def removeDuplicates( self, *, global_power_names=None, toplevel=True):
+        self.rd = RemoveDuplicates( self, power_net_names=global_power_names)
+        return self.rd.remove_duplicates( toplevel=toplevel)
 
-    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True):
+    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, global_power_names=None, toplevel=True):
 
         self.computeBbox()
         self.postprocessor.run(self.terminals)
@@ -223,7 +223,7 @@ class Canvas:
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
-                 'terminals' : self.removeDuplicates()}
+                 'terminals' : self.removeDuplicates(global_power_names=global_power_names, toplevel=toplevel)}
 
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}

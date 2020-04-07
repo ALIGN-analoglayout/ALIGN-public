@@ -11,12 +11,12 @@ from .checkers import gen_viewer_json
 
 logger = logging.getLogger(__name__)
 
-def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None):
+def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True ):
 
     ret = {}
     with open(dbfile,"rt") as fp:
         hN = hierNode(json.load(fp))
-    res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir)
+    res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir, toplevel=toplevel)
 
     if check or extract:
         cnv, d = res
@@ -31,10 +31,14 @@ def _generate_json(dbfile, variant, primitive_dir, pdk_dir, output_dir, check=Fa
         ret['errfile'] = output_dir / f'{variant}.errors'
         with open(ret['errfile'], 'wt') as fp:
             for x in cnv.rd.shorts: fp.write( f'SHORT {x}\n')
-            for x in cnv.rd.opens: fp.write( f'OPEN {x}\n')
+            for x in cnv.rd.signal_opens: fp.write( f'OPEN {x}\n')
+            if toplevel:
+                for x in cnv.rd.power_opens: fp.write( f'OPEN {x}\n')
             for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
             for x in cnv.drc.errors: fp.write( f'DRC ERROR {x}\n')
-        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
+        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.signal_opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
+        if toplevel:
+            ret['errors'] += len(cnv.rd.power_opens)
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'
@@ -142,7 +146,8 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                                 input_dir=working_dir,
                                 output_dir=working_dir,
                                 check=check,
-                                extract=extract)
+                                extract=extract,
+                                toplevel=False)
 
     variants = collections.defaultdict(collections.defaultdict)
     for file_ in results_dir.iterdir():
@@ -163,6 +168,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                                 input_dir=working_dir,
                                 output_dir=working_dir,
                                 check=check,
-                                extract=extract))
+                                extract=extract,
+                                toplevel=True))
 
     return variants

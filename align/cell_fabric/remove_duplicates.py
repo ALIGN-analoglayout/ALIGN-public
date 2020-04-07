@@ -1,6 +1,7 @@
 
 from collections import defaultdict, OrderedDict
 import pprint
+import itertools
 
 from .generators import *
 
@@ -110,11 +111,12 @@ class RemoveDuplicates():
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
                         self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
-                        self.opens.append( slr.terminal)
+                        self.set_open( slr.terminal, slr.terminal)
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
-                self.opens.append( (nm,list(s.values())))
+                self.set_open( nm, (nm,list(s.values())))
+
 
     @staticmethod
     def containedIn( rS, rB):
@@ -127,15 +129,52 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-    def __init__( self, canvas):
+    def __init__( self, canvas, *, power_net_names=None):
         self.canvas = canvas
         self.store_scan_lines = None
         self.different_widths = []
         self.shorts = []
-        self.opens = []
+        self._signal_opens = []
+        self._power_opens = []
         self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
+
+        if power_net_names is None:
+            self.power_net_names = set([])
+        else:
+            self.power_net_names = set(power_net_names)
+            
+
+    def set_open( self, nm, opn):
+        if nm in self.power_net_names:
+            self._power_opens.append( opn)
+        else:
+            self._signal_opens.append( opn)
+
+    @property
+    def opens( self):
+        return list( itertools.chain( self._signal_opens, self._power_opens))
+
+    @property
+    def power_opens( self):
+        return self._power_opens
+
+    @property
+    def signal_opens( self):
+        return self._signal_opens
+
+    @property
+    def power_open_count( self):
+        return len(self.power_opens)
+
+    @property
+    def signal_open_count( self):
+        return len(self.signal_opens)
+
+    @property
+    def open_count( self):
+        return self.power_open_count + self.signal_open_count
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
@@ -288,7 +327,7 @@ class RemoveDuplicates():
                         terminals[-1]['terminal'] = slr.terminal
         return terminals
 
-    def remove_duplicates( self):
+    def remove_duplicates( self, *, toplevel=True):
 
         self.build_scan_lines( self.build_centerline_tbl())
 
@@ -298,8 +337,11 @@ class RemoveDuplicates():
 
         for short in self.shorts:
             logger.warning("SHORT" + pprint.pformat(short))
-        for opn in self.opens:
-            logger.warning( "OPEN" + pprint.pformat(opn))
+        for opn in self._signal_opens:
+            logger.warning( "SIGNAL OPEN" + pprint.pformat(opn))
+        if toplevel:
+            for opn in self._power_opens:
+                logger.warning( "POWER OPEN" + pprint.pformat(opn))
         for dif in self.different_widths:
             logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
         for subinst in self.subinsts:
