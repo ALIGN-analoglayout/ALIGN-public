@@ -1096,7 +1096,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact); //bug use other sinkDataComp Yaguang
   for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator vit = Set.begin(); vit != Set.end(); ++vit)
   {
-    int mIdx = vit->metalIdx;    
+    int mIdx = vit->metalIdx;  
     if(mIdx<this->layerNo-1){
         int vIdx = mIdx;
         box.LL.x = vit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
@@ -1120,8 +1120,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
   //block via to avoid
-  grid.InactivePointlist_via(Pset_via_lower_metal, false); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, true); //inactive metal's lower via
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
   //***************block vias around metal******************
 };
 
