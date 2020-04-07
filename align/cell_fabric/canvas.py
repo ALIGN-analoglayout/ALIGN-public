@@ -211,12 +211,11 @@ class Canvas:
         self.trStack.pop()
         assert self.trStack != []
 
-    def removeDuplicates( self, *, global_power_names=None, toplevel=True):
-        nets_allowed_to_be_open = [] if not toplevel or global_power_names is None else global_power_names
+    def removeDuplicates( self, *, nets_allowed_to_be_open=None):
         self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open)
         return self.rd.remove_duplicates()
 
-    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, global_power_names=None, toplevel=True):
+    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, nets_allowed_to_be_open=None):
 
         self.computeBbox()
         self.postprocessor.run(self.terminals)
@@ -224,7 +223,7 @@ class Canvas:
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
                  'globalRouteGrid' : [],
-                 'terminals' : self.removeDuplicates(global_power_names=global_power_names, toplevel=toplevel)}
+                 'terminals' : self.removeDuplicates(nets_allowed_to_be_open=nets_allowed_to_be_open)}
 
         if len(self.subinsts) > 0:
             data['subinsts'] = {inst: v.parameters for inst, v in self.subinsts.items()}
