@@ -31,14 +31,10 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         ret['errfile'] = output_dir / f'{variant}.errors'
         with open(ret['errfile'], 'wt') as fp:
             for x in cnv.rd.shorts: fp.write( f'SHORT {x}\n')
-            for x in cnv.rd.signal_opens: fp.write( f'OPEN {x}\n')
-            if toplevel:
-                for x in cnv.rd.power_opens: fp.write( f'OPEN {x}\n')
+            for x in cnv.rd.opens: fp.write( f'OPEN {x}\n')
             for x in cnv.rd.different_widths: fp.write( f'DIFFERENT WIDTH {x}\n')
             for x in cnv.drc.errors: fp.write( f'DRC ERROR {x}\n')
-        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.signal_opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
-        if toplevel:
-            ret['errors'] += len(cnv.rd.power_opens)
+        ret['errors'] = len(cnv.rd.shorts) + len(cnv.rd.opens) + len(cnv.rd.different_widths) + len(cnv.drc.errors)
 
     if extract:
         ret['cir'] = output_dir / f'{variant}.cir'

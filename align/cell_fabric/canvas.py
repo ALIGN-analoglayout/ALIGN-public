@@ -212,8 +212,9 @@ class Canvas:
         assert self.trStack != []
 
     def removeDuplicates( self, *, global_power_names=None, toplevel=True):
-        self.rd = RemoveDuplicates( self, power_net_names=global_power_names)
-        return self.rd.remove_duplicates( toplevel=toplevel)
+        nets_allowed_to_be_open = [] if not toplevel or global_power_names is None else global_power_names
+        self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open)
+        return self.rd.remove_duplicates()
 
     def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, global_power_names=None, toplevel=True):
 
