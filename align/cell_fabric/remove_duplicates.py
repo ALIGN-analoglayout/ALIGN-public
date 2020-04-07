@@ -1,7 +1,6 @@
 
 from collections import defaultdict, OrderedDict
 import pprint
-import itertools
 
 from .generators import *
 
@@ -310,7 +309,7 @@ class RemoveDuplicates():
         for short in self.shorts:
             logger.warning("SHORT" + pprint.pformat(short))
         for opn in self.opens:
-            logger.warning( "SIGNAL OPEN" + pprint.pformat(opn))
+            logger.warning( "OPEN" + pprint.pformat(opn))
         for dif in self.different_widths:
             logger.warning( "DIFFERENT WIDTH" + pprint.pformat(dif))
         for subinst in self.subinsts:
