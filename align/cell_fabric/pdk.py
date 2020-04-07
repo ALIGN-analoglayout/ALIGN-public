@@ -150,7 +150,7 @@ class Pdk(object):
         return layer_stack
 
     def get_lef_exclude(self):
-        return {x for x in self.pdk.keys() if x.startswith('M') is False}
+        return {x for x in self.pdk.keys() if (x.startswith('M') or x.startswith('V')) is False}
 
     def get_gds_map(self):
         return {x: self.pdk[x]['LayerNo'] for x in self.pdk.keys() if 'LayerNo' in self.pdk[x]}
