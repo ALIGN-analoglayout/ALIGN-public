@@ -110,11 +110,12 @@ class RemoveDuplicates():
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
                         self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
-                        self.opens.append( slr.terminal)
+                        self.set_open( slr.terminal, slr.terminal)
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
-                self.opens.append( (nm,list(s.values())))
+                self.set_open( nm, (nm,list(s.values())))
+
 
     @staticmethod
     def containedIn( rS, rB):
@@ -127,7 +128,7 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-    def __init__( self, canvas):
+    def __init__( self, canvas, *, nets_allowed_to_be_open=None):
         self.canvas = canvas
         self.store_scan_lines = None
         self.different_widths = []
@@ -136,6 +137,15 @@ class RemoveDuplicates():
         self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
+
+        if nets_allowed_to_be_open is None:
+            self.nets_allowed_to_be_open = set([])
+        else:
+            self.nets_allowed_to_be_open = set(nets_allowed_to_be_open)
+
+    def set_open( self, nm, opn):
+        if nm not in self.nets_allowed_to_be_open:
+            self.opens.append( opn)
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
