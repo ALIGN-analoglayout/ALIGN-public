@@ -552,17 +552,22 @@ bool A_star::Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest){
 
 bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index, int &cost){
 
+  int penety = 1000000;
+  int hide_mode = 0;
+
   if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0){//v
 
     vector<int> temp_nodes;
-    int exist;
+    int exist = 0;
     if(mode==0){
-
-      exist = find_nodes_west(grid, current_node, left, temp_nodes);
+      if(hide_mode){
+        exist = find_nodes_west(grid, current_node, left, temp_nodes);
+        exist = Check_Src_Dest(temp_nodes, src_index);
+      }
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_south(grid, current_node, left, temp_nodes);
-         cost = 10000;
+         cost = penety;
         }
 
        //std::cout<<"check src_index 1";
@@ -585,14 +590,16 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
   }else{
 
     vector<int> temp_nodes;
-    int exist;
+    int exist=0;
     if(mode==0){
-
-      exist = find_nodes_south(grid, current_node, left, temp_nodes);
+      if(hide_mode){
+        exist = find_nodes_south(grid, current_node, left, temp_nodes);
+        exist = Check_Src_Dest(temp_nodes, src_index);
+        }
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_west(grid, current_node, left, temp_nodes);
-         cost = 10000;
+         cost = penety;
         }
 
        //std::cout<<"check src_index 2";
@@ -620,14 +627,16 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
   if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0){//v
 
     vector<int> temp_nodes;
-    int exist;
+    int exist=0;
     if(mode==0){
-     
-      exist = find_nodes_east(grid, current_node, right, temp_nodes);
+      if(hide_mode){
+        exist = find_nodes_east(grid, current_node, right, temp_nodes);
+        exist = Check_Src_Dest(temp_nodes, src_index);
+      }
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_north(grid, current_node, right, temp_nodes);
-         cost = 10000;
+         cost = penety;
       }
        //std::cout<<"check dest_index 1";
        //for(auto j = src_index.begin();j!=src_index.end();j++){
@@ -651,12 +660,14 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
     vector<int> temp_nodes;
     int exist;
     if(mode==0){
-
-      exist = find_nodes_north(grid, current_node, right, temp_nodes);
+      if(hide_mode){
+        exist = find_nodes_north(grid, current_node, right, temp_nodes);
+        exist = Check_Src_Dest(temp_nodes, src_index);
+      }
       if(!exist){
         temp_nodes.clear();
         exist = find_nodes_east(grid, current_node, right, temp_nodes);
-        cost = 10000;
+        cost = penety;
       }
        //std::cout<<"check dest_index 2";
        //for(auto j = src_index.begin();j!=src_index.end();j++){
