@@ -3,6 +3,9 @@ import copy
 import collections
 import operator
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Grid:
     def __init__( self):
         """
@@ -120,7 +123,8 @@ class ColoredCenterLineGrid(CenterLineGrid):
 
 class EnclosureGrid(Grid):
     def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=True):
-        # assert not check or 2*stoppoint <= pitch
+        if check and 2*stoppoint > pitch:
+            logger.debug( f"2*Stoppoint is greater than pitch. Stoppoint={stoppoint}, Pitch={pitch}")
 
         super().__init__()
         self.addGridLine( offset,                     False)

@@ -72,8 +72,8 @@ class DefaultCanvas(Canvas):
                                                        self._get_via_ext(base_layer, nv),
                                                        self._get_metal_offset(nm))
 
-                if False:
-                    spg_stop = max(self._get_via_ext(base_layer, nv), self._get_via_ext(base_layer, pv)) 
+                # Stoppoint shall satisfy both upper and lower layers
+                spg_stop = max(self._get_via_ext(base_layer, nv), self._get_via_ext(base_layer, pv)) 
 
             logger.debug(f"Enclosure grid for {layer}, pitch={spg_pitch}, offset={spg_offset}, stop={spg_stop}")
 
