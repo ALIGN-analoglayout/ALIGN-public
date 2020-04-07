@@ -160,7 +160,7 @@ class DesignRuleCheck():
         (start, end) = (dIndex, dIndex + 2)
         prev_slr = None
         for slr in slrects:
-            if prev_slr is not None and slr.rect[start] - prev_slr.rect[end] < min_space:
+            if prev_slr is not None and 0 < slr.rect[start] - prev_slr.rect[end] < min_space:
                 self.errors.append(
                     f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
             prev_slr = slr
