@@ -1,5 +1,12 @@
 #include "A_star.h"
 
+//Q: via active up/down is not considered yet
+//Q: NO parallel routing, maybe just repeatly routing for a net is a better solution. This is an important problem
+//Q: parrallel routing, but with some post routing processing
+//Q: what about shiedling and symmetry routing 
+
+
+
 A_star::A_star(Grid& grid, bool shielding):drc_info(grid.drc_info){
 
   this->path_number=1;
@@ -743,6 +750,7 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
      //std::cout<<"L shape Connection begin "<<std::endl;
      //assert(0);
      std::cout<<"L shape connection 1"<<std::endl;
+     Pre_trace_back(grid, current_node, left, right, src_index, dest_index);
      bool found = L_shape_Connection(grid, start_points, end_points, node_L_path);
      std::cout<<"L shape connection 2"<<std::endl;
      return found;
@@ -855,7 +863,6 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     
   }
 
-  
   //bool extend_up = Extention_checks(grid, node_set_up);
   //bool extend_down = Extention_checks(grid, node_set_down);
   bool extend_up = 1;
