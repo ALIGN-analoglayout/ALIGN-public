@@ -63,11 +63,11 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, unit_size_mos , unit_size_cap)
         # Generate primitives
         for block_name, block_args in primitives.items():
+            logger.debug(f"Generating primitive: {block_name}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract)
         results.append( (netlist, variants))
-
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/compiler.log for last error."
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
