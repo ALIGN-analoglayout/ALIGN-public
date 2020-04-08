@@ -122,7 +122,7 @@ class ColoredCenterLineGrid(CenterLineGrid):
         self.semantic()
 
 class EnclosureGrid(Grid):
-    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=True):
+    def __init__( self, *, clg=None, pitch, offset=0, stoppoint, check=False):
         if check and 2*stoppoint > pitch:
             logger.debug( f"Enclosure grid stop point ({stoppoint}) is more than half the pitch ({pitch}) causing the physical coordinate to be non-monotonic with the grid ordering")
         super().__init__()
