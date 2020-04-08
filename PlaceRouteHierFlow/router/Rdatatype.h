@@ -93,6 +93,7 @@ struct vertex{
   bool via_active_down = true;
   bool via_active_up = true;
   int parent = -1; // -1 mean source
+  int trace_back_node = -1; // -1 mean source, and will changes for parallel routing
   int index=-1;
   std::vector<int> gridmetal;
   bool expand=0; // expand to right (east) for vertical node? expand to up (north) for heriental node?

@@ -44,11 +44,12 @@ class A_star {
     bool L_shape_Connection_Check(Grid& grid, int start_points, int end_points,std::vector<int> &node_set);
     int find_next_node( Grid& grid, int current_node, int x, int y, int layer, int dummy_layer);
     bool Check_activa_via_active(Grid& grid, std::vector<int> &nodes);
-    bool Extention_checks(Grid& grid, std::vector<int> &nodes);
-    bool Extention_check(Grid& grid, int current_node);
+    bool Extention_checks(Grid& grid, std::vector<int> &nodes, std::set<int> &source_index);
+    bool Extention_check(Grid& grid, int current_node, std::set<int> &source_index);
     std::vector<std::vector<int> > A_star_algorithm(Grid& grid, int left_up, int right_down);
     std::vector<std::vector<int> > Trace_Back_Paths(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
-    std::vector<int> Trace_Back_Path(Grid& grid, int current_node, std::set<int> &src_index);
+    std::vector<int> Trace_Back_Path_parent(Grid& grid, int current_node, std::set<int> &src_index);
+    std::vector<int> Trace_Back_Path_trace_back_node(Grid& grid, int current_node, std::set<int> &src_index);
     std::vector<std::vector<RouterDB::Metal> > ConvertPathintoPhysical(Grid& grid);
     std::vector<int> CovertToShieldingNet(Grid& grid, std::vector<int> &temp_path);
     void refreshGrid(Grid& grid);
@@ -57,11 +58,12 @@ class A_star {
     std::vector<std::vector<int>> GetPath();
     bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
     void erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate);
-    void Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
+    bool Pre_trace_back(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
     void rm_cycle_path(std::vector<std::vector<int> > &Node_Path);
     void lable_father(Grid& grid, std::vector<std::vector<int> > &Node_Path);
     void compact_path(std::vector<std::vector<int> > &Node_Path);
     void print_path();
+    bool Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& node_path, std::set<int> &source_index);
 };
 
 #endif
