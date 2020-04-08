@@ -1400,7 +1400,8 @@ bool A_star::Pre_trace_back(Grid& grid, int current_node, int left, int right, s
   rm_cycle_path(Node_Path);
   //std::cout<<"Pre trace 2"<<std::endl;
   lable_father(grid, Node_Path);
-  //std::cout<<"Pre trace 3"<<std::endl;
+  //std::cout<<"Pre trace 3"<<std::endl
+  //bool extend = 1;
   bool extend = Check_Path_Extension(grid, Node_Path, src_index);
   return extend;
   
