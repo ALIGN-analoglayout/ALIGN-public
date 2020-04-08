@@ -729,6 +729,10 @@ void PowerRouter::CreatePowerGridDrc_info(){
   
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
+    //
+    // SMB: Modify this code to change grid_units
+    //
+
        PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
        PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
