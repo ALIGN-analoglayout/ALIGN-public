@@ -439,6 +439,7 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
       }
 
       node.Blocks[i].instance.back().interMetals = lefData[master].at(w).interMetals;
+      node.Blocks[i].instance.back().interVias = lefData[master].at(w).interVias;
       node.Blocks[i].instance.back().gdsFile=gdsData[lefData[master].at(w).name];
   //cout<<"xxx "<<node.Blocks[i].instance.back().gdsFile<<endl;
     }
