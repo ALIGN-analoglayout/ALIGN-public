@@ -66,7 +66,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   int v_skip_factor = 5;
 
   int signal_routing_metal_l = 0;
-  int signal_routing_metal_u = 5;
+  int signal_routing_metal_u = 2;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
