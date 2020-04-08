@@ -6,10 +6,10 @@ parameters nfin=14 rres=2k lastt=60n fin_n_diff2sing=12 fin_p_diff2sing=12 \
 // Library name: CAD_modules
 // Cell name: diff2sing_v1
 // View name: schematic
-subckt diff2sing_v1 B VDD VSS in1 in2 o
+subckt diff2sing_v1 VDD VSS in1 in2 o
 parameters _ar0 _ar1 _ar2 _ar3
-    P2 (net3 B net1 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
-    P5 (net1 B VDD VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    P2 (net3 VSS net1 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
+    P5 (net1 VSS VDD VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     P1 (o in2 net2 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     P4 (net2 in2 net3 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
     P0 (net8 in1 net4 VDD) lvtpfet m=1 l=14n nfin=_ar0 nf=_ar1
@@ -74,28 +74,28 @@ ends vco_res
 subckt vco_buffer_amp VDD VSS oo\<1\> oo\<2\> oo\<3\> oo\<4\> oo\<5\> oo\<6\> oo\<7\> \
 oo\<8\> on\<1\> on\<2\> on\<3\> on\<4\> on\<5\> on\<6\> on\<7\> on\<8\> op\<1\> op\<2\> op\<3\> op\<4\> op\<5\> \ 
 op\<6\> op\<7\> op\<8\> 
-    I6\<1\> (VSS VDD VSS on\<1\> op\<1\> oo\<1\>) diff2sing_v1 \
+    I6\<1\> (VDD VSS on\<1\> op\<1\> oo\<1\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<2\> (VSS VDD VSS on\<2\> op\<2\> oo\<2\>) diff2sing_v1 \
+    I6\<2\> (VDD VSS on\<2\> op\<2\> oo\<2\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<3\> (VSS VDD VSS on\<3\> op\<3\> oo\<3\>) diff2sing_v1 \
+    I6\<3\> (VDD VSS on\<3\> op\<3\> oo\<3\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<4\> (VSS VDD VSS on\<4\> op\<4\> oo\<4\>) diff2sing_v1 \
+    I6\<4\> (VDD VSS on\<4\> op\<4\> oo\<4\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<5\> (VSS VDD VSS on\<5\> op\<5\> oo\<5\>) diff2sing_v1 \
+    I6\<5\> (VDD VSS on\<5\> op\<5\> oo\<5\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<6\> (VSS VDD VSS on\<6\> op\<6\> oo\<6\>) diff2sing_v1 \
+    I6\<6\> (VDD VSS on\<6\> op\<6\> oo\<6\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<7\> (VSS VDD VSS on\<7\> op\<7\> oo\<7\>) diff2sing_v1 \
+    I6\<7\> (VDD VSS on\<7\> op\<7\> oo\<7\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
-    I6\<8\> (VSS VDD VSS on\<8\> op\<8\> oo\<8\>) diff2sing_v1 \
+    I6\<8\> (VDD VSS on\<8\> op\<8\> oo\<8\>) diff2sing_v1 \
         _ar0=fin_p_diff2sing _ar1=width_p_diff2sing \
         _ar2=fin_n_diff2sing _ar3=width_n_diff2sing
 ends vco_buffer_amp
