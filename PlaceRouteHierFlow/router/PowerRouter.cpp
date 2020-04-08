@@ -1,4 +1,5 @@
 #include "PowerRouter.h"
+#include <cmath>
 
 //one : creation of power gird
 //create power grid (creation: drc-info; return to node: based on node grid, create source and dest) create once or separately?
@@ -723,21 +724,35 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
 
 
 void PowerRouter::CreatePowerGridDrc_info(){
-  
-  int Power_width = 1; 
+
   PowerGrid_Drc_info = drc_info;
   
+  int Power_width = 1; 
+  int horizontal_wire_factor = 7;
+  int vertical_wire_factor   = 5;
+
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
+    int factor = round(1.0/utilization[i]);
+    auto& mi = PowerGrid_Drc_info.Metal_info[i];
+
     //
-    // SMB: Modify this code to change grid_units
+    // SMB: Hack to set skip factor based on direction
     //
 
-       PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
-       PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
-       PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
+    if        (mi.direct == 1) { // horizontal
+      factor = horizontal_wire_factor;
+    } else if (mi.direct == 0) { // vertical
+      factor = vertical_wire_factor;
+    } else {
+      assert( 0);
+    }
 
-     }
+    mi.grid_unit_x *= factor;
+    mi.grid_unit_y *= factor;
+    mi.width *= Power_width;
+
+  }
 
 };
 
