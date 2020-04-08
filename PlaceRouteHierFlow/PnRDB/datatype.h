@@ -476,7 +476,8 @@ struct lefMacro {
   string name="";
   vector<pin> macroPins;
   vector<contact> interMetals;
-  string master="";
+  vector<Via> interVias;
+  string master = "";
 };
 
 /// PArt 5: declaration of structures for design rule data

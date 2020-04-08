@@ -23,9 +23,11 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False, toplevel=True):
 
     logger.info( f'Checking: {hN.name}')
+
+    global_power_names = set( [ n.name for n in hN.PowerNets])
 
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
@@ -88,7 +90,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
-    global_power_names = set( [ n.name for n in hN.PowerNets])
+
 
     fa_map = {}
     for n in itertools.chain( hN.Nets, hN.PowerNets):
@@ -117,7 +119,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 logger.info( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
-
 
         if not found and input_dir is not None:
 
@@ -315,8 +316,9 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
             cnv.subinsts[inst].parameters.update(parameters)
-        cnv.gen_data(run_pex=extract)
 
+        nets_allowed_to_be_open = [] if toplevel else global_power_names
+        cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals

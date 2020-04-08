@@ -851,16 +851,24 @@ void GcellDetailRouter::create_detailrouter_old(){
    }
 };
 
-void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
+void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
+                                          std::vector<RouterDB::Block> &Blocks) {
   std::pair<int, RouterDB::point> via_point;
-  //insert via point into via set
-  for (unsigned int bit = 0; bit < Blocks.size(); bit++)
-  {
-    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size();vit++){
+  // insert via point into via set
+  for (unsigned int bit = 0; bit < Blocks.size(); bit++) {
+    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size(); vit++) {
       via_point.first = Blocks[bit].InternalVia[vit].model_index;
       via_point.second.x = Blocks[bit].InternalVia[vit].position.x;
       via_point.second.y = Blocks[bit].InternalVia[vit].position.y;
       Pset_via.insert(via_point);
+    }
+    for (unsigned int pit = 0; pit < Blocks[bit].pins.size(); pit++) {
+      for (unsigned int vit = 0; vit < Blocks[bit].pins[pit].pinVias.size(); vit++) {
+        via_point.first = Blocks[bit].pins[pit].pinVias[vit].model_index;
+        via_point.second.x = Blocks[bit].pins[pit].pinVias[vit].position.x;
+        via_point.second.y = Blocks[bit].pins[pit].pinVias[vit].position.y;
+        Pset_via.insert(via_point);
+      }
     }
   }
 }
@@ -1096,7 +1104,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact); //bug use other sinkDataComp Yaguang
   for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator vit = Set.begin(); vit != Set.end(); ++vit)
   {
-    int mIdx = vit->metalIdx;    
+    int mIdx = vit->metalIdx;  
     if(mIdx<this->layerNo-1){
         int vIdx = mIdx;
         box.LL.x = vit->coord[0].x + drc_info.Via_model[vIdx].LowerRect[0].x - drc_info.Metal_info[mIdx].dist_ee;
@@ -1120,8 +1128,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
   //block via to avoid
-  grid.InactivePointlist_via(Pset_via_lower_metal, false); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, true); //inactive metal's lower via
+  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
   //***************block vias around metal******************
 };
 
