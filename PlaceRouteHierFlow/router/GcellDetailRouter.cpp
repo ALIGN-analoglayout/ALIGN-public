@@ -862,6 +862,14 @@ void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::poin
       via_point.second.y = Blocks[bit].InternalVia[vit].position.y;
       Pset_via.insert(via_point);
     }
+    for (unsigned int pit = 0; pit < Blocks[bit].pins.size(); pit++) {
+      for (unsigned int vit = 0; vit < Blocks[bit].pins[pit].pinVias.size(); vit++) {
+        via_point.first = Blocks[bit].pins[pit].pinVias[vit].model_index;
+        via_point.second.x = Blocks[bit].pins[pit].pinVias[vit].position.x;
+        via_point.second.y = Blocks[bit].pins[pit].pinVias[vit].position.y;
+        Pset_via.insert(via_point);
+      }
+    }
   }
 }
 
