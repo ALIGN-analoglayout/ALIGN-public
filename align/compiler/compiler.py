@@ -91,7 +91,7 @@ def compiler_output(input_ckt, library, updated_ckt, design_name, result_dir, un
     print_header(VERILOG_FP, design_name)
     design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
     try:
-        POWER_PINS = [design_setup['POWER'][0],design_setup['GND'][0]]
+        POWER_PINS = [design_setup['GND'][0],design_setup['POWER'][0]]
     except (IndexError, ValueError):
         POWER_PINS=[]
         logger.error("no power and gnd defination, correct setup file")

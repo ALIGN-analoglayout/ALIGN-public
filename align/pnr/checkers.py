@@ -1,5 +1,7 @@
+
 from ..cell_fabric import transformation, pdk
 from .. import primitive
+import itertools
 import json
 import importlib
 import sys
@@ -26,7 +28,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3,1)
 
     terminals = []
 
@@ -35,7 +37,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     errors = []
 
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
-              "M4": "m4", "M5": "m5", "M6": "m6"}
+              "M4": "m4", "M5": "m5", "M6": "m6",
+              "M7": "m7", "M8": "m8"}
 
     def add_terminal( netName, layer, b, tag=None):
 
@@ -84,7 +87,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
     fa_map = {}
-    for n in hN.Nets:
+    for n in itertools.chain( hN.Nets, hN.PowerNets):
         for c in n.connected:
             if c.type == 'Block':
                 cblk = hN.Blocks[c.iter2]
@@ -172,7 +175,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
-    for n in hN.Nets:
+    for n in itertools.chain( hN.Nets, hN.PowerNets):
         logger.debug( f"Net: {n.name}")
 
         def addt( obj, con, tag=None):
@@ -214,9 +217,18 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 addt( n, con, "path_via")
 
-        for via in n.interVias:
+        if hasattr( n, 'interVias'):        
+            for via in n.interVias:
+                for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
+                    addt( n, con, "intervia")
+
+    for pg in [hN.Gnd, hN.Vdd]:
+        for metal in pg.metals:
+            con = metal.MetalRect
+            add_terminal( pg.name, con.metal, con.placedBox, "power grid metal")
+        for via in pg.vias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con, "intervia")
+                add_terminal( pg.name, con.metal, con.placedBox, "power grid via")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
