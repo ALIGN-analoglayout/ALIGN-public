@@ -54,7 +54,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   double rate = 0.2;
 
   int signal_routing_metal_l = 0;
-  int signal_routing_metal_u = 5;
+  int signal_routing_metal_u = 8;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
@@ -63,7 +63,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     if ( adr_mode) {
       global_router_mode = 6;
     }
-    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 8, binary_directory, rate);
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
@@ -80,7 +80,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state(DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
-    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 8, binary_directory, rate);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, rate);
     save_state(DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
   } else {
     // Global Routing (old version)
@@ -134,10 +134,10 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     }
 */
 
-    int power_grid_metal_l = 3;
-    int power_grid_metal_u = 4;
+    int power_grid_metal_l = 9;
+    int power_grid_metal_u = 11;
     int power_routing_metal_l = 0;
-    int power_routing_metal_u = 4;
+    int power_routing_metal_u = 11;
 
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, rate);
 
@@ -155,7 +155,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 11, binary_directory, rate);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
     if (current_node.isTop) {
