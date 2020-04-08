@@ -851,16 +851,24 @@ void GcellDetailRouter::create_detailrouter_old(){
    }
 };
 
-void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
+void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
+                                          std::vector<RouterDB::Block> &Blocks) {
   std::pair<int, RouterDB::point> via_point;
-  //insert via point into via set
-  for (unsigned int bit = 0; bit < Blocks.size(); bit++)
-  {
-    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size();vit++){
+  // insert via point into via set
+  for (unsigned int bit = 0; bit < Blocks.size(); bit++) {
+    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size(); vit++) {
       via_point.first = Blocks[bit].InternalVia[vit].model_index;
       via_point.second.x = Blocks[bit].InternalVia[vit].position.x;
       via_point.second.y = Blocks[bit].InternalVia[vit].position.y;
       Pset_via.insert(via_point);
+    }
+    for (unsigned int pit = 0; pit < Blocks[bit].pins.size(); pit++) {
+      for (unsigned int vit = 0; vit < Blocks[bit].pins[pit].pinVias.size(); vit++) {
+        via_point.first = Blocks[bit].pins[pit].pinVias[vit].model_index;
+        via_point.second.x = Blocks[bit].pins[pit].pinVias[vit].position.x;
+        via_point.second.y = Blocks[bit].pins[pit].pinVias[vit].position.y;
+        Pset_via.insert(via_point);
+      }
     }
   }
 }
