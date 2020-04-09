@@ -768,10 +768,10 @@ void SeqPair::PerturbationNew(design& caseNL) {
         case 1: mark=MoveAsymmetricBlockposPair(caseNL); break;
         case 2: mark=MoveAsymmetricBlocknegPair(caseNL); break;
         case 3: mark=MoveAsymmetricBlockdoublePair(caseNL); break;
-        case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
+        //case 4: mark=ChangeAsymmetricBlockOrient(caseNL); break;
         case 5: mark=SwapTwoBlocksofSameGroup(caseNL); break;
         case 6: mark=SwapTwoSymmetryGroup(caseNL); break;
-        case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
+        //case 7: mark=ChangeSymmetryBlockOrient(caseNL); break;
         case 8: mark=SwapMultiBlocksofSameGroup(caseNL); break;
         //case 9: mark=RotateSymmetryGroup(caseNL); break;
         default: mark=false;

@@ -23,17 +23,16 @@
 #include "Graph.h"
 #include "RawRouter.h"
 #include "Rdatatype.h"
-#include "DetailRouter.h"
+#include "GcellDetailRouter.h"
 #include "../PnRDB/datatype.h"
+#include "A_star.h"
 
-class PowerRouter : public DetailRouter {
+class PowerRouter : public GcellDetailRouter {
 
   friend class Grid;
 
   private:
 
-    vector<double> utilization;//drc_info something like this
-    
     PnRDB::Drc_info PowerGrid_Drc_info;
     
     //return PowerGrid to PnRDB
@@ -46,16 +45,16 @@ class PowerRouter : public DetailRouter {
     //create some dummy net with source and dest in nets
     //call detail router
 
-    PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate);
-    void PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate);
-    void CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate);
+PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, int h_skip_factor, int v_skip_factor);
+    void PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal);
+    void CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int hskip_factor, int v_skip_factor);
     void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net);
     void SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest);
     void Physical_metal_via();
     void Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid);
     void GetPhsical_Metal_Via(int i);
-    void CreatePowerGridDrc_info();
-    void GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate);
+    void CreatePowerGridDrc_info(int hskip_factor, int v_skip_factor);
+    void GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal);
     void getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal);
     void getNetData(PnRDB::hierNode& node);
     void getPowerGridData(PnRDB::hierNode & node);
@@ -73,6 +72,12 @@ class PowerRouter : public DetailRouter {
     void ReturnPowerGridData(PnRDB::hierNode& node);
     void ReturnPowerNetData(PnRDB::hierNode& node);
     void UpdateVia(RouterDB::Via &temp_via);
+    void ExtendMetal();
+    void UpdateMetalContact(RouterDB::Metal &temp_metal);
+    void ExtendY(RouterDB::Metal &temp_metal, int extend_dis);
+    void ExtendX(RouterDB::Metal &temp_metal, int extend_dis);
+    void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num);
+
 
 };
 

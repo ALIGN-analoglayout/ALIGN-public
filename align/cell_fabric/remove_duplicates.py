@@ -110,11 +110,12 @@ class RemoveDuplicates():
                         tbl[nm][id(root)].append( (layer, slr.rect))
                     elif slr.terminal is not None:
                         self.subinsts[slr.terminal[0]].pins[slr.terminal[1]].add( None)
-                        self.opens.append( slr.terminal)
+                        self.set_open( slr.terminal, slr.terminal)
 
         for (nm,s) in tbl.items():
             if len(s) > 1:
-                self.opens.append( (nm,list(s.values())))
+                self.set_open( nm, (nm,list(s.values())))
+
 
     @staticmethod
     def containedIn( rS, rB):
@@ -127,7 +128,7 @@ class RemoveDuplicates():
         # not touching if completely to left or right or above or below
         return not (rA[2] < rB[0] or rB[2] < rA[0] or rA[3] < rB[1] or rB[3] < rA[1])
 
-    def __init__( self, canvas):
+    def __init__( self, canvas, *, nets_allowed_to_be_open=None):
         self.canvas = canvas
         self.store_scan_lines = None
         self.different_widths = []
@@ -136,6 +137,15 @@ class RemoveDuplicates():
         self.subinsts = canvas.subinsts
 
         self.setup_layer_structures()
+
+        if nets_allowed_to_be_open is None:
+            self.nets_allowed_to_be_open = set([])
+        else:
+            self.nets_allowed_to_be_open = set(nets_allowed_to_be_open)
+
+    def set_open( self, nm, opn):
+        if nm not in self.nets_allowed_to_be_open:
+            self.opens.append( opn)
 
     def setup_layer_structures( self):
         self.layers = OrderedDict()
@@ -211,7 +221,7 @@ class RemoveDuplicates():
                     if sl.isEmpty():
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
                     elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
-                        if self.connectPair(current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
+                        if self.connectPair(layer,current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
                             sl.merge_slr(current_slr, sl.rects.pop())
                         else:
                             current_slr = sl.rects[-1]
@@ -234,10 +244,10 @@ class RemoveDuplicates():
                         if mh is not None:
                             metal_scan_line_horizontal = self.store_scan_lines[mh][twice_center_y]
                             metal_rect_h = metal_scan_line_horizontal.find_touching(via_rect)
-                            self.connectPair( metal_rect_v.root(), via_rect.root())
-                            self.connectPair( via_rect.root(), metal_rect_h.root())
+                            self.connectPair( via, metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via, via_rect.root(), metal_rect_h.root())
                         else:
-                            self.connectPair( metal_rect_v.root(), via_rect.root())
+                            self.connectPair( via, metal_rect_v.root(), via_rect.root())
 
     def check_shorts_induced_by_terminals( self):
         for instance, v in self.subinsts.items():
@@ -246,7 +256,7 @@ class RemoveDuplicates():
                 if len(names) > 1:
                     self.shorts.append( (names, f'THROUGH TERMINAL {instance}:{pin}', slrs) )
 
-    def connectPair( self, a, b):
+    def connectPair( self, layer, a, b):
         numshorts = len(self.shorts)
         if a.netName is None:
             a.netName = b.netName
@@ -255,7 +265,7 @@ class RemoveDuplicates():
             b.netName = a.netName
             a.connect( b)
         else:
-            self.shorts.append( (a, b) )
+            self.shorts.append( f'CONNECTPAIR {layer} {a} {b}' )
         if a.terminal is None and b.terminal is None:
             return numshorts == len(self.shorts)
         else:

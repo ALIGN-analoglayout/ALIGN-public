@@ -74,8 +74,6 @@ void MNASimulation::Clear_Power_Grid(PnRDB::PowerGrid &temp_grid){
 
   temp_grid.metals.clear();
   temp_grid.vias.clear();
-  temp_grid.power=1;
-
 
 };
 

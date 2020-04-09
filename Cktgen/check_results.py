@@ -11,13 +11,14 @@ from intel_p1222p2.IntelP1222p2Canvas import IntelP1222p2Canvas
 
 def check_results(ckt_name):
 
+    ckt_name_json = ckt_name
     if not ckt_name.endswith('.json'):
-        ckt_name += '.json'
+        ckt_name_json += '.json'
 
-    with open( ckt_name, "rt") as fp:
+    with open( ckt_name_json, "rt") as fp:
         d = json.load(fp)
 
-    skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn"])
+    skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "tcn", "polycon", "diffcon"])
 
     layer_tbl = { "diffcon": "Diffcon",
                   "polycon": "Polycon",
@@ -42,7 +43,7 @@ def check_results(ckt_name):
     terminals = []
     for term in d['terminals']:
         ly = term['layer']
-        if ly in skip_layers:
+        if str(ly).lower() in skip_layers:
             continue
         nm = term['netName'] if 'netName' in term else term['net_name']
         #
@@ -71,13 +72,13 @@ def check_results(ckt_name):
         s = (a+b)/2
         return f"{n0},{n1}: {a:.2f}f, {b:.2f}f, {100*(a/s-1):.1f}%, {100*(b/s-1):.1f}%"
 
-    if ckt_name in ["comparator","comparator_kbc"]:
+    if ckt_name.startswith('comp'):
         print( diffs( 'vin', 'vip'))
         print( diffs( 'vin_d', 'vip_d'))
         print( diffs( 'vin_o', 'vip_o'))
         print( diffs( 'von', 'vop'))
 
-    if True:
+    if False:
         assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
         assert len(cnv.rd.shorts) == 0, pformat(cnv.rd.shorts)
         assert len(cnv.rd.opens) == 0, pformat(cnv.rd.opens)
