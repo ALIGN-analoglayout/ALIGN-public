@@ -265,9 +265,8 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
   while(trace_back_flag){
 
     int last_node = grid.vertices_total[dummy_node].trace_back_node;
-
-    std::cout<<"trace back node "<<last_node<<" metal "<< grid.vertices_total[last_node].metal<<std::endl;
-
+    //std::cout<<"trace back node "<<last_node<<std::endl;
+    //std::cout<<"trace back node "<<last_node<<" metal "<< grid.vertices_total[last_node].metal<<std::endl;
 
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
