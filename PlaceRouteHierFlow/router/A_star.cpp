@@ -840,14 +840,16 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
     //assert(0);
-    if(next==-1){
+    if(next==-1 or next <0 or next>= grid.vertices_total.size()){
       return false;
     }else if(next>=0 and next< grid.vertices_total.size() ){
       //grid.vertices_total[next].trace_back_node = current_node;
       //std::cout<<"next node "<<next<<" "<<grid.vertices_total[next].x<<" "<<grid.vertices_total[next].y<<" "<<grid.vertices_total[next].metal<<std::endl;
       node_set_up.push_back(next); 
     }else{
-      //std::cout<<" bug node "<<grid.vertices_total.size()<<" "<<next<<std::endl;
+      std::cout<<" bug node "<<grid.vertices_total.size()<<" "<<next<<std::endl;
+      std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
+      std::cout<<"next node "<<next<<" "<<grid.vertices_total[next].x<<" "<<grid.vertices_total[next].y<<" "<<grid.vertices_total[next].metal<<std::endl;
       std::cout<<"L shape connection check bug, next node is out of grid"<<std::endl;
       assert(0);
     }
