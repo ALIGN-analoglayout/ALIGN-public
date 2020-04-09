@@ -900,6 +900,7 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
                                              std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num){
   //1.Set physical rect
   GetPhsical_Metal_Via(net_num);
+  //ExtendMetals(net_num);
   //2.insert routing contact
   for (std::vector<RouterDB::Metal>::const_iterator pit = Nets[net_num].path_metal.begin(); pit != Nets[net_num].path_metal.end(); pit++)
   {
@@ -2400,42 +2401,82 @@ void GcellDetailRouter::ExtendY(RouterDB::Metal &temp_metal, int extend_dis){
   
 };
 
+void GcellDetailRouter::ExtendMetals(int i){
+
+    if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
+
+    for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
+
+        if(Nets[i].extend_label[j]==0){continue;}
+
+        int current_metal = Nets[i].path_metal[j].MetalIdx;
+
+        int direction = drc_info.Metal_info[current_metal].direct;
+
+        int minL = drc_info.Metal_info[current_metal].minL;
+         
+        int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
+
+        if(current_length<minL){
+
+           int extend_dis = ceil(minL - current_length)/2;
+   
+           if(direction==1){//h
+             
+              ExtendX(Nets[i].path_metal[j], extend_dis);
+               
+           }else{//v
+              
+              ExtendY(Nets[i].path_metal[j], extend_dis);
+              
+           }
+
+
+        }
+
+    }
+
+
+
+};
+
 void GcellDetailRouter::ExtendMetal(){
 
 
   for(unsigned int i=0;i<Nets.size();i++){
 
-     if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
+    if(Nets[i].path_metal.size()!=Nets[i].extend_label.size()){assert(0);}
 
-     for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
+    for(unsigned int j=0;j<Nets[i].path_metal.size();j++){
 
-         if(Nets[i].extend_label[j]==0){continue;}
+        if(Nets[i].extend_label[j]==0){continue;}
 
-         int current_metal = Nets[i].path_metal[j].MetalIdx;
+        int current_metal = Nets[i].path_metal[j].MetalIdx;
 
-         int direction = drc_info.Metal_info[current_metal].direct;
+        int direction = drc_info.Metal_info[current_metal].direct;
 
-         int minL = drc_info.Metal_info[current_metal].minL;
+        int minL = drc_info.Metal_info[current_metal].minL;
          
-         int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
+        int current_length = abs( Nets[i].path_metal[j].LinePoint[0].x - Nets[i].path_metal[j].LinePoint[1].x) + abs( Nets[i].path_metal[j].LinePoint[0].y - Nets[i].path_metal[j].LinePoint[1].y);
 
-         if(current_length<minL){
+        if(current_length<minL){
 
-            int extend_dis = ceil(minL - current_length)/2;
+           int extend_dis = ceil(minL - current_length)/2;
    
-            if(direction==1){//h
+           if(direction==1){//h
              
-               ExtendX(Nets[i].path_metal[j], extend_dis);
+              ExtendX(Nets[i].path_metal[j], extend_dis);
                
-            }else{//v
+           }else{//v
               
-               ExtendY(Nets[i].path_metal[j], extend_dis);
+              ExtendY(Nets[i].path_metal[j], extend_dis);
               
-            }
+           }
 
 
-         }
-     }
+        }
+
+    }
   }
 
 
