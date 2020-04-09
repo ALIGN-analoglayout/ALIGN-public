@@ -267,6 +267,18 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
     int last_node = grid.vertices_total[dummy_node].trace_back_node;
 
     std::cout<<"trace back node "<<last_node<<" metal "<< grid.vertices_total[last_node].metal<<std::endl;
+
+
+    if(last_node<0 or last_node>=grid.vertices_total.size()){
+      trace_back_flag = false;
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      first_node_same_layer = last_node;
+      dummy_node = last_node;
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      trace_back_flag = false;
+    }
+
+/*
     if(last_node<0 or last_node>=grid.vertices_total.size()){
       trace_back_flag = false;
     }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
@@ -283,7 +295,7 @@ int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_
       assert(0);
     }
     last_nodes.insert(last_node);
-
+*/
   }
 
   return first_node_same_layer;
@@ -764,7 +776,9 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
      //std::cout<<"L shape Connection begin "<<std::endl;
      //assert(0);
      std::cout<<"L shape connection 1"<<std::endl;
-     //Pre_trace_back(grid, current_node, left, right, src_index, dest_index);
+     if(grid.vertices_total[current_node].metal!=grid.vertices_total[next_node].metal){
+        //Pre_trace_back(grid, current_node, left, right, src_index, dest_index);
+     }
      bool found = L_shape_Connection(grid, start_points, end_points, node_L_path);
      std::cout<<"L shape connection 2"<<std::endl;
      return found;
@@ -1047,19 +1061,28 @@ bool A_star::Extention_check(Grid& grid, int current_node, std::set<int> &source
        int temp_parent = grid.vertices_total[node_same_layer].trace_back_node;
        int via_space_length = 0;
        std::cout<<"Extention_check 4 "<<current_node<<std::endl;
+       std::cout<<"temp_parent "<<temp_parent<<std::endl;
        if(temp_parent != -1){
+          std::cout<<grid.vertices_total[temp_parent].metal<<std::endl;
+          std::cout<<grid.vertices_total[current_node].metal<<std::endl;
           if(grid.vertices_total[temp_parent].metal==grid.vertices_total[current_node].metal){
             int via_index = 0;
+            //std::cout<<grid.vertices_total[parent].metal<<std::endl;
+            //std::cout<<drc_info.Metal_info[metal_index].direct<<std::endl;
             int metal_index = grid.vertices_total[parent].metal;
-            int metal_direct =  drc_info.Metal_info[parent].direct;;
+            int metal_direct =  drc_info.Metal_info[metal_index].direct;
             if(grid.vertices_total[parent].metal<grid.vertices_total[current_node].metal){
+                std::cout<<"test 1"<<std::endl;
                 via_index = grid.vertices_total[parent].metal;
               }else{
+                std::cout<<"test 2"<<std::endl;
                 via_index = grid.vertices_total[current_node].metal;
               }
             if(metal_direct==1){//H
+                std::cout<<"test 3"<<std::endl;
                 via_space_length = drc_info.Via_info[via_index].width + drc_info.Via_info[via_index].dist_ss;
               }else{
+                std::cout<<"test 4"<<std::endl;
                 via_space_length = drc_info.Via_info[via_index].width_y + drc_info.Via_info[via_index].dist_ss_y;
               }
           }
@@ -1144,7 +1167,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     it = L_list.begin();
     current_node = it->second;
     L_list.erase(it);
-    close_set.insert(current_node = it->second);
+    
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
        bool extend = Pre_trace_back(grid, current_node, left_up, right_down, src_index,dest_index); //add pre_trace_back and extendtion check here?
@@ -1153,7 +1176,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        }
        continue;
       }
-
+    close_set.insert(current_node = it->second);
 
 
     //found the candidates nodes
