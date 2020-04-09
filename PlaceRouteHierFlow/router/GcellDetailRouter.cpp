@@ -907,7 +907,7 @@ void GcellDetailRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::se
                                              std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num){
   //1.Set physical rect
   GetPhsical_Metal_Via(net_num);
-  //ExtendMetals(net_num);
+  ExtendMetals(net_num);
   //2.insert routing contact
   for (std::vector<RouterDB::Metal>::const_iterator pit = Nets[net_num].path_metal.begin(); pit != Nets[net_num].path_metal.end(); pit++)
   {
