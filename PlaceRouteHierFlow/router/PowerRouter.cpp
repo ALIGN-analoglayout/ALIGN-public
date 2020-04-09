@@ -67,7 +67,7 @@ void PowerRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std:
   GetPhsical_Metal_Via(net_num);
   ExtendMetals(net_num);
   //2.insert routing contact
-  for (std::vector<RouterDB::Metal>::const_iterator pit = Nets[net_num].path_metal.begin(); pit != Nets[net_num].path_metal.end(); pit++)
+  for (std::vector<RouterDB::Metal>::const_iterator pit = PowerNets[net_num].path_metal.begin(); pit != PowerNets[net_num].path_metal.end(); ++pit)
   {
     RouterDB::SinkData contact;
     RouterDB::point LL, UR;
@@ -78,7 +78,7 @@ void PowerRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std:
     contact.coord.push_back(UR);
     contacts.insert(contact);
   }
-  for (std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>::const_iterator vit = Pset_via.begin(); vit != Pset_via.end();vit++){
+  for (std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>::const_iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit){
     //do lower contact
     RouterDB::SinkData contact;
     contact.metalIdx = vit->first;
