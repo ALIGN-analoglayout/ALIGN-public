@@ -1042,7 +1042,8 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      if(nodes[i]<0 or nodes[i]>grid.vertices_total.size() -1 or !grid.vertices_total[nodes[i]].active){
         return false;
      }
-
+     //Q here is a bug?
+     //Q other extention way?
      int parent = nodes[i-1]; //there is a bug when nodes is only one, should use trace_back_node
      int parent_metal = grid.vertices_total[parent].metal;
      int current_metal = grid.vertices_total[nodes[i]].metal;
