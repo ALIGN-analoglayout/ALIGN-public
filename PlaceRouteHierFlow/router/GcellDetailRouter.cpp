@@ -736,26 +736,6 @@ void GcellDetailRouter::create_detailrouter(){
         //add path metal to set_current_net_contact
         //add via conatct to set_current_net_contact
         InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
-/*
-        a_star.print_path();
-        physical_path = a_star.ConvertPathintoPhysical(grid);
-
-        std::string temp_pin_name;   
-        if(Nets[i].connected[j].type==RouterDB::BLOCK){
-           int iter2 = Nets[i].connected[j].iter2;
-           int iter = Nets[i].connected[j].iter;
-           temp_pin_name = Blocks[iter2].blockName + "." + Blocks[iter2].pins[iter].pinName;
-        }else{
-           int iter = Nets[i].connected[j].iter;
-           temp_pin_name = Terminals[iter].name;
-        }
-        std::cout<<"temp_pin name "<<temp_pin_name<<std::endl;
-
-        std::cout<<"physical_path size "<<physical_path.size()<<std::endl;
-        for(int k=0;k<physical_path.size();k++){
-            std::cout<<"physical_path sub path size "<<physical_path[k].size()<<std::endl;
-        }
-*/
         lastmile_source_new(physical_path, temp_source);
         lastmile_dest_new(physical_path, temp_dest);
         returnPath(physical_path, Nets[i]);
