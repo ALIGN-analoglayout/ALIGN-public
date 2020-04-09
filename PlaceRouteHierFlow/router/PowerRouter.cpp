@@ -1,4 +1,5 @@
 #include "PowerRouter.h"
+#include <cmath>
 
 //one : creation of power gird
 //create power grid (creation: drc-info; return to node: based on node grid, create source and dest) create once or separately?
@@ -14,13 +15,13 @@
 
 //detail router for the rest
 
-PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate){
+PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, int h_skip_factor, int v_skip_factor){
   
   //power_grid 1 create power_grid, 0 power net routing
 
   if(power_grid == 1){
      std::cout<<"CheckPoint 1"<<std::endl;
-     CreatePowerGrid(node, drc_info, Lmetal, Hmetal, rate);
+     CreatePowerGrid(node, drc_info, Lmetal, Hmetal, h_skip_factor, v_skip_factor);
      std::cout<<"CheckPoint 2"<<std::endl;
      Physical_metal_via_power_grid(Vdd_grid);
 
@@ -48,7 +49,7 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
      std::cout<<"CheckPoint 5"<<std::endl;  
     }else{
      std::cout<<"CheckPoint 6"<<std::endl;
-     PowerNetRouter(node, drc_info, Lmetal, Hmetal, rate);
+     PowerNetRouter(node, drc_info, Lmetal, Hmetal);
      std::cout<<"CheckPoint 7"<<std::endl;
      Physical_metal_via(); 
      std::cout<<"CheckPoint 8"<<std::endl;
@@ -210,9 +211,8 @@ void PowerRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, Router
 };
 
 
-void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
-  rate = 1.0; //for power routing, rate should be 1.0
-  GetData(node, drc_info, Lmetal, Hmetal, rate);
+void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
+  GetData(node, drc_info, Lmetal, Hmetal);
   
   // bug missing via space check?
   std::vector<std::vector<RouterDB::point> > plist;
@@ -314,11 +314,11 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
 };
 
-void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
+void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int h_skip_factor, int v_skip_factor){
 
   std::cout<<"checkpoint1.1"<<std::endl;
-  GetData(node, drc_info, Lmetal, Hmetal, rate);
-  CreatePowerGridDrc_info();
+  GetData(node, drc_info, Lmetal, Hmetal);
+  CreatePowerGridDrc_info( h_skip_factor, v_skip_factor);
   this->drc_info=this->PowerGrid_Drc_info;
   std::cout<<"checkpoint1.2"<<std::endl;
   std::vector<std::vector<RouterDB::point> > plist;
@@ -722,22 +722,37 @@ void PowerRouter::GetPhsical_Metal_Via(int i){
 };
 
 
-void PowerRouter::CreatePowerGridDrc_info(){
-  
-  int Power_width = 1; 
+void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor){
+
   PowerGrid_Drc_info = drc_info;
   
+  int Power_width = 1; 
+
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
-       PowerGrid_Drc_info.Metal_info[i].grid_unit_x = PowerGrid_Drc_info.Metal_info[i].grid_unit_x/utilization[i];
-       PowerGrid_Drc_info.Metal_info[i].grid_unit_y = PowerGrid_Drc_info.Metal_info[i].grid_unit_y/utilization[i];
-       PowerGrid_Drc_info.Metal_info[i].width = PowerGrid_Drc_info.Metal_info[i].width * Power_width;
+    auto& mi = PowerGrid_Drc_info.Metal_info[i];
 
-     }
+    int factor;
+
+    if        (mi.direct == 1) { // horizontal
+      factor = h_skip_factor;
+    } else if (mi.direct == 0) { // vertical
+      factor = v_skip_factor;
+    } else {
+      assert( 0);
+    }
+
+    // This is weird changing them both, but the code did this before
+    // Probably only need to expand the x for vertical wires and the y for horizontal wires
+    mi.grid_unit_x *= factor;
+    mi.grid_unit_y *= factor;
+    mi.width *= Power_width;
+
+  }
 
 };
 
-void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate){
+void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   std::cout<<"Checkpoint get Data 1"<<std::endl;
   getDRCdata(drc_info);
   std::cout<<"Checkpoint get Data 2"<<std::endl;
@@ -752,10 +767,6 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   getPowerNetData(node);//Power net 
   std::cout<<"Checkpoint get Data 7"<<std::endl;
 
-  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
-      utilization.push_back(rate); 
-     }
-  std::cout<<"Checkpoint get Data 8"<<std::endl;
 };
 
 void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
