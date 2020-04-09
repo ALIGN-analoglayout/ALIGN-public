@@ -1041,12 +1041,12 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
 
      if(nodes[i]<0 or nodes[i]>grid.vertices_total.size() -1 or !grid.vertices_total[nodes[i]].active){
         return false;
-     } 
+     }
 
-     //int parent = nodes[i-1]; //there is a bug when nodes is only one, should use trace_back_node
-     //int parent_metal = grid.vertices_total[parent].metal;
-     //int current_metal = grid.vertices_total[nodes[i]].metal;
-/*
+     int parent = nodes[i-1]; //there is a bug when nodes is only one, should use trace_back_node
+     int parent_metal = grid.vertices_total[parent].metal;
+     int current_metal = grid.vertices_total[nodes[i]].metal;
+
      if(parent_metal == current_metal and !grid.vertices_total[nodes[i]].active){
        return false;
      }else if(parent_metal > current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_up or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_down)){
@@ -1054,7 +1054,7 @@ bool A_star::Check_activa_via_active(Grid& grid, std::vector<int> &nodes){
      }else if(parent_metal < current_metal and (!grid.vertices_total[nodes[i]].active or !grid.vertices_total[nodes[i]].via_active_down or !grid.vertices_total[parent].active or !grid.vertices_total[parent].via_active_up)){
        return false;
      }
-*/     
+    
   }
   
   return true;
