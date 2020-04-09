@@ -61,6 +61,87 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   
 };
 
+void PowerRouter::InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
+                                             std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num){
+  //1.Set physical rect
+  GetPhsical_Metal_Via(net_num);
+  ExtendMetals(net_num);
+  //2.insert routing contact
+  for (std::vector<RouterDB::Metal>::const_iterator pit = PowerNets[net_num].path_metal.begin(); pit != PowerNets[net_num].path_metal.end(); ++pit)
+  {
+    RouterDB::SinkData contact;
+    RouterDB::point LL, UR;
+    LL = pit->MetalRect.placedLL;
+    UR = pit->MetalRect.placedUR;
+    contact.metalIdx = pit->MetalIdx;
+    contact.coord.push_back(LL);
+    contact.coord.push_back(UR);
+    contacts.insert(contact);
+  }
+  for (std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp>::const_iterator vit = Pset_via.begin(); vit != Pset_via.end();++vit){
+    //do lower contact
+    RouterDB::SinkData contact;
+    contact.metalIdx = vit->first;
+    RouterDB::point LL, UR;
+    LL.x = vit->second.x + drc_info.Via_model[vit->first].LowerRect[0].x;
+    LL.y = vit->second.y + drc_info.Via_model[vit->first].LowerRect[0].y;
+    UR.x = vit->second.x + drc_info.Via_model[vit->first].LowerRect[1].x;
+    UR.y = vit->second.y + drc_info.Via_model[vit->first].LowerRect[1].y;
+    contact.coord.push_back(LL);
+    contact.coord.push_back(UR);
+    contacts.insert(contact);
+    //do upper contact
+    contact.metalIdx = vit->first + 1;
+    LL.x = vit->second.x + drc_info.Via_model[vit->first].UpperRect[0].x;
+    LL.y = vit->second.y + drc_info.Via_model[vit->first].UpperRect[0].y;
+    UR.x = vit->second.x + drc_info.Via_model[vit->first].UpperRect[1].x;
+    UR.y = vit->second.y + drc_info.Via_model[vit->first].UpperRect[1].y;
+    contact.coord.clear();
+    contact.coord.push_back(LL);
+    contact.coord.push_back(UR);
+    contacts.insert(contact);
+  }
+};
+
+
+void PowerRouter::ExtendMetals(int i){
+
+
+     if(PowerNets[i].path_metal.size()!=PowerNets[i].extend_label.size()){assert(0);}
+
+     for(unsigned int j=0;j<PowerNets[i].path_metal.size();j++){
+
+         if(PowerNets[i].extend_label[j]==0){continue;}
+
+         int current_metal = PowerNets[i].path_metal[j].MetalIdx;
+
+         int direction = drc_info.Metal_info[current_metal].direct;
+
+         int minL = drc_info.Metal_info[current_metal].minL;
+         
+         int current_length = abs( PowerNets[i].path_metal[j].LinePoint[0].x - PowerNets[i].path_metal[j].LinePoint[1].x) + abs( PowerNets[i].path_metal[j].LinePoint[0].y - PowerNets[i].path_metal[j].LinePoint[1].y);
+
+         if(current_length<minL){
+
+            int extend_dis = ceil(minL - current_length)/2;
+   
+            if(direction==1){//h
+             
+               ExtendX(PowerNets[i].path_metal[j], extend_dis);
+               
+            }else{//v
+              
+               ExtendY(PowerNets[i].path_metal[j], extend_dis);
+              
+            }
+
+
+         }
+     }
+
+
+};
+
 void PowerRouter::ExtendMetal(){
 
 
@@ -313,6 +394,8 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
      }
 
 };
+
+
 
 void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int h_skip_factor, int v_skip_factor){
 
