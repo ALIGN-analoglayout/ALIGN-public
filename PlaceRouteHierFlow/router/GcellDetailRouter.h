@@ -134,7 +134,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void GatherSourceDest(std::vector<std::pair<int,int> > & global_path, std::vector<int> &temp_src, std::vector<int> &temp_dest, std::vector<int> & Tile_Source, std::vector<int> & Tile_Dest);
     std::vector<int> EstimateDist(RouterDB::R_const &temp_R, RouterDB::Net &temp_net);
     int Estimate_multi_connection_number(RouterDB::R_const &temp_R, std::vector<int> &temp_dis);
-    void ExtendMetals();
+    void ExtendMetal();
     void ExtendY(RouterDB::Metal &temp_metal, int extend_dis);
     void ExtendX(RouterDB::Metal &temp_metal, int extend_dis);
     void UpdateMetalContact(RouterDB::Metal &temp_metal);
@@ -176,7 +176,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
                                                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &set2);
     void InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
                               std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num);
-    void ExtendMetal(int i);
+    void ExtendMetals(int i);
 };
 
 #endif
