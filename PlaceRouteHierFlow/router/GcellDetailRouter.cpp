@@ -383,29 +383,37 @@ void GcellDetailRouter::Generate_Block_Terminal_Internal_Metal_Set(std::set<Rout
   //std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_net;
 };
 
-void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num){
+void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num) {
   Set_x_contact.clear();
-  for (std::vector<RouterDB::Block>::iterator bit = Blocks.begin(); bit != Blocks.end(); ++bit)
-  {
+  for (std::vector<RouterDB::Block>::iterator bit = Blocks.begin(); bit != Blocks.end(); ++bit) {
     // 1. collect internal metals on grids
-    for(std::vector<RouterDB::contact>::iterator pit=bit->InternalMetal.begin(); pit!=bit->InternalMetal.end(); ++pit) {
+    for (std::vector<RouterDB::contact>::iterator pit = bit->InternalMetal.begin(); pit != bit->InternalMetal.end(); ++pit) {
       Set_x_contact.insert(Contact2Sinkdata(*pit));
     }
-    for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
+    for (std::vector<RouterDB::Via>::iterator pit = bit->InternalVia.begin(); pit != bit->InternalVia.end(); ++pit) {
       Set_x_contact.insert(Contact2Sinkdata(pit->UpperMetalRect));
       Set_x_contact.insert(Contact2Sinkdata(pit->LowerMetalRect));
     }
     // 2. remove pin contacts from internal metal
-    for(std::vector<RouterDB::Pin>::iterator pit=bit->pins.begin(); pit!=bit->pins.end(); ++pit) {
-      if (pit->netIter != net_num)
-        continue;
-      for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit)
-      {
-        Set_x_contact.erase(Contact2Sinkdata(*cit));
-      }
-      for(std::vector<RouterDB::Via>::iterator cit=pit->pinVias.begin(); cit!=pit->pinVias.end(); ++cit) {
-        Set_x_contact.erase(Contact2Sinkdata(cit->UpperMetalRect));
-        Set_x_contact.erase(Contact2Sinkdata(cit->LowerMetalRect));
+    for (std::vector<RouterDB::Pin>::iterator pit = bit->pins.begin(); pit != bit->pins.end(); ++pit) {
+      //insert other nets' pin
+      if (pit->netIter != net_num) {
+        for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+          Set_x_contact.insert(Contact2Sinkdata(*cit));
+        }
+        for (std::vector<RouterDB::Via>::iterator cit = pit->pinVias.begin(); cit != pit->pinVias.end(); ++cit) {
+          Set_x_contact.insert(Contact2Sinkdata(cit->UpperMetalRect));
+          Set_x_contact.insert(Contact2Sinkdata(cit->LowerMetalRect));
+        }
+      } else {
+        //remove current net's pin
+        for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+          Set_x_contact.erase(Contact2Sinkdata(*cit));
+        }
+        for (std::vector<RouterDB::Via>::iterator cit = pit->pinVias.begin(); cit != pit->pinVias.end(); ++cit) {
+          Set_x_contact.erase(Contact2Sinkdata(cit->UpperMetalRect));
+          Set_x_contact.erase(Contact2Sinkdata(cit->LowerMetalRect));
+        }
       }
     }
   }
@@ -682,7 +690,7 @@ void GcellDetailRouter::create_detailrouter(){
     std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
     std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
     ReturnInternalMetalContact(Set_x_contact,i); //get internal metals' contact,first LL, second UR, exclude current net
-    PnRDB::routing_net temp_routing_net; //router report struct
+    PnRDB::routing_net temp_routing_net;  // router report struct
     Initial_rouer_report_info(temp_routing_net, i);
     int multi_number = R_constraint_based_Parallel_routing_number(i);
 
@@ -1005,8 +1013,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact,
                                         std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_net_contact){
   RouterDB::box box;
-  std::vector<std::vector<RouterDB::point> > plist_via_lower_metal(this->layerNo); //points in this list cannot have an upper via
-  std::vector<std::vector<RouterDB::point> > plist_via_upper_metal(this->layerNo); //points in this list cannot have a lower via
+  std::vector<std::vector<RouterDB::point> > plist_metal2uppervia(this->layerNo); //points in this list cannot have an upper via
+  std::vector<std::vector<RouterDB::point> > plist_metal2lowervia(this->layerNo); //points in this list cannot have a lower via
   /**
   //***************block vias around via******************
   plist_via_lower_metal.clear(), plist_via_lower_metal.resize(this->layerNo);
@@ -1099,8 +1107,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
 
   
   //***************block vias around metal******************
-  plist_via_lower_metal.clear(), plist_via_lower_metal.resize(this->layerNo);
-  plist_via_upper_metal.clear(), plist_via_upper_metal.resize(this->layerNo);
+  plist_metal2uppervia.clear(), plist_metal2uppervia.resize(this->layerNo);
+  plist_metal2lowervia.clear(), plist_metal2lowervia.resize(this->layerNo);
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact); //bug use other sinkDataComp Yaguang
   for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator vit = Set.begin(); vit != Set.end(); ++vit)
   {
@@ -1111,7 +1119,8 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
         box.LL.y = vit->coord[0].y + drc_info.Via_model[vIdx].LowerRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
         box.UR.x = vit->coord[1].x + drc_info.Via_model[vIdx].LowerRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
         box.UR.y = vit->coord[1].y + drc_info.Via_model[vIdx].LowerRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
-        ConvertRect2GridPoints_Via(plist_via_lower_metal, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+        ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     };
     if (mIdx > 0)
     {
@@ -1120,16 +1129,17 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
       box.LL.y = vit->coord[0].y + drc_info.Via_model[vIdx].UpperRect[0].y - drc_info.Metal_info[mIdx].dist_ee;
       box.UR.x = vit->coord[1].x + drc_info.Via_model[vIdx].UpperRect[1].x + drc_info.Metal_info[mIdx].dist_ee;
       box.UR.y = vit->coord[1].y + drc_info.Via_model[vIdx].UpperRect[1].y + drc_info.Metal_info[mIdx].dist_ee;
-      ConvertRect2GridPoints_Via(plist_via_upper_metal, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      ConvertRect2GridPoints_Via(plist_metal2lowervia, drc_info.Via_model[vIdx].UpperIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
+      ConvertRect2GridPoints_Via(plist_metal2uppervia, drc_info.Via_model[vIdx].LowerIdx, box.LL.x, box.LL.y, box.UR.x, box.UR.y);
     };
   }
 
   //convert vector into set
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_lower_metal = Plist2Set(plist_via_lower_metal);
-  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_via_upper_metal = Plist2Set(plist_via_upper_metal);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_metal2uppervia = Plist2Set(plist_metal2uppervia);
+  std::vector<std::set<RouterDB::point, RouterDB::pointXYComp>> Pset_metal2lowervia = Plist2Set(plist_metal2lowervia);
   //block via to avoid
-  grid.InactivePointlist_via(Pset_via_lower_metal, true); //inactive metal's upper via
-  grid.InactivePointlist_via(Pset_via_upper_metal, false); //inactive metal's lower via
+  grid.InactivePointlist_via(Pset_metal2uppervia, true); //inactive metal's upper via
+  grid.InactivePointlist_via(Pset_metal2lowervia, false); //inactive metal's lower via
   //***************block vias around metal******************
 };
 
