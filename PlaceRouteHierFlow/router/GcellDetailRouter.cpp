@@ -730,7 +730,6 @@ void GcellDetailRouter::create_detailrouter(){
       //assert(pathMark);
       if (pathMark)
       {
-
         physical_path = a_star.ConvertPathintoPhysical(grid);
         lastmile_source_new(physical_path, temp_source);
         lastmile_dest_new(physical_path, temp_dest);
@@ -742,7 +741,6 @@ void GcellDetailRouter::create_detailrouter(){
         //add path metal to set_current_net_contact
         //add via conatct to set_current_net_contact
         InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
-
       }
       else
       {
