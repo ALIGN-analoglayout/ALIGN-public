@@ -64,6 +64,7 @@ class A_star {
     void compact_path(std::vector<std::vector<int> > &Node_Path);
     void print_path();
     bool Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& node_path, std::set<int> &source_index);
+    int Calculate_Interval_number(Grid& grid, int node);
 };
 
 #endif

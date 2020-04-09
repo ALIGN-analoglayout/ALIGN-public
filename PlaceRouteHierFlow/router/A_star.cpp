@@ -376,9 +376,41 @@ bool A_star::CheckExendable_With_Certain_Length(int first_node_same_layer,int cu
 
 };
 
-bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
+int A_star::Calculate_Interval_number(Grid& grid, int node){
 
   int interval_number = 1;
+  int metal = grid.vertices_total[node].metal;
+  int via_space_length = 0;
+  int pitches = 0;
+
+  if(drc_info.Metal_info[metal].direct==0){//V
+
+    via_space_length = drc_info.Via_info[metal].width + drc_info.Via_info[metal].dist_ss;
+    pitches = drc_info.Metal_info[metal].grid_unit_x;
+    interval_number = ceil( (double) via_space_length / pitches);
+    std::cout<<metal<<" "<<via_space_length<<" "<<pitches<<std::endl;
+    std::cout<<"interval_number 1 "<<interval_number<<std::endl; 
+    //assert(0);
+
+  }else{
+
+    via_space_length = drc_info.Via_info[metal].width_y + drc_info.Via_info[metal].dist_ss_y;
+    pitches = drc_info.Metal_info[metal].grid_unit_y;
+    interval_number = ceil( (double) via_space_length / pitches);
+    std::cout<<metal<<" "<<via_space_length<<" "<<pitches<<std::endl;
+    std::cout<<"interval_number 2 "<<interval_number<<std::endl; 
+    //assert(0);
+
+  }
+
+  return interval_number;
+
+
+};
+
+bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
+
+  int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
   int current_node = -1;
   while(number!=0){
@@ -426,7 +458,7 @@ bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>
 
 bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
-  int interval_number = 1;
+  int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
   int current_node = -1;
   while(number!=0){
@@ -475,7 +507,7 @@ bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int>&
 
 bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
-  int interval_number = 1;
+  int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
   int current_node = -1;
   while(number!=0){
@@ -523,7 +555,7 @@ bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int>&
 
 bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int>& temp_nodes){
 
-  int interval_number = 1;
+  int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
   int current_node = -1;
   while(number!=0){
