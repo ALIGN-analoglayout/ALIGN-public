@@ -289,6 +289,15 @@ void PowerRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, Router
       }
     }
   }
+  for (std::vector<RouterDB::Net>::iterator nit = Nets.begin(); nit != Nets.end(); nit++) {
+    for (std::vector<RouterDB::Metal>::iterator mit = nit->path_metal.begin(); mit != nit->path_metal.end(); ++mit) {
+      Set_x_contact.insert(Contact2Sinkdata(mit->MetalRect));
+    }
+    for (std::vector<RouterDB::Via>::iterator vit = nit->path_via.begin(); vit != nit->path_via.end(); ++vit) {
+      Set_x_contact.insert(Contact2Sinkdata(vit->UpperMetalRect));
+      Set_x_contact.insert(Contact2Sinkdata(vit->LowerMetalRect));
+    }
+  }
 };
 
 
@@ -361,11 +370,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             grid.InactivePointlist_Power(netplist);
        
             grid.setSrcDest_detail( temp_source, temp_dest, this->width, this->height, Smap);
-            A_star a_star(grid, 0); // no sheilding
-            int multi_number = 0;
-
             AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
             AddViaSpacing(Pset_via, grid);
+            A_star a_star(grid, 0); // no sheilding
+            int multi_number = 0;
 
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal>> physical_path;
