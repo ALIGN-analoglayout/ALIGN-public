@@ -413,7 +413,7 @@ bool A_star::find_nodes_north(Grid& grid, int node, int number, std::vector<int>
 
   int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
-  int current_node = -1;
+  //int current_node = -1;
   while(number!=0){
 
      int current_node = temp_nodes.back();
@@ -461,7 +461,7 @@ bool A_star::find_nodes_east(Grid& grid, int node, int number, std::vector<int>&
 
   int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
-  int current_node = -1;
+  //int current_node = -1;
   while(number!=0){
 
      int current_node = temp_nodes.back();
@@ -510,7 +510,7 @@ bool A_star::find_nodes_west(Grid& grid, int node, int number, std::vector<int>&
 
   int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
-  int current_node = -1;
+  //int current_node = -1;
   while(number!=0){
 
      int current_node = temp_nodes.back();
@@ -642,7 +642,7 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
           //std::cout<<*j<<" ";
        //} 
        //std::cout<<std::endl;
-
+      if(exist)
       exist = Check_Src_Dest(temp_nodes, src_index);
     }else{
       exist = find_nodes_west(grid, current_node, left, temp_nodes);
@@ -676,7 +676,7 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
           //std::cout<<*j<<" ";
        //} 
        //std::cout<<std::endl;
-
+      if(exist)
       exist = Check_Src_Dest(temp_nodes, src_index);
     }else{
       exist = find_nodes_south(grid, current_node, left, temp_nodes);
@@ -714,7 +714,7 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
           //std::cout<<*j<<" ";
        //} 
        //std::cout<<std::endl;
-
+      if(exist)
       exist = Check_Src_Dest(temp_nodes, src_index);
     }else{
       exist = find_nodes_east(grid, current_node, right, temp_nodes);
@@ -747,7 +747,7 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
           //std::cout<<*j<<" ";
        //} 
        //std::cout<<std::endl;
-
+      if(exist)
       exist = Check_Src_Dest(temp_nodes, src_index);
     }else{
       exist = find_nodes_north(grid, current_node, right, temp_nodes);
@@ -1208,7 +1208,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
-    
+    L_list.erase(it);
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
@@ -1218,8 +1218,8 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        }
        continue;
       }
-    L_list.erase(it);
-    close_set.insert(current_node = it->second);
+    
+    close_set.insert(current_node);
 
 
     //found the candidates nodes
