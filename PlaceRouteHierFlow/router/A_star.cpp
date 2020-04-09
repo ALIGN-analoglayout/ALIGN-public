@@ -558,7 +558,7 @@ bool A_star::find_nodes_south(Grid& grid, int node, int number, std::vector<int>
 
   int interval_number = Calculate_Interval_number(grid, node);
   temp_nodes.push_back(node);
-  int current_node = -1;
+  //int current_node = -1;
   while(number!=0){
 
      int current_node = temp_nodes.back();
@@ -617,18 +617,20 @@ bool A_star::Check_Src_Dest(std::vector<int> &nodes, std::set<int> &src_dest){
 
 bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left, int right, int mode, std::vector<int> &nodes, std::set<int> &src_index, int &cost){
 
-  int penety = 1000000;
-  int hide_mode = 0;
+  int penety = 0; // 100000
+  //int hide_mode = 0;
 
   if(drc_info.Metal_info[grid.vertices_total[current_node].metal].direct==0){//v
 
     vector<int> temp_nodes;
     int exist = 0;
     if(mode==0){
+/*
       if(hide_mode){
         exist = find_nodes_west(grid, current_node, left, temp_nodes);
         exist = Check_Src_Dest(temp_nodes, src_index);
       }
+*/
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_south(grid, current_node, left, temp_nodes);
@@ -657,10 +659,12 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
     vector<int> temp_nodes;
     int exist=0;
     if(mode==0){
+/*
       if(hide_mode){
         exist = find_nodes_south(grid, current_node, left, temp_nodes);
         exist = Check_Src_Dest(temp_nodes, src_index);
         }
+*/
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_west(grid, current_node, left, temp_nodes);
@@ -693,11 +697,13 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
 
     vector<int> temp_nodes;
     int exist=0;
+/*
     if(mode==0){
       if(hide_mode){
         exist = find_nodes_east(grid, current_node, right, temp_nodes);
         exist = Check_Src_Dest(temp_nodes, src_index);
       }
+*/
       if(!exist){
          temp_nodes.clear();
          exist = find_nodes_north(grid, current_node, right, temp_nodes);
@@ -723,12 +729,14 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
   }else{
 
     vector<int> temp_nodes;
-    int exist;
+    int exist=0;
     if(mode==0){
+/*
       if(hide_mode){
         exist = find_nodes_north(grid, current_node, right, temp_nodes);
         exist = Check_Src_Dest(temp_nodes, src_index);
       }
+*/
       if(!exist){
         temp_nodes.clear();
         exist = find_nodes_east(grid, current_node, right, temp_nodes);
@@ -852,7 +860,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   std::vector<int> node_set_up;
   std::set<int> unit_node_set_up;
   node_set_up.push_back(start_points);
-  int count = 10;
+  //int count = 10;
   while(node_set_up.back()!=end_points){ // QQQ: might be stacked here
 
     int current_node = node_set_up.back();
@@ -873,7 +881,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
     //assert(0);
-    if(next==-1 or next <0 or next>= grid.vertices_total.size()){
+    if(next <0 or next>= grid.vertices_total.size()){
       return false;
     }else if(next>=0 and next< grid.vertices_total.size() ){
       //grid.vertices_total[next].trace_back_node = current_node;
@@ -913,7 +921,7 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
     int next = find_next_node(grid, current_node, x, y, metal, dummy_layer);
     //std::cout<<"current node, next node "<<current_node<<" "<<next<<std::endl;
     //assert(0);
-    if(next==-1){
+    if(next <0 or next>= grid.vertices_total.size()){
       return false;
     }else if(next>=0 and next< grid.vertices_total.size() ){
       //grid.vertices_total[next].trace_back_node = current_node;
@@ -927,8 +935,8 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
 
   //bool extend_up = Extention_checks(grid, node_set_up);
   //bool extend_down = Extention_checks(grid, node_set_down);
-  bool extend_up = 1;
-  bool extend_down = 1;
+  //bool extend_up = 1;
+  //bool extend_down = 1;
 
   bool activa_up = Check_activa_via_active(grid, node_set_up);
   bool activa_down = Check_activa_via_active(grid, node_set_down);
@@ -937,13 +945,13 @@ bool A_star::L_shape_Connection_Check(Grid& grid, int start_points, int end_poin
   //std::cout<<"L shape connection 6"<<std::endl;
   
 
-  if( (extend_up and activa_up) or (extend_down and activa_down)){
+  if( ( activa_up) or (activa_down)){
     //std::cout<<"L shape flags "<<extend_up<<" "<<activa_up<<" "<<extend_down<<" "<<activa_down<<std::endl;
     //assert(0);
     //std::cout<<"node_set_up size "<<node_set_up.size()<<std::endl;
     //std::cout<<"node_set_down size "<<node_set_down.size()<<std::endl;
-    if((extend_up and activa_up)) node_set = node_set_up;
-    if((extend_down and activa_down)) node_set = node_set_down;
+    if(( activa_up)) node_set = node_set_up;
+    if(( activa_down)) node_set = node_set_down;
     //std::cout<<"node_set size "<<node_set.size()<<std::endl;
     //assert(0);
     return true;
@@ -1200,7 +1208,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
     std::set<std::pair<int,int>, RouterDB::pairComp>::iterator it;
     it = L_list.begin();
     current_node = it->second;
-    L_list.erase(it);
+    
     
     //judge whether dest found Q2// judge whether dest works
     if(dest_index.find(current_node)!=dest_index.end()){
@@ -1210,6 +1218,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
        }
        continue;
       }
+    L_list.erase(it);
     close_set.insert(current_node = it->second);
 
 
@@ -1438,11 +1447,10 @@ void A_star::lable_father(Grid& grid, std::vector<std::vector<int> > &Node_Path)
 
 bool A_star::Check_Path_Extension(Grid& grid, std::vector<std::vector<int> >& node_path, std::set<int> &source_index){
 
-  bool Extendable = true;
   std::cout<<"begin check extention"<<std::endl;
   for(int i=0;i<node_path.size();i++){
      std::cout<<"begin check extention path "<<i<<std::endl;
-     Extendable = Extention_checks(grid, node_path[i], source_index);
+     bool Extendable = Extention_checks(grid, node_path[i], source_index);
      if(!Extendable){
          return false;
        }
