@@ -697,9 +697,9 @@ bool A_star::find_succsive_parallel_node(Grid& grid, int current_node, int left,
 
     vector<int> temp_nodes;
     int exist=0;
-/*
+
     if(mode==0){
-      if(hide_mode){
+/*      if(hide_mode){
         exist = find_nodes_east(grid, current_node, right, temp_nodes);
         exist = Check_Src_Dest(temp_nodes, src_index);
       }
