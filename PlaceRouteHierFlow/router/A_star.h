@@ -46,6 +46,7 @@ class A_star {
     bool Check_activa_via_active(Grid& grid, std::vector<int> &nodes);
     bool Extention_checks(Grid& grid, std::vector<int> &nodes, std::set<int> &source_index);
     bool Extention_check(Grid& grid, int current_node, std::set<int> &source_index);
+    bool Extention_check_prime(Grid& grid, int current_node, int next_node, std::set<int> &source_index);
     std::vector<std::vector<int> > A_star_algorithm(Grid& grid, int left_up, int right_down);
     std::vector<std::vector<int> > Trace_Back_Paths(Grid& grid, int current_node, int left, int right, std::set<int> &src_index, std::set<int> &dest_index);
     std::vector<int> Trace_Back_Path_parent(Grid& grid, int current_node, std::set<int> &src_index);
@@ -55,6 +56,7 @@ class A_star {
     void refreshGrid(Grid& grid);
     bool CheckExendable_With_Certain_Length(int first_node_same_layer,int current_node,int length,int minL,Grid &grid);
     int trace_back_node(int current_node, Grid& grid, std::set<int> &source_index);
+    int trace_back_node_parent(int current_node, Grid& grid, std::set<int> &source_index);
     std::vector<std::vector<int>> GetPath();
     bool expand_node_ud(int direction, std::vector<int> &temp_node, Grid &grid);
     void erase_candidate_node(std::set<int> &Close_set, std::vector<int> &candidate);

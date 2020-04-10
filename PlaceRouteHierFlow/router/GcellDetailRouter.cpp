@@ -693,7 +693,7 @@ void GcellDetailRouter::create_detailrouter(){
     PnRDB::routing_net temp_routing_net;  // router report struct
     Initial_rouer_report_info(temp_routing_net, i);
     int multi_number = R_constraint_based_Parallel_routing_number(i);
-    multi_number = 0;
+    //multi_number = 1;
     if (Nets[i].path_metal.size() > 0)
     {
       continue;

@@ -248,6 +248,58 @@ bool A_star::expand_node(std::vector<int> &direction, std::vector<int> &temp_nod
 };
 
 
+int A_star::trace_back_node_parent(int current_node, Grid& grid, std::set<int> &source_index){
+
+  int first_node_same_layer = current_node;
+
+  std::set<int> last_nodes;
+  last_nodes.insert(current_node);
+
+  bool trace_back_flag = true;
+
+  int dummy_node = current_node;
+
+  std::cout<<"trace back node "<<current_node<<" metal "<<grid.vertices_total[dummy_node].metal<<std::endl;
+
+  while(trace_back_flag){
+
+    int last_node = grid.vertices_total[dummy_node].parent;
+    //std::cout<<"trace back node "<<last_node<<std::endl;
+    //std::cout<<"trace back node "<<last_node<<" metal "<< grid.vertices_total[last_node].metal<<std::endl;
+
+    if(last_node<0 or last_node>=grid.vertices_total.size()){
+      trace_back_flag = false;
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      first_node_same_layer = last_node;
+      dummy_node = last_node;
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      trace_back_flag = false;
+    }
+
+/*
+    if(last_node<0 or last_node>=grid.vertices_total.size()){
+      trace_back_flag = false;
+    }else if(grid.vertices_total[last_node].metal == grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      first_node_same_layer = last_node;
+      dummy_node = last_node;
+    }else if(grid.vertices_total[last_node].metal != grid.vertices_total[dummy_node].metal and last_nodes.find(last_node)==last_nodes.end()){
+      trace_back_flag = false;
+    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)!=source_index.end()){
+      first_node_same_layer = last_node;
+      trace_back_flag = false;
+    }else if(last_nodes.find(last_node)!=last_nodes.end() and source_index.find(last_node)==source_index.end()){
+      std::cout<<last_node<<std::endl;
+      std::cout<<"trace back bug"<<std::endl;
+      assert(0);
+    }
+    last_nodes.insert(last_node);
+*/
+  }
+
+  return first_node_same_layer;
+
+
+};
 
 int A_star::trace_back_node(int current_node, Grid& grid, std::set<int> &source_index){
 
@@ -817,7 +869,9 @@ bool A_star::parallel_routing(Grid& grid, int current_node, int next_node, int l
      //assert(0);
      std::cout<<"L shape connection 1"<<std::endl;
      if(grid.vertices_total[current_node].metal!=grid.vertices_total[next_node].metal){
-        //Pre_trace_back(grid, current_node, left, right, src_index, dest_index);
+        if(!Extention_check_prime(grid, current_node, next_node, src_index)){
+           return false;
+         }
      }
      bool found = L_shape_Connection(grid, start_points, end_points, node_L_path);
      std::cout<<"L shape connection 2"<<std::endl;
@@ -1075,6 +1129,52 @@ bool A_star::Extention_checks(Grid& grid, std::vector<int> &nodes, std::set<int>
   }
 
   return true;
+
+};
+
+bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, std::set<int> &source_index){
+
+  
+  int node_same_layer = trace_back_node_parent(current_node,grid, source_index);
+  if(source_index.find(node_same_layer)!=source_index.end()) return true;
+  int metal = grid.vertices_total[current_node].metal;
+  int length = abs(grid.vertices_total[current_node].x - grid.vertices_total[node_same_layer].x) + abs(grid.vertices_total[current_node].y - grid.vertices_total[node_same_layer].y);
+  int minL = drc_info.Metal_info[metal].minL;
+  int delta_length = length - minL;
+  int temp_parent = grid.vertices_total[node_same_layer].parent;
+  int via_space_length = 0;
+  if(temp_parent != -1){
+     if(grid.vertices_total[temp_parent].metal==grid.vertices_total[next_node].metal){
+        int via_index = 0;
+        int metal_index = grid.vertices_total[current_node].metal;
+        int metal_direct =  drc_info.Metal_info[metal_index].direct;
+        if(grid.vertices_total[current_node].metal<grid.vertices_total[next_node].metal){
+             std::cout<<"test 1"<<std::endl;
+             via_index = grid.vertices_total[current_node].metal;
+           }else{
+             std::cout<<"test 2"<<std::endl;
+             via_index = grid.vertices_total[next_node].metal;
+           }
+        if(metal_direct==1){//H
+             std::cout<<"test 3"<<std::endl;
+             via_space_length = drc_info.Via_info[via_index].width + drc_info.Via_info[via_index].dist_ss;
+          }else{
+             std::cout<<"test 4"<<std::endl;
+             via_space_length = drc_info.Via_info[via_index].width_y + drc_info.Via_info[via_index].dist_ss_y;
+          }
+        }
+      }
+
+  if(delta_length<0 and length >= via_space_length){
+       std::cout<<"Extention_check 6 "<<current_node<<std::endl;
+       bool feasible = CheckExendable_With_Certain_Length(node_same_layer,current_node,length,minL,grid);
+       std::cout<<"Extention_check 7 "<<current_node<<std::endl;
+       return feasible;
+    }else if(length >= via_space_length){
+       std::cout<<"Extention_check 8 "<<current_node<<std::endl;
+       return true;
+    }
+  
 
 };
 
