@@ -287,7 +287,7 @@ void PowerRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, Router
     }
   }
   // insert all signal metals
-  for (std::vector<RouterDB::Net>::iterator nit = Nets.begin(); nit != Nets.end(); nit++) {
+  for (std::vector<RouterDB::Net>::iterator nit = Nets.begin(); nit != Nets.end(); ++nit) {
     for (std::vector<RouterDB::Metal>::iterator mit = nit->path_metal.begin(); mit != nit->path_metal.end(); ++mit) {
       Set_x_contact.insert(Contact2Sinkdata(mit->MetalRect));
     }
