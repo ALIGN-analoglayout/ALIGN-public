@@ -98,7 +98,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":32, "WidthY":32, "SpaceX":48, "SpaceY":52, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -132,7 +132,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 4,
-"Via_cut":{"WidthX":32, "WidthY":32, "SpaceX":48, "SpaceY":40, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -166,7 +166,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":40, "WidthY":40, "SpaceX":40, "SpaceY":44, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -200,7 +200,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 12,
-"Via_cut":{"WidthX":40, "WidthY":40, "SpaceX":104, "SpaceY":44, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -234,7 +234,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":64, "WidthY":64, "SpaceX":80, "SpaceY":80, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -268,7 +268,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":64, "WidthY":64, "SpaceX":80, "SpaceY":80, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -302,7 +302,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":64, "WidthY":64, "SpaceX":80, "SpaceY":80, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -336,7 +336,7 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 32,
-"Via_cut":{"WidthX":64, "WidthY":64, "SpaceX":80, "SpaceY":196, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -370,7 +370,7 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":128, "WidthY":128, "SpaceX":200, "SpaceY":200, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
@@ -404,7 +404,7 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 64,
-"Via_cut":{"WidthX":128, "WidthY":128, "SpaceX":200, "SpaceY":200, "Number":[1,1]},
+"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
@@ -438,7 +438,7 @@
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,1]},
+"ViaCut":{"Gen":"Array", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,1]},
 "R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
@@ -472,7 +472,7 @@
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 472,
-"Via_cut":{"WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,3]},
+"ViaCut":{"Gen":"Array", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,3]},
 "R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
@@ -506,7 +506,7 @@
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
+"ViaCut":{"Gen":"Array", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
 "R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
@@ -540,7 +540,7 @@
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"Via_cut":{"WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
+"ViaCut":{"Gen":"Array", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
 "R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
