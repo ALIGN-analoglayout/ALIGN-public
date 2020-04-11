@@ -287,9 +287,9 @@ struct blockComplex {
 };
 
 struct PowerGrid{
+  std::string name; 
   vector<Metal> metals;
   vector<Via> vias;
-  bool power = 1;//1 is vdd, 0 is gnd;
 };
 
 struct PowerNet {
@@ -466,7 +466,8 @@ struct lefMacro {
   string name="";
   vector<pin> macroPins;
   vector<contact> interMetals;
-  string master="";
+  vector<Via> interVias;
+  string master = "";
 };
 
 /// PArt 5: declaration of structures for design rule data

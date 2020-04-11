@@ -28,7 +28,7 @@
 class DetailRouter : public GlobalRouter {
 
   friend class Grid;
-  friend class PowerRouter;
+  //friend class PowerRouter;
 
   private:
    int global_grid_scale;

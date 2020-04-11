@@ -1,5 +1,7 @@
+
 from ..cell_fabric import transformation, pdk
 from .. import primitive
+import itertools
 import json
 import importlib
 import sys
@@ -21,12 +23,16 @@ def rational_scaling( d, *, mul=1, div=1, errors=None):
 
         term['rect'] = [ (mul*c)//div for c in term['rect']]
 
-def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False):
+def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, json_dir=None, checkOnly=False, extract=False, input_dir=None, markers=False, toplevel=True):
+
+    logger.info( f'Checking: {hN.name}')
+
+    global_power_names = set( [ n.name for n in hN.PowerNets])
 
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),12, 4, 2, 3,1)
 
     terminals = []
 
@@ -35,7 +41,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     errors = []
 
     t_tbl = { "M1": "m1", "M2": "m2", "M3": "m3",
-              "M4": "m4", "M5": "m5", "M6": "m6"}
+              "M4": "m4", "M5": "m5", "M6": "m6",
+              "M7": "m7", "M8": "m8"}
 
     def add_terminal( netName, layer, b, tag=None):
 
@@ -83,8 +90,10 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             r = [ 0, y-2, hN.width, y+2]
             terminals.append( { "netName": 'm2_grid', "layer": 'M2', "rect": r})
 
+
+
     fa_map = {}
-    for n in hN.Nets:
+    for n in itertools.chain( hN.Nets, hN.PowerNets):
         for c in n.connected:
             if c.type == 'Block':
                 cblk = hN.Blocks[c.iter2]
@@ -110,7 +119,6 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 logger.info( f"{pth} is not available; not importing subblock rectangles")
             else:
                 found = True
-
 
         if not found and input_dir is not None:
 
@@ -149,7 +157,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 nm = term['netName']
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
-                    term['netName'] = fa_map.get( formal_name, formal_name)
+                    default_name = nm if nm in global_power_names else formal_name
+                    term['netName'] = fa_map.get( formal_name, default_name)
                 if 'pin' in term:
                     del term['pin']
                 if 'terminal' in term:
@@ -172,7 +181,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
             add_terminal( f"{blk.master}:{blk.name}", 'cellarea', blk.placedBox)
 
-    for n in hN.Nets:
+    for n in itertools.chain( hN.Nets, hN.PowerNets):
         logger.debug( f"Net: {n.name}")
 
         def addt( obj, con, tag=None):
@@ -214,9 +223,18 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
                 addt( n, con, "path_via")
 
-        for via in n.interVias:
+        if hasattr( n, 'interVias'):        
+            for via in n.interVias:
+                for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
+                    addt( n, con, "intervia")
+
+    for pg in [hN.Gnd, hN.Vdd]:
+        for metal in pg.metals:
+            con = metal.MetalRect
+            add_terminal( pg.name, con.metal, con.placedBox, "power grid metal")
+        for via in pg.vias:
             for con in [via.UpperMetalRect,via.LowerMetalRect,via.ViaRect]:
-                addt( n, con, "intervia")
+                add_terminal( pg.name, con.metal, con.placedBox, "power grid via")
 
     if global_route_json is not None:
         with open(global_route_json, "rt") as fp:
@@ -298,8 +316,9 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
         cnv.terminals = d["terminals"]
         for inst, parameters in subinsts.items():
             cnv.subinsts[inst].parameters.update(parameters)
-        cnv.gen_data(run_pex=extract)
 
+        nets_allowed_to_be_open = [] if toplevel else global_power_names
+        cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals

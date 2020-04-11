@@ -19,7 +19,7 @@ def check_results(ckt_name, skip_layers=None):
         d = json.load(fp)
 
     if skip_layers is None:
-        skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "polycon", "diffcon"])
+        skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "tcn", "polycon", "diffcon"])
     else:
         skip_layers = set( ["boundary", "diearea", "cellarea"])
 
