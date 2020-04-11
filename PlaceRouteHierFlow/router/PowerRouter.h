@@ -73,11 +73,13 @@ PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hm
     void ReturnPowerNetData(PnRDB::hierNode& node);
     void UpdateVia(RouterDB::Via &temp_via);
     void ExtendMetal();
+    void ExtendMetals(int i);
     void UpdateMetalContact(RouterDB::Metal &temp_metal);
     void ExtendY(RouterDB::Metal &temp_metal, int extend_dis);
     void ExtendX(RouterDB::Metal &temp_metal, int extend_dis);
     void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num);
-
+    void InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
+                                             std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num);
 
 };
 
