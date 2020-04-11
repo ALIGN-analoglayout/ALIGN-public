@@ -747,7 +747,7 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 
     for(unsigned int i=0;i<ki.size()+1;i++){
 	if(i<ki.size()){
-	    temp_net.name = cap_pin[i].second;
+	    temp_net.name = cap_pin[i].first;
 	}else{
 	    temp_net.name = "dummy_gnd_PLUS";
 	}
@@ -963,7 +963,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
     Nets_neg = Nets_pos;
     for(unsigned int i=0;i<Nets_pos.size();i++){
 	if(i!=Nets_pos.size()-1){
-	    Nets_neg[i].name = cap_pin[i].first;
+	    Nets_neg[i].name = cap_pin[i].second;
 	}else{
 	    Nets_neg[i].name = "dummy_gnd_MINUS";
 	}
