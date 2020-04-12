@@ -648,6 +648,17 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     auto wp = PnRDB::point (vmv.width, vmh.width) / 2;
     auto mp = minmax.LL;
     offset = gp - wp - covPnt - mp;
+    std::cout<<"offset "<<offset.x<<" "<<offset.y<<std::endl;
+    if(offset.x%gp.x!=0 or offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
+      std::cout<<gp.x<<" "<<gp.y<<std::endl;
+      std::cout<<"offset.x%gp.x "<<offset.x%gp.x<<" offset.y%gp.y "<<offset.y%gp.y<<std::endl;
+      offset.x = ceil((double) offset.x/gp.x)*gp.x;
+      offset.y = ceil((double) offset.y/gp.y)*gp.y;
+      std::cout<<"offset "<<offset.x<<" "<<offset.y<<std::endl;
+      std::cout<<"offset.x%gp.x "<<offset.x%gp.x<<" offset.y%gp.y "<<offset.y%gp.y<<std::endl;
+      //assert(0);
+    }
+
 }
 
 void
