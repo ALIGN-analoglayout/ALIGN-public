@@ -696,7 +696,7 @@ void GcellDetailRouter::create_detailrouter(){
     PnRDB::routing_net temp_routing_net;  // router report struct
     Initial_rouer_report_info(temp_routing_net, i);
     int multi_number = R_constraint_based_Parallel_routing_number(i);
-
+    //multi_number = 1;
     if (Nets[i].path_metal.size() > 0)
     {
       continue;
@@ -733,10 +733,11 @@ void GcellDetailRouter::create_detailrouter(){
       AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
       AddViaSpacing(Pset_via, grid);
       A_star a_star(grid, Nets[i].shielding);
+      std::cout<<"Net name "<<Nets[i].netName<<std::endl;
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       std::vector<std::vector<RouterDB::Metal>> physical_path;
       Update_rouer_report_info(temp_routing_net, i, j, pathMark);
-
+      std::cout<<"pathMark "<<pathMark<<std::endl;
       //assert(pathMark);
       if (pathMark)
       {
@@ -793,7 +794,7 @@ void GcellDetailRouter::create_detailrouter_old(){
     PnRDB::routing_net temp_routing_net; //router report struct
     Initial_rouer_report_info(temp_routing_net, i);
     int multi_number = R_constraint_based_Parallel_routing_number(i);
-
+    multi_number = 1;
     if (Nets[i].path_metal.size() > 0)
     {
       continue;
