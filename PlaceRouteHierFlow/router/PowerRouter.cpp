@@ -318,7 +318,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
   // bug missing via space check?
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
-
+  calculate_extension_length();
   CreatePlistBlocks(plist, this->Blocks);
   CreatePlistTerminals(plist, this->Terminals);
   CreatePlistPowerGrid(plist, this->Vdd_grid);

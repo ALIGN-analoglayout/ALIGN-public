@@ -80,7 +80,7 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void Physical_metal_via();
     //void AddMetalToPin();
     //void checkPathMetalToPin(int i, int j);
-
+    void calculate_extension_length();
     void create_detailrouter();
     void create_detailrouter_old();
     //std::vector<std::vector<RouterDB::SinkData> > findPins(RouterDB::Net temp_net);
