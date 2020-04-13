@@ -52,21 +52,20 @@
 
 
 {
-    "Layer": "V0",
-    "GdsLayerNo": 12,
-    "GdsDatatype": {"Draw":0}, 
-    "Stack": [null, "M1"],
-    "SpaceX": 46,
-    "SpaceY": 52,
-    "WidthX": 32,
-    "WidthY": 32,
-    "VencA_L": 20,
-    "VencA_H": 20,
-    "VencP_L": 0,
-    "VencP_H": 0,
-    "MinNo":1,
-    "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
-    },
+"Layer": "V0",
+"GdsLayerNo": 12,
+"GdsDatatype": {"Draw":0}, 
+"Stack": [null, "M1"],
+"SpaceX": 46,
+"SpaceY": 52,
+"WidthX": 32,
+"WidthY": 32,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
+},
 
 {
 "Layer": "M2",
@@ -98,7 +97,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -132,7 +130,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 4,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -166,7 +163,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -200,7 +196,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 12,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -234,7 +229,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -268,7 +262,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -302,7 +295,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -336,7 +328,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 32,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -370,7 +361,6 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
@@ -404,7 +394,6 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 64,
-"ViaCut":{"Gen":"None", "Number":[1,1]},
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
