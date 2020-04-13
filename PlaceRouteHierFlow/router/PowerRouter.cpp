@@ -1263,6 +1263,13 @@ void PowerRouter::CreatePlistNets(std::vector<std::vector<RouterDB::point> >& pl
            ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
 
          }
+
+      for(unsigned int j=0;j<Nets[i].path_via.size();j++){
+
+           CreatePlistSingleContact(plist,Nets[i].path_via[j].UpperMetalRect);
+           CreatePlistSingleContact(plist,Nets[i].path_via[j].LowerMetalRect);
+         }
+
      }
 
 };
@@ -1283,6 +1290,14 @@ void PowerRouter::CreatePlistPowerNets(std::vector<std::vector<RouterDB::point> 
            ConvertRect2GridPoints(plist, mIdx, LLx, LLy, URx, URy);
 
          }
+
+      for(unsigned int j=0;j<Nets[i].path_via.size();j++){
+
+           CreatePlistSingleContact(plist,Nets[i].path_via[j].UpperMetalRect);
+           CreatePlistSingleContact(plist,Nets[i].path_via[j].LowerMetalRect);
+         }
+
+      
      }
 
 };
@@ -1304,6 +1319,11 @@ void PowerRouter::CreatePlistPowerGrid(std::vector<std::vector<RouterDB::point> 
 
          }
      //}
+
+     for(unsigned int j=0;j<Nets.vias.size();j++){
+        CreatePlistSingleContact(plist,Nets.vias[j].UpperMetalRect);
+        CreatePlistSingleContact(plist,Nets.vias[j].UpperMetalRect);
+     }
 
 };
 
