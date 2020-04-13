@@ -312,6 +312,33 @@ void PowerRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, Router
   }
 };
 
+void PowerRouter::InsertInternalVia_PowerGrid(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, RouterDB::PowerGrid & temp_grid){
+  std::pair<int, RouterDB::point> via_point;
+  //insert via point into via set
+  for (unsigned int bit = 0; bit < temp_grid.vias.size(); bit++)
+  {
+    via_point.first = temp_grid.vias[bit].model_index;
+    via_point.second.x = temp_grid.vias[bit].position.x;
+    via_point.second.y = temp_grid.vias[bit].position.y;
+    Pset_via.insert(via_point);
+  }
+};
+
+
+void PowerRouter::InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Net> &temp_Nets){
+  std::pair<int, RouterDB::point> via_point;
+  //insert via point into via set
+  for (unsigned int bit = 0; bit < temp_Nets.size(); bit++)
+  {
+    for (unsigned int vit = 0; vit < temp_Nets[bit].path_via.size();vit++){
+      via_point.first = temp_Nets[bit].path_via[vit].model_index;
+      via_point.second.x = temp_Nets[bit].path_via[vit].position.x;
+      via_point.second.y = temp_Nets[bit].path_via[vit].position.y;
+      Pset_via.insert(via_point);
+    }
+  }
+};
+
 void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   GetData(node, drc_info, Lmetal, Hmetal);
   
@@ -338,6 +365,9 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
   std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_via; //via conter and layer info
   InsertInternalVia(Pset_via, this->Blocks);
+  InsertInternalVia_PowerGrid(Pset_via, this->Vdd_grid);
+  InsertInternalVia_PowerGrid(Pset_via, this->Gnd_grid);
+  InsertInternalVia_Net(Pset_via, this->Nets);
   //QQQ Vdd_grid Gnd_grid Terminals PowerNets Nets
 
   for(unsigned int i=0;i<PowerNets.size();i++){
@@ -345,6 +375,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
       ReturnInternalMetalContact(Set_x_contact,i); //get internal metals' contact,first LL, second UR, exclude current net
+      //what's the meaning here?
 
       for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
 
