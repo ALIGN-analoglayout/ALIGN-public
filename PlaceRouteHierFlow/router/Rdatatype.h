@@ -2,6 +2,7 @@
 #define RDATATYPE_H_
 
 #include <vector>
+#include <limits.h>
 #include <string>
 //#include <iostream>
 //#include <utility>
@@ -86,11 +87,13 @@ struct vertex{
   int x=-1;
   int y=-1;
   int metal=-1;
-  int Cost = -1;
+  int Cost = INT_MAX;
+  //int Cost = -1;
   bool active=false;
   bool via_active_down = true;
   bool via_active_up = true;
   int parent = -1; // -1 mean source
+  int trace_back_node = -1; // -1 mean source, and will changes for parallel routing
   int index=-1;
   std::vector<int> gridmetal;
   bool expand=0; // expand to right (east) for vertical node? expand to up (north) for heriental node?
