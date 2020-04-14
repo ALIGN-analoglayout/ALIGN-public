@@ -28,6 +28,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
   this->temp_report.node_name = HierNode.name;
+  calculate_extension_length();
 
   printNetsInfo(); 
 
@@ -45,6 +46,37 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   std::cout<<"************end return node in detail router**********"<<std::endl;
 
 };
+
+void GcellDetailRouter::calculate_extension_length() {
+  //this calculate difference between minlength and via metal length
+  //and used for inactivate contact of extra length to avoid minspacing from metal extension
+  Minlength_ViaLength_Diff.resize(drc_info.Metal_info.size());
+  for (int i = 0; i < drc_info.Metal_info.size(); ++i) {
+    int minL = drc_info.Metal_info[i].minL;
+    int lower_via_length = INT_MAX;
+    int upper_via_length = INT_MAX;
+    if (i > 0) {
+      if (drc_info.Metal_info[i].direct == 0) {
+        // V
+        lower_via_length = drc_info.Via_info[i - 1].width_y + 2 * drc_info.Via_info[i - 1].cover_u;
+      } else {
+        // H
+        lower_via_length = drc_info.Via_info[i - 1].width + 2 * drc_info.Via_info[i - 1].cover_u;
+      }
+    }
+    if (i < layerNo - 1) {
+      if (drc_info.Metal_info[i].direct == 0) {
+        // V
+        upper_via_length = drc_info.Via_info[i].width_y + 2 * drc_info.Via_info[i].cover_l;
+      } else {
+        // H
+        upper_via_length = drc_info.Via_info[i].width + 2 * drc_info.Via_info[i].cover_l;
+      }
+    }
+    Minlength_ViaLength_Diff[i] = minL - (lower_via_length > upper_via_length ? upper_via_length : lower_via_length);
+    Minlength_ViaLength_Diff[i] = Minlength_ViaLength_Diff[i] > 0 ? Minlength_ViaLength_Diff[i] : 0;
+  }
+}
 
 void GcellDetailRouter::printNetsInfo(){
 
@@ -1113,7 +1145,7 @@ void GcellDetailRouter::AddViaEnclosure(std::set<std::pair<int, RouterDB::point>
   //***************block vias around metal******************
   plist_metal2uppervia.clear(), plist_metal2uppervia.resize(this->layerNo);
   plist_metal2lowervia.clear(), plist_metal2lowervia.resize(this->layerNo);
-  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact);  
+  std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set = CombineTwoSets(Set_net_contact, Set_x_contact);
   bool bidirection = false;
   if (bidirection) {
     for (std::set<RouterDB::SinkData, RouterDB::SinkDataComp>::iterator mit = Set.begin(); mit != Set.end(); ++mit) {
@@ -2859,6 +2891,7 @@ void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::poin
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
         CreatePlistSingleContact(plist,*pit);
     }
+    
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
         CreatePlistSingleContact(plist,pit->UpperMetalRect);
         CreatePlistSingleContact(plist,pit->LowerMetalRect);
@@ -3177,6 +3210,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   int obs_l=0;
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
+ 
+  std::cout<<"rect info "<<mIdx<<" "<<LLx<<" "<<LLy<<" "<<URx<<" "<<URy<<std::endl; 
 
   int enclose_length =0;  
 /*
@@ -3214,6 +3249,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
     int newURx=URx+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    //int newLLx=LLx;
+    //int newURx=URx;
     int boundX=(newLLx%curlayer_unit==0) ? (newLLx+curlayer_unit) : ( (newLLx/curlayer_unit)*curlayer_unit<newLLx ? (newLLx/curlayer_unit+1)*curlayer_unit : (newLLx/curlayer_unit)*curlayer_unit  );
     for(int x=boundX; x<newURx; x+=curlayer_unit) {
       if(mIdx!=obs_l) {
@@ -3231,11 +3268,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-             std::cout<<"Plist problem"<<std::endl;
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
       if(mIdx!=obs_h) {
@@ -3253,10 +3290,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
     }
@@ -3264,6 +3302,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_y;
     int newLLy=LLy-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
     int newURy=URy+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    //int newLLy=LLy;
+    //int newURy=URy;
     int boundY=(newLLy%curlayer_unit==0) ? (newLLy+curlayer_unit) : ( (newLLy/curlayer_unit)*curlayer_unit<newLLy ? (newLLy/curlayer_unit+1)*curlayer_unit : (newLLy/curlayer_unit)*curlayer_unit  );
     for(int y=boundY; y<newURy; y+=curlayer_unit) {
       if(mIdx!=obs_l) {
@@ -3281,10 +3321,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
       if(mIdx!=obs_h) {
@@ -3302,10 +3343,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
     }
@@ -3486,7 +3528,7 @@ ConvertToContactPnRDB_Placed_Origin(temp_contact,Blocks[net.connected[i].iter2].
              PnRDB::Via temp_via;
 ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[net.connected[i].iter].pinVias[j]);
              HierNode.interVias.push_back(temp_via);
-             }
+          }
         } 
      }
 
@@ -3504,7 +3546,8 @@ ConvertToViaPnRDB_Placed_Origin(temp_via, Blocks[net.connected[i].iter2].pins[ne
        PnRDB::Via temp_via;
        ConvertToViaPnRDB_Placed_Origin(temp_via, net.path_via[i]);
        HierNode.interVias.push_back(temp_via);
-
+       HierNode.interMetals.push_back(temp_via.LowerMetalRect);
+       HierNode.interMetals.push_back(temp_via.UpperMetalRect);
       }
           
   //std::cout<<"END par"<<std::endl;

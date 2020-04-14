@@ -80,6 +80,8 @@ PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hm
     void ReturnInternalMetalContact(std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &Set_x_contact, int net_num);
     void InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
                                              std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num);
+    void InsertInternalVia_PowerGrid(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, RouterDB::PowerGrid & temp_grid);
+    void InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Net> &temp_Nets);
 
 };
 
