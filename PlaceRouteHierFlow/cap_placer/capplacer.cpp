@@ -1347,10 +1347,20 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 	}
 	//connect to each trail
 	if(first_lock==1 and end_close==1){
+
+            if(drc_info.Metalmap.find(H_metal)==drc_info.Metalmap.end()){
+               std::cout<<"H_metal error"<<std::endl;
+               assert(0);
+            }
+            auto metal_index = drc_info.Metalmap.at(H_metal);
+            int minL = drc_info.Metal_info.at(metal_index).minL;
+            if(end_coordP.x - first_coordP.x < minL){
+               end_coordP.x = first_coordP.x + minL;
+            }
+
 	    n.start_connection_pos.push_back (first_coordP);
 	    n.end_connection_pos.push_back (end_coordP);
 	    n.Is_pin.push_back(1);
-
 	    n.metal.push_back(H_metal);
 	}    
 

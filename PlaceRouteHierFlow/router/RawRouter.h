@@ -34,9 +34,9 @@ class RawRouter {
     int width, height;
     std::string topName;
     int layerNo;
-    
+    std::vector<int> Minlength_ViaLength_Diff;
 
-  public:
+public:
     RawRouter();
     //void GetShorestPath(Graph& graph);//return the shortest path to Nets
     std::set<int> CheckOverlap(std::vector<RouterDB::SegPiece>& splist, int LLx, int LLy, int URx, int URy);

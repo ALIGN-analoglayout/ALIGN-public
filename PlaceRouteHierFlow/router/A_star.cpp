@@ -1173,6 +1173,8 @@ bool A_star::Extention_check_prime(Grid& grid, int current_node, int next_node, 
     }else if(length >= via_space_length){
        std::cout<<"Extention_check 8 "<<current_node<<std::endl;
        return true;
+    }else{
+       return false;
     }
   
 
