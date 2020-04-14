@@ -2892,12 +2892,7 @@ void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::poin
         CreatePlistSingleContact(plist,*pit);
     }
     
-    std::cout<<"bit name "<<bit->blockName<<" bit InternalVia size "<<bit->InternalVia.size()<<std::endl;
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
-        std::cout<<"upper metal "<<pit->UpperMetalRect.metal<<" "<<pit->UpperMetalRect.placedLL.x<<" "<<pit->UpperMetalRect.placedLL.y<<" "<<pit->UpperMetalRect.placedUR.x<<" "<<pit->UpperMetalRect.placedUR.y<<std::endl;
-        if(pit->UpperMetalRect.metal==3 and pit->UpperMetalRect.placedLL.x ==10320 and pit->UpperMetalRect.placedLL.y ==7016 and pit->UpperMetalRect.placedUR.x ==10480 and pit->UpperMetalRect.placedUR.y ==7096){
-          int found = 1;
-        }
         CreatePlistSingleContact(plist,pit->UpperMetalRect);
         CreatePlistSingleContact(plist,pit->LowerMetalRect);
     }
