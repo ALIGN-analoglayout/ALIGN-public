@@ -2891,6 +2891,7 @@ void GcellDetailRouter::CreatePlistBlocks(std::vector<std::vector<RouterDB::poin
         //std::cout<<"check point createplistBlocks 4.0 "<<std::endl;
         CreatePlistSingleContact(plist,*pit);
     }
+    
     for(std::vector<RouterDB::Via>::iterator pit=bit->InternalVia.begin(); pit!=bit->InternalVia.end(); ++pit) {
         CreatePlistSingleContact(plist,pit->UpperMetalRect);
         CreatePlistSingleContact(plist,pit->LowerMetalRect);
@@ -3209,6 +3210,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
   int obs_l=0;
   int obs_h=this->layerNo-1;
   std::cout<<"Enter converter"<<std::endl;
+ 
+  std::cout<<"rect info "<<mIdx<<" "<<LLx<<" "<<LLy<<" "<<URx<<" "<<URy<<std::endl; 
 
   int enclose_length =0;  
 /*
@@ -3246,6 +3249,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_x;
     int newLLx=LLx-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
     int newURx=URx+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    //int newLLx=LLx;
+    //int newURx=URx;
     int boundX=(newLLx%curlayer_unit==0) ? (newLLx+curlayer_unit) : ( (newLLx/curlayer_unit)*curlayer_unit<newLLx ? (newLLx/curlayer_unit+1)*curlayer_unit : (newLLx/curlayer_unit)*curlayer_unit  );
     for(int x=boundX; x<newURx; x+=curlayer_unit) {
       if(mIdx!=obs_l) {
@@ -3263,11 +3268,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-             std::cout<<"Plist problem"<<std::endl;
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
       if(mIdx!=obs_h) {
@@ -3285,10 +3290,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
     }
@@ -3296,6 +3302,8 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
     int curlayer_unit=drc_info.Metal_info.at(mIdx).grid_unit_y;
     int newLLy=LLy-curlayer_unit+drc_info.Metal_info.at(mIdx).width/2;
     int newURy=URy+curlayer_unit-drc_info.Metal_info.at(mIdx).width/2;
+    //int newLLy=LLy;
+    //int newURy=URy;
     int boundY=(newLLy%curlayer_unit==0) ? (newLLy+curlayer_unit) : ( (newLLy/curlayer_unit)*curlayer_unit<newLLy ? (newLLy/curlayer_unit+1)*curlayer_unit : (newLLy/curlayer_unit)*curlayer_unit  );
     for(int y=boundY; y<newURy; y+=curlayer_unit) {
       if(mIdx!=obs_l) {
@@ -3313,10 +3321,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
       if(mIdx!=obs_h) {
@@ -3334,10 +3343,11 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
-          if(x>=LLx and x<=URx and y>=LLy and y<=URy){
+          if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
+             //std::cout<<"Plist problem"<<std::endl;
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
             }
-          //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+         //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
     }
