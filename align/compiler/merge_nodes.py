@@ -52,15 +52,25 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=merged_value({},G.nodes[node]['values']))
+        if 'ports_match' in G.nodes[node].keys():
+            subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
+            
 
+        logger.debug(f"removing node {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 
         nbr = G.neighbors(node)
         for ele in nbr:
             if ele not in subgraph.nodes():
-                subgraph.add_node(ele,
+                if ele in matched_ports.keys():
+                    subgraph.add_node(ele,
                                   inst_type=G.nodes[ele]["inst_type"],
-                                  net_type=G.nodes[ele]["net_type"])
+                                  net_type="external")
+                else:
+                    subgraph.add_node(ele,
+                                  inst_type=G.nodes[ele]["inst_type"],
+                                  net_type=G.nodes[ele]["net_type"])                    
+                
 
             #print("adding edge b/w:",node,ele,G[node][ele]["weight"])
             subgraph.add_edge(node, ele, weight=G[node][ele]["weight"])
@@ -68,18 +78,20 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
             if ele in ports:
                 # had to remove addition as combination of weight for cmc caused gate to be considered source
                 # changed to bitwise and as all connections of CMB were considered as gate
-                ports[ele] = ports[ele] | G[node][ele]["weight"] 
+                ports[ele] = ports[ele] | G[node][ele]["weight"]
+                
             else:
                 ports[ele] = G[node][ele]["weight"]
-
 
     new_node = new_node[1:]
     G.add_node(new_node,
                inst_type=new_inst_type,
                real_inst_type=new_inst_type,
+               ports=list(matched_ports.keys()),
+               edge_weight=list(ports.values()),
                ports_match=matched_ports,
                values=max_value)
-    logger.debug(f"creating a super node of combination of nodes: {new_inst_type}")
+    #logger.debug(f"creating a super node of combination of nodes: {new_inst_type}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
@@ -88,11 +100,11 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
         G.remove_node(node)
     for pins in ports:
         G.add_edge(new_node, pins, weight=ports[pins])
-        logger.debug(f"new ports: {pins},{ports[pins]}")
+        #logger.debug(f"new ports: {pins},{ports[pins]}")
 
     check_nodes(subgraph)
 
-    return G, subgraph
+    return G, subgraph,new_node
 
 
 

@@ -74,7 +74,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                     p1,p2=pair.split(',')
                     if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
                         all_array[p1]={p1:[p1,p2]}
-                        line=line.replace(' {'+pair+'} ','').replace('(,','(').replace(',)',')').replace(',,',',')
+                        line=line.replace(pair,p1+'_'+p2).replace('(,','(').replace(',)',')').replace(',,',',')
             new_const_fp.write(line)
             logger.debug(f"cap const {line}")
             line=const_fp.readline()
@@ -89,7 +89,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
         logger.debug(f"group1: {array}")
         for _,arr in array.items():
             for ele in arr:
-                if graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
+                if ele in graph.nodes() and graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
                     ele not in available_cap_const:
                     if 'cap' in graph.nodes[ele]['values'].keys():
                         size = graph.nodes[ele]['values']["cap"]*1E15

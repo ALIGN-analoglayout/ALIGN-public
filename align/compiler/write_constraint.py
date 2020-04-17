@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def create_hierarchy(graph,node,traversed,ports_weight):
     hier_of_node ={}
-
+    
     level1=list(set(graph.neighbors(node))- set(traversed))
     
     hier_of_node[node]=matching_groups(graph,level1,None)
@@ -42,8 +42,12 @@ def create_hierarchy(graph,node,traversed,ports_weight):
                         and node_hier not in all_inst \
                         and not graph.nodes[node_hier]['inst_type'].lower().startswith('cap'):  
                         all_inst.append(node_hier)
+                
         else:
-            hier_of_node[node]=list(array.keys())
+            hier_of_node[node]=[]
+            for inst in array.keys():
+                if graph.nodes[inst]['inst_type']!='net':
+                    hier_of_node[node].append(inst)
 
         if len(all_inst)>1:
             h_ports_weight={}
@@ -56,8 +60,8 @@ def create_hierarchy(graph,node,traversed,ports_weight):
                             for nbr in list(graph.neighbors(node_hier)):
                                 h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])
                        
-            logger.debug(f"create a new hierarchy for {node}, {all_inst}, {matched_ports}")
-            graph, subgraph = merge_nodes(
+            logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
+            graph, subgraph,_ = merge_nodes(
                     graph, 'dummy_hier_'+node,all_inst , matched_ports)
             hier_of_node[node]={
                         "name": 'dummy_hier_'+node,
@@ -151,28 +155,39 @@ def FindArray(graph,input_dir,name,ports_weight):
 def matching_groups(G,level1,ports_weight):
     similar_groups=[]
     logger.debug("matching groups for all neighbors: %s", level1)
-    for l1_node1 in level1:
-        for l1_node2 in level1:
-            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2,ports_weight):
-                found_flag=0
-                #logger.debug("similar_group %s",similar_groups)
-                for index, sublist in enumerate(similar_groups):
-                    if l1_node1 in sublist and l1_node2 in sublist:
-                        found_flag=1
-                        break
-                    if l1_node1 in sublist:
-                        similar_groups[index].append(l1_node2)
-                        found_flag=1
-
-                        break
-                    elif l1_node2 in sublist:
-                        similar_groups[index].append(l1_node1)
-                        found_flag=1
-                        break
-                if found_flag==0:
-                    similar_groups.append([l1_node1,l1_node2])
+    for l1_node1,l1_node2 in combinations(level1, 2):
+        if compare_node(G,l1_node1,l1_node2,ports_weight):
+            found_flag=0
+            logger.debug("similar_group %s",similar_groups)
+            for index, sublist in enumerate(similar_groups):
+                if l1_node1 in sublist and l1_node2 in sublist:
+                    found_flag=1
+                    break
+                if l1_node1 in sublist:
+                    similar_groups[index].append(l1_node2)
+                    found_flag=1
+                    break
+                elif l1_node2 in sublist:
+                    similar_groups[index].append(l1_node1)
+                    found_flag=1
+                    break
+            if found_flag==0:
+                similar_groups.append([l1_node1,l1_node2])
     return similar_groups
-
+def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
+    match={}
+    for node1 in nbrs1:
+        for node2 in nbrs2:
+            if compare_node(G, node1, node2, ports_weight):
+                if node1 in match:
+                    return False
+                else:
+                    match[node1]=node2
+        if node1 not in match:
+            return False
+    return match
+        
+    
 def compare_node(G,node1:str,node2:str ,ports_weight):
     """
     compare two node properties. It uses 1st level of neighbourhood for comparison of nets
@@ -193,41 +208,44 @@ def compare_node(G,node1:str,node2:str ,ports_weight):
 
     """
     logger.debug("comparing_nodes, %s %s %s %s",node1,node2,list(G.neighbors(node1)),list(G.neighbors(node2)))
-   
-    if G.nodes[node1]["inst_type"]== G.nodes[node2]["inst_type"]=="net" and \
-        G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
-        # set of neibhours is used to allow gate connections 
-        nbrs_node1 =set([G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(node1))])
-        nbrs_node2 = set([G.nodes[nbr]["inst_type"] for nbr in list(G.neighbors(node2))])
-       
-        if nbrs_node1  != nbrs_node2:
-            return False
-        if G.nodes[node1]["net_type"] == 'external':
+    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
+    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
+
+    # Add some heuristic here in future
+    
+    nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
+    nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
+    if nbrs1_type != nbrs2_type:
+        logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
+        return False
+    if G.nodes[node1]["inst_type"]=="net": 
+        if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
             if not ports_weight:
                 return True
-            elif ports_weight[node1] == ports_weight[node2]:
+            elif sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
                 logger.debug("True")
                 return True
-            
+            else:
+                logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
+                return False
         elif G.nodes[node1]["net_type"] == 'internal':
-            weight1=[]
-            for nbr in list(G.neighbors(node1)):
-                weight1.append(G.get_edge_data(node1, nbr)['weight'])            
-            weight2=[]
-            for nbr in list(G.neighbors(node2)):
-                weight2.append(G.get_edge_data(node2, nbr)['weight'])
+            weight1=[G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
+            weight2=[G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
             if weight2==weight1:
                 logger.debug("True")
                 return True
-    elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
-        'values' in G.nodes[node1].keys() and
-         G.nodes[node1]["values"]==G.nodes[node2]["values"] and
-        len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
-        logger.debug(" True")
-        return True
-    else:
-        logger.debug(" False")
-        return False
+            else:
+                logger.debug(f'internal port weight mismatch {weight1},{weight2}')
+                return False
+    else: 
+        if 'values' in G.nodes[node1].keys() and \
+        G.nodes[node1]["values"]==G.nodes[node2]["values"]:
+            logger.debug(" True")
+            return True
+        else:
+            logger.debug(" False, value mismatch")
+            return False
+
 
 def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     """
@@ -254,6 +272,8 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     logger.debug(f"first node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"second node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
+        if compare_node(G, node1, node2, ports_weight):
+            match_pair[node1]=node2
         logger.debug("no new neihbours, returning recursion")
         return
     #Traversing single branch for symmetry
@@ -267,21 +287,13 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     #   (port and set(G.neighbors(node1)) == set(G.neighbors(node2)) ) :
     
     if node1 == node2:
+        if node1 in match_pair.keys() or node1 in match_pair.values():
+            logger.debug("avoid existing  pair wise symmetry")
+            return
         logger.debug(f"single node {node1}, nbrs {nbrs1}, nbr_weight {[G.get_edge_data(node1,nbr) for nbr in nbrs1]}")
         SD_nbrs= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=2]
         ## TBD: filter based on primitive constraints
         ## Right now will try to figure out S/D paths
-        # if len(nbrs) ==1:
-        #     # differential pair inputs come from gate
-        #     logger.debug(f"traversing single path from port {node1} ")
-        #     #match_pair[node1]=node1 
-        #     traversed.append(node1)
-        #     compare_nodes(G,match_pair,traversed,nbrs[0],nbrs[0],ports_weight)
-        # elif len(nbrs) ==2:
-        #     logger.debug(f"diverging branch from single branch {node1} ")
-        #     match_pair[node1]=node1
-        #     traversed.append(node1)
-        #     compare_nodes(G,match_pair,traversed,nbrs[0],nbrs[1],ports_weight)
         if len(SD_nbrs) ==0:
             logger.debug(f"No SD paths found to traverse")
         elif len(SD_nbrs) ==1:
@@ -300,7 +312,8 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             match_pair[node1]=node1
             traversed.append(node1)
             for nbr1,nbr2 in combinations_with_replacement(set(SD_nbrs)-set(traversed), 2):
-                compare_nodes(G,match_pair,traversed,nbr1,nbr2,ports_weight)
+                logger.debug(f"recursive call from single branch {nbr1} {nbr2}")
+                compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
                         
     elif nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
@@ -308,66 +321,76 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
         traversed+=[node1,node2]
         nbrs1=nbrs1-set([node1,node2])
         logger.debug(f"all non traversed neighbours: {nbrs1}")
-        for nbr in nbrs1:
-            logger.debug(f"recursive call from converged branch {nbr}")
-            compare_nodes(G,match_pair,traversed,nbr,nbr,ports_weight)
+        for nbr1,nbr2 in combinations_with_replacement(nbrs1,2):
+            logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
+            compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
 
     elif compare_node(G,node1,node2,ports_weight):
         match_pair[node1]=node2
         traversed+=[node1,node2]
         logger.info(f"Traversing parallel branches")
-
+        nbrs1_wt = [G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
+        nbrs2_wt = [G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
+        unique_match=find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight)
         if len(nbrs1) ==1 and len(nbrs2)==1:
             logger.debug(f"traversing binary branch")
-            compare_nodes(G,match_pair,traversed,nbrs1.pop(),nbrs2.pop(),ports_weight)        
-        else:
-            logger.debug(f"setting new start points")
+            compare_nodes(G,match_pair,traversed,nbrs1.pop(),nbrs2.pop(),ports_weight)
+        elif unique_match:
+            logger.debug(f'traversing unique matches {unique_match}')
             match_pair[node1]=node2
-            match_pair[node1]= "start_point"
-            match_pair[node2]= "start_point"
-
-            # for nbr1 in list(G.neighbors(node1)):
-            #     if nbr1 not in traversed and \
-            #             nbr1 not in match_pair.keys():
-            #         for nbr2 in list(G.neighbors(node2)):
-            #             if nbr1 != nbr2 and nbr2 not in traversed:
-            #                 logger.debug(f"recursive call from binary {node1}:{node2} to {nbr1}:{nbr2}")
-            #                 compare_nodes(G,match_pair,traversed,nbr1,nbr2,ports_weight)
-            # logger.debug(f"end all traversal from binary branch {node1} {node2}")
+            traversed+=[node1,node2]
+            for nbr1,nbr2 in unique_match.items():
+                logger.debug(f"recursive call from binary {node1}:{node2} to {nbr1}:{nbr2}")
+                compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+        elif len(nbrs1_wt)>len(set(nbrs1_wt))>1 and len(nbrs2_wt)>len(set(nbrs2_wt))>1:
+            logger.debug(f"setting new start points {node1} {node2}")
+            match_pair[node1]=node2
+            if "start_point" in match_pair.keys():
+                match_pair["start_point"]+=[node1,node2]
+            else:
+                match_pair["start_point"]=[node1,node2]
+        else:
+            logger.debug(f"end all traversal from binary branch {node1} {node2}")
         
     else:
-        logger.debug("end of recursion branch")
+        logger.debug(f"end of recursion branch, matches {match_pair}")
 
 def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight):
     logger.debug(f"symmetry start point {node1} {node2}")
     pair ={}
     compare_nodes(G, pair, traversed, node1, node2,ports_weight)
-    
-    hier_start_points=[key for key,value in pair.items() if value=="start_point"]
-    for sp in hier_start_points:
-        del pair[sp]
+
+    if "start_point" in pair:
+        hier_start_points=pair["start_point"]    
+        del pair["start_point"]
     if not pair:
         logger.debug(f"Non symmetrical branches {node1}:{node2}")
         return                  
     else:
         logging.info(f"symmetric blocks found: {pair}")      
         all_match_pairs[node1+node2]=pair                         
-        
-    for sp in hier_start_points:
-        logger.debug(f"starting new node from binary branch:{sp} traversed {traversed}")
-        multifanout = create_hierarchy(G,sp,traversed,ports_weight)
-        if  multifanout and type(multifanout[sp]) ==list:
-            logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
-            all_match_pairs[node1+node2]=multifanout[sp]
-        elif multifanout and type(multifanout[sp]) ==dict:
-            logger.debug(f"more than one depth matched so putting as align block:{multifanout[sp]}")
-            all_match_pairs[node1+node2+"_hier_"+sp]=multifanout[sp]
-            traversed+=[node1,node2]
-            logger.debug("ne hier list %s %s",sp, multifanout)
-            for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
-                 recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed,h_port1, h_port2, multifanout[sp]['ports_weight'])   
-        else:
-            logger.debug(f"no symmetry from {sp}")
+    try: 
+        for sp in hier_start_points:
+            logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
+            if sp not in G.nodes():
+                continue
+            multifanout = create_hierarchy(G,sp,traversed,ports_weight)
+            if  multifanout and type(multifanout[sp]) ==list:
+                logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
+                all_match_pairs[node1+node2+'_align']=multifanout[sp]
+            elif multifanout and type(multifanout[sp]) ==dict:
+                logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
+                #all_match_pairs[node1+node2+"_align_hier_"+sp]=multifanout[sp]
+                traversed+=[node1,node2]
+                all_match_pairs[sp+'_new_hier']=multifanout[sp]
+                
+                logger.debug("new hier list %s %s",sp, multifanout)
+                #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
+                #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])   
+            else:
+                logger.debug(f"no symmetry from {sp}")
+    except NameError:
+        logger.debug("")
         
 
 def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
@@ -394,20 +417,19 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     all_match_pairs={}
     for port1,port2 in combinations_with_replacement(set(sorted(ports))-set(stop_points),2):
         traversed =stop_points.copy()
-        if ports_weight[port1] == ports_weight[port2]:
+        if sorted(ports_weight[port1]) == sorted(ports_weight[port2]):
             traversed+=[port1,port2]
             recursive_start_points(graph,all_match_pairs,traversed,port1,port2, ports_weight)
-            logger.debug(f"all matches found {all_match_pairs}")
+            logger.debug(f"all matches found starting from {port1} and {port2} pair: {all_match_pairs}")
+
     return all_match_pairs
 
-def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_points):
+def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_points=None):
     const_file = (input_dir / (name + '.const'))
     logger.debug("writing constraints: %s",const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
-    all_match_pairs=FindSymmetry(graph, ports, ports_weight, stop_points)
 
-    #print(all_match_pairs)
     # Read contents of input constraint file
     # Check if there are any other constraints except cap constraints
     # No constraints are written in case constraints are provided
@@ -418,26 +440,36 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 logger.info("line %s",content)
                 if 'SymmBlock' in content or 'SymmNet' in content:
                     return
-
+    all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
                     
     written_symmetries = 'all'
     const_fp = open(const_file, 'a+')
     const_fp.write("// ALIGN generated automatic constraints")
-    align_const_keys =[key for key,array in all_match_pairs.items() if type(array) == list]
+    ## ALIGN block constraints
+    align_const_keys =[key for key,value in all_match_pairs.items() if type(value) == list]
+    check_duplicate=[]
     for key in align_const_keys:
         array=all_match_pairs[key]
         logger.debug(f"group1: {array}")
-        h_blocks=[ele for ele in array if ele in graph]
-        h_align = "\nAlignBlock ( H , "+' , '.join(h_blocks)+' )'
-        logger.debug("align constraint"+h_align)
+        h_blocks=[ele for ele in array if ele in graph and ele not in check_duplicate]
+        if len(h_blocks)>0:
+            check_duplicate+=h_blocks
+            h_align = "\nAlignBlock ( H , "+' , '.join(h_blocks)+' )'
+            logger.debug("align constraint"+h_align)
+            const_fp.write(h_align)
         del all_match_pairs[key]
-        const_fp.write(h_align)
+    new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
+    for key in new_hier_keys:
+        del all_match_pairs[key]
+    
     for pairs in sorted(all_match_pairs.values(), key=lambda k: len (k.keys()), reverse=True):
-        #print(pairs,written_symmetries)
         symmBlock='\nSymmBlock ('
-        for key, value in pairs.items():    
+        for key, value in pairs.items():
+            #print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points or key in written_symmetries or \
-            value in written_symmetries or graph.nodes[key]["inst_type"]!=graph.nodes[value]["inst_type"]:
+                value in written_symmetries or key in new_hier_keys or \
+                key not in graph.nodes() or \
+                graph.nodes[key]["inst_type"]!=graph.nodes[value]["inst_type"]:
                 logger.debug(f"skipping symmetry b/w {key} {value}")
                 continue
             if graph.nodes[key]["inst_type"]!="net" and \
@@ -453,14 +485,14 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 # second constraint was added due to ports coming as extra from connection function
                 if nbrs_key != nbrs_val and connection(graph,key)!=connection(graph,value) :
                     logger.info(f"filtering nets which came due to S/D traversal {key} {value}{nbrs_key} {nbrs_val}")
-                elif key!=value  :
-                    pairs = symmnet_device_pairs(graph,connection(graph,key),connection(graph,value))
-                    symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
-                            '} , {'+value+','+','.join(pairs.values()) +'} )'
-                    const_fp.write(symmNet)
-                    written_symmetries += ' '+ key+ ','+value
+                #elif key!=value  :
+                    #pairs = symmnet_device_pairs(graph,connection(graph,key),connection(graph,value))
+                    #symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
+                    #        '} , {'+value+','+','.join(pairs.values()) +'} )'
+                    #const_fp.write(symmNet)
+                    #written_symmetries += ' '+ key+ ','+value + ','.join(pairs.keys()) + ','.join(pairs.values())
                 else:
-                    logger.debug(f"TBD:multiple connections of net need proper handle {key}")
+                    logger.debug(f"skip self symmetric nets")
         if ',' in symmBlock[:-1]:
             symmBlock = symmBlock[:-1]+')'
             written_symmetries.replace(key,'')

@@ -77,7 +77,7 @@ class BasicElement:
             "inst_type": "cap",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "cap")
         }
 
@@ -91,7 +91,7 @@ class BasicElement:
             "inst_type": "res",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "res")
         }
 
@@ -106,7 +106,7 @@ class BasicElement:
             "inst_type": "inductor",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "ind")
         }
 

@@ -3,10 +3,10 @@ import pprint
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
-from .match_graph import read_inputs, read_setup,_mapped_graph_list,preprocess_stack,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
+from .match_graph import read_inputs, read_setup,_mapped_graph_list,add_stacked_transistor,add_parallel_transistor,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
-from .write_constraint import WriteConst, FindArray, CopyConstFile
+from .write_constraint import WriteConst, FindArray, CopyConstFile, FindSymmetry
 from .read_lef import read_lef
 
 import logging
@@ -16,7 +16,7 @@ def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size
     updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
     return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, unit_size_mos , unit_size_cap)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
+def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph    
 
@@ -56,6 +56,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     library += user_lib.sp_parser()
     library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
     logger.info(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
+    logger.info(f"all library elements: {[ele['name'] for ele in library]}")
     if len(design_setup['DONT_USE_CELLS'])>0:
         library=[lib_ele for lib_ele in library if lib_ele['name'] not in design_setup['DONT_USE_CELLS']]
 
@@ -68,29 +69,40 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
 
     updated_ckt_list = []
+    check_duplicates={}
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"START MATCHING in circuit: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name in design_setup['DIGITAL']:
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER'] ,design_setup['CLOCK'], True )
+            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND'] ,design_setup['CLOCK'], True )
         else:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             logger.debug(f"no of nodes: {len(G1)}")
             add_parallel_caps(G1)
             add_series_res(G1)
-            preprocess_stack(G1)
+            add_stacked_transistor(G1)
+            add_parallel_transistor(G1)
             initial_size=len(G1)
             delta =1
             while delta > 0:
                 logger.debug("CHECKING stacked transistors")
-                preprocess_stack(G1)
+                add_stacked_transistor(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
-            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER'] ,design_setup['CLOCK'], False )
+            mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
         # reduce graph converts input hierarhical graph to dictionary
-        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list, library,design_setup)
+        updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup)
         check_nodes(updated_circuit)
         updated_ckt_list.extend(updated_circuit)
+
+
+        stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
+        if circuit_name not in design_setup['DIGITAL']:
+            symmetry_blocks=FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
+            for key,symm_blocks in symmetry_blocks.items():
+                if type(symm_blocks) ==dict and "graph" in symm_blocks.keys():
+                    logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
+                    updated_ckt_list.append(symm_blocks)
 
         updated_ckt_list.append({
             "name": circuit_name,
@@ -100,9 +112,15 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             "ports_match": circuit["connection"],
             "size": len(Grest.nodes())
         })
-    return updated_ckt_list, library
 
-def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, result_dir:pathlib.Path, unit_size_mos=12, unit_size_cap=12):
+        lib_names=[lib_ele['name'] for lib_ele in library]
+        for lib_name, dupl in check_duplicates.items():
+            if len(dupl)>1:
+                print(dupl)
+                lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
+    return updated_ckt_list, lib_names
+
+def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, unit_size_mos=12, unit_size_cap=12):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -133,9 +151,10 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
         DESCRIPTION.
 
     """
+    
     if not result_dir.exists():
         result_dir.mkdir()
-    logger.debug(f"Writing results in dir: {result_dir}")
+    logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
     printed_mos = []
@@ -195,7 +214,7 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
             if 'net' in attr['inst_type']: continue
             #Dropping floating ports
             #if attr['ports'
-            lef_name = attr['inst_type']
+            lef_name = attr['inst_type'].split('_type')[0]
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name, block_args = generate_lef(
                     lef_name, attr["values"],
@@ -216,17 +235,16 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
             else:
                 logger.info(f"No physical information found for: {name}")
 
-        lib_names=[lib_ele['name'] for lib_ele in library]
+
         if name in ALL_LEF:
             logger.debug(f"writing spice for block: {name}")
             ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
             ws.print_subckt(SP_FP)
             ws.print_mos_subckt(SP_FP,printed_mos)
-
             continue
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
-        if name not in  ALL_LEF:
+        if name not in  ALL_LEF or name.split('_type')[0] not in ALL_LEF:
             ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
             ws.print_subckt(SP_FP)
             ws.print_mos_subckt(SP_FP,printed_mos)
@@ -243,7 +261,7 @@ def compiler_output(input_ckt, library, updated_ckt_list, design_name:str, resul
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"], stop_points)
+                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
                 WriteCap(graph, result_dir, name, unit_size_cap,all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 
