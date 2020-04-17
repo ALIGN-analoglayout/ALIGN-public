@@ -99,8 +99,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
         stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
         if circuit_name not in design_setup['DIGITAL']:
             symmetry_blocks=FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
-            for key,symm_blocks in symmetry_blocks.items():
-                if type(symm_blocks) ==dict and "graph" in symm_blocks.keys():
+            for symm_blocks in symmetry_blocks.values():
+                if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
                     logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
                     updated_ckt_list.append(symm_blocks)
 
