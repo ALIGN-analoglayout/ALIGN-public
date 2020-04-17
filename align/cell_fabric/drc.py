@@ -107,7 +107,7 @@ class DesignRuleCheck():
         else:
             #assert False, f"No rectangle on {ly} covering via at {r.rect}"
             return result
-            
+
     def _check_metal_rules(self, layer, vv):
         '''Check metal min-length / min-spacing rules'''
         for v in vv.values():
