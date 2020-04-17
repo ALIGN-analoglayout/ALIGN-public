@@ -105,7 +105,7 @@ class DesignRuleCheck():
         if result is not None:
             return result
         else:
-            assert False, f"No rectangle on {ly} covering via at {r.rect}"
+            #assert False, f"No rectangle on {ly} covering via at {r.rect}"
             return result
             
 
