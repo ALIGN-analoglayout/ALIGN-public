@@ -77,7 +77,7 @@ class BasicElement:
             "inst_type": "cap",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "cap")
         }
 
@@ -91,7 +91,7 @@ class BasicElement:
             "inst_type": "res",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "res")
         }
 
@@ -106,7 +106,7 @@ class BasicElement:
             "inst_type": "inductor",
             "real_inst_type": self.real_inst_type,
             "ports": self.pins,
-            "edge_weight": self.pin_weight,
+            "edge_weight": [1]*(self.num_pins),
             "values": parse_value(self.value, "ind")
         }
 
@@ -174,7 +174,8 @@ class BasicElement:
         return {
             "inst": self.inst,
             "inst_type": inst_type,
-            "real_inst_type": self.real_inst_type+'_'+self.pins[3],
+            "real_inst_type": self.real_inst_type,
+            "body_pin":self.pins[3],
             "ports": self.pins[0:3],
             "edge_weight": self.pin_weight[0:3],
             "values": parse_value(self.value)
@@ -248,7 +249,6 @@ def _parse_inst(line):
         if '(' in line:
             line = line.replace('(', '').replace(')', '')
 
-
         if line:
             all_nodes = line.strip().split()
             hier_nodes = []
@@ -285,6 +285,10 @@ def _parse_inst(line):
         elif  device["inst_type"]=="dummy":
             #device = None
             logger.error(f"Removing dummy transistor: {line}")
+        #added to avoid assertion for string in PnR
+        if device["inst_type"][0].isdigit():
+            device["inst_type"] = "align_"+device["inst_type"]
+
     elif line.startswith('*'):
         logger.info(f"comment: {line}")
     else:

@@ -24,6 +24,28 @@ M2 (DC DA S B) PMOS w=w l=90n
 M3 (DD DA S B) PMOS w=w l=90n
 .ends CASCODED_CMB_PMOS_2
 
+.subckt LSB_NMOS_2 DA DB DC SA SB SC
+**UT austin  array VCM5
+M0 (DA DA SA B) NMOS w=w l=90n
+M1 (DB DA SB B) NMOS w=w l=90n
+M2 (DC DA SC B) NMOS w=w l=90n
+.ends LSB_NMOS_2
+
+.subckt LSB_PMOS_2 DA DB DC SA SB SC
+**UT austin  array VCM5
+M0 (DA DA SA B) PMOS w=w l=90n
+M1 (DB DA SB B) PMOS w=w l=90n
+M2 (DC DA SC B) PMOS w=w l=90n
+.ends LSB_PMOS_2
+
+.subckt DP_PAIR_PMOS DA DB DC DD GB S
+*UT austin VCM5
+M0 (DC DC S B) PMOS w=w l=90n
+M1 (DA DC S B) PMOS w=w l=90n
+M2 (DB GB S B) PMOS w=w l=90n
+M3 (DD GB S B) PMOS w=w l=90n
+.ends DP_PAIR_PMOS
+
 .subckt CASCODED_CMB_PMOS_3 DA DC DD DE GA S
 M0 (DA GA DB B) PMOS w=w l=90n
 M1 (DB DA S B) PMOS w=w l=90n
@@ -32,26 +54,47 @@ M3 (DD DA S B) PMOS w=w l=90n
 M4 (DE DA S B) PMOS w=w l=90n
 .ends CASCODED_CMB_PMOS_3
 
-.subckt CMB_NMOS_2 D0 D1 D2 S
-M0 (D0 D0 S B) NMOS_VTL w=w l=90n
-M1 (D1 D0 S B) NMOS_VTL w=w l=90n
-M2 (D2 D0 S B) NMOS_VTL w=w l=90n
+.subckt CMB_NMOS_2 DA DB DC S
+M0 (DA DA S B) NMOS_VTL w=w l=90n
+M1 (DB DA S B) NMOS_VTL w=w l=90n
+M2 (DC DA S B) NMOS_VTL w=w l=90n
 .ends CMB_NMOS_2 
 
-.subckt CMB_NMOS_3 D0 D1 D2 D3 S
-M0 (D0 D0 S B) NMOS_VTL w=w l=90n
-M1 (D1 D0 S B) NMOS_VTL w=w l=90n
-M2 (D2 D0 S B) NMOS_VTL w=w l=90n
-M3 (D3 D0 S B) NMOS_VTL w=w l=90n
+.subckt CMB_PMOS_2 DA DB DC S
+M0 (DA DA S B) PMOS_VTL w=w l=90n
+M1 (DB DA S B) PMOS_VTL w=w l=90n
+M2 (DC DA S B) PMOS_VTL w=w l=90n
+.ends CMB_PMOS_2 
+
+.subckt CMB_NMOS_3 DA DB DC DD S
+M0 (DA DA S B) NMOS_VTL w=w l=90n
+M1 (DB DA S B) NMOS_VTL w=w l=90n
+M2 (DC DA S B) NMOS_VTL w=w l=90n
+M3 (DD DA S B) NMOS_VTL w=w l=90n
 .ends CMB_NMOS_3 
 
-.subckt CMB_NMOS_4 D0 D1 D2 D3 D4 S
-M0 (D0 D0 S B) NMOS_VTL w=w l=90n
-M1 (D1 D0 S B) NMOS_VTL w=w l=90n
-M2 (D2 D0 S B) NMOS_VTL w=w l=90n
-M3 (D3 D0 S B) NMOS_VTL w=w l=90n
-M4 (D4 D0 S B) NMOS_VTL w=w l=90n
+.subckt CMB_PMOS_3 DA DB DC DD S
+M0 (DA DA S B) PMOS_VTL w=w l=90n
+M1 (DB DA S B) PMOS_VTL w=w l=90n
+M2 (DC DA S B) PMOS_VTL w=w l=90n
+M3 (DD DA S B) PMOS_VTL w=w l=90n
+.ends CMB_PMOS_3 
+
+.subckt CMB_NMOS_4 DA DB DC DD DE S
+M0 (DA DA S B) NMOS_VTL w=w l=90n
+M1 (DB DA S B) NMOS_VTL w=w l=90n
+M2 (DC DA S B) NMOS_VTL w=w l=90n
+M3 (DD DA S B) NMOS_VTL w=w l=90n
+M4 (DE DA S B) NMOS_VTL w=w l=90n
 .ends CMB_NMOS_4
+
+.subckt CMB_PMOS_4 DA DB DC DD DE S
+M0 (DA DA S B) PMOS_VTL w=w l=90n
+M1 (DB DA S B) PMOS_VTL w=w l=90n
+M2 (DC DA S B) PMOS_VTL w=w l=90n
+M3 (DD DA S B) PMOS_VTL w=w l=90n
+M4 (DE DA S B) PMOS_VTL w=w l=90n
+.ends CMB_PMOS_4
 
 .subckt INV_LVT i zn SN SP
 xm0 zn i SN SN lvtnfet w=w0 l=l0

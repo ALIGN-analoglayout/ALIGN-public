@@ -10,11 +10,11 @@
 ** Library name: ALIGN_circuits_ASAP7nm
 ** Cell name: telescopic_ota
 ** View name: schematic
-.subckt telescopic_ota d1 vdd vinn vinp vss vbiasn vbiasnd vbiasp1 vbiasp2 voutn voutp
+.subckt telescopic_ota d1 vdd vinn vinp vss vbiasn vbiasp1 vbiasp2 voutn voutp
 m9 voutn vbiasn net8 vss nmos_rvt w=270e-9 l=20e-9 nfin=36
 m8 voutp vbiasn net014 vss nmos_rvt w=270e-9 l=20e-9 nfin=36
 m5 d1 d1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=24
-m4 net10 vbiasnd vss vss nmos_rvt w=270e-9 l=20e-9 nfin=36
+m4 net10 d1 vss vss nmos_rvt w=270e-9 l=20e-9 nfin=36
 m3 net014 vinn net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=72
 m0 net8 vinp net10 vss nmos_rvt w=270e-9 l=20e-9 nfin=72
 m7 voutp vbiasp2 net012 net012 pmos_rvt w=270e-9 l=20e-9 nfin=24
@@ -41,7 +41,7 @@ m9 agnd phi2 net62 vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m10 net64 phi1 net62 vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m12 net60 phi1 vinp vss nmos_rvt w=270e-9 l=20e-9 nfin=12
 m14 voutp phi1 net68 vss nmos_rvt w=270e-9 l=20e-9 nfin=12
-xi0 id vdd net64 net66 vss vbiasn vbiasnd vbiasp1 vbiasp2 voutn voutp telescopic_ota
+xi0 id vdd net64 net66 vss vbiasn vbiasp1 vbiasp2 voutn voutp telescopic_ota
 c9 voutp vss 60e-15
 c8 voutn vss 60e-15
 c7 net62 net68 30e-15

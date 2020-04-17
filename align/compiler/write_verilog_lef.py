@@ -4,19 +4,14 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-import pickle
-import os
-import sys
-import json
 from math import sqrt, ceil
 
 from .util import convert_to_unit
-from .merge_nodes import merge_nodes
-
-from collections import Counter
 
 import logging
 logger = logging.getLogger(__name__)
+
+
 
 class WriteVerilog:
     """ write hierarchical verilog file """
@@ -31,14 +26,6 @@ class WriteVerilog:
                 self.pins.append(port)
         self.power_pins=power_pins
         self.subckt_list = subckt_list
-
-    def check_ports_match(self,port,subckt):
-        for members in self.subckt_list:
-            if members["name"]==subckt and port in members["ports"]:
-                return 1
-            else:
-                logger.info("ports match: %s %s",subckt,port)
-                return 1
 
     def print_module(self, fp):
         logger.debug(f"Writing module : {self.circuit_name}")
@@ -57,7 +44,7 @@ class WriteVerilog:
                 logger.debug(f"Skipping source nodes : {node}")
                 continue
             if 'net' not in attr['inst_type']:
-                logger.debug(f"Writing node: {node}")
+                logger.debug(f"Writing node: {node} {attr}")
                 fp.write("\n" + attr['inst_type'] + " " + node + ' ( ')
                 ports = []
                 nets = []
@@ -70,7 +57,7 @@ class WriteVerilog:
                     try:
                         logger.debug(f'connection to ports: {attr["connection"]}')
                         for key, value in attr["connection"].items():
-                            if self.check_ports_match(key,attr['inst_type']):
+                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
                                 ports.append(key)
                                 nets.append(value)
                     except:
@@ -124,32 +111,40 @@ class WriteVerilog:
 class WriteSpice:
     """ write hierarchical verilog file """
 
-    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list):
+    def __init__(self, circuit_graph, circuit_name, inout_pin_names,subckt_list, lib_names):
         self.circuit_graph = circuit_graph
         self.circuit_name = circuit_name
         self.inout_pins = inout_pin_names
         self.pins = inout_pin_names
         self.subckt_list = subckt_list
-
-    def check_ports_match(self,port,subckt):
-        for members in self.subckt_list:
-            if members["name"]==subckt and port in members["ports"]:
-                return 1
-            else:
-                logger.info(f"no ports match: {subckt} {port}")
+        self.lib_names = lib_names
+        self.all_mos = []
+    def print_mos_subckt(self,fp,printed_mos):
+        for mos in self.all_mos:
+            if mos["name"] not in printed_mos:
+                fp.write("\n.subckt " + mos["name"] + " D G S B")
+                fp.write("\nm0 D G S1 B " + mos['model'] + ' '+ concat_values(mos["values"]))
+                fp.write("\nm1 S1 G S B " + mos['model'] + ' '+ concat_values(mos["values"]))
+                fp.write("\n.ends "+mos["name"]+'\n')
+                printed_mos.append(mos["name"])
+        return printed_mos
 
     def print_subckt(self, fp):
-        logger.debug(f"Writing module : {self.circuit_name}")
+        logger.debug(f"Writing spice module : {self.circuit_name}")
         fp.write("\n.subckt " + self.circuit_name + " ")
         fp.write(' '.join(self.pins))
 
         for node, attr in self.circuit_graph.nodes(data=True):
             if 'source' in attr['inst_type']:
-                logger.debug(f"Skipping source nodes : {node}")
                 continue
             if 'net' not in attr['inst_type']:
-                logger.debug(f"Writing node: {attr['inst_type']}")
-                fp.write("\n" + node + ' ')
+                if len(attr['inst_type'].split('_'))>2 and attr['inst_type'].split('_')[0]+'_'+attr['inst_type'].split('_')[1] in  self.lib_names:
+                    self.all_mos.append({"name":attr['inst_type'], "model": 'nmos_rvt',"values": attr['values']})
+                    line= "\nx" + node + ' '
+                elif attr['real_inst_type'] in ['cap', 'res', '']:
+                    line= "\n" + node + ' '                    
+                else:
+                    line= "\n" + node + ' '
                 ports = []
                 nets = []
                 if "ports_match" in attr:
@@ -158,8 +153,8 @@ class WriteSpice:
                         ports.append(key)
                         nets.append(value)
                     #move body pin to last
-                    ports[0], ports[-1] = ports[-1], ports[0]
-                    nets[0], nets[-1] = nets[-1], nets[0]
+                    ports.append(ports.pop(0))
+                    nets.append(nets.pop(0))
                     # transitor with shorted terminals
                     if 'DCL_NMOS' in attr['inst_type']:
                         nets[1:1]=[nets[0]]
@@ -170,13 +165,23 @@ class WriteSpice:
                     #    nets.append('vdd')
                     #elif 'NMOS' in attr['inst_type']:
                     #    nets.append('vss')
+                elif "connection" in attr:
+                    try:
+                        logger.debug(f'connection to ports: {attr["connection"]}')
+                        for key, value in attr["connection"].items():
+                            if check_ports_match(self.subckt_list,key,attr['inst_type']):
+                                ports.append(key)
+                                nets.append(value)
+                    except:
+                        logger.error(f"ERROR: Subckt {attr['inst_type']} defination not found")
 
                 else:
                     logger.error(f"No connectivity info found : {', '.join(attr['ports'])}")
                     ports = attr["ports"]
                     nets = list(self.circuit_graph.neighbors(node))
 
-                fp.write(' '.join(nets) +' '+ attr['inst_type'] + ' '+ concat_values(attr['values']) )
+                line +=' '.join(nets) +' '+ attr['inst_type']
+                fp.write(line)
 
         fp.write("\n.ends "+self.circuit_name+ "\n")
 
@@ -214,46 +219,33 @@ def generate_lef(name, values, available_block_lef,
     if name.lower().startswith('cap'):
         #print("all val",values)
         if 'cap' in values.keys():
-            size = '%g'%(round(values["cap"]*1E15,4))
+            size = float('%g'%(round(values["cap"]*1E15,4)))
+            num_of_unit = float(size)/unit_size_cap
         elif 'c' in values.keys():
-            size = '%g'%(round(values["c"]*1E15,4))
+            size = float('%g'%(round(values["c"]*1E15,4)))
+            num_of_unit = float(size)/unit_size_cap
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
+            size = size.replace('.','p').replace('-','_neg_')
+            num_of_unit=1
         logger.debug(f"Found cap with size: {size}, {unit_size_cap}")
-        block_name = name + '_' + size.replace('.','p').replace('-','_neg_') + 'f'
+        block_name = name + '_' + str(int(size)) + 'f'
         unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]
         logger.debug(f'Generating lef for: {name}, {size}')
-        return unit_block_name, {
-            'primitive': block_name,
-            'value': unit_size_cap
-        }
+        if  num_of_unit > 128:
+            return block_name, {
+                'primitive': block_name,
+                'value': int(size)
+            }
+        else:
+            return unit_block_name, {
+                'primitive': block_name,
+                'value': unit_size_cap
+            }
 
-    # elif name.lower().startswith('res_array_8'):
-    #     if 'res' in values.keys():
-    #         size = '%g'%(round(values["res"],2))
-    #     elif 'r' in values.keys():
-    #         size = '%g'%(round(values["r"],2))
-    #     else :
-    #         convert_to_unit(values)
-    #         size = '_'.join(param+str(values[param]) for param in values)
-    #     try:
-    #         #size = float(size)
-    #         res_unit_size = 30 * unit_size_cap
-    #         height = ceil(sqrt(float(size) / res_unit_size))
-    #         block_name = name + '_' + size.replace('.','p')
-    #         if block_name in available_block_lef:
-    #             return block_name, available_block_lef[block_name]
-    #         logger.debug('Generating lef for: %s %s', block_name, size)
-    #         fp.write("\n$PC fabric_Res_array.py " +
-    #                  " -b " + block_name +
-    #                  " -n " + str(height) +
-    #                  " -X " + "8" +
-    #                  " -r " + size)
-    #     except:
-    #         block_name = name + '_' + size
 
     elif name.lower().startswith('res'):
         if 'res' in values.keys():
@@ -280,25 +272,6 @@ def generate_lef(name, values, available_block_lef,
                 'primitive': name,
                 'value': (1, res_unit_size)
             }
-
-    # elif name.lower().startswith('inductor') or \
-    #     name.lower().startswith('spiral'):
-    #     try:
-    #         size = round(values["ind"]*1E12,2)
-    #     except :
-    #         convert_to_unit(values)
-    #         size = '_'.join(param+str(values[param]) for param in values)
-
-    #     ind_unit_size = unit_size_cap
-    #     height = ceil(sqrt(size / ind_unit_size))
-    #     block_name = name + '_' + str(size)
-    #     if block_name in available_block_lef:
-    #         return block_name, available_block_lef[block_name]
-    #     logger.debug('Generating lef for: %s %s', block_name, size)
-    #     fp.write("\n$PC fabric_" + name + ".py " +
-    #              " -b " + block_name +
-    #              " -n " + str(height) + ## THIS IS -u (height)
-    #              " -r " + str(size))
 
     else:
         if "nfin" in values.keys():
@@ -345,371 +318,12 @@ def generate_lef(name, values, available_block_lef,
 
     raise NotImplementedError(f"Could not generate LEF for {name}")
 
-def compare_nodes(G,match_pair,traverced,nodes1,nodes2):
-    #logger.debug("comparing %s,%s, traversed %s %s",nodes1,nodes2,traverced,list(G.neighbors(nodes1)))
-    #logger.debug("Comparing node: %s %s , traversed:%s",nodes1,nodes2,traverced)
-    #match_pair={}
-    #logger.debug("comparing %s, %s ",G.nodes[nodes1],G.nodes[nodes2])
-    if 'net' in G.nodes[nodes1]['inst_type'] and \
-        G.nodes[nodes1]['net_type'] == 'external':
-            port=True
-    else:
-        port = False
-    if (not port and len(list(G.neighbors(nodes1))) <=2 and \
-        set(G.neighbors(nodes1)) == set(G.neighbors(nodes2)) ) or\
-        (port and len(list(G.neighbors(nodes1))) ==1):
-        for node1 in list(G.neighbors(nodes1)):
-            if node1 not in traverced:
-                logger.debug(node1)
-                #print(nodes1,nodes2,list(G.neighbors(nodes1)),list(G.neighbors(nodes2)))
-                match_pair[node1]=node1
-                traverced.append(node1)
-                compare_nodes(G,match_pair,traverced,node1,node1)
-    for node1 in list(G.neighbors(nodes1)):
-        if node1 not in traverced and \
-                node1 not in match_pair.keys():
-            for node2 in list(G.neighbors(nodes2)):
-                if node1 != node2 and node2 not in traverced:
-                    if compare_node(G,node1,node2):
-                        if G.get_edge_data(nodes1,node1)['weight'] == G.get_edge_data(nodes2,node2)['weight']:
-                            #match_pair[nodes1][1].append(node1)
-                            #match_pair[nodes2][2].append(node2)
-                            match_pair[node1]=node2
-                            #print(node1,node2)
-                            traverced.append(node1)
-                            traverced.append(node2)
-                            compare_nodes(G,match_pair,traverced,node1,node2)
-    return match_pair
-def compare_node(G,node1,node2):
-    if G.nodes[node1]["inst_type"]=="net" and \
-            G.nodes[node2]["inst_type"]=="net" and \
-            len(list(G.neighbors(node1)))==len(list(G.neighbors(node2))) and \
-            G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"]:
-        #logger.debug("comparing_nodes, %s %s True",node1,node2)
-        return True
-    elif (G.nodes[node1]["inst_type"]==G.nodes[node2]["inst_type"] and
-        'values' in G.nodes[node1].keys() and
-         G.nodes[node1]["values"]==G.nodes[node2]["values"] and
-        len(list(G.neighbors(node1)))==len(list(G.neighbors(node2)))):
-        #logger.debug("comparing_nodes, %s %s True",node1,node2)
-        return True
-    else:
-        logger.debug("comparing_nodes, %s %s False",node1,node2)
-        return False
-def connection(graph,net):
-    conn =[]
-    for nbr in list(graph.neighbors(net)):
-        if "ports_match" in graph.nodes[nbr]:
-            logger.debug("ports match:%s",graph.nodes[nbr]["ports_match"].items())
-            idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
-        elif "connection" in graph.nodes[nbr]:
-            logger.debug("connection:%s",graph.nodes[nbr]["connection"].items())
-            idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-            conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
-    if graph.nodes[net]["net_type"]=="external":
-        conn.append(net)
-    return conn
 
-def check_common_centroid(graph,const_path,ports):
-    """ Reads available const in input dir
-        Fix cc cap in const and netlist
-    """
-    cc_pair={}
-    new_const_path = const_path.parents[0] / (const_path.stem + '.const_temp')
-    if os.path.isfile(const_path):
-        logger.debug(f'Reading const file for common centroid {const_path}')
-        const_fp = open(const_path, "r")
-        new_const_fp = open(new_const_path, "w")
-        line = const_fp.readline()
-        while line:
-            logger.info("checking cc constraint for caps:%s",line)
-            if line.startswith("CC") and len(line.strip().split(','))>=5:
-                caps_in_line = line[line.find("{")+1:line.find("}")]
-                updated_cap = caps_in_line.replace(',','_')
-                cap_blocks = caps_in_line.strip().split(',')
-                matched_ports ={}
-                for idx,cap_block in enumerate(cap_blocks):
-                    cc_pair.update({cap_block: updated_cap})
-                    conn = list(graph.neighbors(cap_block))
-                    matched_ports['MINUS'+str(idx)] = conn[0]
-                    matched_ports['PLUS'+str(idx)]= conn[1]
-                #print("matched_ports",cc_pair,matched_ports)
-                line = line.replace(caps_in_line,updated_cap)
-                graph, _ = merge_nodes(
-                        graph, 'Cap_cc',cap_blocks , matched_ports)
-            new_const_fp.write(line)
-            line=const_fp.readline()
-
-        const_fp.close()
-        new_const_fp.close()
-        os.rename(new_const_path, const_path)
-    else:
-        logger.debug(f"Couldn't find constraint file {const_path} (might be okay)")
-
-    return(cc_pair)
-
-def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
-    const_path = input_dir / (name + '.const')
-    new_const_path = input_dir / (name + '.const_temp')
-    logger.debug(f"writing cap constraints: {new_const_path}")
-    available_cap_const = []
-    if os.path.isfile(const_path):
-        logger.debug(f'Reading const file for cap {const_path}')
-        const_fp = open(const_path, "r")
-        new_const_fp = open(new_const_path, "w")
-        line = const_fp.readline()
-        while line:
-            logger.info("const line :%s",line)
-            if line.startswith("CC"):
-                caps_in_line = line[line.find("{")+1:line.find("}")]
-                cap_blocks = caps_in_line.strip().split(',')
-                available_cap_const = available_cap_const+cap_blocks
-            elif line.startswith("SymmBlock"):
-                blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
-                logger.info("place symmetrical cap as CC:%s",blocks_in_line)
-                for pair in blocks_in_line:
-                    p1,p2=pair.split(',')
-                    if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
-                        all_array[p1]={p1:[p1,p2]}
-                        line=line.replace(' {'+pair+'} ','').replace('(,','(').replace(',)',')').replace(',,',',')
-            new_const_fp.write(line)
-            logger.debug(f"cap const {line}")
-            line=const_fp.readline()
-        const_fp.close()
-    else:
-        new_const_fp = open(new_const_path, "w")
-        logger.debug(f"Creating new const file: {new_const_path}")
-    logger.debug(f"writing common centroid caps: {all_array}")
-    for _,array in all_array.items():
-        n_cap=[]
-        cc_caps=[]
-        logger.debug(f"group1: {array}")
-        for _,arr in array.items():
-            for ele in arr:
-                if graph.nodes[ele]['inst_type'].lower().startswith('cap') and \
-                    ele not in available_cap_const:
-                    if 'cap' in graph.nodes[ele]['values'].keys():
-                        size = graph.nodes[ele]['values']["cap"]*1E15
-                    elif 'c' in graph.nodes[ele]['values'].keys():
-                        size = graph.nodes[ele]['values']["c"]*1E15
-                    else:
-                        size = unit_size_cap
-                    n_cap.append( str(ceil(size/unit_size_cap)))
-                    cc_caps.append(ele)
-        if len(n_cap)>0:
-            available_cap_const = available_cap_const+ cc_caps
-            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
-            cap_line = "CC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
-            logger.debug("Cap constraint"+cap_line)
-            new_const_fp.write(cap_line)
-
-
-    for node, attr in graph.nodes(data=True):
-        if attr['inst_type'].lower().startswith('cap')  and node not in available_cap_const:
-            if 'cap' in attr['values'].keys():
-                size = attr['values']["cap"]*1E15
-            elif 'c' in attr['values'].keys():
-                size = attr['values']["c"]*1E15
-            else:
-                size = unit_size_cap
-            n_cap = str(ceil(size/unit_size_cap))
-            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )\n'
-            cap_line = "CC ( {"+node+"} , {"+n_cap+unit_block_name
-            logger.debug("Cap constraint"+cap_line)
-            new_const_fp.write(cap_line)
-            available_cap_const.append(node)
-    new_const_fp.close()
-    if os.stat(new_const_path).st_size ==0:
-        os.remove(new_const_path)
-        logger.info("no cap const found: %s",new_const_path)
-    else:
-        os.rename(new_const_path, const_path)
-        logger.info("added cap const: %s",const_path)
-
-def matching_groups(G,level1):
-    similar_groups=[]
-    logger.debug("matching groups for all neighbors: %s", level1)
-    for l1_node1 in level1:
-        for l1_node2 in level1:
-            if l1_node1!= l1_node2 and compare_node(G,l1_node1,l1_node2):
-                found_flag=0
-                #logger.debug("similar_group %s",similar_groups)
-                #print(l1_node1,l1_node2)
-                for index, sublist in enumerate(similar_groups):
-                    if l1_node1 in sublist and l1_node2 in sublist:
-                        found_flag=1
-                        break
-                    if l1_node1 in sublist:
-                        similar_groups[index].append(l1_node2)
-                        found_flag=1
-                        #print("found match")
-
-                        break
-                    elif l1_node2 in sublist:
-                        similar_groups[index].append(l1_node1)
-                        found_flag=1
-                        #print("found match")
-                        break
-                if found_flag==0:
-                    similar_groups.append([l1_node1,l1_node2])
-    return similar_groups
-def trace_template(graph, similar_node_groups,visited,template,array):
-    next_match={}
-    for source,groups in similar_node_groups.items():
-        next_match[source]=[]
-        for node in groups:
-            #print(node)
-            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            #level1=[l1 for l1 in level_1a if l1 not in visited]
-            next_match[source] +=level1
-            visited +=level1
-        if len(next_match[source])==0:
-            del next_match[source]
-
-    if len(next_match.keys())> 0 and match_branches(graph,next_match) :
-        for source in array.keys():
-            if source in next_match.keys():
-                array[source]+=next_match[source]
-        template +=next_match[list(next_match.keys())[0]]
-        logger.debug("found matching level: %s,%s",template,similar_node_groups)
-        trace_template(graph, next_match,visited,template,array)
-
-
-def match_branches(graph,nodes_dict):
-    #print("matching branches",nodes_dict)
-    #match_pair={}
-    nbr_values = {}
-    for node, nbrs in nodes_dict.items():
-        #super_dict={}
-        super_list=[]
-        for nbr in nbrs:
-            #print("checking nbr",nbr,graph.nodes[nbr])
-            if graph.nodes[nbr]['inst_type']== 'net':
-                super_list.append('net')
-                super_list.append(graph.nodes[nbr]['net_type'])
-            else:
-                super_list.append(graph.nodes[nbr]['inst_type'])
-                for v in graph.nodes[nbr]['values'].values():
-                    #super_dict.setdefault(k,[]).append(v)
-                    #print("value",k,v
-                    super_list.append(v)
-        nbr_values[node]=Counter(super_list)
-    _,main=nbr_values.popitem()
-    for node, val in nbr_values.items():
-        if val == main:
-            #print("found values",list(val.elements()))
-            continue
+def check_ports_match(subckt_list,port,subckt):
+    for members in subckt_list:
+        if members["name"]==subckt and port in members["ports"]:
+            return 1
         else:
-            return False
-    return True
+            logger.info("ports match: %s %s",subckt,port)
+            return 1
 
-def FindArray(graph,input_dir,name):
-    templates = {}
-    array_of_node = {}
-    visited =[]
-    all_array = {}
-
-    for node, attr in graph.nodes(data=True):
-        #print("node data",graph.nodes[node])
-        if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>4:
-            level1=[l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            array_of_node[node]=matching_groups(graph,level1)
-            logger.debug("finding array:%s,%s",node,array_of_node[node])
-            if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
-                similar_node_groups = {}
-                for el in array_of_node[node][0]:
-                    similar_node_groups[el]=[el]
-                templates[node]=[list(similar_node_groups.keys())[0]]
-                visited=array_of_node[node][0]+[node]
-                array=similar_node_groups
-                trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logger.debug("similar groups final, %s",array)
-                all_array[node]=array
-    return all_array
-                #match_branches(graph,nodes_dict)
-
-def CopyConstFile(name, input_dir, working_dir):
-    # Copy const file to working directory if needed
-    input_const_file = (input_dir / (name + '.const'))
-    const_file = (working_dir / (name + '.const'))
-    if input_const_file.exists() and input_const_file.is_file():
-        if const_file == input_const_file:
-            (input_dir / (name + '.const.old')).write_text(input_const_file.read_text())
-        else:
-            const_file.write_text(input_const_file.read_text())
-    return const_file
-
-def WriteConst(graph, input_dir, name, ports, stop_points):
-
-    const_file = (input_dir / (name + '.const'))
-
-    #check_common_centroid(graph,const_file,ports)
-    logger.debug("writing constraints: %s",const_file)
-    #const_fp.write(str(ports))
-    #const_fp.write(str(graph.nodes()))
-    traverced =stop_points
-    all_match_pairs={}
-    for port1 in sorted(ports):
-        if port1 in graph.nodes() and port1 not in traverced:
-            for port2 in sorted(ports):
-                if port2 in graph.nodes() and sorted(ports).index(port2)>=sorted(ports).index(port1) and port2 not in traverced:
-            #while len(list(graph.neighbors(port)-set(traverced)))==1:
-            #nbr = list(graph.neighbors(port))
-                    pair ={}
-                    traverced.append(port1)
-                    compare_nodes(graph, pair, traverced, port1, port2)
-                    if pair:
-                        all_match_pairs.update(pair)
-                        logging.info("Symmetric blocks found: %s",pair)
-    existing_SymmBlock =[]
-    existing_SymmNet = False
-
-    # Read contents
-    logger.info("input const file: %s", const_file)
-    if const_file.exists() and const_file.is_file():
-        with open(const_file) as f:
-            for content in f:
-                logger.info("line %s",content)
-                if 'SymmBlock' in content:
-                    existing_SymmBlock+=content
-                    logger.info("symmblock found %s",content)
-                elif 'SymmNet' in content:
-                    existing_SymmNet = True
-    del_existing=[]
-    for key, value in all_match_pairs.items():
-        if key in existing_SymmBlock or value in existing_SymmBlock:
-            del_existing.append(key)
-    logging.info("matching pairs:%s existing %s",all_match_pairs,existing_SymmBlock)
-    logging.info("removing existing symmblocks:%s",del_existing)
-    for nodes in del_existing:
-        del all_match_pairs[nodes]
-
-    const_fp = open(const_file, 'a+')
-    if len(list(all_match_pairs.keys()))>0:
-        symmBlock = "SymmBlock ("
-        for key, value in all_match_pairs.items():
-            if key in stop_points:
-                continue
-            if graph.nodes[key]["inst_type"]!="net" and \
-                key not in symmBlock and value not in symmBlock and \
-                'Dcap' not in graph.nodes[key]["inst_type"] :
-                if key !=value:
-                    symmBlock = symmBlock+' {'+key+ ','+value+'} ,'
-            elif 'Dcap' not in graph.nodes[key]["inst_type"] :
-                if len(connection(graph,key))<3 and len(connection(graph,key))>1:
-                    symmNet = "SymmNet ( {"+key+','+','.join(connection(graph,key)) + \
-                            '} , {'+value+','+','.join(connection(graph,value)) +'} )\n'
-                    if not existing_SymmNet:
-                        const_fp.write(symmNet)
-
-
-        for key, value in all_match_pairs.items():
-            if graph.nodes[key]["inst_type"]!="net" and 'Dcap' not in graph.nodes[key]["inst_type"] :
-                if key ==value and key not in symmBlock:
-                    symmBlock = symmBlock+' {'+key+ '} ,'
-
-        symmBlock = symmBlock[:-1]+')\n'
-        if not existing_SymmBlock:
-            const_fp.write(symmBlock)
-        const_fp.close()
