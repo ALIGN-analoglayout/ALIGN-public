@@ -375,10 +375,10 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
             if sp not in G.nodes():
                 continue
             multifanout = create_hierarchy(G,sp,traversed,ports_weight)
-            if  multifanout and type(multifanout[sp]) ==list:
+            if  multifanout and isinstance(multifanout[sp], list):
                 logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
                 all_match_pairs[node1+node2+'_align']=multifanout[sp]
-            elif multifanout and type(multifanout[sp]) ==dict:
+            elif multifanout and isinstance(multifanout[sp], dict):
                 logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
                 #all_match_pairs[node1+node2+"_align_hier_"+sp]=multifanout[sp]
                 traversed+=[node1,node2]
@@ -446,7 +446,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     const_fp = open(const_file, 'a+')
     const_fp.write("// ALIGN generated automatic constraints")
     ## ALIGN block constraints
-    align_const_keys =[key for key,value in all_match_pairs.items() if type(value) == list]
+    align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
     check_duplicate=[]
     for key in align_const_keys:
         array=all_match_pairs[key]
