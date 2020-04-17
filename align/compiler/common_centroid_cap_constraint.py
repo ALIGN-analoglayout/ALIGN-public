@@ -38,7 +38,7 @@ def check_common_centroid(graph,const_path,ports):
                     matched_ports['MINUS'+str(idx)] = conn[0]
                     matched_ports['PLUS'+str(idx)]= conn[1]
                 line = line.replace(caps_in_line,updated_cap)
-                graph, _ = merge_nodes(
+                graph, _,_= merge_nodes(
                         graph, 'Cap_cc',cap_blocks , matched_ports)
             new_const_fp.write(line)
             line=const_fp.readline()

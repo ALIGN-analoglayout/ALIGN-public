@@ -476,7 +476,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 'Dcap' not in graph.nodes[key]["inst_type"] :
                 if key !=value:
                     symmBlock += ' {'+key+ ','+value+'} ,'
-                else:
+                elif "Switch_" not in graph.nodes[key]["inst_type"]:
                     symmBlock +=' {' + key +'} ,'
                 written_symmetries += symmBlock
             elif 'Dcap' not in graph.nodes[key]["inst_type"] :
