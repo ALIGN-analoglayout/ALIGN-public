@@ -27,7 +27,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->layerNo = GR.drc_info.Metal_info.size();
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
-  this->temp_report.node_name = HierNode.name;
+  this->temp_report.node_name = HierNode.name+"_"+std::to_string(HierNode.n_copy);
   calculate_extension_length();
 
   printNetsInfo(); 

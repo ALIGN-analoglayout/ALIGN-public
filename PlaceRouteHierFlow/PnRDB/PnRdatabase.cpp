@@ -658,6 +658,11 @@ void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, 
   std::vector<PnRDB::Via> interVias = child.interVias;
   TransformInterviasOriginToPlaced(interVias, translate, width, height, ort);
   parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
+
+  //checkin childnode router report
+  for (int i = 0; i < child.router_report.size();++i){
+    parent.router_report.push_back(child.router_report[i]);
+  }
 }
 
 void PnRdatabase::ExtractPinsToPowerPins(PnRDB::hierNode& updatedNode) {
