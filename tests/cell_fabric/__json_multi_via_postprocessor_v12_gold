@@ -1,0 +1,42 @@
+{
+  "bbox": [
+    324,
+    632,
+    6844,
+    3880
+  ],
+  "globalRoutes": [],
+  "globalRouteGrid": [],
+  "terminals": [
+    {
+      "layer": "M12",
+      "netName": "a",
+      "rect": [
+        324,
+        1820,
+        6844,
+        2692
+      ]
+    },
+    {
+      "layer": "M13",
+      "netName": "a",
+      "rect": [
+        3000,
+        632,
+        6600,
+        3880
+      ]
+    },
+    {
+      "layer": "V12",
+      "netName": "a",
+      "rect": [
+        3472,
+        1820,
+        6128,
+        2692
+      ]
+    }
+  ]
+}
