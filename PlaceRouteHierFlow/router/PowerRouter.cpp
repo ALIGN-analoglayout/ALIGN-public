@@ -339,6 +339,15 @@ void PowerRouter::InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>
   }
 };
 
+void PowerRouter::Initial_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i) { 
+  temp_routing_net.net_name = PowerNets[i].netName; 
+};
+
+void PowerRouter::Update_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i, int j, int pathMark) {
+  temp_routing_net.pin_name.push_back(PowerNets[i].pins[j].pinName);
+  temp_routing_net.pin_access.push_back(pathMark);
+};
+
 void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   GetData(node, drc_info, Lmetal, Hmetal);
   
@@ -374,8 +383,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
+      //insert all obstruction contact
       ReturnInternalMetalContact(Set_x_contact,i); //get internal metals' contact,first LL, second UR, exclude current net
-      //what's the meaning here?
+      PnRDB::routing_net temp_routing_net;  // router report struct
+      Initial_powerrouter_report_info(temp_routing_net, i);
 
       for(unsigned int j=0;j<PowerNets[i].pins.size();j++){
 
@@ -420,6 +431,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             std::cout<<"power routing pathMark "<<pathMark<<std::endl;
+            Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
               if (pathMark) {
 
                 physical_path=a_star.ConvertPathintoPhysical(grid);
@@ -441,6 +453,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
              InsertPlistToSet_x(Set_net, add_plist);           
              InsertContact2Contact(Set_current_net_contact, Set_net_contact);
          }
+         temp_report.routed_net.push_back(temp_routing_net);
      }
 
 };
@@ -1432,5 +1445,5 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
          }
       }
      }
-
+     node.router_report.push_back(temp_report);
 };

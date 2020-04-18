@@ -382,7 +382,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     cout<<"step2.7"<<endl;
     initial_net_pair_sequence(ki,cap_pin);
     cout<<"step2.8"<<endl;
-    string outfile=final_gds+".plt";
+    string outfile=opath+final_gds+".plt";
     cout<<"step2.9"<<endl;
     Router_Cap(ki,cap_pin, dummy_flag, cap_ratio, cap_r, cap_s);
     cout<<"step3"<<endl;
