@@ -360,7 +360,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
 
   //limits: capacity unbalanced between the edges from one tile, which has little intermetal, and another tile, which has a lot of intermetal. In this case, the capacity should be keep along with the smaller capacity;
  // solution, find all set of intermetal, then adjust the capacity;
-
+  double scale_number = 1.5;
   for(int k=0;k<this->layerNo;++k) {
     std::cout<<"layer "<<k<<std::endl;
     for(int i=this->Start_index.at(k);i<=this->End_index.at(k);++i) {
@@ -387,7 +387,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
           for(std::set<RouterDB::point, RouterDB::pointYXComp>::iterator ii=itlow; ii!=itup; ++ii) {++capR;}
           if(!this->tiles_total.at(i).south.empty()) {
             std::cout<<"\t south cap -"<<capR<<std::endl;
-            this->tiles_total.at(i).south[0].capacity-=capR;
+            this->tiles_total.at(i).south[0].capacity-=capR*scale_number;
             if(this->tiles_total.at(i).south[0].capacity<0) {this->tiles_total.at(i).south[0].capacity=0;}
           }
           itlow=this->YXSet.at(mIdx).lower_bound(UL);
@@ -395,7 +395,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
           capR=0;
           for(std::set<RouterDB::point, RouterDB::pointYXComp>::iterator ii=itlow; ii!=itup; ++ii) {++capR;}
           if(!this->tiles_total.at(i).north.empty()) {
-            this->tiles_total.at(i).north[0].capacity-=capR;
+            this->tiles_total.at(i).north[0].capacity-=capR*scale_number;
             std::cout<<"\t north cap -"<<capR<<std::endl;
             if(this->tiles_total.at(i).north[0].capacity<0) {this->tiles_total.at(i).north[0].capacity=0;}
           }
@@ -408,7 +408,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
           for(std::set<RouterDB::point, RouterDB::pointXYComp>::iterator ii=itlow; ii!=itup; ++ii) {++capR;}
           if(!this->tiles_total.at(i).west.empty()) {
             std::cout<<"\t west cap -"<<capR<<std::endl;
-            this->tiles_total.at(i).west[0].capacity-=capR;
+            this->tiles_total.at(i).west[0].capacity-=capR*scale_number;
             if(this->tiles_total.at(i).west[0].capacity<0) {this->tiles_total.at(i).west[0].capacity=0;}
           }
           itlow=this->XYSet.at(mIdx).lower_bound(LR);
@@ -417,7 +417,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
           for(std::set<RouterDB::point, RouterDB::pointXYComp>::iterator ii=itlow; ii!=itup; ++ii) {++capR;}
           if(!this->tiles_total.at(i).east.empty()) {
             std::cout<<"\t east cap -"<<capR<<std::endl;
-            this->tiles_total.at(i).east[0].capacity-=capR;
+            this->tiles_total.at(i).east[0].capacity-=capR*scale_number;
             if(this->tiles_total.at(i).east[0].capacity<0) {this->tiles_total.at(i).east[0].capacity=0;}
           }
         }
@@ -429,7 +429,7 @@ void GlobalGrid::AdjustPlateEdgeCapacity() {
 void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<RouterDB::Block>& Blocks ) {
 
   //limits: via capacity is a approximate version. Maybe needs to be improved in the future.
-
+  double scale_number = 2;
   for(int k=0;k<this->layerNo-1;++k) {
     if(this->Start_index.at(k)>this->End_index.at(k)) {
       std::cout<<"GlobalGrid-Error: no tiles on layer "<<k<<std::endl;
@@ -451,7 +451,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<Router
           std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit=this->XYmap.at(k).find(tmpp);
           if(mit!=this->XYmap.at(k).end()) {
             if(!this->tiles_total.at(mit->second).up.empty()) {
-              this->tiles_total.at(mit->second).up[0].capacity-=1;
+              this->tiles_total.at(mit->second).up[0].capacity-=1*scale_number;
               if( this->tiles_total.at(mit->second).up[0].capacity<0 ) {this->tiles_total.at(mit->second).up[0].capacity=0;}
             }
           } else {
@@ -460,7 +460,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<Router
           mit=this->XYmap.at(k+1).find(tmpp);
           if(mit!=this->XYmap.at(k+1).end()) {
             if(!this->tiles_total.at(mit->second).down.empty()) {
-              this->tiles_total.at(mit->second).down[0].capacity-=1;
+              this->tiles_total.at(mit->second).down[0].capacity-=1*scale_number;
               if( this->tiles_total.at(mit->second).down[0].capacity<0 ) {this->tiles_total.at(mit->second).down[0].capacity=0;}
             }
           } else {
@@ -473,6 +473,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromInternalMetal( std::vector<Router
 }
 
 void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::Block>& Blocks, std::vector<RouterDB::Net>& Nets, int excNet  ) {
+  double scale_number = 2;
   for(int k=0;k<this->layerNo-1;++k) {
     if(this->Start_index.at(k)>this->End_index.at(k)) {
       std::cout<<"GlobalGrid-Error: no tiles on layer "<<k<<std::endl;
@@ -498,7 +499,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::B
               std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit=this->XYmap.at(k).find(tmpp);
               if(mit!=this->XYmap.at(k).end()) {
                 if(!this->tiles_total.at(mit->second).up.empty()) {
-                  this->tiles_total.at(mit->second).up[0].capacity-=1;
+                  this->tiles_total.at(mit->second).up[0].capacity-=1*scale_number;
                   if( this->tiles_total.at(mit->second).up[0].capacity<0 ) {this->tiles_total.at(mit->second).up[0].capacity=0;}
                 }
               } else {
@@ -507,7 +508,7 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::B
               mit=this->XYmap.at(k+1).find(tmpp);
               if(mit!=this->XYmap.at(k+1).end()) {
                 if(!this->tiles_total.at(mit->second).down.empty()) {
-                  this->tiles_total.at(mit->second).down[0].capacity-=1;
+                  this->tiles_total.at(mit->second).down[0].capacity-=1*scale_number;
                   if( this->tiles_total.at(mit->second).down[0].capacity<0 ) {this->tiles_total.at(mit->second).down[0].capacity=0;}
                 }
               } else {
