@@ -229,6 +229,14 @@ void Grid::CreateGridData(){
 
      
       }
+	
+ for(int i =0;i<Source.size();i++){
+     write_out_matlab_file(Source[i], Source[i]);
+    }
+
+ for(int i =0;i<Dest.size();i++){
+     write_out_matlab_file(Dest[i], Dest[i]);
+    }
 
   matlabfile.close();
 
