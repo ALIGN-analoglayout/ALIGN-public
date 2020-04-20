@@ -767,6 +767,12 @@ void GcellDetailRouter::create_detailrouter(){
       A_star a_star(grid, Nets[i].shielding);
       std::cout<<"Net name "<<Nets[i].netName<<std::endl;
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+      /*
+      if(pathMark==0){
+        grid.CreateGridData();
+        assert(0);
+        }
+      */
       std::vector<std::vector<RouterDB::Metal>> physical_path;
       Update_rouer_report_info(temp_routing_net, i, j, pathMark);
       std::cout<<"pathMark "<<pathMark<<std::endl;

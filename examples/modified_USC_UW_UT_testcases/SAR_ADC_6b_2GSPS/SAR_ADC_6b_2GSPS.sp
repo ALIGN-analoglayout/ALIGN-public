@@ -212,11 +212,11 @@ subckt SUB2_COMP_DynamicAMP AN AP CK ON OP RS VDD VSS
     M8 (OP RS VSS VSS) nmos_slvt w=81n l=14n m=SW_RS
     I62 (OP AP OP VDD) pmos_slvt w=81n l=14n m=SW_Pch
     I61 (ON AN ON VDD) pmos_slvt w=81n l=14n m=SW_Pch
-    M0 (net016 CK VDD VDD) pmos_slvt w=81n l=14n m=SW_Pch*4
-    I59 (ON AP net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch*2
+    M0 (net016 CK VDD VDD) pmos_slvt w=81n l=14n m=SW_Pch
+    I59 (ON AP net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch
     I63 (VDD ON VDD VDD) pmos_slvt w=81n l=14n m=SW_LOAD
     I64 (VDD OP VDD VDD) pmos_slvt w=81n l=14n m=SW_LOAD
-    I60 (OP AN net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch*2
+    I60 (OP AN net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch
 ends SUB2_COMP_DynamicAMP
 // End of subcircuit definition.
 
@@ -781,21 +781,3 @@ I6\<1\> (net09\<4\> D\<1\>) not_gate vlogic_high=1 vlogic_low=0 vtrans=0.4 \
         tdel=0 trise=10p tfall=10p
 I6\<0\> (net09\<5\> D\<0\>) not_gate vlogic_high=1 vlogic_low=0 vtrans=0.4 \
         tdel=0 trise=10p tfall=10p
-include "./_graphical_stimuli.scs"
-simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
-    tnom=27 nthreads=32 scalem=1.0 scale=1.0 gmin=1e-12 rforce=1 \
-    maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 \
-    sensfile="../psf/sens.output" checklimitdest=psf 
-tran tran stop=600n errpreset=conservative write="spectre.ic" \
-    writefinal="spectre.fc" annotate=status maxiters=5 
-finalTimeOP info what=oppoint where=rawfile
-modelParameter info what=models where=rawfile
-element info what=inst where=rawfile
-outputParameter info what=output where=rawfile
-designParamVals info what=parameters where=rawfile
-primitives info what=primitives where=rawfile
-subckts info what=subckts where=rawfile
-save I0:12 I0:11 I0.RS\<1\> I0.LAT\<1\> I0.RS\<2\> I0.LAT\<2\> VDD I0.OP \
-    I0.ON D\<0\> D\<1\> D\<2\> D\<3\> D\<4\> D\<5\> 
-saveOptions options save=allpub currents=selected
-ahdl_include "/home/Cadence/ICADV123/tools/dfII/samples/artist/ahdlLib/not_gate/veriloga/veriloga.va"
