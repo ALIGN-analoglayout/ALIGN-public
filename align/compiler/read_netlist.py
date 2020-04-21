@@ -236,6 +236,10 @@ class SpiceParser:
         logger.debug(f'started reading subckt: {line.strip()}')
         subckt_nodes = line.strip().split()
         subckt_name = subckt_nodes[1]
+        
+        #added to avoid assertion for string in PnR
+        if subckt_name[0].isdigit():
+            subckt_name = "align_"+subckt_name
         line = self.get_next_line(fp_l, 1)
         nodes, params = self._parse_subckt(line, fp_l)
 
@@ -334,6 +338,24 @@ class SpiceParser:
                          subckt_inst="",
                          connected_nets="",
                          inherited_param={}):
+        """
+        Transform netlist to a flat graph
+
+        Parameters
+        ----------
+        subckt_name : TYPE. string
+            DESCRIPTION. name of subckt. First call should be from top level
+        connected_nets : TYPE, list of nets connected to ports
+            DESCRIPTION. The default is "".
+        inherited_param : TYPE, parameters passed to subckt
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        flat_design : TYPE, networkx graph
+            DESCRIPTION. flat graph of netlist
+
+        """
         flatdesign = []
         ## FIX for UT Austin circuit
         if not inherited_param:
@@ -379,6 +401,8 @@ class SpiceParser:
                     "values": values,
                     "edge_weight": node["edge_weight"]
                 }
+                if 'mos' in node["inst_type"]:
+                    flat_node["body_pin"]=node["body_pin"]
                 flatdesign.append(flat_node)
                 logger.debug(f'Updated Node name: {flat_node["inst"]}, type: {flat_node["inst_type"]}')
 
@@ -389,6 +413,24 @@ class SpiceParser:
                       subckt_name,
                       connected_nets="",
                       inherited_param=None):
+        """
+        Transform netlist to a hierarchical graph
+
+        Parameters
+        ----------
+        subckt_name : TYPE. string
+            DESCRIPTION. name of subckt. First call should be from top level
+        connected_nets : TYPE, list of nets connected to ports
+            DESCRIPTION. The default is "".
+        inherited_param : TYPE, parameters passed to subckt
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        hier_design : TYPE, networkx graph
+            DESCRIPTION. hierarchical graph of netlist
+
+        """
         logger.debug (f"subcktparameters: {inherited_param}")
         hier_design = []
         ## FIX for UT Austin circuit
@@ -416,6 +458,8 @@ class SpiceParser:
                     "edge_weight": node["edge_weight"],
                     "hier_nodes": self._hier_circuit(node["inst_type"], self.subckts[subckt_name]["ports"], values)
                 }
+                if 'mos' in node["inst_type"]:
+                    hier_node["body_pin"]=node["body_pin"]
                 hier_design.append(hier_node)
             else:
                 hier_design.append(node)
@@ -437,7 +481,7 @@ class SpiceParser:
                 logger.debug(f"Creating sub-graph for node: {node}")
             else:
                 subgraph = None
-                connection=None
+                connection = None
             logger.debug(f"Reading node: {node}")
             circuit_graph.add_node(node["inst"],
                                    inst_type=node["inst_type"],
@@ -447,10 +491,11 @@ class SpiceParser:
                                    values=node['values'],
                                    sub_graph=subgraph,
                                    connection=connection)
+            if 'mos' in node["inst_type"]:
+                circuit_graph.nodes[node["inst"]]["body_pin"]=node["body_pin"]
             ##### ASSIGNING EDGE WEIGHTS ######
             #wt_index = 0
             for wt_index, net in enumerate(node["ports"]):
-                #if net not in ["0", "vdd!", "gnd!"]:
                 if "edge_weight" in node.keys():
                     edge_wt = node["edge_weight"][wt_index]
                     logger.debug(f"Using existing weights {edge_wt} for net: {net}")
@@ -460,13 +505,9 @@ class SpiceParser:
                 if net not in circuit_graph:
                     logger.debug(f"Adding net node: {net}")
                     if net in inout_ports:
-                        circuit_graph.add_node(net,
-                                               inst_type="net",
-                                               net_type="external")
+                        circuit_graph.add_node(net, inst_type="net", net_type="external")
                     else:
-                        circuit_graph.add_node(net,
-                                               inst_type="net",
-                                               net_type="internal")
+                        circuit_graph.add_node(net, inst_type="net", net_type="internal")
                 elif circuit_graph.has_edge(node["inst"], net):
                     node_name = node["inst"]
                     edge_wt = edge_wt + circuit_graph.get_edge_data(

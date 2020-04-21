@@ -382,7 +382,7 @@ Placer_Router_Cap::Placer_Router_Cap_function (vector<int> & ki, vector<pair<str
     cout<<"step2.7"<<endl;
     initial_net_pair_sequence(ki,cap_pin);
     cout<<"step2.8"<<endl;
-    string outfile=final_gds+".plt";
+    string outfile=opath+final_gds+".plt";
     cout<<"step2.9"<<endl;
     Router_Cap(ki,cap_pin, dummy_flag, cap_ratio, cap_r, cap_s);
     cout<<"step3"<<endl;
@@ -648,6 +648,17 @@ Placer_Router_Cap::cal_offset(const PnRDB::Drc_info &drc_info, int H_metal, int 
     auto wp = PnRDB::point (vmv.width, vmh.width) / 2;
     auto mp = minmax.LL;
     offset = gp - wp - covPnt - mp;
+    std::cout<<"offset "<<offset.x<<" "<<offset.y<<std::endl;
+    if(offset.x%gp.x!=0 or offset.y%gp.y!=0){//why offset is not correct, might have some bug here? Yaguang - 4/12/2020
+      std::cout<<gp.x<<" "<<gp.y<<std::endl;
+      std::cout<<"offset.x%gp.x "<<offset.x%gp.x<<" offset.y%gp.y "<<offset.y%gp.y<<std::endl;
+      offset.x = ceil((double) offset.x/gp.x)*gp.x;
+      offset.y = ceil((double) offset.y/gp.y)*gp.y;
+      std::cout<<"offset "<<offset.x<<" "<<offset.y<<std::endl;
+      std::cout<<"offset.x%gp.x "<<offset.x%gp.x<<" offset.y%gp.y "<<offset.y%gp.y<<std::endl;
+      //assert(0);
+    }
+
 }
 
 void
@@ -747,7 +758,7 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 
     for(unsigned int i=0;i<ki.size()+1;i++){
 	if(i<ki.size()){
-	    temp_net.name = cap_pin[i].second;
+	    temp_net.name = cap_pin[i].first;
 	}else{
 	    temp_net.name = "dummy_gnd_PLUS";
 	}
@@ -963,7 +974,7 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
     Nets_neg = Nets_pos;
     for(unsigned int i=0;i<Nets_pos.size();i++){
 	if(i!=Nets_pos.size()-1){
-	    Nets_neg[i].name = cap_pin[i].first;
+	    Nets_neg[i].name = cap_pin[i].second;
 	}else{
 	    Nets_neg[i].name = "dummy_gnd_MINUS";
 	}
@@ -1336,10 +1347,20 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 	}
 	//connect to each trail
 	if(first_lock==1 and end_close==1){
+
+            if(drc_info.Metalmap.find(H_metal)==drc_info.Metalmap.end()){
+               std::cout<<"H_metal error"<<std::endl;
+               assert(0);
+            }
+            auto metal_index = drc_info.Metalmap.at(H_metal);
+            int minL = drc_info.Metal_info.at(metal_index).minL;
+            if(end_coordP.x - first_coordP.x < minL){
+               end_coordP.x = first_coordP.x + minL;
+            }
+
 	    n.start_connection_pos.push_back (first_coordP);
 	    n.end_connection_pos.push_back (end_coordP);
 	    n.Is_pin.push_back(1);
-
 	    n.metal.push_back(H_metal);
 	}    
 
