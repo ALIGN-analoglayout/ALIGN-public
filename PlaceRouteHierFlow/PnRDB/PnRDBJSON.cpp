@@ -344,6 +344,7 @@ namespace PnRDB {
     j["orient"] = json(v.orient);
     j["placedBox"] = json(v.placedBox);
     j["placedCenter"] = json(v.placedCenter);
+    //j["PowerNets"] = json(v.PowerNets);
     j["blockPins"] = json(v.blockPins);
     j["interMetals"] = json(v.interMetals);
     j["interVias"] = json(v.interVias);
@@ -364,6 +365,7 @@ namespace PnRDB {
     j["orient"].get_to( v.orient);
     j["placedBox"].get_to( v.placedBox);
     j["placedCenter"].get_to( v.placedCenter);
+    //j["PowerNets"].get_to( v.PowerNets);
     j["blockPins"].get_to( v.blockPins);
     j["interMetals"].get_to( v.interMetals);
     j["interVias"].get_to( v.interVias);
@@ -437,6 +439,8 @@ namespace PnRDB {
     j["Blocks"] = json(v.Blocks);
     j["Nets"] = json(v.Nets);
     j["Terminals"] = json(v.Terminals);
+    j["LL"] = json(v.LL);
+    j["UR"] = json(v.UR);
   }
 
   void from_json(const json& j, layoutAS& v) {
@@ -446,6 +450,8 @@ namespace PnRDB {
     j["Blocks"].get_to( v.Blocks);
     j["Nets"].get_to( v.Nets);
     j["Terminals"].get_to( v.Terminals);
+    j["LL"].get_to( v.LL);
+    j["UR"].get_to( v.UR);
   }
 
   void to_json(json& j, const SymmNet& v) {
@@ -622,6 +628,13 @@ namespace PnRDB {
     j["isIntelGcellGlobalRouter"] = v.isIntelGcellGlobalRouter;
     j["width"] = v.width;
     j["height"] = v.height;
+
+    j["LL"] = json(v.LL);
+    j["UR"] = json(v.UR);
+    j["abs_orient"] = json(v.abs_orient);
+    j["n_copy"] = v.n_copy;
+    j["numPlacement"] = v.numPlacement;
+
     j["name"] = v.name;
     j["gdsFile"] = v.gdsFile;
     j["parent"] = json(v.parent);
@@ -660,6 +673,13 @@ namespace PnRDB {
     j["isIntelGcellGlobalRouter"].get_to( v.isIntelGcellGlobalRouter);
     j["width"].get_to( v.width);
     j["height"].get_to( v.height);
+
+    j["LL"].get_to(v.LL);
+    j["UR"].get_to(v.UR);
+    j["abs_orient"].get_to(v.abs_orient);
+    j["n_copy"].get_to( v.n_copy);
+    j["numPlacement"].get_to( v.numPlacement);
+
     j["name"].get_to( v.name);
     j["gdsFile"].get_to( v.gdsFile);
     j["parent"].get_to( v.parent);

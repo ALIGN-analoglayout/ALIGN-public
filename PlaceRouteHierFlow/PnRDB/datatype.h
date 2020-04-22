@@ -248,6 +248,25 @@ struct Via{
   contact UpperMetalRect, LowerMetalRect, ViaRect;
 };
 
+struct PowerNet {
+  string name="";
+  bool power = 1; // 1 is vdd, 0 is gnd
+  //bool shielding=false; // shielding constraint
+  //bool sink2Terminal=false; // if connected to terminal
+  //int degree=0;
+  //int symCounterpart=-1; // symmetry const
+  //int iter2SNetLsit=-1; // iterator to the list of symmetry nets
+  //vector<connectNode> connected; // list of connected components
+  vector<pin> Pins; //power pins
+  vector<connectNode> connected;
+  vector<connectNode> dummy_connected;
+  //string priority=""; // critical net constraint
+  //vector<contact> segments; // segment inform needs to be updated after routing
+  //vector<contact> interVias;////TEMPORARY!!!+Jinhyun
+  vector<Metal> path_metal;
+  vector<Via> path_via;
+}; // structure of nets
+
 struct block {
   // Basic information
   string name="";
@@ -294,25 +313,6 @@ struct PowerGrid{
   vector<Metal> metals;
   vector<Via> vias;
 };
-
-struct PowerNet {
-  string name="";
-  bool power = 1; // 1 is vdd, 0 is gnd
-  //bool shielding=false; // shielding constraint
-  //bool sink2Terminal=false; // if connected to terminal
-  //int degree=0;
-  //int symCounterpart=-1; // symmetry const
-  //int iter2SNetLsit=-1; // iterator to the list of symmetry nets
-  //vector<connectNode> connected; // list of connected components
-  vector<pin> Pins; //power pins
-  vector<connectNode> connected;
-  vector<connectNode> dummy_connected;
-  //string priority=""; // critical net constraint
-  //vector<contact> segments; // segment inform needs to be updated after routing
-  //vector<contact> interVias;////TEMPORARY!!!+Jinhyun
-  vector<Metal> path_metal;
-  vector<Via> path_via;
-}; // structure of nets
 
 struct layoutAS {
   int width=0;
