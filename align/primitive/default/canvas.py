@@ -108,19 +108,16 @@ class DefaultCanvas(Canvas):
             v_ext = self._get_via_ext(info['Stack'][0], layer)
             h_ext = self._get_via_ext(info['Stack'][1], layer)
         setattr(self, layer.lower(), self.addGen(
-            Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg, h_ext=h_ext, v_ext=v_ext)
+            Via(layer.lower(), layer,
+                h_clg=h_clg, v_clg=v_clg,
+                WidthX=info['WidthX'], WidthY=info['WidthY'],
+                h_ext=h_ext, v_ext=v_ext)
         ))
 
         if 'ViaCut' in info:
-            postprocessor = functools.partial(
+            self.postprocessor.register(layer, functools.partial(
                 get_generator(info['ViaCut']['Gen'], self.pdk.layerfile.parent),
-                **{k: v for k, v in info['ViaCut'].items() if k != 'Gen'})
-        else:
-            postprocessor = functools.partial(
-                single_centered_via,
-                WidthX=info['WidthX'], WidthY=info['WidthY'])
-
-        self.postprocessor.register(layer, postprocessor)
+                **{k: v for k, v in info['ViaCut'].items() if k != 'Gen'}))
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None

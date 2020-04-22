@@ -31,8 +31,13 @@ class ResGenerator(DefaultCanvas):
                                      clg=ColoredCenterLineGrid( colors=['c1','c2'], pitch=self.pdk['Cap']['m3Pitch'], width=self.pdk['Cap']['m3Width']),
                                      spg=EnclosureGrid(pitch=self.pdk['M2']['Pitch'], stoppoint=self.pdk['V2']['VencA_H'] + self.pdk['Cap']['m2Width']//2, check=True)))
 
-        self.v1res = self.addGen( Via( 'v1res', 'V1', h_clg=self.m2res.clg, v_clg=self.m1res.clg))
-        self.v2res = self.addGen( Via( 'v2res', 'V2', h_clg=self.m2res.clg, v_clg=self.m3res.clg))
+        self.v1res = self.addGen( Via( 'v1res', 'V1',
+                                        h_clg=self.m2res.clg, v_clg=self.m1res.clg,
+                                        WidthX=self.v1.WidthX, WidthY=self.v1.WidthY,
+                                        h_ext=self.v1.h_ext, v_ext=self.v1.v_ext))
+        self.v2res = self.addGen( Via( 'v2res', 'V2', h_clg=self.m2res.clg, v_clg=self.m3res.clg,
+                                        WidthX=self.v2.WidthX, WidthY=self.v2.WidthY,
+                                        h_ext=self.v2.h_ext, v_ext=self.v2.v_ext))
 
         self.Rboundary = self.addGen( Region( 'Rboundary', 'Rboundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
 
@@ -88,9 +93,6 @@ class ResGenerator(DefaultCanvas):
         m2n = Wire( self.m2res2.nm, self.m2res2.layer, self.m2res2.direction,
                     clg=self.m2res2.clg.copyShift( self.m2res.clg.value( grid_cell_y_pitch*y)[0]),
                     spg=self.m2res2.spg)
-
-        #v1n = Via( 'v1', 'via1', h_clg=m2n.clg, v_clg=self.m1res.clg)
-        #v2n = Via( 'v2', 'via2', h_clg=m2n.clg, v_clg=self.m3res.clg)
 
         grid_x0 = x*grid_cell_x_pitch
         grid_x1 = grid_x0 + last_x_track
