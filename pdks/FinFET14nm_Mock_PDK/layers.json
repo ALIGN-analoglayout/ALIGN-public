@@ -427,7 +427,7 @@
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"Array", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,1]},
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,1]},
 "R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
@@ -461,7 +461,7 @@
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 472,
-"ViaCut":{"Gen":"Array", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[2,3]},
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "Number":[3,2]},
 "R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
 },
 
@@ -495,7 +495,7 @@
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"Array", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
 "R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
@@ -529,7 +529,7 @@
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"ViaCut":{"Gen":"Array", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "Number":[2,2]},
 "R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
 },
 
