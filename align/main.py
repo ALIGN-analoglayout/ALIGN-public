@@ -68,7 +68,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
         # Copy over necessary collateral & run PNR tool
         variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract)
         results.append( (netlist, variants))
-        assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/compiler.log for last error."
+        assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
