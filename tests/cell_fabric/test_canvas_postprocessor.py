@@ -26,7 +26,7 @@ def test_multi_via_postprocessor_v12(setup):
     fn = '__json_multi_via_postprocessor_v12'
 
     with open( mydir / (fn + "_cand"), "wt") as fp:
-        data = c.writeJSON(fp)
+        data = c.writeJSON(fp, postprocess=True)
 
     with open( mydir / (fn + "_gold"), "rt") as fp:
         data2 = json.load( fp)
