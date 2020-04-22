@@ -1,7 +1,4 @@
 import pytest
-import itertools
-import math
-import filecmp
 import pathlib
 import json
 
