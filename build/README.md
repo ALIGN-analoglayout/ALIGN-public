@@ -1,20 +1,18 @@
-This directory contains a Docker Compose specification that runs the
-end-to-end ALIGN flow using a container-based flow, where individual
-engines have isolated software environments. In addition to Docker,
-you will need to install docker-compose.
+This directory contains setup specifications for a Native flow and a container-based flow that runs the
+end-to-end ALIGN flow using Makefile. For container-based flow in addition to Docker,
+you will need to install docker-compose which is used to have  individual
+engines for isolated software environments.
 
 Software components that are in container images can be thought of as
 'installed' and we are using Make to run the flow through the
 components.
 
-## Container-based Flow
+## Makefile usage
 
-Using the Makefile, you can invoke the container-based flow using
-either a Docker volume for data input/output, or using a directory
-(which Docker will mount in each container).  You can also use the
-Makefile to either run the ALIGN flow through a native Linux build of
+You can use the Makefile to either run the ALIGN flow through a native Linux build of
 all the components in the current environment (assuming you have all
-software prerequisites installed).  
+software prerequisites installed) or you can invoke the container-based flow using
+either a Docker volume for data input/output (you can mount a local directory into Docker container).
 
 You will need to set two environment variables to run the Makefile in
 any environment. First is the ALIGN\_HOME variable which should point
@@ -23,18 +21,20 @@ the top directory of the ALIGN analog system.
 		% export ALIGN_HOME=<top of ALIGN source area>
 
 Second is a working directory ALIGN\_WORK\_DIR, which can either be
-the full path to a working directory or a docker volume name.  
+the full path to a working directory or a docker volume name.
+
+		% export ALIGN_WORK_DIR=<your Linux working area>
+
 
 ## Native Environment Flow
 
-The second option is to invoke a native Linux environment flow without
-using containers, where the same Makefile can be used to issue native
-Linux build commands.  The downside to a native environment is that
+To invoke a native Linux environment flow Makefile can be used to issue native
+Linux build commands.  While using a native environment 
 all software requirements must be built into the native environment,
 including handling any version conflicts, and when a new component is
 needed, it and its environment need to be integrated before any
-testing can start. The Makefile expects the Python general/
-environment to be in the working directory.
+testing can start. The Makefile expects the Python environment in the directory "/opt/venv"
+ which can be modified to python virtual environment path.
 
 Here are the sequence of commands needed to invoke make in a native
 environment.
@@ -45,11 +45,11 @@ environment.
 		% make DESIGN=<design>
 
 ## Docker based flow
-To setup for using a Docker volume in a container-based flow:
+To setup using a Docker volume in a container-based flow:
 
 		% docker volume create <volumeName>
 		% export ALIGN_WORK_DIR=<volumeName>
-To setup for using a working directory in a container-based flow (In WSL,
+To setup using a working directory in a container-based flow (In WSL,
 this directory must be the full path to a Windows shared directory):
 
 

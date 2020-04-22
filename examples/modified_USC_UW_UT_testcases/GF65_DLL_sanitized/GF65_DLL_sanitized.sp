@@ -189,21 +189,3 @@ ends GF65_DLL_sanitized
 	V28 ( VSS 0 ) vsource dc=0 type=dc  
 	V26 ( VDD 0 ) vsource dc=VDD type=dc  
 	I8 ( net07 0 ) isource dc=20u type=dc  
-*ic CK\<1\>=0 CK\<2\>=0 CK\<3\>=0 CK\<4\>=0 CK\<5\>=0 CK\<6\>=0 CK\<7\>=0 CK\<8\>=0 V_CTRLn=0 V_CTRLp=0 
-simulatorOptions options reltol=1e-3 vabstol=1e-6 iabstol=1e-12 temp=27 \
-    tnom=27 multithread=on nthreads=4 scalem=1.0 scale=1.0 gmin=1e-12 \
-    rforce=1 maxnotes=5 maxwarns=5 digits=5 cols=80 pivrel=1e-3 \
-    sensfile="../psf/sens.output" checklimitdest=psf 
-tran tran stop=0.1u errpreset=moderate write="spectre.ic" \
-    writefinal="spectre.fc" annotate=status maxiters=5 
-finalTimeOP info what=oppoint where=rawfile
-dcOp dc write="spectre.dc" maxiters=150 maxsteps=10000 annotate=status
-dcOpInfo info what=oppoint where=rawfile
-modelParameter info what=models where=rawfile
-element info what=inst where=rawfile
-outputParameter info what=output where=rawfile
-designParamVals info what=parameters where=rawfile
-primitives info what=primitives where=rawfile
-subckts info what=subckts where=rawfile
-save I6:44 
-saveOptions options save=allpub

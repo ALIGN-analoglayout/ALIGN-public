@@ -16,15 +16,15 @@ M0 (DA DA S B) PMOS w=w l=90n
 M1 (DB DA S B) PMOS w=w l=90n
 .ends SCM_PMOS
 
-.subckt CMFB_NMOS DA DB GB S
-M0 (DA DA S B) NMOS w=w l=90n
-M1 (DB GB S B) NMOS w=w l=90n
-.ends CMFB_NMOS
-
-.subckt CMFB_PMOS DA DB GB S
-M0 (DA DA S B) PMOS w=w l=90n
-M1 (DB GB S B) PMOS w=w l=90n
-.ends CMFB_PMOS
+**.subckt CMFB_NMOS DA DB GB S
+**M0 (DA DA S B) NMOS w=w l=90n
+**M1 (DB GB S B) NMOS w=w l=90n
+**.ends CMFB_NMOS
+**
+**.subckt CMFB_PMOS DA DB GB S
+**M0 (DA DA S B) PMOS w=w l=90n
+**M1 (DB GB S B) PMOS w=w l=90n
+**.ends CMFB_PMOS
 
 .subckt CASCODED_CMC_PMOS DA GA DB S
 M0 DA GA SA B PMOS w=27e-9 l=20e-9 nfin=120
@@ -70,6 +70,13 @@ M0 (DA DB SA B) NMOS w=w l=90n
 M1 (DB DA SB B) NMOS w=w l=90n
 .ends CCP_NMOS
 
+**.subckt CASCODED_CCP_NMOS DA DB SA SB S BN BP
+**M0 (DA DB SA BN) NMOS w=w l=90n
+**M1 (DB DA SB BN) NMOS w=w l=90n
+**M2 (DA DB S BP) PMOS w=w l=90n
+**M3 (DB DA S BP) PMOS w=w l=90n
+**.ends CASCODED_CCP_NMOS
+
 .subckt CCP_PMOS DA DB SA SB
 M0 (DA DB SA B) PMOS w=w l=90n
 M1 (DB DA SB B) PMOS w=w l=90n
@@ -95,6 +102,22 @@ M0 (DA DA SA B) PMOS w=w l=90n
 M1 (DB DA SB B) PMOS w=w l=90n
 .ends LS_PMOS
 
+**.subckt LS_S_NMOS DA DB S
+***UT austin VCM5
+**M0 (DA DA S B) NMOS w=w l=90n
+**M1 (DB DA S B) NMOS w=w l=90n
+**.ends LS_S_NMOS
+**
+**.subckt LS_S_PMOS DA DB S
+***UT austin VCM5
+**M0 (DA DA S B) PMOS w=w l=90n
+**M1 (DB DA S B) PMOS w=w l=90n
+**.ends LS_S_PMOS
+
+***gate connected 
+**
+**transmission gate
+**ccp `
 .subckt CMC_NMOS DA DB SA SB G
 M0 (DA G SA B) NMOS w=w l=90n
 M1 (DB G SB B) NMOS w=w l=90n

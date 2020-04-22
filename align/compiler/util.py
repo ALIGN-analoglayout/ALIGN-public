@@ -5,7 +5,6 @@ Created on Tue Dec 11 11:34:45 2018
 @author: kunal
 """
 import os
-import pathlib
 import networkx as nx
 import matplotlib.pyplot as plt
 from networkx.algorithms import bipartite
@@ -14,6 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 #library_graphs = glob.glob("L1*.yaml")
+    
 def max_connectivity(G):
     conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]

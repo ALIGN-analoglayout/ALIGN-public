@@ -107,12 +107,20 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         return {}
 
     def find_variant_names( nm):
-        p = re.compile( r'^(.*)_(\d+)\.db\.json$')
         variant_names = []
+        p = re.compile( r'^(.*)_(\d+)\.db\.json$')
+        p2 = re.compile( r'^(.*)_(\d+)_(\d+)\.db\.json$')
         for file_ in results_dir.iterdir():
+            m = p2.match( file_.name)
+            if m:
+                if m.groups()[0] == nm:
+                    variant_names.append( f"{nm}_{m.groups()[1]}_{m.groups()[2]}")
+                continue
             m = p.match( file_.name)
-            if m and m.groups()[0] == nm:
-                variant_names.append( f"{nm}_{m.groups()[1]}")
+            if m:
+                if m.groups()[0] == nm:
+                    variant_names.append( f"{nm}_{m.groups()[1]}")
+                continue
         return variant_names
 
     # Copy generated (Cap) jsons from results_dir to working_dir
