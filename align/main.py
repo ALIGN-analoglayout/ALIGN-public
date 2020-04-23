@@ -9,7 +9,7 @@ from .utils.gds2png import generate_png
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=False):
 
     if log_level:
         logging.getLogger().setLevel(logging.getLevelName(log_level))
@@ -66,13 +66,18 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             logger.debug(f"Generating primitive: {block_name}")
             generate_primitive(block_name, **block_args, pdkdir=pdk_dir, outputdir=primitive_dir)
         # Copy over necessary collateral & run PNR tool
-        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract)
+        variants = generate_pnr(topology_dir, primitive_dir, pdk_dir, pnr_dir, subckt, nvariants, effort, check, extract, gds_json=python_gds_json)
         results.append( (netlist, variants))
         assert len(variants) >= 1, f"No layouts were generated for {netlist}. Cannot proceed further. See LOG/align.log for last error."
         # Generate necessary output collateral into current directory
         for variant, filemap in variants.items():
             convert_GDSjson_GDS(filemap['gdsjson'], working_dir / f'{variant}.gds')
             print("Use KLayout to visualize the generated GDS:",working_dir / f'{variant}.gds')
+            if 'python_gds_json' in filemap:
+                convert_GDSjson_GDS(filemap['python_gds_json'], working_dir / f'{variant}.python.gds')                
+                print("Use KLayout to visualize the python generated GDS:",working_dir / f'{variant}.python.gds')
+
+
             (working_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
             if check:
                 if filemap['errors'] > 0:

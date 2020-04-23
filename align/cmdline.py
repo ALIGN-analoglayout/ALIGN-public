@@ -87,6 +87,9 @@ class CmdlineParser():
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s ' + __version__)
+        parser.add_argument('--python_gds_json',
+                            action='store_true',
+                            help="Write out GDS after python postprocessing")
 
         self.parser = parser
 

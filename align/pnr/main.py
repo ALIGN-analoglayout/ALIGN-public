@@ -8,10 +8,11 @@ import re
 
 from .db import hierNode
 from .checkers import gen_viewer_json
+from ..cell_fabric import gen_gds_json
 
 logger = logging.getLogger(__name__)
 
-def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True ):
+def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
     ret = {}
     with open(dbfile,"rt") as fp:
@@ -25,9 +26,9 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         ncpy = int(m.groups()[1])
         assert ncpy == hN.n_copy, f"n_copy {hN.n_copy} should be same as in the variant name {variant} {ncpy}"
 
-    res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract), extract=extract, input_dir=input_dir, toplevel=toplevel)
+    res = gen_viewer_json( hN, pdkdir=pdk_dir, draw_grid=True, json_dir=str(primitive_dir), checkOnly=(check or extract or gds_json), extract=extract, input_dir=input_dir, toplevel=toplevel)
 
-    if check or extract:
+    if check or extract or gds_json:
         cnv, d = res
     else:
         d = res
@@ -50,9 +51,15 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         with open(ret['cir'], 'wt') as fp:
             cnv.pex.writePex(fp)
 
+    if gds_json:
+        ret['python_gds_json'] = output_dir / f'{variant}.python.gds.json'
+        with open( ret['json'], 'rt') as ifp:
+            with open( ret['python_gds_json'], 'wt') as ofp:
+                gen_gds_json.translate( hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+
     return ret
 
-def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, check=False, extract=False):
+def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvariants=1, effort=0, check=False, extract=False, gds_json=False):
 
     # Check to make sure pnr_compiler is available to begin with
     assert 'ALIGN_HOME' in os.environ, "ALIGN_HOME not in environment"
@@ -160,6 +167,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                                 output_dir=working_dir,
                                 check=check,
                                 extract=extract,
+                                gds_json=gds_json,
                                 toplevel=False)
 
     variants = collections.defaultdict(collections.defaultdict)
@@ -182,6 +190,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
                                 output_dir=working_dir,
                                 check=check,
                                 extract=extract,
+                                gds_json=gds_json,
                                 toplevel=True))
 
     return variants
