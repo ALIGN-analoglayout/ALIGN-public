@@ -33,6 +33,11 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
     else:
         d = res
 
+    if gds_json and toplevel:
+        # Hack in Outline layer
+        # Should be part of post processor
+        d['terminals'].append( { "layer": "Outline", "netName": None, "rect": d['bbox']})
+
     ret['json'] = output_dir / f'{variant}.json'
     with open( ret['json'], 'wt') as fp:
         json.dump( d, fp=fp, indent=2)
