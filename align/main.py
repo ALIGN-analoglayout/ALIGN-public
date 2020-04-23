@@ -9,7 +9,7 @@ from .utils.gds2png import generate_png
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=True):
 
     if log_level:
         logging.getLogger().setLevel(logging.getLevelName(log_level))
