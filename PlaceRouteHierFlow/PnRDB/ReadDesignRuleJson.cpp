@@ -112,7 +112,7 @@ void PnRdatabase::ReadPDKJSON(std::string drfile) {
         for(json::iterator lit = layerAry.begin(); lit != layerAry.end(); ++lit){
           json layer = *lit;
           std::string lname=layer["Layer"];
-          if(lname.compare("Boundary")==0){//
+          if(lname.compare("Outline")==0){//
              PnRDB::Boundary temp_boundary;
              temp_boundary.layerNo = layer["GdsLayerNo"];
              temp_boundary.gds_datatype.Draw=layer["GdsDatatype"]["Draw"];
