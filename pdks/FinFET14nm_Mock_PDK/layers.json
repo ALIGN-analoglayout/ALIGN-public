@@ -630,6 +630,12 @@
 "GdsLayerNo": 103,
 "GdsDatatype": {"Draw":0}
 },
+    
+{
+"Layer": "Outline",
+"GdsLayerNo": 104,
+"GdsDatatype": {"Draw":0}
+},    
 
 {
 "Layer": "Cap",
