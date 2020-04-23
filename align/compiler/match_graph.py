@@ -189,12 +189,12 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
                     else:
                         logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-                elif sub_block_name=='INV_LVT' and POWER is not None:
-                    if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
-                        map_list.append(Gsub)
+                # elif sub_block_name=='INV_LVT' and POWER is not None:
+                #     if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
+                #         map_list.append(Gsub)
                         
-                    else:
-                        logger.debug('skipped inverters')                   
+                #     else:
+                #         logger.debug('skipped inverters')                   
                 else:
                     map_list.append(Gsub)
                     logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")

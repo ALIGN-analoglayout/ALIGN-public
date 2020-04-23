@@ -4,7 +4,7 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-from math import sqrt, ceil
+from math import sqrt, ceil,floor
 
 from .util import convert_to_unit
 
@@ -256,7 +256,7 @@ def generate_lef(name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         block_name = name + '_' + size.replace('.','p')
-        res_unit_size = 300
+        res_unit_size = 600
         try:
             #size = float(size)
             height = ceil(sqrt(float(size) / res_unit_size))
@@ -296,11 +296,15 @@ def generate_lef(name, values, available_block_lef,
         logger.debug('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
             no_units = ceil(size / unit_size_mos)
-            square_x = ceil(sqrt(no_units))
-            while no_units % square_x != 0:
-                square_x += 1
-            xval = square_x
-            yval = int(no_units / square_x)
+            if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
+                square_y = floor(sqrt(no_units/3))
+            else:
+                square_y = floor(sqrt(no_units))
+            while no_units % square_y != 0:
+                square_y -= 1
+            yval = square_y
+            xval = int(no_units / square_y)
+
             block_name = f"{name}_n{unit_size_mos}_X{xval}_Y{yval}"
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
