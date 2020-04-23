@@ -630,7 +630,7 @@ void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& inte
 void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
   // update child into parent.blocks[blockID]
   // update (child.intermetal,intervia,blockpins) into blocks[blockid]
-  PnRDB::Omark ort = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].orient;
+  PnRDB::Omark ort = child.abs_orient;
   int width = child.UR.x - child.LL.x;
   int height = child.UR.y - child.LL.y;
   PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
