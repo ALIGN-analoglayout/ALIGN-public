@@ -434,6 +434,12 @@
 },
 
 {
+"Layer": "Outline",
+"GdsLayerNo": 104,
+"GdsDatatype": {"Draw":0}
+},
+    
+{
 "Layer": "Cap",
 "m1Pitch": 200,
 "m2Pitch": 200,
