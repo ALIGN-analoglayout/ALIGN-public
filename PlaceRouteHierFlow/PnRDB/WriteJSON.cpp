@@ -308,8 +308,8 @@ addOABoundaries (json& jsonElements, int width, int height) {
 }
 
 void
-addTop_OABoundaries (json& jsonElements, int width, int height, const PnRDB::Drc_info& drc_info) {
-  int off_set = drc_info.Metal_info.back().width;
+addTop_OABoundaries (json& jsonElements, int width, int height, const PnRDB::Drc_info& drc_info, double unitScale) {
+  int off_set = unitScale*drc_info.Metal_info.back().width;
   int x[5],y[5];
   x[0]=y[0]=x[1]=y[3]=x[4]=y[4]=0-off_set; x[2]=x[3]=width+off_set; y[1]=y[2]=height+off_set;
   json bound1;
@@ -622,7 +622,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     addOABoundaries (jsonElements, unitScale * node.width, unitScale * node.height);
     if(node.isTop){
-      addTop_OABoundaries(jsonElements, unitScale * node.width, unitScale * node.height, drc_info);
+      addTop_OABoundaries(jsonElements, unitScale * node.width, unitScale * node.height, drc_info, unitScale);
     }
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);
