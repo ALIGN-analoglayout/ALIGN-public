@@ -278,6 +278,10 @@ def generate_lef(name, values, available_block_lef,
             size = int(values["nfin"])
             if 'nf' in values.keys():
                 size=size*int(values["nf"])
+            if 'm' in values.keys():
+                size=size*int(values["m"])
+            if 'M' in values.keys():
+                size=size*int(values["m"])
             ## Hack For VCO circuit
             if 'nmos' in name.lower() and unit_size_mos==37:
                 unit_size_mos=8
