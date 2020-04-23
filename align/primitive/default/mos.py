@@ -107,11 +107,15 @@ class MOSGenerator(DefaultCanvas):
 
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
-                                    v_clg=self.m1.clg))
+                                    v_clg=self.m1.clg,
+                                    WidthX=self.pdk['V0']['WidthX'],
+                                    WidthY=self.pdk['V0']['WidthY']))
 
         self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=CenterLineGrid(),
-                                    v_clg=self.m1.clg))
+                                    v_clg=self.m1.clg,
+                                    WidthX=self.pdk['V0']['WidthX'],
+                                    WidthY=self.pdk['V0']['WidthY']))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
         #v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
