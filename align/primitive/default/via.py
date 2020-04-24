@@ -35,9 +35,8 @@ def ColorClosure( *, info):
         if r == 0:
             color = colors[q % len(colors)]
             colored_term = deepcopy(term)
-            colored_layer = f"{term['layer']}{color}"
-            colored_term['layer'] = colored_layer
-            logger.info( f"Adding {colored_layer}...{term}...{colored_term}") 
+            colored_term['color'] = color
+            logger.info( f"Adding {color}...{term}...{colored_term}") 
             return [term,colored_term]
         else:
             logger.warning( f"Wire to color is offgrid: {term} {c2} {q} {r} pitch {info['Pitch']}")
