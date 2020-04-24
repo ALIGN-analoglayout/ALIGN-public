@@ -1,5 +1,5 @@
 .subckt powertrain_cell ond vcc vout
-mmp0 vout ond vcc vcc p w=180n l=40n nfin=128
+mmp0 vout ond vcc vcc p w=180n l=40n nfin=4 nf=8 m=4
 .ends
 
 .subckt powertrain_thermo on_d[63] on_d[62] on_d[61] on_d[60] on_d[59]
