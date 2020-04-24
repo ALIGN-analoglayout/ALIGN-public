@@ -317,7 +317,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
             cnv.subinsts[inst].parameters.update(parameters)
 
         nets_allowed_to_be_open = [] if toplevel else global_power_names
-        cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open)
+        cnv.gen_data(run_pex=extract,nets_allowed_to_be_open=nets_allowed_to_be_open,postprocess=toplevel)
 
         d['bbox'] = cnv.bbox.toList()
         d['terminals'] = cnv.terminals

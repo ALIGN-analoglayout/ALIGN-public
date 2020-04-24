@@ -1,7 +1,11 @@
 import types
 
-class PostProcessor():
+import logging
+logger = logging.getLogger(__name__)
 
+from copy import deepcopy
+
+class PostProcessor():
     def __init__(self):
         self.postprocessors = {}
 
@@ -14,18 +18,25 @@ class PostProcessor():
         assert len(rect) == 4 and all(isinstance(x, int) for x in rect), f'Invalid generator output {rect}'
 
     def run(self, terminals):
-        worklist = [term for term in terminals if term['layer'] in self.postprocessors]
-        for term in worklist:
-            postprocessor_output = self.postprocessors[term['layer']](term['rect'])
-            if isinstance(postprocessor_output, types.GeneratorType) or \
-                isinstance(postprocessor_output[0], list):
-                # Generator output is a list of rectangles
-                terminals.remove(term)
-                for rect in postprocessor_output:
-                    self._check_valid_rect(rect)
-                    terminals.append({k:v if k != 'rect' else rect for k, v in term.items()})
+        logger.info("Running PostProcessor...")
+        old_terminals = deepcopy(terminals)
+        terminals = []
+        for term in old_terminals:
+            if term['layer'] in self.postprocessors:
+                postprocessor_output = self.postprocessors[term['layer']](term)
+                if isinstance(postprocessor_output, types.GeneratorType) or \
+                   isinstance(postprocessor_output, list):
+                    # Generator output is a list of terminals
+                    postprocessor_output = list(postprocessor_output)
+                else:
+                    # Generator output is a single terminal
+                    postprocessor_output = [postprocessor_output]
+                logger.info(f"postprocessor_output: {postprocessor_output}")
+                
+                for new_term in postprocessor_output:
+                    self._check_valid_rect(new_term['rect'])
+                    terminals.append(new_term)
             else:
-                # Generator output is a single rectangle
-                self._check_valid_rect(postprocessor_output)
-                term.update({'rect': postprocessor_output})
-
+                terminals.append(term)
+        logger.info(f"Terminals before {len(old_terminals)} after {len(terminals)}")
+        return terminals

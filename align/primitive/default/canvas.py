@@ -6,6 +6,7 @@ from ..main import get_generator
 from ...cell_fabric.canvas import Canvas
 from ...cell_fabric.generators import *
 from ...cell_fabric.grid import *
+from .via import ColorClosure
 
 import logging
 logger = logging.getLogger(__name__)
@@ -43,6 +44,10 @@ class DefaultCanvas(Canvas):
         return viawidth // 2 + viaenc
 
     def _create_metal( self, layer, info, *, check=True):
+        if 'Color' in info and len(info['Color']) > 0:
+            logger.info( f"Registering ColorClosure for layer {layer}")
+            self.postprocessor.register(layer, ColorClosure( info=info))
+
         if isinstance(info['Width'], list):
             # TODO: Figure out what multiple metal widths even means. Just doing first width for now
             # for i in range(0, len(info['Width'])):
@@ -124,6 +129,8 @@ class DefaultCanvas(Canvas):
             self.postprocessor.register(layer, functools.partial(
                 get_generator(info['ViaCut']['Gen'], self.pdk.layerfile.parent),
                 **{k: v for k, v in info['ViaCut'].items() if k != 'Gen'}))
+
+
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None

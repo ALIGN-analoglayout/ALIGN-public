@@ -239,7 +239,7 @@ class Canvas:
                 self.pex.run()
 
         if postprocess:
-            self.postprocessor.run(data['terminals'])
+            data['terminals'] = self.postprocessor.run(data['terminals'])
 
         return data
 
