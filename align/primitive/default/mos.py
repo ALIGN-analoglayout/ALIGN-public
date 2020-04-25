@@ -125,15 +125,6 @@ class MOSGenerator(DefaultCanvas):
             self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
         info = self.pdk['V0']
-        def single_centered_via(term):
-            rect = term['rect']
-            xpos = ( rect[0] + rect[2] ) // 2
-            ypos = ( rect[1] + rect[3] ) // 2
-            newrect = [xpos - info['WidthX'] // 2, ypos - info['WidthY'] // 2, xpos + info['WidthX'] // 2, ypos + info['WidthY'] // 2]
-            term['rect'] = newrect
-            return term
-
-        self.postprocessor.register('V0', single_centered_via)
 
     def _addMOS( self, x, y, x_cells, name='M1', reflect=False, **parameters):
 

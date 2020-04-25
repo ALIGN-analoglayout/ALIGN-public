@@ -143,8 +143,3 @@ class DefaultCanvas(Canvas):
                 pm = m0
         assert nm is not None or pm is not None, f"Could not trace any connections for {layer}"
         return (pm, pv, nv, nm)
-
-def single_centered_via(rect, WidthX, WidthY):
-    xpos = ( rect[0] + rect[2] ) // 2
-    ypos = ( rect[1] + rect[3] ) // 2
-    return [xpos - WidthX // 2, ypos - WidthY // 2, xpos + WidthX // 2, ypos + WidthY // 2]
