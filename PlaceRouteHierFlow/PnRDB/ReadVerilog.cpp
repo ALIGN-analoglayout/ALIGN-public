@@ -190,6 +190,14 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
               }
 
       }
+
+//Add LinearConst here
+
+      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+
+
+      }
+
   }
 }
 
@@ -452,3 +460,4 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   return 1;
   
 }
+
