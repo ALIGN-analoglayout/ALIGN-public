@@ -411,12 +411,14 @@ design::design(PnRDB::hierNode& node) {
     tmpnet.name=it->name;
     tmpnet.priority=it->priority;
     tmpnet.weight=1;
+    tmpnet.upperBound = it->upperBound;
+    tmpnet.lowerBound = it->lowerBound;
     for(vector<PnRDB::connectNode>::iterator nit=it->connected.begin(); nit!=it->connected.end(); ++nit) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
       else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
-      placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
+      placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2, nit->alpha};
       tmpnet.connected.push_back(tmpnode);
     }
     this->Nets.push_back(tmpnet);

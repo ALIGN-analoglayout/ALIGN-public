@@ -33,6 +33,7 @@ struct lefMacro;
 struct blockComplex;
 struct CCCap;
 struct R_const;
+struct LinearConst;
 struct C_const;
 struct SymmPairBlock;
 struct Metal;
@@ -195,6 +196,7 @@ struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha = 1;
 }; // structure of connected component of nets
 
 struct globalContact {
@@ -220,6 +222,8 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
+  double upperBound = INT_MAX;
+  double lowerBound = INT_MIN;
 }; // structure of nets
 
 struct Metal{
@@ -363,6 +367,7 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
+  vector<LinearConst> L_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
@@ -446,6 +451,18 @@ struct R_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> R;
+
+};
+
+struct LinearConst {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > pins; //pair.first blocks id pair.second pin id 
+  std::vector<double> alpha;
+  double upperBound;
+  double lowerBound;
 
 };
 
