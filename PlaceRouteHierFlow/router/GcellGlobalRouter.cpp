@@ -1102,22 +1102,74 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       }
    Blocks.push_back(temp_block);
   }
-
-  std::cout<<"Router-Info: complete importing data"<<std::endl;
+  for (std::vector<PnRDB::PowerNet>::iterator nit = node.PowerNets.begin(); nit != node.PowerNets.end(); ++nit) {
+    RouterDB::PowerNet temp_power_net;
+    temp_power_net.netName = nit->name;
+    temp_power_net.power = nit->power;
+    for (std::vector<PnRDB::pin>::iterator pit = nit->Pins.begin(); pit != nit->Pins.end(); ++pit) {
+      RouterDB::Pin temp_pin;
+      temp_pin.pinName = pit->name;
+      temp_pin.netIter = pit->netIter;
+      for (std::vector<PnRDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+        RouterDB::contact temp_contact;
+        temp_contact.metal = drc_info.Metalmap[cit->metal];
+        AssignContact(temp_contact, *cit);
+        temp_pin.pinContacts.push_back(temp_contact);
+      }
+      for (std::vector<PnRDB::Via>::iterator vit = pit->pinVias.begin(); vit != pit->pinVias.end(); ++vit) {
+        RouterDB::Via temp_via;
+        temp_via.model_index = vit->model_index;
+        AssignContact(temp_via.ViaRect, vit->ViaRect);
+        AssignContact(temp_via.LowerMetalRect, vit->LowerMetalRect);
+        AssignContact(temp_via.UpperMetalRect, vit->UpperMetalRect);
+        temp_pin.pinVias.push_back(temp_via);
+      }
+      temp_power_net.pins.push_back(temp_pin);
+    }
+    for (std::vector<PnRDB::Metal>::iterator mit = nit->path_metal.begin(); mit != nit->path_metal.end(); ++mit) {
+      RouterDB::Metal temp_metal;
+      CopyMetal(temp_metal, *mit);
+      temp_power_net.path_metal.push_back(temp_metal);
+    }
+    for (std::vector<PnRDB::Via>::iterator vit = nit->path_via.begin(); vit != nit->path_via.end(); ++vit) {
+      RouterDB::Via temp_via;
+      temp_via.model_index = vit->model_index;
+      AssignContact(temp_via.ViaRect, vit->ViaRect);
+      AssignContact(temp_via.LowerMetalRect, vit->LowerMetalRect);
+      AssignContact(temp_via.UpperMetalRect, vit->UpperMetalRect);
+      temp_power_net.path_via.push_back(temp_via);
+    }
+    PowerNets.push_back(temp_power_net);
+  }
+  std::cout << "Router-Info: complete importing data" << std::endl;
 };
 
+void GcellGlobalRouter::CopyMetal(RouterDB::Metal &RouterDB_metal, PnRDB::Metal &PnRDB_metal) { 
+  RouterDB_metal.MetalIdx = PnRDB_metal.MetalIdx;
+  RouterDB_metal.width = PnRDB_metal.width;
+  AssignContact(RouterDB_metal.MetalRect, PnRDB_metal.MetalRect);
+  for (std::vector<PnRDB::point>::iterator pit = PnRDB_metal.LinePoint.begin(); pit != PnRDB_metal.LinePoint.end(); ++pit) {
+    RouterDB::point temp_point(pit->x, pit->y);
+    RouterDB_metal.LinePoint.push_back(temp_point);
+  }
+}
 
 void GcellGlobalRouter::AssignContact(RouterDB::contact &RouterDB_contact, PnRDB::contact &PnRDB_contact){
-
   RouterDB_contact.placedLL.x = PnRDB_contact.placedBox.LL.x;
   RouterDB_contact.placedLL.y = PnRDB_contact.placedBox.LL.y;
   RouterDB_contact.placedUR.x = PnRDB_contact.placedBox.UR.x;
   RouterDB_contact.placedUR.y = PnRDB_contact.placedBox.UR.y;       
   RouterDB_contact.placedCenter.x = PnRDB_contact.placedCenter.x;
   RouterDB_contact.placedCenter.y = PnRDB_contact.placedCenter.y;
-
+  RouterDB_contact.placedCenter.x = PnRDB_contact.placedCenter.x;
+  RouterDB_contact.placedCenter.y = PnRDB_contact.placedCenter.y;
+  RouterDB_contact.originCenter.x = PnRDB_contact.originCenter.x;
+  RouterDB_contact.originCenter.y = PnRDB_contact.originCenter.y;
+  RouterDB_contact.originLL.x = PnRDB_contact.originBox.LL.x;
+  RouterDB_contact.originLL.y = PnRDB_contact.originBox.LL.y;
+  RouterDB_contact.originUR.x = PnRDB_contact.originBox.UR.x;
+  RouterDB_contact.originUR.y = PnRDB_contact.originBox.UR.y;
 };
-
 
 void GcellGlobalRouter::getDRCdata(PnRDB::Drc_info& drcData){
 

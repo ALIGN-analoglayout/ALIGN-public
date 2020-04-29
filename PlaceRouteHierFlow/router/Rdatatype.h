@@ -53,6 +53,8 @@ enum SType {CMM, CVM, CVV, PMM, PVM, PVV, IMM, IVM, IVV};
 struct point {
   int x=0;
   int y=0;
+  point () : x(0), y(0) {}
+  point (int ix, int iy) : x(ix), y(iy) {}
 }; // structure of integer coordinate
 
 struct contact {
