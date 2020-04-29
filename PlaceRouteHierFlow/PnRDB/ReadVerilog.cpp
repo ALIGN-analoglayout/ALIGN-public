@@ -195,8 +195,43 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
 
       for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
 
+        PnRDB::LinearConst temp_LinearConst = db.hierTree[i].L_Constraints[j];
+
+        for(int k=0;k<db.hierTree[i].Nets.size();k++){
+           if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
+             db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
+             for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
+                std::cout<<"Connected "<<db.hierTree[i].Nets[k].connected[h].type<<" "<<db.hierTree[i].Nets[k].connected[h].iter<<" "<<db.hierTree[i].Nets[k].connected[h].iter2<<std::endl;
+                for(int l=0;l<temp_LinearConst.pins.size();l++){
+                  std::cout<<"LinearConst cont"<<temp_LinearConst.pins[l].first<<" "<<temp_LinearConst.pins[l].second<<" "<<temp_LinearConst.alpha[l]<<std::endl;
+                  if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                  }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                  }
+                 }
+             }
+           }
+        }
+      }
+
+      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+
+          for(unsigned int k=0;k<db.hierTree[i].L_Constraints[j].alpha.size();k++){
+              std::cout<<"LinearConst info "<<db.hierTree[i].L_Constraints[j].net_name<<" "<<db.hierTree[i].L_Constraints[j].alpha[k]<<std::endl;
+           }
 
       }
+
+      for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
+         for(unsigned int k =0;k<db.hierTree[i].Nets[j].connected.size();k++){
+            std::cout<<"Assign Linear "<<db.hierTree[i].Nets[j].upperBound<<" "<<db.hierTree[i].Nets[j].connected[k].alpha<<std::endl;
+         }
+      }
+
+      
 
   }
 }

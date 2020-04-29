@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"

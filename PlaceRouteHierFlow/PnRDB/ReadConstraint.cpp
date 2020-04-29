@@ -532,14 +532,14 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            temp_r_const.R.push_back(atoi(tempsec[2].c_str()));
         }
         node.R_Constraints.push_back(temp_r_const);
-      }else iftemp[0].compare("LinearConst")==0{
+      }else if(temp[0].compare("LinearConst")==0){
         PnRDB::LinearConst temp_LinearConst;
         string word=temp[2];
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
         temp_LinearConst.net_name=word;
 
-        for(unsigned int i=4;i<temp.size()-2;i+=2){
+        for(unsigned int i=4;i<temp.size()-3;i+=2){
 
            word=temp[i];
            word=word.substr(1);
@@ -558,7 +558,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                          temp_pin.first = j;
                          temp_pin.second = k;
                          temp_LinearConst.pins.push_back(temp_pin);
-                         std::cout<<"Test Linear pin "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                         std::cout<<"Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
                          break; 
                        }
                     }
@@ -570,15 +570,17 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                     temp_pin.first = -1;
                     temp_pin.second = j;
                     temp_LinearConst.pins.push_back(temp_pin);
-                    std::cout<<"Test Linear pin "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                    std::cout<<"Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
                     break; 
                  }
               }
            }
            temp_LinearConst.alpha.push_back(atoi(tempsec[1].c_str()));
+           std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atoi(tempsec[1].c_str())<<std::endl;
         }
         int temp_size = temp.size();
-        temp_LinearConst.upperBound = atoi(temp[temp_size-2].c_str());
+        temp_LinearConst.upperBound = atoi(temp[temp_size-3].c_str())*2000;
+        std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atoi(temp[temp_size-3].c_str())<<std::endl;
         node.L_Constraints.push_back(temp_LinearConst);
 /*
         for(int i=0;i<node.Nets.size();i++){

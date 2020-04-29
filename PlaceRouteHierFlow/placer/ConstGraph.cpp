@@ -2102,14 +2102,17 @@ double ConstGraph::LinearConst(design& caseNL, SeqPair& caseSP){
   for(int i=0;i< caseNL.Nets.size(); i++){
      double temp_sum = 0;
      for(int j=0;j<caseNL.Nets[i].connected.size();j++){
-        temp_sum + = caseNL.Nets[i].connected[j].alpha*feature_value[i][j];
+        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha<<" "<<caseNL.Nets[i].upperBound<<std::endl;
+        temp_sum += caseNL.Nets[i].connected[j].alpha*feature_value[i][j];
+        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha*feature_value[i][j]<<std::endl;
      }
      if(temp_sum<=caseNL.Nets[i].upperBound){
         temp_sum = 0;
+
      }else{
         temp_sum = temp_sum - caseNL.Nets[i].upperBound;
      }
-     sum + = temp_sum;
+     sum += temp_sum;
   }
 
   return sum;
@@ -2650,7 +2653,7 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   cost += CalculateRatio()*SIGMA;
   cost += CalculateArea();
   cost += CalculateDeadArea(caseNL, caseSP)*PHI;
-  cost += LinearConst(caseNL, caseSP)*PI
+  cost += LinearConst(caseNL, caseSP)*PI;
   if(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)>0){
   GAMAR=cost/(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph));
   }
@@ -2666,8 +2669,8 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   if(CalculateDeadArea(caseNL, caseSP)) {
   PHI = cost/CalculateDeadArea(caseNL, caseSP) *1.8;
   }
-  if(LinearConst(caseNL, caseSP)){
-  PI = cost/LinearConst(caseNL, caseSP)) * 2.0;
+  if(LinearConst(caseNL, caseSP)>0){
+  PI = cost/LinearConst(caseNL, caseSP) * 2.0;
   }
   //cout<<"NEW GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<" PHI:"<<PHI<<endl;
   //cout<<"NEW_BETA:"<<BETA<<endl;
