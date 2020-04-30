@@ -13,6 +13,8 @@
 #include <sstream>
 #include <thread>
 
+#include "spdlog/spdlog.h"
+
 using std::string;
 using std::cout;
 using std::endl;
@@ -263,6 +265,9 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
 }
 
 int main(int argc, char** argv ){
+
+  spdlog::set_level(spdlog::level::warn);
+  spdlog::info("Welcome to spdlog!");
 
   //
   // Enable or disable state saving in json at intermediate points

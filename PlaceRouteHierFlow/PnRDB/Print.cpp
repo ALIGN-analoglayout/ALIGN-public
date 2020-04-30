@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iomanip>
 
+#include "spdlog/spdlog.h"
+
 void PnRdatabase::PrintHierTree() {
 }
 

@@ -8,6 +8,7 @@
 using namespace nlohmann;
 
 #include <gtest/gtest.h>
+#include "spdlog/spdlog.h"
 
 /*
 static bool EndsWith( const string& str, const string& pat)
@@ -34,19 +35,20 @@ TEST( EndsWithTest, Test1)
 PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefname, string mapname, string drname) {
   unitScale=2000;
   maxNode=0;
-  cout<<"PnRDB-Info: reading data from path "<<path<<endl;
+
+  spdlog::info( "PnRDB-Info: reading data from path ");
 
   if( drname == "HardDesignRules") {
       this->HardDesignRule();
-      cout<<"PnRDB-Info: default PDK"<<std::endl;
+      spdlog::info( "PnRDB-Info: default PDK");
   } else if( EndsWith( drname, ".rul")) {
       this->ReadDesignRule(path+"/"+drname);
-      std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
+      spdlog::info( "PnRDB-Info: read PDK via {0}", drname);
   } else if( EndsWith( drname, ".json")) {
       this->ReadPDKJSON(path+"/"+drname);
-      std::cout<<"PnRDB-Info: read PDK via "<<drname<<std::endl;
+      spdlog::info( "PnRDB-Info: read PDK via {0}", drname);
   } else {
-      std::cout<<"PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): "<<drname<<std::endl;
+      spdlog::critical( "PnRDB-Error: unknown name for read PDK (HardDesignRules, *.rul, *.json): {0}", drname);
       assert(0);
   }
 
@@ -54,7 +56,7 @@ PnRdatabase::PnRdatabase(string path, string topcell, string vname, string lefna
   this->ReadMap(path, mapname);
   this->ReadVerilog(path, vname, topcell);
 
-  cout<<"PnRDB-Info: complete reading"<<endl;
+  spdlog::info( "PnRDB-Info: complete reading");
 }
 
 queue<int> PnRdatabase::TraverseHierTree() {

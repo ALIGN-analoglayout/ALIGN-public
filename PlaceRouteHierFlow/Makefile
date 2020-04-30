@@ -3,6 +3,7 @@ MAKE=make
 
 
 # To compile locally, override LP_DIR as follows:  %> LP_DIR=<path_to_lpsolve> make
+SPDLOG_DIR?=/opt/spdlog
 LP_DIR?=/usr/local/lib/lpsolve
 LIB_LP = $(LP_DIR)/lp_solve_5.5.2.5_dev_ux64
 SOURCE_LP= $(LP_DIR)/lp_solve_5.5
@@ -15,7 +16,7 @@ OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
 
-export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include
+export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include -isystem $(SPDLOG_DIR)/include
 export CXX=g++
 
 export LDFLAGS = -lm -ldl -pthread $(COVERAGE)

@@ -59,12 +59,19 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+#### Install logger
+cd $ALIGN_HOME
+git clone https://github.com/gabime/spdlog.git
+cd spdlog && mkdir build && cd build
+cmake .. && make -j
+
 ## Set prerequisite paths
 #------------------------
 export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
+export SPDLOG_DIR=$ALIGN_HOME/spdlog
 export VENV=$ALIGN_HOME/general
 
 ## Install ALIGN

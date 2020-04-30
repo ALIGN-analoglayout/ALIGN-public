@@ -1,5 +1,6 @@
 #include "Grid.h"
 #include <cassert>
+#include "spdlog/spdlog.h"
 
     Grid::Grid(const Grid& other):total2graph(other.total2graph), graph2total(other.graph2total), vertices_total(other.vertices_total), vertices_graph(other.vertices_graph), Start_index_metal_vertices(other.Start_index_metal_vertices), End_index_metal_vertices(other.End_index_metal_vertices), Source(other.Source), Dest(other.Dest), SourceGraph(other.SourceGraph), DestGraph(other.DestGraph), x_unit(other.x_unit), y_unit(other.y_unit), x_min(other.x_min), y_min(other.y_min), routeDirect(other.routeDirect), LL(other.LL), UR(other.UR), GridLL(other.GridLL), GridUR(other.GridUR), vertices_total_map(other.vertices_total_map), drc_info(other.drc_info), lowest_metal(other.lowest_metal), highest_metal(other.highest_metal), grid_scale(other.grid_scale), layerNo(other.layerNo) { };
 //Grid::Grid(const Grid& other) {
@@ -1187,12 +1188,12 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-        std::cout<<"converter check point 1"<<std::endl;
+	spdlog::debug( "converter check point 1");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
-             std::cout<<"Plist problem"<<std::endl;
-             tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
-            }
+	    spdlog::debug( "Plist problem");
+	    tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
+	  }
           //tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
         }
       }
@@ -1208,7 +1209,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         //int boundY=(newLLy%nexlayer_unit==0) ? (newLLy) : ( (newLLy/nexlayer_unit)*nexlayer_unit<newLLy ? (newLLy/nexlayer_unit+1)*nexlayer_unit : (newLLy/nexlayer_unit)*nexlayer_unit  );
         int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
-        std::cout<<"converter check point 2"<<std::endl;
+	spdlog::debug( "converter check point 2");
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1235,7 +1236,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-         std::cout<<"converter check point 3"<<std::endl;
+	spdlog::debug( "converter check point 3");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
            if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
@@ -1255,7 +1256,7 @@ void Grid::ConvertRect2GridPoints(std::vector<std::vector<RouterDB::point> >& pl
         //int boundX=(newLLx%nexlayer_unit==0) ? (newLLx) : ( (newLLx/nexlayer_unit)*nexlayer_unit<newLLx ? (newLLx/nexlayer_unit+1)*nexlayer_unit : (newLLx/nexlayer_unit)*nexlayer_unit  );
         int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
-         std::cout<<"converter check point 4"<<std::endl;
+	spdlog::debug( "converter check point 4");
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=LLx and x<=URx and y>=LLy and y<=URy){
              tmpP.x=x; tmpP.y=y; plist.at(mIdx).push_back(tmpP);
