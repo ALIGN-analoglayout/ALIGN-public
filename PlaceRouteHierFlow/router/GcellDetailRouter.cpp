@@ -28,6 +28,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
   this->temp_report.node_name = HierNode.name + "_" + std::to_string(HierNode.n_copy);
+  this->PowerNets = GR.PowerNets;
   calculate_extension_length();
 
   printNetsInfo(); 
@@ -449,6 +450,13 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
           Set_x_contact.erase(Contact2Sinkdata(cit->UpperMetalRect));
           Set_x_contact.erase(Contact2Sinkdata(cit->LowerMetalRect));
         }
+      }
+    }
+  }
+  for (std::vector<RouterDB::PowerNet>::iterator nit = PowerNets.begin(); nit != PowerNets.end(); ++nit) {
+    for (std::vector<RouterDB::Pin>::iterator pit = nit->pins.begin(); pit != nit->pins.end(); ++pit) {
+      for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+        Set_x_contact.insert(Contact2Sinkdata(*cit));
       }
     }
   }
@@ -921,6 +929,7 @@ void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::poin
       }
     }
   }
+
 }
 
 void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via){
