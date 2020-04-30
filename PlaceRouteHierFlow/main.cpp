@@ -216,10 +216,6 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
   PnRDB::hierNode current_node = DB.hierTree[idx];
   DB.hierTree[idx].n_copy += 1;
   string current_node_name = current_node.name;
-
-  
-
-
   current_node.LL = bounding_box.LL;
   current_node.UR = bounding_box.UR;
   current_node.abs_orient = current_node_ort;
@@ -230,7 +226,6 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     int child_idx = blk.child;
     if (child_idx == -1) continue;
     auto& inst = blk.instance[blk.selectedInstance];
-
     // calculate childnode's orientation in topnode
     PnRDB::Omark childnode_orient = DB.RelOrt2AbsOrt(current_node_ort, inst.orient);
     string child_node_name = DB.hierTree[child_idx].name;
@@ -244,7 +239,7 @@ void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRD
     }
     // 6.update current_node.blocks[i].intermetal/via/blockpin, absolute position and rect
     DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx]);  // check in childnode into block
-
+    
     // 7.current_node.Blocks[bit].child links to childnode
     current_node.Blocks[bit].child = new_childnode_idx;
   }

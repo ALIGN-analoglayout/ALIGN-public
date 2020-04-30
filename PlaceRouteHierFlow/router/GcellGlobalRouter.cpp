@@ -1161,8 +1161,6 @@ void GcellGlobalRouter::AssignContact(RouterDB::contact &RouterDB_contact, PnRDB
   RouterDB_contact.placedUR.y = PnRDB_contact.placedBox.UR.y;       
   RouterDB_contact.placedCenter.x = PnRDB_contact.placedCenter.x;
   RouterDB_contact.placedCenter.y = PnRDB_contact.placedCenter.y;
-  RouterDB_contact.placedCenter.x = PnRDB_contact.placedCenter.x;
-  RouterDB_contact.placedCenter.y = PnRDB_contact.placedCenter.y;
   RouterDB_contact.originCenter.x = PnRDB_contact.originCenter.x;
   RouterDB_contact.originCenter.y = PnRDB_contact.originCenter.y;
   RouterDB_contact.originLL.x = PnRDB_contact.originBox.LL.x;
