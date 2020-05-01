@@ -43,15 +43,14 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
     ofn = opath+current_node.name + tag + ".db.json";
   }
   DB.WriteDBJSON(current_node,ofn);
-  std::cout << ltag << std::endl;
+  spdlog::info("{0}",ltag);
 }
 
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
   //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   //DB.Extract_RemovePowerPins(current_node);
-
-  std::cout<<"Checkpoint : before route"<<std::endl;
+  spdlog::info("Checkpoint : before route");
   DB.PrintHierNode(current_node);
 
   //DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
@@ -74,7 +73,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     }
     curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
 
-    std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
+    spdlog::debug("***WriteGcellGlobalRoute Debugging***"); 
     if (current_node.isTop) {
       DB.WriteGcellGlobalRoute(current_node, current_node.name + "_GcellGlobalRoute_" + std::to_string(lidx) + ".json", opath);
     } else {
@@ -85,7 +84,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
           current_node_copy.name + "_GcellGlobalRoute_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".json",
           opath);
     }
-    std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
+    spdlog::debug("***End WriteGcellGlobalRoute Debugging***"); 
 
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
 
@@ -148,8 +147,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor);
 
     DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
-
-    std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
+    spdlog::info("Checkpoint : Starting Power Routing");
     curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
     
     DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
@@ -341,16 +339,14 @@ int main(int argc, char** argv ){
     
     DB.AddingPowerPins(current_node);
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
-
-    std::cout<<"Checkpoint : before place"<<std::endl;
+    spdlog::info("Checkpoint : before place");
     DB.PrintHierNode(current_node);
 
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
-
-    std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    spdlog::info("Checkpoint: generated {0} placements.", nodeVec.size());
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
@@ -361,7 +357,8 @@ int main(int argc, char** argv ){
     //TreeVec[idx] = nodeVec;
     //Q.pop();
     if(disable_io)std::cout.clear();
-    cout<<"Main-Info: complete node "<<idx<<endl;
+    spdlog::info("Main-Info: complete node ");
+    //std::cout<<"complete node"<<std::endl;
   }
 
   if(disable_io)std::cout.setstate(std::ios_base::failbit);
