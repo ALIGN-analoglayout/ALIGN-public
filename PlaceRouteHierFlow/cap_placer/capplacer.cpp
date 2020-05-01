@@ -1219,7 +1219,7 @@ void Placer_Router_Cap::GetPhysicalInfo_merged_net(
 
 		    found = 1;
 		    PnRDB::point half_cap_dim = unit_cap_dim / 2;
-		    PnRDB::point shift = half_cap_dim - shifting;
+		    PnRDB::point shift = half_cap_dim - shifting; //shifting need to be changed when extending CC cap to other CCs, now shifting pin is 0, for resistor can be -x or x? Yaguang: 5/1/2020
 		    PnRDB::point shift_final = shift.scale(sign, -sign);
 		    coordP = Caps[n.cap_index[k]].pos + shift_final;
 		  
