@@ -1,4 +1,5 @@
 #include "GlobalGrid.h"
+#include "spdlog/spdlog.h"
 
 GlobalGrid::GlobalGrid(){
 
@@ -121,7 +122,7 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
   this->LL.x=LLx; this->LL.y=LLy;
   this->UR.x=URx; this->UR.y=URy;
   this->maxXidx=0; this->maxYidx=0;
-  std::cout<<"width "<<URx-LLx<<" height "<<URy-LLy<<std::endl;
+
   if(drc_info.Metal_info.at(Lmetal).direct==0) { //vertical
     this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
     this->y_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_y*scale;
@@ -130,20 +131,20 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
     this->y_unit=drc_info.Metal_info.at(Lmetal).grid_unit_y*scale;
   }
   // 1. Create tiles
-  std::cout<<"x_unit "<<x_unit<<" y_unit "<<y_unit<<std::endl;
-  std::cout<<"GlobalGrid-Info: create tiles\n";
+  spdlog::debug("GlobalGrid-Info: create tiles");
+
   for(int i=Lmetal;i<=Hmetal;i+=tileLayerNo) {
-     std::cout<<"layer "<<i<<std::endl;
+    spdlog::debug("layer {0}",i);
     int layerIdx=(i-Lmetal)/tileLayerNo; // current tile index
     this->tile2metal[layerIdx].clear();
     std::vector<int> tmpV;
     for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
-      std::cout<<"Traverse layer "<<j<<std::endl;
+      spdlog::debug("Traverse layer ",j);
       this->metal2tile[i+j]=layerIdx;
       this->tile2metal[layerIdx].insert(i+j);
       tmpV.push_back(i+j);
     }
-    std::cout<<"start of creating tiles\n";
+    spdlog::debug("start of creating tiles");
     this->Start_index.at(layerIdx)=this->tiles_total.size();
     for(int X=this->LL.x; X<this->UR.x; X+=this->x_unit) {
 
@@ -157,7 +158,6 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
       }
       tmpT.x=X+tmpT.width/2;
       for(int Y=this->LL.y; Y<this->UR.y; Y+=this->y_unit) {
-      std::cout<<"work on X "<<X<<" Y "<<Y<<std::endl;
         int Yidx=(Y-this->LL.y)/this->y_unit;
         if(Yidx>this->maxYidx) {this->maxYidx=Yidx;}
         if( Y+this->y_unit > this->UR.y ) {
@@ -170,7 +170,6 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
         tmpT.metal=tmpV;
         tmpT.Xidx=Xidx; tmpT.Yidx=Yidx;
         tmpT.tileLayer=layerIdx;
-        std::cout<<"create tile {"<<tmpT.x<<","<<tmpT.y<<" } metal "<<" idx "<<tmpT.index<<std::endl;
         //tmpT.metal.clear();
         //for(int j=0;j<tileLayerNo and i+j<=Hmetal;j++) {
         //  tmpT.metal.insert(i+j);
@@ -185,13 +184,14 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int
       }
     }
     this->End_index.at(layerIdx)=this->tiles_total.size()-1;
-    std::cout<<"end of layer "<<i<<std::endl;
+    spdlog::debug("end of layer {0}", i);
   }
   
   // 2. Add tile edges
-  std::cout<<"GlobalGrid-Info: add tile connections\n";
+  spdlog::debug("GlobalGrid-Info: add tile connections");
   for(int i=Lmetal;i<=Hmetal;++i) {
     int layerIdx=this->metal2tile[i];
+    spdlog::debug("layer {0} tile layer {1}",i,layerIdx); //# =======
     std::cout<<"layer "<<i<<" tile layer "<<layerIdx<<std::endl;
     if(drc_info.Metal_info.at(i).direct==0) { //vertical
       std::cout<<"vertical\n";
