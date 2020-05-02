@@ -1,4 +1,5 @@
 #include "PowerRouter.h"
+#include "spdlog/spdlog.h"
 #include <cmath>
 
 //one : creation of power gird
@@ -20,9 +21,9 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
   //power_grid 1 create power_grid, 0 power net routing
 
   if(power_grid == 1){
-     std::cout<<"CheckPoint 1"<<std::endl;
+     spdlog::debug("Power router checkPoint 1");
      CreatePowerGrid(node, drc_info, Lmetal, Hmetal, h_skip_factor, v_skip_factor);
-     std::cout<<"CheckPoint 2"<<std::endl;
+     spdlog::debug("Power router checkPoint 2");
      Physical_metal_via_power_grid(Vdd_grid);
 
      Vdd_grid.name = "vdd";
@@ -32,8 +33,7 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
 	 break;
        }
      }
-
-     std::cout<<"CheckPoint 3"<<std::endl;
+     spdlog::debug("Power router checkPoint 3");
      Physical_metal_via_power_grid(Gnd_grid);
 
      Gnd_grid.name = "vss";
@@ -44,19 +44,19 @@ PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int L
        }
      }
 
-     std::cout<<"CheckPoint 4"<<std::endl;
+     spdlog::debug("Power router checkPoint 4");
      ReturnPowerGridData(node);   
-     std::cout<<"CheckPoint 5"<<std::endl;  
+     spdlog::debug("Power router checkPoint 5"); 
     }else{
-     std::cout<<"CheckPoint 6"<<std::endl;
+     spdlog::debug("Power router checkPoint 6");
      PowerNetRouter(node, drc_info, Lmetal, Hmetal);
-     std::cout<<"CheckPoint 7"<<std::endl;
+     spdlog::debug("Power router checkPoint 7");
      Physical_metal_via(); 
-     std::cout<<"CheckPoint 8"<<std::endl;
+     spdlog::debug("Power router checkPoint 8");
      ExtendMetal();  // need to change this part
-     std::cout<<"CheckPoint 8.5"<<std::endl;
+     spdlog::debug("Power router checkPoint 9");
      ReturnPowerNetData(node);
-     std::cout<<"CheckPoint 9"<<std::endl;
+     spdlog::debug("Power router checkPoint 10");
     }
   
 };
@@ -397,7 +397,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
            std::vector<RouterDB::SinkData> temp_source, temp_dest;
 
            if(Vdd_grid.metals.size()==0 or Gnd_grid.metals.size()==0){
-             std::cout<<"Placement Area is too small, no space to create power grid"<<std::endl;
+             spdlog::error("Placement Area is too small, no space to create power grid");
              assert(0);
              //continue;
            }
@@ -412,9 +412,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             Grid grid(this->drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);
             grid.Full_Connected_Vertex();
             std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > pinplist = FindsetPlist(Set_x, LL, UR);
-            std::cout<<"start inactive plist"<<std::endl;
             grid.InactivePointlist_Power(pinplist);
-            std::cout<<"End inactive plist"<<std::endl;
             std::map<RouterDB::point, std::vector<int>, RouterDB::pointXYComp > Smap;
             
             grid.setSrcDest( temp_source, temp_dest, this->width, this->height, Smap);
@@ -430,7 +428,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
             bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
             std::vector<std::vector<RouterDB::Metal>> physical_path;
-            std::cout<<"power routing pathMark "<<pathMark<<std::endl;
+            spdlog::debug("Power router routing pathMark {0}",pathMark);
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
               if (pathMark) {
 
@@ -446,8 +444,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
                 InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
 
                }else{
-                 std::cout<<"Router-Warning: feasible path might not be found\n";
-                 std::cout<<PowerNets[i].netName<<std::endl;
+                 spdlog::info("Router-Warning: feasible path might not be found. net name {0}",PowerNets[i].netName);
                }
              UpdatePlistNets(physical_path, add_plist);
              InsertPlistToSet_x(Set_net, add_plist);           
@@ -461,61 +458,51 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
 
 void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int h_skip_factor, int v_skip_factor){
-
-  std::cout<<"checkpoint1.1"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 1");
   GetData(node, drc_info, Lmetal, Hmetal);
   CreatePowerGridDrc_info( h_skip_factor, v_skip_factor);
   this->drc_info=this->PowerGrid_Drc_info;
-  std::cout<<"checkpoint1.2"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 2");
   std::vector<std::vector<RouterDB::point> > plist;
   plist.resize( this->layerNo );
-  std::cout<<"checkpoint1.2.1"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 3");
   CreatePlistBlocks(plist, this->Blocks);
-  std::cout<<"checkpoint1.2.2"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 4");
   CreatePlistNets(plist, this->Nets);
-  std::cout<<"checkpoint1.2.3"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 5");
   CreatePlistTerminals(plist, this->Terminals);
-  std::cout<<"checkpoint1.2.4"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 6");
   CreatePlistPowerNets(plist, this->PowerNets);
-  std::cout<<"checkpoint1.2.5"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 7");
   CreatePlistPowerGrid(plist, this->Vdd_grid);
-  std::cout<<"checkpoint1.2.6"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 8");
   CreatePlistPowerGrid(plist, this->Gnd_grid);
-  std::cout<<"checkpoint1.2.7"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 9");
+
   
 
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
-  std::cout<<"checkpoint1.2.8"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 10");
   
   //how to crate PowerGrid here????
   Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
 
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
-  for(int i=0;i<netplist.size();i++){
-     std::cout<<"Power inactive node "<<netplist[i].size()<<std::endl;
-     if(i==5){
-       for(auto it=netplist[i].begin();it!=netplist[i].end();it++){
-         std::cout<<"point "<<it->x<<" "<<it->y<<std::endl;
-       }
-     }
-  }
 
   grid.InactivePointlist_Power(netplist);
   //std::vector<std::vector<RouterDB::point> > new_plist = FindPlist(Set_x, this->LL, this->UR);
   //grid.InactivePointlist(new_plist);
   grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
-
-  std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
   //here return a power grid metal information
   bool power_grid = 1;
-  std::cout<<"checkpoint1.3"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 11");
   Graph graph(grid, power_grid);
-  std::cout<<"checkpoint1.4"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 12");
   Vdd_grid = graph.GetVdd_grid();
-  std::cout<<"checkpoint1.5"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 13");
   Gnd_grid = graph.GetGnd_grid();
-  std::cout<<"checkpoint1.6"<<std::endl;
+  spdlog::debug("Create Power Grid Flag 14");
   //use this create a vdd_grid & gnd_grid;
  
 
@@ -656,7 +643,6 @@ void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_gri
 void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
 
   //ViaRect
-  std::cout<<"Test 1"<<std::endl;
   temp_via.ViaRect.metal = temp_via.model_index;
   temp_via.ViaRect.placedCenter = temp_via.position;
   temp_via.ViaRect.placedLL.x = drc_info.Via_model[temp_via.model_index].ViaRect[0].x + temp_via.position.x;
@@ -664,7 +650,6 @@ void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
   temp_via.ViaRect.placedUR.x = drc_info.Via_model[temp_via.model_index].ViaRect[1].x + temp_via.position.x;
   temp_via.ViaRect.placedUR.y = drc_info.Via_model[temp_via.model_index].ViaRect[1].y + temp_via.position.y;
   //LowerMetalRect
-  std::cout<<"Test 2"<<std::endl;
   temp_via.LowerMetalRect.metal = drc_info.Via_model[temp_via.model_index].LowerIdx;
   temp_via.LowerMetalRect.placedCenter = temp_via.position;
   temp_via.LowerMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].LowerRect[0].x + temp_via.position.x;
@@ -672,7 +657,6 @@ void PowerRouter::UpdateVia(RouterDB::Via &temp_via){
   temp_via.LowerMetalRect.placedUR.x = drc_info.Via_model[temp_via.model_index].LowerRect[1].x + temp_via.position.x;
   temp_via.LowerMetalRect.placedUR.y = drc_info.Via_model[temp_via.model_index].LowerRect[1].y + temp_via.position.y;
   //UpperMetalRect
-  std::cout<<"Test 3"<<std::endl;
   temp_via.UpperMetalRect.metal = drc_info.Via_model[temp_via.model_index].UpperIdx;
   temp_via.UpperMetalRect.placedCenter = temp_via.position;
   temp_via.UpperMetalRect.placedLL.x = drc_info.Via_model[temp_via.model_index].UpperRect[0].x + temp_via.position.x;
@@ -750,10 +734,7 @@ void PowerRouter::Physical_metal_via_power_grid(RouterDB::PowerGrid &temp_grid){
        //temp_via.model_index = temp_metal_index;
        RouterDB::Via temp_via;
        temp_via = temp_grid.vias[i];
-       std::cout<<"before update via"<<std::endl;
-       std::cout<<"temp via "<<temp_via.model_index<<std::endl;
        UpdateVia(temp_via);
-       std::cout<<"after update via"<<std::endl;
        temp_grid.vias[i]=temp_via;
      
      }
@@ -899,25 +880,17 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
 };
 
 void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
-  std::cout<<"Checkpoint get Data 1"<<std::endl;
   getDRCdata(drc_info);
-  std::cout<<"Checkpoint get Data 2"<<std::endl;
   getBlockData(node, Lmetal, Hmetal);
-  std::cout<<"Checkpoint get Data 3"<<std::endl;
   getNetData(node);
-  std::cout<<"Checkpoint get Data 4"<<std::endl;
   getTerminalData(node);
-  std::cout<<"Checkpoint get Data 5"<<std::endl;
   getPowerGridData(node);
-  std::cout<<"Checkpoint get Data 6"<<std::endl;
   getPowerNetData(node);//Power net 
-  std::cout<<"Checkpoint get Data 7"<<std::endl;
 
 };
 
 void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
-
-  std::cout<<"Router-Info: begin to import data"<<std::endl;
+  spdlog::info("Power Router-Info: begin to import data");
   this->isTop = node.isTop;
   this->topName=node.name;
   this->width=node.width;
@@ -978,7 +951,7 @@ void PowerRouter::getBlockData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
       }
    Blocks.push_back(temp_block);
   }
-  std::cout<<"Router-Info: complete importing data"<<std::endl;
+  spdlog::info("Power Router-Info: complete importing data");
 };
 
 void PowerRouter::getNetData(PnRDB::hierNode& node){
@@ -992,18 +965,14 @@ void PowerRouter::getNetData(PnRDB::hierNode& node){
       //path_metal
       for(unsigned int j=0;j<node.Nets[i].path_metal.size();j++){
           RouterDB::Metal temp_metal;
-          std::cout<<"getNetData check point 1"<<std::endl;
           ConvertMetal(temp_metal,node.Nets[i].path_metal[j]);
-          std::cout<<"getNetData check point 2"<<std::endl;
           temp_net.path_metal.push_back(temp_metal);          
          }
       
       //path via
       for(unsigned int j=0;j<node.Nets[i].path_via.size();j++){
           RouterDB::Via temp_via;
-          std::cout<<"getNetData check point 3"<<std::endl;
-          ConvertVia(temp_via,node.Nets[i].path_via[j]); 
-          std::cout<<"getNetData check point 4"<<std::endl;   
+          ConvertVia(temp_via,node.Nets[i].path_via[j]);  
           temp_net.path_via.push_back(temp_via);          
          }
 
@@ -1011,8 +980,6 @@ void PowerRouter::getNetData(PnRDB::hierNode& node){
      
      }
   	
-
-  std::cout<<"Router-Info: complete importing data"<<std::endl;
 };
 
 void PowerRouter::getPowerGridData(PnRDB::hierNode & node){
@@ -1119,7 +1086,7 @@ void PowerRouter::ConvertContact(RouterDB::contact& temp_metal, PnRDB::contact& 
       temp_metal.metal=drc_info.Metalmap[pnr_metal.metal];
       //temp_metal.width=drc_info.Metal_info[temp_metal.MetalIdx].width;
     }else{
-      std::cout<<"Router-Error: interMetal info missing metal"<<std::endl;
+      spdlog::error("Power Router-Error: interMetal info missing metal");
     }
    RouterDB::point temp_point;
    temp_metal.placedLL.x = pnr_metal.placedBox.LL.x;     
@@ -1134,7 +1101,6 @@ void PowerRouter::ConvertContact(RouterDB::contact& temp_metal, PnRDB::contact& 
 
 void PowerRouter::ConvertMetal(RouterDB::Metal& temp_metal,PnRDB::Metal& pnr_metal){
 
-  std::cout<<"ConvertMetal check point 1"<<std::endl;
   //RouterDB::Metal temp_metal;
   temp_metal.MetalIdx = pnr_metal.MetalIdx;
   RouterDB::point temp_point;
@@ -1154,15 +1120,13 @@ void PowerRouter::ConvertMetal(RouterDB::Metal& temp_metal,PnRDB::Metal& pnr_met
   temp_metal.width = pnr_metal.width;
   //contact
   RouterDB::contact temp_contact;
-  std::cout<<"ConvertMetal check point 2"<<std::endl;
   if(drc_info.Metalmap.find(pnr_metal.MetalRect.metal)!=drc_info.Metalmap.end()){
     temp_contact.metal=drc_info.Metalmap[pnr_metal.MetalRect.metal];
   }else{
-    std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
+    spdlog::error("Power Router-Error: the metal pin contact of block is not found");
   }
 
   //temp_contact.metal = drc_info.Metalmap[node.Nets[i].path_metal[j].MetalRect.metal];
-  std::cout<<"ConvertMetal check point 3"<<std::endl;
   temp_contact.placedLL.x = pnr_metal.MetalRect.placedBox.LL.x;
   temp_contact.placedLL.y = pnr_metal.MetalRect.placedBox.LL.y;
   temp_contact.placedUR.x = pnr_metal.MetalRect.placedBox.UR.x;
@@ -1170,7 +1134,6 @@ void PowerRouter::ConvertMetal(RouterDB::Metal& temp_metal,PnRDB::Metal& pnr_met
   temp_contact.placedCenter.x = pnr_metal.MetalRect.placedCenter.x;
   temp_contact.placedCenter.y = pnr_metal.MetalRect.placedCenter.y;
   temp_metal.MetalRect = temp_contact;
-  std::cout<<"ConvertMetal check point 4"<<std::endl;
 };
 
 void PowerRouter::ConvertVia(RouterDB::Via &temp_via,PnRDB::Via& pnr_via){
@@ -1185,7 +1148,7 @@ void PowerRouter::ConvertVia(RouterDB::Via &temp_via,PnRDB::Via& pnr_via){
   if(drc_info.Viamap.find(pnr_via.ViaRect.metal)!=drc_info.Viamap.end()){
       temp_via.ViaRect.metal = drc_info.Viamap[pnr_via.ViaRect.metal];
      }else{
-      std::cout<<"Router-Error: - Viamap Error"<<std::endl;
+      spdlog::error("Power Router-Error: - Viamap Error");
      }
 
   temp_via.ViaRect.placedLL.x = pnr_via.ViaRect.placedBox.LL.x;
@@ -1198,7 +1161,7 @@ void PowerRouter::ConvertVia(RouterDB::Via &temp_via,PnRDB::Via& pnr_via){
   if(drc_info.Metalmap.find(pnr_via.LowerMetalRect.metal)!=drc_info.Metalmap.end()){
       temp_via.LowerMetalRect.metal = drc_info.Metalmap[pnr_via.LowerMetalRect.metal];
      }else{
-      std::cout<<"Router-Error: Metal map error"<<std::endl;
+      spdlog::error("Power Router-Error: - Metal Error");
      }
   temp_via.LowerMetalRect.placedLL.x = pnr_via.LowerMetalRect.placedBox.LL.x;
   temp_via.LowerMetalRect.placedLL.y = pnr_via.LowerMetalRect.placedBox.LL.y;
@@ -1210,7 +1173,7 @@ void PowerRouter::ConvertVia(RouterDB::Via &temp_via,PnRDB::Via& pnr_via){
   if(drc_info.Metalmap.find(pnr_via.UpperMetalRect.metal)!=drc_info.Metalmap.end()){
        temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_via.UpperMetalRect.metal];
      }else{
-       std::cout<<"Router-Error: Metal map error"<<std::endl;
+       spdlog::error("Power Router-Error: - Metal map Error");
      }
   temp_via.UpperMetalRect.placedLL.x = pnr_via.UpperMetalRect.placedBox.LL.x;
   temp_via.UpperMetalRect.placedLL.y = pnr_via.UpperMetalRect.placedBox.LL.y;
@@ -1231,7 +1194,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
        if(drc_info.Metalmap.find(pnr_pin.pinContacts[k].metal)!=drc_info.Metalmap.end()){
            temp_contact.metal=drc_info.Metalmap[pnr_pin.pinContacts[k].metal];
         }else{
-           std::cout<<"Router-Error: the metal pin contact of block is not found"<<std::endl;
+           spdlog::error("Power Router-Error: the metal pin contact of block is not found");
         }
        temp_contact.placedLL.x=pnr_pin.pinContacts[k].placedBox.LL.x;
        temp_contact.placedLL.y=pnr_pin.pinContacts[k].placedBox.LL.y;
@@ -1253,7 +1216,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
         if(drc_info.Viamap.find(pnr_pin.pinVias[k].ViaRect.metal)!=drc_info.Viamap.end()){
              temp_via.ViaRect.metal = drc_info.Viamap[pnr_pin.pinVias[k].ViaRect.metal];
           }else{
-             std::cout<<"Router-Error: - Viamap Error"<<std::endl;
+             spdlog::error("Power Router-Error: - Viamap Error");
           }
         temp_via.ViaRect.placedLL.x = pnr_pin.pinVias[k].ViaRect.placedBox.LL.x;
         temp_via.ViaRect.placedLL.y = pnr_pin.pinVias[k].ViaRect.placedBox.LL.y;
@@ -1265,7 +1228,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
         if(drc_info.Metalmap.find(pnr_pin.pinVias[k].LowerMetalRect.metal)!=drc_info.Metalmap.end()){
              temp_via.LowerMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].LowerMetalRect.metal];
            }else{
-             std::cout<<"Router-Error: Metal map error"<<std::endl;
+             spdlog::error("Power Router-Error: Metal map error");
            }
          temp_via.LowerMetalRect.placedLL.x = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.x;
          temp_via.LowerMetalRect.placedLL.y = pnr_pin.pinVias[k].LowerMetalRect.placedBox.LL.y;
@@ -1277,7 +1240,7 @@ void PowerRouter::ConvertPin(RouterDB::Pin& temp_pin,PnRDB::pin& pnr_pin){
          if(drc_info.Metalmap.find(pnr_pin.pinVias[k].UpperMetalRect.metal)!=drc_info.Metalmap.end()){
               temp_via.UpperMetalRect.metal = drc_info.Metalmap[pnr_pin.pinVias[k].UpperMetalRect.metal];
             }else{
-              std::cout<<"Router-Error: Metal map error"<<std::endl;
+              spdlog::error("Power Router-Error: Metal map error");
             }
          temp_via.UpperMetalRect.placedLL.x = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.x;
          temp_via.UpperMetalRect.placedLL.y = pnr_pin.pinVias[k].UpperMetalRect.placedBox.LL.y;
@@ -1405,7 +1368,6 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
       node.Vdd.vias.push_back(temp_via);
      }
   node.Vdd.name = Vdd_grid.name;
-  std::cout<<"Power grid name "<<node.Vdd.name<<std::endl;
 //Gnd
   for(unsigned int i=0;i<Gnd_grid.metals.size();i++){
       PnRDB::Metal temp_metal;
@@ -1419,7 +1381,6 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
       node.Gnd.vias.push_back(temp_via);
      }
   node.Gnd.name = Gnd_grid.name;
-  std::cout<<"Power grid name "<<node.Gnd.name<<std::endl;
 
 };
 
