@@ -1,20 +1,19 @@
 #include "Graph.h"
+#include "spdlog/spdlog.h"
 
 Graph::Graph(Grid& grid):path_number(1) {
-
-  std::cout<<"Start Creating adjacent list (graph), ";
+  spdlog::debug("Start Creating adjacent list (graph)");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating adjacent list (graph)"<<std::endl;
+  spdlog::debug("End Creating adjacent list (graph)");
 
 };
 
 Graph::Graph(Grid& grid, bool Power_grid):path_number(1) {
 
-  std::cout<<"Enter Graph, ";
   this->source=-1; this->dest=-1;
-  std::cout<<"Start Creating power grid (graph), ";
+  spdlog::debug("Start Creating power grid (graph)");
   CreatePower_Grid(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating power grid (graph)"<<std::endl;
+  spdlog::debug("End creating power grid (graph)");
 
 };
 
@@ -22,16 +21,13 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
   bool mark=false;
   for(int i =0;i<pathNo;++i){
     
-     std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
 
      std::vector<int> temp_path;
-     
-     std::cout<<"start dijkstra, "<<std::endl;
-
+     spdlog::debug("start dijkstra");
      temp_path = dijkstra();// grid.Source grid.dest
-     
-     std::cout<<"end dijkstra"<<std::endl; 
+     spdlog::debug("end dijkstra");
+
      if(temp_path.size()>0) {
      //update weight
      UpdateEdgeWeight(temp_path);
@@ -44,7 +40,7 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
      mark=true;
      } else {
        mark=(mark or false);
-       std::cout<<"Router-Warning: feasible path might not be found\n";
+       spdlog::info("Router-Warning: feasible path might not be found");
      }
   }
   return mark;
@@ -52,24 +48,19 @@ bool Graph::FindFeasiblePath(Grid& grid, int pathNo) {
 }
 
 Graph::Graph(Grid& grid, int pathNo) {
-
-  std::cout<<"Start Creating adjacent list (graph), ";
+  spdlog::debug("Start Creating adjacent list (graph),");
   CreateAdjacentList(grid); //create adjacentList base gird.LL_graph and gird.UR_graph
-  std::cout<<"End creating adjacent list (graph)"<<std::endl;
+  spdlog::debug("End creating adjacent list (graph)");
 
   this->path_number=pathNo;
   for(int i =0;i<pathNo;++i){
     
-     std::cout<<"Path No "<<pathNo<<" current path index "<<i<<std::endl;
      //find one shortest path
 
      std::vector<int> temp_path;
-     
-     std::cout<<"start dijkstra, "<<std::endl;
 
      temp_path = dijkstra();// grid.Source grid.dest
 
-     std::cout<<"end dijkstra"<<std::endl; 
      //update weight
      UpdateEdgeWeight(temp_path);
      
@@ -476,7 +467,7 @@ void Graph::RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int
     if(tar->second==idx) {mark=true; break;}
   }
   if(mark) {mmap.erase(tar);}
-  else {std::cout<<"Graph-Info: cannot found element in map\n";}
+  else {spdlog::debug("Graph-Info: cannot found element in map");}
   //  std::cout << "RemovefromMultMap: searched through " << count << " multmap nodes." << std::endl;
 }
 
@@ -503,25 +494,21 @@ std::vector<int>  Graph::dijkstra(){
 
   std::vector<int> temp_path;
 
-  std::cout<<"checkpoint 0"<<std::endl;
  
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
 
   std::vector<double> dist;
   dist.resize(graph.size());
   //double dist[graph.size()];
 
-  std::cout<<"check point 0.1"<<std::endl;
   std::vector<int> parent;
   parent.resize(graph.size());
   //int parent[graph.size()];
 
-  std::cout<<"check point 0.2"<<std::endl;
+
   std::vector<int> status;
   status.resize(graph.size());
   //int status[graph.size()];
 
-  std::cout<<"check point 0.3"<<std::endl;
 
   std::multimap<double, int> distMap;
     
@@ -532,11 +519,9 @@ std::vector<int>  Graph::dijkstra(){
         status[i] = 0;
      }
 
-  std::cout<<"checkpoint 1"<<std::endl;
   dist[source] = 0;
   status[source] = 1;
   distMap.insert ( std::pair<double,int>(dist[source], source) );
-  std::cout<<"checkpoint 2"<<std::endl;
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
@@ -574,9 +559,7 @@ std::vector<int>  Graph::dijkstra(){
           count++;
        }
 
-  std::cout<<"checkpoint 3"<<std::endl;
   printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;
@@ -587,25 +570,23 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
 
   std::vector<int> temp_path;
 
-  std::cout<<"checkpoint 0"<<std::endl;
  
-  std::cout<<"graph.size() "<<graph.size()<<std::endl;
 
   std::vector<double> dist;
   dist.resize(graph.size());
   //double dist[graph.size()];
 
-  std::cout<<"check point 0.1"<<std::endl;
+
   std::vector<int> parent;
   parent.resize(graph.size());
   //int parent[graph.size()];
 
-  std::cout<<"check point 0.2"<<std::endl;
+
   std::vector<int> status;
   status.resize(graph.size());
   //int status[graph.size()];
 
-  std::cout<<"check point 0.3"<<std::endl;
+
 
   for(unsigned int i = 0; i < graph.size(); ++i)
      {
@@ -614,10 +595,10 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
         status[i] = 0;
      }
 
-  std::cout<<"checkpoint 1"<<std::endl;
+
   dist[source] = 0;
   status[source] = 1;
-  std::cout<<"checkpoint 2"<<std::endl;
+
   int count=0;
   int v;
   //std::cout<<"graph source "<<source<<" vs graph dest "<<dest<<std::endl;
@@ -651,9 +632,9 @@ std::vector<int>  Graph::dijkstraRetire(Grid& grid){
           count++;
        }
 
-  std::cout<<"checkpoint 3"<<std::endl;
+
   printPath(parent, dest, graph.size(), temp_path);
-  std::cout<<"checkpoint 4"<<std::endl;
+
   //std::cout<<"temp path"<<std::endl;
   //for(int i=0;i<temp_path.size();i++) {std::cout<<temp_path[i]<<" "<<std::endl;}
   return temp_path;
