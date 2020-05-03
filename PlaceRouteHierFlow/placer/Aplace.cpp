@@ -112,7 +112,7 @@ void Aplace::ConjugateGrident(design& caseNL, string opath) {
 
 
 void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+  spdlog::info("Placer-Info: create gnuplot file");
   int Xmax=this->width;
   int Ymax=this->height;
   placerDB::point p, bp;
