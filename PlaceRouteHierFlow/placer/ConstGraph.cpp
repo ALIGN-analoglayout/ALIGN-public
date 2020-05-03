@@ -1414,24 +1414,24 @@ ConstGraph& ConstGraph::operator=(const ConstGraph &cg) {
 }
 
 void ConstGraph::PrintConstGraph() {
-  cout<<endl<<"== Constraint Graph =="<<endl;
-  cout<<"LAMBDA:"<<LAMBDA<<" GARMAR:"<<GAMAR<<" BETA:"<<BETA<<" origNodeSize:"<<origNodeSize<<" sourceNode:"<<sourceNode<<" sinkNode:"<<sinkNode<<endl;
-  cout<<endl<<"Horizontal graph"<<endl;
+  spdlog::info("== Constraint Graph ==");
+  spdlog::info("LAMBDA {0} GARMAR {1}  BETA {2} origNodeSize {3} sourceNode {4} sinkNode {5}",LAMBDA,GAMAR,BETA,origNodeSize,sourceNode,sinkNode);
+  spdlog::info("Horizontal graph");
   for(int i=0;i<(int)HGraph.size();i++) {
-    cout<<"Node "<<i<<": weight-"<<HGraph.at(i).weight<<" isSource-";
-    cout<<HGraph.at(i).isSource<<" isSink-"<<HGraph.at(i).isSink;
-    cout<<" isVirtual-"<<HGraph.at(i).isVirtual<<" position-"<<HGraph.at(i).position<<"<<"<<HGraph.at(i).precedent<<" backpost-"<<HGraph.at(i).backpost<<"<<"<<HGraph.at(i).backprec<<endl;
+    spdlog::info("Node {0} weight {1} isSource",i,HGraph.at(i).weight);
+    spdlog::info("{0} isSink {1}",HGraph.at(i).isSource,HGraph.at(i).isSink);
+    spdlog::info("isVirtual- {0} position {1} << {2} backpost {3} << {4}",HGraph.at(i).isVirtual,HGraph.at(i).position,HGraph.at(i).precedent,HGraph.at(i).backpost,HGraph.at(i).backprec);
     for(int j=0;j<(int)HGraph.at(i).Edges.size();j++) {
-      cout<<"\tEdge to "<<HGraph.at(i).Edges.at(j).next<<" weight "<<HGraph.at(i).Edges.at(j).weight<<" isBackward "<<HGraph.at(i).Edges.at(j).isBackward<<endl;
+      spdlog::info("Edge to {0} weight {1} isbackward {2}",HGraph.at(i).Edges.at(j).next,HGraph.at(i).Edges.at(j).weight,HGraph.at(i).Edges.at(j).isBackward);
     }
   }
-  cout<<endl<<"Vertical graph"<<endl;
+  spdlog::info("Vertical graph");
   for(int i=0;i<(int)VGraph.size();i++) {
-    cout<<"Node "<<i<<": weight-"<<VGraph.at(i).weight<<" isSource-";
-    cout<<VGraph.at(i).isSource<<" isSink-"<<VGraph.at(i).isSink;
-    cout<<" isVirtual-"<<VGraph.at(i).isVirtual<<" position-"<<VGraph.at(i).position<<"<<"<<VGraph.at(i).precedent<<" backpost-"<<VGraph.at(i).backpost<<"<<"<<VGraph.at(i).backprec<<endl;
+    spdlog::info("Node {0} weight {1} isSource",i,VGraph.at(i).weight);
+    spdlog::info("{0} isSink {1}",VGraph.at(i).isSource,VGraph.at(i).isSink);
+    spdlog::info("isVirtual- {0} position {1} << {2} backpost {3} << {4}",VGraph.at(i).isVirtual,VGraph.at(i).position,VGraph.at(i).precedent,VGraph.at(i).backpost,VGraph.at(i).backprec);
     for(int j=0;j<(int)VGraph.at(i).Edges.size();j++) {
-      cout<<"\tEdge to "<<VGraph.at(i).Edges.at(j).next<<" weight "<<VGraph.at(i).Edges.at(j).weight<<" isBackward "<<VGraph.at(i).Edges.at(j).isBackward<<endl;
+      spdlog::info("Edge to {0} weight {1} isbackward {2}",VGraph.at(i).Edges.at(j).next,VGraph.at(i).Edges.at(j).weight,VGraph.at(i).Edges.at(j).isBackward);
     }
   }
 }
@@ -5245,7 +5245,7 @@ void ConstGraph::updateTerminalCenterRetire(design& caseNL, SeqPair& caseSP) {
 void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile) {
   ofstream fout;
   fout.open(outfile.c_str());
-  cout<<"Placer-Info: write placement"<<endl;
+  spdlog::info("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5316,7 +5316,7 @@ void ConstGraph::WritePlacementAP(design& caseNL, Aplace& caseAP, string outfile
 void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile) {
   ofstream fout;
   fout.open(outfile.c_str());
-  cout<<"Placer-Info: write placement"<<endl;
+  spdlog::info("Placer-Info: write placement");
   fout<<"# TAMU blocks 1.0"<<endl<<endl;
   fout<<"DIE {"<<HGraph.at(sourceNode).position<<", "<<VGraph.at(sourceNode).position<<"} {"<<HGraph.at(sinkNode).position<<", "<<VGraph.at(sinkNode).position<<"}"<<endl<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
@@ -5385,7 +5385,7 @@ void ConstGraph::WritePlacement(design& caseNL, SeqPair& caseSP, string outfile)
 }
 
 void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+  spdlog::info("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
@@ -5455,10 +5455,8 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     fout<<"# block "<<caseNL.GetBlockName(i)<<" select "<<caseSP.GetBlockSelected(i)<<" bsize "<<newp.size()<<endl;
     for(int it=0; it<(int)newp.size(); it++ ) {
       fout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
-      cout<<"\t"<<newp[it].x<<"\t"<<newp[it].y<<endl;
     }
     fout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
-    cout<<"\t"<<newp[0].x<<"\t"<<newp[0].y<<endl;
     fout<<endl;
   }
   fout<<"\nEOF"<<endl;
@@ -5549,7 +5547,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
 
 
 void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile) {
-  cout<<"Placer-Info: create gnuplot file"<<endl;
+  spdlog::info("Placer-Info: create gnuplot file");
   placerDB::point p, bp;
   ofstream fout;
   vector<placerDB::point> p_pin;
