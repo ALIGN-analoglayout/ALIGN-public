@@ -1,4 +1,5 @@
 #include "design.h"
+#include "spdlog/spdlog.h"
 #include <cassert>
 
 design::design() {
@@ -26,8 +27,8 @@ design::design(design& other, int mode) {
     // Add big macros
     cout<<"Test: add macro"<<endl;
     for(std::vector<std::vector<block> >::iterator oit=other.Blocks.begin(); oit!=other.Blocks.end(); ++oit) {
-      std::cout<<"Block "<<oit-other.Blocks.begin()<<std::endl;
-      if(oit->back().bigMacro) { this->Blocks.resize(this->Blocks.size()+1); std::cout<<"Bigmarco\n"; }
+      spdlog::debug("Block {0}",oit-other.Blocks.begin());
+      if(oit->back().bigMacro) { this->Blocks.resize(this->Blocks.size()+1); spdlog::debug("Bigmarco");}
       for(std::vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it){
         it->mapIdx=-1; // reset mapping index
         if(it->bigMacro) { 
@@ -39,7 +40,7 @@ design::design(design& other, int mode) {
             it2->netIter=-1;
           }
           it->mapIdx=this->Blocks.size()-1;
-          std::cout<<"mapIdx "<<it->mapIdx<<std::endl;
+          spdlog::debug("mapIdx {0}",it->mapIdx);
         }
       }
     }
@@ -49,7 +50,7 @@ design::design(design& other, int mode) {
     //  this->Terminals.back().netIter=-1;
     //}
     // Add nets
-    cout<<"Test: add net"<<endl;
+    spdlog::debug("Test: add net");
     std::set<placerDB::Node, placerDB::nodeStructComp> seen;
     std::vector<placerDB::Node> bigs, smalls;
     int dnet=1;
@@ -132,7 +133,7 @@ design::design(design& other, int mode) {
               this->Blocks.at(nnode.iter2).at(w).blockPins.at(nnode.iter).netIter=this->Nets.size(); // link block to net
             }
           } else {
-            cout<<"Placer-Warning: unexpected node type"<<endl;
+            spdlog::info("Placer-Warning: unexpected node type");
           }
           newbigs.push_back(nnode);
         }
@@ -141,7 +142,8 @@ design::design(design& other, int mode) {
         std::set<int> sset;
         for(vector<placerDB::Node>::iterator it4=smalls.begin(); it4!=smalls.end(); ++it4) {
           if(it4->type==placerDB::Terminal) {
-            cout<<"Placer-Warning: unexpected node type"<<endl; continue;
+            spdlog::debug("Placer-Warning: unexpected node type");
+            continue;
           }
           if( sset.find(it4->iter2)==sset.end() ) {sset.insert(it4->iter2);}
         }
@@ -159,12 +161,12 @@ design::design(design& other, int mode) {
         //cout<<"Test: push new net"<<endl;
       } else {
         if(!smalls.empty()) {
-          cout<<"Placer-Error: found graphs only with small cells"<<endl;
+          spdlog::debug("Placer-Error: found graphs only with small cells");
         }
       }
     }
     // Add symmetry group
-    cout<<"Test: add symm group"<<endl;
+    spdlog::debug("Test: add symm group");
     int sbno=this->Blocks.size()+2;
     for(std::vector<placerDB::SymmBlock>::iterator sbit=other.SBlocks.begin(); sbit!=other.SBlocks.end(); ++sbit) {
       sbit->mapIdx=-1; // reset mapping index
@@ -213,7 +215,7 @@ design::design(design& other, int mode) {
     //other.PrintDesign();
     // Add matching blocks
     //
-    cout<<"Test: add matching block"<<endl;
+    spdlog::debug("Test: add matching block");
     for(vector<MatchBlock>::iterator it=other.Match_blocks.begin(); it!=other.Match_blocks.end(); ++it) {
       if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Match_blocks.resize(this->Match_blocks.size()+1);
@@ -222,7 +224,7 @@ design::design(design& other, int mode) {
       }
     }
     // Add preplace blocks
-    cout<<"Test: add preplace blocks"<<endl;
+    spdlog::debug("Test: add preplace blocks");
     for(vector<Preplace>::iterator it=other.Preplace_blocks.begin(); it!=other.Preplace_blocks.end(); ++it) {
       if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Preplace_blocks.resize(this->Preplace_blocks.size()+1);
@@ -234,7 +236,7 @@ design::design(design& other, int mode) {
       }
     }
     // Add aligned blocks
-    cout<<"Test: add aligned block"<<endl;
+    spdlog::debug("Test: add aligned block");
     for(vector<Alignment>::iterator it=other.Alignment_blocks.begin(); it!=other.Alignment_blocks.end(); ++it) {
       if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Alignment_blocks.resize(this->Alignment_blocks.size()+1);
@@ -245,7 +247,7 @@ design::design(design& other, int mode) {
       }
     }
     // Add abutted blocks
-    cout<<"Test: add abutted blocks"<<endl;
+    spdlog::debug("Test: add abutted blocks");
     for(vector<Abument>::iterator it=other.Abument_blocks.begin(); it!=other.Abument_blocks.end(); ++it) {
       if(other.Blocks.at(it->blockid1).back().bigMacro and other.Blocks.at(it->blockid2).back().bigMacro) {
         this->Abument_blocks.resize(this->Abument_blocks.size()+1);
@@ -256,7 +258,7 @@ design::design(design& other, int mode) {
       }
     }
     // Add align blocks
-    cout<<"Test: add algin blocks"<<endl;
+    spdlog::debug("Test: add algin blocks");
     for(vector<AlignBlock>::iterator it=other.Align_blocks.begin();it!=other.Align_blocks.end();++it) {
       std::vector<int> tmpB;
       for(std::vector<int>::iterator it2=it->blocks.begin(); it2!=it->blocks.end(); ++it2) {
@@ -268,29 +270,29 @@ design::design(design& other, int mode) {
         this->Align_blocks.back().horizon=it->horizon;
       }
     }
-    cout<<"Test: add paramenter"<<endl;
+    spdlog::debug("Test: add paramenter");
     PrintDesign();
     hasAsymBlock=checkAsymmetricBlockExist();
-    cout<<"Test: add paramenter 1"<<endl;
+    spdlog::debug("Test: add paramenter 1");
     hasSymGroup=(not this->SBlocks.empty());
-    cout<<"Test: add paramenter 2"<<endl;
+    spdlog::debug("Test: add paramenter 2");
     noBlock4Move=GetSizeBlock4Move(1);
-    cout<<"Test: add paramenter 3"<<endl;
+    spdlog::debug("Test: add paramenter 3");
     noAsymBlock4Move=GetSizeAsymBlock4Move(1);
-    cout<<"Test: add paramenter 4"<<endl;
+    spdlog::debug("Test: add paramenter 4");
     noSymGroup4FullMove=GetSizeSymGroup4FullMove(1);
-    cout<<"Test: add paramenter 5"<<endl;
+    spdlog::debug("Test: add paramenter 5");
     noSymGroup4PartMove=noSymGroup4FullMove;
-    cout<<"Test: add paramenter 6"<<endl;
+    spdlog::debug("Test: add paramenter 6");
 
     other.noBlock4Move=other.GetSizeBlock4Move(0);
-    cout<<"Test: add paramenter 7"<<endl;
+    spdlog::debug("Test: add paramenter 7");
     other.noAsymBlock4Move=other.GetSizeAsymBlock4Move(0);
-    cout<<"Test: add paramenter 8"<<endl;
+    spdlog::debug("Test: add paramenter 8");
     other.noSymGroup4FullMove=other.GetSizeSymGroup4FullMove(0);
-    cout<<"Test: add paramenter 9"<<endl;
+    spdlog::debug("Test: add paramenter 9");
     other.noSymGroup4PartMove=other.GetSizeSymGroup4PartMove(0);
-    cout<<"Test: add paramenter 10"<<endl;
+    spdlog::debug("Test: add paramenter 10");
 /*
     for(vector<placerDB::net>::iterator it=other.Nets.begin(); it!=other.Nets.end(); ++it) {
       int sink=0;
@@ -415,7 +417,7 @@ design::design(PnRDB::hierNode& node) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
+      else {spdlog::error("Placer-Error: incorrect connected node type"); assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet.connected.push_back(tmpnode);
     }
@@ -433,7 +435,7 @@ design::design(PnRDB::hierNode& node) {
       placerDB::Smark axis;
       if(sit->second==PnRDB::H) {axis=placerDB::H;}
       else if (sit->second==PnRDB::V) {axis=placerDB::V;}
-      else {cout<<"Placer-Error: incorrect Smark"<<endl; continue;}
+      else {spdlog::debug("Placer-Error: incorrect Smark"); continue;}
       this->SPBlocks.back().selfsym.push_back(make_pair(sit->first, axis));
     }
   }
@@ -446,7 +448,7 @@ design::design(PnRDB::hierNode& node) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
+      else {spdlog::error("Placer-Error: incorrect connected node type"); assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet1.connected.push_back(tmpnode);
     }
@@ -456,7 +458,7 @@ design::design(PnRDB::hierNode& node) {
       placerDB::NType tmptype = placerDB::Block;
       if (nit->type==PnRDB::Block) {tmptype=placerDB::Block;}
       else if (nit->type==PnRDB::Terminal) {tmptype=placerDB::Terminal;}
-      else {cerr<<"Placer-Error: incorrect connected node type"<<endl; assert(0);}
+      else {spdlog::error("Placer-Error: incorrect connected node type"); assert(0);}
       placerDB::Node tmpnode={tmptype, nit->iter, nit->iter2};
       tmpnet2.connected.push_back(tmpnode);
     }
@@ -557,7 +559,6 @@ int design::GetSizeSymGroup4PartMove(int mode) {
   int ss=0;
   if(mode==0) {
     for(unsigned int i=0;i<this->SBlocks.size();++i) {
-      std::cout<<"i "<<i<<std::endl;
       bool mark=false;
       for(std::vector< std::pair<int,int> >::iterator it=this->SBlocks.at(i).sympair.begin(); it!=this->SBlocks.at(i).sympair.end() and !mark; ++it) {
         if(it->first<this->GetSizeofBlocks() and it->second<this->GetSizeofBlocks()) {
@@ -1245,152 +1246,142 @@ design& design::operator= (const design& other) {
 }
 
 void design::PrintDesign() {
-  cout<<"== Print Design "<<endl;
-  cout<<"bias_Vgraph: "<<bias_Vgraph<<" mixFlag: "<<mixFlag<<endl;
-  cout<<"bias_Hgraph: "<<bias_Hgraph<<" mixFlag: "<<mixFlag<<endl;
+  spdlog::info("== Print Design ");
+  spdlog::info("bias_Vgraph: {0} mixFlag: {1}",bias_Vgraph,mixFlag);
+  spdlog::info("bias_Hgraph: {0} mixFlag: {1}",bias_Hgraph,mixFlag);
   PrintBlocks();
   PrintTerminals();
   PrintNets();
   PrintConstraints();
   PrintSymmGroup();
   for(unsigned int i=0;i<SNets.size();++i) {
-    std::cout<<"Symmetry net "<<i<<" SBidx "<<SNets.at(i).SBidx<<std::endl;
+    spdlog::debug("Symmetry net {0} SBidx {1}",i,SNets.at(i).SBidx);
   }
   for(unsigned int i=0;i<Port_Location.size();++i) {
-    std::cout<<"Port location "<<Port_Location.at(i).tid<<" @ "<<Port_Location.at(i).pos<<std::endl; 
+    spdlog::debug("Port location {0} @ {1}",Port_Location.at(i).tid,Port_Location.at(i).pos); 
   }
 }
 
 void design::PrintSymmGroup() {
-  cout<<endl<<"=== Symmetric Groups ==="<<endl;
+  spdlog::debug("=== Symmetric Groups ===");
   for(vector<placerDB::SymmBlock>::iterator si=SBlocks.begin(); si!=SBlocks.end(); ++si) {
-    cout<<"Group node: "<<si->dnode<<" mapIdx: "<<si->mapIdx<<endl;
+    spdlog::debug("Group node: {0} mapIdx {1}",si->dnode,si->mapIdx);
     for(vector<pair<int,int> >::iterator pi=si->sympair.begin(); pi!=si->sympair.end(); ++pi) {
-      cout<<"\tsymmetric pair "<<pi->first<<" vs "<<pi->second<<endl;
+      spdlog::debug("symmetric pair {0} vs {1}",pi->first,pi->second);
     }
     for(vector<pair<int,placerDB::Smark> >::iterator pi=si->selfsym.begin(); pi!=si->selfsym.end(); ++pi) {
-      cout<<"\tself-symmetric "<<pi->first<<" at "<<pi->second<<endl;
+      spdlog::debug("self-symmetric {0} at {1}",pi->first,pi->second);
     }
   }
 }
 
 void design::PrintBlocks() {
-  cout<<"=== Blocks ==="<<endl;
+  spdlog::debug("=== Blocks ===");
   for(std::vector<std::vector<block> >::iterator oit=Blocks.begin(); oit!=Blocks.end(); ++oit) {
-    std::cout<<"Block idx "<<oit-Blocks.begin()<<std::endl;
+    spdlog::debug("Block idx {0}",oit-Blocks.begin());
     for(vector<block>::iterator it=oit->begin(); it!=oit->end(); ++it) {
-      cout<<"Choice: "<<it-oit->begin()<<"; Name: "<<(*it).name<<"; SBidx: "<<it->SBidx<<"; counterpart: "<<it->counterpart<<"; macro: "<<it->bigMacro<<"; mapIdx: "<<it->mapIdx<<endl;
-      cout<<"\ttype: "<<(*it).type<<"; width: "<<(*it).width<<"; height: "<<(*it).height<<"; bbox: ";
+      spdlog::debug("Choice {0} Name {1} SBidx {2} counterpart {3} macro {4} mapIdx {5}",it-oit->begin(),(*it).name,it->SBidx,it->counterpart,it->bigMacro,it->mapIdx);
+      spdlog::debug("type {0} width {1} heigt {2} bbox",(*it).type,(*it).width,(*it).height);
       for(vector<placerDB::point>::iterator it2=(*it).boundary.polygon.begin(); it2!=(*it).boundary.polygon.end(); ++it2 ) {
-        cout<<"{"<<(*it2).x<<","<<(*it2).y<<"}";
+        spdlog::debug("{0} {1}",(*it2).x,(*it2).y);
       }
       cout<<endl;
       for(vector<block::pin>::iterator it3=it->blockPins.begin(); it3!=it->blockPins.end(); ++it3) {
-        cout<<"\tPin: "<<it3->name<<" net:"<<it3->netIter<<" center:";
+        spdlog::debug("Pin {0} net {1} center",it3->name,it3->netIter);
         for(vector<placerDB::point>::iterator it4=it3->center.begin();it4!=it3->center.end();++it4) {
-          cout<<" {"<<it4->x<<","<<it4->y<<"}";
+          spdlog::debug("{0} {1}",it4->x,it4->y);
         }
-        cout<<"\t\tbbox: ";
+        spdlog::debug("bbox");
         for(vector<placerDB::bbox>::iterator it5=it3->boundary.begin();it5!=it3->boundary.end();++it5) {
-          cout<<" {";
           for(vector<placerDB::point>::iterator it4=it5->polygon.begin(); it4!=it5->polygon.end(); ++it4) {
-            cout<<" {"<<it4->x<<","<<it4->y<<"}";
+            spdlog::debug("{0} {1}",it4->x,it4->y);
           }
-          cout<<" }";
         }
-        cout<<endl;
       }
-      cout<<endl;
     }
   }
 }
 
 void design::PrintConstraints() {
-  cout<<"=== SymmNet Constraits ==="<<endl;
+  spdlog::debug("=== SymmNet Constraits ===");
   for(vector<SymmNet>::iterator it=SNets.begin(); it!=SNets.end(); ++it) {
-    cout<<it->net1.name;
-    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ++ni) {
-      cout<<"-{"<<ni->type<<","<<ni->iter<<","<<ni->iter2<<"}";
-      if(ni->type==placerDB::Block) {cout<<"@"<<Blocks.at(ni->iter2).back().name<<"/"<<Blocks.at(ni->iter2).back().blockPins.at(ni->iter).name;}
-      if(ni->type==placerDB::Terminal) {cout<<"@"<<Terminals.at(ni->iter).name;}
+    spdlog::debug("{0}",it->net1.name);
+    for(vector<placerDB::Node>::iterator ni=it->net1.connected.begin(); ni!=it->net1.connected.end(); ++ni) { 
+      spdlog::debug("{0} {1} {2}",ni->type, ni->iter, ni->iter2);
+      if(ni->type==placerDB::Block) {spdlog::debug("@ {0} / {1}",Blocks.at(ni->iter2).back().name,Blocks.at(ni->iter2).back().blockPins.at(ni->iter).name);}
+      if(ni->type==placerDB::Terminal) {spdlog::debug("@ {0}",Terminals.at(ni->iter).name);}
     }
-    cout<<" "<<it->net2.name;
+    spdlog::debug("{0} ",it->net2.name);
     for(vector<placerDB::Node>::iterator ni=it->net2.connected.begin(); ni!=it->net2.connected.end(); ++ni) {
-      cout<<"-{"<<ni->type<<","<<ni->iter<<","<<ni->iter2<<"}";
-      if(ni->type==placerDB::Block) {cout<<"@"<<Blocks.at(ni->iter2).back().name<<"/"<<Blocks.at(ni->iter2).back().blockPins.at(ni->iter).name;}
-      if(ni->type==placerDB::Terminal) {cout<<"@"<<Terminals.at(ni->iter).name;}
+      spdlog::debug("{0} {1} {2}",ni->type, ni->iter, ni->iter2);
+      if(ni->type==placerDB::Block) {spdlog::debug("@ {0} / {1}",Blocks.at(ni->iter2).back().name,Blocks.at(ni->iter2).back().blockPins.at(ni->iter).name);}
+      if(ni->type==placerDB::Terminal) {spdlog::debug("@ {0}",Terminals.at(ni->iter).name);}
     }
-    cout<<endl;
   }
-  cout<<"=== SymmPairBlock Constraints ==="<<endl;
+  spdlog::debug("=== SymmPairBlock Constraints ===");
   for(vector<SymmPairBlock>::iterator it=SPBlocks.begin(); it!=SPBlocks.end(); ++it) {
     for(vector< pair<int,int> >::iterator sit=it->sympair.begin(); sit!=it->sympair.end(); ++sit ) {
-      cout<<"sympair "<<sit->first<<"@"<<Blocks.at(sit->first).back().name<<" vs "<<sit->second<<"@"<<Blocks.at(sit->second).back().name<<endl;
+      spdlog::debug("sympair {0} @ {1} vs {2} @ {3}", sit->first, Blocks.at(sit->first).back().name, sit->second, Blocks.at(sit->second).back().name);
     }
     for(vector< pair<int,placerDB::Smark> >::iterator sit=it->selfsym.begin();sit!=it->selfsym.end();++sit) {
-      cout<<"selfsym "<<sit->first<<"@"<<Blocks.at(sit->first).back().name<<" symmetric to "<<sit->second<<endl;
+      spdlog::debug("selfsym {0} @ {1} symmetric to {2}",sit->first,Blocks.at(sit->first).back().name,sit->second);
     }
   }
-  cout<<"=== Preplace_blocks Constraits ==="<<endl;
+  spdlog::debug("=== Preplace_blocks Constraits ===");
   for(vector<Preplace>::iterator it=Preplace_blocks.begin();it!=Preplace_blocks.end();++it) {
-    cout<<"block1-"<<it->blockid1<<" ;block2-"<<it->blockid2<<" ;corner-"<<it->conner<<" ;distance-"<<it->distance<<" ;horizon-"<<it->horizon<<endl;
+    spdlog::debug("block1 {0} block2 {1} corner {2} distance {3} horizon {4}",it->blockid1,it->blockid2,it->conner,it->distance,it->horizon);
   }
-  cout<<"=== Alignment_blocks Constraits ==="<<endl;
+  spdlog::debug("=== Alignment_blocks Constraits ===");
   for(vector<Alignment>::iterator it=Alignment_blocks.begin();it!=Alignment_blocks.end();++it) {
-    cout<<"block1-"<<it->blockid1<<" ;block2-"<<it->blockid2<<" ;distance-"<<it->distance<<" ;horizon-"<<it->horizon<<endl;
+    spdlog::debug("block1 {0} block2 {1} distance {2} horizon {3}",it->blockid1,it->blockid2,it->distance,it->horizon);
   }
-  cout<<"=== Abument_blocks Constraits ==="<<endl;
+  spdlog::debug("=== Abument_blocks Constraits ===");
   for(vector<Abument>::iterator it=Abument_blocks.begin();it!=Abument_blocks.end();++it) {
-    cout<<"block1-"<<it->blockid1<<" ;block2-"<<it->blockid2<<" ;distance-"<<it->distance<<" ;horizon-"<<it->horizon<<endl;
+    spdlog::debug("block1 {0} block2 {1} distance {2} horizon {3}",it->blockid1,it->blockid2,it->distance,it->horizon);
   }
-  cout<<"=== Match_blocks Constraits ==="<<endl;
+  spdlog::debug("=== Match_blocks Constraits ===");
   for(vector<MatchBlock>::iterator it=Match_blocks.begin();it!=Match_blocks.end();++it) {
-    cout<<"block1-"<<it->blockid1<<" ;block2-"<<it->blockid2<<endl;
+    spdlog::debug("block1 {0} block2 {1}",it->blockid1,it->blockid2);
   }
-  cout<<"=== Align_blocks Constraints ==="<<endl;
+  spdlog::debug("=== Align_blocks Constraints ===");
   for(vector<AlignBlock>::iterator it=Align_blocks.begin();it!=Align_blocks.end();++it) {
-    cout<<it->horizon<<" @ ";
+    spdlog::debug("@");
     for(vector<int>::iterator it2=it->blocks.begin();it2!=it->blocks.end();++it2) {
-      cout<<*it2<<" ";
+      spdlog::debug(" {0} ",*it2);
     }
-    cout<<endl;
   }
 }
 
 void design::PrintTerminals() {
-  cout<<"=== Terminals ==="<<endl;
+  spdlog::debug("=== Terminals ===");
   for(vector<terminal>::iterator it=Terminals.begin(); it!=Terminals.end(); ++it) {
-    cout<<"Name: "<<it->name<<" net:"<<it->netIter<<"@";
-    if(it->netIter>=0) {cout<<Nets.at(it->netIter).name;}
-    cout<<" SBidx:"<<it->SBidx<<" counterpart:"<<it->counterpart;
-    cout<<endl;
+    spdlog::debug("Name: {0} net: {1} @",it->name,it->netIter);
+    if(it->netIter>=0) {spdlog::debug(" {0} ",Nets.at(it->netIter).name);}
+    spdlog::debug(" SBidx: {0} counterpart: {1}",it->SBidx,it->counterpart);
   }
-  cout<<endl;
 }
 
 void design::PrintNets() {
-  cout<<"=== Nets ==="<<endl;
+  spdlog::debug("=== Nets ===");
   for(vector<placerDB::net>::iterator it=Nets.begin(); it!=Nets.end(); ++it) {
-    cout<<"Name: "<<(*it).name<<" Weight: "<<it->weight<<" Priority: "<<it->priority<<endl;
-    cout<<"Name: "<<(*it).name<<" Priority: "<<it->priority<<" Margin: "<<it->margin<<endl;
-    cout<<"\tConnected: "<<endl;
+    spdlog::debug("Name: {0} Weight: {1} Priority: {2}",(*it).name,it->weight,it->priority);
+    spdlog::debug("Name: {0} Priority: {1} Margin: {2}",(*it).name,it->priority,it->margin);
+    spdlog::debug("Connected: ");
     for(vector<placerDB::Node>::iterator it2=it->connected.begin(); it2!=it->connected.end(); ++it2) {
-      cout<<"\t\ttype: "<<it2->type<<"; iter: "<<it2->iter<<"; iter2:"<<it2->iter2;
-
+      spdlog::debug("type: {0} iter {1} iter2 {2}",it2->type,it2->iter,it2->iter2);
       if(it2->type==placerDB::Block) {
 	auto blk=Blocks.at(it2->iter2);
-	if ( blk.size() == 0) {  
-	  cout<<" <empty>"<<endl;
+	if ( blk.size() == 0) { 
+          spdlog::debug(" <empty>"); 
 	} else {
 	  auto tmp=blk.back();
 	  auto tmp2=tmp.blockPins.at(it2->iter);
-	  cout<<" "<<tmp.name<<"/"<<tmp2.name<<endl;
+          spdlog::debug("{0} / {1}",tmp.name,tmp2.name);
 	}
       }
-      if(it2->type==placerDB::Terminal) {cout<<" "<<Terminals.at(it2->iter).name<<endl;}
+      if(it2->type==placerDB::Terminal) {spdlog::debug("{0}",Terminals.at(it2->iter).name);}
     }
   }
-  cout<<endl;
 }
 
 int design::GetBlockWidth(int blockid, placerDB::Omark ort, int sel) {
@@ -1637,7 +1628,7 @@ vector<pair<int,int> > design::checkSelfsymInSymmBlock(vector<placerDB::SymmBloc
 }
 
 placerDB::point design::GetMultPolyCenterPoint(vector<placerDB::point>& pL) {
-  if(pL.empty()) {cerr<<"Placer-Error: empty input"<<endl;}
+  if(pL.empty()) {spdlog::debug("Placer-Error: empty input");}
   int x=pL.at(0).x, X=pL.at(0).x, y=pL.at(0).y, Y=pL.at(0).y;
   for(vector<placerDB::point>::iterator it=pL.begin()+1;it!=pL.end();++it) {
     if(it->x<x) {x=it->x; }
@@ -1671,7 +1662,7 @@ void design::constructSymmGroup() {
     for(unsigned int i=0;i<sni->net1.connected.size();++i) {
       //std::cout<<"type "<<sni->net1.connected.at(i).type<<" vs "<<sni->net2.connected.at(i).type<<std::endl;
       if(sni->net1.connected.at(i).type!=sni->net2.connected.at(i).type) {
-        cout<<"Placer-Warning: different object type found in symmetric nets! Skip those objects..."<<endl; continue;
+        spdlog::debug("Placer-Warning: different object type found in symmetric nets! Skip those objects...");
       }
       if(sni->net1.connected.at(i).type==placerDB::Terminal) {
         //cout<<sni->net1.connected.at(i).iter<<endl;
@@ -1696,19 +1687,19 @@ void design::constructSymmGroup() {
           placerDB::Smark tsmark= placerDB::H;
           //placerDB::Smark tsmark= ( abs(p1.x-p2.x)<abs(p1.y-p2.y) ) ? placerDB::V : placerDB::H;
           tmpselfsym.push_back(make_pair(tpair.first, tsmark));
-        } else {cout<<"Placer-Warning: self-symmetric terminal found! Skip this object..."<<endl;continue;}
+        } else {spdlog::debug("Placer-Warning: self-symmetric terminal found! Skip this object...");continue;}
       } else { // if paired-symmetric block
         tmpsympair.push_back(tpair);
       }
     }
     for(unsigned int i=0;i<tmpsympair.size();++i) {
-      cout<<"paired-symmectric: "<<tmpsympair.at(i).first<<","<<tmpsympair.at(i).second<<endl;
+      spdlog::debug("paired-symmectric: {0} {1}",tmpsympair.at(i).first,tmpsympair.at(i).second);
     }
     for(unsigned int i=0;i<tmpselfsym.size();++i) {
-      cout<<"self-symmectric: "<<tmpselfsym.at(i).first<<","<<tmpselfsym.at(i).second<<endl;
+      spdlog::debug("self-symmectric: {0} {1}",tmpselfsym.at(i).first,tmpselfsym.at(i).second);
     }
     int sbidx=MergeNewBlockstoSymmetryGroup(tmpsympair, tmpselfsym, SBs, this->SNets);
-    std::cout<<"Placer-Info: symmetry net "<<sni-SNets.begin()<<" sbidx "<<sbidx<<std::endl;
+    spdlog::debug("Placer-Info: symmetry net {0} sbidx {1}",sni-SNets.begin(),sbidx);
     sni->SBidx=sbidx;
     //vector<pair<int,int> > matchedPair,matchedSelf;
     //matchedPair=checkSympairInSymmBlock(SBs, tmpsympair);
@@ -1847,7 +1838,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
   int sbidx=-1;
   if(matchedPair.empty()) {
     if(matchedSelf.empty()) { // neither matched
-      cout<<"New symmetric group "<<endl;
+      spdlog::debug("New symmetric group ");
       SBs.resize(SBs.size()+1);
       SBs.back().sympair=tmpsympair;
       SBs.back().selfsym=tmpselfsym;
@@ -1859,7 +1850,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         if(itt->first!=gidx) {
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
-          cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          spdlog::debug("Move SB# {0} to SB# {1}",itt->first,gidx);
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1867,7 +1858,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           }
         }
       }
-      cout<<"Append symmetric group #"<<gidx<<endl;
+      spdlog::debug("Append symmetric group # {0}",gidx);
       for(unsigned int i=0;i<tmpsympair.size();++i) { SBs.at(gidx).sympair.push_back( tmpsympair.at(i) ); }
       for(unsigned int i=0;i<tmpselfsym.size();++i) {
         bool found=false;
@@ -1885,7 +1876,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         if(itt->first!=gidx) {
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
-          cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          spdlog::debug("Move SB# {0} to SB# {1}",itt->first,gidx);
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1893,7 +1884,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
           }
         }
       }
-      cout<<"Append symmetric group #"<<gidx<<endl;
+      spdlog::debug("Append symmetric group # {0}",gidx);
       for(unsigned int i=0;i<tmpsympair.size();++i) { 
         bool found=false;
         for(vector<pair<int,int> >::iterator mit=matchedPair.begin();mit!=matchedPair.end();++mit) {
@@ -1909,7 +1900,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         if(itt->first!=gidx) {
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
-          cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          spdlog::debug("Move SB# {0} to SB# {1}",itt->first,gidx);
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
@@ -1921,7 +1912,7 @@ int design::MergeNewBlockstoSymmetryGroup(vector< pair<int,int> >& tmpsympair,  
         if(itt->first!=gidx) {
           for(vector<pair<int,int> >::iterator spit=SBs.at(itt->first).sympair.begin();spit!=SBs.at(itt->first).sympair.end();++spit) {SBs.at(gidx).sympair.push_back(*spit);}
           for(vector<pair<int,placerDB::Smark> >::iterator spit=SBs.at(itt->first).selfsym.begin();spit!=SBs.at(itt->first).selfsym.end();++spit) {SBs.at(gidx).selfsym.push_back(*spit);}
-          cout<<"Move SB#"<<itt->first<<" to SB#"<<gidx<<endl;
+          spdlog::debug("Move SB# {0} to SB# {1}",itt->first,gidx);
           SBs.at(itt->first).sympair.clear();
           SBs.at(itt->first).selfsym.clear();
           for(vector<SymmNet>::iterator nit=SNs.begin(); nit!=SNs.end(); ++nit) {
