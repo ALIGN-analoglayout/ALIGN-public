@@ -28,6 +28,7 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
   this->temp_report.node_name = HierNode.name + "_" + std::to_string(HierNode.n_copy);
+  this->PowerNets = GR.PowerNets;
   calculate_extension_length();
 
   printNetsInfo(); 
@@ -449,6 +450,13 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
           Set_x_contact.erase(Contact2Sinkdata(cit->UpperMetalRect));
           Set_x_contact.erase(Contact2Sinkdata(cit->LowerMetalRect));
         }
+      }
+    }
+  }
+  for (std::vector<RouterDB::PowerNet>::iterator nit = PowerNets.begin(); nit != PowerNets.end(); ++nit) {
+    for (std::vector<RouterDB::Pin>::iterator pit = nit->pins.begin(); pit != nit->pins.end(); ++pit) {
+      for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+        Set_x_contact.insert(Contact2Sinkdata(*cit));
       }
     }
   }
@@ -921,6 +929,7 @@ void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::poin
       }
     }
   }
+
 }
 
 void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via){
@@ -3273,6 +3282,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundY>newURy){
+          newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          newURy = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundY = newLLy;
+        }
+
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3294,6 +3311,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundY>newURy){
+          newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          newURy = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundY = newLLy;
+        }
+
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
@@ -3325,6 +3350,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundX>newURx){
+          newLLx = floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+          newURx = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundX = newLLx;
+        }
+
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
@@ -3347,6 +3380,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundX>newURx){
+          newLLx = floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+          newURx = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundX = newLLx;
+        }
+
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
