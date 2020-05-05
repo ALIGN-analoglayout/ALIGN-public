@@ -1,5 +1,5 @@
 .subckt powertrain_cell ond vcc vout
-mmp0 vout ond vcc vcc p w=180n l=40n nfin=128
+mmp0 vout ond vcc vcc p w=180n l=40n nfin=4 nf=8 m=4
 .ends
 
 .subckt powertrain_binary on_d[5] on_d[4] on_d[3] on_d[2] on_d[1] on_d[0] vcc vout
