@@ -16,18 +16,19 @@ GcellDetailRouter::GcellDetailRouter(PnRDB::hierNode& HierNode, GcellGlobalRoute
   this->highest_metal = GR.highest_metal;
   this->width = GR.width;
   this->height = GR.height;
-  this->LL.x = 0;
-  this->LL.y = 0;
-  this->UR.x = GR.width;
-  this->UR.y = GR.height;
-  this->LL=GR.LL;
-  this->UR=GR.UR;
+  this->LL.x = GR.LL.x;
+  this->LL.y = GR.LL.y;
+  this->UR.x = GR.UR.x;
+  this->UR.y = GR.UR.y;
+  //this->LL=GR.LL;
+  //this->UR=GR.UR;
   this->path_number = path_number;
   this->grid_scale = grid_scale;
   this->layerNo = GR.drc_info.Metal_info.size();
   this->isTop = GR.isTop;
   this->Gcell = GR.Gcell;
-  this->temp_report.node_name = HierNode.name;
+  this->temp_report.node_name = HierNode.name + "_" + std::to_string(HierNode.n_copy);
+  this->PowerNets = GR.PowerNets;
   calculate_extension_length();
 
   printNetsInfo(); 
@@ -452,6 +453,13 @@ void GcellDetailRouter::ReturnInternalMetalContact(std::set<RouterDB::SinkData, 
       }
     }
   }
+  for (std::vector<RouterDB::PowerNet>::iterator nit = PowerNets.begin(); nit != PowerNets.end(); ++nit) {
+    for (std::vector<RouterDB::Pin>::iterator pit = nit->pins.begin(); pit != nit->pins.end(); ++pit) {
+      for (std::vector<RouterDB::contact>::iterator cit = pit->pinContacts.begin(); cit != pit->pinContacts.end(); ++cit) {
+        Set_x_contact.insert(Contact2Sinkdata(*cit));
+      }
+    }
+  }
 };
 
 void GcellDetailRouter::Initial_rouer_report_info(PnRDB::routing_net &temp_routing_net, int i){
@@ -504,10 +512,10 @@ Grid GcellDetailRouter::Generate_Grid_Net(int i){
 
   RouterDB::point chip_LL;
   RouterDB::point chip_UR;
-  chip_LL.x = 0;
-  chip_LL.y = 0;
-  chip_UR.x = width;
-  chip_UR.y = height;
+  chip_LL.x = LL.x;
+  chip_LL.y = LL.y;
+  chip_UR.x = UR.x;
+  chip_UR.y = UR.y;
   int STindex = Nets[i].STindex;
 
   std::vector<std::pair<int,int> > global_path = Nets[i].STs[STindex].path;
@@ -901,12 +909,12 @@ void GcellDetailRouter::create_detailrouter_old(){
    }
 };
 
-void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Block> &Blocks){
+void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
+                                          std::vector<RouterDB::Block> &Blocks) {
   std::pair<int, RouterDB::point> via_point;
-  //insert via point into via set
-  for (unsigned int bit = 0; bit < Blocks.size(); bit++)
-  {
-    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size();vit++){
+  // insert via point into via set
+  for (unsigned int bit = 0; bit < Blocks.size(); bit++) {
+    for (unsigned int vit = 0; vit < Blocks[bit].InternalVia.size(); vit++) {
       via_point.first = Blocks[bit].InternalVia[vit].model_index;
       via_point.second.x = Blocks[bit].InternalVia[vit].position.x;
       via_point.second.y = Blocks[bit].InternalVia[vit].position.y;
@@ -921,6 +929,7 @@ void GcellDetailRouter::InsertInternalVia(std::set<std::pair<int, RouterDB::poin
       }
     }
   }
+
 }
 
 void GcellDetailRouter::InsertRoutingVia(A_star& a_star, Grid& grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via){
@@ -3273,6 +3282,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
         std::cout<<"converter check point 1"<<std::endl;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundY>newURy){
+          newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          newURy = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundY = newLLy;
+        }
+
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
              //std::cout<<"Plist problem"<<std::endl;
@@ -3294,6 +3311,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundY=floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
         int boundY=ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
         //newURy=ceil((double)newURy/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundY>newURy){
+          newLLy = floor((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          newURy = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundY = newLLy;
+        }
+
         std::cout<<"converter check point 2"<<std::endl;
         for(int y=boundY; y<=newURy; y+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
@@ -3325,6 +3350,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundX>newURx){
+          newLLx = floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+          newURx = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundX = newLLx;
+        }
+
          std::cout<<"converter check point 3"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){
@@ -3347,6 +3380,14 @@ void GcellDetailRouter::ConvertRect2GridPoints(std::vector<std::vector<RouterDB:
         //int boundX=floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
         int boundX=ceil((double)newLLx/nexlayer_unit)*nexlayer_unit;
         //newURx=ceil((double)newURx/nexlayer_unit)*nexlayer_unit;
+
+        //fix bug for power grid construction YG: 4/30/2020
+        if(boundX>newURx){
+          newLLx = floor((double)newLLx/nexlayer_unit)*nexlayer_unit;
+          newURx = ceil((double)newLLy/nexlayer_unit)*nexlayer_unit;
+          boundX = newLLx;
+        }
+
         std::cout<<"converter check point 4"<<std::endl;
         for(int x=boundX; x<=newURx; x+=nexlayer_unit) {
           if(x>=newLLx and x<=newURx and y>=newLLy and y<=newURy){

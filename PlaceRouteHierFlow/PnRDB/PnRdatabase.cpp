@@ -79,6 +79,24 @@ PnRDB::hierNode PnRdatabase::CheckoutHierNode(int nodeID) {
   return hierTree[nodeID];
 }
 
+std::vector<PnRDB::hierNode> PnRdatabase::CheckoutHierNodeVec(int nodeID){
+  std::vector<PnRDB::hierNode> nodeVec(hierTree[nodeID].PnRAS.size());
+  for (unsigned int lidx = 0; lidx < hierTree[nodeID].PnRAS.size(); lidx++)
+  {
+    PnRDB::hierNode current_node = hierTree[nodeID];
+    current_node.gdsFile = current_node.PnRAS[lidx].gdsFile;
+    current_node.width = current_node.PnRAS[lidx].width;
+    current_node.height = current_node.PnRAS[lidx].height;
+    current_node.Blocks = current_node.PnRAS[lidx].Blocks;
+    current_node.Terminals = current_node.PnRAS[lidx].Terminals;
+    current_node.Nets = current_node.PnRAS[lidx].Nets;
+    nodeVec[lidx] = current_node;
+    nodeVec[lidx].LL = current_node.PnRAS[lidx].LL;
+    nodeVec[lidx].UR = current_node.PnRAS[lidx].UR;
+  }
+  return nodeVec;
+}
+
 bool PnRdatabase::ReadMap(string fpath, string mapname) {
   cout<<"PnRDB-Info: reading map file "<<fpath+"/"+mapname<<endl;
   ifstream fin;
@@ -97,7 +115,7 @@ bool PnRdatabase::ReadMap(string fpath, string mapname) {
       }
     }
     fin.close();
-    return true;
+    return true; 
   } catch(ifstream::failure& e) {
     cerr<<"PnRDB-Error: fail to read map file "<<endl;
   }
@@ -126,6 +144,539 @@ void PnRdatabase::updatePowerPins(PnRDB::pin& temp_pin){
 
 };
 
+void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point translate, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  /*
+  this function transform all points and inside the node according to translate and orient,
+  it recursively call other transform functions
+  Inputs:
+    updatedNode: node needs updating
+    translate: translate vector
+    ort: current_node absolute orientation
+    transform_type: Forward (orientate and translate), Backward (undo orientate and translate)
+  */
+  PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
+  int width = 0, height = 0;  // here width and height are in updated node coordinate
+  if (ort == PnRDB::N || ort == PnRDB::FN || ort == PnRDB::S || ort == PnRDB::FS) {
+    width = UR.x - LL.x;
+    height = UR.y - LL.y;
+    updatedNode.width = width;
+    updatedNode.height = height;
+  } else if (ort == PnRDB::W || ort == PnRDB::FW || ort == PnRDB::E || ort == PnRDB::FE) {
+    width = UR.y - LL.y; 
+    height = UR.x - LL.x;
+    updatedNode.width = width;
+    updatedNode.height = height;
+  }
+  TransformBlockComplexs(updatedNode.Blocks, translate, width, height, ort, transform_type);
+  TransformNets(updatedNode.Nets, translate, width, height, ort, transform_type);
+  TransformTerminals(updatedNode.Terminals, translate, width, height, ort, transform_type);
+  TransformPins(updatedNode.blockPins, translate, width, height, ort, transform_type);
+  TransformContacts(updatedNode.interMetals, translate, width, height, ort, transform_type);
+  TransformVias(updatedNode.interVias, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::contact>::iterator cit = terminal.termContacts.begin(); cit != terminal.termContacts.end(); ++cit) {
+    TransformContacts(terminal.termContacts, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformTerminals(std::vector<PnRDB::terminal>& terminals, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::terminal>::iterator tit = terminals.begin(); tit != terminals.end(); ++tit) {
+    TransformTerminal(*tit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformBlock(PnRDB::block& block, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformBbox(block.placedBox, translate, width, height, ort, transform_type);
+  TransformPoint(block.placedCenter, translate, width, height, ort, transform_type);
+  TransformPins(block.blockPins, translate, width, height, ort, transform_type);
+  TransformContacts(block.interMetals, translate, width, height, ort, transform_type);
+  TransformVias(block.interVias, translate, width, height, ort, transform_type);
+  TransformPins(block.dummy_power_pin, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformBlocks(std::vector<PnRDB::block>& blocks, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::block>::iterator bit = blocks.begin(); bit != blocks.end(); ++bit) {
+    TransformBlock(*bit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformBlockComplexs(std::vector<PnRDB::blockComplex>& bcs, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::blockComplex>::iterator bit = bcs.begin(); bit != bcs.end(); ++bit) {
+    TransformBlockComplex(*bit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformBlockComplex(PnRDB::blockComplex& bc, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformBlocks(bc.instance, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::pin>::iterator pit = pins.begin(); pit != pins.end(); ++pit) {
+    TransformPin(*pit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformContacts(pin.pinContacts, translate, width, height, ort, transform_type);
+  TransformVias(pin.pinVias, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::Via>::iterator vit = vias.begin(); vit != vias.end(); ++vit) {
+    TransformVia(*vit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformVia(PnRDB::Via& via, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformPoint(via.placedpos, translate, width, height, ort, transform_type);
+  TransformPoint(via.originpos, translate, width, height, ort, transform_type);
+  TransformContact(via.UpperMetalRect, translate, width, height, ort, transform_type);
+  TransformContact(via.LowerMetalRect, translate, width, height, ort, transform_type);
+  TransformContact(via.ViaRect, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformContacts(std::vector<PnRDB::contact>& contacts, PnRDB::point translate, int width, int height,
+                                    PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::contact>::iterator cit = contacts.begin(); cit != contacts.end(); ++cit) {
+    TransformContact(*cit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformContact(PnRDB::contact& contact, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformBbox(contact.placedBox, translate, width, height, ort, transform_type);
+  TransformBbox(contact.originBox, translate, width, height, ort, transform_type);
+  TransformPoint(contact.placedCenter, translate, width, height, ort, transform_type);
+  TransformPoint(contact.originCenter, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformBboxs(std::vector<PnRDB::bbox>& bboxs, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::bbox>::iterator bit = bboxs.begin(); bit != bboxs.end(); ++bit) {
+    TransformBbox(*bit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformBbox(PnRDB::bbox& box, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  int WW = width;
+  int HH = height;
+  if (transform_type == PnRDB::TransformType::Forward) {
+    PnRDB::point tempLL = box.LL, tempUR = box.UR;
+    switch (ort) {
+      case PnRDB::N:  // keep same
+        box.LL = tempLL;
+        box.UR = tempUR;
+        break;
+      case PnRDB::S:  // rotate 180 degree
+        box.LL.x = WW - tempUR.x;
+        box.LL.y = HH - tempUR.y;
+        box.UR.x = WW - tempLL.x;
+        box.UR.y = HH - tempLL.y;
+        break;
+      case PnRDB::W:  // rotate 90 degree counter clockwise
+        box.LL.x = HH - tempUR.y;
+        box.LL.y = tempLL.x;
+        box.UR.x = HH - tempLL.y;
+        box.UR.y = tempUR.x;
+        break;
+      case PnRDB::E:  // rotate 90 degree clockwise
+        box.LL.x = tempLL.y;
+        box.LL.y = WW - tempUR.x;
+        box.UR.x = tempUR.y;
+        box.UR.y = WW - tempLL.x;
+        break;
+      case PnRDB::FN:  // flip horizontally
+        box.LL.x = WW - tempUR.x;
+        box.UR.x = WW - tempLL.x;
+        break;
+      case PnRDB::FS:  // flip vertically
+        box.LL.y = HH - tempUR.y;
+        box.UR.y = HH - tempLL.y;
+        break;
+      case PnRDB::FW:  // flip along 45 degree axis
+        box.LL.x = tempLL.y;
+        box.LL.y = tempLL.x;
+        box.UR.x = tempUR.y;
+        box.UR.y = tempUR.x;
+        break;
+      case PnRDB::FE:  //flip along 135 degree axis
+        box.LL.x = HH - tempUR.y;
+        box.LL.y = WW - tempUR.x;
+        box.UR.x = HH - tempLL.y;
+        box.UR.y = WW - tempLL.x;
+        break;
+      default:
+        box.LL = tempLL;
+        box.UR = tempUR;
+        break;
+    }
+    box.LL = box.LL + translate;
+    box.UR = box.UR + translate;
+  }else if(transform_type==PnRDB::TransformType::Backward){
+    box.LL = box.LL - translate;
+    box.UR = box.UR - translate;
+    PnRDB::point tempLL = box.LL, tempUR = box.UR;
+    switch (ort) {
+      case PnRDB::N:  // keep same
+        box.LL = tempLL;
+        box.UR = tempUR;
+        break;
+      case PnRDB::S:  // rotate 180 degree
+        box.LL.x = WW - tempUR.x;
+        box.LL.y = HH - tempUR.y;
+        box.UR.x = WW - tempLL.x;
+        box.UR.y = HH - tempLL.y;
+        break;
+      case PnRDB::W:  // rotate 90 degree counter clockwise
+        box.LL.x = tempLL.y;
+        box.LL.y = HH - tempUR.x;
+        box.UR.x = tempUR.y;
+        box.UR.y = HH - tempLL.x;
+        break;
+      case PnRDB::E:  // rotate 90 degree clockwise
+        box.LL.x = WW - tempUR.y;
+        box.LL.y = tempLL.x;
+        box.UR.x = WW - tempLL.y;
+        box.UR.y = tempUR.x;
+        break;
+      case PnRDB::FN:  // flip horizontally
+        box.LL.x = WW - tempUR.x;
+        box.UR.x = WW - tempLL.x;
+        break;
+      case PnRDB::FS:  // flip vertically
+        box.LL.y = HH - tempUR.y;
+        box.UR.y = HH - tempLL.y;
+        break;
+      case PnRDB::FW:  // flip along 45 degree axis
+        box.LL.x = tempLL.y;
+        box.LL.y = tempLL.x;
+        box.UR.x = tempUR.y;
+        box.UR.y = tempUR.x;
+        break;
+      case PnRDB::FE:  //flip along 135 degree axis
+        box.LL.x = WW - tempUR.y;
+        box.LL.y = HH - tempUR.x;
+        box.UR.x = WW - tempLL.y;
+        box.UR.y = HH - tempLL.x;
+        break;
+      default:
+        box.LL = tempLL;
+        box.UR = tempUR;
+        break;
+    }
+  }
+}
+
+void PnRdatabase::TransformPoints(std::vector<PnRDB::point>& points, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::point>::iterator pit = points.begin(); pit != points.end(); ++pit) {
+    TransformPoint(*pit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformPoint(PnRDB::point& p, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  int WW = width;
+  int HH = height;
+  if (transform_type == PnRDB::TransformType::Forward) {
+    int X = p.x, Y = p.y;
+    switch (ort) {
+      case PnRDB::N:
+        p.x = X;
+        p.y = Y;
+        break;
+      case PnRDB::S:
+        p.x = WW - X;
+        p.y = HH - Y;
+        break;
+      case PnRDB::W:
+        p.x = HH - Y;
+        p.y = X;
+        break;
+      case PnRDB::E:
+        p.x = Y;
+        p.y = WW - X;
+        break;
+      case PnRDB::FN:// flip horizontally
+        p.x = WW - X;
+        p.y = Y;
+        break;
+      case PnRDB::FS:// flip vertically
+        p.x = X;
+        p.y = HH - Y;
+        break;
+      case PnRDB::FW:// flip along 45 degree axis
+        p.x = Y;
+        p.y = X;
+        break;
+      case PnRDB::FE:// flip along 135 degree axis
+        p.x = HH - Y;
+        p.y = WW - X;
+        break;
+      default:
+        p.x = X;
+        p.y = Y;
+        break;
+    }
+    p = p + translate;
+  } else if (transform_type == PnRDB::TransformType::Backward) {
+    p = p - translate;
+    int X = p.x, Y = p.y;
+    switch (ort) {
+      case PnRDB::N:
+        p.x = X;
+        p.y = Y;
+        break;
+      case PnRDB::S:
+        p.x = WW - X;
+        p.y = HH - Y;
+        break;
+      case PnRDB::W:
+        p.x = Y;
+        p.y = HH - X;
+        break;
+      case PnRDB::E:
+        p.x = WW - Y;
+        p.y = X;
+        break;
+      case PnRDB::FN:// flip horizontally
+        p.x = WW - X;
+        p.y = Y;
+        break;
+      case PnRDB::FS:// flip vertically
+        p.x = X;
+        p.y = HH - Y;
+        break;
+      case PnRDB::FW:// flip along 45 degree axis
+        p.x = Y;
+        p.y = X;
+        break;
+      case PnRDB::FE:// flip along 135 degree axis
+        p.x = WW - Y;
+        p.y = HH - X;
+        break;
+      default:
+        p.x = X;
+        p.y = Y;
+        break;
+    }
+  }
+}
+
+void PnRdatabase::TransformMetal(PnRDB::Metal& metal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type){
+  TransformPoints(metal.LinePoint, translate, width, height, ort, transform_type);
+  TransformContact(metal.MetalRect, translate, width, height, ort, transform_type);
+};
+
+void PnRdatabase::TransformMetals(std::vector<PnRDB::Metal>& metals, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type){
+  for (std::vector<PnRDB::Metal>::iterator mit = metals.begin(); mit != metals.end(); ++mit) {
+    TransformMetal(*mit, translate, width, height, ort, transform_type);
+  }
+};
+
+void PnRdatabase::TransformNet(PnRDB::net& net, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformMetals(net.path_metal, translate, width, height, ort, transform_type);
+  TransformVias(net.path_via, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformNets(std::vector<PnRDB::net>& nets, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::net>::iterator nit = nets.begin(); nit != nets.end(); ++nit) {
+    TransformNet(*nit, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TranslateNode(PnRDB::hierNode& updatedNode, PnRDB::point translate) { 
+  /*
+  Inputs:
+    updatedNode: node needs updating
+    translate: translate reference point, all points will be subtracted by this point
+  */
+  PnRDB::point LL = updatedNode.LL, UR = updatedNode.UR;
+  int width = UR.x - LL.x, height = UR.y - LL.y;
+  TransformBlockComplexs(updatedNode.Blocks, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformTerminals(updatedNode.Terminals, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformPins(updatedNode.blockPins, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformContacts(updatedNode.interMetals, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformVias(updatedNode.interVias, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformNets(updatedNode.Nets, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformPoint(updatedNode.LL, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+  TransformPoint(updatedNode.UR, translate, width, height, PnRDB::Omark::N, PnRDB::Backward);
+}
+
+PnRDB::Omark PnRdatabase::RelOrt2AbsOrt(PnRDB::Omark current_node_ort, PnRDB::Omark childnode_ort) {
+  /*
+  Inputs:
+    current_node_ort: current_node's absolute orientation in topnode
+    childnode_ort: childnode's relative orientation in current_node
+  Outputs:
+    childnode's absolute orientation in topnode
+
+  coordinate definition: Z = X × Y
+  Y
+  ↑
+  ⊙Z →X
+  transform matrix:
+  N:  1  0  0
+      0  1  0 
+      0  0  1
+  S: -1  0  0
+      0 -1  0
+      0  0  1
+  W:  0 -1  0
+      1  0  0
+      0  0  1
+  E:  0  1  0
+     -1  0  0
+      0  0  1
+  F: -1  0  0
+      0  1  0
+      0  0 -1
+  FN: F × N = F
+    =-1  0  0
+      0  1  0
+      0  0 -1
+  FS: F × S 
+    = 1  0  0
+      0 -1  0
+      0  0 -1
+  FW: F × W
+      0  1  0
+      1  0  0
+      0  0 -1
+  FE: F × E
+      0 -1  0
+     -1  0  0
+      0  0 -1
+  */
+  const PnRDB::Omark TransformTable[8][8] = {{PnRDB::N, PnRDB::S, PnRDB::W, PnRDB::E, PnRDB::FN, PnRDB::FS, PnRDB::FW, PnRDB::FE},
+                                             {PnRDB::S, PnRDB::N, PnRDB::E, PnRDB::W, PnRDB::FS, PnRDB::FN, PnRDB::FE, PnRDB::FW},
+                                             {PnRDB::W, PnRDB::E, PnRDB::S, PnRDB::N, PnRDB::FE, PnRDB::FW, PnRDB::FN, PnRDB::FS},
+                                             {PnRDB::E, PnRDB::W, PnRDB::N, PnRDB::S, PnRDB::FW, PnRDB::FE, PnRDB::FS, PnRDB::FN},
+                                             {PnRDB::FN, PnRDB::FS, PnRDB::FW, PnRDB::FE, PnRDB::N, PnRDB::S, PnRDB::W, PnRDB::E},
+                                             {PnRDB::FS, PnRDB::FN, PnRDB::FE, PnRDB::FW, PnRDB::S, PnRDB::N, PnRDB::E, PnRDB::W},
+                                             {PnRDB::FW, PnRDB::FE, PnRDB::FS, PnRDB::FN, PnRDB::E, PnRDB::W, PnRDB::N, PnRDB::S},
+                                             {PnRDB::FE, PnRDB::FW, PnRDB::FN, PnRDB::FS, PnRDB::W, PnRDB::E, PnRDB::S, PnRDB::N}};
+  return TransformTable[current_node_ort][childnode_ort];
+}
+
+void PnRdatabase::TransformBlockPinsOriginToPlaced(std::vector<PnRDB::pin>& blockPins, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    blockPins: blockpins to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformPins(blockPins, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::pin> blockPins_copy = blockPins;
+  TransformPins(blockPins, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int pit = 0; pit < blockPins.size(); pit++) {
+    for (unsigned int cit = 0; cit < blockPins[pit].pinContacts.size(); cit++) {
+      blockPins[pit].pinContacts[cit].placedBox = blockPins_copy[pit].pinContacts[cit].originBox;
+      blockPins[pit].pinContacts[cit].placedCenter = blockPins_copy[pit].pinContacts[cit].originCenter;
+    }
+    for (unsigned int vit = 0; vit < blockPins[pit].pinVias.size(); vit++){
+      blockPins[pit].pinVias[vit].placedpos = blockPins_copy[pit].pinVias[vit].originpos;
+      blockPins[pit].pinVias[vit].UpperMetalRect.placedBox = blockPins_copy[pit].pinVias[vit].UpperMetalRect.originBox;
+      blockPins[pit].pinVias[vit].UpperMetalRect.placedCenter = blockPins_copy[pit].pinVias[vit].UpperMetalRect.originCenter;
+      blockPins[pit].pinVias[vit].LowerMetalRect.placedBox = blockPins_copy[pit].pinVias[vit].LowerMetalRect.originBox;
+      blockPins[pit].pinVias[vit].LowerMetalRect.placedCenter = blockPins_copy[pit].pinVias[vit].LowerMetalRect.originCenter;
+      blockPins[pit].pinVias[vit].ViaRect.placedBox = blockPins_copy[pit].pinVias[vit].ViaRect.originBox;
+      blockPins[pit].pinVias[vit].ViaRect.placedCenter = blockPins_copy[pit].pinVias[vit].ViaRect.originCenter;
+    }
+  }
+}
+
+void PnRdatabase::TransformIntermetalsOriginToPlaced(std::vector<PnRDB::contact>& interMetals, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    interMetals: intermetals to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformContacts(interMetals, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::contact> interMetals_copy = interMetals;
+  TransformContacts(interMetals, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int mit = 0; mit < interMetals.size(); mit++) {
+    interMetals[mit].placedBox = interMetals_copy[mit].originBox;
+    interMetals[mit].placedCenter = interMetals_copy[mit].originCenter;
+  }
+}
+
+void PnRdatabase::TransformInterviasOriginToPlaced(std::vector<PnRDB::Via>& interVias, PnRDB::point translate, int width, int height,
+                                                   PnRDB::Omark ort) {
+  /*
+  this function transforms original pose into placed pose
+  Inputs:
+    interVias: intervias to be transformed
+    translate: translate vector
+    ort: orientation
+  */
+  TransformVias(interVias, translate, width, height, ort, PnRDB::TransformType::Forward);
+  std::vector<PnRDB::Via> interVias_copy = interVias;
+  TransformVias(interVias, translate, width, height, ort, PnRDB::TransformType::Backward);
+  for (unsigned int vit = 0; vit < interVias.size(); vit++){
+      interVias[vit].placedpos = interVias_copy[vit].originpos;
+      interVias[vit].UpperMetalRect.placedBox = interVias_copy[vit].UpperMetalRect.originBox;
+      interVias[vit].UpperMetalRect.placedCenter = interVias_copy[vit].UpperMetalRect.originCenter;
+      interVias[vit].LowerMetalRect.placedBox = interVias_copy[vit].LowerMetalRect.originBox;
+      interVias[vit].LowerMetalRect.placedCenter = interVias_copy[vit].LowerMetalRect.originCenter;
+      interVias[vit].ViaRect.placedBox = interVias_copy[vit].ViaRect.originBox;
+      interVias[vit].ViaRect.placedCenter = interVias_copy[vit].ViaRect.originCenter;
+    }
+}
+
+void PnRdatabase::CheckinChildnodetoBlock(PnRDB::hierNode& parent, int blockID, const PnRDB::hierNode& child) {
+  // update child into parent.blocks[blockID]
+  // update (child.intermetal,intervia,blockpins) into blocks[blockid]
+  PnRDB::Omark ort = child.abs_orient;
+  int width = child.UR.x - child.LL.x;
+  int height = child.UR.y - child.LL.y;
+  PnRDB::point translate = parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].placedBox.LL;
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].gdsFile = child.gdsFile;
+
+  // transform child blockpins orginals into placed in parent coordinate
+  std::vector<PnRDB::pin> blockPins = child.blockPins;
+  TransformBlockPinsOriginToPlaced(blockPins, translate, width, height, ort);
+  for (unsigned int p = 0; p < parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins.size(); p++) {
+    for (unsigned int q = 0; q < child.blockPins.size(); q++) {
+      if (parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].name == blockPins[q].name) {
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinContacts = blockPins[q].pinContacts;
+        parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].blockPins[p].pinVias = blockPins[q].pinVias;
+        break;
+      }
+    }
+  }
+
+  //transform child intermetals originals into placed in parent coordinate
+  std::vector<PnRDB::contact> interMetals = child.interMetals;
+  TransformIntermetalsOriginToPlaced(interMetals, translate, width, height, ort);
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interMetals = interMetals;
+
+  //transform child intervias originals into placed in parent coordinate
+  std::vector<PnRDB::Via> interVias = child.interVias;
+  TransformInterviasOriginToPlaced(interVias, translate, width, height, ort);
+  parent.Blocks[blockID].instance[parent.Blocks[blockID].selectedInstance].interVias = interVias;
+
+  //checkin childnode router report
+  for (int i = 0; i < child.router_report.size();++i){
+    parent.router_report.push_back(child.router_report[i]);
+  }
+}
+
+void PnRdatabase::ExtractPinsToPowerPins(PnRDB::hierNode& updatedNode) {
+  for (unsigned int i = 0; i < updatedNode.PowerNets.size(); i++) {
+    for (unsigned int j = 0; j < updatedNode.PowerNets[i].connected.size(); j++) {
+      PnRDB::pin temp_pin;
+      int iter = updatedNode.PowerNets[i].connected[j].iter;
+      int iter2 = updatedNode.PowerNets[i].connected[j].iter2;
+      temp_pin = updatedNode.Blocks[iter2].instance[updatedNode.Blocks[iter2].selectedInstance].blockPins[iter];
+      updatedNode.PowerNets[i].Pins[j] = temp_pin;
+    }
+  }
+}
+
 // [RA] need further modification for hierarchical issue - wbxu
 void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode){
   //In fact, the original node, do not need to be updated. Just update father node is fine.
@@ -138,6 +689,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
   tmpL.Blocks=updatedNode.Blocks;
   tmpL.Terminals=updatedNode.Terminals;
   tmpL.Nets=updatedNode.Nets;
+  tmpL.LL = updatedNode.LL;
+  tmpL.UR = updatedNode.UR;
   hierTree[nodeID].PnRAS.push_back(tmpL);
 
   hierTree[nodeID].isCompleted = 1;
@@ -315,6 +868,7 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
           }
         }
 
+/*
     std::cout<<"Start Update power pin in parent"<<std::endl;
      //update power pin information
 
@@ -371,6 +925,96 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
             }
         }
      std::cout<<"End update power pin in parent"<<std::endl;
+*/
+
+    std::cout<<"Start Update power pin in parent"<<std::endl;
+     //update power pin information
+
+    for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+       auto& lhs = parent_node.Blocks[j];
+       auto& b = lhs.instance.back();
+       if(b.master.compare(updatedNode.name)==0){
+         for(unsigned int k = 0; k<updatedNode.PowerNets.size();k++){
+            int found = 0;
+            for(unsigned int l =0;l<b.PowerNets.size();l++){
+               if(updatedNode.PowerNets[k].name == b.PowerNets[l].name){
+                 found = 1;
+                 for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                    PnRDB::connectNode temp_connectNode;
+                    temp_connectNode.iter2 = j;
+                    temp_connectNode.iter = b.dummy_power_pin.size();
+                    //here is the problem
+                    b.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                    //parent_node.PowerNets[l].dummy_connected.push_back(temp_connectNode);
+                    //need move the dummy_connected into block level
+                    PnRDB::pin temp_pin;
+                    temp_pin=updatedNode.PowerNets[k].Pins[p];
+                    updatePowerPins(temp_pin);
+                    b.dummy_power_pin.push_back(temp_pin);
+                 }
+                 
+               }
+            }
+
+            if(found ==0){
+               PnRDB::PowerNet temp_PowerNet;
+               temp_PowerNet = updatedNode.PowerNets[k];
+               temp_PowerNet.connected.clear();
+               temp_PowerNet.dummy_connected.clear();
+               temp_PowerNet.Pins.clear();
+                      
+               for(unsigned int p=0;p<updatedNode.PowerNets[k].Pins.size();p++){
+                   PnRDB::pin temp_pin;
+                   PnRDB::connectNode temp_connectNode;
+                   temp_connectNode.iter2 = j;
+                   temp_connectNode.iter = b.dummy_power_pin.size();
+                   temp_pin = updatedNode.PowerNets[k].Pins[p];
+                   updatePowerPins(temp_pin);
+                   b.dummy_power_pin.push_back(temp_pin);
+                   //here is the problem too
+                   temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+                   //temp_PowerNet.dummy_connected.push_back(temp_connectNode);
+                   //here is the problem too
+                   }                     
+                b.PowerNets.push_back(temp_PowerNet);
+               }                      
+           }
+         }
+      }
+
+      std::cout<<"Extract dummy power connection into parent"<<std::endl;
+
+      for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+         parent_node.PowerNets[k].dummy_connected.clear();
+      }
+
+      for(unsigned int j=0;j<parent_node.Blocks.size();j++){
+         auto& lhs = parent_node.Blocks[j];
+         auto& b = lhs.instance.back();
+         for(unsigned int l =0;l<b.PowerNets.size();l++){
+            int found = 0;
+            for(unsigned int k = 0; k<parent_node.PowerNets.size();k++){
+               if(b.PowerNets[l].name==parent_node.PowerNets[k].name){
+                  found = 1;
+                  for(unsigned int h = 0;h < b.PowerNets[l].dummy_connected.size();h++){
+                      parent_node.PowerNets[k].dummy_connected.push_back(b.PowerNets[l].dummy_connected[h]);
+                     }
+                 }
+            }
+            if(found ==0){
+               PnRDB::PowerNet temp_PowerNet;
+               temp_PowerNet = b.PowerNets[l];
+               temp_PowerNet.connected.clear();
+               //temp_PowerNet.dummy_connected.clear();
+               temp_PowerNet.Pins.clear();
+               parent_node.PowerNets.push_back(temp_PowerNet);
+            }
+         }
+      }
+
+      std::cout<<"End update power pin in parent"<<std::endl;
+
+
      }
 
   std::cout<<"End update blocks in parent"<<std::endl;

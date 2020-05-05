@@ -105,7 +105,7 @@ GlobalGrid::GlobalGrid(const GlobalGrid& other):x_unit(other.x_unit), y_unit(oth
    //this->maxYidx        =other.maxYidx;
 }
 
-GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, int Hmetal, int tileLayerNo, int scale) {
+GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int LLx, int LLy, int URx, int URy, int Lmetal, int Hmetal, int tileLayerNo, int scale) {
   this->lowest_metal=Lmetal;
   this->highest_metal=Hmetal;
   this->layerNo=ceil(double(Hmetal-Lmetal+1)/tileLayerNo); // no of tile layer
@@ -118,10 +118,10 @@ GlobalGrid::GlobalGrid(PnRDB::Drc_info& drc_info, int URx, int URy, int Lmetal, 
   this->YXSet.resize(this->metalLayerNo);
   this->IDXmap.resize(this->layerNo);
   this->drc_info=drc_info;
-  this->LL.x=0; this->LL.y=0;
+  this->LL.x=LLx; this->LL.y=LLy;
   this->UR.x=URx; this->UR.y=URy;
   this->maxXidx=0; this->maxYidx=0;
-  std::cout<<"width "<<URx<<" height "<<URy<<std::endl;
+  std::cout<<"width "<<URx-LLx<<" height "<<URy-LLy<<std::endl;
   if(drc_info.Metal_info.at(Lmetal).direct==0) { //vertical
     this->x_unit=drc_info.Metal_info.at(Lmetal).grid_unit_x*scale;
     this->y_unit=drc_info.Metal_info.at(Lmetal+1).grid_unit_y*scale;
@@ -525,18 +525,26 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::B
 void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int LLx, int LLy, int URx, int URy) {
   int layerIdx=this->metal2tile[metalIdx];
   std::cout<<"Convert block pin {"<<LLx<<","<<LLy<<"} {"<<URx<<","<<URy<<"} @metal "<<metalIdx<<std::endl;
-  int LLx_cc=floor(double(LLx)/this->x_unit)*this->x_unit;
-  int LLy_cc=floor(double(LLy)/this->y_unit)*this->y_unit;
+  int LLx_cc = floor(double(LLx - this->LL.x) / this->x_unit) * this->x_unit + this->LL.x;
+  int LLy_cc = floor(double(LLy - this->LL.y) / this->y_unit) * this->y_unit + this->LL.y;
   std::cout<<"LLx_cc "<<LLx_cc<<" LLy_cc "<<LLy_cc<<std::endl;
   for(int x=LLx_cc; x<URx; x+=this->x_unit) {
     for(int y=LLy_cc; y<URy; y+=this->y_unit) {
       RouterDB::point tmpp; 
       std::cout<<"Or check "<<x<<" , "<<y<<std::endl;
-      if ( x+this->x_unit > this->UR.x ) { tmpp.x=x+(this->UR.x-x)/2;
-      } else { tmpp.x=x+this->x_unit/2; }
-      if ( y+this->y_unit > this->UR.y) { tmpp.y=y+(this->UR.y-y)/2;
-      } else { tmpp.y=y+this->y_unit/2; }
-      std::cout<<"check "<<tmpp.x<<" , "<<tmpp.y<<std::endl;
+      if (x + this->x_unit > this->UR.x) {
+        tmpp.x = x + (this->UR.x - x) / 2;
+      } else {
+        tmpp.x = x + this->x_unit / 2;
+      }
+
+      if (y + this->y_unit > this->UR.y) {
+        tmpp.y = y + (this->UR.y - y) / 2;
+      } else {
+        tmpp.y = y + this->y_unit / 2;
+      }
+
+      std::cout << "check " << tmpp.x << " , " << tmpp.y << std::endl;
       std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit=this->XYmap.at(layerIdx).find(tmpp);
       if(mit!=this->XYmap.at(layerIdx).end()) {
         sSet.insert(mit->second);

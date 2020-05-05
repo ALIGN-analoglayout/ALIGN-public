@@ -148,6 +148,7 @@ abstract_structs = [
                    ("orient",None),
                    ("placedBox","bbox"),
                    ("placedCenter","point"),
+                   #("PowerNets",(list,"PowerNet")),
                    ("blockPins",(list,"pin")),
                    ("interMetals",(list,"contact")),
                    ("interVias",(list,"Via")),
@@ -175,7 +176,9 @@ abstract_structs = [
                       ("gdsFile",None),
                       ("Blocks",(list,"blockComplex")),
                       ("Nets",(list,"net")),
-                      ("Terminals",(list,"terminal"))
+                      ("Terminals",(list,"terminal")),
+                      ("LL","point"),
+                      ("UR","point")
            ]),
 
            ("routing_net",[("net_name",None),
@@ -192,6 +195,11 @@ abstract_structs = [
                       ("isIntelGcellGlobalRouter",None),
                       ("width",None),
                       ("height",None),
+                      ("LL","point"),
+                      ("UR","point"),
+                      ("abs_orient",None),
+                      ("n_copy",None),
+                      ("numPlacement",None),
                       ("name",None),
                       ("gdsFile",None),
                       ("parent",(list,None)),

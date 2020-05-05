@@ -28,9 +28,15 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
 {
   if ( skip) return;
 
+  int copy_number = current_node.n_copy;
+
   string ofn;
   if ( lidx >= 0) {
-    ofn = opath+current_node.name + "_" + std::to_string(lidx) + tag + ".db.json";
+    if ( current_node.isTop) {
+      ofn = opath+current_node.name + "_" + std::to_string(lidx) + tag + ".db.json";
+    } else {
+      ofn = opath+current_node.name + "_" + std::to_string(copy_number) + "_" + std::to_string(lidx) + tag + ".db.json";
+    }
   } else {
     ofn = opath+current_node.name + tag + ".db.json";
   }
@@ -40,24 +46,13 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
 
 static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
 {
-
-  //routing metal configuration
-  //int max_metal_layer_index = drcInfo.Metal_info.size()-1;
-  //int min_metal_layer_index = 0;
-  //int signal_routing_metal_l = min_metal_layer_index;
-  //int signal_routing_metal_u = max_metal_layer_index - 3;
-  //int power_grid_metal_l = max_metal_layer_index - 2;
-  //int power_grid_metal_u = max_metal_layer_index;
-  //int power_routing_metal_l = min_metal_layer_index;
-  
-
-  std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
-  DB.Extract_RemovePowerPins(current_node);
+  //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+  //DB.Extract_RemovePowerPins(current_node);
 
   std::cout<<"Checkpoint : before route"<<std::endl;
   DB.PrintHierNode(current_node);
 
-  DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
+  //DB.WriteJSON (current_node, true, false, false, false, current_node.name+"_PL_"+std::to_string(lidx), drcInfo, opath); //block net powernet powergrid
 
   Router curr_route;
 
@@ -66,50 +61,61 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   int v_skip_factor = 5;
 
   int signal_routing_metal_l = 0;
-  int signal_routing_metal_u = 5;
+  int signal_routing_metal_u = 8;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
-    save_state( DB, current_node, lidx, opath, ".pre_gr", "Starting Gcell Global Routing", skip_saving_state);
+
     int global_router_mode = 4;
     if ( adr_mode) {
       global_router_mode = 6;
     }
     curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
-    save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
-    DB.WriteGcellGlobalRoute(current_node, current_node.name+"_GcellGlobalRoute_"+std::to_string(lidx)+".json", opath);
+    if (current_node.isTop) {
+      DB.WriteGcellGlobalRoute(current_node, current_node.name + "_GcellGlobalRoute_" + std::to_string(lidx) + ".json", opath);
+    } else {
+      PnRDB::hierNode current_node_copy = current_node;
+      DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+      DB.WriteGcellGlobalRoute(
+          current_node_copy,
+          current_node_copy.name + "_GcellGlobalRoute_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".json",
+          opath);
+    }
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
-    save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
     curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
-    save_state( DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
+
   } else {
     // Global Routing (old version)
-    save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
+
     curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
-    save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
     // The following line is used to write global route results for Intel router (only for old version)
     DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
 
     // Detail Routing
-    save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
     curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
-    save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
-  DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_DR_"+std::to_string(lidx), drcInfo, opath);
-  //DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
+  if (current_node.isTop) {
+    DB.WriteJSON(current_node, true, true, false, false, current_node.name + "_DR_" + std::to_string(lidx), drcInfo, opath);
+  } else {
+    PnRDB::hierNode current_node_copy = current_node;
+    DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+    DB.WriteJSON(current_node_copy, true, true, false, false,
+                 current_node_copy.name + "_DR_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+    current_node.gdsFile = current_node_copy.gdsFile;
+  }
+  // DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
 
   //double worst=0;
   //double th = 0.1;
   //bool Power_mesh_optimize = 0;
 
   if(current_node.isTop){
-    save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
 
 /*  DC Power Grid Simulation
  *
@@ -139,27 +145,35 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor);
 
-    save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
+    DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
 
-    DB.WriteJSON (current_node, true, true, false, true, current_node.name+"_PG_"+std::to_string(lidx), drcInfo, opath);
-        
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
-    save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
     curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
-    save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
-
-    DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
-    DB.Write_Router_Report(current_node,opath);
-        
+    
+    DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
+    
+    DB.Write_Router_Report(current_node, opath);
   }
 
-  DB.WriteJSON (current_node, true, true, true, true, current_node.name+"_"+std::to_string(lidx), drcInfo, opath);
-  std::cout<<"Check point : before checkin\n";
-  DB.PrintHierNode(current_node);
-      
-  save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state);
+  // transform current_node into current_node coordinate
+  if (current_node.isTop) {
+    DB.WriteJSON(current_node, true, true, true, true, current_node.name + "_" + std::to_string(lidx), drcInfo, opath);
+    DB.WriteLef(current_node, current_node.name + "_" + std::to_string(lidx) + ".lef", opath);
+    save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state);
+    DB.PrintHierNode(current_node);
+  } else {
+    PnRDB::hierNode current_node_copy = current_node;
+    DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
+    DB.WriteJSON(current_node_copy, true, true, true, true,
+                 current_node_copy.name + "_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
+    current_node.gdsFile = current_node_copy.gdsFile;
+    DB.WriteLef(current_node_copy,
+                current_node_copy.name + "_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx) + ".lef", opath);
 
-  DB.WriteLef(current_node, current_node.name+"_"+std::to_string(lidx)+".lef", opath);
+    save_state( DB, current_node_copy, lidx, opath, "", "Final result", skip_saving_state);
+    DB.PrintHierNode(current_node_copy);
+  }
+
 
   /*
   std::ostringstream oss;
@@ -181,6 +195,72 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
 }
 
+void static route_top_down(PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::bbox bounding_box, PnRDB::Omark current_node_ort,
+                           int idx, int& new_currentnode_idx, int lidx, const string& opath, const string& binary_directory,
+                           bool skip_saving_state, bool adr_mode) {
+
+  /*
+  recursively DFS hiertree
+  Inputs:
+    current_node_ort: absolute orientation of current_node
+    idx: index of current_node type
+    new_currentnode_idx: index of current_node copy in hiertree, after routing
+    lidx: number of layouts, now is one.
+  */
+  //Q: current top down flow works when lidx = 1. Yaguang -- 3/17/2020
+  //Q: Conflict here when lidx != 1. childnode only stores last update in bottom-up (maybe 2), while the selected block might be 1. When doing top-down, mismatch happens. Yaguang -- 3/17/2020
+  //Q: solution should be refresh the content of childnode by childnode.PnRAS[current_node.Blocks.selectedInstance]. Yaguang -- 3/17/2020
+  //Q: power routing does not change, still do power routing when it comes to top level. Yaguang -- 3/17/2020
+  //Q: Power routing dose not work when lidx != 1. Need double check? Yaguang -- 3/17/2020
+  // 1.copy current_node from hiertree[idx]
+  PnRDB::hierNode current_node = DB.hierTree[idx];
+  DB.hierTree[idx].n_copy += 1;
+  string current_node_name = current_node.name;
+  current_node.LL = bounding_box.LL;
+  current_node.UR = bounding_box.UR;
+  current_node.abs_orient = current_node_ort;
+  // 2.transform (translate and rotate) all points and rects of current_node into topnode coordinate;
+  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Forward);
+  for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
+    auto& blk = current_node.Blocks[bit];
+    int child_idx = blk.child;
+    if (child_idx == -1) continue;
+    auto& inst = blk.instance[blk.selectedInstance];
+    // calculate childnode's orientation in topnode
+    PnRDB::Omark childnode_orient = DB.RelOrt2AbsOrt(current_node_ort, inst.orient);
+    string child_node_name = DB.hierTree[child_idx].name;
+    // 3.childnode.LL and UR, absolute bouding box in topnode coordinate
+    PnRDB::bbox childnode_box( inst.placedBox.LL, inst.placedBox.UR);
+    // 4.complete all children of current_node recursively
+    int new_childnode_idx = 0;
+    for (unsigned int lidx = 0; lidx < DB.hierTree[child_idx].numPlacement; lidx++) {
+      route_top_down(DB, drcInfo, childnode_box, childnode_orient, child_idx, new_childnode_idx, lidx, opath, binary_directory,
+                     skip_saving_state, adr_mode);
+    }
+    // 6.update current_node.blocks[i].intermetal/via/blockpin, absolute position and rect
+    DB.CheckinChildnodetoBlock(current_node, bit, DB.hierTree[new_childnode_idx]);  // check in childnode into block
+    
+    // 7.current_node.Blocks[bit].child links to childnode
+    current_node.Blocks[bit].child = new_childnode_idx;
+  }
+  DB.ExtractPinsToPowerPins(current_node);
+  route_single_variant(DB, drcInfo, current_node, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+
+  // 8.transform (translate and rotate) current_node into current_node coordinate
+  // undo transform current_node.LL and current_node_ort
+  DB.TransformNode(current_node, current_node.LL, current_node.abs_orient, PnRDB::TransformType::Backward);
+
+  // 9.pushback current_node into hiertree, update current_node copy's index
+  // update hiertree[blocks.*.child].parent = new_currentnode_idx
+  DB.hierTree.push_back(current_node);
+  new_currentnode_idx = DB.hierTree.size() - 1;
+  for (unsigned int bit = 0; bit < current_node.Blocks.size(); bit++) {
+    auto& blk = current_node.Blocks[bit];
+    if (blk.child == -1) continue;
+    DB.hierTree[blk.child].parent[0] = new_currentnode_idx;
+  }
+  return;
+}
 
 int main(int argc, char** argv ){
 
@@ -236,59 +316,58 @@ int main(int argc, char** argv ){
     jsonStream.close();
   }
 
-  queue<int> Q=DB.TraverseHierTree(); // traverse hierarchical tree in topological order
+  queue<int> Q = DB.TraverseHierTree();  // traverse hierarchical tree in topological order
+  std::vector<int> TraverseOrder;        // save traverse order, same as Q
+  int Q_size = Q.size();
+  for (int i = 0; i < Q_size; i++) {  // copy Q to TraverseOrder
+    TraverseOrder.push_back(Q.front());
+    Q.pop();
+    Q.push(TraverseOrder.back());
+  }
 
-  while (!Q.empty())
+  for (int i = 0; i < Q_size;i++)
   {
-    int idx=Q.front();
+    int idx=TraverseOrder[i];
     cout<<"Main-Info: start to work on node "<<idx<<endl;
     if(disable_io)std::cout.setstate(std::ios_base::failbit);
     PnRDB::hierNode current_node=DB.CheckoutHierNode(idx);
     DB.PrintHierNode(current_node);
 
     
-    save_state( DB, current_node, -1, opath, ".pre_prc", "Placer_Router_Cap", skip_saving_state);
     DB.AddingPowerPins(current_node);
     Placer_Router_Cap PRC(opath, fpath, current_node, drcInfo, lefData, 1, 6); //dummy, aspect ratio, number of aspect retio
-    save_state( DB, current_node, -1, opath, ".post_prc", "Placer_Router_Cap", skip_saving_state);
 
     std::cout<<"Checkpoint : before place"<<std::endl;
     DB.PrintHierNode(current_node);
 
-    save_state( DB, current_node, -1, opath, ".pre_pl", "Before Placement", skip_saving_state);
     
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
 
-    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      save_state( DB, nodeVec[lidx], lidx, opath, ".post_pl", "End Placement", skip_saving_state);
-    }
-
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
-    if(multi_thread){
-      std::thread t[nodeVec.size()];
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
-                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
-      }
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        t[lidx].join();
-      }
-    }else{
-      for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
-      }
-    }
-        
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
+      //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      DB.Extract_RemovePowerPins(nodeVec[lidx]);
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
+    DB.hierTree[idx].numPlacement = nodeVec.size();
 
-    Q.pop();
+    //TreeVec[idx] = nodeVec;
+    //Q.pop();
     if(disable_io)std::cout.clear();
     cout<<"Main-Info: complete node "<<idx<<endl;
   }
+
+  if(disable_io)std::cout.setstate(std::ios_base::failbit);
+  int new_topnode_idx = 0;
+  for (unsigned int lidx = 0; lidx < DB.hierTree[Q.back()].numPlacement; lidx++) {
+    route_top_down(
+        DB, drcInfo,
+        PnRDB::bbox(PnRDB::point(0, 0), PnRDB::point(DB.hierTree[Q.back()].PnRAS[0].width, DB.hierTree[Q.back()].PnRAS[0].height)),
+        PnRDB::N, Q.back(), new_topnode_idx, lidx, opath, binary_directory, skip_saving_state, adr_mode);
+  }
+  if(disable_io)std::cout.clear();
 
   return 0;
 }

@@ -51,6 +51,7 @@ enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
 enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
+enum TransformType { Forward, Backward };
 
 /// Part 2: declaration of sturctures for placer and router
 struct point {
@@ -64,6 +65,7 @@ struct point {
   point operator - (const point& other) const { return point (x - other.x, y - other.y); }
   point& operator += (const point& other) { x += other.x; y += other.y; return *this; }
   point& operator -= (const point& other) { x -= other.x; y -= other.y; return *this; }
+  point& operator = (const point& other) { x = other.x; y = other.y; return *this; }
   
   bool operator == (const point& other) const { return x == other.x and y == other.y; }
   point scale (const int scx, const int scy) const { return point (x * scx, y * scy); }
@@ -246,6 +248,25 @@ struct Via{
   contact UpperMetalRect, LowerMetalRect, ViaRect;
 };
 
+struct PowerNet {
+  string name="";
+  bool power = 1; // 1 is vdd, 0 is gnd
+  //bool shielding=false; // shielding constraint
+  //bool sink2Terminal=false; // if connected to terminal
+  //int degree=0;
+  //int symCounterpart=-1; // symmetry const
+  //int iter2SNetLsit=-1; // iterator to the list of symmetry nets
+  //vector<connectNode> connected; // list of connected components
+  vector<pin> Pins; //power pins
+  vector<connectNode> connected;
+  vector<connectNode> dummy_connected;
+  //string priority=""; // critical net constraint
+  //vector<contact> segments; // segment inform needs to be updated after routing
+  //vector<contact> interVias;////TEMPORARY!!!+Jinhyun
+  vector<Metal> path_metal;
+  vector<Via> path_via;
+}; // structure of nets
+
 struct block {
   // Basic information
   string name="";
@@ -266,6 +287,7 @@ struct block {
   //int SBidx;
   //int counterpart;
   // Block pin
+  vector<PowerNet> PowerNets;
   vector<pin> blockPins;
   vector<contact> interMetals;
   vector<Via> interVias;
@@ -292,25 +314,6 @@ struct PowerGrid{
   vector<Via> vias;
 };
 
-struct PowerNet {
-  string name="";
-  bool power = 1; // 1 is vdd, 0 is gnd
-  //bool shielding=false; // shielding constraint
-  //bool sink2Terminal=false; // if connected to terminal
-  //int degree=0;
-  //int symCounterpart=-1; // symmetry const
-  //int iter2SNetLsit=-1; // iterator to the list of symmetry nets
-  //vector<connectNode> connected; // list of connected components
-  vector<pin> Pins; //power pins
-  vector<connectNode> connected;
-  vector<connectNode> dummy_connected;
-  //string priority=""; // critical net constraint
-  //vector<contact> segments; // segment inform needs to be updated after routing
-  //vector<contact> interVias;////TEMPORARY!!!+Jinhyun
-  vector<Metal> path_metal;
-  vector<Via> path_via;
-}; // structure of nets
-
 struct layoutAS {
   int width=0;
   int height=0;
@@ -318,6 +321,8 @@ struct layoutAS {
   vector<blockComplex> Blocks;
   vector<net> Nets;
   vector<terminal> Terminals;
+  point LL;
+  point UR;
   //vector<pin> blockPins;
   //vector<contact> interMetals;
   //vector<Via> interVias;
@@ -329,7 +334,12 @@ struct hierNode {
   bool isIntelGcellGlobalRouter=false;
   int width=0;
   int height=0;
-  string name="";
+  point LL;                 // hiernode absolute LL in topnode coordinate
+  point UR;                 // hiernode absolute UR in topnode coordinate
+  PnRDB::Omark abs_orient;  // hiernode absolute orient in topnode coordinate
+  int n_copy = 0;           // number of hiernodes of the same type used in the whole design 
+  int numPlacement = 0;
+  string name = "";
   string gdsFile="";
   vector<int> parent;
   vector<blockComplex> Blocks;
@@ -344,9 +354,9 @@ struct hierNode {
 //added by yg
 
   //Updated
-  vector<pin> blockPins;
-  vector<contact> interMetals;
-  vector<Via> interVias;
+  vector<pin> blockPins;//need
+  vector<contact> interMetals;//need
+  vector<Via> interVias;//need
 
   vector<layoutAS> PnRAS;
 
