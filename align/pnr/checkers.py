@@ -300,7 +300,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
 
     d = {}
 
-    d["bbox"] = [0,0,hN.width,hN.height]
+    d["bbox"] = [hN.LL.x,hN.LL.y,hN.UR.x,hN.UR.y]
 
     d["globalRoutes"] = []
 
