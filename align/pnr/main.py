@@ -115,7 +115,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Dump out intermediate states
-    if check or extract:
+    if check or extract or gds_json:
         os.environ['PNRDB_SAVE_STATE'] = ''
 
     # Run pnr_compiler
@@ -151,7 +151,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
         if file_.suffixes == ['.json']:
             (working_dir / file_.name).write_text(file_.read_text())
 
-    if check or extract:
+    if check or extract or gds_json:
         with (results_dir / "__hierTree.json").open("rt") as fp:
             order = json.load(fp)
         logger.debug( f"Topological order: {order}")
@@ -184,7 +184,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
             variants[variant]['gdsjson'] = file_
         elif file_.suffixes == ['.lef']:
             variants[variant]['lef'] = file_
-        elif file_.suffixes == ['.db', '.json'] and (check or extract):
+        elif file_.suffixes == ['.db', '.json'] and (check or extract or gds_json):
             logger.debug( f".db.json: {file_.name}")
             variants[variant].update(
                 _generate_json( dbfile = file_,
