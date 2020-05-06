@@ -16,6 +16,8 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
 
     if working_dir is None:
         working_dir = pathlib.Path.cwd().resolve()
+    else:
+        working_dir = pathlib.Path(working_dir).resolve()
     if not working_dir.is_dir():
         logger.error(f"Working directory {working_dir} doesn't exist. Please enter a valid directory path.")
         raise FileNotFoundError(2, 'No such working directory', working_dir)
