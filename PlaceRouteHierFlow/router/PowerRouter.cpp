@@ -1391,6 +1391,15 @@ void PowerRouter::ConvertToMetalPnRDB_Placed_Placed(PnRDB::Metal &temp_metal,Rou
 
 };
 
+void PowerRouter::Max_Min_Contact(PnRDB::contact &temp_contact, int &LLx, int &LLy, int &URx, int &URy){
+
+  if(temp_contact.placedBox.LL.x<LLx){LLx=temp_contact.placedBox.LL.x;} 
+  if(temp_contact.placedBox.LL.y<LLy){LLy=temp_contact.placedBox.LL.y;} 
+  if(temp_contact.placedBox.UR.x>URx){URx=temp_contact.placedBox.UR.x;} 
+  if(temp_contact.placedBox.UR.y>URy){URy=temp_contact.placedBox.UR.y;} 
+
+};
+
 void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
 
 //vdd
@@ -1426,6 +1435,33 @@ void PowerRouter::ReturnPowerGridData(PnRDB::hierNode& node){
 
 void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
 
+  int minX = INT_MAX;
+  int minY = INT_MAX;
+  int maxX = INT_MIN;
+  int maxY = INT_MIN;
+
+//vdd
+  for(unsigned int i=0;i<node.Vdd.metals.size();i++){
+      Max_Min_Contact(node.Vdd.metals[i].MetalRect, minX, minY, maxX, maxY);
+     }
+
+  for(unsigned int i=0;i<node.Vdd.vias.size();i++){
+      Max_Min_Contact(node.Vdd.vias[i].LowerMetalRect, minX, minY, maxX, maxY);
+      Max_Min_Contact(node.Vdd.vias[i].UpperMetalRect, minX, minY, maxX, maxY);
+     }
+
+//Gnd
+  for(unsigned int i=0;i<node.Gnd.metals.size();i++){
+      Max_Min_Contact(node.Gnd.metals[i].MetalRect, minX, minY, maxX, maxY);
+     }
+
+  for(unsigned int i=0;i<node.Gnd.vias.size();i++){
+      Max_Min_Contact(node.Gnd.vias[i].LowerMetalRect, minX, minY, maxX, maxY);
+      Max_Min_Contact(node.Gnd.vias[i].UpperMetalRect, minX, minY, maxX, maxY);
+     }
+
+
+
   for(unsigned int i=0;i<PowerNets.size();i++){
       
       int index=-1;
@@ -1437,14 +1473,29 @@ void PowerRouter::ReturnPowerNetData(PnRDB::hierNode& node){
           PnRDB::Metal temp_metal;
           ConvertToMetalPnRDB_Placed_Placed(temp_metal,PowerNets[i].path_metal[j]);
           node.PowerNets[index].path_metal.push_back(temp_metal);
+          Max_Min_Contact(temp_metal.MetalRect, minX, minY, maxX, maxY);
          }
 
       for(unsigned int j=0;j<PowerNets[i].path_via.size();j++){
            PnRDB::Via temp_via;
            ConvertToViaPnRDB_Placed_Placed(temp_via,PowerNets[i].path_via[j]);
            node.PowerNets[index].path_via.push_back(temp_via);
+           Max_Min_Contact(temp_via.LowerMetalRect, minX, minY, maxX, maxY);
+           Max_Min_Contact(temp_via.UpperMetalRect, minX, minY, maxX, maxY);
          }
       }
      }
      node.router_report.push_back(temp_report);
+
+  std::cout<<"node UR x UR y"<<node.LL.x<<" "<<node.LL.y<<" "<<node.UR.x<<" "<<node.UR.y<<std::endl;
+  if(minX<node.LL.x){node.LL.x=minX;}
+  if(minY<node.LL.y){node.LL.y=minY;}
+  if(maxX>node.UR.x){node.UR.x=maxX;}
+  if(maxY>node.UR.y){node.UR.y=maxY;}
+  node.width = node.UR.x - node.LL.x;
+  std::cout<<"node UR x UR y"<<node.LL.x<<" "<<node.LL.y<<" "<<node.UR.x<<" "<<node.UR.y<<std::endl;
+  node.height = node.UR.y - node.LL.y;
+  //assert(0);
+  
+
 };
