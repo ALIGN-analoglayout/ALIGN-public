@@ -82,7 +82,7 @@ class CmdlineParser():
         parser.add_argument( "-l", "--log",
                             dest="log_level",
                             choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
-                            default='WARNING',
+                            default='DEBUG',
                             help="Set the logging level (default: %(default)s)")
         parser.add_argument('--version',
                             action='version',

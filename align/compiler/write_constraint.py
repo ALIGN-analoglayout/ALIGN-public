@@ -417,7 +417,7 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     all_match_pairs={}
     for port1,port2 in combinations_with_replacement(set(sorted(ports))-set(stop_points),2):
         traversed =stop_points.copy()
-        if sorted(ports_weight[port1]) == sorted(ports_weight[port2]):
+        if sorted(ports_weight[port1]) == sorted(ports_weight[port2]) !=[0]:
             traversed+=[port1,port2]
             recursive_start_points(graph,all_match_pairs,traversed,port1,port2, ports_weight)
             logger.debug(f"all matches found starting from {port1} and {port2} pair: {all_match_pairs}")

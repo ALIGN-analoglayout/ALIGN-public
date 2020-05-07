@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 
 class SpiceParser:
     """
-    Read a spice file (.sp/.cdl) and converts it to a graph.
+    Read a spice file (1sp/.cdl) and converts it to a graph.
     Device properties are inherited from BasicElement.py
     You can flatten the circuit by using flag: flat
     The final graph is stored in a yaml file in circuit_graphs folder.
     """
 
-    def __init__(self, netlistPath, top_ckt_name=None, flat=1):
+    def __init__(self, netlistPath, top_ckt_name=None, flat=0):
         self.netlist = netlistPath
         self.subckts = {}
         self.circuits_list = []
@@ -31,11 +31,11 @@ class SpiceParser:
         self.top_insts = []
         self.include = []
         self.top_ckt_name = top_ckt_name
-        self.flat = flat
+        self.flat = 1
         self.next_line = None
         self.prev_line = None
         self.check_next_line = None
-        logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name}')
+        logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name} flat={self.flat}')
 
     def sp_parser(self):
         """Parse the defined file line wise"""
@@ -157,6 +157,8 @@ class SpiceParser:
             #self._show_circuit_graph("circuit", self.circuit_graph,"./circuit_graph_images/")
             return self.circuits_list
     def resolve_hierarchy(self):
+        print(self.flat)
+        print("why not")
         if self.flat:
             logger.debug(f"Flatten circuit: {self.top_ckt_name}")
             design = self._flatten_circuit(self.top_ckt_name)
