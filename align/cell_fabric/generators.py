@@ -57,23 +57,37 @@ class Region:
         return data
 
 class Via:
-    def __init__( self, nm, layer, *, h_clg, v_clg, h_ext=1, v_ext=1):
+    def __init__( self, nm, layer, *, h_clg, v_clg, WidthX=None, WidthY=None, h_ext=None, v_ext=None):
         self.nm = nm
         self.layer = layer
 
         self.h_clg = h_clg
         self.v_clg = v_clg
 
-        self.h_ext = h_ext
-        self.v_ext = v_ext
+        if WidthX is not None:
+            self.WidthX = WidthX
+        elif self.v_clg is not None:
+            self.WidthX = self.v_clg.grid[0][1][0]
+        else:
+            self.WidthX = 2
+
+        if WidthY is not None:
+            self.WidthY = WidthY
+        elif self.h_clg is not None:
+            self.WidthY = self.h_clg.grid[0][1][0]
+        else:
+            self.WidthY = 2
+
+        self.h_ext = h_ext if h_ext is not None else (self.WidthX // 2)
+        self.v_ext = v_ext if v_ext is not None else (self.WidthY // 2)
 
     def physical_xs( self, p):
-        (c,(w,_)) = self.v_clg.value( p)
-        return (c-w//2,c+w//2)
+        c = self.v_clg.value( p)[0]
+        return (c-self.WidthX//2,c+self.WidthX//2)
 
     def physical_ys( self, p):
-        (c,(w,_)) = self.h_clg.value( p)
-        return (c-w//2,c+w//2)
+        c = self.h_clg.value( p)[0]
+        return (c-self.WidthY//2,c+self.WidthY//2)
 
     def segment( self, netName, pinName, grid_cx, grid_cy):
         (x0,x1) = self.physical_xs( grid_cx)

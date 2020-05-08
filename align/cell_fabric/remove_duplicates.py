@@ -220,12 +220,13 @@ class RemoveDuplicates():
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
                     if sl.isEmpty():
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= current_slr.rect[dIndex+2]:  # continue
+                    elif rect[dIndex] <= current_slr.rect[dIndex+2] \
+                            and all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
                         if self.connectPair(layer,current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
                             sl.merge_slr(current_slr, sl.rects.pop())
                         else:
                             current_slr = sl.rects[-1]
-                    else:  # gap
+                    else:  # gap or different width
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
 
     def check_shorts_induced_by_vias( self):

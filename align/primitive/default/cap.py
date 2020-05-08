@@ -26,10 +26,22 @@ class CapGenerator(DefaultCanvas):
 
         self.Cboundary = self.addGen( Region( 'Cboundary', 'Cboundary', h_grid=self.m2.clg, v_grid=self.m1.clg))
 
-        self.v1_xn = self.addGen( Via( 'v1_xn', 'V1', h_clg=self.m2n.clg, v_clg=self.m1.clg))
-        self.v1_nx = self.addGen( Via( 'v1_nx', 'V1', h_clg=self.m2.clg, v_clg=self.m1n.clg))
-        self.v2_xn = self.addGen( Via( 'v2_xn', 'V2', h_clg=self.m2n.clg, v_clg=self.m3.clg))
-        self.v2_nx = self.addGen( Via( 'v2_nx', 'V2', h_clg=self.m2.clg, v_clg=self.m3n.clg))
+        self.v1_xn = self.addGen( Via( 'v1_xn', 'V1',
+                                        h_clg=self.m2n.clg, v_clg=self.m1.clg,
+                                        WidthX=self.v1.WidthX, WidthY=self.v1.WidthY,
+                                        h_ext=self.v1.h_ext, v_ext=self.v1.v_ext))
+        self.v1_nx = self.addGen( Via( 'v1_nx', 'V1',
+                                        h_clg=self.m2.clg, v_clg=self.m1n.clg,
+                                        WidthX=self.v1.WidthX, WidthY=self.v1.WidthY,
+                                        h_ext=self.v1.h_ext, v_ext=self.v1.v_ext))
+        self.v2_xn = self.addGen( Via( 'v2_xn', 'V2',
+                                        h_clg=self.m2n.clg, v_clg=self.m3.clg,
+                                        WidthX=self.v2.WidthX, WidthY=self.v2.WidthY,
+                                        h_ext=self.v2.h_ext, v_ext=self.v2.v_ext))
+        self.v2_nx = self.addGen( Via( 'v2_nx', 'V2',
+                                        h_clg=self.m2.clg, v_clg=self.m3n.clg,
+                                        WidthX=self.v2.WidthX, WidthY=self.v2.WidthY,
+                                        h_ext=self.v2.h_ext, v_ext=self.v2.v_ext))
 
     def addCap( self, unit_cap):
 

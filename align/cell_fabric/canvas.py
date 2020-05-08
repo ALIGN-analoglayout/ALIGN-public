@@ -215,10 +215,9 @@ class Canvas:
         self.rd = RemoveDuplicates( self, nets_allowed_to_be_open=nets_allowed_to_be_open)
         return self.rd.remove_duplicates()
 
-    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, nets_allowed_to_be_open=None):
+    def gen_data( self, *, draw_grid=False, run_drc=True, run_pex=True, nets_allowed_to_be_open=None, postprocess=False):
 
         self.computeBbox()
-        self.postprocessor.run(self.terminals)
 
         data = { 'bbox' : self.bbox.toList(),
                  'globalRoutes' : [],
@@ -239,10 +238,13 @@ class Canvas:
                 self.pex = ParasiticExtraction( self)
                 self.pex.run()
 
+        if postprocess:
+            data['terminals'] = self.postprocessor.run(data['terminals'])
+
         return data
 
-    def writeJSON(self, fp, *, draw_grid=False):
-        data = self.gen_data( draw_grid=draw_grid)
+    def writeJSON(self, fp, *, draw_grid=False, run_drc=True, run_pex=True, postprocess=False):
+        data = self.gen_data( draw_grid=draw_grid, run_drc=run_drc, run_pex=run_pex, postprocess=postprocess)
         json.dump( data, fp, indent=2)
         return data
 

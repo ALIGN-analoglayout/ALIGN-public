@@ -108,6 +108,7 @@ class Pdk(object):
         self._add(params + optional_params, **kwargs)
 
     def addVia(self, **kwargs):
+        optional_params = ['ViaCut']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',
@@ -120,10 +121,8 @@ class Pdk(object):
                   'VencA_H',
                   'VencP_L',
                   'VencP_H',
-                  'MinNo',
-                  #'DesignRules',
                   'R']
-        self._check(params, [], **kwargs)
+        self._check(params, optional_params, **kwargs)
         # Attributes that need additional processing
         # 0. Dimensions
         assert all(isinstance(kwargs[x], int) for x in params[4:7]), f"One or more of {params[3:7]} not an integer in {kwargs}"
