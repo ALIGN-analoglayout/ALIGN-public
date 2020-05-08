@@ -107,11 +107,15 @@ class MOSGenerator(DefaultCanvas):
 
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
-                                    v_clg=self.m1.clg))
+                                    v_clg=self.m1.clg,
+                                    WidthX=self.pdk['V0']['WidthX'],
+                                    WidthY=self.pdk['V0']['WidthY']))
 
         self.v0 = self.addGen( Via( 'v0', 'V0',
                                     h_clg=CenterLineGrid(),
-                                    v_clg=self.m1.clg))
+                                    v_clg=self.m1.clg,
+                                    WidthX=self.pdk['V0']['WidthX'],
+                                    WidthY=self.pdk['V0']['WidthY']))
 
         self.v0.h_clg.addCenterLine( 0,                 self.pdk['V0']['WidthY'], False)
         #v0pitch = activeWidth//(2*self.pdk['M2']['Pitch']) * self.pdk['Fin']['Pitch']
@@ -121,12 +125,6 @@ class MOSGenerator(DefaultCanvas):
             self.v0.h_clg.addCenterLine(i*v0pitch+v0Offset,    self.pdk['V0']['WidthY'], True)
         self.v0.h_clg.addCenterLine( self.unitCellHeight,    self.pdk['V0']['WidthY'], False)
         info = self.pdk['V0']
-        def single_centered_via(rect):
-            xpos = ( rect[0] + rect[2] ) // 2
-            ypos = ( rect[1] + rect[3] ) // 2
-            return [xpos - info['WidthX'] // 2, ypos - info['WidthY'] // 2, xpos + info['WidthX'] // 2, ypos + info['WidthY'] // 2]
-
-        self.postprocessor.register('V0', single_centered_via)
 
     def _addMOS( self, x, y, x_cells, name='M1', reflect=False, **parameters):
 
