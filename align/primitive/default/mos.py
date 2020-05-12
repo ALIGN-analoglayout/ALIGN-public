@@ -7,27 +7,27 @@ logger = logging.getLogger(__name__)
 
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, fin, finDummy, gate, gateDummy,shared_diff):
+    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff):
         super().__init__(pdk)
-        assert   3*self.pdk['Fin']['Pitch'] < 2*self.pdk['M2']['Pitch']
-
+        self.finsPerUnitCell = height
+        assert self.finsPerUnitCell % 4 == 0
+        assert (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])%self.pdk['M2']['Pitch']==0
+        self.m2PerUnitCell = (self.finsPerUnitCell*self.pdk['Fin']['Pitch'])//self.pdk['M2']['Pitch']
+        self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
         self.shared_diff = shared_diff
         self.gateDummy = gateDummy
         self.gatesPerUnitCell = gate + 2*self.gateDummy*(1-self.shared_diff)
-        self.finsPerUnitCell = fin + 2*finDummy
-        self.finDummy = finDummy
+        self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = 16 ## need to be added in the PDK JSON
-        # Should be a multiple of 4 for maximum utilization
-        assert self.finsPerUnitCell % 4 == 0
+        assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
         assert fin > 3, "number of fins in the transistor must be more than 2"
-        assert finDummy % 2 == 0
+        assert fin % 2 == 0, "number of fins in the transistor must be even" 
         assert gateDummy > 0
-        self.m2PerUnitCell = self.finsPerUnitCell//2 + 0
-        self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         unitCellLength = self.gatesPerUnitCell* self.pdk['Poly']['Pitch']
+        #activeOffset = self.finsPerUnitCell//-self.pdk['Fin']['Pitch']//2
+        activeOffset = self.unitCellHeight//2 -self.pdk['Fin']['Pitch']//2
         activeWidth =  self.pdk['Fin']['Pitch']*fin
-        activeOffset = activeWidth//2 + finDummy*self.pdk['Fin']['Pitch']-self.pdk['Fin']['Pitch']//2
         activePitch = self.unitCellHeight
         RVTWidth = activeWidth + 2*self.pdk['Active']['active_enclosure']
 
