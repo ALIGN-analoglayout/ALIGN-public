@@ -9,7 +9,7 @@ from align.cell_fabric import transformation
 
 from intel_p1222p2.IntelP1222p2Canvas import IntelP1222p2Canvas
 
-def check_results(ckt_name):
+def check_results(ckt_name, skip_layers=None):
 
     ckt_name_json = ckt_name
     if not ckt_name.endswith('.json'):
@@ -18,7 +18,10 @@ def check_results(ckt_name):
     with open( ckt_name_json, "rt") as fp:
         d = json.load(fp)
 
-    skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "tcn", "polycon", "diffcon"])
+    if skip_layers is None:
+        skip_layers = set( ["boundary", "diearea", "cellarea", "ndiff", "pdiff", "nwell", "poly", "gcn", "tcn", "polycon", "diffcon"])
+    else:
+        skip_layers = set( ["boundary", "diearea", "cellarea"])
 
     layer_tbl = { "diffcon": "Diffcon",
                   "polycon": "Polycon",
@@ -72,11 +75,17 @@ def check_results(ckt_name):
         s = (a+b)/2
         return f"{n0},{n1}: {a:.2f}f, {b:.2f}f, {100*(a/s-1):.1f}%, {100*(b/s-1):.1f}%"
 
-    if ckt_name.startswith('comp'):
+    if ckt_name.startswith("comparator") or ckt_name.startswith("align"):
         print( diffs( 'vin', 'vip'))
         print( diffs( 'vin_d', 'vip_d'))
         print( diffs( 'vin_o', 'vip_o'))
         print( diffs( 'von', 'vop'))
+
+    if ckt_name.startswith('pushpull'):
+        print( diffs( 'v_n1', 'v_n2'))
+        print( diffs( 'v_p1', 'v_p2'))
+        print( diffs( 'vo_ls', 'vref_ls'))
+        print( diffs( 'vo_hs', 'vref_hs'))
 
     if False:
         assert len(cnv.rd.different_widths) == 0, pformat(cnv.rd.different_widths)
