@@ -52,7 +52,8 @@ def test_A( design_dir):
 
     primitives = generate_hierarchy( netlist, subckt, topology_dir, flatten, unit_size_mos, unit_size_cap)
 
-    for suffix in [ "const", "v"]:
-        assert filecmp.cmp( topology_dir / f"{subckt}.{suffix}",
-                            gold_dir / f"{subckt}.{suffix}",
-                            False)
+    for suffix in ['v','const']:
+        for p in gold_dir.rglob(f'*.{suffix}'):
+            assert filecmp.cmp( topology_dir / p.name,
+                                gold_dir / p.name,
+                                False)
