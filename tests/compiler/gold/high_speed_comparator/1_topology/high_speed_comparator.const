@@ -1,0 +1,2 @@
+// ALIGN generated automatic constraints
+SymmBlock ( {mmn1_mmn0} , {mmn4_mmn3} , {mmp4,mmp2} , {mmp1_mmp0} , {mmn6_mmp7,mmn5_mmp6} , {mmp5,mmp3} )
