@@ -7,4 +7,4 @@ CC ( {C2} , {11} , {Cap_12f} )
 CC ( {C1} , {21} , {Cap_12f} )
 CC ( {C0} , {42} , {Cap_12f} )
 // ALIGN generated automatic constraints
-SymmBlock ( {C7} , {C4} , {C0} , {C2} , {C5} , {C1} , {C3} , {C6} , {C10} )
+SymmBlock ( {C7} , {C0} , {C5} , {C1} , {C10} , {C3} , {C4} , {C2} , {C6} )

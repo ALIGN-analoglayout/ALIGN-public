@@ -50,23 +50,23 @@ xM0 DA GA S B Switch_PMOS_n12_X1_Y1
 xM1 DB GB S B Switch_PMOS_n12_X1_Y1
 .ends DP_PMOS_n12_X1_Y1
 
-.subckt dummy_hier_m50_m20 on1 cmfb op1 op on
-xm2 avss on1 avss Dcap_NMOS_n12_X1_Y1
-m29_m14_m13 cmfb avss op1 on1 avss CMB_NMOS_2
-xm19 op on1 avss avss Switch_NMOS_n12_X1_Y1
-xm66 avss on1 avss Dcap_NMOS_n12_X1_Y1
-xm64 avss op1 avss Dcap_NMOS_n12_X1_Y1
+.subckt dummy_hier_m23_m37 op1 on vcmo on1 op
 xm21 on op1 avss avss Switch_NMOS_n12_X1_Y1
+r13_3__dmy0 vcmo on Res_400
+xm19 op on1 avss avss Switch_NMOS_n12_X1_Y1
+r12_3__dmy0 vcmo op Res_400
+.ends dummy_hier_m23_m37
+
+.subckt dummy_hier_m50_m20 on1 op1 cmfb on vcmo op
+xm66 avss on1 avss Dcap_NMOS_n12_X1_Y1
+m29_m14_m13 cmfb avss op1 on1 avss CMB_NMOS_2
+m21_r13_3__dmy0_m19_r12_3__dmy0 op1 on vcmo on1 op avss dummy_hier_m23_m37
+xm2 avss on1 avss Dcap_NMOS_n12_X1_Y1
 xm7 avss op1 avss Dcap_NMOS_n12_X1_Y1
+xm64 avss op1 avss Dcap_NMOS_n12_X1_Y1
 .ends dummy_hier_m50_m20
 
 .subckt Dcap_NMOS_n12_X1_Y1 D G S B
 m0 D G S1 B nmos_rvt  w=1e-08 l=1e-08
 m1 S1 G S B nmos_rvt  w=1e-08 l=1e-08
 .ends Dcap_NMOS_n12_X1_Y1
-
-.subckt dummy_hier_m23_m37 on1 on op cmfb op1 vcmo
-m2_m29_m14_m13_m19_m66_m64_m21_m7 avss cmfb op1 op on on1 dummy_hier_m50_m20
-r13_3__dmy0 vcmo on Res_400
-r12_3__dmy0 vcmo op Res_400
-.ends dummy_hier_m23_m37

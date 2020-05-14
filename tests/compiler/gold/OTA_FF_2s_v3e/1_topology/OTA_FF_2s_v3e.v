@@ -35,15 +35,12 @@ SCM_NMOS_n12_X1_Y1 M0_M1 ( .B(B), .DA(DA), .S(S), .DB(DB) );
 
 endmodule
 
-module dummy_hier_m50_m20 ( cmfb, on, on1, op, op1 ); 
-input cmfb, on, on1, op, op1;
+module dummy_hier_m23_m37 ( on, on1, op, op1, vcmo ); 
+input on, on1, op, op1, vcmo;
 
-Dcap_NMOS_n12_X1_Y1 m2 ( .B(avss), .S(avss), .G(on1) ); 
-CMB_NMOS_2 m29_m14_m13 ( .B(avss), .DA(cmfb), .S(avss), .DB(op1), .DC(on1) ); 
-Switch_NMOS_n12_X1_Y1 m19 ( .B(avss), .D(op), .G(on1), .S(avss) ); 
-Dcap_NMOS_n12_X1_Y1 m66 ( .B(avss), .S(avss), .G(on1) ); 
-Dcap_NMOS_n12_X1_Y1 m64 ( .B(avss), .S(avss), .G(op1) ); 
 Switch_NMOS_n12_X1_Y1 m21 ( .B(avss), .D(on), .G(op1), .S(avss) ); 
-Dcap_NMOS_n12_X1_Y1 m7 ( .B(avss), .S(avss), .G(op1) ); 
+Res_400 r13_3__dmy0 ( .PLUS(on), .MINUS(vcmo) ); 
+Switch_NMOS_n12_X1_Y1 m19 ( .B(avss), .D(op), .G(on1), .S(avss) ); 
+Res_400 r12_3__dmy0 ( .PLUS(op), .MINUS(vcmo) ); 
 
 endmodule

@@ -136,8 +136,8 @@ endmodule
 module dummy_hier_crossn ( clk, crossn, outp ); 
 input clk, crossn, outp;
 
-Switch_PMOS_n12_X1_Y1 xm1 ( .B(vdd), .D(crossn), .G(clk), .S(vdd) ); 
 Switch_PMOS_n12_X1_Y1 xm15 ( .B(vdd), .D(outp), .G(crossn), .S(vdd) ); 
+Switch_PMOS_n12_X1_Y1 xm1 ( .B(vdd), .D(crossn), .G(clk), .S(vdd) ); 
 
 endmodule
 
@@ -153,8 +153,8 @@ CCP_PMOS_S_n12_X1_Y1 xm13_xm14 ( .B(vdd), .DA(crossp), .DB(crossn), .S(vdd) );
 CCP_NMOS_n12_X1_Y1 xm3_xm4 ( .B(gnd), .DA(crossp), .DB(crossn), .SA(interp), .SB(intern) ); 
 DP_NMOS_n12_X1_Y1 xm6_xm5 ( .B(gnd), .DA(interp), .GA(_net1), .S(net069), .DB(intern), .GB(_net0) ); 
 DP_NMOS_n12_X1_Y1 xm16_xm17 ( .B(gnd), .DA(outm), .GA(crossp), .S(gnd), .DB(outp), .GB(crossn) ); 
-dummy_hier_crossp xm12_xm8 ( .clk(clk), .crossp(crossp), .outm(outm) ); 
-dummy_hier_crossn xm1_xm15 ( .clk(clk), .crossn(crossn), .outp(outp) ); 
+dummy_hier_crossp xm12_xm8 ( .crossp(crossp), .clk(clk), .outm(outm) ); 
+dummy_hier_crossn xm15_xm1 ( .outp(outp), .crossn(crossn), .clk(clk) ); 
 
 endmodule
 

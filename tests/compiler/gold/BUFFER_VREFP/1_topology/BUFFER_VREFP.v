@@ -34,27 +34,27 @@ LS_PMOS_n12_X1_Y1 M0_M1 ( .B(B), .DA(DA), .SA(SA), .DB(DB), .SB(SB) );
 
 endmodule
 
-module dummy_hier_xm11_xm8 ( net051, net054, net211, net215 ); 
-input net051, net054, net211, net215;
-
-SCM_PMOS_n12_X1_Y1 xm25_xm26 ( .B(vdd), .DA(net211), .S(vdd), .DB(net054) ); 
-Dummy1_PMOS_n12_X1_Y1 xm35 ( .B(vdd), .S(net211) ); 
-Dummy1_NMOS_n12_X1_Y1 xm43 ( .B(gnd), .S(net211) ); 
-Dummy1_PMOS_n12_X1_Y1 xm36 ( .B(vdd), .S(net215) ); 
-Dummy1_NMOS_n12_X1_Y1 xm44 ( .B(gnd), .S(net215) ); 
-SCM_PMOS_n12_X1_Y1 xm23_xm24 ( .B(vdd), .DA(net215), .S(vdd), .DB(net051) ); 
-
-endmodule
-
 module dummy_hier_xm12_xm10 ( net036, net051, net054, net204, net207, net211, net215 ); 
 input net036, net051, net054, net204, net207, net211, net215;
 
-LSB_PMOS_2 xm22_xm14_xm13 ( .B(vdd), .DA(net204), .SA(vdd), .DB(net207), .SB(net054), .DC(net036), .SC(net051) ); 
-dummy_hier_xm11_xm8 xm25_xm26_xm35_xm43_xm36_xm44_xm23_xm24 ( .net211(net211), .net054(net054), .net215(net215), .net051(net051) ); 
-Dummy1_PMOS_n12_X1_Y1 xm42 ( .B(vdd), .S(net051) ); 
-Dummy1_NMOS_n12_X1_Y1 xm45 ( .B(gnd), .S(net051) ); 
 Dummy1_NMOS_n12_X1_Y1 xm46 ( .B(gnd), .S(net054) ); 
+LSB_PMOS_2 xm22_xm14_xm13 ( .B(vdd), .DA(net204), .SA(vdd), .DB(net207), .SB(net054), .DC(net036), .SC(net051) ); 
 Dummy1_PMOS_n12_X1_Y1 xm41 ( .B(vdd), .S(net054) ); 
+SCM_PMOS_n12_X1_Y1 xm25_xm26 ( .B(vdd), .DA(net211), .S(vdd), .DB(net054) ); 
+Dummy1_PMOS_n12_X1_Y1 xm42 ( .B(vdd), .S(net051) ); 
+SCM_PMOS_n12_X1_Y1 xm23_xm24 ( .B(vdd), .DA(net215), .S(vdd), .DB(net051) ); 
+Dummy1_NMOS_n12_X1_Y1 xm45 ( .B(gnd), .S(net051) ); 
+
+endmodule
+
+module dummy_hier_xm11_xm8 ( net036, net051, net054, net204, net207, net211, net215 ); 
+input net036, net051, net054, net204, net207, net211, net215;
+
+dummy_hier_xm12_xm10 xm46_xm22_xm14_xm13_xm41_xm25_xm26_xm42_xm23_xm24_xm45 ( .net054(net054), .net207(net207), .net036(net036), .net204(net204), .net051(net051), .net211(net211), .net215(net215) ); 
+Dummy1_NMOS_n12_X1_Y1 xm43 ( .B(gnd), .S(net211) ); 
+Dummy1_PMOS_n12_X1_Y1 xm35 ( .B(vdd), .S(net211) ); 
+Dummy1_PMOS_n12_X1_Y1 xm36 ( .B(vdd), .S(net215) ); 
+Dummy1_NMOS_n12_X1_Y1 xm44 ( .B(gnd), .S(net215) ); 
 
 endmodule
 
@@ -88,7 +88,7 @@ SCM_NMOS_n12_X1_Y1 xm1_xm6 ( .B(gnd), .DA(net207), .S(gnd), .DB(net036) );
 LS_PMOS_n12_X1_Y1 xm27_xm29 ( .B(vdd), .DA(net057), .SA(net049), .DB(net052), .SB(vrefp) ); 
 DP_NMOS_n12_X1_Y1 xm12_xm10 ( .B(gnd), .DA(net051), .GA(vref), .S(net212), .DB(net054), .GB(net049) ); 
 DP_NMOS_n12_X1_Y1 xm11_xm8 ( .B(gnd), .DA(net211), .GA(vref), .S(net212), .DB(net215), .GB(net049) ); 
-dummy_hier_xm12_xm10 xm22_xm14_xm13_xm25_xm26_xm35_xm43_xm36_xm44_xm23_xm24_xm42_xm45_xm46_xm41 ( .net204(net204), .net036(net036), .net207(net207), .net051(net051), .net054(net054), .net211(net211), .net215(net215) ); 
+dummy_hier_xm11_xm8 xm46_xm22_xm14_xm13_xm41_xm25_xm26_xm42_xm23_xm24_xm45_xm43_xm35_xm36_xm44 ( .net211(net211), .net207(net207), .net036(net036), .net204(net204), .net215(net215), .net054(net054), .net051(net051) ); 
 
 endmodule
 

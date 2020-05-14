@@ -154,14 +154,14 @@ xM0 DA DB SA B Switch_NMOS_n12_X1_Y1
 xM1 DB DA SB B Switch_NMOS_n12_X1_Y1
 .ends CCP_NMOS_n12_X1_Y1
 
-.subckt dummy_hier_crossp clk crossp outm
+.subckt dummy_hier_crossp crossp clk outm
 xxm12 crossp clk vdd vdd Switch_PMOS_n12_X1_Y1
 xxm8 outm crossp vdd vdd Switch_PMOS_n12_X1_Y1
 .ends dummy_hier_crossp
 
-.subckt dummy_hier_crossn clk crossn outp
-xxm1 crossn clk vdd vdd Switch_PMOS_n12_X1_Y1
+.subckt dummy_hier_crossn outp crossn clk
 xxm15 outp crossn vdd vdd Switch_PMOS_n12_X1_Y1
+xxm1 crossn clk vdd vdd Switch_PMOS_n12_X1_Y1
 .ends dummy_hier_crossn
 
 .subckt myComparator_v3 clk gnd outm outp _net0 _net1
@@ -174,8 +174,8 @@ xxm13_xm14 crossp crossn vdd vdd CCP_PMOS_S_n12_X1_Y1
 xxm3_xm4 crossp crossn interp intern gnd CCP_NMOS_n12_X1_Y1
 xxm6_xm5 interp _net1 net069 intern _net0 gnd DP_NMOS_n12_X1_Y1
 xxm16_xm17 outm crossp gnd outp crossn gnd DP_NMOS_n12_X1_Y1
-xm12_xm8 vdd crossp outm clk dummy_hier_crossp
-xm1_xm15 vdd crossn outp clk dummy_hier_crossn
+xm12_xm8 vdd clk outm crossp dummy_hier_crossp
+xm15_xm1 crossn vdd clk outp dummy_hier_crossn
 .ends myComparator_v3
 
 .subckt CCP_PMOS_S_n12_X1_Y1 D G S B

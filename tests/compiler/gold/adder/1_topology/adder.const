@@ -13,4 +13,4 @@ PortLocation ( n2 , LT )
 CC ( {C0} , {5} , {Cap_12f} )
 CC ( {C1} , {5} , {Cap_12f} )
 // ALIGN generated automatic constraints
-SymmBlock ( {R0} , {C0} , {C1} , {R1} )
+SymmBlock ( {R1} , {C1} , {C0} , {R0} )
