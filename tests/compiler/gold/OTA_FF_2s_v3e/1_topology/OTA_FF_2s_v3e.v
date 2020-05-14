@@ -35,57 +35,15 @@ SCM_NMOS_n12_X1_Y1 M0_M1 ( .B(B), .DA(DA), .S(S), .DB(DB) );
 
 endmodule
 
-module dummy_hier_m23_m37 ( on, on1, op, op1, vcmo ); 
-input on, on1, op, op1, vcmo;
+module dummy_hier_m50_m20 ( cmfb, on, on1, op, op1 ); 
+input cmfb, on, on1, op, op1;
 
-Switch_NMOS_n12_X1_Y1 m19 ( .B(avss), .D(op), .G(on1), .S(avss) ); 
-Res_400 r12_3__dmy0 ( .PLUS(op), .MINUS(vcmo) ); 
-Res_400 r13_3__dmy0 ( .PLUS(on), .MINUS(vcmo) ); 
-Switch_NMOS_n12_X1_Y1 m21 ( .B(avss), .D(on), .G(op1), .S(avss) ); 
-
-endmodule
-
-module dummy_hier_m50_m20 ( cmfb, on, on1, op, op1, vcmo ); 
-input cmfb, on, on1, op, op1, vcmo;
-
-dummy_hier_m23_m37 m19_r12_3__dmy0_r13_3__dmy0_m21 ( .op(op), .on1(on1), .vcmo(vcmo), .on(on), .op1(op1) ); 
-CMB_NMOS_2 m29_m14_m13 ( .B(avss), .DA(cmfb), .S(avss), .DB(op1), .DC(on1) ); 
-Dcap_NMOS_n12_X1_Y1 m66 ( .B(avss), .S(avss), .G(on1) ); 
 Dcap_NMOS_n12_X1_Y1 m2 ( .B(avss), .S(avss), .G(on1) ); 
+CMB_NMOS_2 m29_m14_m13 ( .B(avss), .DA(cmfb), .S(avss), .DB(op1), .DC(on1) ); 
+Switch_NMOS_n12_X1_Y1 m19 ( .B(avss), .D(op), .G(on1), .S(avss) ); 
+Dcap_NMOS_n12_X1_Y1 m66 ( .B(avss), .S(avss), .G(on1) ); 
 Dcap_NMOS_n12_X1_Y1 m64 ( .B(avss), .S(avss), .G(op1) ); 
+Switch_NMOS_n12_X1_Y1 m21 ( .B(avss), .D(on), .G(op1), .S(avss) ); 
 Dcap_NMOS_n12_X1_Y1 m7 ( .B(avss), .S(avss), .G(op1) ); 
 
 endmodule
-
-module OTA_FF_2s_v3e ( ibin, in, ip, on, op, vcas, vcmi ); 
-input ibin, in, ip, on, op, vcas, vcmi;
-
-Dcap_PMOS_n12_X1_Y1 m62 ( .B(avdd), .S(avdd), .G(ibin) ); 
-Dummy1_PMOS_n12_X1_Y1 m54 ( .B(net59), .S(net59) ); 
-Dummy1_PMOS_n12_X1_Y1 m43 ( .B(net5), .S(net5) ); 
-Dcap_PMOS_n12_X1_Y1 m53 ( .B(avdd), .S(avdd), .G(ibin) ); 
-Dcap_PMOS_n12_X1_Y1 m57 ( .B(avdd), .S(avdd), .G(ibin) ); 
-Dcap_PMOS_n12_X1_Y1 m63 ( .B(net75), .S(net75), .G(vcas) ); 
-Dcap_PMOS_n12_X1_Y1 m58 ( .B(net057), .S(net057), .G(vcmo) ); 
-Dcap_PMOS_n12_X1_Y1 m41 ( .B(avdd), .S(avdd), .G(ibin) ); 
-Dcap_PMOS_n12_X1_Y1 m48 ( .B(net057), .S(net057), .G(vcmi) ); 
-Dcap_NMOS_n12_X1_Y1 m0 ( .B(avss), .S(avss), .G(cmfb) ); 
-Dummy1_NMOS_n12_X1_Y1 m55 ( .B(avss), .S(avss) ); 
-Dcap_NMOS_n12_X1_Y1 m59 ( .B(avss), .S(avss), .G(net044) ); 
-DCL_NMOS_n12_X1_Y1 m30 ( .B(avss), .D(net044), .S(avss) ); 
-Dcap_NMOS_n12_X1_Y1 m56 ( .B(avss), .S(avss), .G(cmfb) ); 
-CASCODED_CMB_PMOS_3 m16_m6_m4_m36_m35 ( .B(avdd), .DA(ibin), .GA(vcas), .S(avdd), .DC(net5), .DD(net59), .DE(net057) ); 
-DP_PMOS_n12_X1_Y1 m33_m34 ( .B(net057), .DA(net044), .GA(vcmi), .S(net057), .DB(cmfb), .GB(vcmo) ); 
-DP_PMOS_n12_X1_Y1 m50_m20 ( .B(net5), .DA(on1), .GA(ip), .S(net5), .DB(op1), .GB(in) ); 
-DP_PMOS_n12_X1_Y1 m23_m37 ( .B(net59), .DA(on), .GA(ip), .S(net59), .DB(op), .GB(in) ); 
-dummy_hier_m50_m20 m19_r12_3__dmy0_r13_3__dmy0_m21_m29_m14_m13_m66_m2_m64_m7 ( .op1(op1), .op(op), .on(on), .vcmo(vcmo), .on1(on1), .cmfb(cmfb) ); 
-Cap_cc c4_c5 ( .MINUS0(vcmo), .PLUS0(on), .MINUS1(vcmo), .PLUS1(op) ); 
-
-endmodule
-
-`celldefine
-module global_power;
-supply0 avss;
-supply1 avdd;
-endmodule
-`endcelldefine

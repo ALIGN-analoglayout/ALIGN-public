@@ -1,0 +1,7 @@
+CC ( {xc6} , {1} , {Cap_12f} )
+CC ( {xc3} , {1} , {Cap_12f} )
+// ALIGN generated automatic constraints
+SymmBlock ( {xi154,xi155} , {xi161} , {xi160} , {xi88} , {r16} , {xi164} , {r25} , {c3} , {r51} , {xi128} , {xi146} , {c6} )
+SymmBlock ( {xi99,xi97} )
+CC ( {c6} , {1} , {Cap_12f} )
+CC ( {c3} , {1} , {Cap_12f} )

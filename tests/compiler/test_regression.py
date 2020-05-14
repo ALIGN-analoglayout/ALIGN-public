@@ -6,9 +6,22 @@ from align.compiler import generate_hierarchy
 import filecmp
 import logging
 
-run_flat = ['linear_equalizer', 'adder', 'variable_gain_amplifier', 'single_to_differential_converter']
-skip_dirs = []
-skip_pdks = []
+run_flat = ['linear_equalizer',
+            'adder',
+            'variable_gain_amplifier',
+            'single_to_differential_converter']
+
+skip_dirs = set(['Sanitized_CDAC_SW_Coarse',
+                 'Sanitized_model3x_MDLL_TOP',
+                 'Santized_12b_ADC_TOP',
+                 'CTDTDSM_V3',
+                 'TI_SAR',
+                 'Sanitized_TX_8l12b',
+                 'Sanitized_DLPF_RCFilter', # 24sec
+                 'Sanitized_TempSensor',    # 30sec
+                 'Sanitized_5b_ADC',
+                 'Sanitized_civiR_DLDO_TOP'
+                ])
 
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 

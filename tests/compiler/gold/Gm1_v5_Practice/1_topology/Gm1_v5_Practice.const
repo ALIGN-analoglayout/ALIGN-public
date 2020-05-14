@@ -1,0 +1,3 @@
+CC ( {c21_c22} , {2,2} , {Cap_12f} )
+// ALIGN generated automatic constraints
+SymmBlock ( {m27_m26} , {r11,r12} , {c22_c21} , {m12_m14_m11} )
