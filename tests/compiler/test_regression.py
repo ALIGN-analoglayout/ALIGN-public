@@ -32,7 +32,7 @@ examples =  [p.parents[0] for p in examples_dir.rglob('*.sp') \
 @pytest.mark.regression
 @pytest.mark.parametrize( "design_dir", examples, ids=lambda x: x.name)
 def test_A( design_dir):
-    logging.getLogger().setLevel(logging.getLevelName("ERROR"))
+    logging.getLogger().setLevel(logging.getLevelName("CRITICAL"))
 
     nm = design_dir.name
     run_dir = pathlib.Path( os.environ['ALIGN_WORK_DIR']).resolve() / nm
@@ -52,7 +52,7 @@ def test_A( design_dir):
 
     primitives = generate_hierarchy( netlist, subckt, topology_dir, flatten, unit_size_mos, unit_size_cap)
 
-    for suffix in ['v','const']:
+    for suffix in ['v','const','sp']:
         for p in gold_dir.rglob(f'*.{suffix}'):
             assert filecmp.cmp( topology_dir / p.name,
                                 gold_dir / p.name,
