@@ -1,0 +1,3 @@
+// ALIGN generated automatic constraints
+SymmBlock ( {xi1} , {xi2} , {xm1,xm5} , {c2} )
+CC ( {c2} , {1} , {Cap_12f} )
