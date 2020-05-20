@@ -2133,6 +2133,7 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
         for(int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
            int index_i=0;
            int index_j=0;
+           std::cout<<"ML Linear "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
            for(int m=0;m<caseNL.Nets.size();m++){
                for(int n=0;n<caseNL.Nets[m].connected.size();n++){
                   if(caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
@@ -2142,9 +2143,8 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
                   }
                }
               } 
-         std::cout<<"MLLinearConst Cost"<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" "<<caseNL.ML_Constraints[i].upperBound<<std::endl;
+         std::cout<<"MLLinearConst Cost "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" "<<caseNL.ML_Constraints[i].upperBound<<" "<<index_i<<" "<<index_j<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<std::endl;
          temp_sum += caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j];
-         std::cout<<"MLLinearConst Cost"<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<std::endl;
          
         }
 
