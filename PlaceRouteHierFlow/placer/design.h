@@ -103,6 +103,7 @@ class design
     std::vector<placerDB::SymmBlock> SBlocks;
     std::vector<SymmPairBlock> SPBlocks;
     std::vector<PortPos> Port_Location;
+    std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
 
     //added by ya
     

@@ -35,6 +35,7 @@ struct blockComplex;
 struct CCCap;
 struct R_const;
 struct LinearConst;
+struct Multi_LinearConst;
 struct C_const;
 struct SymmPairBlock;
 struct Metal;
@@ -369,6 +370,7 @@ struct hierNode {
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
   vector<LinearConst> L_Constraints;
+  vector<Multi_LinearConst> ML_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
@@ -462,6 +464,14 @@ struct LinearConst {
   //vector<string> end_pin;
   std::vector<std::pair<int,int> > pins; //pair.first blocks id pair.second pin id 
   std::vector<double> alpha;
+  double upperBound;
+  double lowerBound;
+
+};
+
+struct Multi_LinearConst {
+
+  std::vector<LinearConst> Multi_linearConst;
   double upperBound;
   double lowerBound;
 

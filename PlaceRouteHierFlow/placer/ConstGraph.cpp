@@ -2119,6 +2119,48 @@ double ConstGraph::LinearConst(design& caseNL, SeqPair& caseSP){
 
 }
 
+double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
+
+  double sum = 0;
+  std::vector<std::vector<double> > feature_value;
+  std::vector<std::vector<std::string> > feature_name;
+  ExtractLength(caseNL, caseSP, feature_value, feature_name);
+
+  for(int i=0;i<caseNL.ML_Constraints.size();i++){
+     double temp_sum = 0;
+     for(int j=0;j<caseNL.ML_Constraints[i].Multi_linearConst.size();j++){
+
+        for(int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
+           int index_i=0;
+           int index_j=0;
+           for(int m=0;m<caseNL.Nets.size();m++){
+               for(int n=0;n<caseNL.Nets[m].connected.size();n++){
+                  if(caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
+                     index_i=m;
+                     index_j=n;
+                     break;
+                  }
+               }
+              } 
+         std::cout<<"MLLinearConst Cost"<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" "<<caseNL.ML_Constraints[i].upperBound<<std::endl;
+         temp_sum += caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j];
+         std::cout<<"MLLinearConst Cost"<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<std::endl;
+         
+        }
+
+     }
+     if(temp_sum<=caseNL.ML_Constraints[i].upperBound){
+        temp_sum = 0;
+     }else{
+        temp_sum = caseNL.ML_Constraints[i].upperBound;
+     }
+     sum += temp_sum;
+  }
+
+  return sum;
+
+}
+
 
 void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std::vector<double> > &feature_value, std::vector<std::vector<std::string> > &feature_name){
 
@@ -2629,6 +2671,7 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   cost += CalculateArea();
   cost += CalculateDeadArea(caseNL, caseSP)*PHI;
   cost += LinearConst(caseNL, caseSP)*PI;
+  cost += ML_LinearConst(caseNL, caseSP)*PII;
   //cout<<"GAMAR:"<<GAMAR<<" BETA "<<BETA<<"LAMBDA "<<LAMBDA<<endl;
   //cout<<"Penalt: "<<  (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph))*GAMAR<<" vs "<< (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)) << endl;
   //cout<<"WL: "<<CalculateWireLength(caseNL, caseSP)*LAMBDA<<" vs "<<CalculateWireLength(caseNL, caseSP)<<endl;
@@ -2654,6 +2697,7 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   cost += CalculateArea();
   cost += CalculateDeadArea(caseNL, caseSP)*PHI;
   cost += LinearConst(caseNL, caseSP)*PI;
+  cost += ML_LinearConst(caseNL, caseSP)*PII;
   if(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)>0){
   GAMAR=cost/(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph));
   }
@@ -2671,6 +2715,9 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   }
   if(LinearConst(caseNL, caseSP)>0){
   PI = cost/LinearConst(caseNL, caseSP) * 2.0;
+  }
+  if(ML_LinearConst(caseNL, caseSP)>0){
+  PII = cost/ML_LinearConst(caseNL, caseSP) * 2.0;
   }
   //cout<<"NEW GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<" PHI:"<<PHI<<endl;
   //cout<<"NEW_BETA:"<<BETA<<endl;
