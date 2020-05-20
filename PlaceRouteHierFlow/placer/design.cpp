@@ -423,6 +423,9 @@ design::design(PnRDB::hierNode& node) {
     }
     this->Nets.push_back(tmpnet);
   }
+
+  this->ML_Constraints = node.ML_Constraints;
+
   // Add symmetry block constraint, axis direction is determined by user
   for(vector<PnRDB::SymmPairBlock>::iterator it=node.SPBlocks.begin(); it!=node.SPBlocks.end();++it) {
     this->SPBlocks.resize(SPBlocks.size()+1);

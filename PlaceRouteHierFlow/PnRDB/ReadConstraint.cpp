@@ -598,6 +598,56 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
 */
 
+      }else if(temp[0].compare("Multi_LinearConst")==0){
+
+        PnRDB::Multi_LinearConst temp_Multi_LinearConst;
+        for(int i=2;i<temp.size()-3;i=i+2){
+           PnRDB::LinearConst temp_LinearConst;
+
+           string word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           tempsec=StringSplitbyChar(word, ',');
+           
+           for(int p=1;p<tempsec.size();p++){
+              std::pair<int,int> temp_pin;
+              vector<string> pins;
+              pins = StringSplitbyChar(tempsec[p], '/');
+              if(pins.size()>2){
+                 for(unsigned int j=0;j<node.Blocks.size();j++){
+                    if(node.Blocks.at(j).instance.back().name.compare(pins[0])==0){
+                       for(unsigned int k=0;k<node.Blocks.at(j).instance.back().blockPins.size();k++){
+                          if(node.Blocks.at(j).instance.back().blockPins[k].name.compare(pins[1])==0){
+                            temp_pin.first = j;
+                            temp_pin.second = k;
+                            temp_LinearConst.pins.push_back(temp_pin);
+                            temp_LinearConst.alpha.push_back(atoi(tempsec[2].c_str()));
+                            std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                            break; 
+                         }
+                      }
+                   }
+                }
+             }else if(pins.size()==2){
+                 for(unsigned int j=0;j<node.Terminals.size();j++){
+                    if(node.Terminals.at(j).name.compare(pins[0])==0){
+                       temp_pin.first = -1;
+                       temp_pin.second = j;
+                       temp_LinearConst.pins.push_back(temp_pin);
+                       temp_LinearConst.alpha.push_back(atoi(tempsec[1].c_str()));
+                       std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<std::endl;
+                       break; 
+                   }
+                }
+             }  
+           }
+
+           temp_Multi_LinearConst.Multi_linearConst.push_back(temp_LinearConst);
+        }
+        int temp_size = temp.size();
+        temp_Multi_LinearConst.upperBound = atoi(temp[temp_size-3].c_str())*2000;
+        node.ML_Constraints.push_back(temp_Multi_LinearConst);
+
       }else if (temp[0].compare("C_Const")==0){
         PnRDB::C_const temp_c_const;
         string word=temp[2];
