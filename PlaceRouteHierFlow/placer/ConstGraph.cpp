@@ -2126,6 +2126,25 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
   std::vector<std::vector<std::string> > feature_name;
   ExtractLength(caseNL, caseSP, feature_value, feature_name);
 
+  for(int i =0; i<feature_value.size();i++){
+     
+     for(int j=0;j<feature_value[i].size();j++){
+        //std::cout<<feature_value[i][j]<<" ";
+     }
+     //std::cout<<std::endl;
+
+  }
+
+  for(int i =0; i<feature_name.size();i++){
+
+     for(int j=0;j<feature_name[i].size();j++){
+        //std::cout<<feature_name[i][j]<<" ";
+     }
+     //std::cout<<std::endl;
+
+  }
+
+
   for(int i=0;i<caseNL.ML_Constraints.size();i++){
      double temp_sum = 0;
      for(int j=0;j<caseNL.ML_Constraints[i].Multi_linearConst.size();j++){
@@ -2133,17 +2152,24 @@ double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
         for(int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
            int index_i=0;
            int index_j=0;
-           std::cout<<"ML Linear "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+           //std::cout<<"ML Linear "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
            for(int m=0;m<caseNL.Nets.size();m++){
                for(int n=0;n<caseNL.Nets[m].connected.size();n++){
-                  if(caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
+
+                  //std::cout<<"searching" <<m<<" "<<n<<" "<<caseNL.Nets[m].connected[n].iter << " "<< caseNL.Nets[m].connected[n].iter2 << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+
+                  if(caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
+
+                     //std::cout<<" found " <<caseNL.Nets[m].connected[n].iter2 << " "<< caseNL.Nets[m].connected[n].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+
                      index_i=m;
                      index_j=n;
                      break;
                   }
                }
-              } 
-         std::cout<<"MLLinearConst Cost "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" "<<caseNL.ML_Constraints[i].upperBound<<" "<<index_i<<" "<<index_j<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<std::endl;
+              }
+         //std::cout<< caseNL.Nets[index_i].connected[index_j].iter2 << " "<< caseNL.Nets[index_i].connected[index_j].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+         std::cout<<"MLLinearConst Cost: alpha "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" upperbound "<<caseNL.ML_Constraints[i].upperBound<<" block idex "<<caseNL.Nets[index_i].connected[index_j].iter2<<" pin idx "<<caseNL.Nets[index_i].connected[index_j].iter<<" index_i "<<index_i<<" index_j "<<index_j<<" dist "<<feature_value[index_i][index_j]<<" alpha*dist "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<" pin_name "<<feature_name[index_i][index_j]<<std::endl;
          temp_sum += caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j];
          
         }
@@ -2177,8 +2203,8 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       pos.clear();
       if(ci->type==placerDB::Block) {
-        //pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + std::to_string(net_pin_number);
-        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + "_" + std::to_string(net_pin_number);
+        //pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name;
         net_pin_number = net_pin_number + 1;
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
@@ -2199,10 +2225,12 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
     // for each net
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     // for each terminal
-    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      int net_terminal_number = 0;
+      for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       pos.clear();
       if(ci->type==placerDB::Terminal) {
-        pin_name = ni->name;
+        pin_name = ni->name +"_"+std::to_string(net_terminal_number);
+        net_terminal_number = net_terminal_number + 1;
         std::cout<<"Terminal center (x,y) "<<caseNL.Terminals[ci->iter].center.x<<" "<<caseNL.Terminals[ci->iter].center.y<<std::endl;
         pos.push_back(caseNL.Terminals[ci->iter].center);
         pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
@@ -2217,26 +2245,29 @@ void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std:
     // for each pin
     string net_name = ni->name;
     int net_pin_number = 0;
+    int net_terminal_number = 0;
     std::vector<std::vector<placerDB::point> > center_points;
     std::vector<std::string> temp_feature_name;
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       if(ci->type==placerDB::Block) {
-        //pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name+"_"+std::to_string(net_pin_number);
-        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name+"_"+std::to_string(net_pin_number);
+        //pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
         net_pin_number = net_pin_number + 1;
         temp_feature_name.push_back(pin_name);
         std::cout<<"Sorted Pin name "<<pin_name<<" pin contact size "<<pin_maps[pin_name].size()<<std::endl;
         center_points.push_back(pin_maps[pin_name]);
         center_points_all.push_back(pin_maps[pin_name]);
       }else if(ci->type==placerDB::Terminal) {
-        temp_feature_name.push_back(net_name);
-        std::cout<<"Sorted terminal name "<<net_name<<" terminal contact size "<<pin_maps[net_name].size()<<std::endl;
-        center_points.push_back(pin_maps[net_name]);
-        center_points_all.push_back(pin_maps[net_name]);
+        pin_name = net_name +"_" + std::to_string(net_terminal_number);
+        net_terminal_number = net_terminal_number + 1;
+        temp_feature_name.push_back(pin_name);
+        std::cout<<"Sorted terminal name "<<pin_name<<" terminal contact size "<<pin_maps[pin_name].size()<<std::endl;
+        center_points.push_back(pin_maps[pin_name]);
+        center_points_all.push_back(pin_maps[pin_name]);
       }
-     feature_name.push_back(temp_feature_name);
+     
     }
-
+    feature_name.push_back(temp_feature_name);
 
     std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
     feature_value.push_back(temp_feature);

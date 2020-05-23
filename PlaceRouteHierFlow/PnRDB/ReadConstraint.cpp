@@ -575,12 +575,12 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                  }
               }
            }
-           temp_LinearConst.alpha.push_back(atoi(tempsec[1].c_str()));
-           std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atoi(tempsec[1].c_str())<<std::endl;
+           temp_LinearConst.alpha.push_back(atof(tempsec[1].c_str()));
+           std::cout<<"Test Linear pin alpha "<<tempsec[1]<<" "<<atof(tempsec[1].c_str())<<std::endl;
         }
         int temp_size = temp.size();
-        temp_LinearConst.upperBound = atoi(temp[temp_size-3].c_str())*2000;
-        std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atoi(temp[temp_size-3].c_str())<<std::endl;
+        temp_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
+        std::cout<<"Test Linear pin upperBound "<<temp[temp_size-3]<<" "<<atof(temp[temp_size-3].c_str())<<std::endl;
         node.L_Constraints.push_back(temp_LinearConst);
 /*
         for(int i=0;i<node.Nets.size();i++){
@@ -621,7 +621,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                             temp_pin.first = j;
                             temp_pin.second = k;
                             temp_LinearConst.pins.push_back(temp_pin);
-                            temp_LinearConst.alpha.push_back(atoi(pins[2].c_str()));
+                            temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
                             std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<pins[1]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
                             break; 
                          }
@@ -634,7 +634,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
                        temp_pin.first = -1;
                        temp_pin.second = j;
                        temp_LinearConst.pins.push_back(temp_pin);
-                       temp_LinearConst.alpha.push_back(atoi(pins[2].c_str()));
+                       temp_LinearConst.alpha.push_back(atof(pins[2].c_str()));
                        std::cout<<"ML Test Linear pin "<<pins[0]<<" "<<temp_pin.first<<" "<<temp_pin.second<<" "<<pins[2]<<std::endl;
                        break; 
                    }
@@ -645,7 +645,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
            temp_Multi_LinearConst.Multi_linearConst.push_back(temp_LinearConst);
         }
         int temp_size = temp.size();
-        temp_Multi_LinearConst.upperBound = atoi(temp[temp_size-3].c_str())*2000;
+        temp_Multi_LinearConst.upperBound = atof(temp[temp_size-3].c_str())*2000;
         node.ML_Constraints.push_back(temp_Multi_LinearConst);
         std::cout<<"Left ML Linear Const"<<" "<<temp[temp_size-3]<<std::endl;
       }else if (temp[0].compare("C_Const")==0){
