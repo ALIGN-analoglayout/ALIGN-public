@@ -1,6 +1,6 @@
 	#include "MNASimulation.h"
 	#include <iostream>
-#include "/home/grads/x/xurishang/research/test/superlu/SuperLU_5.2.1/SRC/slu_ddefs.h"
+#include "slu_ddefs.h"
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info){
