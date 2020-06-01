@@ -84,6 +84,7 @@ PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hm
     void InsertInternalVia_Net(std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via, std::vector<RouterDB::Net> &temp_Nets);
     void Initial_powerrouter_report_info(PnRDB::routing_net &temp_routing_net, int i);
     void Update_powerrouter_report_info(PnRDB::routing_net& temp_routing_net, int i, int j, int pathMark);
+    void Max_Min_Contact(PnRDB::contact &temp_contact, int &LLx, int &LLy, int &URx, int &URy);
 };
 
 #endif

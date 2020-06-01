@@ -52,21 +52,20 @@
 
 
 {
-    "Layer": "V0",
-    "GdsLayerNo": 12,
-    "GdsDatatype": {"Draw":0}, 
-    "Stack": [null, "M1"],
-    "SpaceX": 46,
-    "SpaceY": 52,
-    "WidthX": 32,
-    "WidthY": 32,
-    "VencA_L": 20,
-    "VencA_H": 20,
-    "VencP_L": 0,
-    "VencP_H": 0,
-    "MinNo":1,
-    "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
-    },
+"Layer": "V0",
+"GdsLayerNo": 12,
+"GdsDatatype": {"Draw":0}, 
+"Stack": [null, "M1"],
+"SpaceX": 46,
+"SpaceY": 52,
+"WidthX": 32,
+"WidthY": 32,
+"VencA_L": 20,
+"VencA_H": 20,
+"VencP_L": 0,
+"VencP_H": 0,
+"R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
+},
 
 {
 "Layer": "M2",
@@ -98,7 +97,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -132,7 +130,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 4,
-"MinNo": 1,
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -166,7 +163,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -200,7 +196,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 12,
-"MinNo": 1,
 "R": {"L_3Sigma":15, "Mean":25, "U_3Sigma":35}
 },
 
@@ -234,7 +229,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -268,7 +262,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -302,7 +295,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -336,7 +328,6 @@
 "VencA_H": 20,
 "VencP_L": 0,
 "VencP_H": 32,
-"MinNo": 1,
 "R": {"L_3Sigma":7, "Mean":12, "U_3Sigma":17}
 },
 
@@ -370,7 +361,6 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
@@ -404,7 +394,6 @@
 "VencA_H": 40,
 "VencP_L": 0,
 "VencP_H": 64,
-"MinNo":1,
 "R": {"L_3Sigma":4, "Mean":6, "U_3Sigma":8}
 },
 
@@ -414,8 +403,8 @@
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
-"Pitch": 512,
-"Width": 256,
+"Pitch": 1128,
+"Width": 872,
 "MinL": 1200,
 "MaxL": null,
 "EndToEnd":280,
@@ -433,13 +422,13 @@
 "SpaceX": 360,
 "SpaceY": 360,
 "WidthX": 256,
-"WidthY": 256,
+"WidthY": 872,
 "VencA_L": 60,
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
-"R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "NumX":1, "NumY":2},
+"R": {"L_3Sigma":0.71, "Mean":1.50, "U_3Sigma":1.41}
 },
 
 {
@@ -448,8 +437,8 @@
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
-"Pitch": 2400,
-"Width": 1200,
+"Width": 3600,
+"Pitch": 4800,
 "MinL": 400,
 "MaxL": null,
 "EndToEnd": 280,
@@ -466,14 +455,14 @@
 "Stack": ["M12", "M13"],
 "SpaceX": 360,
 "SpaceY": 360,
-"WidthX": 256,
-"WidthY": 256,
+"WidthX": 2656,
+"WidthY": 872,
 "VencA_L": 60,
 "VencA_H": 60,
 "VencP_L": 0,
 "VencP_H": 472,
-"MinNo": 1,
-"R": {"L_3Sigma":2, "Mean":3, "U_3Sigma":4}
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":256, "WidthY":256, "SpaceX":360, "SpaceY":360, "NumX":3, "NumY":2},
+"R": {"L_3Sigma":0.14, "Mean":0.5, "U_3Sigma":0.27}
 },
 
 {
@@ -482,8 +471,8 @@
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
 "Color": [],
-"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
-"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
+"Width": 3600,
+"Pitch": 4800,
 "MinL": 1400,
 "MaxL": null,
 "EndToEnd": 1200,
@@ -500,14 +489,14 @@
 "Stack": ["M13", "M14"],
 "SpaceX": 1200,
 "SpaceY": 1200,
-"WidthX": 1200,
-"WidthY": 1200,
+"WidthX": 3600,
+"WidthY": 3600,
 "VencA_L": 100,
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
-"R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "NumX":2, "NumY":2},
+"R": {"L_3Sigma":0.05, "Mean":0.17, "U_3Sigma":0.12}
 },
 
 {
@@ -516,8 +505,8 @@
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
 "Color": [],
-"Width": [1200, 1600, 2000, 2500, 4000, 5000, 10000, 20000],
-"Pitch": [2400, 2800, 3200, 3700, 5200, 6200, 11200, 21200],
+"Width": 3600,
+"Pitch": 4800,
 "MinL": 1400,
 "MaxL": null,
 "EndToEnd": 1200,
@@ -534,14 +523,14 @@
 "Stack": ["M14", "M15"],
 "SpaceX": 1200,
 "SpaceY": 1200,
-"WidthX": 1200,
-"WidthY": 1200,
+"WidthX": 3600,
+"WidthY": 3600,
 "VencA_L": 100,
 "VencA_H": 100,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo": 1,
-"R": {"L_3Sigma":0.42, "Mean":0.67, "U_3Sigma":0.92}
+"ViaCut":{"Gen":"ViaArrayGenerator", "WidthX":1200, "WidthY":1200, "SpaceX":1200, "SpaceY":1200, "NumX":2, "NumY":2},
+"R": {"L_3Sigma":0.05, "Mean":0.17, "U_3Sigma":0.12}
 },
 
 {

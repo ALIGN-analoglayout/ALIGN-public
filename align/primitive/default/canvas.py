@@ -1,8 +1,12 @@
 import math
+import functools
+
+from ..main import get_generator
 
 from ...cell_fabric.canvas import Canvas
 from ...cell_fabric.generators import *
 from ...cell_fabric.grid import *
+from .via import ColorClosure
 
 import logging
 logger = logging.getLogger(__name__)
@@ -40,6 +44,10 @@ class DefaultCanvas(Canvas):
         return viawidth // 2 + viaenc
 
     def _create_metal( self, layer, info, *, check=True):
+        if 'Color' in info and len(info['Color']) > 0:
+            logger.info( f"Registering ColorClosure for layer {layer}")
+            self.postprocessor.register(layer, ColorClosure( info=info))
+
         if isinstance(info['Width'], list):
             # TODO: Figure out what multiple metal widths even means. Just doing first width for now
             # for i in range(0, len(info['Width'])):
@@ -111,15 +119,18 @@ class DefaultCanvas(Canvas):
             v_ext = self._get_via_ext(info['Stack'][0], layer)
             h_ext = self._get_via_ext(info['Stack'][1], layer)
         setattr(self, layer.lower(), self.addGen(
-            Via(layer.lower(), layer, h_clg = h_clg, v_clg = v_clg, h_ext=h_ext, v_ext=v_ext)
+            Via(layer.lower(), layer,
+                h_clg=h_clg, v_clg=v_clg,
+                WidthX=info['WidthX'], WidthY=info['WidthY'],
+                h_ext=h_ext, v_ext=v_ext)
         ))
 
-        def single_centered_via(rect):
-            xpos = ( rect[0] + rect[2] ) // 2
-            ypos = ( rect[1] + rect[3] ) // 2
-            return [xpos - info['WidthX'] // 2, ypos - info['WidthY'] // 2, xpos + info['WidthX'] // 2, ypos + info['WidthY'] // 2]
+        if 'ViaCut' in info:
+            self.postprocessor.register(layer, functools.partial(
+                get_generator(info['ViaCut']['Gen'], self.pdk.layerfile.parent),
+                **{k: v for k, v in info['ViaCut'].items() if k != 'Gen'}))
 
-        self.postprocessor.register(layer, single_centered_via)
+
 
     def _find_adjoining_layers( self, layer):
         pm = pv = nv = nm = None

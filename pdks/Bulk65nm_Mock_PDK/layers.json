@@ -64,7 +64,6 @@
     "VencA_H": 50,
     "VencP_L": 0,
     "VencP_H": 0,
-    "MinNo":1,
     "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
     },
 
@@ -98,7 +97,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -132,7 +130,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -166,7 +163,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -200,7 +196,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -234,7 +229,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -268,7 +262,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -302,7 +295,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
@@ -336,7 +328,6 @@
 "VencA_H": 50,
 "VencP_L": 0,
 "VencP_H": 0,
-"MinNo":1,
 "R": {"L_3Sigma":16, "Mean":20, "U_3Sigma":24}
 },
 
