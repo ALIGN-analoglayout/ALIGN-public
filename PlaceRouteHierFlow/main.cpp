@@ -51,7 +51,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   Router curr_route;
 
   bool NEW_GLOBAL_ROUTER = 1;
-  double rate = 0.1;
+  double rate = 0.6;
 
   if ( NEW_GLOBAL_ROUTER) {
     // Gcell Global Routing
@@ -92,7 +92,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
   double worst=0;
   //double th = 0.1;
   //bool Power_mesh_optimize = 0;
-  rate = 0.3;
+  rate = 0.4;
 
   if(current_node.isTop){
     save_state( DB, current_node, lidx, opath, ".pre_pg", "Checkpoint : Starting Power Grid Creation", skip_saving_state);
@@ -100,7 +100,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 //  DC Power Grid Simulation
  //   while(Power_mesh_optimize and worst < th and rate<1){
 
-      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 10, binary_directory, rate);
+      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate);
     
       std::cout<<"Start MNA "<<std::endl;
       MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
@@ -114,7 +114,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
        
    // }
 //
-    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 10, binary_directory, rate);
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate);
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 
@@ -122,7 +122,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
         
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 5, binary_directory, rate);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 2, binary_directory, rate);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
     DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);

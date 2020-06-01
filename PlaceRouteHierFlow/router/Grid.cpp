@@ -867,11 +867,11 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
     if(drc_info.Metal_info.at(i).direct==0) { //vertical
       //layer_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x;
       this->x_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_x*grid_scale;
-      this->y_min.at(i)=this->x_unit.at(i)/2;
+      this->y_min.at(i)=1;
     } else if (drc_info.Metal_info.at(i).direct==1) { // horizontal
       //layer_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y;
       this->y_unit.at(i)=drc_info.Metal_info.at(i).grid_unit_y*grid_scale;
-      this->x_min.at(i)=this->y_unit.at(i)/2;
+      this->x_min.at(i)=1;
     } else {
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }

@@ -11,6 +11,8 @@
 #include <boost/numeric/ublas/lu.hpp>
 #include "MatrixInverse.hpp"
 #include <sstream>
+#include <fstream>
+#include <string>
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
@@ -58,20 +60,23 @@ class MNASimulation {
 	int MapY(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
 	int MapX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int layer);
 	void Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double* dp);
-
+        void Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices);
+	void Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp);
+        void Map(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer);
+	void ReadCurrent(std::vector<std::vector<double>> &currentstore);
       //added by yg
      void Clear_Power_Grid(PnRDB::PowerGrid &temp_grid);
-      void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int &highest_metal, int &lowest_metal, int power);
+      void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int &highest_metal, int &lowest_metal, double power);
       //void ExtractPowerGridPoint(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set);
-      void ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,int power);
-      void ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,int power);
+      void ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,double power);
+      void ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices,double power);
       void ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set);
       void Print_Devices(std::vector<MDB::device> &temp_devices);
       double Return_Worst_Voltage(){return result;};
       void Test_superlu();
       void AddingI(std::vector<MDB::metal_point> &I_point_v, std::vector<MDB::metal_point> &I_point_g, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double current);
       void AddingPower(std::vector<MDB::metal_point> &power_points, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, std::vector<MDB::device> &Power_Grid_devices, double power);
-      void FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, int power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points);
+      void FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points);
 
 
 };

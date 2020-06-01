@@ -139,13 +139,19 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   CreatePlistPowerGrid(plist, this->Gnd_grid);
   std::cout<<"checkpoint1.2.7"<<std::endl;
   
-
+  
   std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_x;
   InsertPlistToSet_x(Set_x, plist);
   std::cout<<"checkpoint1.2.8"<<std::endl;
-  
+  RouterDB::point tempLL, tempUR;
+  double times = 1.1;
+  tempLL.x = this->LL.x*times;
+  tempLL.y = this->LL.y*times;
+  tempUR.x = this->UR.x*times;
+  tempUR.y = this->UR.y*times;
+   
   //how to crate PowerGrid here????
-  Grid grid(this->PowerGrid_Drc_info, this->LL, this->UR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
+  Grid grid(this->PowerGrid_Drc_info, tempLL, tempUR, lowest_metal, highest_metal, this->grid_scale);//1.pg needs other LL, UR 2. here what is the lowest_metal, highest_metal
 
   std::vector<std::set<RouterDB::point, RouterDB::pointXYComp> > netplist = FindsetPlist(Set_x, LL, UR);
   for(int i=0;i<netplist.size();i++){
@@ -160,7 +166,7 @@ void PowerRouter::CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_in
   grid.InactivePointlist_Power(netplist);
   //std::vector<std::vector<RouterDB::point> > new_plist = FindPlist(Set_x, this->LL, this->UR);
   //grid.InactivePointlist(new_plist);
-  grid.PrepareGraphVertices(LL.x, LL.y, UR.x, UR.y);
+  grid.PrepareGraphVertices(tempLL.x, tempLL.y, tempUR.x, tempUR.y);
 
   std::cout<<"Power Grid Info "<<grid.vertices_total.size()<<" "<<grid.vertices_graph.size()<<std::endl;
   //here return a power grid metal information
@@ -525,9 +531,14 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       utilization.push_back(rate); 
      }
-	//utilization[7] = 0.6;
-	//utilization[6] = 0.6;
-
+/*
+	utilization[5] = 0.8;
+	utilization[10] = 0.8;
+	utilization[9] = 0.8;
+	utilization[8] = 0.8;
+	utilization[7] = 0.8;
+	utilization[6] = 0.8;
+*/
 for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       std::cout<<"utility["<<i<<"]= " << utilization[i] <<std::endl;
      }

@@ -1,4 +1,4 @@
-from mpl_toolkits.mplot3d import axes3d
+#from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib import cm
@@ -6,7 +6,7 @@ import numpy as np
 import math
 #matplotlib.use('WXAgg')
 
-filename = 'Powergridresult.txt' 
+filename = 'gridresult.txt' 
 data = []
 
 with open(filename, 'r') as file_to_read:
@@ -22,29 +22,61 @@ with open(filename, 'r') as file_to_read:
    
 print(data)
 
-metal = 5
-power = 1
+metal1 = 7
+metal2 = 8
+power = 0
 
 print(data.shape)
-X = []
-Y = []
+X1 = []
+Y1 = []
+X2 = []
+Y2 = []
+X3 = []
+Y3 = []
 Z = []
 x = []
 y = []
 z = []
 
 for i in(range(data.shape[0])):
-  if data[i][2] == metal and  data[i][4] == power:
-     X.append(data[i][0])
-     Y.append(data[i][1])
-     Z.append(data[i][3])
+  if data[i][2] == metal1 and data[i][3] == power and data[i][6] == metal1 and data[i][7] == power:
+     X1.append([data[i][0],data[i][4]])
+     Y1.append([data[i][1],data[i][5]])
+     #X2.append(data[i][4])
+     #Y2.append(data[i][5])
      if data[i][0] not in x:
        x.append(data[i][0])
      if data[i][1] not in y:
        y.append(data[i][1])
+  if data[i][2] == metal2 and data[i][3] == power and data[i][6] == metal2 and data[i][7] == power:
+     X2.append([data[i][0],data[i][4]])
+     Y2.append([data[i][1],data[i][5]])
+  if data[i][0] == data[i][4] and data[i][3] == power and data[i][5] == data[i][1] and data[i][7] == power:
+     if (data[i][2] == metal1 and data[i][6] == metal2) or (data[i][2] == metal2 and data[i][6] == metal1):     
+        X3.append(data[i][0])
+        Y3.append(data[i][1])
 
-X = np.array(X)
-Y = np.array(Y)
+X1 = np.array(X1)
+Y1 = np.array(Y1)
+X2 = np.array(X2)
+Y2 = np.array(Y2)
+X3 = np.array(X3)
+Y3 = np.array(Y3)
+
+
+#print(X1)
+#plt.plot(data1[:,0], data1[:,2],  color='skyblue', label='y1')
+#plt.plot(data2[:,0], data2[:,3], color='blue', label='y2')
+
+for i in range(len(X1)):
+  plt.plot(X1[i], Y1[i], color='r')
+  #plt.scatter(X1[i], Y1[i], color='b')
+for i in range(len(X2)):
+  plt.plot(X2[i], Y2[i], color='green')
+  #plt.scatter(X2[i], Y2[i], color='black')
+for i in range(len(X3)):
+  plt.scatter(X3[i], Y3[i], color='brown', marker = 's')
+'''
 Z = np.array(Z)    
 fig = plt.figure()
 ax = fig.gca(projection='3d')
@@ -91,6 +123,6 @@ ax.set_ylim(0, 11000)
 ax.set_zlabel('Z')
 ax.set_zlim(0.5, 1)
 fig.savefig('demo.png', bbox_inches='tight')
- 
+''' 
 plt.show()
 
