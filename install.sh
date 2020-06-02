@@ -63,10 +63,17 @@ cp -r lib googletest/mybuild/.
 cd $ALIGN_HOME
 mkdir superlu
 cd superlu
+
+#version 1
 wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz
 tar -zxvf superlu_5.2.1.tar.gz 
-
 cd SuperLU_5.2.1/
+
+#version 2
+#git clone https://github.com/xiaoyeli/superlu.git
+#git checkout v5.2.1
+#mv superlu SuperLU_5.2.1 && cd SuperLU_5.2.1
+
 mkdir build
 cd build
 cmake ..
