@@ -35,14 +35,12 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
-
     # TODO: THIS SHOULD NOT BE NEEDED !!!
-    fin = height
+    fin = int(nfin)
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
-    finDummy = 8  ### Total Dummy fins per unit cell: 2*finDummy
     gate = 2
     shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS","CMC","CCP"]) else 1
-    uc = generator(pdk, fin, finDummy, gate, gateDummy, shared_diff)
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff)
     x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
     parameters = get_parameters(primitive, parameters, nfin)
 
@@ -160,7 +158,7 @@ def get_generator(name, pdkdir):
     return getattr(primitive, name)
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=12, x_cells=1, y_cells=1, pattern=1, value=12, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
