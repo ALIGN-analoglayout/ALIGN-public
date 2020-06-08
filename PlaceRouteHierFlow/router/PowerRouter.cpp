@@ -381,6 +381,10 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
   for(unsigned int i=0;i<PowerNets.size();i++){
 
+      int multi_number = 3;
+
+      for(unsigned int multi_index = 0; multi_index<multi_number;multi_index++){
+
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
       //insert all obstruction contact
@@ -426,9 +430,8 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
             AddViaEnclosure(Pset_via, grid, Set_x_contact, Set_net_contact);
             AddViaSpacing(Pset_via, grid);
             A_star a_star(grid, 0); // no sheilding
-            int multi_number = 0;
 
-            bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
+            bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
             std::vector<std::vector<RouterDB::Metal>> physical_path;
             std::cout<<"power routing pathMark "<<pathMark<<std::endl;
             Update_powerrouter_report_info(temp_routing_net, i, j, pathMark);
@@ -454,6 +457,7 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
              InsertContact2Contact(Set_current_net_contact, Set_net_contact);
          }
          temp_report.routed_net.push_back(temp_routing_net);
+        }
      }
 
 };
