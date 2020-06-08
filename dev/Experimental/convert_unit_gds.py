@@ -10,7 +10,7 @@ def modify_gds(name, mult):
         for i,lib in enumerate(data['bgnlib']):
             data['bgnlib'][i]['units'] =[unit/40 for unit in  lib['units']]
             for cell in lib['bgnstr']:
-                for tt,vv in cell.items():
+                for tt in cell.keys():
                     if 'elements' in tt:
                         for ele in cell['elements']:
                             for k,v in ele.items():
