@@ -158,7 +158,6 @@ jobs:
           paths:
             - test-reports/align
             - coverage-reports/align
-            - Results
 
   build-PlaceRouteHierFlow:
     executor: docker-executor
@@ -233,7 +232,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
-            - Results
 
   build-nightly2:
     executor: docker-executor
@@ -295,7 +293,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
-            - Results
 
   build-nightly3:
     executor: docker-executor
@@ -321,7 +318,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly  
-            - Results
   # wont run as circle ci kills it
   build-nightly4:
     executor: docker-executor
@@ -368,7 +364,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
-            - Results
 
   build-nightly6:
     executor: docker-executor
@@ -392,7 +387,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
-            - Results
 
   build-nightly7:
     executor: docker-executor
@@ -416,7 +410,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly
-            - Results
 
   build-nightly8:
     executor: docker-executor
