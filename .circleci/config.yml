@@ -244,10 +244,10 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          #      - run: |
-          #          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_CK_Divider8' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/ 2>/dev/null && cp junit.xml /test-reports/align-nightly/junit2_4.xml"
-          #          docker cp align_container:test-reports .
-          #          docker rm align_container
+      - run: |
+            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'telescopic_ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && ls $ALIGN_WORK_DIR && ls /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* && cp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/ 2>/dev/null && cp junit.xml /test-reports/align-nightly/junit2_4.xml; ls /test-reports/align-nightly/"
+            docker cp align_container:test-reports .
+            docker rm align_container
       
       - run: |
           docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_Comp_CK' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ 2>/dev/null && cp junit.xml /test-reports/align-nightly/junit2_5.xml"
