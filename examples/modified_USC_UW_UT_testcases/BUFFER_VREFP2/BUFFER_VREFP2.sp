@@ -1,15 +1,15 @@
 .subckt BUFFER_VREFP2 gnd ibias sw<2> sw<1> sw<0> vdd vref vrefp
-m35 net0110 net076 vrefp vdd pfet_lvt w=w0 l=l0
-m34 vrefp net0116 net0121 vdd pfet_lvt w=w1 l=l0
-m33 vrefp net0116 net0140 vdd pfet_lvt w=w1 l=l0
-m32 net0111 net076 vrefp vdd pfet_lvt w=w0 l=l0
-m106 vdd net076 vdd vdd pfet_lvt w=w2 l=l1
-m29 net0116 net076 vrefp vdd pfet_lvt w=w0 l=l0
-m27 net076 net076 vfb vdd pfet_lvt w=w3 l=l0
-m28 vrefp net0116 net0127 vdd pfet_lvt w=w1 l=l0
-m15 vfb net450 net0138 vdd pfet_lvt w=w4 l=l0
-m43 net0109 net076 vrefp vdd pfet_lvt w=w0 l=l0
-m58 vrefp net0116 net0125 vdd pfet_lvt w=w1 l=l0
+m35 net0110 net076 vrefp vdd lvtpfet w=w0 l=l0
+m34 vrefp net0116 net0121 vdd lvtpfet w=w1 l=l0
+m33 vrefp net0116 net0140 vdd lvtpfet w=w1 l=l0
+m32 net0111 net076 vrefp vdd lvtpfet w=w0 l=l0
+m106 vdd net076 vdd vdd lvtpfet w=w2 l=l1
+m29 net0116 net076 vrefp vdd lvtpfet w=w0 l=l0
+m27 net076 net076 vfb vdd lvtpfet w=w3 l=l0
+m28 vrefp net0116 net0127 vdd lvtpfet w=w1 l=l0
+m15 vfb net450 net0138 vdd lvtpfet w=w4 l=l0
+m43 net0109 net076 vrefp vdd lvtpfet w=w0 l=l0
+m58 vrefp net0116 net0125 vdd lvtpfet w=w1 l=l0
 m36 net0110 ibias net464 gnd nfet w=w5 l=l0
 m31 net0111 ibias net463 gnd nfet w=w5 l=l0
 m30 net0116 ibias net470 gnd nfet w=w5 l=l0

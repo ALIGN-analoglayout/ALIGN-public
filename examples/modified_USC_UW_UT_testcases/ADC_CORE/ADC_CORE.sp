@@ -1,7 +1,7 @@
 ** label = ADC
 .subckt INV0_LVT i zn VDD vss
-xm0 zn i vss vss lvtnfet w=w0 l=l0
-xm1 zn i VDD VDD lvtpfet w=w1 l=l0
+m0 zn i vss vss lvtnfet w=w0 l=l0
+m1 zn i VDD VDD lvtpfet w=w1 l=l0
 .ends INV0_LVT
 
 .subckt DAC_SWITCHES dac<9> dac<8> dac<7> dac<6> dac<5> dac<4> dac<3> dac<2> dac<1> gnd in<9> in<8> in<7> in<6> in<5> in<4> in<3> in<2> in<1> vcm vdd vrefn vrefp
@@ -23,23 +23,23 @@ xi2 dac<9> dac<8> dac<7> dac<6> dac<5> dac<4> dac<3> dac<2> dac<1> gnd in<9> in<
 .ends SAMPLE_NETWORK
 
 .subckt COMPARATOR clk crossn crossp gnd intern interp outm outp vdd _net1 _net0
-xm1 gnd interp gnd gnd nfet w=w2 l=l1
-xm0 gnd intern gnd gnd nfet w=w2 l=l1
-xm16 outm crossp gnd gnd lvtnfet w=w3 l=l0
-xm17 outp crossn gnd gnd lvtnfet w=w3 l=l0
-xm26 net050 clk gnd gnd lvtnfet w=w4 l=l0
-xm4 crossn crossp intern gnd lvtnfet w=w3 l=l0
-xm3 crossp crossn interp gnd lvtnfet w=w3 l=l0
-xm25 interp _net0 net050 gnd lvtnfet w=w5 l=l0
-xm24 intern _net1 net050 gnd lvtnfet w=w5 l=l0
-xm8 outm crossp vdd vdd lvtpfet w=w4 l=l0
-xm18 intern clk vdd vdd lvtpfet w=w3 l=l0
-xm15 outp crossn vdd vdd lvtpfet w=w4 l=l0
-xm19 interp clk vdd vdd lvtpfet w=w3 l=l0
-xm10 crossn clk vdd vdd lvtpfet w=w3 l=l0
-xm12 crossp clk vdd vdd lvtpfet w=w3 l=l0
-xm14 crossn crossp vdd vdd lvtpfet w=w4 l=l0
-xm13 crossp crossn vdd vdd lvtpfet w=w4 l=l0
+m1 gnd interp gnd gnd nfet w=w2 l=l1
+m0 gnd intern gnd gnd nfet w=w2 l=l1
+m16 outm crossp gnd gnd lvtnfet w=w3 l=l0
+m17 outp crossn gnd gnd lvtnfet w=w3 l=l0
+m26 net050 clk gnd gnd lvtnfet w=w4 l=l0
+m4 crossn crossp intern gnd lvtnfet w=w3 l=l0
+m3 crossp crossn interp gnd lvtnfet w=w3 l=l0
+m25 interp _net0 net050 gnd lvtnfet w=w5 l=l0
+m24 intern _net1 net050 gnd lvtnfet w=w5 l=l0
+m8 outm crossp vdd vdd lvtpfet w=w4 l=l0
+m18 intern clk vdd vdd lvtpfet w=w3 l=l0
+m15 outp crossn vdd vdd lvtpfet w=w4 l=l0
+m19 interp clk vdd vdd lvtpfet w=w3 l=l0
+m10 crossn clk vdd vdd lvtpfet w=w3 l=l0
+m12 crossp clk vdd vdd lvtpfet w=w3 l=l0
+m14 crossn crossp vdd vdd lvtpfet w=w4 l=l0
+m13 crossp crossn vdd vdd lvtpfet w=w4 l=l0
 .ends COMPARATOR
 
 .subckt INVD0BWP i zn vdd vss
@@ -50,17 +50,17 @@ m1 zn i vdd vdd pfet w=w1 l=l0
 .subckt LATCH clk gnd inm inp outm outp vcc
 xi1 net67 outp vcc gnd INVD0BWP
 xi0 net64 outm vcc gnd INVD0BWP
-xm10 net64 clk vcc vcc pfet w=w6 l=l0
-xm9 net67 clk vcc vcc pfet w=w6 l=l0
-xm13 net67 net64 vcc vcc pfet w=w3 l=l0
-xm4 net64 net67 vcc vcc pfet w=w3 l=l0
-xm8 net65 clk vcc vcc pfet w=w6 l=l0
-xm12 net012 clk vcc vcc pfet w=w6 l=l0
-xm11 net60 clk gnd gnd nfet w=w6 l=l0
-xm0 net65 inp net60 gnd nfet w=w6 l=l0
-xm2 net67 net64 net65 gnd nfet w=w6 l=l0
-xm3 net64 net67 net012 gnd nfet w=w6 l=l0
-xm1 net012 inm net60 gnd nfet w=w6 l=l0
+m10 net64 clk vcc vcc pfet w=w6 l=l0
+m9 net67 clk vcc vcc pfet w=w6 l=l0
+m13 net67 net64 vcc vcc pfet w=w3 l=l0
+m4 net64 net67 vcc vcc pfet w=w3 l=l0
+m8 net65 clk vcc vcc pfet w=w6 l=l0
+m12 net012 clk vcc vcc pfet w=w6 l=l0
+m11 net60 clk gnd gnd nfet w=w6 l=l0
+m0 net65 inp net60 gnd nfet w=w6 l=l0
+m2 net67 net64 net65 gnd nfet w=w6 l=l0
+m3 net64 net67 net012 gnd nfet w=w6 l=l0
+m1 net012 inm net60 gnd nfet w=w6 l=l0
 .ends LATCH
 
 .subckt SAR_LOGIC_2ND_STAGE comp compb gnd q<9> q<8> q<7> q<6> q<5> q<4> q<3> q<2> q<1> qb<9> qb<8> qb<7> qb<6> qb<5> qb<4> qb<3> qb<2> qb<1> s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> vdd q<0> qb<0>
@@ -211,7 +211,7 @@ xi0 clk clksb gnd s<10> s<9> s<8> s<7> s<6> s<5> s<4> s<3> s<2> s<1> s<0> vdd sb
 .ends SAR_LOGIC
 
 .subckt SAMPLER clks_boost gnd vin vout
-xm0 vout clks_boost vin gnd lvtnfet w=w3 l=l0
+m0 vout clks_boost vin gnd lvtnfet w=w3 l=l0
 .ends SAMPLER
 
 .subckt DFCND1BWP d cp cdn q qn vdd vss

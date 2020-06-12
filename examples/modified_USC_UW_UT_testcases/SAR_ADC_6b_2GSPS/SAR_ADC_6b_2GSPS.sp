@@ -13,10 +13,10 @@ include "/home/techfile/PTM/ASAP/ASAP7_PDKandLIB_v1p5/asap7PDK_r1p5/models/hspic
 // Cell name: BUF_X4
 // View name: schematic
 subckt BUF_X4 Y VDD VNW VPW VSS A
-    I2 (Y net027 VSS VPW) nmos_slvt w=81n l=14n m=4
-    I0 (net027 A VSS VPW) nmos_slvt w=81n l=14n m=2
-    I3 (Y net027 VDD VNW) pmos_slvt w=81n l=14n m=4
-    I1 (net027 A VDD VNW) pmos_slvt w=81n l=14n m=2
+    I2 (Y net027 VSS VPW) slvtnfet w=81n l=14n m=4
+    I0 (net027 A VSS VPW) slvtnfet w=81n l=14n m=2
+    I3 (Y net027 VDD VNW) slvtpfet w=81n l=14n m=4
+    I1 (net027 A VDD VNW) slvtpfet w=81n l=14n m=2
 ends BUF_X4
 // End of subcircuit definition.
 
@@ -24,8 +24,8 @@ ends BUF_X4
 // Cell name: INV_X4
 // View name: schematic
 subckt INV_X4 Y VDD VNW VPW VSS A
-    I2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=4
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=4
+    I2 (Y A VSS VPW) slvtnfet w=81n l=14n m=4
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=4
 ends INV_X4
 // End of subcircuit definition.
 
@@ -33,8 +33,8 @@ ends INV_X4
 // Cell name: INV_X6
 // View name: schematic
 subckt INV_X6 Y VDD VNW VPW VSS A
-    I2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=6
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=6
+    I2 (Y A VSS VPW) slvtnfet w=81n l=14n m=6
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=6
 ends INV_X6
 // End of subcircuit definition.
 
@@ -42,10 +42,10 @@ ends INV_X6
 // Cell name: BUF_X12
 // View name: schematic
 subckt BUF_X12 Y VDD VNW VPW VSS A
-    I2 (Y net027 VSS VPW) nmos_slvt w=81n l=14n m=12
-    I0 (net027 A VSS VPW) nmos_slvt w=81n l=14n m=3
-    I3 (Y net027 VDD VNW) pmos_slvt w=81n l=14n m=12
-    I1 (net027 A VDD VNW) pmos_slvt w=81n l=14n m=3
+    I2 (Y net027 VSS VPW) slvtnfet w=81n l=14n m=12
+    I0 (net027 A VSS VPW) slvtnfet w=81n l=14n m=3
+    I3 (Y net027 VDD VNW) slvtpfet w=81n l=14n m=12
+    I1 (net027 A VDD VNW) slvtpfet w=81n l=14n m=3
 ends BUF_X12
 // End of subcircuit definition.
 
@@ -53,14 +53,14 @@ ends BUF_X12
 // Cell name: DLY2_X2
 // View name: schematic
 subckt DLY2_X2 Y VDD VNW VPW VSS A
-    MMPA0 (ny A i1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA1 (i1 A VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPY (Y ny VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPY_2 (Y ny VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMNA0 (ny A i0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNA1 (i0 A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNY (Y ny VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNY_2 (Y ny VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPA0 (ny A i1 VNW) slvtpfet w=81n l=14n m=1
+    MMPA1 (i1 A VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPY (Y ny VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPY_2 (Y ny VDD VNW) slvtpfet w=81n l=14n m=1
+    MMNA0 (ny A i0 VPW) slvtnfet w=81n l=14n m=1
+    MMNA1 (i0 A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNY (Y ny VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNY_2 (Y ny VSS VPW) slvtnfet w=81n l=14n m=1
 ends DLY2_X2
 // End of subcircuit definition.
 
@@ -68,8 +68,8 @@ ends DLY2_X2
 // Cell name: INV_X16
 // View name: schematic
 subckt INV_X16 Y VDD VNW VPW VSS A
-    I2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=16
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=16
+    I2 (Y A VSS VPW) slvtnfet w=81n l=14n m=16
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=16
 ends INV_X16
 // End of subcircuit definition.
 
@@ -77,8 +77,8 @@ ends INV_X16
 // Cell name: INV_X8
 // View name: schematic
 subckt INV_X8 Y VDD VNW VPW VSS A
-    I2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=8
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=8
+    I2 (Y A VSS VPW) slvtnfet w=81n l=14n m=8
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=8
 ends INV_X8
 // End of subcircuit definition.
 
@@ -86,10 +86,10 @@ ends INV_X8
 // Cell name: BUF_X6
 // View name: schematic
 subckt BUF_X6 Y VDD VNW VPW VSS A
-    I2 (Y net027 VSS VPW) nmos_slvt w=81n l=14n m=6
-    I0 (net027 A VSS VPW) nmos_slvt w=81n l=14n m=2
-    I3 (Y net027 VDD VNW) pmos_slvt w=81n l=14n m=6
-    I1 (net027 A VDD VNW) pmos_slvt w=81n l=14n m=2
+    I2 (Y net027 VSS VPW) slvtnfet w=81n l=14n m=6
+    I0 (net027 A VSS VPW) slvtnfet w=81n l=14n m=2
+    I3 (Y net027 VDD VNW) slvtpfet w=81n l=14n m=6
+    I1 (net027 A VDD VNW) slvtpfet w=81n l=14n m=2
 ends BUF_X6
 // End of subcircuit definition.
 
@@ -97,10 +97,10 @@ ends BUF_X6
 // Cell name: NAND2_X4
 // View name: schematic
 subckt NAND2_X4 Y VDD VNW VPW VSS A B
-    I1 (Y A net13 VPW) nmos_slvt w=81n l=14n m=6
-    I2 (net13 B VSS VPW) nmos_slvt w=81n l=14n m=6
-    I0 (Y B VDD VNW) pmos_slvt w=81n l=14n m=4
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=4
+    I1 (Y A net13 VPW) slvtnfet w=81n l=14n m=6
+    I2 (net13 B VSS VPW) slvtnfet w=81n l=14n m=6
+    I0 (Y B VDD VNW) slvtpfet w=81n l=14n m=4
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=4
 ends NAND2_X4
 // End of subcircuit definition.
 
@@ -108,26 +108,26 @@ ends NAND2_X4
 // Cell name: DLY4_X4
 // View name: schematic
 subckt DLY4_X4 Y VDD VNW VPW VSS A
-    MMPA0 (na A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA1 (p0 A VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPna1 (p1 na VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPna0 (ba na p1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPba1 (p2 ba VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPba0 (nba ba p2 VNW) pmos_slvt w=81n l=14n m=1
-    MMPY (Y nba VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPY_4 (Y nba VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPY_3 (Y nba VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPY_2 (Y nba VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMNA0 (na A n0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNA1 (n0 A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNba0 (nba ba n2 VPW) nmos_slvt w=81n l=14n m=1
-    MMNba1 (n2 ba VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNna1 (n1 na VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNna0 (ba na n1 VPW) nmos_slvt w=81n l=14n m=1
-    MMNY_2 (Y nba VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNY_3 (Y nba VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNY_4 (Y nba VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNY (Y nba VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPA0 (na A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPA1 (p0 A VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPna1 (p1 na VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPna0 (ba na p1 VNW) slvtpfet w=81n l=14n m=1
+    MMPba1 (p2 ba VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPba0 (nba ba p2 VNW) slvtpfet w=81n l=14n m=1
+    MMPY (Y nba VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPY_4 (Y nba VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPY_3 (Y nba VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPY_2 (Y nba VDD VNW) slvtpfet w=81n l=14n m=1
+    MMNA0 (na A n0 VPW) slvtnfet w=81n l=14n m=1
+    MMNA1 (n0 A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNba0 (nba ba n2 VPW) slvtnfet w=81n l=14n m=1
+    MMNba1 (n2 ba VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNna1 (n1 na VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNna0 (ba na n1 VPW) slvtnfet w=81n l=14n m=1
+    MMNY_2 (Y nba VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNY_3 (Y nba VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNY_4 (Y nba VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNY (Y nba VSS VPW) slvtnfet w=81n l=14n m=1
 ends DLY4_X4
 // End of subcircuit definition.
 
@@ -170,8 +170,8 @@ ends SUB3_CLK1
 // Cell name: INV_X2
 // View name: schematic
 subckt INV_X2 Y VDD VNW VPW VSS A
-    I2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=2
-    I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=2
+    I2 (Y A VSS VPW) slvtnfet w=81n l=14n m=2
+    I3 (Y A VDD VNW) slvtpfet w=81n l=14n m=2
 ends INV_X2
 // End of subcircuit definition.
 
@@ -179,11 +179,11 @@ ends INV_X2
 // Cell name: SUB2_RDYgen
 // View name: schematic
 subckt SUB2_RDYgen IN IP RDY RS VDD VSS
-    M1 (net45 IN VSS VSS) nmos_slvt w=81n l=14n m=4
-    M2 (net45 IP VSS VSS) nmos_slvt w=81n l=14n m=4
+    M1 (net45 IN VSS VSS) slvtnfet w=81n l=14n m=4
+    M2 (net45 IP VSS VSS) slvtnfet w=81n l=14n m=4
     I102 (net46 VDD VDD VSS VSS RS) INV_X2
     I100 (RDY VDD VDD VSS VSS net45) INV_X8
-    M0 (net45 net46 VDD VDD) pmos_slvt w=81n l=14n m=8
+    M0 (net45 net46 VDD VDD) slvtpfet w=81n l=14n m=8
 ends SUB2_RDYgen
 // End of subcircuit definition.
 
@@ -193,14 +193,14 @@ ends SUB2_RDYgen
 subckt SUB2_COMP_DynamicLAT DN DP IN IP VDD VSS
     I95 (DN VDD VDD VSS VSS net113) INV_X8
     I94 (DP VDD VDD VSS VSS net17) INV_X8
-    M2 (net17 IP VDD VDD) pmos_slvt w=81n l=14n m=SW_RS2
-    M3 (net113 IN VDD VDD) pmos_slvt w=81n l=14n m=SW_RS2
-    M5 (net113 net17 VDD VDD) pmos_slvt w=81n l=14n m=SW_Lch2
-    M4 (net17 net113 VDD VDD) pmos_slvt w=81n l=14n m=SW_Lch2
-    M6 (net17 IP net112 VSS) nmos_slvt w=81n l=14n m=SW_Lch2
-    M7 (net113 IN net111 VSS) nmos_slvt w=81n l=14n m=SW_Lch2
-    M0 (net112 net113 VSS VSS) nmos_slvt w=81n l=14n m=SW_Lch2
-    M1 (net111 net17 VSS VSS) nmos_slvt w=81n l=14n m=SW_Lch2
+    M2 (net17 IP VDD VDD) slvtpfet w=81n l=14n m=SW_RS2
+    M3 (net113 IN VDD VDD) slvtpfet w=81n l=14n m=SW_RS2
+    M5 (net113 net17 VDD VDD) slvtpfet w=81n l=14n m=SW_Lch2
+    M4 (net17 net113 VDD VDD) slvtpfet w=81n l=14n m=SW_Lch2
+    M6 (net17 IP net112 VSS) slvtnfet w=81n l=14n m=SW_Lch2
+    M7 (net113 IN net111 VSS) slvtnfet w=81n l=14n m=SW_Lch2
+    M0 (net112 net113 VSS VSS) slvtnfet w=81n l=14n m=SW_Lch2
+    M1 (net111 net17 VSS VSS) slvtnfet w=81n l=14n m=SW_Lch2
 ends SUB2_COMP_DynamicLAT
 // End of subcircuit definition.
 
@@ -208,15 +208,15 @@ ends SUB2_COMP_DynamicLAT
 // Cell name: SUB2_COMP_DynamicAMP
 // View name: schematic
 subckt SUB2_COMP_DynamicAMP AN AP CK ON OP RS VDD VSS
-    I65 (ON RS VSS VSS) nmos_slvt w=81n l=14n m=SW_RS
-    M8 (OP RS VSS VSS) nmos_slvt w=81n l=14n m=SW_RS
-    I62 (OP AP OP VDD) pmos_slvt w=81n l=14n m=SW_Pch
-    I61 (ON AN ON VDD) pmos_slvt w=81n l=14n m=SW_Pch
-    M0 (net016 CK VDD VDD) pmos_slvt w=81n l=14n m=SW_Pch
-    I59 (ON AP net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch
-    I63 (VDD ON VDD VDD) pmos_slvt w=81n l=14n m=SW_LOAD
-    I64 (VDD OP VDD VDD) pmos_slvt w=81n l=14n m=SW_LOAD
-    I60 (OP AN net016 VDD) pmos_slvt w=81n l=14n m=SW_Pch
+    I65 (ON RS VSS VSS) slvtnfet w=81n l=14n m=SW_RS
+    M8 (OP RS VSS VSS) slvtnfet w=81n l=14n m=SW_RS
+    I62 (OP AP OP VDD) slvtpfet w=81n l=14n m=SW_Pch
+    I61 (ON AN ON VDD) slvtpfet w=81n l=14n m=SW_Pch
+    M0 (net016 CK VDD VDD) slvtpfet w=81n l=14n m=SW_Pch
+    I59 (ON AP net016 VDD) slvtpfet w=81n l=14n m=SW_Pch
+    I63 (VDD ON VDD VDD) slvtpfet w=81n l=14n m=SW_LOAD
+    I64 (VDD OP VDD VDD) slvtpfet w=81n l=14n m=SW_LOAD
+    I60 (OP AN net016 VDD) slvtpfet w=81n l=14n m=SW_Pch
 ends SUB2_COMP_DynamicAMP
 // End of subcircuit definition.
 
@@ -240,9 +240,9 @@ ends SUB2_COMP_DUPLEX
 // Cell name: SUB1_CDAC_SW
 // View name: schematic
 subckt SUB1_CDAC_SW CTRL_nch N O REFN REFP VDD VSS
-    M0 (N CTRL_nch REFP VDD) pmos_slvt w=81n l=14n m=RNN
+    M0 (N CTRL_nch REFP VDD) slvtpfet w=81n l=14n m=RNN
     C0 (O N) capacitor c=Cu ic=0
-    M1 (N CTRL_nch REFN VSS) nmos_slvt w=81n l=14n m=RNP
+    M1 (N CTRL_nch REFN VSS) slvtnfet w=81n l=14n m=RNP
 ends SUB1_CDAC_SW
 // End of subcircuit definition.
 
@@ -252,7 +252,7 @@ ends SUB1_CDAC_SW
 subckt SUB1_CDAC_6b CTRL_nch\<5\> CTRL_nch\<4\> CTRL_nch\<3\> \
         CTRL_nch\<2\> CTRL_nch\<1\> CTRL_nch\<0\> I O QSN QSP REFN REFP \
         VDD VSS
-    M0 (O QSP I VSS) nmos_slvt w=186n l=14n m=SNN
+    M0 (O QSP I VSS) slvtnfet w=186n l=14n m=SNN
     I2 (CTRL_nch\<1\> net33 O REFN REFP VDD VSS) SUB1_CDAC_SW
     I4\<4\> (CTRL_nch\<3\> net056\<0\> O REFN REFP VDD VSS) SUB1_CDAC_SW
     I4\<3\> (CTRL_nch\<3\> net056\<1\> O REFN REFP VDD VSS) SUB1_CDAC_SW
@@ -285,7 +285,7 @@ subckt SUB1_CDAC_6b CTRL_nch\<5\> CTRL_nch\<4\> CTRL_nch\<3\> \
     I6\<3\> (CTRL_nch\<5\> net054\<13\> O REFN REFP VDD VSS) SUB1_CDAC_SW
     I6\<2\> (CTRL_nch\<5\> net054\<14\> O REFN REFP VDD VSS) SUB1_CDAC_SW
     I6\<1\> (CTRL_nch\<5\> net054\<15\> O REFN REFP VDD VSS) SUB1_CDAC_SW
-    M1 (I QSN O VDD) pmos_slvt w=186n l=14n m=SNP
+    M1 (I QSN O VDD) slvtpfet w=186n l=14n m=SNP
 ends SUB1_CDAC_6b
 // End of subcircuit definition.
 
@@ -308,32 +308,32 @@ ends SUB1_CDAC_6b_diff
 // Cell name: DFFQ_X2
 // View name: schematic
 subckt DFFQ_X2 Q VDD VNW VPW VSS CK D
-    MMPI0 (nm bclk i1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPI1 (i1 D VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPMF1 (mf1 m VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPMF0 (nm nclk mf1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLF0 (s bclk slf1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLF1 (slf1 ns VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPCKIN0 (nclk CK VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPMI0 (m nm VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPCKOUT0 (bclk nclk VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLT0 (s nclk m VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLI0 (ns s VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPQ (Q ns VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPQ_2 (Q ns VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMNI1 (i0 D VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNI0 (nm nclk i0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNCKIN0 (nclk CK VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNMF0 (nm bclk mf0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNMF1 (mf0 m VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLF0 (s nclk slf0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLF1 (slf0 ns VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNMI0 (m nm VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLT0 (s bclk m VPW) nmos_slvt w=81n l=14n m=1
-    MMNCKOU0 (bclk nclk VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLI0 (ns s VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNQ (Q ns VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNQ_2 (Q ns VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPI0 (nm bclk i1 VNW) slvtpfet w=81n l=14n m=1
+    MMPI1 (i1 D VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPMF1 (mf1 m VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPMF0 (nm nclk mf1 VNW) slvtpfet w=81n l=14n m=1
+    MMPSLF0 (s bclk slf1 VNW) slvtpfet w=81n l=14n m=1
+    MMPSLF1 (slf1 ns VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPCKIN0 (nclk CK VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPMI0 (m nm VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPCKOUT0 (bclk nclk VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPSLT0 (s nclk m VNW) slvtpfet w=81n l=14n m=1
+    MMPSLI0 (ns s VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPQ (Q ns VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPQ_2 (Q ns VDD VNW) slvtpfet w=81n l=14n m=1
+    MMNI1 (i0 D VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNI0 (nm nclk i0 VPW) slvtnfet w=81n l=14n m=1
+    MMNCKIN0 (nclk CK VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNMF0 (nm bclk mf0 VPW) slvtnfet w=81n l=14n m=1
+    MMNMF1 (mf0 m VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLF0 (s nclk slf0 VPW) slvtnfet w=81n l=14n m=1
+    MMNSLF1 (slf0 ns VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNMI0 (m nm VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLT0 (s bclk m VPW) slvtnfet w=81n l=14n m=1
+    MMNCKOU0 (bclk nclk VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLI0 (ns s VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNQ (Q ns VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNQ_2 (Q ns VSS VPW) slvtnfet w=81n l=14n m=1
 ends DFFQ_X2
 // End of subcircuit definition.
 
@@ -341,38 +341,38 @@ ends DFFQ_X2
 // Cell name: DFFRPQN_X3
 // View name: schematic
 subckt DFFRPQN_X3 QN VDD VNW VPW VSS CK D R
-    MMNI1 (i0 D VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNI0 (nm nclk i0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNMF0 (nm bclk mf0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNMF1 (mf0 m VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLF1 (slf0 ns VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLF0 (s nclk slf0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNCKIN0 (nclk CK VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNCKOUT0 (bclk nclk VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNMR0 (m nm VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNMR1 (m R VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLT0 (s bclk m VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLF2 (s R VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNSLI0 (ns s VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNQN_2 (QN s VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNQN_3 (QN s VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNQN (QN s VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMPI0 (nm bclk i1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPI1 (i1 D VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLF1 (slf1 ns slf2 VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLF2 (slf2 R VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLF0 (s bclk slf1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPMF0 (nm nclk mf1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPMF1 (mf1 m VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPMR0 (m nm mr0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPMR1 (mr0 R VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPCKIN0 (nclk CK VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPCKOUT0 (bclk nclk VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLT0 (s nclk m VNW) pmos_slvt w=81n l=14n m=1
-    MMPSLI0 (ns s VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPQN (QN s VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPQN_3 (QN s VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPQN_2 (QN s VDD VNW) pmos_slvt w=81n l=14n m=1
+    MMNI1 (i0 D VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNI0 (nm nclk i0 VPW) slvtnfet w=81n l=14n m=1
+    MMNMF0 (nm bclk mf0 VPW) slvtnfet w=81n l=14n m=1
+    MMNMF1 (mf0 m VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLF1 (slf0 ns VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLF0 (s nclk slf0 VPW) slvtnfet w=81n l=14n m=1
+    MMNCKIN0 (nclk CK VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNCKOUT0 (bclk nclk VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNMR0 (m nm VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNMR1 (m R VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLT0 (s bclk m VPW) slvtnfet w=81n l=14n m=1
+    MMNSLF2 (s R VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNSLI0 (ns s VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNQN_2 (QN s VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNQN_3 (QN s VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNQN (QN s VSS VPW) slvtnfet w=81n l=14n m=1
+    MMPI0 (nm bclk i1 VNW) slvtpfet w=81n l=14n m=1
+    MMPI1 (i1 D VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPSLF1 (slf1 ns slf2 VNW) slvtpfet w=81n l=14n m=1
+    MMPSLF2 (slf2 R VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPSLF0 (s bclk slf1 VNW) slvtpfet w=81n l=14n m=1
+    MMPMF0 (nm nclk mf1 VNW) slvtpfet w=81n l=14n m=1
+    MMPMF1 (mf1 m VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPMR0 (m nm mr0 VNW) slvtpfet w=81n l=14n m=1
+    MMPMR1 (mr0 R VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPCKIN0 (nclk CK VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPCKOUT0 (bclk nclk VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPSLT0 (s nclk m VNW) slvtpfet w=81n l=14n m=1
+    MMPSLI0 (ns s VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPQN (QN s VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPQN_3 (QN s VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPQN_2 (QN s VDD VNW) slvtpfet w=81n l=14n m=1
 ends DFFRPQN_X3
 // End of subcircuit definition.
 
@@ -390,10 +390,10 @@ ends SUB4_SAR2_DFF
 // Cell name: BUF_X2
 // View name: schematic
 subckt BUF_X2 Y VDD VNW VPW VSS A
-    I2 (Y net08 VSS VPW) nmos_slvt w=81n l=14n m=2
-    I0 (net08 A VSS VPW) nmos_slvt w=81n l=14n m=1
-    I3 (Y net08 VDD VNW) pmos_slvt w=81n l=14n m=2
-    I1 (net08 A VDD VNW) pmos_slvt w=81n l=14n m=1
+    I2 (Y net08 VSS VPW) slvtnfet w=81n l=14n m=2
+    I0 (net08 A VSS VPW) slvtnfet w=81n l=14n m=1
+    I3 (Y net08 VDD VNW) slvtpfet w=81n l=14n m=2
+    I1 (net08 A VDD VNW) slvtpfet w=81n l=14n m=1
 ends BUF_X2
 // End of subcircuit definition.
 
@@ -401,8 +401,8 @@ ends BUF_X2
 // Cell name: SUB4_SAR3
 // View name: schematic
 subckt SUB4_SAR3 CKP D DN DP VDD VSS
-    I46 (DP CKP net010 VSS) nmos_slvt w=81n l=14n m=8
-    N14 (D CKP DN VSS) nmos_slvt w=81n l=14n m=8
+    I46 (DP CKP net010 VSS) slvtnfet w=81n l=14n m=8
+    N14 (D CKP DN VSS) slvtnfet w=81n l=14n m=8
     I42 (D VDD VDD VSS VSS net010) INV_X2
     I43 (net010 VDD VDD VSS VSS D) INV_X2
 ends SUB4_SAR3
@@ -488,18 +488,18 @@ ends SUB4_SAR_TOP
 // Cell name: NAND2_X3
 // View name: schematic
 subckt NAND2_X3 Y VDD VNW VPW VSS A B
-    MMPB (Y B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_3 (Y B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_2 (Y B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA (Y A VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_2 (Y A VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMNA (Y A n0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_3 (Y A n0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_2 (Y A n0 VPW) nmos_slvt w=81n l=14n m=1
-    MMNB (n0 B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_3 (n0 B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_2 (n0 B VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPB (Y B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPB_3 (Y B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPB_2 (Y B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA (Y A VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA_3 (Y A VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA_2 (Y A VDD VNW) slvtpfet w=81n l=14n m=1
+    MMNA (Y A n0 VPW) slvtnfet w=81n l=14n m=1
+    MMNA_3 (Y A n0 VPW) slvtnfet w=81n l=14n m=1
+    MMNA_2 (Y A n0 VPW) slvtnfet w=81n l=14n m=1
+    MMNB (n0 B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_3 (n0 B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_2 (n0 B VSS VPW) slvtnfet w=81n l=14n m=1
 ends NAND2_X3
 // End of subcircuit definition.
 
@@ -507,22 +507,22 @@ ends NAND2_X3
 // Cell name: NOR2_X4
 // View name: schematic
 subckt NOR2_X4 Y VDD VNW VPW VSS A B
-    MMPB (p0 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_4 (p0 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_3 (p0 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_2 (p0 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_4 (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_3 (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_2 (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMNB (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_4 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_3 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_2 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_4 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_3 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPB (p0 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPB_4 (p0 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPB_3 (p0 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPB_2 (p0 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_4 (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_3 (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_2 (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMNB (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_4 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_3 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_2 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_4 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_3 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_2 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
 ends NOR2_X4
 // End of subcircuit definition.
 
@@ -530,12 +530,12 @@ ends NOR2_X4
 // Cell name: TIEHI_X1
 // View name: schematic
 subckt TIEHI_X1 Y VDD VNW VPW VSS
-    M1 (lo hi VSS VPW) nmos_slvt w=81n l=14n m=1
-    M0 (VSS lo VSS VPW) nmos_slvt w=81n l=14n m=1
-    M4 (lo lo VSS VPW) nmos_slvt w=81n l=14n m=1
-    M3 (hi hi VDD VNW) pmos_slvt w=81n l=14n m=2
-    M5 (Y lo VDD VNW) pmos_slvt w=81n l=14n m=2
-    M2 (hi lo VDD VNW) pmos_slvt w=81n l=14n m=2
+    M1 (lo hi VSS VPW) slvtnfet w=81n l=14n m=1
+    M0 (VSS lo VSS VPW) slvtnfet w=81n l=14n m=1
+    M4 (lo lo VSS VPW) slvtnfet w=81n l=14n m=1
+    M3 (hi hi VDD VNW) slvtpfet w=81n l=14n m=2
+    M5 (Y lo VDD VNW) slvtpfet w=81n l=14n m=2
+    M2 (hi lo VDD VNW) slvtpfet w=81n l=14n m=2
 ends TIEHI_X1
 // End of subcircuit definition.
 
@@ -601,30 +601,30 @@ ends SUB5_SEQ_TOP_6b_v2
 // Cell name: NOR3_X4
 // View name: schematic
 subckt NOR3_X4 Y VDD VNW VPW VSS A B C
-    MMPB (p0__2 B p1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA (Y A p0__2 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_4 (Y A p0__3 VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_4 (p0__3 B p1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_3 (p0__4 B p1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_3 (Y A p0__4 VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_2 (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPB_2 (p0 B p1 VNW) pmos_slvt w=81n l=14n m=1
-    MMPC_2 (p1 C VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPC_3 (p1 C VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPC_4 (p1 C VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPC (p1 C VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMNB_2 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_3 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_3 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_4 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_4 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNC_2 (Y C VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNC_3 (Y C VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNC_4 (Y C VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNC (Y C VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPB (p0__2 B p1 VNW) slvtpfet w=81n l=14n m=1
+    MMPA (Y A p0__2 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_4 (Y A p0__3 VNW) slvtpfet w=81n l=14n m=1
+    MMPB_4 (p0__3 B p1 VNW) slvtpfet w=81n l=14n m=1
+    MMPB_3 (p0__4 B p1 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_3 (Y A p0__4 VNW) slvtpfet w=81n l=14n m=1
+    MMPA_2 (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPB_2 (p0 B p1 VNW) slvtpfet w=81n l=14n m=1
+    MMPC_2 (p1 C VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPC_3 (p1 C VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPC_4 (p1 C VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPC (p1 C VDD VNW) slvtpfet w=81n l=14n m=1
+    MMNB_2 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_2 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_3 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_3 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_4 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_4 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNC_2 (Y C VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNC_3 (Y C VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNC_4 (Y C VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNC (Y C VSS VPW) slvtnfet w=81n l=14n m=1
 ends NOR3_X4
 // End of subcircuit definition.
 
@@ -632,10 +632,10 @@ ends NOR3_X4
 // Cell name: BUF_X8
 // View name: schematic
 subckt BUF_X8 Y VDD VNW VPW VSS A
-    I2 (Y net027 VSS VPW) nmos_slvt w=81n l=14n m=8
-    I0 (net027 A VSS VPW) nmos_slvt w=81n l=14n m=3
-    I1 (net027 A VDD VNW) pmos_slvt w=81n l=14n m=3
-    I3 (Y net027 VDD VNW) pmos_slvt w=81n l=14n m=8
+    I2 (Y net027 VSS VPW) slvtnfet w=81n l=14n m=8
+    I0 (net027 A VSS VPW) slvtnfet w=81n l=14n m=3
+    I1 (net027 A VDD VNW) slvtpfet w=81n l=14n m=3
+    I3 (Y net027 VDD VNW) slvtpfet w=81n l=14n m=8
 ends BUF_X8
 // End of subcircuit definition.
 
@@ -643,14 +643,14 @@ ends BUF_X8
 // Cell name: NOR2_X2
 // View name: schematic
 subckt NOR2_X2 Y VDD VNW VPW VSS A B
-    MMPB_2 (p0 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA_2 (Y A p0 VNW) pmos_slvt w=81n l=14n m=1
-    MMPB (p0__2 B VDD VNW) pmos_slvt w=81n l=14n m=1
-    MMPA (Y A p0__2 VNW) pmos_slvt w=81n l=14n m=1
-    MMNB (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNB_2 (Y B VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
-    MMNA_2 (Y A VSS VPW) nmos_slvt w=81n l=14n m=1
+    MMPB_2 (p0 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA_2 (Y A p0 VNW) slvtpfet w=81n l=14n m=1
+    MMPB (p0__2 B VDD VNW) slvtpfet w=81n l=14n m=1
+    MMPA (Y A p0__2 VNW) slvtpfet w=81n l=14n m=1
+    MMNB (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNB_2 (Y B VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA (Y A VSS VPW) slvtnfet w=81n l=14n m=1
+    MMNA_2 (Y A VSS VPW) slvtnfet w=81n l=14n m=1
 ends NOR2_X2
 // End of subcircuit definition.
 
@@ -659,17 +659,17 @@ ends NOR2_X2
 // View name: schematic
 subckt SUB3_CLK2 ENV\<2\> ENV\<3\> ENV\<4\> LAT\<1\> LAT\<2\> QS_DEL \
         RDY\<1\> RDY\<2\> RS\<1\> RS\<2\> VDD VSS
-    M20 (net095 net0115 VDD VDD) pmos_slvt w=81n l=14n m=4
-    M1 (net087 net037 VDD VDD) pmos_slvt w=81n l=14n m=2
-    M15 (net099 net054 VDD VDD) pmos_slvt w=81n l=14n m=2
-    M0 (net092 ENV\<2\> net087 VDD) pmos_slvt w=81n l=14n m=2
-    I150 (net022 net0117 VDD VDD) pmos_slvt w=81n l=14n m=4
-    M4 (net092 net0102 net088 VDD) pmos_slvt w=81n l=14n m=2
-    I151 (net022 net024 VDD VDD) pmos_slvt w=81n l=14n m=4
-    M12 (net084 net089 net093 VDD) pmos_slvt w=81n l=14n m=2
-    M8 (net084 ENV\<3\> net099 VDD) pmos_slvt w=81n l=14n m=2
-    M9 (net093 net033 VDD VDD) pmos_slvt w=81n l=14n m=2
-    M7 (net088 net0109 VDD VDD) pmos_slvt w=81n l=14n m=2
+    M20 (net095 net0115 VDD VDD) slvtpfet w=81n l=14n m=4
+    M1 (net087 net037 VDD VDD) slvtpfet w=81n l=14n m=2
+    M15 (net099 net054 VDD VDD) slvtpfet w=81n l=14n m=2
+    M0 (net092 ENV\<2\> net087 VDD) slvtpfet w=81n l=14n m=2
+    I150 (net022 net0117 VDD VDD) slvtpfet w=81n l=14n m=4
+    M4 (net092 net0102 net088 VDD) slvtpfet w=81n l=14n m=2
+    I151 (net022 net024 VDD VDD) slvtpfet w=81n l=14n m=4
+    M12 (net084 net089 net093 VDD) slvtpfet w=81n l=14n m=2
+    M8 (net084 ENV\<3\> net099 VDD) slvtpfet w=81n l=14n m=2
+    M9 (net093 net033 VDD VDD) slvtpfet w=81n l=14n m=2
+    M7 (net088 net0109 VDD VDD) slvtpfet w=81n l=14n m=2
     I134 (net078 VDD VDD VSS VSS net011 net020 net084) NOR3_X4
     I103 (RS\<2\> VDD VDD VSS VSS net073) BUF_X8
     I96 (RS\<1\> VDD VDD VSS VSS net047) BUF_X8
@@ -698,18 +698,18 @@ subckt SUB3_CLK2 ENV\<2\> ENV\<3\> ENV\<4\> LAT\<1\> LAT\<2\> QS_DEL \
     I143 (net077 VDD VDD VSS VSS RDY\<2\>) DLY2_X2
     I130 (net0109 VDD VDD VSS VSS net0100) DLY2_X2
     I126 (net037 VDD VDD VSS VSS net0108) DLY2_X2
-    M13 (net094 net054 VSS VSS) nmos_slvt w=81n l=14n m=2
-    I153 (net022 net076 VSS VSS) nmos_slvt w=81n l=14n m=4
-    M14 (net084 net089 net094 VSS) nmos_slvt w=81n l=14n m=2
-    M2 (net092 net0102 net0101 VSS) nmos_slvt w=81n l=14n m=2
-    M10 (net084 ENV\<3\> net0104 VSS) nmos_slvt w=81n l=14n m=2
-    I152 (net095 net0114 VSS VSS) nmos_slvt w=81n l=14n m=4
-    M19 (VSS net095 VSS VSS) nmos_slvt w=81n l=14n m=4
-    M18 (VSS net022 VSS VSS) nmos_slvt w=81n l=14n m=4
-    M11 (net0104 net033 VSS VSS) nmos_slvt w=81n l=14n m=2
-    M5 (net090 net0109 VSS VSS) nmos_slvt w=81n l=14n m=2
-    M6 (net092 ENV\<2\> net090 VSS) nmos_slvt w=81n l=14n m=2
-    M3 (net0101 net037 VSS VSS) nmos_slvt w=81n l=14n m=2
+    M13 (net094 net054 VSS VSS) slvtnfet w=81n l=14n m=2
+    I153 (net022 net076 VSS VSS) slvtnfet w=81n l=14n m=4
+    M14 (net084 net089 net094 VSS) slvtnfet w=81n l=14n m=2
+    M2 (net092 net0102 net0101 VSS) slvtnfet w=81n l=14n m=2
+    M10 (net084 ENV\<3\> net0104 VSS) slvtnfet w=81n l=14n m=2
+    I152 (net095 net0114 VSS VSS) slvtnfet w=81n l=14n m=4
+    M19 (VSS net095 VSS VSS) slvtnfet w=81n l=14n m=4
+    M18 (VSS net022 VSS VSS) slvtnfet w=81n l=14n m=4
+    M11 (net0104 net033 VSS VSS) slvtnfet w=81n l=14n m=2
+    M5 (net090 net0109 VSS VSS) slvtnfet w=81n l=14n m=2
+    M6 (net092 ENV\<2\> net090 VSS) slvtnfet w=81n l=14n m=2
+    M3 (net0101 net037 VSS VSS) slvtnfet w=81n l=14n m=2
     I135 (net058 VDD VDD VSS VSS ENV\<4\>) INV_X4
     I105 (net024 VDD VDD VSS VSS net017 net052) NAND2_X3
     I113 (net039 VDD VDD VSS VSS net078 net040) NAND2_X3
