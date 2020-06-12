@@ -5,10 +5,10 @@ from align.primitive import default
 
 class MOSGenerator(default.MOSGenerator):
 
-    def _addMOS( self, x, y, x_cells, name='M1', reflect=False, **parameters):
+    def _addMOS( self, x, y, x_cells, vt_type, name='M1', reflect=False, **parameters):
 
         # Draw default layers
-        super()._addMOS(x, y, x_cells, name, reflect, **parameters)
+        super()._addMOS(x, y, x_cells, vt_type, name, reflect, **parameters)
 
         # Draw Technology Specific Layers
         if self.shared_diff == 1:
@@ -20,7 +20,32 @@ class MOSGenerator(default.MOSGenerator):
 
         gate_x = self.gateDummy*self.shared_diff + x * self.gatesPerUnitCell + self.gatesPerUnitCell // 2         
         self.addWire( self.LISD, None, None, gate_x - 1, (y, 1), (y+1, -1))
-        self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1))
+        self.addWire( self.LISD, None, None, gate_x + 1, (y, 1), (y+1, -1)) 
+        def _addRVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.RVT_diff,  None, None, y, 0, 2*x_cells+1)
+            else:
+                pass
+    
+        def _addLVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.LVT,  None, None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.LVT_diff,  None, None, y, 0, 2*x_cells+1)
+            else:
+                pass
+    
+        def _addHVT(x, y, x_cells):
+            if self.shared_diff == 0:
+                self.addWire( self.HVT,  None, None, y,          (x, 1), (x+1, -1))
+            elif self.shared_diff == 1 and x == x_cells-1:
+                self.addWire( self.HVT_diff,  None, None, y, 0, 2*x_cells+1)
+            else:
+                pass
+        add_vt = '_add' + vt_type
+        eval(add_vt)(x, y, x_cells)
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         super()._addBodyContact(x, y, x_cells, yloc, name)
