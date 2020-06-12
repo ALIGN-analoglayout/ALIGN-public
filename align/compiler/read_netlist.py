@@ -31,7 +31,7 @@ class SpiceParser:
         self.top_insts = []
         self.include = []
         self.top_ckt_name = top_ckt_name
-        self.flat = 1
+        self.flat = flat
         self.next_line = None
         self.prev_line = None
         self.check_next_line = None
@@ -157,8 +157,6 @@ class SpiceParser:
             #self._show_circuit_graph("circuit", self.circuit_graph,"./circuit_graph_images/")
             return self.circuits_list
     def resolve_hierarchy(self):
-        print(self.flat)
-        print("why not")
         if self.flat:
             logger.debug(f"Flatten circuit: {self.top_ckt_name}")
             design = self._flatten_circuit(self.top_ckt_name)
