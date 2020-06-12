@@ -509,7 +509,6 @@ workflows:
             - build-nightly
             - build-nightly2
             - build-nightly3
-            - build-nightly4
             - build-nightly5
             - build-nightly6
             - build-nightly7
