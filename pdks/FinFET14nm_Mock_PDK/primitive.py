@@ -1,4 +1,5 @@
 from align.primitive import default
+import ast
 
 # Override default MOSGenerator._addMOS & _addBodyContact 
 # (to add fin & LISD layers)
@@ -43,9 +44,17 @@ class MOSGenerator(default.MOSGenerator):
             elif self.shared_diff == 1 and x == x_cells-1:
                 self.addWire( self.HVT_diff,  None, None, y, 0, 2*x_cells+1)
             else:
-                pass
-        add_vt = '_add' + vt_type
-        eval(add_vt)(x, y, x_cells)
+                pass       
+        if vt_type == 'RVT':
+            _addRVT(x, y, x_cells)
+        elif vt_type == 'LVT':
+            _addLVT(x, y, x_cells)
+        elif vt_type == 'HVT':
+            _addHVT(x, y, x_cells)
+        else:
+            print("This VT type not supported")
+            exit()    
+
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         super()._addBodyContact(x, y, x_cells, yloc, name)
