@@ -1,5 +1,4 @@
 from align.primitive import default
-import ast
 
 # Override default MOSGenerator._addMOS & _addBodyContact 
 # (to add fin & LISD layers)
