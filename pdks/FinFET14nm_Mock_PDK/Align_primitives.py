@@ -16,6 +16,7 @@ def main( args):
         args.pattern,
         args.value,
         args.vt_type,
+        args.stack,
         args.params,
         args.pinSwitch,
         args.pdkdir,
@@ -32,6 +33,7 @@ def gen_parser():
     parser.add_argument( "-s", "--pattern", type=int, required=False, default=1)
     parser.add_argument( "-q", "--pinSwitch", type=int, required=False, default=0)
     parser.add_argument( "-v", "--vt_type", type=str, required=False, default='RVT')
+    parser.add_argument( "-st", "--stack", type=int, required=False, default=1)
     parser.add_argument( "-n", "--value", type=str, required=False, default=None)
     parser.add_argument( "--params", type=json.loads, required=False, default='{}')
     parser.add_argument( "-d", "--pdkdir", type=pathlib.Path, required=False, default=pathlib.Path(__file__).resolve().parent)
