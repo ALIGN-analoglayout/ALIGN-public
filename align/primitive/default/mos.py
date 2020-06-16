@@ -16,6 +16,7 @@ class MOSGenerator(DefaultCanvas):
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
         self.shared_diff = shared_diff
+        self.stack = 0
         self.gateDummy = gateDummy
         self.gatesPerUnitCell = gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
