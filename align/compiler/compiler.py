@@ -87,6 +87,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
             while delta > 0:
                 logger.debug("CHECKING stacked transistors")
                 add_stacked_transistor(G1)
+                add_parallel_transistor(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
@@ -246,7 +247,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF or name.split('_type')[0] not in ALL_LEF:
-            ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
+            #ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
             ws.print_subckt(SP_FP)
             ws.print_mos_subckt(SP_FP,printed_mos)
 
@@ -274,7 +275,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
+    #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
     print("compilation stage done")
     return primitives

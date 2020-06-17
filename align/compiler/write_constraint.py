@@ -21,11 +21,11 @@ def create_hierarchy(graph,node,traversed,ports_weight):
     logger.debug(f"new hierarchy points {hier_of_node} {level1}")
 
     if len(hier_of_node[node]) > 0:
-        for group in hier_of_node[node]:
+        for group in sorted(hier_of_node[node] , key=lambda x: len(x)):
             if len(group)>0:
                 templates={}
                 similar_node_groups = {}
-                for el in group:
+                for el in sorted(group):
                     similar_node_groups[el]=[el]
                 templates[node]=[el]
                 visited=group+[node]
@@ -48,8 +48,8 @@ def create_hierarchy(graph,node,traversed,ports_weight):
             for inst in array.keys():
                 if graph.nodes[inst]['inst_type']!='net':
                     hier_of_node[node].append(inst)
-
         if len(all_inst)>1:
+            all_inst=sorted(all_inst)
             h_ports_weight={}
             for inst in  all_inst:
                 for node_hier in list(set(graph.neighbors(inst))):
@@ -370,7 +370,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
         logging.info(f"symmetric blocks found: {pair}")      
         all_match_pairs[node1+node2]=pair                         
     try: 
-        for sp in hier_start_points:
+        for sp in sorted(hier_start_points):
             logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
             if sp not in G.nodes():
                 continue
@@ -415,7 +415,9 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     """
     #traversed =stop_points.copy()
     all_match_pairs={}
-    for port1,port2 in combinations_with_replacement(set(sorted(ports))-set(stop_points),2):
+    non_power_ports=sorted(set(sorted(ports))-set(stop_points))
+    logger.debug(f"sorted ports: {non_power_ports}")
+    for port1,port2 in combinations_with_replacement(non_power_ports,2):
         traversed =stop_points.copy()
         if sorted(ports_weight[port1]) == sorted(ports_weight[port2]) !=[0]:
             traversed+=[port1,port2]
@@ -462,9 +464,12 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     for key in new_hier_keys:
         del all_match_pairs[key]
     
-    for pairs in sorted(all_match_pairs.values(), key=lambda k: len (k.keys()), reverse=True):
+    all_pairs=sorted(all_match_pairs.values(), key=lambda k: len ([k1 for k1,v1 in k.items() if k1!=v1 ]), reverse=True)
+    for pairs in all_pairs:
         symmBlock='\nSymmBlock ('
-        for key, value in pairs.items():
+        pairs=sorted(pairs.items(),key=lambda k: k[0])
+        logger.debug(f"all symmblock pairs {pairs}")
+        for key, value in pairs:
             #print("key,value,hier",key,value,new_hier_keys)
             if key in stop_points or key in written_symmetries or \
                 value in written_symmetries or key in new_hier_keys or \

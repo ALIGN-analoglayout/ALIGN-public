@@ -81,28 +81,28 @@ class WriteVerilog:
     def map_pins(self, a, b):
         if len(a) == len(b):
             mapped_pins = []
-            for ai, bi in zip(a, b):
+            for ai, bi in sorted(zip(a, b),key=lambda x:x[0]):
                 if ai not in self.power_pins:
                     mapped_pins.append("." + ai + "(" + bi + ")")
 
-            return mapped_pins
+            return sorted(mapped_pins)
         elif len(set(a)) == len(set(b)):
             if len(a) > len(b):
                 mapped_pins = []
-                check_sort = []
-                no_of_sort = 0
+                check_short = []
+                no_of_short = 0
                 for i in range(len(a)):
-                    if a[i] in check_sort:
-                        mapped_pins.append(mapped_pins[check_sort.index(a[i])])
-                        no_of_sort += 1
+                    if a[i] in check_short:
+                        mapped_pins.append(mapped_pins[check_short.index(a[i])])
+                        no_of_short += 1
                     else:
                         mapped_pins.append("." + a[i] + "(" +
-                                           b[i - no_of_sort] + ")")
-                        check_sort.append(a[i])
+                                           b[i - no_of_short] + ")")
+                        check_short.append(a[i])
                     if a[i] in self.power_pins:
                         mapped_pins= mapped_pins[:-1]
-
-                return mapped_pins
+                
+                return sorted(mapped_pins)
 
         else:
             logger.info("unmatched ports found")
