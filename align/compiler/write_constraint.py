@@ -267,8 +267,8 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
 
     """
     logger.debug("comparing %s,%s, traversed %s",node1,node2,traversed)
-    nbrs1 = set(G.neighbors(node1)) - set(traversed)
-    nbrs2 = set(G.neighbors(node2)) - set(traversed)
+    nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
+    nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
     logger.debug(f"first node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"second node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
@@ -311,7 +311,8 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in SD_nbrs  ]}")
             match_pair[node1]=node1
             traversed.append(node1)
-            for nbr1,nbr2 in combinations_with_replacement(set(SD_nbrs)-set(traversed), 2):
+            new_sp=sorted(set(SD_nbrs)-set(traversed))
+            for nbr1,nbr2 in combinations_with_replacement(new_sp, 2):
                 logger.debug(f"recursive call from single branch {nbr1} {nbr2}")
                 compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
                         
@@ -319,7 +320,7 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
         logger.debug(f"traversing converging branch")
         match_pair[node1]=node2
         traversed+=[node1,node2]
-        nbrs1=nbrs1-set([node1,node2])
+        nbrs1=sorted(set(nbrs1)-set([node1,node2]))
         logger.debug(f"all non traversed neighbours: {nbrs1}")
         for nbr1,nbr2 in combinations_with_replacement(nbrs1,2):
             logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")

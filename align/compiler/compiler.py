@@ -240,16 +240,16 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
         if name in ALL_LEF:
             logger.debug(f"writing spice for block: {name}")
-            ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
-            ws.print_subckt(SP_FP)
-            ws.print_mos_subckt(SP_FP,printed_mos)
+            #ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
+            #ws.print_subckt(SP_FP)
+            #ws.print_mos_subckt(SP_FP,printed_mos)
             continue
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF or name.split('_type')[0] not in ALL_LEF:
             #ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
-            ws.print_subckt(SP_FP)
-            ws.print_mos_subckt(SP_FP,printed_mos)
+            #ws.print_subckt(SP_FP)
+            #ws.print_mos_subckt(SP_FP,printed_mos)
 
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
