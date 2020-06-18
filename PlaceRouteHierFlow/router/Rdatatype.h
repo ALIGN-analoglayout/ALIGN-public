@@ -257,6 +257,7 @@ struct Net{
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
   int STindex = 0;
+  int multi_connection = 1;
   //void display();
 };
 

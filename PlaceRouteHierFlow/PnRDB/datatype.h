@@ -222,6 +222,7 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
+  int multi_connection = 1;
 }; // structure of nets
 
 struct Metal{

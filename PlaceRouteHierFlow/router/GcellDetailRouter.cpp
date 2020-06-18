@@ -750,8 +750,8 @@ void GcellDetailRouter::create_detailrouter(){
   for (unsigned int i = 0; i < Nets.size(); i++)
   {
 
-    int multi_number = R_constraint_based_Parallel_routing_number(i);
-    multi_number = 3;
+    //int multi_number = R_constraint_based_Parallel_routing_number(i);
+    int multi_number = Nets[i].multi_connection;
 
     for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
 

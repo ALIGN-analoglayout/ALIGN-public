@@ -929,6 +929,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
          temp_net.symCounterpart=node.Nets[i].symCounterpart;
          temp_net.iter2SNetLsit=node.Nets[i].iter2SNetLsit;
          temp_net.priority=node.Nets[i].priority;
+         temp_net.multi_connection = node.Nets[i].multi_connection;
 
          if(node.Nets[i].axis_dir == PnRDB::H){
              temp_net.sym_H = 1;
