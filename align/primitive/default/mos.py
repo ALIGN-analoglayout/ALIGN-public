@@ -253,6 +253,13 @@ class MOSGenerator(DefaultCanvas):
                     self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
                 else: # create m3 terminal(s)
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    if max(contacts) - min(contacts) < 2:
+                        minL_m3 = 2 ## for M3 min length
+                        maxy = min(contacts) + minL_m3
+                        miny = min(contacts)
+                        self.addWire(self.m3, net, net, current_track, (miny, -1), (maxy, 1))
+                    else:
+                        pass
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
