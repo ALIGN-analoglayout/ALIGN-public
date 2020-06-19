@@ -1,0 +1,3 @@
+MatchBlock ( m5 , m4 )
+SymmBlock ( {m2,m1} , {m6,m8} )
+#SymmBlock ( {m2,m1} , {m3,m0} , {m4} , {m5} )

@@ -1,0 +1,9 @@
+#MatchBlock ( m18 , m19 )
+#MatchBlock ( m20 , m21 )
+#MatchBlock ( m14 , m16 )
+#MatchBlock ( m10 , m11 )
+SymmBlock ( {m21,m19} , {m20,m18} , {m17,m15} )
+#MatchBlock ( m18 , m20 )
+#MatchBlock ( m19 , m21 )
+
+
