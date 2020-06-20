@@ -6,7 +6,7 @@
 #include <time.h>
 
 using namespace nlohmann;
-#define FinFET_MOCK_PDK
+//#define FinFET_MOCK_PDK
 //uncomment the above line when using layer.json from FinFET_MOCK_PDK
 
 
