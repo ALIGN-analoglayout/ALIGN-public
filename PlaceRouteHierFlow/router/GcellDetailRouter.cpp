@@ -501,6 +501,97 @@ int GcellDetailRouter::R_constraint_based_Parallel_routing_number(int i){
 
 };
 
+std::vector<int> GcellDetailRouter::Multi_Connection_Number(int i){
+
+  std::vector<int> multi_number;
+
+  //collect all the pin positions
+
+  std::vector<std::vector<RouterDB::contact> > pin_contacts;
+  std::vector<int> expecated_length;
+  
+  for(int j=0;j<this->Nets[i].connected.size();j++){
+
+    if(this->Nets[i].connected[j].type!=RouterDB::TERMINAL){
+       int blockid = this->Nets[i].connected[j].iter2;
+       int pinid = this->Nets[i].connected[j].iter;
+       std::vector<RouterDB::contact> temp_contacts;
+       for(int k=0;k<this->Blocks[blockid].pins[pinid].pinContacts.size();k++){
+          temp_contacts.push_back(this->Blocks[blockid].pins[pinid].pinContacts[k]);
+       }
+       pin_contacts.push_back(temp_contacts);
+       expecated_length.push_back(Nets[i].connected[j].expected_length);
+      }
+  }
+  
+  //calculate the center point
+
+  std::vector<RouterDB::point> center_points;
+
+  for(int j=0;j<pin_contacts.size();j++){
+
+     RouterDB::point temp_points;
+
+     for(int k=0;k<pin_contacts[j].size();k++){
+
+        temp_points.x = temp_points.x + pin_contacts[j][k].placedCenter.x;
+        temp_points.y = temp_points.y + pin_contacts[j][k].placedCenter.y;
+
+     }
+
+     temp_points.x = temp_points.x/pin_contacts[j].size();    
+     temp_points.y = temp_points.y/pin_contacts[j].size();
+
+     center_points.push_back(temp_points);    
+  }
+
+  //estimated length for each pin
+
+  std::vector<int> es_dis;
+
+  for(int j=0;j<pin_contacts.size();j++){
+
+     int temp_dis=INT_MAX;
+     int dis;
+
+     for(int k=0;k<pin_contacts[j].size();k++){
+
+        dis = abs(pin_contacts[j][k].placedLL.x-center_points[j].x)+abs(pin_contacts[j][k].placedLL.y-center_points[j].y);
+        if(dis<temp_dis)temp_dis=dis;
+
+        dis = abs(pin_contacts[j][k].placedLL.x-center_points[j].x)+abs(pin_contacts[j][k].placedUR.y-center_points[j].y);
+        if(dis<temp_dis)temp_dis=dis;
+
+        dis = abs(pin_contacts[j][k].placedUR.x-center_points[j].x)+abs(pin_contacts[j][k].placedLL.y-center_points[j].y);
+        if(dis<temp_dis)temp_dis=dis;
+
+        dis = abs(pin_contacts[j][k].placedUR.x-center_points[j].x)+abs(pin_contacts[j][k].placedUR.y-center_points[j].y);
+        if(dis<temp_dis)temp_dis=dis;
+
+     }
+
+     es_dis.push_back(temp_dis);
+
+  }
+
+  //calculate multi_number;
+
+  for(int j=0;j<es_dis.size();j++){
+
+     if(expecated_length[j]<0){
+       multi_number.push_back(1);
+     }else{
+       multi_number.push_back(es_dis[j]/expecated_length[j]);
+     }
+  }
+  
+  return multi_number;
+
+
+};
+
+
+
 void GcellDetailRouter::Global_Path_Operation_For_Pins(int i, std::vector<std::pair<int,int> > &global_path){
 
   for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
@@ -752,9 +843,9 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
-
+    //multi_number = 3;
     for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
-
+      std::vector<int> Multi_Number =  Multi_Connection_Number(i);
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
       ReturnInternalMetalContact(Set_x_contact,i); //get internal metals' contact,first LL, second UR, exclude current net
@@ -769,8 +860,6 @@ void GcellDetailRouter::create_detailrouter(){
       {
         continue;
       } //if suspending, then skip
-
-      
 
       std::vector<std::vector<RouterDB::SinkData>> temp_pins; //routing pins
       RouterDB::point gridll;
@@ -800,7 +889,7 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaSpacing(Pset_via, grid);
         A_star a_star(grid, Nets[i].shielding);
         std::cout<<"Net name "<<Nets[i].netName<<std::endl;
-        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, 0, 0);
+        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, Multi_Number[j]-1, 0);
         /*
         if(pathMark==0){
           grid.CreateGridData();

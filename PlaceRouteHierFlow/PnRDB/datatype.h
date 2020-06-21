@@ -197,6 +197,7 @@ struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  int expected_length = -1;
 }; // structure of connected component of nets
 
 struct globalContact {
