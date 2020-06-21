@@ -953,6 +953,7 @@ void GcellGlobalRouter::getData(PnRDB::hierNode& node, int Lmetal, int Hmetal){
                // assume that at most one terminal connected to one net 
                temp_connectNode.iter=node.Nets[i].connected[j].iter;
                temp_connectNode.iter2=node.Nets[i].connected[j].iter2;
+               temp_connectNode.expected_length = node.Nets[i].connected[j].expected_length;
                temp_net.connected.push_back(temp_connectNode);
               }
           Nets.push_back(temp_net);		

@@ -1,3 +1,5 @@
 #MatchBlock ( m5 , m4 )
 #SymmBlock ( {m1,m2} , {m5} )
 SymmBlock ( {m2,m1} , {m3,m0} )
+#L_Const ( {net_name} , {block/pin,2} , {block/pin,2} )
+L_Const ( {net10} , {m4/D,2.4} , {m0/S,2.5} )

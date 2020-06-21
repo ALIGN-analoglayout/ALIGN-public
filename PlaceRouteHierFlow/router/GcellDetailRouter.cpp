@@ -581,9 +581,22 @@ std::vector<int> GcellDetailRouter::Multi_Connection_Number(int i){
      if(expecated_length[j]<0){
        multi_number.push_back(1);
      }else{
-       multi_number.push_back(es_dis[j]/expecated_length[j]);
+       multi_number.push_back(ceil((double)es_dis[j]/expecated_length[j]));
      }
   }
+
+  std::cout<<"L_Const net name "<<this->Nets[i].netName<<std::endl;
+  
+  for(int j=0;j<this->Nets[i].connected.size();j++){
+
+    if(this->Nets[i].connected[j].type!=RouterDB::TERMINAL){
+       int blockid = this->Nets[i].connected[j].iter2;
+       int pinid = this->Nets[i].connected[j].iter;
+       std::cout<<"iter2 "<<blockid<<" iter "<<pinid<<" blockname "<<this->Blocks[blockid].blockName<<" pinname "<< this->Blocks[blockid].pins[pinid].pinName<<" expected_length "<<expecated_length[j]<<" es_dis "<<es_dis[j]<<" multi_number "<<multi_number[j]<<std::endl;
+      }
+  }
+  
+ 
   
   return multi_number;
 

@@ -454,6 +454,46 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
         std::cout<<"PortLocation "<<tmp_portpos.tid<<" @ "<<tmp_portpos.pos<<std::endl;
         node.Port_Location.push_back(tmp_portpos);
+      } else if(temp[0].compare("L_Const")==0){
+
+        std::cout<<"L_Const Flag 1"<<std::endl;
+
+        string netname=temp[2];
+        netname=netname.substr(1);
+        netname=netname.substr(0, netname.length()-1);
+
+        std::cout<<"L_Const Flag 2"<<std::endl;
+
+        for(unsigned int i=4;i<temp.size()-1;i+=2){
+
+           string word=temp[i];
+           word=word.substr(1);
+           word=word.substr(0, word.length()-1);
+           tempsec=StringSplitbyChar(word, ',');
+           vector<string> pins;
+           pins = StringSplitbyChar(tempsec[0], '/');
+
+           std::cout<<"L_Const Flag 3"<<std::endl;
+           
+           for(unsigned int j=0;j<node.Nets.size();j++){
+              
+              if(node.Nets[j].name==netname){
+                 for(unsigned int k=0;k<node.Nets[j].connected.size();k++){
+                    int blockid = node.Nets[j].connected[k].iter2;
+                    int pinid = node.Nets[j].connected[k].iter;
+ 
+                    std::cout<<"L_Const Flag 4"<<std::endl;
+
+                    if(node.Nets[j].connected[k].type==PnRDB::Block and node.Blocks.at(blockid).instance.back().name.compare(pins[0])==0 and node.Blocks.at(blockid).instance.back().blockPins[pinid].name.compare(pins[1])==0){
+                       node.Nets[j].connected[k].expected_length = (int) 2000*atof(tempsec[1].c_str());
+                       std::cout<<"L_Const "<<"netname "<<netname<<" blockname "<<pins[0]<<" pinname "<<pins[1]<<" iter2 "<<blockid<<" iter "<<pinid<<" expected length "<<node.Nets[j].connected[k].expected_length<<std::endl;
+                     }
+                  }
+                }
+           }
+           
+        }
+
       } else if (temp[0].compare("R_Const")==0){
         PnRDB::R_const temp_r_const;
         string word=temp[2];
