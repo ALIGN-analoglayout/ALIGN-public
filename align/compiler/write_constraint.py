@@ -175,6 +175,7 @@ def matching_groups(G,level1,ports_weight):
                 similar_groups.append([l1_node1,l1_node2])
     return similar_groups
 def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
+    logger.debug(f"finding unique matches between {nbrs1},{nbrs2}")
     match={}
     for node1 in nbrs1:
         for node2 in nbrs2:
@@ -185,6 +186,7 @@ def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
                     match[node1]=node2
         if node1 not in match:
             return False
+
     return match
         
     
@@ -207,9 +209,11 @@ def compare_node(G,node1:str,node2:str ,ports_weight):
         DESCRIPTION. True for matching node
 
     """
-    logger.debug("comparing_nodes, %s %s %s %s",node1,node2,list(G.neighbors(node1)),list(G.neighbors(node2)))
     nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
     nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
+    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]
+    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]
+    logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
 
     # Add some heuristic here in future
     
@@ -247,7 +251,7 @@ def compare_node(G,node1:str,node2:str ,ports_weight):
             return False
 
 
-def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
+def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weight):
     """
 
     Parameters
@@ -268,13 +272,15 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
     """
     logger.debug("comparing %s,%s, traversed %s",node1,node2,traversed)
     nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
+    nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]))
     nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
+    nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]))
     logger.debug(f"first node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"second node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
         if compare_node(G, node1, node2, ports_weight):
             match_pair[node1]=node2
-        logger.debug("no new neihbours, returning recursion")
+        logger.debug(f"no new neihbours, returning recursion {match_pair}")
         return
     #Traversing single branch for symmetry
     #condition 1, Single branch: both ports/ nets are same and connected to two or more ports
@@ -300,12 +306,12 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             logger.debug(f"traversing single S/D path ")
             match_pair[node1]=node1 
             traversed.append(node1)
-            compare_nodes(G,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)            
-        elif len(SD_nbrs) ==2:
-            logger.debug(f"diverging S/D branch from single branch {SD_nbrs} ")
-            match_pair[node1]=node1
-            traversed.append(node1)
-            compare_nodes(G,match_pair,traversed,SD_nbrs[0],SD_nbrs[1],ports_weight)            
+            compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[0],ports_weight)            
+        #elif len(SD_nbrs) ==2:
+        #    logger.debug(f"diverging S/D branch from single branch {SD_nbrs} ")
+        #    match_pair[node1]=node1
+        #    traversed.append(node1)
+        #    compare_nodes(G,all_match_pairs,match_pair,traversed,SD_nbrs[0],SD_nbrs[1],ports_weight)            
         else:        
             logger.debug(f" multiple nodes diverging {nbrs1} {SD_nbrs}")
             logger.debug(f"nbr weights: {SD_nbrs} {[G.get_edge_data(node1, nbr)['weight'] for nbr in SD_nbrs  ]}")
@@ -314,7 +320,10 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             new_sp=sorted(set(SD_nbrs)-set(traversed))
             for nbr1,nbr2 in combinations_with_replacement(new_sp, 2):
                 logger.debug(f"recursive call from single branch {nbr1} {nbr2}")
-                compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+                new_pair={}
+                compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+                if new_pair:
+                    all_match_pairs[nbr1+'_'+nbr2] = new_pair
                         
     elif nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
@@ -324,25 +333,29 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
         logger.debug(f"all non traversed neighbours: {nbrs1}")
         for nbr1,nbr2 in combinations_with_replacement(nbrs1,2):
             logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
-            compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+            new_pair={}
+            compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+            all_match_pairs[nbr1+'_'+nbr2] = new_pair
 
     elif compare_node(G,node1,node2,ports_weight):
+        nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=2]))
+        nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=2]))
         match_pair[node1]=node2
         traversed+=[node1,node2]
-        logger.info(f"Traversing parallel branches")
+        logger.info(f"Traversing parallel branches from {node1},{node2} {nbrs1}, {nbrs2}")
         nbrs1_wt = [G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
         nbrs2_wt = [G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
         unique_match=find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight)
         if len(nbrs1) ==1 and len(nbrs2)==1:
             logger.debug(f"traversing binary branch")
-            compare_nodes(G,match_pair,traversed,nbrs1.pop(),nbrs2.pop(),ports_weight)
+            compare_nodes(G,all_match_pairs,match_pair,traversed,nbrs1.pop(),nbrs2.pop(),ports_weight)
         elif unique_match:
             logger.debug(f'traversing unique matches {unique_match}')
             match_pair[node1]=node2
             traversed+=[node1,node2]
             for nbr1,nbr2 in unique_match.items():
                 logger.debug(f"recursive call from binary {node1}:{node2} to {nbr1}:{nbr2}")
-                compare_nodes(G,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+                compare_nodes(G,all_match_pairs,match_pair,traversed.copy(),nbr1,nbr2,ports_weight)
         elif len(nbrs1_wt)>len(set(nbrs1_wt))>1 and len(nbrs2_wt)>len(set(nbrs2_wt))>1:
             logger.debug(f"setting new start points {node1} {node2}")
             match_pair[node1]=node2
@@ -351,25 +364,27 @@ def compare_nodes(G,match_pair,traversed,node1,node2, ports_weight):
             else:
                 match_pair["start_point"]=[node1,node2]
         else:
+            match_pair = {}
             logger.debug(f"end all traversal from binary branch {node1} {node2}")
         
     else:
+        match_pair = {}
         logger.debug(f"end of recursion branch, matches {match_pair}")
 
 def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight):
     logger.debug(f"symmetry start point {node1} {node2}")
     pair ={}
-    compare_nodes(G, pair, traversed, node1, node2,ports_weight)
+    compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
+    all_match_pairs[node1+node2]=pair                         
+    all_match_pairs={k: v for k, v in all_match_pairs.items() if v}
 
-    if "start_point" in pair:
-        hier_start_points=pair["start_point"]    
-        del pair["start_point"]
-    if not pair:
-        logger.debug(f"Non symmetrical branches {node1}:{node2}")
-        return                  
-    else:
-        logging.info(f"symmetric blocks found: {pair}")      
-        all_match_pairs[node1+node2]=pair                         
+    for k,pair in all_match_pairs.items():
+        logger.debug(f"all pairs from {k}:{pair}")
+        if "start_point" in pair.keys():
+            hier_start_points=pair["start_point"]    
+            del pair["start_point"]
+            logger.debug(f"New symmetrical start points {pair}")
+    logging.info(f"symmetric blocks found: {pair}")      
     try: 
         for sp in sorted(hier_start_points):
             logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
