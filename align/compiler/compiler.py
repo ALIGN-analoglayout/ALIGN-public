@@ -163,7 +163,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
-    SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
+    #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
     print_header(VERILOG_FP, design_name)
     design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
     try:
@@ -271,7 +271,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             generated_module.append(name)
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
-    SP_FP.close()
+    #SP_FP.close()
 
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
