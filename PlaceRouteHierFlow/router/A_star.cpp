@@ -1648,7 +1648,7 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
      if(temp_path.size()<2){
         std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
         std::cout<<"Trace_Back_Paths bug 2 "<<std::endl;
-        assert(0);      
+        //assert(0);      
      }
      temp_paths.push_back(temp_path);
   }
