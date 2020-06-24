@@ -22,7 +22,7 @@ def create_hierarchy(graph,node,traversed,ports_weight):
     logger.debug(f"new hierarchy points {hier_of_node} {level1}")
 
     if len(hier_of_node[node]) > 0:
-        for group in sorted(hier_of_node[node] , key=lambda  x: len(x), reverse =False):
+        for group in sorted(hier_of_node[node] , key= len(x)):
             if len(group)>0:
                 templates={}
                 similar_node_groups = {}
@@ -551,8 +551,6 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
 
 def symmnet_device_pairs(G, list_A, list_B):
     """
-    
-
     Parameters
     ----------
     G : networkx graph
@@ -581,7 +579,7 @@ def symmnet_device_pairs(G, list_A, list_B):
     pairs={}
     for ele_A in weight_A.keys():
         for ele_B in weight_B.keys():
-            if weight_A[ele_A]==weight_B[ele_B] and ele_B not in pairs.values():
+            if weight_A[ele_A]==weight_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"] and ele_B not in pairs.values():
                 pairs[ele_A]=ele_B
     return pairs
         
