@@ -106,16 +106,16 @@ m11 vss ntail2 vss vss lvtnfet w=w23 l=l2
 *d0 net100 vdd diode
 .ends Gm2_v5_Practice
 
-.subckt myComparator_v3 clk gnd outm outp vdd _net0 _net1
-m0 gnd intern gnd gnd lvtnfet w=w24 l=l6
-m22 gnd interp gnd gnd lvtnfet w=w24 l=l6
-m16 outm crossp gnd gnd lvtnfet w=w25 l=l3
-m17 outp crossn gnd gnd lvtnfet w=w25 l=l3
-m4 crossn crossp intern gnd lvtnfet w=w26 l=l3
-m3 crossp crossn interp gnd lvtnfet w=w26 l=l3
-m7 net069 clk gnd gnd lvtnfet w=w27 l=l3
-m5 intern _net0 net069 gnd lvtnfet w=w28 l=l3
-m6 interp _net1 net069 gnd lvtnfet w=w28 l=l3
+.subckt myComparator_v3 clk vss outm outp vdd _net0 _net1
+m0 vss intern vss vss lvtnfet w=w24 l=l6
+m22 vss interp vss vss lvtnfet w=w24 l=l6
+m16 outm crossp vss vss lvtnfet w=w25 l=l3
+m17 outp crossn vss vss lvtnfet w=w25 l=l3
+m4 crossn crossp intern vss lvtnfet w=w26 l=l3
+m3 crossp crossn interp vss lvtnfet w=w26 l=l3
+m7 net069 clk vss vss lvtnfet w=w27 l=l3
+m5 intern _net0 net069 vss lvtnfet w=w28 l=l3
+m6 interp _net1 net069 vss lvtnfet w=w28 l=l3
 m8 outm crossp vdd vdd lvtpfet w=w26 l=l3
 m18 intern clk vdd vdd lvtpfet w=w26 l=l3
 m15 outp crossn vdd vdd lvtpfet w=w26 l=l3
@@ -138,27 +138,27 @@ r64 r4 in res res=100
 xi94 in clkb rstb net10 vdd vss DFCNQD2BWP
 .ends C_DAC_schematic
 
-.subckt CTDSM_CORE_NEW clk clkb1 clkb2 ibias1 ibias2 outm outp rstb vdda vddd vim vip vss
-xi160 ibias1 vdda vo1m vo1p vo2p vo2m vss Gm1_v5_Practice
-xi154 clkb1 net062 vo3m vo3p rstb vdda vss FIR_DAC
-xi152 clk net052 vo1p vo1p rstb vdda vss FIR_DAC
+.subckt CTDSM_CORE_NEW clk clkb1 clkb2 ibias1 ibias2 outm outp rstb vdd vim vip vss
+xi160 ibias1 vdd vo1m vo1p vo2p vo2m vss Gm1_v5_Practice
+xi154 clkb1 net062 vo3m vo3p rstb vdd vss FIR_DAC
+xi152 clk net052 vo1p vo1p rstb vdd vss FIR_DAC
 m1 vss clkb2 vss vss nfet w=w30 l=l7
 m0 vss clkb1 vss vss nfet w=w30 l=l7
 xi164 vo1p vo1m vss C1
-xi128 outm outp net072 net071 vddd vss SR_Latch
+xi128 outm outp net072 net071 vdd vss SR_Latch
 c6 vo3p vo3m cap cap=10f
 c3 net074 net073 cap cap=10f
 r16 vip vo1p res res=100
 r51 net073 vo2m res res=100
 r25 vo2p net074 res res=100
 r47 vim vo1m res res=100
-xi161 ibias2 vdda vo2m vo2p vo3p vo3m vss Gm1_v5_Practice
-xi88 net062 clk rstb net052 vdda vss DFCNQD2BWP
-xi97 outp clkb1 rstb net062 vdda vss DFCNQD2BWP
-xi92 net063 clk rstb net051 vdda vss DFCNQD2BWP
-xi99 outm clkb2 rstb net063 vdda vss DFCNQD2BWP
-xi146 clk vss net072 net071 vddd vo3p vo3m myComparator_v3
-xi153 clk net051 vo1m vo1m rstb vdda vss FIR_DAC
-xi155 clkb2 net063 vo3p vo3m rstb vdda vss FIR_DAC
+xi161 ibias2 vdd vo2m vo2p vo3p vo3m vss Gm1_v5_Practice
+xi88 net062 clk rstb net052 vdd vss DFCNQD2BWP
+xi97 outp clkb1 rstb net062 vdd vss DFCNQD2BWP
+xi92 net063 clk rstb net051 vdd vss DFCNQD2BWP
+xi99 outm clkb2 rstb net063 vdd vss DFCNQD2BWP
+xi146 clk vss net072 net071 vdd vo3p vo3m myComparator_v3
+xi153 clk net051 vo1m vo1m rstb vdd vss FIR_DAC
+xi155 clkb2 net063 vo3p vo3m rstb vdd vss FIR_DAC
 .ends CTDSM_CORE_NEW
 
