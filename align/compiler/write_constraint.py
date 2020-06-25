@@ -303,7 +303,7 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         ## Right now will try to figure out S/D paths
         if len(SD_nbrs) ==0:
             logger.debug(f"No SD paths found to traverse")
-            match_pair[node1]=node1 
+            #match_pair[node1]=node1 
         elif len(SD_nbrs) ==1:
             logger.debug(f"traversing single S/D path ")
             match_pair[node1]=node1 
@@ -326,21 +326,24 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                 new_pair={}
                 compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
                 if new_pair:
+                    #new_pair[nbr1]=nbr2
                     all_match_pairs_local[nbr1+'_'+nbr2] = new_pair
             all_match_pairs_local={k: v for k, v in all_match_pairs_local.items() if len(v)>0}
-            if len(all_match_pairs_local)==0:
-                logger.debug(f"no symm pair")
-            elif len(all_match_pairs_local)==1:
-                logger.debug(f"found inline pair")
+            if len(all_match_pairs_local)==1:
                 match_pair.update( all_match_pairs_local[list(all_match_pairs_local.keys())[0]])
+                logger.debug(f"found inline pair: {pprint.pformat(match_pair, indent=4)}")
             else:
                 for nbr1 in new_sp:
-                    nbr2=nbr1
-                    logger.debug(f"recursive single branch call from single branch {nbr1} {nbr2}")
+                    logger.debug(f"recursive single branch call from single branch {nbr1} {nbr1}")
                     new_pair={}
-                    compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
-                    if new_pair:
-                        all_match_pairs_local[nbr1+'_'+nbr2] = new_pair
+                    compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr1,ports_weight)
+                    if new_pair and nbr1+'_'+nbr1 in all_match_pairs.keys():
+                        all_match_pairs[nbr1+'_'+nbr1].update(new_pair)
+                        logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+                    elif new_pair:
+                        all_match_pairs[nbr1+'_'+nbr1] = new_pair
+                        logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+
 
     elif nbrs1 == nbrs2:
         logger.debug(f"traversing converging branch")
@@ -357,7 +360,12 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                 logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
                 new_pair={}
                 compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
-                all_match_pairs[nbr1+'_'+nbr2] = new_pair
+                if new_pair and nbr1+'_'+nbr2 in all_match_pairs.keys():
+                    all_match_pairs[nbr1+'_'+nbr2].update(new_pair)
+                    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+                elif new_pair:
+                    all_match_pairs[nbr1+'_'+nbr2] = new_pair
+                    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
         
 
     elif compare_node(G,node1,node2,ports_weight):
@@ -369,7 +377,9 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         nbrs1_wt = [G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
         nbrs2_wt = [G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
         unique_match=find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight)
-        if len(nbrs1) ==1 and len(nbrs2)==1:
+        if  len(nbrs1)==0 or len(nbrs2)==0:
+            logger.debug(f"no new SD neihbours, returning recursion {match_pair}")
+        elif len(nbrs1) ==1 and len(nbrs2)==1:
             logger.debug(f"traversing binary branch")
             compare_nodes(G,all_match_pairs,match_pair,traversed,nbrs1.pop(),nbrs2.pop(),ports_weight)
         elif unique_match:
@@ -399,7 +409,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     pair ={}
     compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
     all_match_pairs[node1+node2]=pair                         
-    all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>0}
+    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
 
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
@@ -407,7 +417,8 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
             hier_start_points=pair["start_point"]    
             del pair["start_point"]
             logger.debug(f"New symmetrical start points {pair}")
-    logging.info(f"symmetric blocks found: {pair}")      
+    all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>0}
+    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
     try: 
         for sp in sorted(hier_start_points):
             logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
@@ -419,7 +430,6 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
                 all_match_pairs[node1+node2+'_align']=multifanout[sp]
             elif multifanout and isinstance(multifanout[sp], dict):
                 logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
-                #all_match_pairs[node1+node2+"_align_hier_"+sp]=multifanout[sp]
                 traversed+=[node1,node2]
                 all_match_pairs[sp+'_new_hier']=multifanout[sp]
                 
@@ -428,6 +438,7 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
                 #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])   
             else:
                 logger.debug(f"no symmetry from {sp}")
+            logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
     except NameError:
         logger.debug("")
         
