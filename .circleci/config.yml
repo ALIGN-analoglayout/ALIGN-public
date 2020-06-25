@@ -303,7 +303,7 @@ jobs:
       - run:
           command: |
             docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not sc_dc_dc' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          no_output_timeout: 120m
+          no_output_timeout: 30m
 
       - run: |
           docker cp align_container:test-reports .

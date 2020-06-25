@@ -14,8 +14,8 @@ r12 ntail1 vop res res=100
 r11 vom ntail1 res res=100
 m3 vss ntail1 vss vss lvtnfet w=w5 l=l2
 m0 vss ntail1 vss vss lvtnfet w=w5 l=l2
-d0 net074 vdd diode
-d1 vss vdd diode
+**d0 net074 vdd diode
+**d1 vss vdd diode
 .ends Gm1_v5_Practice
 
 .subckt DFCNQD2BWP d cp cdn q vdd vss
