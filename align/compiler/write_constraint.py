@@ -487,6 +487,8 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     # No constraints are written in case constraints are provided
     logger.info("input const file: %s", const_file)
     if const_file.exists() and const_file.is_file():
+        return
+        ## Designer want file based check
         with open(const_file) as f:
             for content in f:
                 logger.info("line %s",content)
