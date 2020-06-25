@@ -1,0 +1,12 @@
+SymmBlock ( {mn2,mn3} , {mn4} , {mn0,mn1} , {mp2,mp0} , {mp5,mp4} , {mp1,mp3} , {mp6,mp7} , {mn5,mn6} )
+MatchBlock ( mn3, mn4 )
+MatchBlock ( mp2, mp0 )
+MatchBlock ( mn1, mn0 )
+
+
+
+
+
+
+
+
