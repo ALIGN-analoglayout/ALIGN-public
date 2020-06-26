@@ -187,6 +187,7 @@ def parse_value(all_param, vtype=None):
     device_param_list = {}
     for idx, unique_param in enumerate(all_param):
         if '=' in unique_param:
+            #making all values to lower case
             [param, value] = unique_param.lower().split('=')
             if not param:
                 param = all_param[idx - 1]
