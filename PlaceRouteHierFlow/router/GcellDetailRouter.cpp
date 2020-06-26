@@ -578,7 +578,7 @@ std::vector<int> GcellDetailRouter::Multi_Connection_Number(int i){
 
   for(int j=0;j<es_dis.size();j++){
 
-     if(expecated_length[j]<0){
+     if(expecated_length[j]<=0){
        multi_number.push_back(1);
      }else{
        multi_number.push_back(ceil((double)es_dis[j]/expecated_length[j]));
