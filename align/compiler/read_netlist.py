@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class SpiceParser:
     """
-    Read a spice file (1sp/.cdl) and converts it to a graph.
+    Read a spice file (.sp/.cdl) and converts it to a graph.
     Device properties are inherited from BasicElement.py
     You can flatten the circuit by using flag: flat
     The final graph is stored in a yaml file in circuit_graphs folder.

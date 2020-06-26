@@ -194,8 +194,6 @@ def concat_values(values):
 
 def print_globals(fp, power):
     """ Write global variables"""
-    #fp.write("\n\n// End HDL models")
-    #fp.write("\n// Global nets module")
     fp.write("\n`celldefine")
     fp.write("\nmodule global_power;")
     for i in range(len(power)):
@@ -279,8 +277,6 @@ def generate_lef(name, values, available_block_lef,
             if 'nf' in values.keys():
                 size=size*int(values["nf"])
             if 'm' in values.keys():
-                size=size*int(values["m"])
-            if 'M' in values.keys():
                 size=size*int(values["m"])
             ## Hack For VCO circuit
             if 'nmos' in name.lower() and unit_size_mos==37:
