@@ -2,7 +2,6 @@ import pytest
 import align
 import os
 import pathlib
-from align.compiler import generate_hierarchy
 import filecmp
 import logging
 
