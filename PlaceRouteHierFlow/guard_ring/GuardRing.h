@@ -26,10 +26,15 @@ class GuardRing {
 
   private:
     GuardRingDB::point temp_point;
+    GuardRingDB::point wcell_ll;
+    GuardRingDB::length wcell_size;
+    GuardRingDB::length pcell_size;
+    vector<GuardRingDB::point> stored_point;
   
   public:
+    Pcell_info(int xs, int ys);
+    Wcell_info(PnRDB::hierNode &node);
     GuardRing();
-    GuardRing(PnRDB::hierNode &node);
 
 };
 
