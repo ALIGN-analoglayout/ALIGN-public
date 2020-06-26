@@ -221,7 +221,7 @@ addTextElements (json& jsonElements, int cenX, int cenY, int layer, const PnRDB:
     json element;
     element["type"] = "text";
     element["layer"] = layer;
-    element["texttype"] = drc_info.Metal_info.at(layer_index).gds_datatype.Pin;
+    element["texttype"] = 251;
     //std::cout << "add Text Elements Test" << layer_index << layer << element["texttype"] << std::endl;
     //reminder, layer_index is not metal layer number. It is the index of metal in drc_info.Metal_info
     element["presentation"] = JSON_Presentation (test_font, test_vp, test_hp);
@@ -622,7 +622,7 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
 
     addOABoundaries (jsonElements, unitScale * node.width, unitScale * node.height);
     if(node.isTop){
-      addTop_OABoundaries(jsonElements, unitScale * node.width, unitScale * node.height, drc_info, unitScale);
+      //addTop_OABoundaries(jsonElements, unitScale * node.width, unitScale * node.height, drc_info, unitScale);
     }
     jsonStr["elements"] = jsonElements;
     jsonStrAry.push_back (jsonStr);

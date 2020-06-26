@@ -143,12 +143,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     int power_routing_metal_l = 0;
     int power_routing_metal_u = 6;
 
-    //curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor);
 
     DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
 
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
-    //curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
     
     DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
     
@@ -157,14 +157,14 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
   // transform current_node into current_node coordinate
   if (current_node.isTop) {
-    DB.WriteJSON(current_node, true, true, true, true, current_node.name + "_" + std::to_string(lidx), drcInfo, opath);
+    DB.WriteJSON(current_node, true, true, false, false, current_node.name + "_" + std::to_string(lidx), drcInfo, opath);
     DB.WriteLef(current_node, current_node.name + "_" + std::to_string(lidx) + ".lef", opath);
     save_state( DB, current_node, lidx, opath, "", "Final result", skip_saving_state);
     DB.PrintHierNode(current_node);
   } else {
     PnRDB::hierNode current_node_copy = current_node;
     DB.TransformNode(current_node_copy, current_node_copy.LL, current_node_copy.abs_orient, PnRDB::TransformType::Backward);
-    DB.WriteJSON(current_node_copy, true, true, true, true,
+    DB.WriteJSON(current_node_copy, true, true, false, false,
                  current_node_copy.name + "_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
     current_node.gdsFile = current_node_copy.gdsFile;
     DB.WriteLef(current_node_copy,
