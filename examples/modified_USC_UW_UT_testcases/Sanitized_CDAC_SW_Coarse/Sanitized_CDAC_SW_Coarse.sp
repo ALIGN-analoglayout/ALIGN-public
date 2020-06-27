@@ -59,10 +59,10 @@ MM0 net23 D VREFP DVDD pch l=LA w=WC m=1
 
 .SUBCKT ND2D1LVT A1 A2 ZN VDD VSS
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMI1-M_u3 ZN A1 net1 VSS nch_lvt l=LA w=WD m=1
-MMI1-M_u4 net1 A2 VSS VSS nch_lvt l=LA w=WD m=1
-MMI1-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WE m=1
-MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WE m=1
+MMI1-M_u3 ZN A1 net1 VSS lvtnfet l=LA w=WD m=1
+MMI1-M_u4 net1 A2 VSS VSS lvtnfet l=LA w=WD m=1
+MMI1-M_u1 ZN A1 VDD VDD lvtpfet l=LA w=WE m=1
+MMI1-M_u2 ZN A2 VDD VDD lvtpfet l=LA w=WE m=1
 .ENDS
 
 ************************************************************************
@@ -73,8 +73,8 @@ MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WE m=1
 
 .SUBCKT INVD0LVT I ZN VDD VSS
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1-M_u2 ZN I VSS VSS nch_lvt l=LA w=WB m=1
-MMU1-M_u3 ZN I VDD VDD pch_lvt l=LA w=WC m=1
+MMU1-M_u2 ZN I VSS VSS lvtnfet l=LA w=WB m=1
+MMU1-M_u3 ZN I VDD VDD lvtpfet l=LA w=WC m=1
 .ENDS
 
 ************************************************************************
@@ -173,8 +173,8 @@ MM0 net23 D VREFP DVDD pch l=LA w=WE m=4
 
 .SUBCKT TG_Top_Coarse CKS CKSB DVDD DVSS VCM VO
 *.PININFO CKS:I CKSB:I VCM:I VO:O DVDD:B DVSS:B
-MM5 VO CKS VCM DVSS nch_lvt_dnw l=LA w=WH m=2
-MM2 VO CKSB VCM DVDD pch_lvt l=LA w=WH m=2
+MM5 VO CKS VCM DVSS lvtnfet_dnw l=LA w=WH m=2
+MM2 VO CKSB VCM DVDD lvtpfet l=LA w=WH m=2
 .ENDS
 
 ************************************************************************
