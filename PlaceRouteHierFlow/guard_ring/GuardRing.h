@@ -27,15 +27,17 @@ class GuardRing {
   private:
     GuardRingDB::point temp_point;
     GuardRingDB::point wcell_ll;
-    GuardRingDB::length wcell_size;
-    GuardRingDB::length pcell_size;
-    vector<GuardRingDB::point> stored_point;
+    GuardRingDB::point wcell_ur;
+    GuardRingDB::dimension wcell_size;
+    GuardRingDB::dimension pcell_size;
+    vector<GuardRingDB::point> stored_point_ll;
+    vector<GuardRingDB::point> stored_point_ur;
   
   public:
-    Pcell_info(int xs, int ys);
+    Pcell_info(int pcell_width, int pcell_length);
     Wcell_info(PnRDB::hierNode &node);
-    GuardRing();
-
+    GuardRing(int Minimal_x, int Minimal_y);
+    gnuplot();
 };
 
 #endif

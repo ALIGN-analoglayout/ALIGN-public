@@ -8,16 +8,16 @@
 namespace GuardRingDB {
 
 struct point;
-struct length;
+struct dimension;
 
 struct point {
   int x=0;
   int y=0;
 }; 
 
-struct length {
-  int xs=0;
-  int ys=0;
+struct dimension {
+  int width=0;    //x-axis
+  int length=0;   //y-axis
 }
 
 } // namespace GuardRingDB
