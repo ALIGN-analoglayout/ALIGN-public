@@ -29,8 +29,8 @@ GuardRing::GuardRing(){
   //start from Pcell0 which is at the southwest corner of wrapped cell
   int southwestx = wcell_ll.x - pcell_size.xs - (((x_number-2) * pcell_size.xs) - wcell_size.xs)/2;
   int southwesty = wcell_ll.y - pcell_size.ys - (((y_number * pcell_size.ys) - wcell_size.ys)/2;
-  temp_point.x = swx;
-  temp_point.y = swy;
+  temp_point.x = southwestx;
+  temp_point.y = southwesty;
   stored_point.push_back(temp_point);
   return;
 
