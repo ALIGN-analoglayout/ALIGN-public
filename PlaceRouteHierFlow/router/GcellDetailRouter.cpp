@@ -1,4 +1,7 @@
 #include "GcellDetailRouter.h"
+#include <string>
+#include <fstream>
+#include <iostream>
 
 GcellDetailRouter::GcellDetailRouter(){
 
@@ -595,11 +598,22 @@ std::vector<int> GcellDetailRouter::Multi_Connection_Number(int i){
        std::cout<<"iter2 "<<blockid<<" iter "<<pinid<<" blockname "<<this->Blocks[blockid].blockName<<" pinname "<< this->Blocks[blockid].pins[pinid].pinName<<" expected_length "<<expecated_length[j]<<" es_dis "<<es_dis[j]<<" multi_number "<<multi_number[j]<<std::endl;
       }
   }
-  
- 
+
+  //write out minlength
+
+  std::ofstream file;
+  file.open("low_bound.txt", std::ios::app);
+
+  for(int j=0;j<this->Nets[i].connected.size();j++){
+
+    if(this->Nets[i].connected[j].type!=RouterDB::TERMINAL){
+       int blockid = this->Nets[i].connected[j].iter2;
+       int pinid = this->Nets[i].connected[j].iter;
+       file<<this->Nets[i].netName<<" "<<this->Blocks[blockid].blockName<<" "<<this->Blocks[blockid].pins[pinid].pinName<<" "<<(double) es_dis[j]/2000<<std::endl;
+      }
+  }
   
   return multi_number;
-
 
 };
 
