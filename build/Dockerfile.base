@@ -69,9 +69,9 @@ RUN cd /opt && \
     git clone https://github.com/nlohmann/json.git
 
 # KLayout
-RUN curl -o /klayout_0.25.4-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.25.4-1_amd64.deb
+RUN curl -o /klayout_0.26.6-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.6-1_amd64.deb
 
-RUN DEBIAN_FRONTEND=noninterative apt-get install -qq /klayout_0.25.4-1_amd64.deb < /dev/null > /dev/null
+RUN DEBIAN_FRONTEND=noninterative apt-get install -qq /klayout_0.26.6-1_amd64.deb < /dev/null > /dev/null
 
 from align_base as align_image
 

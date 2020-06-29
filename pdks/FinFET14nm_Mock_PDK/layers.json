@@ -581,6 +581,19 @@
 },
 
 {
+"Layer": "Lvt",
+"GdsLayerNo": 131,
+"GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "Hvt",
+"GdsLayerNo": 151,
+"GdsDatatype": {"Draw":0}
+},
+
+
+{
 "Layer": "Pb",
 "GdsLayerNo": 150,
 "GdsDatatype": {"Draw":0},

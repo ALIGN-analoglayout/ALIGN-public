@@ -54,18 +54,18 @@ MMU1-M_u3 ZN I VDD VDD pch_hvt l=LA w=WC m=1
 
 .SUBCKT ND2D3LVT A1 A2 ZN VDD VSS
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMU3_0-M_u4 net21 A2 VSS VSS nch_lvt l=LA w=WB m=1
-MMU3_1-M_u3 ZN A1 net20 VSS nch_lvt l=LA w=WB m=1
-MMU3_2-M_u4 net13 A2 VSS VSS nch_lvt l=LA w=WB m=1
-MMU3_1-M_u4 net20 A2 VSS VSS nch_lvt l=LA w=WB m=1
-MMU3_0-M_u3 ZN A1 net21 VSS nch_lvt l=LA w=WB m=1
-MMU3_2-M_u3 ZN A1 net13 VSS nch_lvt l=LA w=WB m=1
-MMU3_2-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WA m=1
-MMU3_1-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WA m=1
-MMU3_1-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WA m=1
-MMU3_2-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WA m=1
-MMU3_0-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WA m=1
-MMU3_0-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WA m=1
+MMU3_0-M_u4 net21 A2 VSS VSS lvtnfet l=LA w=WB m=1
+MMU3_1-M_u3 ZN A1 net20 VSS lvtnfet l=LA w=WB m=1
+MMU3_2-M_u4 net13 A2 VSS VSS lvtnfet l=LA w=WB m=1
+MMU3_1-M_u4 net20 A2 VSS VSS lvtnfet l=LA w=WB m=1
+MMU3_0-M_u3 ZN A1 net21 VSS lvtnfet l=LA w=WB m=1
+MMU3_2-M_u3 ZN A1 net13 VSS lvtnfet l=LA w=WB m=1
+MMU3_2-M_u1 ZN A1 VDD VDD lvtpfet l=LA w=WA m=1
+MMU3_1-M_u1 ZN A1 VDD VDD lvtpfet l=LA w=WA m=1
+MMU3_1-M_u2 ZN A2 VDD VDD lvtpfet l=LA w=WA m=1
+MMU3_2-M_u2 ZN A2 VDD VDD lvtpfet l=LA w=WA m=1
+MMU3_0-M_u2 ZN A2 VDD VDD lvtpfet l=LA w=WA m=1
+MMU3_0-M_u1 ZN A1 VDD VDD lvtpfet l=LA w=WA m=1
 .ENDS
 
 ************************************************************************
@@ -76,15 +76,15 @@ MMU3_0-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WA m=1
 
 .SUBCKT NR3D1LVT A1 A2 A3 ZN VDD VSS
 *.PININFO A1:I A2:I A3:I ZN:O VDD:B VSS:B
-MMI1_1 ZN A1 net5 VDD pch_lvt l=LA w=WA m=1
-MM_u1_0 net17 A3 VDD VDD pch_lvt l=LA w=WA m=1
-MMI1_0 ZN A1 net9 VDD pch_lvt l=LA w=WA m=1
-MMI0_0 net9 A2 net17 VDD pch_lvt l=LA w=WA m=1
-MMI0_1 net5 A2 net1 VDD pch_lvt l=LA w=WA m=1
-MM_u1_1 net1 A3 VDD VDD pch_lvt l=LA w=WA m=1
-MMI3 ZN A1 VSS VSS nch_lvt l=LA w=WB m=1
-MMI2 ZN A2 VSS VSS nch_lvt l=LA w=WB m=1
-MM_u4 ZN A3 VSS VSS nch_lvt l=LA w=WB m=1
+MMI1_1 ZN A1 net5 VDD lvtpfet l=LA w=WA m=1
+MM_u1_0 net17 A3 VDD VDD lvtpfet l=LA w=WA m=1
+MMI1_0 ZN A1 net9 VDD lvtpfet l=LA w=WA m=1
+MMI0_0 net9 A2 net17 VDD lvtpfet l=LA w=WA m=1
+MMI0_1 net5 A2 net1 VDD lvtpfet l=LA w=WA m=1
+MM_u1_1 net1 A3 VDD VDD lvtpfet l=LA w=WA m=1
+MMI3 ZN A1 VSS VSS lvtnfet l=LA w=WB m=1
+MMI2 ZN A2 VSS VSS lvtnfet l=LA w=WB m=1
+MM_u4 ZN A3 VSS VSS lvtnfet l=LA w=WB m=1
 .ENDS
 
 ************************************************************************
@@ -95,10 +95,10 @@ MM_u4 ZN A3 VSS VSS nch_lvt l=LA w=WB m=1
 
 .SUBCKT INVD2LVT I ZN VDD VSS
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1_0-M_u2 ZN I VSS VSS nch_lvt l=LA w=WB m=1
-MMU1_1-M_u2 ZN I VSS VSS nch_lvt l=LA w=WB m=1
-MMU1_0-M_u3 ZN I VDD VDD pch_lvt l=LA w=WA m=1
-MMU1_1-M_u3 ZN I VDD VDD pch_lvt l=LA w=WA m=1
+MMU1_0-M_u2 ZN I VSS VSS lvtnfet l=LA w=WB m=1
+MMU1_1-M_u2 ZN I VSS VSS lvtnfet l=LA w=WB m=1
+MMU1_0-M_u3 ZN I VDD VDD lvtpfet l=LA w=WA m=1
+MMU1_1-M_u3 ZN I VDD VDD lvtpfet l=LA w=WA m=1
 .ENDS
 
 ************************************************************************

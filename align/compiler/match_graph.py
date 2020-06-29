@@ -35,6 +35,7 @@ def traverse_hier_in_graph(G, hier_graph_dict):
                             ports_weight[sub_node].append(attr["sub_graph"].get_edge_data(sub_node, nbr)['weight'])
                 elif 'body_pin' in sub_attr:
                     mos_body.append(sub_attr['body_pin'])
+                    ports_weight[sub_attr['body_pin']]=[0]
 
 
             logger.debug(f'external ports: {sub_ports}, {attr["connection"]}, {ports_weight}')
@@ -70,6 +71,7 @@ def read_inputs(name,hier_graph):
                     ports_weight[node].append(hier_graph.get_edge_data(node, nbr)['weight'])
         elif 'body_pin' in attr:
             mos_body.append(attr['body_pin'])
+            ports_weight[attr['body_pin']]=[0]
 
 
     logger.debug("READING top circuit graph: ")
@@ -189,12 +191,12 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
                     else:
                         logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-                elif sub_block_name=='INV_LVT' and POWER is not None:
-                    if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
-                        map_list.append(Gsub)
+                # elif sub_block_name=='INV_LVT' and POWER is not None:
+                #     if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
+                #         map_list.append(Gsub)
                         
-                    else:
-                        logger.debug('skipped inverters')                   
+                #     else:
+                #         logger.debug('skipped inverters')                   
                 else:
                     map_list.append(Gsub)
                     logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
@@ -619,31 +621,30 @@ def add_stacked_transistor(G):
     #             source_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==4][0]
     #             gate_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==2][0]
     #             drain_net = [next_net for next_net in G.neighbors(nbr2) if G.get_edge_data(nbr2, next_net)['weight'] & 1 ==1][0]
-
     for node, attr in G.nodes(data=True):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
                 edge_wt = G.get_edge_data(node, net)['weight']
-                if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
+                if edge_wt == 4 and len(list(G.neighbors(net))) == 2 :
                     for next_node in G.neighbors(net):
-                        logger.debug(f" checking nodes: {node}, {next_node}")
+                        logger.debug(f" checking nodes: {node}:{list(G.neighbors(node))}, {next_node}:{list(G.neighbors(next_node))} {net}")
                         if not next_node == node and G.nodes[next_node][
                                 "inst_type"] == G.nodes[node][
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
                             common_nets = set(G.neighbors(node)) & set(
                                 G.neighbors(next_node))
-                            logger.debug(f"stacking two transistors: {node}, {next_node}, {common_nets}")
-                            source_net = list(
-                                set(G.neighbors(next_node)) - common_nets)[0]
-                            if len(common_nets) == 2 and G.nodes[net]["net_type"]!="external":
+                            source_net = [snet for snet in G.neighbors(next_node) if  G.get_edge_data( next_node, snet)['weight'] == 4]
+                            gate_net =  [gnet for gnet in G.neighbors(next_node) if  G.get_edge_data( next_node, gnet)['weight'] == 2]
+                            if len(gate_net)==len(source_net)==1 and len(common_nets)>1:
+                                source_net=source_net[0]
+                                gate_net=gate_net[0]
+                            else:
+                                continue
+                            logger.debug(f"stacking two transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
+                            if G.nodes[net]["net_type"]!="external" and next_node not in modified_nodes:
                                 #source_net = source_net[0]
-                                common_nets.remove(net)
-                                gate_net = list(common_nets)[0]
-                                if G.get_edge_data(
-                                        node, gate_net)['weight'] >= 2 and \
-                                        G.get_edge_data(next_node, gate_net)\
-                                        ['weight'] >= 2:
+                                if G.get_edge_data( node, gate_net)['weight'] >= 2 :
 
                                     lequivalent = 0
                                     for param, value in G.nodes[next_node][
@@ -651,7 +652,6 @@ def add_stacked_transistor(G):
                                         if param == 'l':
                                             lequivalent = float(
                                                 convert_unit(value))
-                                            logger.debug(f"converted unit of 1st: {node}")
                                     for param, value in G.nodes[node][
                                             "values"].items():
                                         if param == 'l':
@@ -659,12 +659,13 @@ def add_stacked_transistor(G):
                                                 convert_unit(value))
                                             modified_nodes[node] = str(
                                                 lequivalent)
-                                            logger.debug(f"converted unit of incr: {node}")
+                                            logger.debug(f"updated node size {node}: {lequivalent} merged {next_node} ")
                                     remove_nodes.append(net)
-                                    modified_edges[node] = [
-                                        source_net,
-                                        G[next_node][source_net]["weight"]
-                                    ]
+                                    if G.has_edge(node,source_net):
+                                        wt= G[next_node][source_net]["weight"]+G[node][source_net]["weight"]
+                                    else:
+                                         wt= G[next_node][source_net]["weight"]
+                                    modified_edges[node] = [ source_net, wt ]
                                     logger.debug("success")
                                     remove_nodes.append(next_node)
     for node, attr in modified_edges.items():
@@ -675,8 +676,11 @@ def add_stacked_transistor(G):
 
     for node in remove_nodes:
         G.remove_node(node)
+    for node, attr in modified_nodes.items():
+        wt=[G.get_edge_data(node, net)['weight'] for net in G.neighbors(node)]
+        logger.debug(f"new neighbors of {node} {list(G.neighbors(node))} {wt}")
 
-    logger.debug(f"reduced_size after resolving stacked transistor: {len(G)}")
+    logger.debug(f"reduced_size after resolving stacked transistor: {len(G)} {G.nodes()}")
     logger.debug(
         "\n######################START CREATING HIERARCHY##########################\n"
     )

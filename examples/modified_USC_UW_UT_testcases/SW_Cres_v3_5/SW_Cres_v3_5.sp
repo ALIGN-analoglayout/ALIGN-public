@@ -28,9 +28,9 @@
 
 .SUBCKT SW1_Dummy_V2 CKS CKSB DVDD DVSS VBTSW VCM VIN VO
 *.PININFO CKS:I CKSB:I VCM:I VIN:I VO:O DVDD:B DVSS:B VBTSW:B
-MM6 VO VBTSW VIN DVSS nch_dnw l=LA w=WA m=1
-MM5 VO CKSB VCM DVSS nch_dnw l=LA w=WA m=1
-MM2 VO CKS VCM DVDD pch l=LA w=WA m=1
+MM6 VO VBTSW VIN DVSS nfet_dnw l=LA w=WA m=1
+MM5 VO CKSB VCM DVSS nfet_dnw l=LA w=WA m=1
+MM2 VO CKS VCM DVDD pfet l=LA w=WA m=1
 .ENDS
 
 ************************************************************************
@@ -42,13 +42,13 @@ MM2 VO CKS VCM DVDD pch l=LA w=WA m=1
 .SUBCKT SW1_V2 D DVDD DVSS SW SWB TG TGB VBTSW VCM VIN VO VREFN VREFP
 *.PININFO D:I SW:I SWB:I TG:I TGB:I VCM:I VIN:I VREFN:I VREFP:I VO:O DVDD:B 
 *.PININFO DVSS:B VBTSW:B
-MM6 VO VBTSW VIN DVSS nch_dnw l=LA w=WA m=1
-MM5 VO TG VCM DVSS nch_dnw l=LA w=WA m=1
-MM4 net22 D VREFN DVSS nch_dnw l=LA w=WB m=1
-MM3 VO SW net22 DVSS nch_dnw l=LA w=WB m=1
-MM2 VO TGB VCM DVDD pch l=LA w=WA m=1
-MM1 VO SWB net23 DVDD pch l=LA w=WC m=1
-MM0 net23 D VREFP DVDD pch l=LA w=WC m=1
+MM6 VO VBTSW VIN DVSS nfet_dnw l=LA w=WA m=1
+MM5 VO TG VCM DVSS nfet_dnw l=LA w=WA m=1
+MM4 net22 D VREFN DVSS nfet_dnw l=LA w=WB m=1
+MM3 VO SW net22 DVSS nfet_dnw l=LA w=WB m=1
+MM2 VO TGB VCM DVDD pfet l=LA w=WA m=1
+MM1 VO SWB net23 DVDD pfet l=LA w=WC m=1
+MM0 net23 D VREFP DVDD pfet l=LA w=WC m=1
 .ENDS
 
 ************************************************************************
@@ -59,10 +59,10 @@ MM0 net23 D VREFP DVDD pch l=LA w=WC m=1
 
 .SUBCKT ND2D1LVT A1 A2 ZN VDD VSS
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMI1-M_u3 ZN A1 net1 VSS nch_lvt l=LA w=WD m=1
-MMI1-M_u4 net1 A2 VSS VSS nch_lvt l=LA w=WD m=1
-MMI1-M_u1 ZN A1 VDD VDD pch_lvt l=LA w=WE m=1
-MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WE m=1
+MMI1-M_u3 ZN A1 net1 VSS lvtnfet l=LA w=WD m=1
+MMI1-M_u4 net1 A2 VSS VSS lvtnfet l=LA w=WD m=1
+MMI1-M_u1 ZN A1 VDD VDD lvtpfet l=LA w=WE m=1
+MMI1-M_u2 ZN A2 VDD VDD lvtpfet l=LA w=WE m=1
 .ENDS
 
 ************************************************************************
@@ -73,8 +73,8 @@ MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LA w=WE m=1
 
 .SUBCKT INVD0LVT I ZN VDD VSS
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1-M_u2 ZN I VSS VSS nch_lvt l=LA w=WB m=1
-MMU1-M_u3 ZN I VDD VDD pch_lvt l=LA w=WC m=1
+MMU1-M_u2 ZN I VSS VSS lvtnfet l=LA w=WB m=1
+MMU1-M_u3 ZN I VDD VDD lvtpfet l=LA w=WC m=1
 .ENDS
 
 ************************************************************************
@@ -85,10 +85,10 @@ MMU1-M_u3 ZN I VDD VDD pch_lvt l=LA w=WC m=1
 
 .SUBCKT SW_Cres_v3_6 CK DVDD DVSS VRCTL VRN VRNX VRP VRPX
 *.PININFO VRCTL:I CK:B DVDD:B DVSS:B VRN:B VRNX:B VRP:B VRPX:B
-MM3 VRN CLK VRN DVSS nch l=LA w=WA m=1
-MM2 VRN net010 VRNX DVSS nch l=LA w=WF m=1
-MM4 VRP net018 VRP DVDD pch l=LA w=WA m=1
-MM1 VRP CLK VRPX DVDD pch l=LA w=WF m=1
+MM3 VRN CLK VRN DVSS nfet l=LA w=WA m=1
+MM2 VRN net010 VRNX DVSS nfet l=LA w=WF m=1
+MM4 VRP net018 VRP DVDD pfet l=LA w=WA m=1
+MM1 VRP CLK VRPX DVDD pfet l=LA w=WF m=1
 XI11 CK VRCTL net010 DVDD DVSS / ND2D1LVT
 XI5 CLK net018 DVDD DVSS / INVD0LVT
 XI6 net010 CLK DVDD DVSS / INVD0LVT
@@ -102,10 +102,10 @@ XI6 net010 CLK DVDD DVSS / INVD0LVT
 
 .SUBCKT SW_Cres_v3_5 CK DVDD DVSS VRCTL VRN VRNX VRP VRPX
 *.PININFO VRCTL:I CK:B DVDD:B DVSS:B VRN:B VRNX:B VRP:B VRPX:B
-MM3 VRN CLK VRN DVSS nch l=LA w=WA m=1
-MM2 VRN net010 VRNX DVSS nch l=LA w=WF m=1
-MM4 VRP net018 VRP DVDD pch l=LA w=WA m=1
-MM1 VRP CLK VRPX DVDD pch l=LA w=WF m=1
+MM3 VRN CLK VRN DVSS nfet l=LA w=WA m=1
+MM2 VRN net010 VRNX DVSS nfet l=LA w=WF m=1
+MM4 VRP net018 VRP DVDD pfet l=LA w=WA m=1
+MM1 VRP CLK VRPX DVDD pfet l=LA w=WF m=1
 XI11 CK VRCTL net010 DVDD DVSS / ND2D1LVT
 XI5 CLK net018 DVDD DVSS / INVD0LVT
 XI6 net010 CLK DVDD DVSS / INVD0LVT
@@ -120,13 +120,13 @@ XI6 net010 CLK DVDD DVSS / INVD0LVT
 .SUBCKT SW2_V2 D DVDD DVSS SW SWB TG TGB VBTSW VCM VIN VO VREFN VREFP
 *.PININFO D:I SW:I SWB:I TG:I TGB:I VCM:I VIN:I VREFN:I VREFP:I VO:O DVDD:B 
 *.PININFO DVSS:B VBTSW:B
-MM6 VO VBTSW VIN DVSS nch_dnw l=LA w=WA m=1
-MM5 VO TG VCM DVSS nch_dnw l=LA w=WA m=1
-MM4 net22 D VREFN DVSS nch_dnw l=LA w=WD m=1
-MM3 VO SW net22 DVSS nch_dnw l=LA w=WD m=1
-MM2 VO TGB VCM DVDD pch l=LA w=WA m=1
-MM1 VO SWB net23 DVDD pch l=LA w=WE m=1
-MM0 net23 D VREFP DVDD pch l=LA w=WE m=1
+MM6 VO VBTSW VIN DVSS nfet_dnw l=LA w=WA m=1
+MM5 VO TG VCM DVSS nfet_dnw l=LA w=WA m=1
+MM4 net22 D VREFN DVSS nfet_dnw l=LA w=WD m=1
+MM3 VO SW net22 DVSS nfet_dnw l=LA w=WD m=1
+MM2 VO TGB VCM DVDD pfet l=LA w=WA m=1
+MM1 VO SWB net23 DVDD pfet l=LA w=WE m=1
+MM0 net23 D VREFP DVDD pfet l=LA w=WE m=1
 .ENDS
 
 ************************************************************************
@@ -138,13 +138,13 @@ MM0 net23 D VREFP DVDD pch l=LA w=WE m=1
 .SUBCKT SW3_V2 D DVDD DVSS SW SWB TG TGB VBTSW VCM VIN VO VREFN VREFP
 *.PININFO D:I SW:I SWB:I TG:I TGB:I VCM:I VIN:I VREFN:I VREFP:I VO:O DVDD:B 
 *.PININFO DVSS:B VBTSW:B
-MM6 VO VBTSW VIN DVSS nch_dnw l=LA w=WA m=1
-MM5 VO TG VCM DVSS nch_dnw l=LA w=WA m=1
-MM4 net22 D VREFN DVSS nch_dnw l=LA w=WD m=2
-MM3 VO SW net22 DVSS nch_dnw l=LA w=WD m=2
-MM2 VO TGB VCM DVDD pch l=LA w=WA m=1
-MM1 VO SWB net23 DVDD pch l=LA w=WE m=2
-MM0 net23 D VREFP DVDD pch l=LA w=WE m=2
+MM6 VO VBTSW VIN DVSS nfet_dnw l=LA w=WA m=1
+MM5 VO TG VCM DVSS nfet_dnw l=LA w=WA m=1
+MM4 net22 D VREFN DVSS nfet_dnw l=LA w=WD m=2
+MM3 VO SW net22 DVSS nfet_dnw l=LA w=WD m=2
+MM2 VO TGB VCM DVDD pfet l=LA w=WA m=1
+MM1 VO SWB net23 DVDD pfet l=LA w=WE m=2
+MM0 net23 D VREFP DVDD pfet l=LA w=WE m=2
 .ENDS
 
 ************************************************************************
@@ -156,13 +156,13 @@ MM0 net23 D VREFP DVDD pch l=LA w=WE m=2
 .SUBCKT SW4_V2 D DVDD DVSS SW SWB TG TGB VBTSW VCM VIN VO VREFN VREFP
 *.PININFO D:I SW:I SWB:I TG:I TGB:I VCM:I VIN:I VREFN:I VREFP:I VO:O DVDD:B 
 *.PININFO DVSS:B VBTSW:B
-MM6 VO VBTSW VIN DVSS nch_dnw l=LA w=WA m=1
-MM5 VO TG VCM DVSS nch_dnw l=LA w=WG m=1
-MM4 net22 D VREFN DVSS nch_dnw l=LA w=WD m=4
-MM3 VO SW net22 DVSS nch_dnw l=LA w=WD m=4
-MM2 VO TGB VCM DVDD pch l=LA w=WG m=1
-MM1 VO SWB net23 DVDD pch l=LA w=WE m=4
-MM0 net23 D VREFP DVDD pch l=LA w=WE m=4
+MM6 VO VBTSW VIN DVSS nfet_dnw l=LA w=WA m=1
+MM5 VO TG VCM DVSS nfet_dnw l=LA w=WG m=1
+MM4 net22 D VREFN DVSS nfet_dnw l=LA w=WD m=4
+MM3 VO SW net22 DVSS nfet_dnw l=LA w=WD m=4
+MM2 VO TGB VCM DVDD pfet l=LA w=WG m=1
+MM1 VO SWB net23 DVDD pfet l=LA w=WE m=4
+MM0 net23 D VREFP DVDD pfet l=LA w=WE m=4
 .ENDS
 
 ************************************************************************
@@ -173,8 +173,8 @@ MM0 net23 D VREFP DVDD pch l=LA w=WE m=4
 
 .SUBCKT TG_Top_Coarse CKS CKSB DVDD DVSS VCM VO
 *.PININFO CKS:I CKSB:I VCM:I VO:O DVDD:B DVSS:B
-MM5 VO CKS VCM DVSS nch_lvt_dnw l=LA w=WH m=2
-MM2 VO CKSB VCM DVDD pch_lvt l=LA w=WH m=2
+MM5 VO CKS VCM DVSS lvtnfet l=LA w=WH m=2
+MM2 VO CKSB VCM DVDD lvtpfet l=LA w=WH m=2
 .ENDS
 
 ************************************************************************
