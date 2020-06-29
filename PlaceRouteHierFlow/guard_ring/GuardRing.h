@@ -19,6 +19,7 @@
 #include <map>
 #include <set>
 #include <utility>//std::pair, make_pair
+#include <stdlib.h>
 #include "Gdatatype.h"
 #include "../PnRDB/datatype.h"
 
@@ -34,10 +35,10 @@ class GuardRing {
     vector<GuardRingDB::point> stored_point_ur;
   
   public:
-    Pcell_info(int pcell_width, int pcell_length);
-    Wcell_info(PnRDB::hierNode &node);
-    GuardRing(int Minimal_x, int Minimal_y);
-    gnuplot();
+    void Pcell_info(int pcell_width, int pcell_length);
+    void Wcell_info(PnRDB::hierNode &node);
+    GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node);
+    void gnuplot();
 };
 
 #endif

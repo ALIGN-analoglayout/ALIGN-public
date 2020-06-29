@@ -7,6 +7,7 @@
 #include "./router/Router.h"
 #include "./cap_placer/capplacer.h"
 #include "./MNA/MNASimulation.h"
+#include "./guard_ring/GuardRing.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
@@ -352,6 +353,8 @@ int main(int argc, char** argv ){
       DB.CheckinHierNode(idx, nodeVec[lidx]);
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
+
+    GuardRing current_guard_ring(0,0,nodeVec[0]);
 
     //TreeVec[idx] = nodeVec;
     //Q.pop();
