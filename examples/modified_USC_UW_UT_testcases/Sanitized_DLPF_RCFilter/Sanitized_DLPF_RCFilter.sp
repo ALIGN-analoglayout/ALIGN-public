@@ -28,12 +28,12 @@
 
 .SUBCKT SwitchCap_256X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WA m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WA m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WA m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WA m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WB m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WB m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WA m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WA m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WA m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WA m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WB m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WB m=1
 .ENDS
 
 ************************************************************************
@@ -44,12 +44,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WB m=1
 
 .SUBCKT SwitchCap_128X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WD m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WD m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WD m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WD m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WC m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WC m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WD m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WD m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WD m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WD m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WC m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WC m=1
 .ENDS
 
 ************************************************************************
@@ -60,12 +60,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WC m=1
 
 .SUBCKT SwitchCap_64X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WE m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WE m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WE m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WE m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WF m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WF m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WE m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WE m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WE m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WE m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WF m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WF m=1
 .ENDS
 
 ************************************************************************
@@ -76,12 +76,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WF m=1
 
 .SUBCKT SwitchCap_32X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WG m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WG m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WG m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WG m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WH m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WH m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WG m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WG m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WG m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WG m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WH m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WH m=1
 .ENDS
 
 ************************************************************************
@@ -92,12 +92,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WH m=1
 
 .SUBCKT SwitchCap_16X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WI m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WI m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WI m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WI m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WJ m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WJ m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WI m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WI m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WI m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WI m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WJ m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WJ m=1
 .ENDS
 
 ************************************************************************
@@ -108,12 +108,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WJ m=1
 
 .SUBCKT SwitchCap_8X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WL m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WL m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WL m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WL m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WK m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WK m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WL m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WL m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WL m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WL m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WK m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WK m=1
 .ENDS
 
 ************************************************************************
@@ -124,12 +124,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WK m=1
 
 .SUBCKT SwitchCap_4X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WM m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WM m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WN m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WN m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WM m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WM m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WN m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WN m=1
 .ENDS
 
 ************************************************************************
@@ -140,12 +140,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WN m=1
 
 .SUBCKT SwitchCap_2X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WM m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WM m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WN m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WN m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WM m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WM m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WN m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WN m=1
 .ENDS
 
 ************************************************************************
@@ -156,12 +156,12 @@ MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WN m=1
 
 .SUBCKT SwitchCap_1X VDD VSS Vctl0 Vctlin Von Vop
 *.PININFO Vctl0:I Vctlin:I VDD:B VSS:B Von:B Vop:B
-MM5 Von Vctlin net3 VSS nch_lvt l=LA w=WM m=1
-MM0 net4 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM4 net3 Vctl0 VSS VSS nch_lvt l=LA w=WM m=1
-MM3 Vop Vctlin net4 VSS nch_lvt l=LA w=WM m=1
-MM2 net4 Vctl0 Vop VDD pch_lvt l=LA w=WN m=1
-MM1 net3 Vctl0 Von VDD pch_lvt l=LA w=WN m=1
+MM5 Von Vctlin net3 VSS lvtnfet l=LA w=WM m=1
+MM0 net4 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM4 net3 Vctl0 VSS VSS lvtnfet l=LA w=WM m=1
+MM3 Vop Vctlin net4 VSS lvtnfet l=LA w=WM m=1
+MM2 net4 Vctl0 Vop VDD lvtpfet l=LA w=WN m=1
+MM1 net3 Vctl0 Von VDD lvtpfet l=LA w=WN m=1
 .ENDS
 
 ************************************************************************

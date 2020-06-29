@@ -4,7 +4,7 @@ Created on Wed Nov 21 13:12:15 2018
 
 @author: kunal
 """
-from math import sqrt, ceil
+from math import sqrt, ceil,floor
 
 from .util import convert_to_unit
 
@@ -81,28 +81,28 @@ class WriteVerilog:
     def map_pins(self, a, b):
         if len(a) == len(b):
             mapped_pins = []
-            for ai, bi in zip(a, b):
+            for ai, bi in sorted(zip(a, b),key=lambda x:x[0]):
                 if ai not in self.power_pins:
                     mapped_pins.append("." + ai + "(" + bi + ")")
 
-            return mapped_pins
+            return sorted(mapped_pins)
         elif len(set(a)) == len(set(b)):
             if len(a) > len(b):
                 mapped_pins = []
-                check_sort = []
-                no_of_sort = 0
+                check_short = []
+                no_of_short = 0
                 for i in range(len(a)):
-                    if a[i] in check_sort:
-                        mapped_pins.append(mapped_pins[check_sort.index(a[i])])
-                        no_of_sort += 1
+                    if a[i] in check_short:
+                        mapped_pins.append(mapped_pins[check_short.index(a[i])])
+                        no_of_short += 1
                     else:
                         mapped_pins.append("." + a[i] + "(" +
-                                           b[i - no_of_sort] + ")")
-                        check_sort.append(a[i])
+                                           b[i - no_of_short] + ")")
+                        check_short.append(a[i])
                     if a[i] in self.power_pins:
                         mapped_pins= mapped_pins[:-1]
-
-                return mapped_pins
+                
+                return sorted(mapped_pins)
 
         else:
             logger.info("unmatched ports found")
@@ -194,8 +194,6 @@ def concat_values(values):
 
 def print_globals(fp, power):
     """ Write global variables"""
-    #fp.write("\n\n// End HDL models")
-    #fp.write("\n// Global nets module")
     fp.write("\n`celldefine")
     fp.write("\nmodule global_power;")
     for i in range(len(power)):
@@ -256,7 +254,7 @@ def generate_lef(name, values, available_block_lef,
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         block_name = name + '_' + size.replace('.','p')
-        res_unit_size = 300
+        res_unit_size = 600
         try:
             #size = float(size)
             height = ceil(sqrt(float(size) / res_unit_size))
@@ -278,6 +276,8 @@ def generate_lef(name, values, available_block_lef,
             size = int(values["nfin"])
             if 'nf' in values.keys():
                 size=size*int(values["nf"])
+            if 'm' in values.keys():
+                size=size*int(values["m"])
             ## Hack For VCO circuit
             if 'nmos' in name.lower() and unit_size_mos==37:
                 unit_size_mos=8
@@ -296,11 +296,15 @@ def generate_lef(name, values, available_block_lef,
         logger.debug('Generating lef for: %s %s', name, str(size))
         if isinstance(size, int):
             no_units = ceil(size / unit_size_mos)
-            square_x = ceil(sqrt(no_units))
-            while no_units % square_x != 0:
-                square_x += 1
-            xval = square_x
-            yval = int(no_units / square_x)
+            if any(x in name for x in ['DP','_S']) and floor(sqrt(no_units/3))>=1:
+                square_y = floor(sqrt(no_units/3))
+            else:
+                square_y = floor(sqrt(no_units))
+            while no_units % square_y != 0:
+                square_y -= 1
+            yval = square_y
+            xval = int(no_units / square_y)
+
             block_name = f"{name}_n{unit_size_mos}_X{xval}_Y{yval}"
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]

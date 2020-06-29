@@ -187,7 +187,8 @@ def parse_value(all_param, vtype=None):
     device_param_list = {}
     for idx, unique_param in enumerate(all_param):
         if '=' in unique_param:
-            [param, value] = unique_param.split('=')
+            #making all values to lower case
+            [param, value] = unique_param.lower().split('=')
             if not param:
                 param = all_param[idx - 1]
             if not value:
@@ -208,15 +209,7 @@ def _parse_inst(line):
     device = None
     if not line.strip():
         return device
-    ##USC CKT SAR_ADC: I3 (Y A VDD VNW) pmos_slvt w=81n l=14n m=2
-    elif line.strip().lower().startswith('m') \
-            or line.strip().lower().startswith('n') \
-            or line.strip().lower().startswith('p') \
-            or line.strip().lower().startswith('xm') \
-            or line.strip().startswith('xn') \
-            or line.strip().startswith('xp') \
-            or (line.strip().startswith('I') and 'mos' in line) \
-            or line.strip().lower().startswith('t'):
+    elif line.strip().lower().startswith('m'):
         logger.debug(f'FOUND transistor : {line.strip()}')
         device = element.transistor()
     elif line.strip().lower().startswith('v'):
