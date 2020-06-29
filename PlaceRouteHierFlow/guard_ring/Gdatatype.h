@@ -17,7 +17,7 @@ struct point {
 
 struct dimension {
   int width=0;    //x-axis
-  int length=0;   //y-axis
+  int height=0;   //y-axis
 };
 
 } // namespace GuardRingDB

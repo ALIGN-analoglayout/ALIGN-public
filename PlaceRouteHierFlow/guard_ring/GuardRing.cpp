@@ -1,26 +1,36 @@
 #include "GuardRing.h"
 
-void GuardRing::Pcell_info(int pcell_width, int pcell_length){
+void GuardRing::Pcell_info(int pcell_width, int pcell_height){
   pcell_size.width = pcell_width;
-  pcell_size.length = pcell_length;
+  pcell_size.height = pcell_height;
 };
 
 void GuardRing::Wcell_info(PnRDB::hierNode &node){
   wcell_ll.x = node.LL.x;
   wcell_ll.y = node.LL.y;
-  wcell_ur.x = node.UR.x;
-  wcell_ur.y = node.UR.y;
-  wcell_size.width = node.UR.x - node.LL.x;
-  wcell_size.length = node.UR.y - node.LL.y;
+  wcell_ur.x = node.LL.x + node.width;
+  wcell_ur.y = node.LL.y + node.height;
+  wcell_size.width = node.width;
+  wcell_size.height = node.height;
 }
 
-GuardRing::GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node){
+GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_height, PnRDB::hierNode &node){
+  
+  Pcell_info(pcell_width, pcell_height);
+  Wcell_info(node);
+  //Print wcell & pcell info
+  std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
+  std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
+  std::cout << "node_width = " << node.width << std::endl;
+  std::cout << "node_height = " << node.height << std::endl;
+  std::cout << "node_ll[x,y] = " << node.LL.x << "," << node.LL.y << std::endl;
+  std::cout << "node_ur[x,y] = " << node.UR.x << "," << node.UR.y << std::endl;
+
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil(wcell_size.width / pcell_size.width) + 2;
-  y_number = ceil(wcell_size.length / pcell_size.length);
+  x_number = ceil(wcell_size.width / pcell_size.width) + 3;
+  y_number = ceil(wcell_size.height / pcell_size.height) + 1;
 
-  Wcell_info(node);
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
   GuardRingDB::point southwest, southeast, northeast, northwest; //guard ring primitive cells at corner.
@@ -29,9 +39,9 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node){
   else
     southwest.x = wcell_ll.x - pcell_size.width - (((x_number-2) * pcell_size.width) - wcell_size.width)/2;
   if (((((x_number-2) * pcell_size.width) - wcell_size.width)/2) < Minimal_y)
-    southwest.y = wcell_ll.y - pcell_size.length - Minimal_y;
+    southwest.y = wcell_ll.y - pcell_size.height - Minimal_y;
   else
-    southwest.y = wcell_ll.y - pcell_size.length - (((y_number * pcell_size.length) - wcell_size.length)/2);
+    southwest.y = wcell_ll.y - pcell_size.height - (((y_number * pcell_size.height) - wcell_size.height)/2);
   temp_point.x = southwest.x;
   temp_point.y = southwest.y;
   stored_point_ll.push_back(temp_point);
@@ -50,7 +60,7 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node){
   for (int i_e=1; i_e< y_number+2; i_e++)
   {
     temp_point.x = southeast.x;
-    temp_point.y = southeast.y + (i_e)*pcell_size.length;
+    temp_point.y = southeast.y + (i_e)*pcell_size.height;
     stored_point_ll.push_back(temp_point);
   }
   northeast.x = temp_point.x;
@@ -70,7 +80,7 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node){
   for (int i_w=1; i_w<y_number+1; i_w++)
   {
     temp_point.x = northwest.x;
-    temp_point.y = northwest.y - i_w*pcell_size.length;
+    temp_point.y = northwest.y - i_w*pcell_size.height;
     stored_point_ll.push_back(temp_point);
   }
 
@@ -81,7 +91,7 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, PnRDB::hierNode &node){
   for (int i_ur = 0; i_ur < stored_point_ll.size(); i_ur++) 
   {
     temp_point.x = stored_point_ll[i_ur].x + pcell_size.width;
-    temp_point.y = stored_point_ll[i_ur].y + pcell_size.length;
+    temp_point.y = stored_point_ll[i_ur].y + pcell_size.height;
     stored_point_ur.push_back(temp_point);
   }
     
@@ -113,7 +123,7 @@ void GuardRing::gnuplot(){
 
   //set range
   fout<<"\nset xrange ["<<wcell_ll.x-4*pcell_size.width<<":"<<wcell_ur.x+4*pcell_size.width<<"]"<<std::endl;
-  fout<<"\nset yrange ["<<wcell_ll.y-4*pcell_size.length<<":"<<wcell_ur.y+4*pcell_size.length<<"]"<<std::endl;
+  fout<<"\nset yrange ["<<wcell_ll.y-4*pcell_size.height<<":"<<wcell_ur.y+4*pcell_size.height<<"]"<<std::endl;
 
   //set label for Pcells
   for(int i=0; i<stored_point_ll.size(); i++)
@@ -129,7 +139,7 @@ void GuardRing::gnuplot(){
     fout<<"\nset object \"" << i+1 << "\" rectangle from "<<stored_point_ll[i].x <<"," <<stored_point_ll[i].y<<" to "<<stored_point_ur[i].x << ","<<stored_point_ur[i].y<<" back"<<std::endl;
   }
   fout<<"\nset object \"" << stored_point_ll.size()+1 << "\" rectangle from "<<wcell_ll.x<<","<<wcell_ll.y<<" to "<<wcell_ur.x<< ","<<wcell_ur.y<<" back"<<std::endl;
-  fout<<"plot "<<"["<<wcell_ll.x-4*pcell_size.width<<":"<<wcell_ur.x+4*pcell_size.width<<"] "<<"["<<wcell_ll.y-4*pcell_size.length<<":"<<wcell_ur.y+4*pcell_size.length<<"] "<<wcell_ur.y+4*pcell_size.length+1<<" title "<<"\"#GuardRing Pcells= "<<stored_point_ll.size()<<"\"";
+  fout<<"plot "<<"["<<wcell_ll.x-4*pcell_size.width<<":"<<wcell_ur.x+4*pcell_size.width<<"] "<<"["<<wcell_ll.y-4*pcell_size.height<<":"<<wcell_ur.y+4*pcell_size.height<<"] "<<wcell_ur.y+4*pcell_size.height+1<<" title "<<"\"#GuardRing Pcells= "<<stored_point_ll.size()<<"\"";
 
   fout.close();
 }

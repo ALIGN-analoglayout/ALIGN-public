@@ -354,7 +354,7 @@ int main(int argc, char** argv ){
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
 
-    GuardRing current_guard_ring(0,0,nodeVec[0]);
+    GuardRing current_guard_ring(0,0,4000,4000,nodeVec[0]);
 
     //TreeVec[idx] = nodeVec;
     //Q.pop();
