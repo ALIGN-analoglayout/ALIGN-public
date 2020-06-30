@@ -1505,9 +1505,9 @@ vector<placerDB::point> design::GetPlacedBlockRelBoundary(int blockid, placerDB:
   vector<placerDB::point> newp;
   //cout<<"  In GetPlacedBlockRelBoundary"<<endl;
   for(vector<placerDB::point>::iterator it=Blocks.at(blockid).at(sel).boundary.polygon.begin(); it!=Blocks.at(blockid).at(sel).boundary.polygon.end(); ++it) {
-    std::cout<<"design test3"<<std::endl;
+    //std::cout<<"design test3"<<std::endl;
     newp.push_back( GetPlacedPosition(*it, Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
-    std::cout<<"design test4"<<std::endl;
+    //std::cout<<"design test4"<<std::endl;
     //cout<<"push "<<newp.back().x<<", "<<newp.back().y<<endl;
   }
   //cout<<"point size "<<newp.size()<<endl;
