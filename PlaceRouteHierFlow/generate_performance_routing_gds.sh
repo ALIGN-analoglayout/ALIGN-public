@@ -1,6 +1,6 @@
 #file_name=ota_asap7
-file_name=cascode_current_mirror_ota
-#file_name=current_mirror_ota
+#file_name=cascode_current_mirror_ota
+file_name=current_mirror_ota
 #file_name=strong_arm_latch
 
 export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
