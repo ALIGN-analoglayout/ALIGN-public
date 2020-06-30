@@ -4210,12 +4210,15 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
       center=caseNL.GetPlacedBlockPinAbsPosition(i, j, ort, LL, sel);
       // [wbxu] Following two lines have be updated for multiple contacts
       // update pin contacts
+      if(j<nd.blockPins.size()){
       for(unsigned int k=0;k<nd.blockPins.at(j).pinContacts.size();k++) {
         //cout<<"    Pin contact "<<k<<endl;
         nd.blockPins.at(j).pinContacts.at(k).placedBox=ConvertBoundaryData(boundary.at(k));
         nd.blockPins.at(j).pinContacts.at(k).placedCenter=ConvertPointData(center.at(k));
       }
+      }
       // update pin vias
+      if(j<node.Blocks.at(i).instance.at(sel).blockPins.size()){
       for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size();k++) {
         //cout<<"    Pin via "<<k<<endl;
 	auto& pv = nd.blockPins.at(j).pinVias.at(k);
@@ -4226,6 +4229,7 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
         pv.UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.UpperMetalRect.originCenter, LL, sel);
         pv.LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.LowerMetalRect.originCenter, LL, sel);
         pv.ViaRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.ViaRect.originCenter, LL, sel);
+      }
       }
     }
   // [wbxu] Complete programing: to update internal metals
@@ -5407,24 +5411,30 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   fout<<"\nset xrange ["<<0-max-bias<<":"<<max+bias<<"]"<<endl;
   fout<<"\nset yrange ["<<0-bias<<":"<<max+bias<<"]"<<endl;
   // set labels for blocks
-  //cout<<"set labels for blocks..."<<endl;
+  cout<<"set labels for blocks..."<<endl;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
+    std::cout<<"test flag1"<<std::endl;
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
+     std::cout<<"test flag2"<<std::endl;
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
     for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+      std::cout<<"test flag3"<<std::endl;
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i) );
+      std::cout<<"test flag4"<<std::endl;
 	  for(unsigned int k = 0; k<p_pin.size();k++){
       placerDB::point newp = p_pin[k];
+      std::cout<<"test flag5"<<std::endl;
       fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
+      std::cout<<"test flag6"<<std::endl;
       fout<<endl;
 	  }
     }
   }
   // set labels for terminals
-  //cout<<"set labels for terminals..."<<endl;
+  cout<<"set labels for terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
     int tno; placerDB::point tp;
@@ -5441,7 +5451,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     }
 
   // plot blocks
-  //cout<<"plot blocks..."<<endl;
+  cout<<"plot blocks..."<<endl;
   fout<<"\nplot[:][:] \'-\' with lines linestyle 3, \'-\' with lines linestyle 7, \'-\' with lines linestyle 1, \'-\' with lines linestyle 0"<<endl<<endl;;
   for(int i=0;i<(int)caseNL.GetSizeofBlocks();++i) {
     string ort;
@@ -5464,7 +5474,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   fout<<"\nEOF"<<endl;
   vector<vector<placerDB::point> > newp_pin;
   // plot block pins
-  //cout<<"plot block pins..."<<endl;
+  cout<<"plot block pins..."<<endl;
   for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
     string ort;
     placerDB::point tp;
@@ -5485,7 +5495,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   fout<<"\nEOF"<<endl;
 
   // plot terminals
-  //cout<<"plot terminals..."<<endl;
+  cout<<"plot terminals..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
     int tno=-1;
@@ -5509,19 +5519,21 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   fout<<"\nEOF"<<endl;
   //}
   // plot nets
-  //cout<<"plot nets..."<<endl;
+  cout<<"plot nets..."<<endl;
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
     int tno; placerDB::point tp;
     vector<placerDB::point> pins;
     pins.clear();
+    std::cout<<"test flag7"<<std::endl;
     // for each pin
     for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
       if(ci->type==placerDB::Block) {
         bp.x=this->HGraph.at(ci->iter2).position;
         bp.y=this->VGraph.at(ci->iter2).position;
+        std::cout<<"test flag7.1"<<std::endl;
         p_pin=caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
-
+        std::cout<<"test flag7.2"<<std::endl;
         if(!p_pin.empty()) {
         for(int i=0;i<1;i++){
 		p=p_pin[i];
@@ -5532,6 +5544,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
         hasTerminal=true; tno=ci->iter;
       }
     }
+    std::cout<<"test flag8"<<std::endl;
     if(hasTerminal) {pins.push_back(caseNL.Terminals.at(tno).center);}
     fout<<"\n#Net: "<<ni->name<<endl;
     if(pins.size()>=2) {
