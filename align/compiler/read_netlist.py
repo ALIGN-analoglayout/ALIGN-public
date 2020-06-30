@@ -21,7 +21,7 @@ class SpiceParser:
     The final graph is stored in a yaml file in circuit_graphs folder.
     """
 
-    def __init__(self, netlistPath, top_ckt_name=None, flat=1):
+    def __init__(self, netlistPath, top_ckt_name=None, flat=0):
         self.netlist = netlistPath
         self.subckts = {}
         self.circuits_list = []
@@ -35,7 +35,7 @@ class SpiceParser:
         self.next_line = None
         self.prev_line = None
         self.check_next_line = None
-        logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name}')
+        logger.debug(f'creating an instance of SpiceParser: {self.top_ckt_name} flat={self.flat}')
 
     def sp_parser(self):
         """Parse the defined file line wise"""
