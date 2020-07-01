@@ -8,10 +8,10 @@ void GuardRing::Pcell_info(int pcell_width, int pcell_height){
 
 //set wrapped cell lower left & upper right coordinate and width & height
 void GuardRing::Wcell_info(PnRDB::hierNode &node){
-  wcell_ll.x = node.LL.x;
-  wcell_ll.y = node.LL.y;
-  wcell_ur.x = node.LL.x + node.width;
-  wcell_ur.y = node.LL.y + node.height;
+  wcell_ll.x = 0;
+  wcell_ll.y = 0;
+  wcell_ur.x = node.width;
+  wcell_ur.y = node.height;
   wcell_size.width = node.width;
   wcell_size.height = node.height;
 }
@@ -31,8 +31,8 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil(wcell_size.width / pcell_size.width) + 3;
-  y_number = ceil(wcell_size.height / pcell_size.height) + 1;
+  x_number = ceil(wcell_size.width / pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil(wcell_size.height / pcell_size.height) + 1;//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
@@ -41,7 +41,7 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
     southwest.x = wcell_ll.x - pcell_size.width - Minimal_x;
   else
     southwest.x = wcell_ll.x - pcell_size.width - (((x_number-2) * pcell_size.width) - wcell_size.width)/2;
-  if (((((x_number-2) * pcell_size.width) - wcell_size.width)/2) < Minimal_y)
+  if ((((y_number * pcell_size.height) - wcell_size.height)/2) < Minimal_y)
     southwest.y = wcell_ll.y - pcell_size.height - Minimal_y;
   else
     southwest.y = wcell_ll.y - pcell_size.height - (((y_number * pcell_size.height) - wcell_size.height)/2);
@@ -129,8 +129,9 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
   movehierNode(node);
 
 };
+
 //store guard ring primitive cell information into Hiernode
-PnRDB::hierNode GuardRing::storegrhierNode(PnRDB::hierNode &node){
+void GuardRing::storegrhierNode(PnRDB::hierNode &node){
   PnRDB::contact temp_contact;
   PnRDB::pin temp_pin;
   for (int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
@@ -151,28 +152,30 @@ PnRDB::hierNode GuardRing::storegrhierNode(PnRDB::hierNode &node){
     temp_contact.placedCenter.y = temp_gr.center.y;
     temp_gr.interMetals.push_back(temp_contact);
     //Write pin information
-    //temp_pin.name = "";
-    //temp_pin.type = "";
-    //temp_pin.use = "";
+    temp_pin.name = "";
+    temp_pin.type = "";
+    temp_pin.use = "";
     temp_pin.pinContacts.push_back(temp_contact);
     temp_gr.blockPins.push_back(temp_pin);
     //Write node GuardRings information
     node.GuardRings.push_back(temp_gr);
   }
-  return node;
+  //return node;
 }
 
 //return hiernode for movement
 PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
-  node.LL.x = 0;
-  node.LL.y = 0;
-  node.UR.x = node.LL.x + node.width;
-  node.UR.y = node.LL.y + node.height;
-  //LL
-  movepoint(node.LL);
-  //UR
-  movepoint(node.UR);
-  //Blocks
+  //node.LL.x = 0;
+  //node.LL.y = 0;
+  //node.UR.x = node.LL.x + node.width;
+  //node.UR.y = node.LL.y + node.height;
+  node.width += 2*shift.x;
+  node.height += 2*shift.y;
+  // LL
+  // movepoint(node.LL);
+  // UR
+  // movepoint(node.UR);
+  // Blocks
   movevecblockcomplex(node.Blocks);
   //Nets
   for (int i_nets = 0; i_nets < node.Nets.size(); i_nets++) 
