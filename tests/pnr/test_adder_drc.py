@@ -1,15 +1,18 @@
+import pytest
 import pathlib
 import align.pnr.main
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
-
+@pytest.mark.skipif('ALIGN_WORK_DIR' not in os.environ,
+                    reason='Necessary test collateral has not been built')
 def test_a():
     logging.getLogger().setLevel("DEBUG")
 
-    ALIGN_HOME = "/home/smburns/DARPA/ALIGN-public"
-    ALIGN_WORK_DIR = ALIGN_HOME + "/work"
+    ALIGN_HOME = os.environ['ALIGN_HOME']
+    ALIGN_WORK_DIR = os.environ['ALIGN_WORK_DIR']
 
     dbfile = ALIGN_WORK_DIR + "/FinFET14nm_Mock_PDK/adder/3_pnr/Results/adder_0.db.json"
     variant = "adder_0"

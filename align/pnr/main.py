@@ -7,7 +7,7 @@ import json
 import re
 
 from .db import hierNode
-qfrom .checkers import gen_viewer_json
+from .checkers import gen_viewer_json
 from ..cell_fabric import gen_gds_json
 
 logger = logging.getLogger(__name__)
