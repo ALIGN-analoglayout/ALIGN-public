@@ -1480,10 +1480,8 @@ PnRDB::point design::GetPlacedPnRPosition(PnRDB::point oldp, int width, int heig
 
 vector<placerDB::point> design::GetPlacedBlockPinRelPosition(int blockid, int pinid, placerDB::Omark ort, int sel) {
   vector<placerDB::point> newCenter;
-  if(pinid<Blocks.at(blockid).at(sel).blockPins.size()){
   for(vector<placerDB::point>::iterator it=Blocks.at(blockid).at(sel).blockPins.at(pinid).center.begin();it!=Blocks.at(blockid).at(sel).blockPins.at(pinid).center.end();++it) {
     newCenter.push_back( GetPlacedPosition(*it, Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
-  }
   }
   return newCenter;
   //return GetPlacedPosition(Blocks.at(blockid).blockPins.at(pinid).center, Blocks.at(blockid).width, Blocks.at(blockid).height, ort);
@@ -1528,13 +1526,11 @@ vector<placerDB::point> design::GetPlacedBlockAbsBoundary(int blockid, placerDB:
 
 vector<vector<placerDB::point> > design::GetPlacedBlockPinRelBoundary(int blockid, int pinid, placerDB::Omark ort, int sel) {
   vector<vector<placerDB::point> > newp;
-  if(pinid<Blocks.at(blockid).at(sel).blockPins.size()){
   for(vector<placerDB::bbox>::iterator it=Blocks.at(blockid).at(sel).blockPins.at(pinid).boundary.begin(); it!=Blocks.at(blockid).at(sel).blockPins.at(pinid).boundary.end(); ++it) {
     newp.resize(newp.size()+1);
     for(vector<placerDB::point>::iterator it2=it->polygon.begin();it2!=it->polygon.end();++it2) {
       newp.back().push_back( GetPlacedPosition(*it2, Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
     }
-  }
   }
   //for(vector<placerDB::point>::iterator it=Blocks.at(blockid).blockPins.at(pinid).boundary.polygon.begin(); it!=Blocks.at(blockid).blockPins.at(pinid).boundary.polygon.end(); ++it) {
   //  newp.push_back( GetPlacedPosition(*it, Blocks.at(blockid).width, Blocks.at(blockid).height, ort) );
@@ -1598,12 +1594,12 @@ PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark 
   return placedBox;
 }
 
-int design::GetBlockPinNum(int blockid) {
-  return (int)Blocks.at(blockid).back().blockPins.size();
+int design::GetBlockPinNum(int blockid, int sel) {
+  return (int)Blocks.at(blockid).at(sel).blockPins.size();
 }
 
-string design::GetBlockPinName(int blockid, int pinid) {
-  return Blocks.at(blockid).back().blockPins.at(pinid).name;
+string design::GetBlockPinName(int blockid, int pinid,int sel) {
+  return Blocks.at(blockid).at(sel).blockPins.at(pinid).name;
 }
 
 string design::GetBlockName(int blockid) {

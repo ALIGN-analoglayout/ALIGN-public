@@ -4204,21 +4204,18 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
     nd.orient=PnRDB::Omark(ort);
     nd.placedBox=ConvertBoundaryData(bbox);
     nd.placedCenter=ConvertPointData(bpoint);
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,sel);j++) {
       //cout<<"  Pin "<<j<<endl;
       boundary=caseNL.GetPlacedBlockPinAbsBoundary(i, j, ort, LL, sel);
       center=caseNL.GetPlacedBlockPinAbsPosition(i, j, ort, LL, sel);
       // [wbxu] Following two lines have be updated for multiple contacts
       // update pin contacts
-      if(j<nd.blockPins.size()){
       for(unsigned int k=0;k<nd.blockPins.at(j).pinContacts.size();k++) {
         //cout<<"    Pin contact "<<k<<endl;
         nd.blockPins.at(j).pinContacts.at(k).placedBox=ConvertBoundaryData(boundary.at(k));
         nd.blockPins.at(j).pinContacts.at(k).placedCenter=ConvertPointData(center.at(k));
       }
-      }
       // update pin vias
-      if(j<node.Blocks.at(i).instance.at(sel).blockPins.size()){
       for(unsigned int k=0;k<node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size();k++) {
         //cout<<"    Pin via "<<k<<endl;
 	auto& pv = nd.blockPins.at(j).pinVias.at(k);
@@ -4229,7 +4226,6 @@ void ConstGraph::UpdateBlockinHierNode(design& caseNL, placerDB::Omark ort, PnRD
         pv.UpperMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.UpperMetalRect.originCenter, LL, sel);
         pv.LowerMetalRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.LowerMetalRect.originCenter, LL, sel);
         pv.ViaRect.placedCenter=caseNL.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.ViaRect.originCenter, LL, sel);
-      }
       }
     }
   // [wbxu] Complete programing: to update internal metals
@@ -5420,14 +5416,14 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
      //std::cout<<"test flag2"<<std::endl;
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
       //std::cout<<"test flag3"<<std::endl;
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i) );
       //std::cout<<"test flag4"<<std::endl;
 	  for(unsigned int k = 0; k<p_pin.size();k++){
       placerDB::point newp = p_pin[k];
       //std::cout<<"test flag5"<<std::endl;
-      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
+      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j,caseSP.GetBlockSelected(i))<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       //std::cout<<"test flag6"<<std::endl;
       fout<<endl;
 	  }
@@ -5472,15 +5468,18 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     fout<<endl;
   }
   fout<<"\nEOF"<<endl;
+
+
   vector<vector<placerDB::point> > newp_pin;
   // plot block pins
   //cout<<"plot block pins..."<<endl;
+
   for(int i=0;i<caseNL.GetSizeofBlocks();++i) {
     string ort;
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,caseSP.GetBlockSelected(i));j++) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseSP.GetBlockOrient(i), tp, caseSP.GetBlockSelected(i));
       for(unsigned int k=0;k<newp_pin.size();k++){
 	  vector<placerDB::point> newp_p = newp_pin[k];
@@ -5520,6 +5519,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
   //}
   // plot nets
   //cout<<"plot nets..."<<endl;
+
   for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
     bool hasTerminal=false;
     int tno; placerDB::point tp;
@@ -5555,6 +5555,7 @@ void ConstGraph::PlotPlacement(design& caseNL, SeqPair& caseSP, string outfile) 
     }
     }
   }
+
   fout<<"\nEOF"<<endl;
   fout<<endl<<"pause -1 \'Press any key\'";
   fout.close();
@@ -5591,11 +5592,11 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
     tp.y=VGraph.at(i).position;
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, caseAP.GetBlockOrient(i), tp, caseAP.GetSelectedInstance(i));
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,caseAP.GetSelectedInstance(i));j++) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,caseAP.GetBlockOrient(i), tp, caseAP.GetSelectedInstance(i));
 	  for(unsigned int k = 0; k<p_pin.size();k++){
       placerDB::point newp = p_pin[k];
-      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
+      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j,caseAP.GetSelectedInstance(i))<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
 	  }
     }
@@ -5643,7 +5644,7 @@ void ConstGraph::PlotPlacementAP(design& caseNL, Aplace& caseAP, string outfile)
     placerDB::point tp;
     tp.x=HGraph.at(i).position;
     tp.y=VGraph.at(i).position;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);j++) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,caseAP.GetSelectedInstance(i));j++) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, caseAP.GetBlockOrient(i), tp, caseAP.GetSelectedInstance(i));
       for(unsigned int k=0;k<newp_pin.size();k++){
 	  vector<placerDB::point> newp_p = newp_pin[k];

@@ -1843,7 +1843,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		if(current_node.CC_Caps[j].CCCap_name == b.name){
 		    std::cout<<"core dump 0"<<std::endl;
 		    ki = current_node.CC_Caps[j].size;
-                    bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    //bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    bool dummy_flag = 1;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
@@ -1886,6 +1887,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		    //increase other aspect ratio
 		    std::cout<<"New CC 4 "<<j<<std::endl;
 		    std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
+                    bool insert_dummy_connection = 0;
 		    for(unsigned int q=0;q<cap_r.size();q++){
                         std::cout<<"New CC 5 "<<j<<std::endl;
                         std::cout<<"New CC 6 "<<j<<std::endl;
@@ -1939,7 +1941,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 
                             }
                             //if not found then insert this pin as a power pin and add a dummy pin in 
-                            if(!found){
+                            if(!found and !temp_block.blockPins[l].name.empty()){
+                            //if(!found){
                                    //create dummy connection and insert power pin
                                    PnRDB::connectNode temp_connectNode;
                                    temp_connectNode.iter2 = i;
@@ -1949,11 +1952,12 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                    //insert the dummy connection power power net
                                      //if power net does not exist, then create a power net
                                    for(unsigned powernet_index = 0;powernet_index<current_node.PowerNets.size();powernet_index++){
-                                         if(current_node.PowerNets[powernet_index].power==0){
+                                         if(current_node.PowerNets[powernet_index].power==0 and !insert_dummy_connection){
                                             current_node.PowerNets[powernet_index].dummy_connected.push_back(temp_connectNode);
                                             break;
                                            }
                                       }
+                                insert_dummy_connection = 1;
                               }
                         }
 
