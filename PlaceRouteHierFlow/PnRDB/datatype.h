@@ -55,16 +55,6 @@ enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 enum TransformType { Forward, Backward };
 
 /// Part 2: declaration of sturctures for placer and router
-struct GuardRing {
-  std::string mastername = "";
-  point LL;
-  point UR;
-  point center;
-  vector<pin> blockPins;
-  vector<contact> interMetals;
-  vector<Via> interVias;
-};
-
 struct point {
   int x=0;
   int y=0;
@@ -338,6 +328,16 @@ struct layoutAS {
   //vector<pin> blockPins;
   //vector<contact> interMetals;
   //vector<Via> interVias;
+};
+
+struct GuardRing {
+  std::string mastername = "";
+  point LL;
+  point UR;
+  point center;
+  vector<pin> blockPins;
+  vector<contact> interMetals;
+  vector<Via> interVias;
 };
 
 struct hierNode {

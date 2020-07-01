@@ -130,9 +130,9 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
 
 };
 //store guard ring primitive cell information into Hiernode
-GuardRing::storegrhierNode(PnRDB::hierNode &node){
+PnRDB::hierNode GuardRing::storegrhierNode(PnRDB::hierNode &node){
   PnRDB::contact temp_contact;
-  PnRDB::contact temp_pin;
+  PnRDB::pin temp_pin;
   for (int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
   {
     temp_gr.LL.x = stored_point_ll[i_store].x;
@@ -142,20 +142,20 @@ GuardRing::storegrhierNode(PnRDB::hierNode &node){
     temp_gr.center.x = (stored_point_ll[i_store].x + stored_point_ur[i_store].x)/2;
     temp_gr.center.y = (stored_point_ll[i_store].y + stored_point_ur[i_store].y)/2;
     //write contact information
-    temp_contact.metal = M1;
+    //temp_contact.metal = "";
     temp_contact.placedBox.LL.x = stored_point_ll[i_store].x;
     temp_contact.placedBox.LL.y = stored_point_ll[i_store].y;
-    temp_contact.placedBox.UR.x = stored_point_UR[i_store].x;
-    temp_contact.placedBox.UR.y = stored_point_UR[i_store].y;
+    temp_contact.placedBox.UR.x = stored_point_ur[i_store].x;
+    temp_contact.placedBox.UR.y = stored_point_ur[i_store].y;
     temp_contact.placedCenter.x = temp_gr.center.x;
     temp_contact.placedCenter.y = temp_gr.center.y;
     temp_gr.interMetals.push_back(temp_contact);
     //Write pin information
-    temp_pin.name = ;
-    temp_pin.type = ;
-    temp_pin.use = ;
+    //temp_pin.name = "";
+    //temp_pin.type = "";
+    //temp_pin.use = "";
     temp_pin.pinContacts.push_back(temp_contact);
-    temp.gr.blockPins.push_back(temp_pin);
+    temp_gr.blockPins.push_back(temp_pin);
     //Write node GuardRings information
     node.GuardRings.push_back(temp_gr);
   }
