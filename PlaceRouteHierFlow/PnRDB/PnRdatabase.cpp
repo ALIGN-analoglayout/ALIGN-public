@@ -695,7 +695,8 @@ void PnRdatabase::CheckinHierNode(int nodeID, const PnRDB::hierNode& updatedNode
 
   hierTree[nodeID].isCompleted = 1;
   hierTree[nodeID].gdsFile = updatedNode.gdsFile;
-  //update current node information
+  hierTree[nodeID].GuardRings = updatedNode.GuardRings;
+  // update current node information
   for(unsigned int i=0;i<hierTree[nodeID].Blocks.size();i++){
      int sel=updatedNode.Blocks[i].selectedInstance;
      std::cout<<"Block "<<i<<" select "<<sel<<std::endl;
