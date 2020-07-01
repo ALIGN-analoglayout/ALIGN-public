@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_a():
-    logging.getLogger().setLevel("ERROR")
+    logging.getLogger().setLevel("DEBUG")
 
     ALIGN_HOME = "/home/smburns/DARPA/ALIGN-public"
     ALIGN_WORK_DIR = ALIGN_HOME + "/work"

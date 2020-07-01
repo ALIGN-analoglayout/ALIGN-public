@@ -7,14 +7,14 @@ import json
 import re
 
 from .db import hierNode
-from .checkers import gen_viewer_json
+qfrom .checkers import gen_viewer_json
 from ..cell_fabric import gen_gds_json
 
 logger = logging.getLogger(__name__)
 
 def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
 
-    logger.info( f"_generate_json: ${dbfile} ${variant} ${primitive_dir} ${pdk_dir} ${output_dir} ${check} ${extract} ${input_dir} ${toplevel} ${gds_json}")
+    logger.info( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
 
     ret = {}
     with open(dbfile,"rt") as fp:
