@@ -57,7 +57,8 @@ enum TransformType { Forward, Backward };
 /// Part 2: declaration of sturctures for placer and router
 struct GuardRing {
   std::string mastername = "";
-  point LL,UR;
+  point LL;
+  point UR;
   point center;
   vector<pin> blockPins;
   vector<contact> interMetals;

@@ -34,12 +34,14 @@ class GuardRing {
     vector<GuardRingDB::point> stored_point_ll;
     vector<GuardRingDB::point> stored_point_ur;
     GuardRingDB::point shift;
+    PnRDB::GuardRing temp_gr;
   
   public:
     void Pcell_info(int pcell_width, int pcell_height);
     void Wcell_info(PnRDB::hierNode &node);
     GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_height, PnRDB::hierNode &node);
-    PnRDB::hierNode returnhierNode(PnRDB::hierNode &node);
+    PnRDB::hierNode storegrhierNode(PnRDB::hierNode &node);
+    PnRDB::hierNode movehierNode(PnRDB::hierNode &node);
     void gnuplot();
     void movepoint(PnRDB::point &point);
     void movebbox (PnRDB::bbox &bbox);
