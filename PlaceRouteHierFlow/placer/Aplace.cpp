@@ -143,11 +143,11 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     placerDB::point ntp=caseNL.GetBlockAbsCenter(i, this->ABlocks.at(i).orient, tp, this->selected.at(i));
     fout<<"\nset label \""<<caseNL.GetBlockName(i)<<"\" at "<<ntp.x<<" , "<<ntp.y<<" center "<<endl;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,this->selected.at(i));++j) {
       p_pin =caseNL.GetPlacedBlockPinAbsPosition(i,j,this->ABlocks.at(i).orient, tp, this->selected.at(i));
           for(unsigned int k = 0; k<p_pin.size();++k){
       placerDB::point newp = p_pin[k];
-      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j)<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
+      fout<<"\nset label \""<<caseNL.GetBlockPinName(i,j,this->selected.at(i))<<"\" at "<<newp.x<<" , "<<newp.y<<endl;
       fout<<endl;
           }
     }
@@ -196,7 +196,7 @@ void Aplace::PlotPlacement(design& caseNL, boost_vector& x_k, string outfile) {
     placerDB::point tp;
     tp.x=x_k(2*i)-caseNL.GetBlockWidth(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
     tp.y=x_k(2*i+1)-caseNL.GetBlockHeight(i, this->ABlocks.at(i).orient, this->selected.at(i))/2;
-    for(int j=0;j<caseNL.GetBlockPinNum(i);++j) {
+    for(int j=0;j<caseNL.GetBlockPinNum(i,this->selected.at(i));++j) {
       newp_pin=caseNL.GetPlacedBlockPinAbsBoundary(i,j, this->ABlocks.at(i).orient, tp, this->selected.at(i));
       for(unsigned int k=0;k<newp_pin.size();++k){
           std::vector<placerDB::point> newp_p = newp_pin[k];

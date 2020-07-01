@@ -1489,7 +1489,10 @@ vector<placerDB::point> design::GetPlacedBlockPinRelPosition(int blockid, int pi
 
 vector<placerDB::point> design::GetPlacedBlockPinAbsPosition(int blockid, int pinid, placerDB::Omark ort, placerDB::point LL, int sel) {
   vector<placerDB::point> p;
+
+  //std::cout<<"design test1"<<std::endl;  
   p=GetPlacedBlockPinRelPosition(blockid, pinid, ort, sel);
+  //std::cout<<"design test2"<<std::endl;
   for(vector<placerDB::point>::iterator it=p.begin();it!=p.end();++it) {
     (it->x)+=LL.x; (it->y)+=LL.y;
   }
@@ -1500,7 +1503,9 @@ vector<placerDB::point> design::GetPlacedBlockRelBoundary(int blockid, placerDB:
   vector<placerDB::point> newp;
   //cout<<"  In GetPlacedBlockRelBoundary"<<endl;
   for(vector<placerDB::point>::iterator it=Blocks.at(blockid).at(sel).boundary.polygon.begin(); it!=Blocks.at(blockid).at(sel).boundary.polygon.end(); ++it) {
+    //std::cout<<"design test3"<<std::endl;
     newp.push_back( GetPlacedPosition(*it, Blocks.at(blockid).at(sel).width, Blocks.at(blockid).at(sel).height, ort) );
+    //std::cout<<"design test4"<<std::endl;
     //cout<<"push "<<newp.back().x<<", "<<newp.back().y<<endl;
   }
   //cout<<"point size "<<newp.size()<<endl;
@@ -1534,6 +1539,7 @@ vector<vector<placerDB::point> > design::GetPlacedBlockPinRelBoundary(int blocki
 }
 
 vector<vector<placerDB::point> > design::GetPlacedBlockPinAbsBoundary(int blockid, int pinid, placerDB::Omark ort, placerDB::point LL, int sel) {
+
   vector<vector<placerDB::point> > newp=GetPlacedBlockPinRelBoundary(blockid, pinid, ort, sel);
   for(vector<vector<placerDB::point> >::iterator it=newp.begin(); it!=newp.end(); ++it) {
     for(vector<placerDB::point>::iterator it2=it->begin();it2!=it->end();++it2) {
@@ -1588,12 +1594,12 @@ PnRDB::bbox design::GetPlacedBlockInterMetalAbsBox(int blockid, placerDB::Omark 
   return placedBox;
 }
 
-int design::GetBlockPinNum(int blockid) {
-  return (int)Blocks.at(blockid).back().blockPins.size();
+int design::GetBlockPinNum(int blockid, int sel) {
+  return (int)Blocks.at(blockid).at(sel).blockPins.size();
 }
 
-string design::GetBlockPinName(int blockid, int pinid) {
-  return Blocks.at(blockid).back().blockPins.at(pinid).name;
+string design::GetBlockPinName(int blockid, int pinid,int sel) {
+  return Blocks.at(blockid).at(sel).blockPins.at(pinid).name;
 }
 
 string design::GetBlockName(int blockid) {

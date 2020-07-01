@@ -1843,7 +1843,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		if(current_node.CC_Caps[j].CCCap_name == b.name){
 		    std::cout<<"core dump 0"<<std::endl;
 		    ki = current_node.CC_Caps[j].size;
-                    bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    //bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    bool dummy_flag = 1;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
@@ -1886,6 +1887,7 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		    //increase other aspect ratio
 		    std::cout<<"New CC 4 "<<j<<std::endl;
 		    std::cout<<"cap_r size "<<cap_r.size()<<std::endl;
+                    bool insert_dummy_connection = 0;
 		    for(unsigned int q=0;q<cap_r.size();q++){
                         std::cout<<"New CC 5 "<<j<<std::endl;
                         std::cout<<"New CC 6 "<<j<<std::endl;
@@ -1923,16 +1925,42 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 			va.orient = temp_block.orient;
 			va.interMetals = temp_block.interMetals;
 			va.interVias = temp_block.interVias;
-			for(unsigned int k=0;k<va.blockPins.size();k++){
-			    for(unsigned int l=0;l<temp_block.blockPins.size();l++){
+
+                        for(unsigned int l=0;l<temp_block.blockPins.size();l++){
+                           bool found = 0;
+                           for(unsigned int k=0;k<va.blockPins.size();k++){
+
 				if(va.blockPins[k].name == temp_block.blockPins[l].name){    
+                                    found = 1;
 				    va.blockPins[k].pinContacts.clear();
 				    for(unsigned int p=0;p<temp_block.blockPins[l].pinContacts.size();p++){
 					va.blockPins[k].pinContacts.push_back(temp_block.blockPins[l].pinContacts[p]);
 				    }
+                                  
 				}
-			    }
-			}
+
+                            }
+                            //if not found then insert this pin as a power pin and add a dummy pin in 
+                            if(!found and !temp_block.blockPins[l].name.empty()){
+                            //if(!found){
+                                   //create dummy connection and insert power pin
+                                   PnRDB::connectNode temp_connectNode;
+                                   temp_connectNode.iter2 = i;
+                                   temp_connectNode.iter = va.blockPins.size();
+                                   temp_block.blockPins[l].netIter = -2;
+                                   va.blockPins.push_back(temp_block.blockPins[l]);
+                                   //insert the dummy connection power power net
+                                     //if power net does not exist, then create a power net
+                                   for(unsigned powernet_index = 0;powernet_index<current_node.PowerNets.size();powernet_index++){
+                                         if(current_node.PowerNets[powernet_index].power==0 and !insert_dummy_connection){
+                                            current_node.PowerNets[powernet_index].dummy_connected.push_back(temp_connectNode);
+                                            break;
+                                           }
+                                      }
+                                insert_dummy_connection = 1;
+                              }
+                        }
+
 			WriteLef(va, cc_gds_file+".lef", opath);
 			std::cout<<"End feed blocks"<<std::endl;
 			continue;
