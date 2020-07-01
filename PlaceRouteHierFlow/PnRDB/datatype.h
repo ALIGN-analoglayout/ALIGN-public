@@ -44,6 +44,7 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
+struct GuardRing;
 
 
 /// Part 1: declaration of enum types
@@ -54,6 +55,15 @@ enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 enum TransformType { Forward, Backward };
 
 /// Part 2: declaration of sturctures for placer and router
+struct GuardRing {
+  std::string mastername = "";
+  point LL,UR;
+  point center;
+  vector<pin> blockPins;
+  vector<contact> interMetals;
+  vector<Via> interVias;
+};
+
 struct point {
   int x=0;
   int y=0;
@@ -292,6 +302,7 @@ struct block {
   vector<contact> interMetals;
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
+  vector<GuardRing> GuardRings;
 }; // structure of block
 
 struct terminal {
@@ -352,6 +363,7 @@ struct hierNode {
   PowerGrid Gnd;
   vector<PowerNet> PowerNets;
 //added by yg
+  vector<GuardRing> GuardRings;
 
   //Updated
   vector<pin> blockPins;//need

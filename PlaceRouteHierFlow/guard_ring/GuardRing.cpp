@@ -127,6 +127,10 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
 };
 
 PnRDB::hierNode GuardRing::returnhierNode(PnRDB::hierNode &node){
+  node.LL.x=0;
+  node.LL.y=0;
+  node.UR.x=node.LL.x+node.width;
+  node.UR.y=node.LL.y+node.height;
   //LL
   movepoint(node.LL);
   //UR
