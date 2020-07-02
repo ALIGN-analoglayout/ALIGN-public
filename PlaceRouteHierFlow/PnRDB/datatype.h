@@ -555,7 +555,7 @@ struct via_info {
 
 struct Boundary{
   string name = "Boundary";
-  int layerNo;
+  int layerNo = 0;
   GdsDatatype gds_datatype;
 };
 
