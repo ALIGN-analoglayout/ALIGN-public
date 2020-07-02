@@ -1717,7 +1717,7 @@ std::vector<int> A_star::Trace_Back_Path_trace_back_node(Grid& grid, int current
   //temp_parents.insert(temp_parent);
   //std::cout<<"start trace back"<<std::endl;
   int count = 0;
-  //src_index.insert(-1);
+  src_index.insert(-1);
   while(src_index.find(temp_parent)==src_index.end()){
   //while(temp_parent!=-1){
       /*
