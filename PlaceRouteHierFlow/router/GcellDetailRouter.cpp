@@ -776,7 +776,7 @@ void GcellDetailRouter::create_detailrouter(){
       std::cout<<"Net name "<<Nets[i].netName<<std::endl;
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       /*
-      if(pathMark==0){
+      if(Nets[i].netName=="vin"){
         grid.CreateGridData();
         assert(0);
         }
@@ -788,6 +788,19 @@ void GcellDetailRouter::create_detailrouter(){
       if (pathMark)
       {
         physical_path = a_star.ConvertPathintoPhysical(grid);
+
+      std::cout<<"GcellDetailRouter Net name "<<Nets[i].netName<<std::endl;
+      for(int unsigned p_index =0;p_index<physical_path.size();p_index++){
+           for(int unsigned q_index =0;q_index<physical_path[p_index].size();q_index++){
+           std::cout<<physical_path[p_index][q_index].MetalIdx<<" ("<<physical_path[p_index][q_index].LinePoint[0].x<<" "<<physical_path[p_index][q_index].LinePoint[0].y<<")"<<" ("<<physical_path[p_index][q_index].LinePoint[1].x<<" "<<physical_path[p_index][q_index].LinePoint[1].y<<")"<<std::endl;
+           }
+         }
+
+      if(Nets[i].netName=="vin"){
+        grid.CreateGridData();
+        assert(0);
+        }
+
         //lastmile_source_new(physical_path, temp_source);
         //lastmile_dest_new(physical_path, temp_dest);
         returnPath(physical_path, Nets[i]);
@@ -2599,6 +2612,8 @@ void GcellDetailRouter::ExtendMetal(){
 
 
 void GcellDetailRouter::GetPhsical_Metal_Via(int i){
+
+  std::cout<<"Nets[i].netName "<<Nets[i].netName<<std::endl;
   
   for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 
