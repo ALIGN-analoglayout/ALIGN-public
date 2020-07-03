@@ -795,12 +795,12 @@ void GcellDetailRouter::create_detailrouter(){
            std::cout<<physical_path[p_index][q_index].MetalIdx<<" ("<<physical_path[p_index][q_index].LinePoint[0].x<<" "<<physical_path[p_index][q_index].LinePoint[0].y<<")"<<" ("<<physical_path[p_index][q_index].LinePoint[1].x<<" "<<physical_path[p_index][q_index].LinePoint[1].y<<")"<<std::endl;
            }
          }
-
+/*
       if(Nets[i].netName=="vin"){
         grid.CreateGridData();
         assert(0);
         }
-
+*/
         //lastmile_source_new(physical_path, temp_source);
         //lastmile_dest_new(physical_path, temp_dest);
         returnPath(physical_path, Nets[i]);
