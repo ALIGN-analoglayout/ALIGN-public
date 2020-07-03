@@ -1845,8 +1845,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		if(current_node.CC_Caps[j].CCCap_name == b.name){
 		    std::cout<<"core dump 0"<<std::endl;
 		    ki = current_node.CC_Caps[j].size;
-                    //bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
-                    bool dummy_flag = 1;
+                    bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    //bool dummy_flag = 1;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
@@ -1959,9 +1959,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                             break;
                                            }
                                       }
-                                insert_dummy_connection = 1;
                               }
                         }
+                        insert_dummy_connection = 1;
 
 			WriteLef(va, cc_gds_file+".lef", opath);
 			std::cout<<"End feed blocks"<<std::endl;
