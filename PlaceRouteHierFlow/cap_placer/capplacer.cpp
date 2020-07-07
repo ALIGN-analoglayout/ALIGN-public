@@ -758,7 +758,8 @@ Placer_Router_Cap::initial_net_pair_sequence(vector<int> & ki, vector<pair<strin
 
     for(unsigned int i=0;i<ki.size()+1;i++){
 	if(i<ki.size()){
-	    temp_net.name = cap_pin[i].first;
+	    //temp_net.name = cap_pin[i].first;
+            temp_net.name = cap_pin[i].second;
 	}else{
 	    temp_net.name = "dummy_gnd_PLUS";
 	}
@@ -974,7 +975,8 @@ void Placer_Router_Cap::Router_Cap(vector<int> & ki, vector<pair<string, string>
     Nets_neg = Nets_pos;
     for(unsigned int i=0;i<Nets_pos.size();i++){
 	if(i!=Nets_pos.size()-1){
-	    Nets_neg[i].name = cap_pin[i].second;
+	    //Nets_neg[i].name = cap_pin[i].second;
+            Nets_neg[i].name = cap_pin[i].first;
 	}else{
 	    Nets_neg[i].name = "dummy_gnd_MINUS";
 	}
@@ -1843,8 +1845,8 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		if(current_node.CC_Caps[j].CCCap_name == b.name){
 		    std::cout<<"core dump 0"<<std::endl;
 		    ki = current_node.CC_Caps[j].size;
-                    //bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
-                    bool dummy_flag = 1;
+                    bool dummy_flag = current_node.CC_Caps[j].dummy_flag;
+                    //bool dummy_flag = 1;
 		    unit_capacitor = current_node.CC_Caps[j].Unit_capacitor;
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
@@ -1957,9 +1959,9 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
                                             break;
                                            }
                                       }
-                                insert_dummy_connection = 1;
                               }
                         }
+                        insert_dummy_connection = 1;
 
 			WriteLef(va, cc_gds_file+".lef", opath);
 			std::cout<<"End feed blocks"<<std::endl;
