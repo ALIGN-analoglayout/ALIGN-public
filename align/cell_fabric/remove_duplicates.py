@@ -206,6 +206,8 @@ class RemoveDuplicates():
 
             for (twice_center, v) in tbl[layer].items():
 
+                different_widths_in_bin = False
+
                 (rect0, _, _) = v[0]
                 for (rect, _, _) in v[1:]:
                     if not all(rect[i] == rect0[i] for i in indices):
@@ -213,22 +215,26 @@ class RemoveDuplicates():
                         for (r, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
                         if layer not in skip_layers_for_different_widths:
-                            self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
+                            different_widths_in_bin = True
+                            tup = (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
+                            logger.warning( f"{tup}")
+                            self.different_widths.append( tup)
 
                 sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
 
                 current_slr = None
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
-                    if sl.isEmpty():
-                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= current_slr.rect[dIndex+2] \
+                    if not sl.isEmpty() and rect[dIndex] <= current_slr.rect[dIndex+2] \
                             and all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
                         if self.connectPair(layer,current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
                             sl.merge_slr(current_slr, sl.rects.pop())
                         else:
                             current_slr = sl.rects[-1]
-                    else:  # gap or different width
+                    else:  # empty or gap or different width
                         current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
+
+                if different_widths_in_bin:
+                    logger.warning( f"Different widths: {layer} {sl}")
 
     def check_shorts_induced_by_vias( self):
 
