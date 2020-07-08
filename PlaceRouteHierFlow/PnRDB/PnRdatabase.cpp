@@ -1703,7 +1703,10 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
              PnRDB::pin temp_pin;
              int iter = node.PowerNets[i].dummy_connected[j].iter;
              int iter2 = node.PowerNets[i].dummy_connected[j].iter2;
+             //std::cout<<"dummy power pin flag1"<<std::endl;
+             if(iter<node.Blocks[iter2].instance[node.Blocks[iter2].selectedInstance].blockPins.size())
              temp_pin = node.Blocks[iter2].instance[node.Blocks[iter2].selectedInstance].blockPins[iter];
+             //std::cout<<"dummy power pin flag2"<<std::endl;
              node.PowerNets[i].Pins.push_back(temp_pin);
            }
      

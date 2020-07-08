@@ -250,7 +250,7 @@ struct Via{
 
 struct PowerNet {
   string name="";
-  bool power = 1; // 1 is vdd, 0 is gnd
+  bool power = 0; // 1 is vdd, 0 is gnd
   //bool shielding=false; // shielding constraint
   //bool sink2Terminal=false; // if connected to terminal
   //int degree=0;
