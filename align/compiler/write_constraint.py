@@ -234,8 +234,8 @@ def compare_node(G,node1:str,node2:str ,ports_weight):
                 logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
                 return False
         elif G.nodes[node1]["net_type"] == 'internal':
-            weight1=[G.get_edge_data(node1, nbr)['weight'] for nbr in nbrs1]
-            weight2=[G.get_edge_data(node2, nbr)['weight'] for nbr in nbrs2]
+            weight1=[(G.get_edge_data(node1, nbr)['weight'] & ~2) for nbr in nbrs1]
+            weight2=[(G.get_edge_data(node2, nbr)['weight'] & ~2) for nbr in nbrs2]
             if weight2==weight1:
                 logger.debug("True")
                 return True
@@ -497,10 +497,9 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     all_match_pairs=FindSymmetry(graph.copy(), ports, ports_weight, stop_points)
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")            
-    written_symmetries = 'all'
-    const_fp = open(const_file, 'a+')
-    const_fp.write("// ALIGN generated automatic constraints")
+    written_symmetries = ''
     ## ALIGN block constraints
+    const_all=[]
     align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
     check_duplicate=[]
     for key in align_const_keys:
@@ -511,55 +510,72 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
             check_duplicate+=h_blocks
             h_align = "\nAlignBlock ( H , "+' , '.join(h_blocks)+' )'
             logger.debug("align constraint"+h_align)
-            const_fp.write(h_align)
+            const_all.write(h_align)
         del all_match_pairs[key]
+
     new_hier_keys =  [key for key,value in all_match_pairs.items() if "name" in value.keys()]
     for key in new_hier_keys:
         del all_match_pairs[key]
     
     all_pairs=sorted(all_match_pairs.values(), key=lambda k: len ([k1 for k1,v1 in k.items() if k1!=v1 and graph.nodes[k1]["inst_type"]!='net']), reverse=True)
-    logger.debug(f"all symmetry matching pairs {pprint.pformat(all_pairs, indent=4)}")            
+    logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")            
     for pairs in all_pairs:
         symmBlock='\nSymmBlock ('
         pairs=sorted(pairs.items(),key=lambda k: k[0])
-        logger.debug(f"all symmblock pairs {pairs}")
+        logger.debug(f"all symmblock pairs {pairs} {written_symmetries}")
         for key, value in pairs:
             #print("key,value,hier",key,value,new_hier_keys)
-            if key in stop_points or key in written_symmetries or \
-                value in written_symmetries or key in new_hier_keys or \
-                key not in graph.nodes() or \
-                graph.nodes[key]["inst_type"]!=graph.nodes[value]["inst_type"]:
-                logger.debug(f"skipping symmetry b/w {key} {value}")
+            if key in stop_points:
+                logger.debug(f"skipping symmetry b/w {key} {value} as they are present in stop_points")
                 continue
-            if graph.nodes[key]["inst_type"]!="net" and \
-                'Dcap' not in graph.nodes[key]["inst_type"] :
-                if key !=value:
-                    symmBlock += ' {'+key+ ','+value+'} ,'
-                elif "Switch_" not in graph.nodes[key]["inst_type"]:
-                    symmBlock +=' {' + key +'} ,'
-                written_symmetries += symmBlock
-            elif 'Dcap' not in graph.nodes[key]["inst_type"] :
+            elif key in written_symmetries or value in written_symmetries:
+                logger.debug(f"skipping symmetry b/w {key} {value} as already written {written_symmetries}")
+                continue
+            elif key in new_hier_keys:
+                logger.debug(f"skipping symmetry b/w {key} {value} as {key} is merged to another hierarchy")
+                continue
+            elif key not in graph.nodes():
+                logger.debug(f"skipping symmetry b/w {key} {value} as {key} is not in graph")
+                continue
+            elif graph.nodes[key]["inst_type"]!=graph.nodes[value]["inst_type"]:
+                logger.debug(f"skipping symmetry b/w {key} {value} due to instance type mismatch")
+                continue
+            if graph.nodes[key]["inst_type"]=="net" :
                 nbrs_key = [graph.get_edge_data(key, nbr)['weight'] for nbr in list(set(graph.neighbors(key)))]
                 nbrs_val = [graph.get_edge_data(value, nbr)['weight'] for nbr in list(set(graph.neighbors(value)))]
-                # second constraint was added due to ports coming as extra from connection function
+                # second constraint was added due to ports coming as extra from connection function and ignoring gate connections in previous stages
 
                 if nbrs_key != nbrs_val and connection(graph,key)!=connection(graph,value) :
-                    logger.info(f"filtering nets which came due to S/D traversal {key} {value}{nbrs_key} {nbrs_val}")
+                    logger.debug(f"skipping symmetry b/w nets with non equal weights {key} {value}: {nbrs_key} {nbrs_val}")
                 elif key!=value  :
                     pairs = symmnet_device_pairs(graph,connection(graph,key),connection(graph,value))
                     if len(pairs)==2:
-                        logger.info("TBD:Need update in placer to simplify this")
                         symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
                                 '} , {'+value+','+','.join(pairs.values()) +'} )'
-                        const_fp.write(symmNet)
-                        written_symmetries += ' '+ key+ ','+value + ','.join(pairs.keys()) + ','.join(pairs.values())
+                        written_symmetries += symmNet
+                        logger.debug(f"adding symmetries: {written_symmetries}")
+                    else:
+                        logger.debug("skipping symmetry between large fanout nets {key} {value}")
+                        logger.debug("TBF:Need update in placer to simplify this")
                 else:
-                    logger.debug(f"skip self symmetric nets")
+                    logger.debug(f"skipping self symmetric nets {key} {value}")
+            elif 'Dcap' in graph.nodes[key]["inst_type"]:
+                logger.debug(f"skipping symmetry for dcaps {key} {value}") 
+            else:
+                if key !=value:
+                    symmBlock += ' {'+key+ ','+value+'} ,'
+                elif "Switch_" in graph.nodes[key]["inst_type"]:
+                    logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
+                else:
+                    symmBlock +=' {' + key +'} ,'
         if ',' in symmBlock[:-1]:
             symmBlock = symmBlock[:-1]+')'
-            written_symmetries.replace(key,'')
-            const_fp.write(symmBlock)
+            written_symmetries += symmBlock
+            logger.debug(f"one axis of written symmetries: {written_symmetries}")
 
+    const_fp = open(const_file, 'a+')
+    const_fp.write("// ALIGN generated automatic constraints")
+    const_fp.write(written_symmetries)
     const_fp.close()
 
 def symmnet_device_pairs(G, list_A, list_B):
