@@ -47,7 +47,8 @@ class Scanline:
     def isEmpty(self):
         return len(self.rects) == 0
 
-    def new_slr_no_add(self, rect, netName, *, isPorted=False):
+    @staticmethod
+    def new_slr_no_add( rect, netName, *, isPorted=False):
         slr = ScanlineRect()
         slr.rect = rect[:]
         if netName is not None and ':' in netName:

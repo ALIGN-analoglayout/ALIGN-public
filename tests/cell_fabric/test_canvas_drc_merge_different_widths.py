@@ -24,7 +24,7 @@ def setup():
 
 
 def test_merged_same(setup):
-    c,dy0,dy1 = setup
+    c,dy0,_ = setup
 
     c.terminals = [
         {'layer': 'M2', 'netName': 'x', 'rect': [    0, -dy0,  200, dy0]},
@@ -44,6 +44,8 @@ def test_merged_same(setup):
     ]
 
     assert len(data['terminals']) == 2
+
+    assert data['terminals'] == gold
 
 def test_merged_diff_after(setup):
     c,dy0,dy1 = setup
