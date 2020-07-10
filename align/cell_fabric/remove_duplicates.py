@@ -38,30 +38,33 @@ class ScanlineRect(UnionFind):
         return str( (self.rect, self.netName))
 
 class Scanline:
-    def __init__(self, proto, indices, dIndex):
-        self.proto = proto
+    def __init__(self, indices, dIndex):
         self.indices = indices
         self.dIndex = dIndex
         self.rects = []
         self.dad = None
 
-
     def isEmpty(self):
         return len(self.rects) == 0
 
-
-    def new_slr(self, rect, netName, *, isPorted=False):
+    @staticmethod
+    def new_slr_no_add( rect, netName, *, isPorted=False):
         slr = ScanlineRect()
-        slr.rect = self.proto[:]
-        slr.rect[self.dIndex] = rect[self.dIndex]
-        slr.rect[self.dIndex+2] = rect[self.dIndex+2]
+        slr.rect = rect[:]
         if netName is not None and ':' in netName:
             slr.terminal = tuple(netName.split(':'))
             assert len(slr.terminal) == 2
         else:
             slr.netName = netName
         slr.isPorted = isPorted
+        return slr
+
+    def add_slr(self, slr):
         self.rects.append(slr)
+        return slr
+
+    def new_slr(self, rect, netName, *, isPorted=False):
+        self.add_slr( self.new_slr_no_add( rect, netName, isPorted=isPorted))
         return slr
 
     def merge_slr(self, base_slr, new_slr):
@@ -154,6 +157,7 @@ class RemoveDuplicates():
 
         # Should use a region generator
         self.skip_layers.add( 'boundary')
+        self.skip_layers.add( 'Rboundary')
 
         for (nm, gen) in self.canvas.generators.items():
             if   isinstance( gen, Region):
@@ -205,6 +209,8 @@ class RemoveDuplicates():
 
             for (twice_center, v) in tbl[layer].items():
 
+                different_widths_in_bin = False
+
                 (rect0, _, _) = v[0]
                 for (rect, _, _) in v[1:]:
                     if not all(rect[i] == rect0[i] for i in indices):
@@ -212,22 +218,31 @@ class RemoveDuplicates():
                         for (r, _, _) in v:
                             widths.add( r[indices[1]]-r[indices[0]])
                         if layer not in skip_layers_for_different_widths:
-                            self.different_widths.append( (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v)))
+                            different_widths_in_bin = True
+                            tup = (f"Rectangles on layer {layer} with the same 2x centerline {twice_center} but different widths {widths}:", (indices,v))
+                            logger.warning( f"{tup}")
+                            self.different_widths.append( tup)
 
-                sl = self.store_scan_lines[layer][twice_center] = Scanline(v[0][0], indices, dIndex)
+                sl = self.store_scan_lines[layer][twice_center] = Scanline( indices, dIndex)
 
                 current_slr = None
                 for (rect, netName, isPorted) in sorted(v, key=lambda p: p[0][dIndex]):
-                    if sl.isEmpty():
-                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
-                    elif rect[dIndex] <= current_slr.rect[dIndex+2] \
-                            and all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
-                        if self.connectPair(layer,current_slr, sl.new_slr(rect, netName, isPorted=isPorted)):
-                            sl.merge_slr(current_slr, sl.rects.pop())
+                    potential_slr = sl.new_slr_no_add(rect, netName, isPorted=isPorted)
+                    if not sl.isEmpty() and \
+                       rect[dIndex] <= current_slr.rect[dIndex+2] and \
+                       all(rect[i] == current_slr.rect[i] for i in indices):  # continuation
+                        if self.connectPair(layer,current_slr, potential_slr):
+                            sl.merge_slr(current_slr, potential_slr)
                         else:
-                            current_slr = sl.rects[-1]
-                    else:  # gap or different width
-                        current_slr = sl.new_slr(rect, netName, isPorted=isPorted)
+                            current_slr = sl.add_slr( potential_slr)
+                    else:  # empty or gap or different width
+                        current_slr = sl.add_slr( potential_slr)
+
+                    # invariant (can probably remove current_slr)
+                    assert current_slr == sl.rects[-1]
+
+                if different_widths_in_bin:
+                    logger.warning( f"Different widths: {layer} {sl}")
 
     def check_shorts_induced_by_vias( self):
 
@@ -278,6 +293,8 @@ class RemoveDuplicates():
 
     def generate_rectangles( self):
 
+        logger.debug( f"BEFORE: generate_rectangles {self.canvas.terminals}")
+
         terminals = []
 #
 # Write out regions
@@ -297,6 +314,9 @@ class RemoveDuplicates():
                         terminals[-1]['pin'] = root.netName
                     if slr.terminal is not None:
                         terminals[-1]['terminal'] = slr.terminal
+
+        logger.debug( f"AFTER: generate_rectangles {terminals}")
+
         return terminals
 
     def remove_duplicates( self):

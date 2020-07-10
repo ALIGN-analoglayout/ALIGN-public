@@ -347,9 +347,11 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      std::cout<<"Checkpoint: extract power pins work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
+      std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
       DB.CheckinHierNode(idx, nodeVec[lidx]);
+      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
 

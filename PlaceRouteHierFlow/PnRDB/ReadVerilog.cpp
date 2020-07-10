@@ -142,8 +142,10 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
         }
       for(unsigned int j=0;j<db.hierTree.size();j++){
            std::vector<PnRDB::net> temp_net;
+           bool powernet_found = 0;
            for(unsigned int k=0;k<db.hierTree[j].Nets.size();k++){
                if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
+                   powernet_found = 1;
                    PnRDB::PowerNet temp_PowerNet;
                    temp_PowerNet.name = db.hierTree[j].Nets[k].name;
                    temp_PowerNet.power = power;
@@ -153,6 +155,14 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
                    temp_net.push_back(db.hierTree[j].Nets[k]);
                  }
               }
+
+            if(powernet_found==0){
+              PnRDB::PowerNet temp_PowerNet;
+              temp_PowerNet.name = supply_name;
+              temp_PowerNet.power = power;
+              db.hierTree[j].PowerNets.push_back(temp_PowerNet);
+            }
+
             db.hierTree[j].Nets = temp_net;
          }
      }

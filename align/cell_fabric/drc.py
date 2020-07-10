@@ -2,10 +2,32 @@ import pprint
 import logging
 logger = logging.getLogger(__name__)
 
+class RegionSet:
+    def __init__(self):
+        self.rects = []
+
+    def add_region(self, rect):
+        self.rects.append( rect)
+
+    def contained_in( self, rect):
+        for r in self.rects:
+            if r[0] <= rect[0] and rect[2] <= r[2] and \
+               r[1] <= rect[1] and rect[3] <= r[3]:
+                #logger.debug( f"Filtering rect {rect} inside {r}")
+                return True
+        #logger.debug( f"Did not filter rect {rect}: {self.rects}")
+        return False
+        
 class DesignRuleCheck():
     def __init__(self, canvas):
         self.canvas = canvas
         self.errors = []
+
+        self.r_regions = RegionSet()
+        for term in self.canvas.terminals:
+            if term['layer'] == 'Boundary':
+                logger.error( f"Adding region {term['rect']}")
+                self.r_regions.add_region( term['rect'])
 
     @property
     def num_errors(self):
@@ -19,6 +41,7 @@ class DesignRuleCheck():
               (aka removeDuplicates has been run)
         '''
 
+        
         for (layer, vv) in self.canvas.rd.store_scan_lines.items():
             if not (layer.startswith('V') or layer.startswith('M')) or layer not in self.canvas.pdk:
                 continue
@@ -154,16 +177,23 @@ class DesignRuleCheck():
             rect = slr.rect
             if rect[end] - rect[start] < min_length:
                 root = slr.root()
-                self.errors.append(
-                    f"MinLength violation on {layer}: {root.netName}{rect}")
+                if self.r_regions.contained_in( rect):
+                    logger.debug( f"Skipping: MinLength violation on {layer}: {root.netName}{rect}")
+                else:
+                    self.errors.append(
+                        f"MinLength violation on {layer}: {root.netName}{rect}")
 
     def _check_min_spacing(self, layer, slrects, dIndex):
         min_space = self.canvas.pdk[layer]['EndToEnd']
         (start, end) = (dIndex, dIndex + 2)
         prev_slr = None
         for slr in slrects:
-            if prev_slr is not None and 0 < slr.rect[start] - prev_slr.rect[end] < min_space:
-                self.errors.append(
-                    f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
+            if prev_slr is not None and \
+               0 < slr.rect[start] - prev_slr.rect[end] < min_space:
+                if self.r_regions.contained_in( slr.rect):
+                    logger.debug( f"Skipping: MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
+                else:
+                    self.errors.append(
+                        f"MinSpace violation on {layer}: {prev_slr.root().netName}{prev_slr.rect} x {slr.root().netName}{slr.rect}")
             prev_slr = slr
         return

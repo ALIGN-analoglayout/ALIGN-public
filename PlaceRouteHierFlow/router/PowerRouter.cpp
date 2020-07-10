@@ -541,7 +541,7 @@ void PowerRouter::returnPath(std::vector<std::vector<RouterDB::Metal> > temp_pat
 
 void PowerRouter::SetSrcDest(RouterDB::Pin temp_pin, RouterDB::PowerGrid Vdd_grid, std::vector<RouterDB::SinkData> &temp_source, std::vector<RouterDB::SinkData> &temp_dest){
 
-  int expand_scale = 4;
+  int expand_scale = 10;
   RouterDB::SinkData temp_sink;
   RouterDB::point temp_point;
 
