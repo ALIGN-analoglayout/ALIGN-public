@@ -293,8 +293,6 @@ class RemoveDuplicates():
 
     def generate_rectangles( self):
 
-        logger.debug( f"BEFORE: generate_rectangles {self.canvas.terminals}")
-
         terminals = []
 #
 # Write out regions
@@ -314,8 +312,6 @@ class RemoveDuplicates():
                         terminals[-1]['pin'] = root.netName
                     if slr.terminal is not None:
                         terminals[-1]['terminal'] = slr.terminal
-
-        logger.debug( f"AFTER: generate_rectangles {terminals}")
 
         return terminals
 
