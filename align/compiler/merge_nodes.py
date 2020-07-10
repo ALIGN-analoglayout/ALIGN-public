@@ -145,9 +145,6 @@ def convert_unit(value:str):
     elif value.endswith('k') and is_val:
         value = float(value.replace('k', ""))
         value = value * 1000
-    elif 'K' in value and is_val:
-        value = float(value.replace('K', ""))
-        value = value * 1000
     elif 'm' in value and is_val:
         value = float(value.replace('m', ""))
         value = value * 1E6

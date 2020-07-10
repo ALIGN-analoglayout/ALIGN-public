@@ -281,7 +281,7 @@ class SpiceParser:
         """Reads and store all parameters"""
         param_list = {}
         logger.debug(f"param: {line}")
-        all_param = line.strip().split()
+        all_param = line.lower().strip().split()
         for idx, individual_param in enumerate(all_param):
             if '=' in individual_param:
                 [param, value] = individual_param.split('=')

@@ -6,7 +6,8 @@ from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,add_stacked_transistor,add_parallel_transistor,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
 from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
-from .write_constraint import WriteConst, FindArray, CopyConstFile, FindSymmetry
+from .write_constraint import WriteConst, CopyConstFile, FindSymmetry
+from .create_array_hierarchy import FindArray
 from .read_lef import read_lef
 
 import logging
