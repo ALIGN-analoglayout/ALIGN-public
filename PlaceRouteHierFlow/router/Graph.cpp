@@ -154,7 +154,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
          {
             if(grid.total2graph.find(temp_index)!=grid.total2graph.end()){
                  int graph_index = grid.total2graph[temp_index];
-                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1) 
+                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 1 and grid.vertices_graph[graph_index].power==1 and CheckActive(grid,graph_index) and CheckActive(grid,i)) 
                    { 
                      if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
                         temp_via.model_index = grid.vertices_graph[i].metal;
@@ -165,7 +165,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
                      //VddPower_Set.insert(temp_metal);
                    }
 
-                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0) 
+                 if(grid.vertices_graph[graph_index].active == 1 and grid.vertices_graph[i].power == 0 and grid.vertices_graph[graph_index].power==0 and CheckActive(grid,graph_index) and CheckActive(grid,i)) 
                    { 
                        if(grid.vertices_graph[i].metal<grid.vertices_graph[graph_index].metal){
                         temp_via.model_index = grid.vertices_graph[i].metal;
@@ -222,6 +222,43 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
   for(viax=vialowx;viax!=viaupx;++viax){
       Gnd_grid.vias.push_back(*viax);
      }
+
+};
+
+bool Graph::CheckActive(Grid& grid, int index){
+
+  bool found = false;
+
+  auto check_one_direction = [&](auto&temp_vector){
+
+       for(unsigned int j=0;j<temp_vector.size();++j) 
+          {   
+          
+             if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
+               {
+                  int graph_index = grid.total2graph[temp_vector[j]];
+                  if(graph_index>=0 and graph_index< grid.vertices_graph.size() and grid.vertices_graph[graph_index].active == 1) 
+                    {  
+                       found = true;
+                    }
+               }
+                   
+         }
+
+  };
+
+  check_one_direction(grid.vertices_graph[index].north);
+  check_one_direction(grid.vertices_graph[index].south);
+  check_one_direction(grid.vertices_graph[index].east);
+  check_one_direction(grid.vertices_graph[index].west);
+
+  if(found==false){
+     std::cout<<"Power Via Bug "<<found<<std::endl;
+    }else{
+     std::cout<<"Power Via Bug "<<found<<std::endl;
+    }
+
+  return found;
 
 };
 

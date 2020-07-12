@@ -62,6 +62,8 @@ class Graph {
     //vector<RouterDB:Metal> Get_Physical_Path(vector<int>& path);
     std::vector<std::vector<int> > GetShorestPath();
     std::vector<std::vector<RouterDB::Metal> > ConvertPathintoPhysical(Grid& grid);
+    bool CheckActive(Grid& grid, int index);
+    
 };
 
 #endif
