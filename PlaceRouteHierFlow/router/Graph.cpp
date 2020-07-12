@@ -232,7 +232,7 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 };
 
-void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, bool power){
+void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, int power){
 
   //std::cout<<"power_grid_dsf checkpoint 1"<<std::endl;
 
