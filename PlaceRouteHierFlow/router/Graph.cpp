@@ -249,7 +249,7 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
                {
                   int index = grid.total2graph[temp_vector[j]];
                   //std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
-                  if(index>=0 and index<grid.vertices_graph.size() and grid.vertices_graph[index].active == 1 and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( grid.vertices_graph[index].active == 1 and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -265,7 +265,7 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
                {
                   int index = grid.total2graph[temp_vector];
                   //std::cout<<"index via "<<index<<" graph size "<<grid.vertices_graph.size()<<std::endl;
-                  if(index>=0 and index<grid.vertices_graph.size() and grid.vertices_graph[index].active == 1 and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  if( grid.vertices_graph[index].active == 1 and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
