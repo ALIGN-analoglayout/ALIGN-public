@@ -63,6 +63,8 @@ class Graph {
     std::vector<std::vector<int> > GetShorestPath();
     std::vector<std::vector<RouterDB::Metal> > ConvertPathintoPhysical(Grid& grid);
     bool CheckActive(Grid& grid, int index);
+    void power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, bool power);
+    void Connection_Check_Power_Grid(Grid& grid, int power);
     
 };
 
