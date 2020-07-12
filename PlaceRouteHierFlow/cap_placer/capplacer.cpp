@@ -1760,7 +1760,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    bool addNetName = true;
 
 	    json term1;
-
+/*
 	    if ( ni == -1) {
 		if ( term0["netName"] == "PLUS") {
 		    term1["netName"] = "dummy_gnd_PLUS";
@@ -1784,18 +1784,41 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		if ( term0["netName"] == "PLUS") {
 		    ostringstream os;
 		    os << "PLUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else if ( term0["netName"] == "MINUS") {
 		    ostringstream os;
 		    os << "MINUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else {
 		    continue;
 		}
+	    }
+*/
+	    if ( ni == -1) {
+		if ( term0["netName"] == "PLUS") {
+		    term1["netName"] = "dummy_gnd_PLUS";
+		} else if ( term0["netName"] == "MINUS") {
+		    term1["netName"] = "dummy_gnd_MINUS";
+		} else {
+		    continue;
+		}
+	    } else {
+		if ( term0["netName"] == "PLUS") {
+                     term1["netName"] = Nets_pos[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else if ( term0["netName"] == "MINUS") {
+                     term1["netName"] = Nets_neg[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else {
+                    continue;
+                }
+
 	    }
 
 	    term1["layer"] = term0["layer"];
