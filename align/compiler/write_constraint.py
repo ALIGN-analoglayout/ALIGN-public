@@ -412,21 +412,13 @@ def symmnet_device_pairs(G, net_A, net_B):
     pairs : dict
         deviceA/pin: deviceB/pin.
     """
-    list_A = connection(G,net_A)
-    list_B = connection(G,net_B)
-    weight_A = []
-    for ele  in list_A:
-        node=ele.split('/')[0]
-        weight_A.append(G.get_edge_data(node, net_A)['weight'])         
-    weight_B = []
-    for ele  in list_B:
-        node=ele.split('/')[0]
-        weight_B.append(G.get_edge_data(node, net_B)['weight'])
-    logger.info(f"arranging symmnet pairs {list_A} {weight_A} : {list_B} {weight_B}")
+    conn_A = connection(G,net_A)
+    conn_B = connection(G,net_B)
+
     pairs={}
-    for iter_A, ele_A in enumerate(list_A):
-        for iter_B, ele_B in enumerate(list_B):
-            if weight_A[iter_A]==weight_B[iter_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
+    for ele_A in conn_A.keys():
+        for ele_B in conn_B.keys():
+            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
                 if ele_B in pairs.values():
                     logger.debug(f"skipping symmetry due to multiple possible matching of net nbr {ele_B} to {pairs.values()} ")
                     pairs = {}
@@ -454,21 +446,22 @@ def connection(graph,net:str):
         list of all pins and ports connected to a net.
 
     """
-    conn =[]
+    conn = {}
     for nbr in list(graph.neighbors(net)):
         try:
             if "ports_match" in graph.nodes[nbr]:
                 #logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
                 idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-                conn.append(nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx])
+                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
+                
             elif "connection" in graph.nodes[nbr]:
                 #logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-                conn.append(nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx])
+                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
         except ValueError:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
-        conn.append(net)
+        conn[net]=sum(conn.values())
     return conn
 
 def CopyConstFile(name, input_dir, working_dir):
