@@ -1,7 +1,8 @@
 import pathlib
 
 from align.compiler.write_verilog_lef import WriteVerilog, WriteSpice, generate_lef
-from align.compiler.write_constraint import WriteConst, FindArray
+from align.compiler.write_constraint import WriteConst
+from align.compiler.create_array_hierarchy import FindArray
 from align.compiler.common_centroid_cap_constraint import WriteCap
 from test_current_parser import test_match
 

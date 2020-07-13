@@ -4,7 +4,7 @@ import pprint
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
 from .match_graph import read_inputs, read_setup,_mapped_graph_list,add_stacked_transistor,add_parallel_transistor,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
-from .write_verilog_lef import WriteVerilog, WriteSpice, print_globals,print_header,generate_lef
+from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, CopyConstFile, FindSymmetry
 from .create_array_hierarchy import FindArray
@@ -160,8 +160,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
     input_dir=input_ckt.parents[0]
     VERILOG_FP = open(result_dir / f'{design_name}.v', 'w')
-    printed_mos = []
-    logger.debug("writing spice file for cell generator")
+    #printed_mos = []
+    #logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
     #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
@@ -222,7 +222,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 block_name, block_args = generate_lef(
                     lef_name, attr["values"],
                     primitives, unit_size_mos, unit_size_cap)
-                block_name_ext = block_name.replace(lef_name,'')
+                #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
                 # Only unit caps are generated
                 if  block_name.lower().startswith('cap'):

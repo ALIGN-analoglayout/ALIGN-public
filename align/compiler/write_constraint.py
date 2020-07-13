@@ -175,8 +175,9 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                     new_pair={}
                     compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr1,ports_weight)
                     if new_pair and nbr1+'_'+nbr1 in all_match_pairs.keys():
+                        new_pair= {k:v for (k,v) in new_pair.items() if v not in all_match_pairs[nbr1+'_'+nbr1].values()}
                         all_match_pairs[nbr1+'_'+nbr1].update(new_pair)
-                        logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+                        logger.debug(f"updating match pairs haha: {pprint.pformat(all_match_pairs, indent=4)}")
                     elif new_pair:
                         all_match_pairs[nbr1+'_'+nbr1] = new_pair
                         logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
@@ -402,11 +403,11 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
             symmBlock = symmBlock[:-1]+')'
             written_symmetries += symmBlock
             logger.debug(f"one axis of written symmetries: {written_symmetries}")
-
-    const_fp = open(const_file, 'a+')
-    const_fp.write("// ALIGN generated automatic constraints")
-    const_fp.write(written_symmetries)
-    const_fp.close()
+    if written_symmetries:
+        const_fp = open(const_file, 'a+')
+        const_fp.write("// ALIGN generated automatic constraints")
+        const_fp.write(written_symmetries)
+        const_fp.close()
 
 def symmnet_device_pairs(G, net_A, net_B):
     """
