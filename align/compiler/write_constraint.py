@@ -367,19 +367,13 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 logger.debug(f"skipping symmetry b/w {key} {value} due to instance type mismatch")
                 continue
             if graph.nodes[key]["inst_type"]=="net" :
-                nbrs_key = [graph.get_edge_data(key, nbr)['weight'] for nbr in list(set(graph.neighbors(key)))]
-                nbrs_val = [graph.get_edge_data(value, nbr)['weight'] for nbr in list(set(graph.neighbors(value)))]
-                # second constraint was added due to ports coming as extra from connection function and ignoring gate connections in previous stages
-
-                if nbrs_key != nbrs_val and connection(graph,key)!=connection(graph,value) :
-                    logger.debug(f"skipping symmetry b/w nets with non equal weights {key} {value}: {nbrs_key} {nbrs_val}")
-                elif key!=value  :
-                    pairs = symmnet_device_pairs(graph,connection(graph,key),connection(graph,value))
+                if key!=value  :
+                    pairs = symmnet_device_pairs(graph,key,value)
                     if pairs:
                         symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
                                 '} , {'+value+','+','.join(pairs.values()) +'} )'
                         written_symmetries += symmNet
-                        logger.debug(f"adding symmetries: {written_symmetries}")
+                        logger.debug(f"adding symmetries: {symmNet}")
                     else:
                         logger.debug("skipping symmetry between large fanout nets {key} {value}")
                         logger.debug("TBF:Need update in placer to simplify this")
@@ -404,13 +398,13 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     const_fp.write(written_symmetries)
     const_fp.close()
 
-def symmnet_device_pairs(G, list_A, list_B):
+def symmnet_device_pairs(G, net_A, net_B):
     """
     Parameters
     ----------
     G : networkx graph
         subckt graphs.
-    list_A/B : neighbors (device/pin) of net A/B
+    net_A/B : two nets A/B
         DESCRIPTION.
 
     Returns
@@ -418,25 +412,23 @@ def symmnet_device_pairs(G, list_A, list_B):
     pairs : dict
         deviceA/pin: deviceB/pin.
     """
-    weight_A={}
+    list_A = connection(G,net_A)
+    list_B = connection(G,net_B)
+    weight_A = []
     for ele  in list_A:
         node=ele.split('/')[0]
-        weight_A[ele]=[]
-        for nbr in sorted(list(G.neighbors(node))):
-            weight_A[ele].append(G.get_edge_data(node, nbr)['weight'])            
-    weight_B={}
+        weight_A.append(G.get_edge_data(node, net_A)['weight'])         
+    weight_B = []
     for ele  in list_B:
         node=ele.split('/')[0]
-        weight_B[ele]=[]
-        for nbr in sorted(list(G.neighbors(node))):
-            weight_B[ele].append(G.get_edge_data(node, nbr)['weight'])
+        weight_B.append(G.get_edge_data(node, net_B)['weight'])
     logger.info(f"arranging symmnet pairs {list_A} {weight_A} : {list_B} {weight_B}")
     pairs={}
-    for ele_A in weight_A.keys():
-        for ele_B in weight_B.keys():
-            if weight_A[ele_A]==weight_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
-                if ele_B not in pairs.values():
-                    logger.debug(f"skipping symmetry due to multiple possible matching connections from net")
+    for iter_A, ele_A in enumerate(list_A):
+        for iter_B, ele_B in enumerate(list_B):
+            if weight_A[iter_A]==weight_B[iter_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
+                if ele_B in pairs.values():
+                    logger.debug(f"skipping symmetry due to multiple possible matching of net nbr {ele_B} to {pairs.values()} ")
                     pairs = {}
                     return pairs
                 else:
