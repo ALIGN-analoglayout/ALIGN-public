@@ -1760,7 +1760,7 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 	    bool addNetName = true;
 
 	    json term1;
-
+/*
 	    if ( ni == -1) {
 		if ( term0["netName"] == "PLUS") {
 		    term1["netName"] = "dummy_gnd_PLUS";
@@ -1784,18 +1784,41 @@ Placer_Router_Cap::WriteViewerJSON (const string& fpath, const string& unit_capa
 		if ( term0["netName"] == "PLUS") {
 		    ostringstream os;
 		    os << "PLUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else if ( term0["netName"] == "MINUS") {
 		    ostringstream os;
 		    os << "MINUS" << 1+ni;
+                    std::cout<<"Cap Bug test "<<1+ni<<" "<<os.str()<<" "<<term0["netName"]<<std::endl;
 		    if ( addNetName) {
 			term1["netName"] = os.str();
 		    }
 		} else {
 		    continue;
 		}
+	    }
+*/
+	    if ( ni == -1) {
+		if ( term0["netName"] == "PLUS") {
+		    term1["netName"] = "dummy_gnd_PLUS";
+		} else if ( term0["netName"] == "MINUS") {
+		    term1["netName"] = "dummy_gnd_MINUS";
+		} else {
+		    continue;
+		}
+	    } else {
+		if ( term0["netName"] == "PLUS") {
+                     term1["netName"] = Nets_pos[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else if ( term0["netName"] == "MINUS") {
+                     term1["netName"] = Nets_neg[ni].name ;
+                     std::cout<<"Cap Bug test "<<1+ni<<" "<<" "<<term1["netName"]<<std::endl;
+		} else {
+                    continue;
+                }
+
 	    }
 
 	    term1["layer"] = term0["layer"];
@@ -1851,11 +1874,39 @@ void Placer_Router_Cap::Common_centroid_capacitor_aspect_ratio(const string& opa
 		    final_gds = b.master;
 		    std::cout<<"core dump 1"<<std::endl;
 		    assert( b.blockPins.size() % 2 == 0);
+
+                    for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index++){
+                        int position_minus = b.blockPins[pin_index].name.find("MINUS");
+                        if(position_minus!=string::npos){
+                           pins.first = b.blockPins[pin_index].name;
+                           for(unsigned int pin_index_p=0; pin_index_p <b.blockPins.size(); pin_index_p++){
+                              int position_plus = b.blockPins[pin_index_p].name.find("PLUS");
+                              std::string first_name_index (pins.first,5);
+                              //std::cout<<"first_name_index "<<first_name_index<<" pin name" <<b.blockPins[pin_index].name<<std::endl;
+                              if(position_plus!=string::npos){
+                                 std::string second_name_index (b.blockPins[pin_index_p].name,4);
+                                 //std::cout<<"second_name_index "<<second_name_index<<" pin name" <<b.blockPins[pin_index_p].name<<std::endl;
+                                 if(first_name_index==second_name_index){
+                                   pins.second = b.blockPins[pin_index_p].name;
+                                   std::cout<<pins.first<<" "<<pins.second<<std::endl;
+                                   std::cout<<"first_name_index "<<first_name_index<<" second_name_index "<<second_name_index<<" found"<<std::endl;
+                                   //assert(0);
+                                   pin_names.push_back(pins);
+                                   break;
+                                 }
+                                }
+                           }
+                         }
+                    }
+
+                    /*
 		    for(unsigned int pin_index=0; pin_index <b.blockPins.size(); pin_index+=2){
 			pins.first = b.blockPins[pin_index].name;
 			pins.second = b.blockPins[pin_index+1].name;
 			pin_names.push_back(pins);
 		    }
+                    */
+
 		    std::cout<<"core dump 2"<<std::endl;
 		    bool cap_ratio = current_node.CC_Caps[j].cap_ratio;
 		    std::cout<<"New CC 2 "<<j<<std::endl;
