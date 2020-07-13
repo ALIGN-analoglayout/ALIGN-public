@@ -10,7 +10,7 @@ class Grid:
     def __init__( self):
         """
         grid is a list of pairs: the grid coord and associated attributes (e.g., width, color)
-"""
+        """
         self.grid = []
         self.legalIndices = set()
 
@@ -90,6 +90,7 @@ class CenteredGrid(Grid):
 class CenterLineGrid(Grid):
 
     def addCenterLine( self, value, width, isLegal=True, *, color=None):
+        assert width % 2 == 0
         self.addGridLine( value, isLegal, (width, color))
 
     def semantic( self):
