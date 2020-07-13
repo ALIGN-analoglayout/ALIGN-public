@@ -235,50 +235,10 @@ jobs:
       - run: |
           docker build -t align_image -f ./build/Dockerfile.base .
 
-          #      - run: |
-          #          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_CK_Divider8' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_4.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          #          docker cp align_container:test-reports .
-          #          docker rm align_container
-      
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_Comp_CK' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_5.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_5.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
           docker cp align_container:test-reports .
           docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_DLPF_RCFilter' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_7.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_EdgeComparator' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_8.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_LevelCrossingDetector' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_9.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_11.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-          docker cp align_container:test-reports .
-          docker rm align_container
-      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'Sanitized_TempSensor' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_12.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1600 -k 'Santized_12b_ADC_TOP' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit2_15.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 30m
-      
       
       - persist_to_workspace:
           root: /work/workspace
@@ -298,7 +258,7 @@ jobs:
 
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not sc_dc_dc' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
+            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
           no_output_timeout: 30m
 
       - run: |
@@ -309,29 +269,6 @@ jobs:
           root: /work/workspace
           paths:
             - test-reports/align-nightly  
-  # wont run as circle ci kills it
-  build-nightly4:
-    executor: docker-executor
-    steps:
-      - setup_remote_docker
-
-      - attach_workspace:
-          at: /work/workspace
-
-      - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-      - run:
-          command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=6800 -k 'sc_dc_dc_converter' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit4.xml && cp -v /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/*/* /test-reports/align-nightly/ >/dev/null; ls /test-reports/align-nightly"
-              docker cp align_container:test-reports .
-              docker rm align_container
-          no_output_timeout: 120m
-           
-      - persist_to_workspace:
-          root: /work/workspace
-          paths:
-            - test-reports/align-nightly
 
   finish:
     executor: git-executor

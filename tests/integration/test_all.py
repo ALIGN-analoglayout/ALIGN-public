@@ -5,7 +5,7 @@ import pathlib
 
 run_flat = ['linear_equalizer', 'adder', 'variable_gain_amplifier', 'single_to_differential_converter']
 skip_pdks = ['Bulk65nm_Mock_PDK']
-skip_dirs = ['Sanitized_model3x_MDLL_TOP','Sanitized_Coarse_SAR_Logic', 'ADC_CORE', 'GF65_DLL_sanitized', 'Sanitized_5b_ADC','Sanitized_CDAC_SW_Coarse','Sanitized_DLPF_RCFilter','Sanitized_ResTune_Configure', 'Sanitized_TempSensor', 'CTDTDSM_V3','single_SAR','Sanitized_civiR_DLDO_TOP','Sanitized_TX_8l12b']
+skip_dirs = ['Sanitized_model3x_MDLL_TOP','Sanitized_Coarse_SAR_Logic', 'ADC_CORE', 'GF65_DLL_sanitized', 'Sanitized_5b_ADC','Sanitized_CDAC_SW_Coarse','Sanitized_DLPF_RCFilter','Sanitized_ResTune_Configure', 'Sanitized_TempSensor', 'CTDTDSM_V3','single_SAR','Sanitized_civiR_DLDO_TOP','Sanitized_TX_8l12b','Santized_12b_ADC_TOP','Sanitized_LevelCrossingDetector','Sanitized_CK_Divider8']
 skip_dirs = []
 ALIGN_HOME = pathlib.Path(__file__).parent.parent.parent
 
