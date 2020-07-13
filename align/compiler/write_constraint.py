@@ -114,8 +114,10 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
     """
     logger.debug("comparing %s,%s, traversed %s",node1,node2,traversed)
     nbrs1 = sorted(set(G.neighbors(node1)) - set(traversed))
+    #remove dummies
     nbrs1 = sorted(set([nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]))
     nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
+    #remove dummies
     nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]))
     logger.debug(f"first node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
     logger.debug(f"second node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
@@ -123,6 +125,14 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         if compare_two_nodes(G, node1, node2, ports_weight):
             match_pair[node1]=node2
         logger.debug(f"no new neihbours, returning recursion {match_pair}")
+        return
+    elif len(nbrs1)> 10:
+        logger.debug(f"skipping high fanout nets due to large computation,  {node1} {nbrs1}")
+        traversed.append(node1)
+        return
+    elif len(nbrs2)> 10:
+        traversed.append(node2)
+        logger.debug(f"skipping high fanout nets due to large computation,  {node2} {nbrs2}")
         return
     
     if node1 == node2:
