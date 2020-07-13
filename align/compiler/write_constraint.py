@@ -450,12 +450,12 @@ def connection(graph,net:str):
     for nbr in list(graph.neighbors(net)):
         try:
             if "ports_match" in graph.nodes[nbr]:
-                #logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
+                logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
                 idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
                 conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
                 
             elif "connection" in graph.nodes[nbr]:
-                #logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
+                logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
                 conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
         except ValueError:
