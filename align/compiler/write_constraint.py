@@ -431,7 +431,7 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
         for ele_B in conn_B.keys():
             if conn_A[ele_A]==conn_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
                 if ele_B in pairs.values():
-                    logger.debug(f"skipping symmetry due to multiple possible matching of net nbr {ele_B} to {pairs.values()} ")
+                    logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                     pairs = {}
                     return pairs
                 elif ele_A.split('/')[0] in existing and ele_B.split('/')[0] not in existing:
@@ -440,7 +440,10 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
                     continue
                 else:
                     pairs[ele_A]=ele_B
-    return pairs
+    if len(pairs.keys())>1:
+        return pairs
+    else:
+        logger.debug(f"skipping symmnet as: symmetry of net is between two devices")
         
 
 def connection(graph,net:str):

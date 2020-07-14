@@ -72,6 +72,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 logger.info("place symmetrical cap as CC:%s",blocks_in_line)
                 for pair in blocks_in_line:
                     p1,p2=pair.split(',')
+                    
                     if graph.nodes[p1]['inst_type'].lower().startswith('cap'):
                         all_array[p1]={p1:[p1,p2]}
                         line=line.replace(pair,p1+'_'+p2).replace('(,','(').replace(',)',')').replace(',,',',')
