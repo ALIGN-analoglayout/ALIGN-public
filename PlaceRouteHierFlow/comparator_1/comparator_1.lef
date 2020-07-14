@@ -1,7 +1,7 @@
 MACRO Switch_NMOS_n12_X3_Y2
   ORIGIN 0 0 ;
   FOREIGN Switch_NMOS_n12_X3_Y2 0 0 ;
-  SIZE 1.296 BY 1.080 ;
+  SIZE 1.296 BY 1.188 ;
   PIN S
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -34,6 +34,14 @@ MACRO Switch_NMOS_n12_X3_Y2
         RECT 0.639 0.256 0.657 0.824 ;
     END
   END D
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 1.125 1.296 1.143 ;
+    END
+  END Bg
   PIN G
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -47,6 +55,8 @@ MACRO Switch_NMOS_n12_X3_Y2
     END
   END G
   OBS
+    LAYER M1 ;
+      RECT 0.0 1.125 1.296 1.143 ;
     LAYER M1 ;
       RECT 0.099 0.040 0.117 0.500 ;
     LAYER M1 ;
@@ -124,7 +134,7 @@ END Switch_NMOS_n12_X3_Y2
 MACRO Switch_PMOS_n12_X1_Y1
   ORIGIN 0 0 ;
   FOREIGN Switch_PMOS_n12_X1_Y1 0 0 ;
-  SIZE 0.432 BY 0.540 ;
+  SIZE 0.432 BY 0.648 ;
   PIN S
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -139,6 +149,14 @@ MACRO Switch_PMOS_n12_X1_Y1
         RECT 0.153 0.094 0.171 0.446 ;
     END
   END S
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 0.585 0.432 0.603 ;
+    END
+  END Bg
   PIN D
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -161,6 +179,8 @@ MACRO Switch_PMOS_n12_X1_Y1
   END G
   OBS
     LAYER M1 ;
+      RECT 0.0 0.585 0.432 0.603 ;
+    LAYER M1 ;
       RECT 0.099 0.040 0.117 0.500 ;
     LAYER M1 ;
       RECT 0.315 0.040 0.333 0.500 ;
@@ -177,7 +197,7 @@ END Switch_PMOS_n12_X1_Y1
 MACRO Switch_PMOS_n12_X3_Y1
   ORIGIN 0 0 ;
   FOREIGN Switch_PMOS_n12_X3_Y1 0 0 ;
-  SIZE 1.296 BY 0.540 ;
+  SIZE 1.296 BY 0.648 ;
   PIN S
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -192,6 +212,14 @@ MACRO Switch_PMOS_n12_X3_Y1
         RECT 0.585 0.094 0.603 0.446 ;
     END
   END S
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 0.585 1.296 0.603 ;
+    END
+  END Bg
   PIN D
     DIRECTION INOUT ;
     USE SIGNAL ;
@@ -213,6 +241,8 @@ MACRO Switch_PMOS_n12_X3_Y1
     END
   END G
   OBS
+    LAYER M1 ;
+      RECT 0.0 0.585 1.296 0.603 ;
     LAYER M1 ;
       RECT 0.099 0.040 0.117 0.500 ;
     LAYER M1 ;
