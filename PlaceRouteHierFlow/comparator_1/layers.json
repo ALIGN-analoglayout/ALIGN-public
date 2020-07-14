@@ -1,0 +1,338 @@
+{
+"ScaleFactor": 2,
+"Abstraction": [
+{
+"Layer": "Poly",
+"LayerNo": 7,
+"Direction": "V",
+"Width": 40,
+"Pitch": 108,
+"MinL": 80,
+"MaxL": null,
+"EndToEnd": null,
+"Offset": 54,
+"UnitC": 0.2,
+"UnitR": 10
+},
+
+{
+"Layer": "Fin",
+"LayerNo": 2,
+"Direction": "H",
+"Width": 14,
+"Pitch": 54,
+"MinL": 216,
+"MaxL": null,
+"EndToEnd": null,
+"Offset": 0
+},
+
+{
+"Layer": "M1",
+"LayerNo": 19,
+"Direction": "V",
+"Color": [],
+"Width": 36,
+"Pitch": 108,
+"MinL": 56,
+"MaxL": null,
+"EndToEnd": 62,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+    "Layer": "V0",
+    "LayerNo": 18,
+    "Stack": [null, "M1"],
+    "SpaceX": 72,
+    "SpaceY": 72,
+    "WidthX": 36,
+    "WidthY": 36,
+    "VencA_L": 10,
+    "VencA_H": 10,
+    "VencP_L": 0,
+    "VencP_H": 0,
+    "MinNo":1,
+    "R": 50
+    },
+
+{
+"Layer": "M2",
+"LayerNo": 20,
+"Direction": "H",
+"Color": [],
+"Width": 36,
+"Pitch": 108,
+"MinL": 56,
+"MaxL": null,
+"EndToEnd": 62,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V1",
+"LayerNo": 21,
+"Stack": ["M1", "M2"],
+"WidthX": 36,
+"WidthY": 36,
+"SpaceX": 60,
+"SpaceY": 60,
+"VencA_L": 10,
+"VencA_H": 10,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M3",
+"LayerNo": 30,
+"Direction": "V",
+"Color": [],
+"Width": 36,
+"Pitch": 108,
+"MinL": 56,
+"MaxL": null,
+"EndToEnd": 62,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V2",
+"LayerNo": 25,
+"Stack": ["M2", "M3"],
+"WidthX": 36,
+"WidthY": 36,
+"SpaceX": 60,
+"SpaceY": 60,
+"VencA_L": 10,
+"VencA_H": 10,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M4",
+"LayerNo": 40,
+"Direction": "H",
+"Color": [],
+"Width": 48,
+"Pitch": 192,
+"MinL": 88,
+"MaxL": null,
+"EndToEnd": 80,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V3",
+"LayerNo": 35,
+"Stack": ["M3", "M4"],
+"WidthX": 36,
+"WidthY": 48,
+"SpaceX": 60,
+"SpaceY": 60,
+"VencA_L": 22,
+"VencA_H": 22,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M5",
+"LayerNo": 50,
+"Direction": "V",
+"Color": [],
+"Width": 48,
+"Pitch": 96,
+"MinL": 88,
+"MaxL": null,
+"EndToEnd": 80,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V4",
+"LayerNo": 45,
+"Stack": ["M4", "M5"],
+"WidthX": 48,
+"WidthY": 48,
+"SpaceX": 68,
+"SpaceY": 68,
+"VencA_L": 22,
+"VencA_H": 22,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M6",
+"LayerNo": 60,
+"Direction": "H",
+"Color": [],
+"Width": 64,
+"Pitch": 128,
+"MinL": 88,
+"MaxL": null,
+"EndToEnd": 80,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V5",
+"LayerNo": 55,
+"Stack": ["M5", "M6"],
+"WidthX": 48,
+"WidthY": 64,
+"SpaceX": 68,
+"SpaceY": 68,
+"VencA_L": 22,
+"VencA_H": 22,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M7",
+"LayerNo": 70,
+"Direction": "V",
+"Color": [],
+"Width": 64,
+"Pitch": 128,
+"MinL": 88,
+"MaxL": null,
+"EndToEnd": 80,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V6",
+"LayerNo": 65,
+"Stack": ["M6", "M7"],
+"WidthX": 64,
+"WidthY": 64,
+"SpaceX": 92,
+"SpaceY": 92,
+"VencA_L": 22,
+"VencA_H": 22,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M8",
+"LayerNo": 80,
+"Direction": "H",
+"Color": [],
+"Width": [80, 120, 160, 240, 1000, 2000, 4000],
+"Pitch": [160, 240, 320, 480, 2000, 4000, 8000],
+"MinL": 376,
+"MaxL": 800,
+"EndToEnd": 92,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V7",
+"LayerNo": 75,
+"Stack": ["M7", "M8"],
+"SpaceX": 92,
+"SpaceY": 92,
+"WidthX": 64,
+"WidthY": 80,
+"VencA_L": 22,
+"VencA_H": 22,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "M9",
+"LayerNo": 90,
+"Direction": "V",
+"Color": [],
+"Width": [80, 120, 160, 140, 1000, 2000, 4000],
+"Pitch": [160, 240, 320, 480, 2000, 4000, 8000],
+"MinL": 376,
+"MaxL": 800,
+"EndToEnd": 92,
+"Offset": 0,
+"UnitC": 0.2,
+"UnitR": 100
+},
+
+{
+"Layer": "V8",
+"LayerNo": 85,
+"Stack": ["M8", "M9"],
+"WidthX": 80,
+"WidthY": 80,
+"SpaceX": 114,
+"SpaceY": 114,
+"VencA_L": 40,
+"VencA_H": 40,
+"VencP_L": 0,
+"VencP_H": 0,
+"MinNo": 1,
+"R": 50
+},
+
+{
+"Layer": "Feol",    
+"pcGateExt":2,
+"lisdWidth": 48,
+"sdtWidth": 48,    
+"pcWidth": 36,
+"gcutWidth": 36,
+"v0Width": 36,
+"v0Pitch": 108,
+"v0Enc": 10, 
+"finEnc": 20,
+"plActiveEnc": 50,
+"pcActiveS":60,
+"pcgcutS":10 
+},
+
+{
+"Layer": "Cap",
+"m1Pitch": 72,
+"m2Pitch": 72,
+"m3Pitch": 72,
+"m1Width": 36,
+"m2Width": 36,
+"m3Width": 36
+} 
+
+
+
+]
+}
