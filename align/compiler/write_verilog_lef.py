@@ -219,9 +219,6 @@ def generate_lef(name, values, available_block_lef,
         if 'cap' in values.keys():
             size = float('%g'%(round(values["cap"]*1E15,4)))
             num_of_unit = float(size)/unit_size_cap
-        elif 'c' in values.keys():
-            size = float('%g'%(round(values["c"]*1E15,4)))
-            num_of_unit = float(size)/unit_size_cap
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
@@ -248,8 +245,6 @@ def generate_lef(name, values, available_block_lef,
     elif name.lower().startswith('res'):
         if 'res' in values.keys():
             size = '%g'%(round(values["res"],2))
-        elif 'r' in values.keys():
-            size = '%g'%(round(values["r"],2))
         else :
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
