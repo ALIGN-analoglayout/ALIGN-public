@@ -158,14 +158,13 @@ def convert_unit(value:str):
         value = float(value.replace('u', ""))
         value = value * 1E-6
     elif 'f' in value and is_val:
-        #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
         value = float(value.replace('f', ""))
         value = value * 1e-15
     else:
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. Using value=12n. Please fix netlist")
+            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
             value = 1e-8
     return mult*value
 
