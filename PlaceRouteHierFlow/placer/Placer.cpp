@@ -458,7 +458,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
           if(update_index>updateThrd) {
             std::cout<<"Insert\n";
             oData[curr_cost]=curr_sp;
-            oData[curr_cost]=curr_sp;
+            //oData[curr_cost]=curr_sp;
             ReshapeSeqPairMap(oData, nodeSize);
           }
         }

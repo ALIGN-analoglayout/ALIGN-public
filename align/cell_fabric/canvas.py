@@ -120,7 +120,7 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-#                        assert nm is not None
+                        # assert nm is not None
                         self.addWireAndMultiViaSet( nm, None, m2, y, [ (v1, via1s), (v2, via2s)])
                         started = False
                         nm = None
@@ -156,7 +156,7 @@ class Canvas:
                 if c == ' ':
                     if started:
                         # close off wire
-#                        assert nm is not None
+                        # assert nm is not None
                         self.addWireAndMultiViaSet( nm, None, m3, x, [ (v2, via2s)])
                         started = False
                         nm = None
