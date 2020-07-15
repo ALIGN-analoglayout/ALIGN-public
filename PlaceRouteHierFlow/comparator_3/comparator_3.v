@@ -5,7 +5,7 @@
 module comparator_3 ( vss, vip, vin, vcc, vout, bias ); 
 input vss, vip, vin, vcc, vout, bias;
 
-Switch_NMOS_n12_X3_Y1 m10 ( .D(9), .G(5), .S(8), .Bg(vss) ); 
+Switch_NMOS_n12_X3_Y1 mn10 ( .D(9), .G(5), .S(8), .Bg(vss) ); 
 Switch_NMOS_n12_X3_Y1 mn1 ( .D(2), .G(vip), .S(1), .Bg(vss) ); 
 Switch_NMOS_n12_X3_Y1 mn11 ( .D(vout), .G(9), .S(vss), .Bg(vss) ); 
 Switch_NMOS_n12_X3_Y1 mn12 ( .D(1), .G(bias), .S(vss), .Bg(vss) ); 
