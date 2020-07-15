@@ -171,16 +171,14 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
                 logger.debug(f"found inline pair: {pprint.pformat(match_pair, indent=4)}")
             else:
                 for nbr1 in new_sp:
-                    logger.debug(f"recursive single branch call from single branch {nbr1} {nbr1}")
-                    new_pair={}
-                    compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr1,ports_weight)
-                    if new_pair and (nbr1+'_'+nbr1 in all_match_pairs.keys()):
-                        new_pair= {k:v for (k,v) in new_pair.items() if v not in all_match_pairs[nbr1+'_'+nbr1].values()}
-                        all_match_pairs[nbr1+'_'+nbr1].update(new_pair)
-                        logger.debug(f"updating match pairs haha: {pprint.pformat(all_match_pairs, indent=4)}")
-                    elif new_pair:
-                        all_match_pairs[nbr1+'_'+nbr1] = new_pair
-                        logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+                    if (nbr1+'_'+nbr1 not in all_match_pairs.keys()):
+                        logger.debug(f"recursive single branch call from single branch {nbr1} {nbr1}")
+                        new_pair={}
+                        compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr1,ports_weight)
+                        #filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
+                        if new_pair:
+                            all_match_pairs[nbr1+'_'+nbr1] = new_pair
+                            logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
 
 
     elif nbrs1 == nbrs2:
@@ -196,14 +194,13 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
         else:
             for nbr1,nbr2 in combinations_with_replacement(nbrs1,2):
                 logger.debug(f"recursive call from converged branch {nbr1} {nbr2}")
-                new_pair={}
-                compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
-                if new_pair and nbr1+'_'+nbr2 in all_match_pairs.keys():
-                    all_match_pairs[nbr1+'_'+nbr2].update(new_pair)
-                    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-                elif new_pair:
-                    all_match_pairs[nbr1+'_'+nbr2] = new_pair
-                    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
+                if nbr1+'_'+nbr2 not in all_match_pairs.keys():
+                    new_pair={}
+                    compare_nodes(G,all_match_pairs,new_pair,traversed.copy(),nbr1,nbr2,ports_weight)
+                    #filtering multiple axis of symmetries with same block, ideally they should be handled by array generation
+                    if new_pair:
+                        all_match_pairs[nbr1+'_'+nbr2] = new_pair
+                        logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
         
 
     elif compare_two_nodes(G,node1,node2,ports_weight):
@@ -434,9 +431,9 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
                     pairs = {}
                     return pairs
-                elif ele_A.split('/')[0] in existing and ele_B.split('/')[0] not in existing:
+                elif ele_A.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
                     continue
-                elif ele_B.split('/')[0] in existing and ele_A.split('/')[0] not in existing:
+                elif ele_B.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
                     continue
                 else:
                     pairs[ele_A]=ele_B
@@ -470,12 +467,12 @@ def connection(graph,net:str):
             if "ports_match" in graph.nodes[nbr]:
                 logger.debug("ports match:%s %s",net,graph.nodes[nbr]["ports_match"].items())
                 idx=list(graph.nodes[nbr]["ports_match"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
+                conn[nbr+'/'+list(graph.nodes[nbr]["ports_match"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
                 
             elif "connection" in graph.nodes[nbr]:
                 logger.debug("connection:%s%s",net,graph.nodes[nbr]["connection"].items())
                 idx=list(graph.nodes[nbr]["connection"].values()).index(net)
-                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= graph.get_edge_data(net, nbr)['weight']
+                conn[nbr+'/'+list(graph.nodes[nbr]["connection"].keys())[idx]]= (graph.get_edge_data(net, nbr)['weight'] & ~2)
         except ValueError:
             logger.debug("internal net")
     if graph.nodes[net]["net_type"]=="external":
