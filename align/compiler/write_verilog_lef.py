@@ -219,13 +219,16 @@ def generate_lef(name, values, available_block_lef,
         if 'cap' in values.keys():
             size = float('%g'%(round(values["cap"]*1E15,4)))
             num_of_unit = float(size)/unit_size_cap
+            block_name = name + '_' + str(int(size)) + 'f'
+
         else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
             size = size.replace('.','p').replace('-','_neg_')
             num_of_unit=1
+            block_name = name + '_' + str(size)
+
         logger.debug(f"Found cap with size: {size}, {unit_size_cap}")
-        block_name = name + '_' + str(int(size)) + 'f'
         unit_block_name = 'Cap_' + str(unit_size_cap) + 'f'
         if block_name in available_block_lef:
             return block_name, available_block_lef[block_name]

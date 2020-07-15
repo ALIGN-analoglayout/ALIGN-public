@@ -139,5 +139,7 @@ def convert_to_unit(values):
             values[param]=str(int(values[param]*1E9))+'n'
         elif values[param]*1E12>1:
             values[param]=str(int(values[param]*1E12))+'p'
+        elif values[param]*1E15>1:
+            values[param]=str(int(values[param]*1E15))+'f'
         else:
             logger.error(f"WRONG value, {values}")
