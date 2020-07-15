@@ -26,7 +26,7 @@
 * View Name:    schematic
 ************************************************************************
 
-.SUBCKT Santized_BTSW AVDD AVSS CKSBT CKSBTB VBTSW VIN
+.SUBCKT Sanitized_BTSW AVDD AVSS CKSBT CKSBTB VBTSW VIN
 *.PININFO CKSBT:I CKSBTB:I VIN:I AVDD:B AVSS:B VBTSW:B
 MM9 VBTSW net7 net12 net12 pch l=LA w=WA m=1
 MM8 AVDD VBTSW net12 net12 pch l=LA w=WA m=1
