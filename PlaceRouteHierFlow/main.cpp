@@ -350,7 +350,7 @@ int main(int argc, char** argv ){
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
-      GuardRing current_guard_ring(1000,1000,4000,4000,nodeVec[lidx]);
+      GuardRing current_guard_ring(1600,1680,1600,1680,nodeVec[lidx]);
       DB.PrintHierNode(nodeVec[lidx]);
       DB.WriteJSON(nodeVec[lidx], true, false, false, false, nodeVec[lidx].name + "_PL_" + std::to_string(lidx), drcInfo, opath);
       DB.CheckinHierNode(idx, nodeVec[lidx]);

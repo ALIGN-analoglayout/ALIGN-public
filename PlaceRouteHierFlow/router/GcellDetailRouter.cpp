@@ -774,6 +774,7 @@ void GcellDetailRouter::create_detailrouter(){
       AddViaSpacing(Pset_via, grid);
       A_star a_star(grid, Nets[i].shielding);
       std::cout<<"Net name "<<Nets[i].netName<<std::endl;
+      grid.CreateGridData();
       bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number, multi_number);
       /*
       if(pathMark==0){

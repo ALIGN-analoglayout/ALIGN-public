@@ -31,8 +31,11 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil(wcell_size.width / pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil(wcell_size.height / pcell_size.height) + 1;//excluding corner
+  x_number = ceil((wcell_size.width + 2*Minimal_x )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil((wcell_size.height + 2*Minimal_y)/ pcell_size.height) + 1;//excluding corner
+
+  //x_number = ceil((wcell_size.width )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
+  //y_number = ceil((wcell_size.height )/ pcell_size.height) + 1;//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
