@@ -13,7 +13,7 @@ class MOSGenerator(default.MOSGenerator):
         # Draw Technology Specific Layers
         if self.shared_diff == 1:
             for i in range(1,  self.finsPerUnitCell):
-                self.addWire( self.fin_diff, None, None,  self.finsPerUnitCell*y+i, 0, 2*(x_cells+self.gateDummy))
+                self.addWire( self.fin_diff, None, None,  self.finsPerUnitCell*y+i, 0, (self.gate*x_cells+2*self.gateDummy))
         else:
             for i in range(1,  self.finsPerUnitCell):
                 self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1) 
@@ -25,7 +25,7 @@ class MOSGenerator(default.MOSGenerator):
             if self.shared_diff == 0:
                 self.addWire( self.RVT,  None, None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.RVT_diff,  None, None, y, 0, 2*x_cells+1)
+                self.addWire( self.RVT_diff,  None, None, y, 0, self.gate*x_cells+1)
             else:
                 pass
     
@@ -33,7 +33,7 @@ class MOSGenerator(default.MOSGenerator):
             if self.shared_diff == 0:
                 self.addWire( self.LVT,  None, None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.LVT_diff,  None, None, y, 0, 2*x_cells+1)
+                self.addWire( self.LVT_diff,  None, None, y, 0, self.gate*x_cells+1)
             else:
                 pass
     
@@ -41,7 +41,7 @@ class MOSGenerator(default.MOSGenerator):
             if self.shared_diff == 0:
                 self.addWire( self.HVT,  None, None, y,          (x, 1), (x+1, -1))
             elif self.shared_diff == 1 and x == x_cells-1:
-                self.addWire( self.HVT_diff,  None, None, y, 0, 2*x_cells+1)
+                self.addWire( self.HVT_diff,  None, None, y, 0, self.gate*x_cells+1)
             else:
                 pass       
         if vt_type == 'RVT':
@@ -65,7 +65,7 @@ class MOSGenerator(default.MOSGenerator):
         self.addWire( self.LISDb, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         if self.shared_diff == 1:
             for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
-                self.addWire( self.fin_diff, None, None,  self.finsPerUnitCell*y+i, 0, 2*(x_cells+self.gateDummy))
+                self.addWire( self.fin_diff, None, None,  self.finsPerUnitCell*y+i, 0, (self.gate*x_cells+2*self.gateDummy))
         else:
             for i in range(self.finsPerUnitCell, self.finsPerUnitCell+self.lFin):
                 self.addWire( self.fin, None, None,  self.finsPerUnitCell*y+i, x, x+1)

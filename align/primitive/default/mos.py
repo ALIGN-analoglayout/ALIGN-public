@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class MOSGenerator(DefaultCanvas):
 
-    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff):
+    def __init__(self, pdk, height, fin, gate, gateDummy, shared_diff, stack):
         super().__init__(pdk)
         self.finsPerUnitCell = height
         assert self.finsPerUnitCell % 4 == 0
@@ -16,8 +16,10 @@ class MOSGenerator(DefaultCanvas):
         self.unitCellHeight = self.m2PerUnitCell* self.pdk['M2']['Pitch']
         ######### Derived Parameters ############
         self.shared_diff = shared_diff
+        self.stack = stack
         self.gateDummy = gateDummy
-        self.gatesPerUnitCell = gate + 2*self.gateDummy*(1-self.shared_diff)
+        self.gate = (2*gate)*self.stack
+        self.gatesPerUnitCell = self.gate + 2*self.gateDummy*(1-self.shared_diff)
         self.finDummy = (self.finsPerUnitCell-fin)//2
         self.lFin = 16 ## need to be added in the PDK JSON
         assert self.finDummy >= 8, "number of fins in the transistor must be less than height"
@@ -157,7 +159,7 @@ class MOSGenerator(DefaultCanvas):
         if self.shared_diff == 0:
             self.addWire( self.active, None, None, y, (x,1), (x+1,-1)) 
         elif self.shared_diff == 1 and x == x_cells-1:
-            self.addWire( self.active_diff, None, None, y, 0, 2*x_cells+1)
+            self.addWire( self.active_diff, None, None, y, 0, self.gate*x_cells+1)
         else:
             pass
 
@@ -181,15 +183,22 @@ class MOSGenerator(DefaultCanvas):
         #self.addVia( self.va, f'{fullname}:G', None, gate_x, (y*self.m2PerUnitCell//2, 1))
         self.addVia( self.va, f'{fullname}:G', None, gate_x, grid_y1+2)
         self._xpins[name]['G'].append(gate_x)
+
         # Connect Source & Drain
-        if reflect:
-            _connect_diffusion(gate_x + 1, 'S') #S
-            _connect_diffusion(gate_x - 1, 'S') #S
-            _connect_diffusion(gate_x, 'D') #D 
-        else:
-            _connect_diffusion(gate_x - 1, 'S') #S
-            _connect_diffusion(gate_x + 1, 'S') #S 
-            _connect_diffusion(gate_x, 'D') #D
+        (center_terminal, side_terminal) = ('S', 'D') if self.gate%4 == 0 else ('D', 'S')
+        center_terminal = 'D' if self.stack > 1 else center_terminal # for stacked devices
+        _connect_diffusion(gate_x, center_terminal)
+
+        for x_terminal in range(1,1+self.gate//2):
+            terminal = center_terminal if x_terminal%2 == 0 else side_terminal #for fingers
+            if self.stack > 1 and x_terminal != self.gate//2: continue
+            terminal = 'S' if self.stack > 1 else terminal 
+            if reflect:
+                _connect_diffusion(gate_x - x_terminal, terminal)
+                _connect_diffusion(gate_x + x_terminal, terminal)
+            else:
+                _connect_diffusion(gate_x - x_terminal, terminal)
+                _connect_diffusion(gate_x + x_terminal, terminal)
 
     def _connectDevicePins(self, y, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
@@ -244,6 +253,13 @@ class MOSGenerator(DefaultCanvas):
                     self.addWire(self.m2, net, net, i, (minx, -1), (maxx, 1))
                 else: # create m3 terminal(s)
                     self.addWireAndViaSet(net, net, self.m3, self.v2, current_track, contacts)
+                    if max(contacts) - min(contacts) < 2:
+                        minL_m3 = 2 ## for M3 min length
+                        maxy = min(contacts) + minL_m3
+                        miny = min(contacts)
+                        self.addWire(self.m3, net, net, current_track, (miny, -1), (maxy, 1))
+                    else:
+                        pass
                     # Extend m2 if needed. TODO: What to do if we go beyond cell boundary?
                     for i, locs in conn.items():
                         minx, maxx = _get_wire_terminators([*locs, current_track])
@@ -264,7 +280,7 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.activeb, None, None, y, (x,1), (x+1,-1)) 
             self.addWire( self.pb, None, None, y, (x,1), (x+1,-1)) 
         else:
-            self.addWire( self.activeb_diff, None, None, y, 0, 2*x_cells+1)
+            self.addWire( self.activeb_diff, None, None, y, 0, self.gate*x_cells+1)
             self.addWire( self.pb_diff, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
