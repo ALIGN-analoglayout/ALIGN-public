@@ -39,6 +39,7 @@ class Pdk(object):
         assert 'Abstraction' in j
         for layer in j['Abstraction']:
             assert layer['Layer'] not in self.pdk, f"Cannot have multiple {layer['Layer']} layers with same name"
+            assert layer['Layer'][0].isupper(), f"Layer name {layer['Layer']} must start with capitalized letter"
             if layer['Layer'].startswith('M'):
                 self.addMetal(**layer)
             elif layer['Layer'].startswith('V'):
@@ -60,7 +61,7 @@ class Pdk(object):
         self.pdk[layername] = {key: None if value == 'NA' else value for key, value in kwargs.items()}
 
     def addMetal(self, **kwargs):
-        optional_params = ['AdjacentAttacker']
+        optional_params = ['AdjacentAttacker','Space','Stop_point','Stop_pitch','Stop_offset']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',
@@ -86,8 +87,10 @@ class Pdk(object):
             if isinstance(kwargs[x], list) else kwargs[x] is not None and kwargs[x] % 2 == 0 \
             for x in params[5:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
-        # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
-        list_params = ['Pitch','Width','MinL','MaxL','EndToEnd','UnitC','UnitCC','UnitR']
+        # 1. Width, MinL, MaxL, EndToEnd of type list.
+        # Exclude Pitch: Pitch is a scalar as it refers to the pitch of the repeating metal pattern
+        # Disabling as DRC doesnt support multi-width grids yet 
+        list_params = []
         ll = set()
         for param in list_params:
             if isinstance(kwargs[param], list):
