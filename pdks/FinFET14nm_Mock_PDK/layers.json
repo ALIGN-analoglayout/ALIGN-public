@@ -637,6 +637,14 @@
 "Layer": "Outline",
 "GdsLayerNo": 104,
 "GdsDatatype": {"Draw":0}
+},
+
+{
+"Layer": "GuardRing",
+"activeRingWidth": 400,
+"activeRing_enclosure": 300,
+"XSpace": 400,
+"YSpace": 400
 },    
 
 {
