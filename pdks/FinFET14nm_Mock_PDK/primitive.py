@@ -76,6 +76,6 @@ class MOSGenerator(default.MOSGenerator):
 
 CapGenerator = default.CapGenerator
 ResGenerator = default.ResGenerator
-
+RingGenerator = default.RingGenerator
 # Default Via Array generator is good enough
 ViaArrayGenerator = default.ViaArrayGenerator

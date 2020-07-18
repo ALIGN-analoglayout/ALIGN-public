@@ -643,8 +643,9 @@
 "Layer": "GuardRing",
 "activeRingWidth": 400,
 "activeRing_enclosure": 300,
-"XSpace": 400,
-"YSpace": 400
+"viaArray": 8,
+"XSpace": 240,
+"YSpace": 252
 },    
 
 {

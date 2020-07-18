@@ -1,3 +1,4 @@
+import math
 from .canvas import DefaultCanvas
 from ...cell_fabric.generators import *
 from ...cell_fabric.grid import *
@@ -11,53 +12,58 @@ class RingGenerator(DefaultCanvas):
         super().__init__(pdk)
 
         ######### Derived Parameters ########
+ 
+        self.WidthX = self.pdk['GuardRing']['viaArray']*(self.pdk['V0']['SpaceX']+self.pdk['V0']['WidthX'])
+        self.WidthY = (self.pdk['GuardRing']['viaArray']+1)*(self.pdk['V0']['SpaceX']+self.pdk['V0']['WidthX']+1)
+        self.ring_enclosureX = math.ceil(self.pdk['GuardRing']['activeRing_enclosure']/self.pdk['M1']['Pitch'])
+        
+        self.ring_enclosureY = math.ceil(self.pdk['GuardRing']['activeRing_enclosure']/self.pdk['M2']['Pitch'])
+        
+        m1_ring_WidthX = math.ceil(self.WidthX/self.pdk['M1']['Pitch'])*self.pdk['M1']['Pitch']
+        m1_ring_WidthY = math.ceil(self.WidthX/self.pdk['M2']['Pitch'])*self.pdk['M2']['Pitch']
+        #### Layers definition ####
 
-        self.ring_enclosure = self.pdk['GuardRing']['activeRing_enclosure']/self.pdk['M2']['Pitch']
-        self.ring_width = self.pdk['GuardRing']['activeRingWidth']/self.pdk['M2']['Pitch']
-                
-        self.nselect = self.addGen( Region( 'nselect', 'Nselect',
-                                            v_grid=CenteredGrid( offset= self.pdk['Poly']['Pitch']//2, pitch= self.pdk['Poly']['Pitch']),
-                                            h_grid=self.fin.clg))
+        self.m1_ring = self.addGen( Wire( 'm_test', 'M1', 'v',
+                                     clg=UncoloredCenterLineGrid( pitch=self.pdk['M1']['Pitch'], width=self.pdk['M1']['Pitch']),
+                                     spg=EnclosureGrid( pitch=self.pdk['M2']['Pitch'], stoppoint=0, check=False)))
+
         self.pselect_ring = self.addGen( Region( 'pselect_ring', 'Pselect',
-                                            v_grid=self.pdk['M2']['Pitch'],
-                                            h_grid=self.pdk['M2']['Pitch']))
+                                            v_grid=self.m1.clg,
+                                            h_grid=self.m2.clg))
 
         self.active_ring = self.addGen( Region( 'active_ring', 'Active',
-                                            v_grid=self.pdk['M2']['Pitch'],
-                                            h_grid=self.pdk['M2']['Pitch']))
+                                            v_grid=UncoloredCenterLineGrid( offset=-self.pdk['M1']['Pitch']//2, pitch=self.pdk['M1']['Pitch'], width=self.pdk['M1']['Pitch']),
+                                            h_grid=self.m2.clg))
 
-        self.m1_ring = self.addGen( Region( 'M1_ring', 'M1',
-                                            v_grid=self.pdk['M2']['Pitch'],
-                                            h_grid=self.pdk['M2']['Pitch']))
-
+ 
         #self.nwell = self.addGen( Region( 'nwell', 'Nwell',
         #                                    v_grid=CenteredGrid( offset= self.pdk['Poly']['Pitch']//2, pitch= self.pdk['Poly']['Pitch']),
-                                            h_grid=self.fin.clg))
-         
+        #                                    h_grid=self.fin.clg))
         
         self.va = self.addGen( Via( 'va', 'V0',
                                     h_clg=self.m2.clg,
                                     v_clg=self.m1.clg,
                                     WidthX=self.pdk['V0']['WidthX'],
-                                    WidthY=self.pdk['V0']['WidthY']))
-
+                                    WidthY=self.pdk['V0']['WidthY'])) 
         
-    def addRing( self, x_length, y_length):
-        assert x_length == 1 or y_length == 1
-        x_cells = x_length/self.pdk['M2']['Pitch']
-        y_cells = y_length/self.pdk['M2']['Pitch']
-        x_cells = self.ring_width if x_length == 1 else x_length
-        y_cells = self.ring_width if y_length == 1 else y_length
-        #self.addWire( self.m1_ring, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.lFin)
-        #self.addVia( self.va, None, None, gate_x, grid_y1+2)
-        #self.addVia( self.va, f'{fullname}:G', None, gate_x, grid_y1+2)
+    def addRing( self, x_cells, y_cells):
 
-        self.addWire( self.m1_ring, self.ring_enclosure, self.ring_enclosure, (x_cells+self.ring_enclosure), (y_cells+self.ring_enclosure))
+        gridX = math.ceil(self.WidthX/self.pdk['M1']['Pitch'])
+        gridY = math.ceil(self.WidthY/self.pdk['M2']['Pitch'])
 
-        self.addWire( self.active_ring, self.ring_enclosure, self.ring_enclosure, (x_cells+self.ring_enclosure), (y_cells+self.ring_enclosure))
+        for i in range(self.ring_enclosureX, gridX+self.ring_enclosureX):
+            self.addWire( self.m1_ring, None, None, i, (self.ring_enclosureY, -1), (gridY+self.ring_enclosureY, -1))
+            for j in range(self.ring_enclosureY+1, gridY+self.ring_enclosureY): 
+                self.addVia( self.va, None, None, i, j)
+        #self.addWire( self.m2, None, None, 1, (1, -1), (5, -1))
+        #
+        self.addRegion( self.active_ring, None, None, self.ring_enclosureX, self.ring_enclosureY, (gridX+self.ring_enclosureX), (gridY+self.ring_enclosureY))
 
-        self.addRegion( self.pselect_ring, None, None, 0, 0, (x_cells+2*self.ring_enclosure), (y_cells+2*self.ring_enclosure))
+        self.addRegion( self.pselect_ring, None, None, 0, 0, (gridX+2*self.ring_enclosureX), (gridY+2*self.ring_enclosureY))
 
-        #self.addRegion( self.nwell, None, None, (0, -1), 0, (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1), y_cells* self.finsPerUnitCell+self.lFin)
+        #self.addRegion( self.boundary, 'Boundary', None, 0, 0, (gridX+2*self.ring_enclosureX), (gridY+2*self.ring_enclosureY))
+
+
+
 
         

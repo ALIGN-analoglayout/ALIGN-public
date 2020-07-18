@@ -14,7 +14,7 @@ def gen_parser():
     return parser
 
 def main( args):
-    return generate_primitive(args.block_name, 'Res', value=(args.height, args.res), pdkdir=args.pdkdir, outputdir=args.outputdir)
+    return generate_primitive(args.block_name, 'ring', pdkdir=args.pdkdir, outputdir=args.outputdir)
 
 if __name__ == "__main__":
     main( gen_parser().parse_args())
