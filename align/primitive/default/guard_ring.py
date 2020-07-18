@@ -19,8 +19,8 @@ class RingGenerator(DefaultCanvas):
         
         self.ring_enclosureY = math.ceil(self.pdk['GuardRing']['activeRing_enclosure']/self.pdk['M2']['Pitch'])
         
-        m1_ring_WidthX = math.ceil(self.WidthX/self.pdk['M1']['Pitch'])*self.pdk['M1']['Pitch']
-        m1_ring_WidthY = math.ceil(self.WidthX/self.pdk['M2']['Pitch'])*self.pdk['M2']['Pitch']
+        #m1_ring_WidthX = math.ceil(self.WidthX/self.pdk['M1']['Pitch'])*self.pdk['M1']['Pitch']
+        #m1_ring_WidthY = math.ceil(self.WidthX/self.pdk['M2']['Pitch'])*self.pdk['M2']['Pitch']
         #### Layers definition ####
 
         self.m1_ring = self.addGen( Wire( 'm_test', 'M1', 'v',
