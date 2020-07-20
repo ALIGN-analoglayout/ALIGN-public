@@ -40,14 +40,9 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
   GuardRingDB::point southwest, southeast, northeast, northwest; //guard ring primitive cells at corner.
-  if (((((x_number-2) * pcell_size.width) - wcell_size.width)/2) < Minimal_x)
-    southwest.x = wcell_ll.x - pcell_size.width - Minimal_x;
-  else
-    southwest.x = wcell_ll.x - pcell_size.width - (((x_number-2) * pcell_size.width) - wcell_size.width)/2;
-  if ((((y_number * pcell_size.height) - wcell_size.height)/2) < Minimal_y)
-    southwest.y = wcell_ll.y - pcell_size.height - Minimal_y;
-  else
-    southwest.y = wcell_ll.y - pcell_size.height - (((y_number * pcell_size.height) - wcell_size.height)/2);
+  southwest.x = wcell_ll.x - Minimal_x - pcell_size.width - ((((x_number-2) * pcell_size.width) - (wcell_size.width + 2*Minimal_x))/2);
+  southwest.y = wcell_ll.y - Minimal_y - pcell_size.height - (((y_number * pcell_size.height) - (wcell_size.height + 2*Minimal_y))/2);
+
   temp_point.x = southwest.x;
   temp_point.y = southwest.y;
   stored_point_ll.push_back(temp_point);
