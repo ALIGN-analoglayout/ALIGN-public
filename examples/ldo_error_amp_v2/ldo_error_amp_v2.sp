@@ -8,7 +8,7 @@ Mi1[0] d g n0 vssx nhplvt nfin=6 m=1
 Mi0[0] n0 g s vssx nhplvt nfin=6 m=1
 .ENDS
 
-.SUBCKT sivr_aldo_erramp_1_als_e2 vbias vcc vin vip vout vssx
+.SUBCKT ldo_error_amp_v2 vbias vcc vin vip vout vssx
 Xi27 vcc n2 n2 vcc pcell_0 m=8
 Xi26 vcc n1 n1 vcc pcell_0 m=8
 Xi33 vcc vout n1 vcc pcell_0 m=16
