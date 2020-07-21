@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 GcellDetailRouter::GcellDetailRouter(){
 
@@ -870,6 +872,10 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
+    srand(time(0));
+    multi_number = rand() % 4;
+    if(multi_number == 0) multi_number = 1;
+    Nets[i].multi_connection = multi_number;
     //multi_number = 3;
     for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
       std::vector<int> Multi_Number =  Multi_Connection_Number(i);
@@ -916,7 +922,7 @@ void GcellDetailRouter::create_detailrouter(){
         AddViaSpacing(Pset_via, grid);
         A_star a_star(grid, Nets[i].shielding);
         std::cout<<"Net name "<<Nets[i].netName<<std::endl;
-        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, Multi_Number[j]-1, 0);
+        bool pathMark = a_star.FindFeasiblePath(grid, this->path_number, multi_number-1, 0);
         /*
         if(pathMark==0){
           grid.CreateGridData();
@@ -3850,6 +3856,7 @@ void GcellDetailRouter::ReturnHierNode(PnRDB::hierNode& HierNode)
               HierNode.Nets.at(j).path_via.clear();
               std::cout<<"test net to net: start"<<std::endl;
               NetToNodeNet(HierNode, Nets[i], j);
+              HierNode.Nets[j].multi_connection = Nets[i].multi_connection;
               std::cout<<"test net to net: end"<<std::endl;
               break;
             }

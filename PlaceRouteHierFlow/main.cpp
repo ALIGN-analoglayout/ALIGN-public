@@ -109,7 +109,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
                  current_node_copy.name + "_DR_" + std::to_string(current_node_copy.n_copy) + "_" + std::to_string(lidx), drcInfo, opath);
     current_node.gdsFile = current_node_copy.gdsFile;
   }
-  // DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
+  DB.WriteJSON_Routability_Analysis (current_node, opath, const_cast<PnRDB::Drc_info&>(drcInfo));
 
   //double worst=0;
   //double th = 0.1;

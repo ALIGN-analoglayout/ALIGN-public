@@ -1,7 +1,7 @@
-#file_name=ota_asap7
+file_name=ota_asap7
 #file_name=cascode_current_mirror_ota
 #file_name=current_mirror_ota
-file_name=strong_arm_latch
+#file_name=strong_arm_latch
 #file_name=comparator_3
 
 export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
@@ -45,7 +45,7 @@ for i in $(seq 1 1 1000)
 do
   index=$((index+1))
   mkdir $gds_folder$slash$index
-  cp $const_folder_file$slash$index$slash$const_file $file_name$slash$const_file &&
+  #cp $const_folder_file$slash$index$slash$const_file $file_name$slash$const_file &&
   #PNRDB_disable_io=1 ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && rm -r $source_folder
   ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && rm -r $source_folder  
 done

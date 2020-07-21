@@ -453,7 +453,8 @@ PnRdatabase::WriteJSON (PnRDB::hierNode& node, bool includeBlock, bool includeNe
             std::cout<<"Write blockPins info "<<node.blockPins[i].name<<std::endl;
             std::cout<<"blockPins contact size "<<node.blockPins[i].pinContacts.size()<<std::endl;
 	    for (unsigned int j = 0; j < node.blockPins[i].pinContacts.size(); j++) {
-		if (write == 0 and j==node.blockPins[i].pinContacts.size()/2) {
+		//if (write == 0 and j==node.blockPins[i].pinContacts.size()/2) {
+                if (write == 0) {
 		    PnRDB::contact con = node.blockPins[i].pinContacts[j];
                     std::cout<<"contact info "<<con.originBox.LL.x<<" "<<con.originBox.LL.y<<" "<<con.originBox.UR.x<<" "<<con.originBox.UR.y<<std::endl;
                     con.placedBox = con.originBox;
@@ -812,6 +813,7 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
        AddVias(node.Nets[i].path_via, internal_metals, internal_vias, unit);
        json_temp_net["Internal Metal"]=internal_metals;
        json_temp_net["Internal Via"]=internal_vias;
+       json_temp_net["Multi Connection"]=node.Nets[i].multi_connection;
 
        jsonNets.push_back(json_temp_net);
       
