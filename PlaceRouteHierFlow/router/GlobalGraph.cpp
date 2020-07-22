@@ -660,13 +660,13 @@ std::vector<int> GlobalGraph::minDistance(double dist[], int status[], int V)
 
 void GlobalGraph::setTerminals(const std::vector<std::vector<int> >& t){
 
- Pin_terminals = t;
+ Pin_terminals = t; // pin _terminal is a vector<vector>, each vector includes the tile index of the pin
 
 };
 
 void GlobalGraph::setterminals(const std::vector<int>& t){
 
- terminals = t;
+ terminals = t; //terminals is a vector. include all tile index of the pins
 
 };
 
