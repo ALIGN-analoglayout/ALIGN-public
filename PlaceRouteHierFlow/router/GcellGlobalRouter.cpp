@@ -388,12 +388,13 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
              std::cout<<"Current Box "<<LL.x<<" "<<LL.y<<" "<<UR.x<<" "<<UR.y<<std::endl;
              std::cout<<"terminal box "<<Terminals[iter].termContacts[0].placedLL.x<<" "<<Terminals[iter].termContacts[0].placedLL.y<<" "<<Terminals[iter].termContacts[0].placedUR.x<<" "<<Terminals[iter].termContacts[0].placedUR.y<<std::endl;
            }
-           assert(0);}
+           assert(0);
+          }
      }
 
 
      GGgraph.setterminals(Nets[i].terminals);
-     GGgraph.setTerminals(Nets[i].connectedTile);
+     GGgraph.setTerminals(Nets[i].connectedTile); // set all tiles that belongs to pin to Terminals in global graph
      
      std::vector<int> Pontential_Stiner_node = Get_Potential_Steiner_node(Nets[i].terminals, Tile_Set, Gcell);
 
