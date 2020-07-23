@@ -17,7 +17,7 @@ An array of transistors in parallel can be specified using m and nf parameters. 
 Mi0 d g s b pmos w=90n l=14nm m=4
 ```
 ```
-# Four instances of two-fingered transistors in a planar process (total of 6 fingers)
+# Four instances of two-fingered transistors in a planar process (total of 8 fingers)
 Mi0 d g s b pmos w=90n l=14nm m=4 nf=2
 ```
 
