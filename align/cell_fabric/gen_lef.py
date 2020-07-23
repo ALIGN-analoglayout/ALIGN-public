@@ -93,7 +93,7 @@ def json_lef(input_json, out_lef, cell_pin, blockM, p):
 
         fp.write("  SIZE %s BY %s ;\n" % (s(j['bbox'][2]), s(j['bbox'][3])))
         cell_pin = list(cell_pin)
-        if cell_pin[0] != "PLUS":
+        if cell_pin[0] !="Body" and cell_pin[0] != "PLUS":
             # add body contact to the pin list of transistors
             cell_pin.append('B')
         else:
