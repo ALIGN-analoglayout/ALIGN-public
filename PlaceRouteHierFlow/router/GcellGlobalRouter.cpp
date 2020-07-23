@@ -148,6 +148,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
        json temp_tile;
        temp_tile["x"]=this->Gcell.tiles_total[i].x;
        temp_tile["y"]=this->Gcell.tiles_total[i].y;
+       temp_tile["Physical Layer"]=this->Gcell.tiles_total[i].metal[0];
        jsonGcell.push_back(temp_tile);
     }
 
@@ -167,6 +168,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
            int tile_index = this->Nets[i].terminals[j];
            json_temp_terminal["x"] = this->Gcell.tiles_total[tile_index].x;
            json_temp_terminal["y"] = this->Gcell.tiles_total[tile_index].y;
+           json_temp_terminal["Physical Layer"]=this->Gcell.tiles_total[tile_index].metal[0];
            json_terminals.push_back(json_temp_terminal);
         }
         json_temp_net["terminals"]=json_terminals;
@@ -178,8 +180,10 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
            int end_index = this->Nets[i].global_path[j].second;
            json_temp_path["llx"] = this->Gcell.tiles_total[start_index].x;
            json_temp_path["lly"] = this->Gcell.tiles_total[start_index].y;
+           json_temp_path["Physical Layer ll"]=this->Gcell.tiles_total[start_index].metal[0];
            json_temp_path["urx"] = this->Gcell.tiles_total[end_index].x;
            json_temp_path["ury"] = this->Gcell.tiles_total[end_index].y;
+           json_temp_path["Physical Layer ur"]=this->Gcell.tiles_total[end_index].metal[0];
            json_global_path.push_back(json_temp_path);
         }
         json_temp_net["global_path"]=json_global_path;
@@ -190,6 +194,7 @@ void GcellGlobalRouter::PlotGlobalRouter_Json(PnRDB::hierNode& node){
            int index = this->Nets[i].steiner_node[j];
            json_temp_steiner_node["x"] = this->Gcell.tiles_total[index].x;
            json_temp_steiner_node["y"] = this->Gcell.tiles_total[index].y;
+           json_temp_steiner_node["Physical Layer"]=this->Gcell.tiles_total[index].metal[0];
            json_steiner_node.push_back(json_temp_steiner_node);
         }
         json_temp_net["steiner_node"]=json_steiner_node;
@@ -494,15 +499,15 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   int tile_size = 0;
   int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
   if(chip_size<1000000){
-      tile_size = 20;
+      tile_size = 2;
     }else if(chip_size<10000000000){
-      tile_size = 100;
+      tile_size = 10;
     }else if(chip_size<1000000000000){
-      tile_size = 1000;
+      tile_size = 100;
     }else if(chip_size<100000000000000){
-      tile_size = 10000;
+      tile_size = 100;
     }else {
-      tile_size = 100000;
+      tile_size = 100;
     }
 
     int tileLayerNo = 1;//Hmetal - Lmetal + 1;
@@ -979,18 +984,25 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
                 RouterDB::tile temp_tile;
                 temp_tile = grid.tiles_total[t[i]];
                 temp_tile.y = grid.tiles_total[t[j]].y;
-                Temp_tile.push_back(temp_tile);
+                if(temp_tile.y!=grid.tiles_total[t[i]].y){
+                    Temp_tile.push_back(temp_tile);
+                  }
                 temp_tile.y = grid.tiles_total[t[i]].y;
                 temp_tile.x = grid.tiles_total[t[j]].x;
-                Temp_tile.push_back(temp_tile);
+                if(temp_tile.x!=grid.tiles_total[t[i]].x){
+                    Temp_tile.push_back(temp_tile);
+                  }
 
                 temp_tile = grid.tiles_total[t[j]];
                 temp_tile.y = grid.tiles_total[t[i]].y;
-                Temp_tile.push_back(temp_tile);
+                if(temp_tile.y!=grid.tiles_total[t[j]].y){
+                    Temp_tile.push_back(temp_tile);
+                  }
                 temp_tile.y = grid.tiles_total[t[j]].y;
                 temp_tile.x = grid.tiles_total[t[i]].x;
-                Temp_tile.push_back(temp_tile);
-                
+                if(temp_tile.x!=grid.tiles_total[t[j]].x){
+                    Temp_tile.push_back(temp_tile);
+                  }
               }
            }
        }
