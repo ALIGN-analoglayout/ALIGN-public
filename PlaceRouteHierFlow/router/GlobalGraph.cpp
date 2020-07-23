@@ -664,6 +664,20 @@ void GlobalGraph::setTerminals(const std::vector<std::vector<int> >& t){
 
 };
 
+void GlobalGraph::setTerminals_contact(const std::vector<std::vector<std::vector<int> > >& t){
+
+ std::vector<std::vector<int> > temp_t;
+
+ for(unsigned int i=0;i<t.size();i++){
+    for(unsigned int j=0;j<t[i].size();j++){
+        temp_t.push_back(t[i][j]);
+    }
+ }
+
+ Pin_terminals = temp_t;
+
+};
+
 void GlobalGraph::setterminals(const std::vector<int>& t){
 
  terminals = t;

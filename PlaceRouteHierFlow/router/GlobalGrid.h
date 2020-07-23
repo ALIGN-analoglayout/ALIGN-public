@@ -66,7 +66,7 @@ class GlobalGrid {
 //    int grid_scale; // scaling of grids, 1 for detail router, >1 for global router
       void ConvertRect2Points(int metalIdx, int LLx, int LLy, int URx, int URy);
       void ConvertMetal2Points(int mIdx, int x, int y, int X, int Y);
-      void ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int LLx, int LLy, int URx, int URy);
+      void ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, std::vector<std::vector<int> >&contactVec, int metalIdx, int LLx, int LLy, int URx, int URy);
       void ConverNetTerminal(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int x, int y);
       
   public:

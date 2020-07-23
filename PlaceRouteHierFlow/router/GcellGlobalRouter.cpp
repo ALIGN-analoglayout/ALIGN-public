@@ -335,13 +335,20 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      
   //}
   std::cout<<"Test 10"<<std::endl;
+  //bool multi_contact_routing = false;
   Gcell.SetNetSink(Blocks, Nets, Terminals, terminal_routing);
   //Gcell.CreateGridDataNCap();
   //Gcell.CreateGridDataCap(true);
 
   for(unsigned int i=0;i<Nets.size();++i){
      //for(int j=0;j<Nets[i].connectedTile.size();++j){
-         std::cout<<"Net "<<i<<" number of connectedTile "<<Nets[i].connectedTile.size()<<std::endl;
+         std::cout<<"Global Net "<<i<<" number of connectedTile "<<Nets[i].connectedTile.size()<<std::endl;
+         std::cout<<"number of connectedTile Contact "<<Nets[i].connectedTile_contact.size()<<std::endl;
+         std::cout<<"number of connectTile in each tile_contact ";
+         for(unsigned int j=0;j<Nets[i].connectedTile_contact.size();j++){
+            std::cout<<Nets[i].connectedTile_contact[j].size()<<" ";
+         }         
+         std::cout<<std::endl;
          std::cout<<"number of connnected "<<Nets[i].connected.size()<<std::endl;
       //  }
      }
@@ -393,7 +400,12 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
 
      GGgraph.setterminals(Nets[i].terminals);
-     GGgraph.setTerminals(Nets[i].connectedTile);
+     bool multi_pin_contact_routing = false;
+     if(!multi_pin_contact_routing){                
+        GGgraph.setTerminals(Nets[i].connectedTile);
+     }else{
+        GGgraph.setTerminals_contact(Nets[i].connectedTile_contact);
+     }
      
      std::vector<int> Pontential_Stiner_node = Get_Potential_Steiner_node(Nets[i].terminals, Tile_Set, Gcell);
 

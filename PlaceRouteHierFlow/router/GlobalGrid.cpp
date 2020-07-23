@@ -522,8 +522,9 @@ void GlobalGrid::AdjustVerticalEdgeCapacityfromBlockPin( std::vector<RouterDB::B
   }
 }
 
-void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int LLx, int LLy, int URx, int URy) {
+void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec, std::vector<std::vector<int> >&contactVec , int metalIdx, int LLx, int LLy, int URx, int URy) {
   int layerIdx=this->metal2tile[metalIdx];
+  std::vector<int> temp_tile_index;
   std::cout<<"Convert block pin {"<<LLx<<","<<LLy<<"} {"<<URx<<","<<URy<<"} @metal "<<metalIdx<<std::endl;
   int LLx_cc = floor(double(LLx - this->LL.x) / this->x_unit) * this->x_unit + this->LL.x;
   int LLy_cc = floor(double(LLy - this->LL.y) / this->y_unit) * this->y_unit + this->LL.y;
@@ -549,11 +550,19 @@ void GlobalGrid::ConvertNetBlockPin(std::set<int>& sSet, std::vector<int>& sVec,
       if(mit!=this->XYmap.at(layerIdx).end()) {
         sSet.insert(mit->second);
         sVec.push_back(mit->second);
+        temp_tile_index.push_back(mit->second);
       } else {
         std::cout<<"GlobalGrid-Warning: cannot map block pin to tiles\n";
       }
     }
   }
+
+  if(temp_tile_index.size()>0){
+     contactVec.push_back(temp_tile_index);
+  }else{
+     std::cout<<"GlobalGrid-Warning: cannot map block pin to tiles\n";
+  }
+
 }
 
 void GlobalGrid::ConverNetTerminal(std::set<int>& sSet, std::vector<int>& sVec, int metalIdx, int x, int y) {
@@ -585,22 +594,23 @@ void GlobalGrid::SetNetSink(std::vector<RouterDB::Block>& Blocks, std::vector<Ro
     std::cout<<"For Net "<<net_index<<std::endl;
     net_index= net_index +1;
     int cNO=nit->connected.size();
-    nit->terminals.clear(); nit->connectedTile.clear();
+    nit->terminals.clear(); nit->connectedTile.clear(); nit->connectedTile_contact.clear();
     nit->connectedTile.resize(cNO);
+    nit->connectedTile_contact.resize(cNO);
     std::set<int> tSet;
     for(int i=0;i<cNO;++i) {
       int iter=nit->connected.at(i).iter;
       int iter2=nit->connected.at(i).iter2;
       if(nit->connected.at(i).type==RouterDB::BLOCK) { // block pin
         for( std::vector<RouterDB::contact>::iterator cit=Blocks.at(iter2).pins.at(iter).pinContacts.begin(); cit!=Blocks.at(iter2).pins.at(iter).pinContacts.end(); ++cit) {
-          ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
+          ConvertNetBlockPin(tSet, nit->connectedTile.at(i), nit->connectedTile_contact.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
           std::cout<<"Pin Contact LL ( "<<cit->placedLL.x<<" "<<cit->placedLL.y<<" ) UR ( "<<cit->placedUR.x<<" "<<cit->placedUR.y<<" )"<<std::endl;
         }
       } else if(terminal_routing){ // terminal
 
         for( std::vector<RouterDB::contact>::iterator cit=Terminals.at(iter).termContacts.begin(); cit!=Terminals.at(iter).termContacts.end(); ++cit) {
           //ConverNetTerminal(tSet, nit->connectedTile.at(i), this->lowest_metal, cit->placedCenter.x, cit->placedCenter.y);
-          ConvertNetBlockPin(tSet, nit->connectedTile.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
+          ConvertNetBlockPin(tSet, nit->connectedTile.at(i), nit->connectedTile_contact.at(i), cit->metal, cit->placedLL.x, cit->placedLL.y, cit->placedUR.x, cit->placedUR.y);
           std::cout<<"Terminal Contact Center ( "<<cit->placedCenter.x<<" "<<cit->placedCenter.y<<" )"<<std::endl;
         }
 /*

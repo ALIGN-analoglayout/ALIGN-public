@@ -255,6 +255,7 @@ struct Net{
   std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
   std::vector<int> terminals;
   std::vector<std::vector<int> > connectedTile;
+  std::vector<std::vector<std::vector<int> > > connectedTile_contact;
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
   int STindex = 0;
