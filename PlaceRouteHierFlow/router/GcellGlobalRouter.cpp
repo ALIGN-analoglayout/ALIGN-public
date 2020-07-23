@@ -16,6 +16,64 @@ GcellGlobalRouter::GcellGlobalRouter(){
 
 };
 
+void GcellGlobalRouter::PlotGlobalRouter(){
+
+    std::cout<<"Global-Router-Info: create gnuplot file"<<std::endl;
+    std::ofstream fout;
+    std::string outfile = "global_router.plt";
+    fout.open(outfile);
+
+    //set title
+    fout<<"#Use this file as a script for gnuplot\n#(See http://www.gnuplot.info/ for details)"<<std::endl;
+    fout<<"\nset title\" global router results"<<" \""<<std::endl;
+    fout<<"\nset nokey"<<std::endl;
+    fout<<"#   Uncomment these two lines starting with \"set\""<<std::endl;
+    fout<<"#   to save an EPS file for inclusion into a latex document"<<std::endl;
+    fout<<"# set terminal postscript eps color solid 20"<<std::endl;
+    fout<<"# set output \"result.eps\""<<std::endl<<std::endl;
+    fout<<"#   Uncomment these two lines starting with \"set\""<<std::endl;
+    fout<<"#   to save a PS file for printing"<<std::endl;
+    fout<<"set term jpeg"<<std::endl;
+    fout<<"set output \"result.jpg\""<<std::endl<<std::endl;
+
+    //set range
+    fout<<"\nset xrange ["<<this->LL.x-5000<<":"<<this->UR.x+5000<<"]"<<std::endl;
+    fout<<"\nset yrange ["<<this->LL.y-5000<<":"<<this->UR.y+5000<<"]"<<std::endl;
+
+    fout<<"\nplot[:][:] \'-\' with lines linestyle 1,";
+
+    for(unsigned int i=0;i<Nets.size();i++){
+	fout<<" \'-\' with lines linestyle "<<i+2<<",";
+    }
+    
+    fout<<"\nEOF"<<std::endl;
+
+    // plot connections
+    auto plot_nets = [&] (auto& nets) {
+	for (unsigned int i = 0; i < nets.size(); i++) {
+	    for (unsigned int j = 0; j < nets[i].global_path.size(); j++) {
+		auto first = nets[i].global_path[j].first;
+		auto second = nets[i].global_path[j].second;
+                
+                auto sposx = this->Gcell.tiles_total[first].x;
+                auto sposy = this->Gcell.tiles_total[first].y;
+                auto eposx = this->Gcell.tiles_total[second].x;
+                auto eposy = this->Gcell.tiles_total[second].y;
+
+		fout << "\t" << sposx << "\t" << sposy << std::endl;
+		fout << "\t" << eposx << "\t" << eposy << std::endl;
+		fout << "\t" << sposx << "\t" << sposy << std::endl;
+		fout << std::endl;
+	    }
+	    if (nets.size() > 0) fout << "\nEOF" << std::endl;
+	}
+    };
+
+    plot_nets (Nets);
+    fout.close();
+
+};
+
 void GcellGlobalRouter::AssignMetal(RouterDB::terminal &temp_Terminal, int horizontal_index, int vertical_index, int times){
   std::cout<<"start assign metal"<<std::endl;
   RouterDB::point temp_point;
@@ -400,7 +458,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
 
 
      GGgraph.setterminals(Nets[i].terminals);
-     bool multi_pin_contact_routing = false;
+     bool multi_pin_contact_routing = true;
      if(!multi_pin_contact_routing){                
         GGgraph.setTerminals(Nets[i].connectedTile);
      }else{
@@ -474,6 +532,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   std::cout << "Test 16" << std::endl;
   //5. Return hierNode  Q2. return some to hierNode for detial router
   ReturnHierNode(node);
+  PlotGlobalRouter();
 };
 
 

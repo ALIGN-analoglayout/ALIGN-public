@@ -129,6 +129,7 @@ class GcellGlobalRouter : public RawRouter {
     void CopyMetal(RouterDB::Metal &RouterDB_metal, PnRDB::Metal & PnRDB_metal);
     void Determine_Terminal_Center(int horizontal_index, int vertical_index, int times);
     void PlaceTerminal();
+    void PlotGlobalRouter();
     //void getPhsical_metal_via(int i, int j);
 
 
