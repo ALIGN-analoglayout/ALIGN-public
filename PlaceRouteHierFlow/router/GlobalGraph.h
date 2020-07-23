@@ -42,6 +42,7 @@ class GlobalGraph {
     void RemovefromMultMap(std::multimap<double, int>& mmap, double dist, int idx);
     void UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist);
     std::vector<int> minDistancefromMultiMap(std::multimap<double, int> &mmap);
+    std::vector<std::vector<int> > found_steiner_node;
 
 
   public:
@@ -69,6 +70,7 @@ class GlobalGraph {
     std::vector<std::vector<std::pair<int,int> > > returnPath();
     void InitialSrcDest(std::vector<int> & temp_src, std::vector<int> & temp_dest, std::vector<int> &pin_access);
     void clearPath();
+    std::vector<std::vector<int> > return_steiner_node();
     //void Path_graph_total(GlobalGrid& grid, std::vector<int> &temp_path);
 
 };

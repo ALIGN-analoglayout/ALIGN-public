@@ -24,6 +24,8 @@
 #include "RawRouter.h"
 #include "Rdatatype.h"
 #include "../PnRDB/datatype.h"
+#include <nlohmann/json.hpp>
+#include <iomanip>
 
 /*
 #ifdef _cplusplus
@@ -47,7 +49,7 @@ extern "C"
 #include "lp_lib.h"
 }
 
-
+using namespace nlohmann;
 class GcellGlobalRouter : public RawRouter {
  
   friend class GlobalGrid;
@@ -142,6 +144,10 @@ class GcellGlobalRouter : public RawRouter {
     //void ConvertToViaPnRDB_Placed_Origin(PnRDB::Via& temp_via, RouterDB::Via& router_via);
     //void ConvertToViaPnRDB_Placed_Placed(PnRDB::Via& temp_via, RouterDB::Via& router_via);
     //void TerminalToNodeTerminal(PnRDB::hierNode& HierNode);
+    void PlotGlobalRouter();
+    void PlotGlobalRouter_Json(PnRDB::hierNode& node);
+    void AddContact(PnRDB::contact &temp_contact, json& temp_json_Contact, int unit);
+    void AddContacts(std::vector<PnRDB::contact> &temp_contact, json& temp_json_Contact, int unit);
     
 };
 

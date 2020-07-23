@@ -257,6 +257,8 @@ struct Net{
   std::vector<std::vector<int> > connectedTile;
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
+  std::vector<int> steiner_node;
+  std::vector<std::vector<int> > found_steiner_node;
   int STindex = 0;
   int multi_connection = 1;
   //void display();

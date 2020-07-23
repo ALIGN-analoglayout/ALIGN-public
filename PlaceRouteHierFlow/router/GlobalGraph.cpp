@@ -14,6 +14,14 @@ void GlobalGraph::clearPath(){
 
 };
 
+std::vector<std::vector<int> > GlobalGraph::return_steiner_node(){
+
+  std::vector<std::vector<int> > temp_node = found_steiner_node;  
+  found_steiner_node.clear();
+  return temp_node;
+
+}
+
 void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node) {
 
 
@@ -88,6 +96,8 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   int Flag = 1;
 
+  std::vector<int> temp_steiner_node;
+
   while(iterate_number>0 and Flag){
 
         int index = -1;        
@@ -101,6 +111,7 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
             LastWireLength = WireLength;
 
             AddStinerNodeToTerminals(Pontential_Stiner_node,index);
+            temp_steiner_node.push_back(Pontential_Stiner_node[index]);
 
            }else{
 
@@ -112,6 +123,8 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
         //find a stiner node
         }
+
+  found_steiner_node.push_back(temp_steiner_node);
  
 
 };
