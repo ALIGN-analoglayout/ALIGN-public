@@ -599,6 +599,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      GGgraph.setTerminals(Nets[i].connectedTile); // set all tiles that belongs to pin to Terminals in global graph
      
      std::vector<int> Pontential_Stiner_node = Get_Potential_Steiner_node(Nets[i].terminals, Tile_Set, Gcell);
+     std::cout<<"Potential Steiner Node Size "<<Pontential_Stiner_node.size()<<std::endl;
 
      //std::cout<<"terminal size "<<Nets[i].terminals.size()<<std::endl;
      //find STs
