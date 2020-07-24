@@ -473,6 +473,62 @@ void GcellGlobalRouter::PlaceTerminal(){
 
 };
 
+std::vector<int> GcellGlobalRouter::Found_Center_Point(std::vector<int> pin_tile){
+
+  int x = 0;
+  int y = 0;
+
+  for(unsigned int i=0;i<pin_tile.size();i++){
+     x = x + this->Gcell.tiles_total[pin_tile[i]].x;
+     y = y + this->Gcell.tiles_total[pin_tile[i]].y;
+     }
+
+  x = x / pin_tile.size();
+  y = y / pin_tile.size();
+
+  int dis = INT_MAX;
+  int index = 0;
+
+  for(unsigned int i=0;i<pin_tile.size();i++){
+     int temp_dis = abs(x-this->Gcell.tiles_total[pin_tile[i]].x)+abs(y-this->Gcell.tiles_total[pin_tile[i]].y);
+     if(temp_dis<dis){
+       index = i;
+     }
+    }
+
+  std::vector<int> temp_pin_tile;
+
+  temp_pin_tile.push_back(index);
+  
+  return temp_pin_tile;
+
+};
+
+void GcellGlobalRouter::Seleced_Center_Point(std::vector<int> &terminals, std::vector<std::vector<int> >& connected_tile){
+
+  terminals.clear();
+  
+  for(unsigned int i=0;i<connected_tile.size();i++){
+     std::vector<int> temp_tile = Found_Center_Point(connected_tile[i]);
+     connected_tile[i] = temp_tile;
+  }
+
+  std::set<int> terminal_set;
+  for(unsigned int i=0;i<connected_tile.size();i++){
+     for(unsigned int j=0;j<connected_tile[i].size();j++){
+         terminal_set.insert(connected_tile[i][j]);
+     }
+  }
+
+  std::set<int>::iterator it,it_low,it_up;
+  it_low = terminal_set.begin();
+  it_up = terminal_set.end();
+
+  for(it = it_low;it!=it_up;++it){
+       terminals.push_back(*it);
+     }
+};
+
 GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drcData, int Lmetal, int Hmetal, const std::string &binaryDIR){
   terminal_routing = 0;
   //1. Initial Drcdata and design data
@@ -594,7 +650,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
           }
      }
 
-
+     Seleced_Center_Point(Nets[i].terminals, Nets[i].connectedTile);
      GGgraph.setterminals(Nets[i].terminals); // all collected tiles pins. set(connectedTile) =  terminals here
      GGgraph.setTerminals(Nets[i].connectedTile); // set all tiles that belongs to pin to Terminals in global graph
      
@@ -1012,6 +1068,8 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
     std::set<int>::iterator it_stiner, it_low, it_up;
 
     std::set<RouterDB::tile, RouterDB::tileComp>::iterator it;
+
+    std::cout<<"Temp_tile size "<<Temp_tile.size()<<std::endl;
 
     for(unsigned int i=0;i<Temp_tile.size();++i){
 

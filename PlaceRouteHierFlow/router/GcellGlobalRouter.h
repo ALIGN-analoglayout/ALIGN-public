@@ -148,6 +148,8 @@ class GcellGlobalRouter : public RawRouter {
     void PlotGlobalRouter_Json(PnRDB::hierNode& node);
     void AddContact(PnRDB::contact &temp_contact, json& temp_json_Contact, int unit);
     void AddContacts(std::vector<PnRDB::contact> &temp_contact, json& temp_json_Contact, int unit);
+    std::vector<int> Found_Center_Point(std::vector<int> pin_tile);
+    void Seleced_Center_Point(std::vector<int> &terminals, std::vector<std::vector<int> >& connected_tile);
     
 };
 
