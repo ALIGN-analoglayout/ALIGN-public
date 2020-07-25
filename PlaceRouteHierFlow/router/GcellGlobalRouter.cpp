@@ -492,7 +492,7 @@ std::vector<int> GcellGlobalRouter::Found_Center_Point(std::vector<int> pin_tile
   for(unsigned int i=0;i<pin_tile.size();i++){
      int temp_dis = abs(x-this->Gcell.tiles_total[pin_tile[i]].x)+abs(y-this->Gcell.tiles_total[pin_tile[i]].y);
      if(temp_dis<dis){
-       index = i;
+       index = pin_tile[i];
      }
     }
 
