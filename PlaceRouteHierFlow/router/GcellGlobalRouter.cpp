@@ -2201,8 +2201,10 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
 
     for(unsigned int i=0;i<Nets.size();++i){
 
-       Nets[i].global_path = Nets[i].STs[Nets[i].STindex].path;
-       Nets[i].steiner_node= Nets[i].found_steiner_node[Nets[i].STindex];
+       int selected_index = Nets[i].STindex;
+       //int selected_index = 0;
+       Nets[i].global_path = Nets[i].STs[selected_index].path;
+       Nets[i].steiner_node= Nets[i].found_steiner_node[selected_index];
 
     }
 
