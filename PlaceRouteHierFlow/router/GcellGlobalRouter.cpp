@@ -493,6 +493,7 @@ std::vector<int> GcellGlobalRouter::Found_Center_Point(std::vector<int> pin_tile
      int temp_dis = abs(x-this->Gcell.tiles_total[pin_tile[i]].x)+abs(y-this->Gcell.tiles_total[pin_tile[i]].y);
      if(temp_dis<dis){
        index = pin_tile[i];
+       dis = temp_dis;
      }
     }
 
@@ -1039,26 +1040,23 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
         for(unsigned int j=0;j<t.size();++j){
             if(i!=j){
                 RouterDB::tile temp_tile;
-                temp_tile = grid.tiles_total[t[i]];
-                temp_tile.y = grid.tiles_total[t[j]].y;
-                if(temp_tile.y!=grid.tiles_total[t[i]].y){
-                    Temp_tile.push_back(temp_tile);
-                  }
-                temp_tile.y = grid.tiles_total[t[i]].y;
-                temp_tile.x = grid.tiles_total[t[j]].x;
-                if(temp_tile.x!=grid.tiles_total[t[i]].x){
-                    Temp_tile.push_back(temp_tile);
-                  }
+                if(grid.tiles_total[t[i]].x!=grid.tiles_total[t[j]].x and grid.tiles_total[t[i]].y!=grid.tiles_total[t[j]].y){
+                   temp_tile = grid.tiles_total[t[i]];
+                   temp_tile.y = grid.tiles_total[t[j]].y;
+                   Temp_tile.push_back(temp_tile);
 
-                temp_tile = grid.tiles_total[t[j]];
-                temp_tile.y = grid.tiles_total[t[i]].y;
-                if(temp_tile.y!=grid.tiles_total[t[j]].y){
-                    Temp_tile.push_back(temp_tile);
-                  }
-                temp_tile.y = grid.tiles_total[t[j]].y;
-                temp_tile.x = grid.tiles_total[t[i]].x;
-                if(temp_tile.x!=grid.tiles_total[t[j]].x){
-                    Temp_tile.push_back(temp_tile);
+                   temp_tile.y = grid.tiles_total[t[i]].y;
+                   temp_tile.x = grid.tiles_total[t[j]].x;
+                   Temp_tile.push_back(temp_tile);
+
+                   temp_tile = grid.tiles_total[t[j]];
+                   temp_tile.y = grid.tiles_total[t[i]].y;
+                   Temp_tile.push_back(temp_tile);
+
+                   temp_tile.y = grid.tiles_total[t[j]].y;
+                   temp_tile.x = grid.tiles_total[t[i]].x;
+                   Temp_tile.push_back(temp_tile);
+                   
                   }
               }
            }

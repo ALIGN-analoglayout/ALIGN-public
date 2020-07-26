@@ -410,6 +410,7 @@ struct pointSetComp{
   }
 };
 
+/*
 struct tileComp {
   bool operator() (const tile& lhs, const tile& rhs) const
   {
@@ -420,6 +421,23 @@ struct tileComp {
              }else{
                return lhs.index<rhs.index;
              }
+        }else{
+           return lhs.y<rhs.y;
+        }
+      
+    } else {
+      return lhs.x<rhs.x;
+    }
+  }
+};
+*/
+
+struct tileComp {
+  bool operator() (const tile& lhs, const tile& rhs) const
+  {
+    if(lhs.x==rhs.x) {
+      if(lhs.y==rhs.y){
+           return lhs.metal[0]<rhs.metal[0];
         }else{
            return lhs.y<rhs.y;
         }
