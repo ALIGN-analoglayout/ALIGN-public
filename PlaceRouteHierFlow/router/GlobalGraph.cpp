@@ -109,9 +109,9 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
         if(DetailWireLength > 0){
 
             LastWireLength = WireLength;
-
-            AddStinerNodeToTerminals(Pontential_Stiner_node,index);
             temp_steiner_node.push_back(Pontential_Stiner_node[index]);
+            AddStinerNodeToTerminals(Pontential_Stiner_node,index);
+            
 
            }else{
 
