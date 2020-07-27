@@ -556,7 +556,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   int tile_size = 0;
   int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
   if(chip_size<1000000){
-      tile_size = 2;
+      tile_size = 5;
     }else if(chip_size<10000000000){
       tile_size = 10;
     }else if(chip_size<1000000000000){
@@ -1036,7 +1036,13 @@ int GcellGlobalRouter::SymNetTerminal_PrimeSet(GlobalGrid &grid, std::set<Router
 std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> t, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set, GlobalGrid &grid){
 
     std::vector<RouterDB::tile> Temp_tile;
+
+    std::set<RouterDB::tile, RouterDB::tileComp> terminal_set;
+
     for(unsigned int i=0;i<t.size();++i){
+
+        terminal_set.insert(grid.tiles_total[t[i]]);
+
         for(unsigned int j=0;j<t.size();++j){
             if(i!=j){
                 RouterDB::tile temp_tile;
@@ -1072,7 +1078,7 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
     for(unsigned int i=0;i<Temp_tile.size();++i){
 
           it = Tile_Set.find(Temp_tile[i]);
-          if(it!=Tile_Set.end()){
+          if(it!=Tile_Set.end() and terminal_set.find(Temp_tile[i]) == terminal_set.end()){
           stiner_node_set.insert(it->index); 
           }         
 
@@ -2202,7 +2208,7 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
     for(unsigned int i=0;i<Nets.size();++i){
 
        int selected_index = Nets[i].STindex;
-       //int selected_index = 4;
+       //int selected_index = 0;
        Nets[i].global_path = Nets[i].STs[selected_index].path;
        Nets[i].steiner_node= Nets[i].found_steiner_node[selected_index];
 
