@@ -93,7 +93,14 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   int LastWireLength = INT_MAX;
 
+  /*
+  std::vector<pair<int,int> > temp_path;
+  MST(LastWireLength, temp_path, grid); // there is a initial bug
+  */
+
   int WireLength = INT_MAX;
+
+  
 
   int Flag = 1;
 
@@ -161,14 +168,17 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
   
 //  std::cout<<"Start Get WireLength"<<std::endl;
 
-  int Last_WireLength = INT_MAX; 
+  int Last_WireLength = INT_MAX;
+
+  std::vector<pair<int,int> > temp_path;
+  //MST(Last_WireLength, temp_path, grid); // there is another initial bug
 
   for(unsigned int i=0;i<Pontential_Stiner_node.size();i++){
       
       std::vector<int> temp_pin;
       temp_pin.push_back(Pontential_Stiner_node[i]);
       Pin_terminals.push_back(temp_pin);
-      std::vector<pair<int,int> > temp_path;
+      temp_path.clear();
 //      std::cout<<"Start MST"<<std::endl;
       MST(WireLength, temp_path, grid);
 //      std::cout<<"End MST"<<std::endl;
