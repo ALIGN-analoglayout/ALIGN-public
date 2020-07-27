@@ -93,10 +93,10 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   int LastWireLength = INT_MAX;
 
-  /*
+  
   std::vector<pair<int,int> > temp_path;
   MST(LastWireLength, temp_path, grid); // there is a initial bug
-  */
+  
 
   int WireLength = INT_MAX;
 
@@ -171,7 +171,7 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
   int Last_WireLength = INT_MAX;
 
   std::vector<pair<int,int> > temp_path;
-  //MST(Last_WireLength, temp_path, grid); // there is another initial bug
+  MST(Last_WireLength, temp_path, grid); // there is another initial bug
 
   for(unsigned int i=0;i<Pontential_Stiner_node.size();i++){
       
@@ -278,10 +278,12 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
         }
      }
   std::cout<<"Test3"<<std::endl;
-  for(unsigned int i=0;i<temp_single_path.size();i++){
+
+  /*
+  for(unsigned int i=0;i<temp_single_path.size();i++){ //there is a bug, path should not be source for MST
      src_set.insert(temp_single_path[i]);
      }
-
+  */
 
   std::set<int>::iterator itlow, itup, xit;
 
