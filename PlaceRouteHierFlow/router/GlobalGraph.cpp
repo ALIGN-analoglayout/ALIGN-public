@@ -88,7 +88,8 @@ void GlobalGraph::refreshWeight(GlobalGrid &grid){
 
 void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontential_Stiner_node){
 
-  int iterate_number = Pin_terminals.size()-2;
+  int iterate_number = Pin_terminals.size()-2; // should the number of global router terminals, not the number of detail router pin locations
+  //int iterate_number = Pin_terminals.size()-2; // should the number of global router terminals, not the number of detail router pin locations
 
   int LastWireLength = INT_MAX;
 
