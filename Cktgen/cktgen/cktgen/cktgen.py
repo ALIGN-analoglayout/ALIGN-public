@@ -21,16 +21,14 @@ class ADT:
 
   @property
   def nrows( self):
-    """Computes number of ADT row heights.
-"""
+    """Computes number of ADT row heights."""
     dy = self.bbox.ury-self.bbox.lly
     assert dy % (self.tech.dgPerRow*self.tech.pitchDG) == 0
     return dy // (self.tech.dgPerRow*self.tech.pitchDG)
 
   @property
   def npps( self):
-    """Computes number of poly pitches.
-"""
+    """Computes number of poly pitches."""
     dx = self.bbox.urx-self.bbox.llx
     assert dx % self.tech.pitchDG == 0
     return dx // self.tech.pitchDG
@@ -45,8 +43,7 @@ class ADT:
     return w
 
   def addM1Terminal( self, netName, m1TracksOffset=None, rect=None, leaf_bbox=None):
-    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m1 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m1TracksOffset is None or rect is None
     assert m1TracksOffset is not None or rect is not None
 
@@ -74,8 +71,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal1")
 
   def addM2Terminal( self, netName, rect):
-    """Add a m2 terminal (horizontal) that corresponds to rect
-"""
+    """Add a m2 terminal (horizontal) that corresponds to rect"""
 
     assert rect[1] == rect[3]
 
@@ -92,8 +88,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal2")
 
   def addM3Terminal( self, netName, m3TracksOffset=None, rect=None):
-    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m3 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m3TracksOffset is None or rect is None
     assert m3TracksOffset is not None or rect is not None
 
@@ -119,8 +114,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal3")
 
   def addM4Terminal( self, netName, rect):
-    """Add a m4 terminal (horizontal) that corresponds to rect
-"""
+    """Add a m4 terminal (horizontal) that corresponds to rect"""
 
     assert rect[1] == rect[3]
 
@@ -137,8 +131,7 @@ class ADT:
     return self.newWire( netName, Rect( x0, y0, x1, y1), "metal4")
 
   def addM5Terminal( self, netName, m5TracksOffset=None, rect=None):
-    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect
-"""
+    """Add a m5 terminal (vertical) that spans the entire ADT and is centered on track m1TracksOffset (zero is the left boundary of the cell) or corresponds to rect"""
     assert m5TracksOffset is None or rect is None
     assert m5TracksOffset is not None or rect is not None
 
@@ -264,9 +257,9 @@ class ADITransform:
     return ( self.xScale * x + self.xOffset, self.yScale * y + self.yOffset)
 
   def preMult( self, A):
-# sx 0  tx
-# 0  sy ty
-# 0  0  1
+    # sx 0  tx
+    # 0  sy ty
+    # 0  0  1
     C = ADITransform()
     C.xOffset = A.xScale * self.xOffset + A.xOffset
     C.yOffset = A.yScale * self.yOffset + A.yOffset
@@ -349,7 +342,7 @@ class ADNetlist:
       assert l in ["metal1","metal2","metal3","metal4","metal5","metal6","via1","via2","via3","via4","via5"], l
       netl.newWire( '!kor', r, l)
       
-# ports no longer used
+    # ports no longer used
     assert self.ports == []
 
     for p in self.preroutes:
@@ -406,7 +399,7 @@ class GR:
 
 def encode_GR( tech, obj):
   if isinstance(obj, GR):
-# Convert global route coords to physical coords
+    # Convert global route coords to physical coords
     if obj.rect.llx == obj.rect.urx and obj.rect.lly == obj.rect.ury:
       raise RuntimeError( f"{obj} is a point.")
     if obj.rect.llx == obj.rect.urx: # vertical wire
@@ -448,7 +441,7 @@ class Netlist:
 
   def dumpGR( self, tech, fn, cell_instances=None, no_grid=False):
     with open( fn, "w") as fp:
-# mimic what flatmap would do
+      # mimic what flatmap would do
       grs = []
       terminals = []
 
@@ -494,8 +487,7 @@ class Netlist:
       fp.write( json.dumps( data, indent=2, default=lambda x: encode_GR(tech,x)) + "\n")
 
   def newWire( self, netName, r, l, *, ceName=None):
-    """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire
-"""
+    """The wire cache is used to make sure we don't generate gid's for two different occs of the same wire """
     cand = (netName, (r.llx, r.lly, r.urx, r.ury), l)
     if cand not in self.wire_cache:
       w = Wire()
@@ -619,7 +611,7 @@ Option name=upper_layer                          value={topmetal}
 
             for cp in gr.connected_pins:
               assert cp['layer'] == 'M2'
-# convert to Angstroms (probably should do this elsewhere)
+              # convert to Angstroms (probably should do this elsewhere)
               rect = [ v*5 for v in cp['rect']]
 
               cand = ( gr.netName, tuple(rect), "metal2")
@@ -975,7 +967,7 @@ def removeDuplicates( data):
                     sl.clear()
 
 
-#        print( layer, twice_center, len(v), len(sl.rects))
+      # print( layer, twice_center, len(v), len(sl.rects))
 
             for (rect, netName) in sl.rects:
                 terminals.append(
@@ -1010,7 +1002,7 @@ def parse_args( command_line_args=None):
 
   if args.consume_results:
     consume_results(args,tech)
-#    exit()
+    # exit()
 
   return args,tech
 
@@ -1028,7 +1020,7 @@ if __name__ == "__main__":
   pdev.addM1Terminal( "g", 3)
   pdev.addM1Terminal( "d", 5)
 
-# python cktgen.py --block_name mydesign
+  # python cktgen.py --block_name mydesign
 
   def xg( x): 
     return tech.pitchPoly*tech.halfXGRGrid*2*x
