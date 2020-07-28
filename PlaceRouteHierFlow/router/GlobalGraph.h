@@ -43,7 +43,7 @@ class GlobalGraph {
     void UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist);
     std::vector<int> minDistancefromMultiMap(std::multimap<double, int> &mmap);
     std::vector<std::vector<int> > found_steiner_node;
-    std::vector<std::vector<RouterDB::wire_segment> > Wire_segment;
+    std::vector<std::vector<RouterDB::wire_segment> > Wire_segments;
 
 
   public:

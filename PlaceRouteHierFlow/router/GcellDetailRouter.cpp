@@ -3711,7 +3711,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
      PnRDB::connectNode temp_connectNode;
      PnRDB::wire_segment temp_wire_segment;
 
-     if(start_pin_index<net.connected.size()-1){
+     if(start_pin_index<net.connected.size()){
         if(net.connected[start_pin_index].type==RouterDB::BLOCK)
            temp_connectNode.type = PnRDB::Block;
         if(net.connected[start_pin_index].type==RouterDB::TERMINAL)
@@ -3725,7 +3725,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
      }
      temp_wire_segment.source_pin=temp_connectNode;
 
-     if(end_pin_index<net.connected.size()-1){
+     if(end_pin_index<net.connected.size()){
         if(net.connected[end_pin_index].type==RouterDB::BLOCK)
            temp_connectNode.type = PnRDB::Block;
         if(net.connected[end_pin_index].type==RouterDB::TERMINAL)

@@ -24,8 +24,8 @@ std::vector<std::vector<int> > GlobalGraph::return_steiner_node(){
 
 std::vector<std::vector<RouterDB::wire_segment> > GlobalGraph::return_wire_segment(){
 
-  std::vector<std::vector<RouterDB::wire_segment> > temp_wire_segment = Wire_segment;  
-  Wire_segment.clear();
+  std::vector<std::vector<RouterDB::wire_segment> > temp_wire_segment = Wire_segments;  
+  Wire_segments.clear();
   return temp_wire_segment;
 
 };
@@ -51,7 +51,7 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
      std::cout<<"Pin number "<<Pin_terminals.size()<<std::endl;
      std::vector<RouterDB::wire_segment> temp_wire_segment;
      MST(weight, temp_path, grid, temp_wire_segment);
-     Wire_segment.push_back(temp_wire_segment);
+     Wire_segments.push_back(temp_wire_segment);
      //should return something
      std::cout<<"End MTS1"<<std::endl;
      std::cout<<temp_path.size()<<std::endl;
