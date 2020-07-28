@@ -192,7 +192,7 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
 
 //  std::cout<<"End Get WireLength"<<std::endl;
   
-
+  WireLength = Last_WireLength;
 
 };
 
