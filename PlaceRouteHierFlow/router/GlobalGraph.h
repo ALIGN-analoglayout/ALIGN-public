@@ -43,6 +43,7 @@ class GlobalGraph {
     void UpdateMultMap(std::multimap<double, int>& mmap, double olddist, int idx, double newdist);
     std::vector<int> minDistancefromMultiMap(std::multimap<double, int> &mmap);
     std::vector<std::vector<int> > found_steiner_node;
+    std::vector<std::vector<RouterDB::wire_segment> > Wire_segment;
 
 
   public:
@@ -58,7 +59,7 @@ class GlobalGraph {
     void AddStinerNodeToTerminals(std::vector<int> &Pontential_Stiner_node,int index);
     //std::vector<int> Get_Potential_Steiner_node(GlobalGrid &grid);
     void GetWireLength(int &WireLength, int &index, std::vector<int> Pontential_Stiner_node, GlobalGrid &grid);
-    void MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid);
+    void MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid, std::vector<RouterDB::wire_segment> & temp_wire_segment);
     int Calculate_Weigt(std::vector<std::vector<int> > temp_path);
     std::vector<std::pair<int,int> > Get_MST_Edges(std::vector<std::vector<int> > temp_path);
     void SetSrcDest(std::vector<int> temp_src, std::vector<int> temp_dest);
@@ -72,7 +73,11 @@ class GlobalGraph {
     void clearPath();
     std::vector<std::vector<int> > return_steiner_node();
     //void Path_graph_total(GlobalGrid& grid, std::vector<int> &temp_path);
-
+    std::vector<std::vector<RouterDB::wire_segment> > return_wire_segment();
+    std::vector<int> found_pin_index(int index);
+    std::vector<RouterDB::wire_segment> generate_wire_segment(std::vector<int> source_set,std::vector<int> dest_set, int WireLength);
+    void Found_Source_Dest_Pair_WireLength(std::vector<int> temp_single_path, std::vector<RouterDB::wire_segment> &Wire_segment);
+    void Found_Wire_Segment(std::vector<std::vector<int> > temp_path, std::vector<RouterDB::wire_segment> &Wire_segment);
 };
 
 #endif

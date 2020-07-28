@@ -666,6 +666,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
      std::cout<<"Test 14"<<std::endl;
      std::vector<std::vector<std::pair<int,int> > > temp_path = GGgraph.returnPath();
      Nets[i].found_steiner_node = GGgraph.return_steiner_node();
+     Nets[i].Wire_segments = GGgraph.return_wire_segment();
      RouterDB::SteinerTree temp_st;
 
      for(unsigned int j=0;j<temp_path.size();++j){
@@ -2211,7 +2212,7 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
        //int selected_index = 0;
        Nets[i].global_path = Nets[i].STs[selected_index].path;
        Nets[i].steiner_node= Nets[i].found_steiner_node[selected_index];
-
+       Nets[i].wire_segments = Nets[i].Wire_segments[selected_index];
     }
 
     //    HierNode.tiles_total = Gcell.tiles_total;

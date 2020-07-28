@@ -805,6 +805,55 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
        }
 
        json_temp_net["Connected"]=json_connected;
+
+       json json_wire_segment=json::array();
+
+       for(unsigned int j=0;j<node.Nets[i].wire_segments.size();j++){
+           json temp_wire_segment;
+           json start_pin;
+           json end_pin;
+
+          if(node.Nets[i].wire_segments[j].source_pin.type==PnRDB::Block){
+             start_pin["Type"]="Block";
+             int select_block_index = node.Blocks[node.Nets[i].wire_segments[j].source_pin.iter2].selectedInstance;
+             int block_index = node.Nets[i].wire_segments[j].source_pin.iter2;
+             int pin_index = node.Nets[i].wire_segments[j].source_pin.iter;
+             start_pin["Block name"]=node.Blocks[block_index].instance.at(select_block_index).name;
+             start_pin["Pin name"]=node.Blocks[block_index].instance.at(select_block_index).blockPins[pin_index].name;             
+          }else if(node.Nets[i].wire_segments[j].source_pin.type==PnRDB::Terminal){
+             start_pin["Type"]="Terminal";
+             start_pin["Block name"]="Null";
+             start_pin["Pin name"]=node.Terminals[node.Nets[i].wire_segments[j].source_pin.iter].name;
+          }else if(node.Nets[i].wire_segments[j].source_pin.type==PnRDB::Steiner){
+             start_pin["Type"]="Steiner";
+             start_pin["Block name"]="Null";
+             start_pin["Pin name"]=node.Nets[i].name+"_"+"Steiner_"+std::to_string(node.Nets[i].wire_segments[j].source_pin.iter);
+          }
+
+          if(node.Nets[i].wire_segments[j].dest_pin.type==PnRDB::Block){
+             end_pin["Type"]="Block";
+             int select_block_index = node.Blocks[node.Nets[i].wire_segments[j].dest_pin.iter2].selectedInstance;
+             int block_index = node.Nets[i].wire_segments[j].dest_pin.iter2;
+             int pin_index = node.Nets[i].wire_segments[j].dest_pin.iter;
+             end_pin["Block name"]=node.Blocks[block_index].instance.at(select_block_index).name;
+             end_pin["Pin name"]=node.Blocks[block_index].instance.at(select_block_index).blockPins[pin_index].name;             
+          }else if(node.Nets[i].wire_segments[j].dest_pin.type==PnRDB::Terminal){
+             end_pin["Type"]="Terminal";
+             end_pin["Block name"]="Null";
+             end_pin["Pin name"]=node.Terminals[node.Nets[i].wire_segments[j].dest_pin.iter].name;
+          }else if(node.Nets[i].wire_segments[j].dest_pin.type==PnRDB::Steiner){
+             end_pin["Type"]="Steiner";
+             end_pin["Block name"]="Null";
+             end_pin["Pin name"]=node.Nets[i].name+"_"+"Steiner_"+std::to_string(node.Nets[i].wire_segments[j].dest_pin.iter);
+          }
+
+          temp_wire_segment["source_pin"] = start_pin;
+          temp_wire_segment["dest_pin"] = end_pin;
+          temp_wire_segment["length"] = node.Nets[i].wire_segments[j].length;
+          json_wire_segment.push_back(temp_wire_segment);
+       }
+       
+       json_temp_net["wire_segments"] = json_wire_segment;
        //internal metal
        //internal via
        json internal_metals = json::array();

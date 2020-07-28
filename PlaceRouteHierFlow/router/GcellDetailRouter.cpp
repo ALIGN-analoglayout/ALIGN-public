@@ -3703,6 +3703,46 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
        HierNode.Nets[net_index].path_via.push_back(temp_via);
      }
 
+  //for wire segment
+  for(unsigned int i=0;i<net.wire_segments.size();i++){
+     int start_pin_index = net.wire_segments[i].source_pin;
+     int end_pin_index = net.wire_segments[i].dest_pin;
+     int length = net.wire_segments[i].length;
+     PnRDB::connectNode temp_connectNode;
+     PnRDB::wire_segment temp_wire_segment;
+
+     if(start_pin_index<net.connected.size()-1){
+        if(net.connected[start_pin_index].type==RouterDB::BLOCK)
+           temp_connectNode.type = PnRDB::Block;
+        if(net.connected[start_pin_index].type==RouterDB::TERMINAL)
+           temp_connectNode.type = PnRDB::Terminal;
+        temp_connectNode.iter = net.connected[start_pin_index].iter;
+        temp_connectNode.iter2 = net.connected[start_pin_index].iter2;
+     }else{
+        temp_connectNode.type = PnRDB::Steiner;  
+        temp_connectNode.iter = start_pin_index-(net.connected.size()-1);
+        temp_connectNode.iter2 = -1;
+     }
+     temp_wire_segment.source_pin=temp_connectNode;
+
+     if(end_pin_index<net.connected.size()-1){
+        if(net.connected[end_pin_index].type==RouterDB::BLOCK)
+           temp_connectNode.type = PnRDB::Block;
+        if(net.connected[end_pin_index].type==RouterDB::TERMINAL)
+           temp_connectNode.type = PnRDB::Terminal;
+        temp_connectNode.iter = net.connected[end_pin_index].iter;
+        temp_connectNode.iter2 = net.connected[end_pin_index].iter2;
+     }else{
+        temp_connectNode.type = PnRDB::Steiner;  
+        temp_connectNode.iter = end_pin_index-(net.connected.size()-1);
+        temp_connectNode.iter2 = -1;
+     }
+     temp_wire_segment.dest_pin=temp_connectNode;
+     temp_wire_segment.length = length;
+     HierNode.Nets[net_index].wire_segments.push_back(temp_wire_segment);
+
+  }
+
 };
 
 

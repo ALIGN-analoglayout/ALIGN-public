@@ -44,10 +44,11 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
+struct wire_segment;
 
 
 /// Part 1: declaration of enum types
-enum NType {Block, Terminal};
+enum NType {Block, Terminal, Steiner};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum Smark {H, V};
 enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
@@ -205,6 +206,12 @@ struct globalContact {
   int metalIdx;
 };
 
+struct wire_segment{
+  connectNode source_pin; // block, terminal, steiner
+  connectNode dest_pin;
+  int length;
+};
+
 struct net {
   string name="";
   bool shielding=false; // shielding constraint
@@ -223,6 +230,7 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
+  vector<wire_segment> wire_segments;
   int multi_connection = 1;
 }; // structure of nets
 

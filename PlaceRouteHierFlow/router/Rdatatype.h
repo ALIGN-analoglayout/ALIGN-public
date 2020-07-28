@@ -45,8 +45,9 @@ struct SinkDataComp;
 struct SinkData2Comp;
 struct PowerGrid;
 struct PowerNet;
+struct wire_segment;
 
-enum NType {BLOCK, TERMINAL};
+enum NType {BLOCK, TERMINAL, STEINER};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
 enum SType {CMM, CVM, CVV, PMM, PVM, PVV, IMM, IVM, IVV}; 
 
@@ -84,6 +85,14 @@ struct tile{
   std::vector<tileEdge> north,south,east,west,down,up;
   //int power; // i is vdd, 0 is gnd;
 };
+
+struct wire_segment{
+  int source_pin; // block, terminal, steiner
+  int dest_pin;
+  int length;
+};
+
+
 
 struct vertex{
   int x=-1;
@@ -259,6 +268,8 @@ struct Net{
   std::vector<C_const> C_constraints;
   std::vector<int> steiner_node;
   std::vector<std::vector<int> > found_steiner_node;
+  std::vector<wire_segment> wire_segments;
+  std::vector<std::vector<wire_segment> > Wire_segments;
   int STindex = 0;
   int multi_connection = 1;
   //void display();

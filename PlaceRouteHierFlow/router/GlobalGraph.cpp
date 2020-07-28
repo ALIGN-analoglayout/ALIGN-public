@@ -20,7 +20,15 @@ std::vector<std::vector<int> > GlobalGraph::return_steiner_node(){
   found_steiner_node.clear();
   return temp_node;
 
-}
+};
+
+std::vector<std::vector<RouterDB::wire_segment> > GlobalGraph::return_wire_segment(){
+
+  std::vector<std::vector<RouterDB::wire_segment> > temp_wire_segment = Wire_segment;  
+  Wire_segment.clear();
+  return temp_wire_segment;
+
+};
 
 void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner_node) {
 
@@ -41,7 +49,10 @@ void GlobalGraph::FindSTs(GlobalGrid& grid, int pathNo, std::vector<int> &stiner
 
      std::cout<<"Start MST1"<<std::endl;
      std::cout<<"Pin number "<<Pin_terminals.size()<<std::endl;
-     MST(weight, temp_path, grid);
+     std::vector<RouterDB::wire_segment> temp_wire_segment;
+     MST(weight, temp_path, grid, temp_wire_segment);
+     Wire_segment.push_back(temp_wire_segment);
+     //should return something
      std::cout<<"End MTS1"<<std::endl;
      std::cout<<temp_path.size()<<std::endl;
      UpdateEdgeWeight(temp_path);
@@ -95,7 +106,8 @@ void GlobalGraph::Iterated_Steiner(GlobalGrid &grid, std::vector<int> &Pontentia
 
   
   std::vector<pair<int,int> > temp_path;
-  MST(LastWireLength, temp_path, grid); // there is a initial bug
+  std::vector<RouterDB::wire_segment> temp_wire_segment;
+  MST(LastWireLength, temp_path, grid,temp_wire_segment); // there is a initial bug
   
 
   int WireLength = INT_MAX;
@@ -171,7 +183,8 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
   int Last_WireLength = INT_MAX;
 
   std::vector<pair<int,int> > temp_path;
-  MST(Last_WireLength, temp_path, grid); // there is another initial bug
+  std::vector<RouterDB::wire_segment> temp_wire_segment;
+  MST(Last_WireLength, temp_path, grid, temp_wire_segment); // there is another initial bug
 
   for(unsigned int i=0;i<Pontential_Stiner_node.size();i++){
       
@@ -180,7 +193,8 @@ void GlobalGraph::GetWireLength(int &WireLength, int &index, std::vector<int> Po
       Pin_terminals.push_back(temp_pin);
       temp_path.clear();
 //      std::cout<<"Start MST"<<std::endl;
-      MST(WireLength, temp_path, grid);
+      std::vector<RouterDB::wire_segment> Wire_segment;
+      MST(WireLength, temp_path, grid, Wire_segment);
 //      std::cout<<"End MST"<<std::endl;
       if(WireLength<Last_WireLength){
           Last_WireLength = WireLength;
@@ -306,7 +320,87 @@ void GlobalGraph::ChangeSrcDest(std::vector<int> &temp_src, std::vector<int> &te
   
 };
 
-void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid){
+std::vector<int> GlobalGraph::found_pin_index(int index){
+
+  std::vector<int> temp_index;
+
+  for(unsigned int i=0;i<Pin_terminals.size();i++){
+
+      for(unsigned int j=0;j<Pin_terminals[i].size();j++){
+         if(Pin_terminals[i][j]==index){
+             temp_index.push_back(i);
+             break;
+           }     
+      }
+
+     }
+
+  return temp_index;
+
+
+};
+
+std::vector<RouterDB::wire_segment>  GlobalGraph::generate_wire_segment(std::vector<int> source_set,std::vector<int> dest_set, int WireLength){
+
+  std::vector<RouterDB::wire_segment> Wire_segment;
+  RouterDB::wire_segment temp_wire_segment;
+
+  for(unsigned int i=0;i<source_set.size();i++){
+
+     for(unsigned int j=0;j<dest_set.size();j++){
+        temp_wire_segment.source_pin = source_set[i];
+        temp_wire_segment.dest_pin = dest_set[j];
+        temp_wire_segment.length = WireLength;
+        Wire_segment.push_back(temp_wire_segment);
+     }
+
+  }
+
+  return Wire_segment;
+
+};
+
+
+void GlobalGraph::Found_Source_Dest_Pair_WireLength(std::vector<int> temp_single_path, std::vector<RouterDB::wire_segment> &Wire_segment){
+
+  int path_size = temp_single_path.size();
+  if(path_size>0){
+    int source_index = temp_single_path[0];
+    int dest_index = temp_single_path[path_size-1];
+    std::vector<std::vector<int> > temp_MST;
+    temp_MST.push_back(temp_single_path);
+    int WireLength = Calculate_Weigt(temp_MST);
+    std::vector<int> source_set = found_pin_index(source_index);
+    std::vector<int> dest_set = found_pin_index(dest_index);
+    Wire_segment = generate_wire_segment(source_set,dest_set,WireLength);
+    
+  }else{
+    std::cout<<"MST Found Source Dest Pair Error"<<std::endl;
+  }
+
+};
+
+void GlobalGraph::Found_Wire_Segment(std::vector<std::vector<int> > temp_path, std::vector<RouterDB::wire_segment> &Wire_segment){
+
+
+   for(unsigned int i=0;i<temp_path.size();i++){
+
+      std::vector<RouterDB::wire_segment> temp_segment;
+      
+      Found_Source_Dest_Pair_WireLength(temp_path[i], temp_segment);
+
+      for(unsigned int j=0;j<temp_segment.size();j++){
+         Wire_segment.push_back(temp_segment[j]);
+      }
+
+   }
+
+
+};
+
+
+
+void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, GlobalGrid &grid, std::vector<RouterDB::wire_segment> &Wire_segment){
 
     std::vector<std::vector<int> > MST_path;
     std::vector<int> temp_src;
@@ -354,6 +448,12 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
          std::cout<<"ChangeSrcDest"<<std::endl;
        }
      WireLength = Calculate_Weigt(MST_path);
+
+     //calculate each segement, return from pin index to index and its length
+     //std::vector<RouterDB::wire_segment> Wire_segment;
+     Found_Wire_Segment(MST_path, Wire_segment);
+
+
      temp_path = Get_MST_Edges(MST_path);
 
 };
