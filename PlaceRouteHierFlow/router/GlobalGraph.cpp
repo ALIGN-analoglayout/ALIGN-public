@@ -329,7 +329,6 @@ std::vector<int> GlobalGraph::found_pin_index(int index){
       for(unsigned int j=0;j<Pin_terminals[i].size();j++){
          if(Pin_terminals[i][j]==index){
              temp_index.push_back(i);
-             break;
            }     
       }
 
