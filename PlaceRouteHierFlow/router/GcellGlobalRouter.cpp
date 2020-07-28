@@ -556,11 +556,11 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   int tile_size = 0;
   int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
   if(chip_size<1000000){
-      tile_size = 20;
+      tile_size = 5;
     }else if(chip_size<10000000000){
-      tile_size = 40;
+      tile_size = 10;
     }else if(chip_size<1000000000000){
-      tile_size = 1000;
+      tile_size = 100;
     }else if(chip_size<100000000000000){
       tile_size = 10000;
     }else {
@@ -2213,6 +2213,16 @@ void GcellGlobalRouter::ReturnHierNode(PnRDB::hierNode& HierNode) {
        Nets[i].global_path = Nets[i].STs[selected_index].path;
        Nets[i].steiner_node= Nets[i].found_steiner_node[selected_index];
        Nets[i].wire_segments = Nets[i].Wire_segments[selected_index];
+
+       for(unsigned int j=0;j<Nets[i].steiner_node.size();++j){
+          RouterDB::contact temp_contact;
+          int steiner_index = Nets[i].steiner_node[j];
+          temp_contact.metal = this->Gcell.tiles_total[steiner_index].metal[0];
+          temp_contact.originCenter.x = this->Gcell.tiles_total[steiner_index].x;
+          temp_contact.originCenter.y = this->Gcell.tiles_total[steiner_index].y;
+          Nets[i].steiner_node_contact.push_back(temp_contact);
+       }
+
     }
 
     //    HierNode.tiles_total = Gcell.tiles_total;

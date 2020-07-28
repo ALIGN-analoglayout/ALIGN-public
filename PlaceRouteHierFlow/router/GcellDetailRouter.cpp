@@ -3743,6 +3743,16 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
 
   }
 
+  //for steiner node contact
+  for(unsigned int i=0;i<net.steiner_node_contact.size();i++){
+     PnRDB::contact temp_contact;
+     temp_contact.metal = drc_info.Metal_info[net.steiner_node_contact[i].metal].name;
+     temp_contact.originCenter.x = net.steiner_node_contact[i].originCenter.x;
+     temp_contact.originCenter.y = net.steiner_node_contact[i].originCenter.y;
+     HierNode.Nets[net_index].steiner_node_contact.push_back(temp_contact);
+  }
+
+
 };
 
 

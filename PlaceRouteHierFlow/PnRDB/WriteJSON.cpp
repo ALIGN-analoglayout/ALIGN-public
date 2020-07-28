@@ -854,6 +854,18 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
        }
        
        json_temp_net["wire_segments"] = json_wire_segment;
+
+       json steiner_node=json::array();
+       for(unsigned int j=0;j<node.Nets[i].steiner_node_contact.size();j++){
+          json temp_steiner_node;
+          temp_steiner_node["name"] = node.Nets[i].name+"_"+"Steiner_"+std::to_string(j+1);
+          temp_steiner_node["x"] = node.Nets[i].steiner_node_contact[j].originCenter.x;
+          temp_steiner_node["y"] = node.Nets[i].steiner_node_contact[j].originCenter.y;
+          temp_steiner_node["Physical Layer"] = node.Nets[i].steiner_node_contact[j].metal;
+          steiner_node.push_back(temp_steiner_node);
+       }
+       json_temp_net["Steiner node"]= steiner_node;
+
        //internal metal
        //internal via
        json internal_metals = json::array();

@@ -268,6 +268,7 @@ struct Net{
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
   std::vector<int> steiner_node;
+  std::vector<contact> steiner_node_contact;
   std::vector<std::vector<int> > found_steiner_node;
   std::vector<wire_segment> wire_segments;
   std::vector<std::vector<wire_segment> > Wire_segments;
