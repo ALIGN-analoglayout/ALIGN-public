@@ -556,15 +556,15 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   int tile_size = 0;
   int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
   if(chip_size<1000000){
-      tile_size = 5;
+      tile_size = 20;
     }else if(chip_size<10000000000){
-      tile_size = 10;
+      tile_size = 40;
     }else if(chip_size<1000000000000){
-      tile_size = 100;
+      tile_size = 1000;
     }else if(chip_size<100000000000000){
-      tile_size = 100;
+      tile_size = 10000;
     }else {
-      tile_size = 100;
+      tile_size = 1000000;
     }
 
     int tileLayerNo = 1;//Hmetal - Lmetal + 1;
@@ -650,7 +650,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
            assert(0);
           }
      }
-
+     Nets[i].terminals_bk = Nets[i].terminals;
      Seleced_Center_Point(Nets[i].terminals, Nets[i].connectedTile);
      GGgraph.setterminals(Nets[i].terminals); // all collected tiles pins. set(connectedTile) =  terminals here
      GGgraph.setTerminals(Nets[i].connectedTile); // set all tiles that belongs to pin to Terminals in global graph

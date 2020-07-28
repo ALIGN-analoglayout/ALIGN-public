@@ -622,7 +622,7 @@ std::vector<int> GcellDetailRouter::Multi_Connection_Number(int i){
 
 
 void GcellDetailRouter::Global_Path_Operation_For_Pins(int i, std::vector<std::pair<int,int> > &global_path){
-
+  Nets[i].terminals = Nets[i].terminals_bk; //should rm this part
   for(unsigned int terminal_size=0;terminal_size<Nets[i].terminals.size();terminal_size++){
       Adding_tiles_for_terminal(Nets[i].terminals[terminal_size], global_path);
   }
@@ -873,7 +873,7 @@ void GcellDetailRouter::create_detailrouter(){
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
     srand(time(0));
-    multi_number = rand() % 4;
+    multi_number = rand() % 3;
     if(multi_number == 0) multi_number = 1;
     Nets[i].multi_connection = multi_number;
     //multi_number = 3;

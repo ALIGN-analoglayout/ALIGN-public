@@ -263,6 +263,7 @@ struct Net{
   std::vector<SteinerTree> STs;
   std::vector<std::pair<int,int> > global_path; //index of tiles, representing start point & end point of tiles
   std::vector<int> terminals;
+  std::vector<int> terminals_bk;
   std::vector<std::vector<int> > connectedTile;
   std::vector<R_const> R_constraints;
   std::vector<C_const> C_constraints;
