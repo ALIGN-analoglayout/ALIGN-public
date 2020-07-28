@@ -1,0 +1,6148 @@
+{
+    "Blocks": [
+        {
+            "Box": {
+                "LLx": 5508,
+                "LLy": 108,
+                "Physical Layer": "null",
+                "URx": 8964,
+                "URy": 4644
+            },
+            "Height": 4536,
+            "Internal Metal": [
+                {
+                    "LLx": 5696,
+                    "LLy": 738,
+                    "Physical Layer": "M2",
+                    "URx": 8776,
+                    "URy": 774
+                },
+                {
+                    "LLx": 5696,
+                    "LLy": 1818,
+                    "Physical Layer": "M2",
+                    "URx": 8776,
+                    "URy": 1854
+                },
+                {
+                    "LLx": 5696,
+                    "LLy": 2898,
+                    "Physical Layer": "M2",
+                    "URx": 8776,
+                    "URy": 2934
+                },
+                {
+                    "LLx": 5696,
+                    "LLy": 3978,
+                    "Physical Layer": "M2",
+                    "URx": 8776,
+                    "URy": 4014
+                },
+                {
+                    "LLx": 5804,
+                    "LLy": 630,
+                    "Physical Layer": "M2",
+                    "URx": 8884,
+                    "URy": 666
+                },
+                {
+                    "LLx": 5804,
+                    "LLy": 1710,
+                    "Physical Layer": "M2",
+                    "URx": 8884,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 5804,
+                    "LLy": 2790,
+                    "Physical Layer": "M2",
+                    "URx": 8884,
+                    "URy": 2826
+                },
+                {
+                    "LLx": 5804,
+                    "LLy": 3870,
+                    "Physical Layer": "M2",
+                    "URx": 8884,
+                    "URy": 3906
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 306,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 342
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 414,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 450
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 522,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 558
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 1386,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 1422
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 1494,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 1530
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 1602,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 1638
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 2466,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 2502
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 2574,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 2610
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 2682,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 2718
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 3546,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 3582
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 3654,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 3690
+                },
+                {
+                    "LLx": 5588,
+                    "LLy": 3762,
+                    "Physical Layer": "M2",
+                    "URx": 8668,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 5508,
+                    "LLy": 4518,
+                    "Physical Layer": "M1",
+                    "URx": 8964,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 5706,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5742,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5706,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5742,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5706,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 5742,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 5706,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 5742,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6138,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6174,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6138,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6174,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6138,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6174,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6138,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6174,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6570,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6606,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6570,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6606,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6570,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6606,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6570,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6606,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7002,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7038,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7002,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7038,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7002,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7038,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7002,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7038,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7434,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7470,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7434,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7470,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7434,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7470,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7434,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7470,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7866,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7902,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7866,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7902,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7866,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7902,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7866,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7902,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8298,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8334,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8298,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8334,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8298,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8334,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8298,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8334,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8730,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8766,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8730,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8766,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8730,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8766,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8730,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8766,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 5598,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5634,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5598,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5634,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5598,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 5634,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 5598,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 5634,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6030,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6066,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6030,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6066,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6030,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6066,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6030,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6066,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6462,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6498,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6462,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6498,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6462,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6498,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6462,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6498,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6894,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6930,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6894,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6930,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6894,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6930,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6894,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6930,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7326,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7362,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7326,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7362,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7326,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7362,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7326,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7362,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7758,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7794,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7758,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7794,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7758,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7794,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7758,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7794,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8190,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8226,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8190,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8226,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8190,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8226,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8190,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8226,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8622,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8658,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8622,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8658,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8622,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8658,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8622,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8658,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 5814,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5850,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5814,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5850,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5814,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 5850,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 5814,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 5850,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6246,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6282,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6246,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6282,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6246,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6282,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6246,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6282,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 6678,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 6714,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 6678,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 6714,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 6678,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 6714,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 6678,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 6714,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7146,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7146,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7146,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7146,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7542,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 7578,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7542,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 7578,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7542,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 7578,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7542,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 7578,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 7974,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8010,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 7974,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8010,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 7974,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8010,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 7974,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8010,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8406,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8442,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8406,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8442,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8406,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8442,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8406,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8442,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 8838,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 8874,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 8838,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 8874,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 8838,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 8874,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 8838,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 8874,
+                    "URy": 4348
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m0",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 7218,
+                            "LLy": 620,
+                            "Physical Layer": "M3",
+                            "URx": 7254,
+                            "URy": 3916
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 7002,
+                            "LLy": 728,
+                            "Physical Layer": "M3",
+                            "URx": 7038,
+                            "URy": 4024
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "G"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 7110,
+                            "LLy": 296,
+                            "Physical Layer": "M3",
+                            "URx": 7146,
+                            "URy": 3808
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 5508,
+                            "LLy": 4518,
+                            "Physical Layer": "M2",
+                            "URx": 8964,
+                            "URy": 4554
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 3456
+        },
+        {
+            "Box": {
+                "LLx": 9072,
+                "LLy": 2592,
+                "Physical Layer": "null",
+                "URx": 13392,
+                "URy": 4968
+            },
+            "Height": 2376,
+            "Internal Metal": [
+                {
+                    "LLx": 9260,
+                    "LLy": 3114,
+                    "Physical Layer": "M2",
+                    "URx": 13312,
+                    "URy": 3150
+                },
+                {
+                    "LLx": 9260,
+                    "LLy": 4194,
+                    "Physical Layer": "M2",
+                    "URx": 13312,
+                    "URy": 4230
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 2790,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 2826
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 2898,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 2934
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 3006,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 3042
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 3870,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 3906
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 3978,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 4014
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 4086,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 4122
+                },
+                {
+                    "LLx": 9072,
+                    "LLy": 4842,
+                    "Physical Layer": "M1",
+                    "URx": 13392,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 9270,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9306,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9270,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9306,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 9702,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9738,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9702,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9738,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10134,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10170,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10134,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10170,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10566,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10602,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10566,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10602,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11034,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11034,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11430,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11466,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11430,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11466,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11862,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11898,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11862,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11898,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12294,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12330,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12294,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12330,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12726,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12762,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12726,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12762,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 13158,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 13194,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 13158,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 13194,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 9162,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9198,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9162,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9198,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 9594,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9630,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9594,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9630,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10026,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10062,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10026,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10062,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10458,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10494,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10458,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10494,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10890,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10926,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10890,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10926,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11322,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11358,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11322,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11358,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11754,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11790,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11754,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11790,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12186,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12222,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12186,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12222,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12618,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12654,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12618,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12654,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 13050,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 13086,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 13050,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 13086,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 9378,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9414,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9378,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9414,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 9810,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 9846,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 9810,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 9846,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10242,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10278,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10242,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10278,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 10674,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 10710,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 10674,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 10710,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11142,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11142,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11538,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 11574,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11538,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 11574,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 11970,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12006,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 11970,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12006,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12402,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12438,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12402,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12438,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 12834,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 12870,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 12834,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 12870,
+                    "URy": 4672
+                },
+                {
+                    "LLx": 13266,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 13302,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 13266,
+                    "LLy": 3752,
+                    "Physical Layer": "M1",
+                    "URx": 13302,
+                    "URy": 4672
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m1",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 11214,
+                            "LLy": 3104,
+                            "Physical Layer": "M3",
+                            "URx": 11250,
+                            "URy": 4240
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 11106,
+                            "LLy": 2780,
+                            "Physical Layer": "M3",
+                            "URx": 11142,
+                            "URy": 4132
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 9072,
+                            "LLy": 4842,
+                            "Physical Layer": "M2",
+                            "URx": 13392,
+                            "URy": 4878
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 4320
+        },
+        {
+            "Box": {
+                "LLx": 9072,
+                "LLy": 108,
+                "Physical Layer": "null",
+                "URx": 13392,
+                "URy": 2484
+            },
+            "Height": 2376,
+            "Internal Metal": [
+                {
+                    "LLx": 9260,
+                    "LLy": 738,
+                    "Physical Layer": "M2",
+                    "URx": 13204,
+                    "URy": 774
+                },
+                {
+                    "LLx": 9260,
+                    "LLy": 1818,
+                    "Physical Layer": "M2",
+                    "URx": 13204,
+                    "URy": 1854
+                },
+                {
+                    "LLx": 9368,
+                    "LLy": 630,
+                    "Physical Layer": "M2",
+                    "URx": 13312,
+                    "URy": 666
+                },
+                {
+                    "LLx": 9368,
+                    "LLy": 1710,
+                    "Physical Layer": "M2",
+                    "URx": 13312,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 306,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 342
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 414,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 450
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 522,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 558
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 1386,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 1422
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 1494,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 1530
+                },
+                {
+                    "LLx": 9152,
+                    "LLy": 1602,
+                    "Physical Layer": "M2",
+                    "URx": 13096,
+                    "URy": 1638
+                },
+                {
+                    "LLx": 9072,
+                    "LLy": 2358,
+                    "Physical Layer": "M1",
+                    "URx": 13392,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 9270,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9306,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9270,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9306,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 9702,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9738,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9702,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9738,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10134,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10170,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10134,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10170,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10566,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10602,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10566,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10602,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11034,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11034,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11430,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11466,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11430,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11466,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11862,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11898,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11862,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11898,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12294,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12330,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12294,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12330,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12726,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12762,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12726,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12762,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 13158,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 13194,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 13158,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 13194,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 9162,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9198,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9162,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9198,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 9594,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9630,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9594,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9630,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10026,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10062,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10026,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10062,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10458,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10494,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10458,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10494,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10890,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10926,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10890,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10926,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11322,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11358,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11322,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11358,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11754,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11790,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11754,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11790,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12186,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12222,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12186,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12222,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12618,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12654,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12618,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12654,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 13050,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 13086,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 13050,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 13086,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 9378,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9414,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9378,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9414,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 9810,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 9846,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 9810,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 9846,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10242,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10278,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10242,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10278,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 10674,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 10710,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 10674,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 10710,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11142,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11142,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11538,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 11574,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11538,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 11574,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 11970,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12006,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 11970,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12006,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12402,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12438,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12402,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12438,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 12834,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 12870,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 12834,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 12870,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 13266,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 13302,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 13266,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 13302,
+                    "URy": 2188
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m2",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 11214,
+                            "LLy": 620,
+                            "Physical Layer": "M3",
+                            "URx": 11250,
+                            "URy": 1756
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 10998,
+                            "LLy": 728,
+                            "Physical Layer": "M3",
+                            "URx": 11034,
+                            "URy": 1864
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "G"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 11106,
+                            "LLy": 296,
+                            "Physical Layer": "M3",
+                            "URx": 11142,
+                            "URy": 1648
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 9072,
+                            "LLy": 2358,
+                            "Physical Layer": "M2",
+                            "URx": 13392,
+                            "URy": 2394
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 4320
+        },
+        {
+            "Box": {
+                "LLx": 108,
+                "LLy": 108,
+                "Physical Layer": "null",
+                "URx": 3564,
+                "URy": 4644
+            },
+            "Height": 4536,
+            "Internal Metal": [
+                {
+                    "LLx": 296,
+                    "LLy": 738,
+                    "Physical Layer": "M2",
+                    "URx": 3376,
+                    "URy": 774
+                },
+                {
+                    "LLx": 296,
+                    "LLy": 1818,
+                    "Physical Layer": "M2",
+                    "URx": 3376,
+                    "URy": 1854
+                },
+                {
+                    "LLx": 296,
+                    "LLy": 2898,
+                    "Physical Layer": "M2",
+                    "URx": 3376,
+                    "URy": 2934
+                },
+                {
+                    "LLx": 296,
+                    "LLy": 3978,
+                    "Physical Layer": "M2",
+                    "URx": 3376,
+                    "URy": 4014
+                },
+                {
+                    "LLx": 188,
+                    "LLy": 630,
+                    "Physical Layer": "M2",
+                    "URx": 3268,
+                    "URy": 666
+                },
+                {
+                    "LLx": 188,
+                    "LLy": 1710,
+                    "Physical Layer": "M2",
+                    "URx": 3268,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 188,
+                    "LLy": 2790,
+                    "Physical Layer": "M2",
+                    "URx": 3268,
+                    "URy": 2826
+                },
+                {
+                    "LLx": 188,
+                    "LLy": 3870,
+                    "Physical Layer": "M2",
+                    "URx": 3268,
+                    "URy": 3906
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 306,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 342
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 414,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 450
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 522,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 558
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 1386,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 1422
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 1494,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 1530
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 1602,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 1638
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 2466,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 2502
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 2574,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 2610
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 2682,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 2718
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 3546,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 3582
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 3654,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 3690
+                },
+                {
+                    "LLx": 404,
+                    "LLy": 3762,
+                    "Physical Layer": "M2",
+                    "URx": 3484,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 108,
+                    "LLy": 4518,
+                    "Physical Layer": "M1",
+                    "URx": 3564,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 3330,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3366,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3330,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3366,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3330,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 3366,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 3330,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 3366,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2898,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2934,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2898,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2934,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2898,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2934,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2898,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2934,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2466,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2502,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2466,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2502,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2466,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2502,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2466,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2502,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2034,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2070,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2034,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2070,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2034,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2070,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2034,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2070,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1602,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1638,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1602,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1638,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1602,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1638,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1602,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1638,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1170,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1206,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1170,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1206,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1170,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1206,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1170,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1206,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 738,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 774,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 738,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 774,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 738,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 774,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 738,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 774,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 306,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 342,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 306,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 342,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 306,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 342,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 306,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 342,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 3438,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3474,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3438,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3474,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3438,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 3474,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 3438,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 3474,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 3006,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3042,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3006,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3042,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3006,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 3042,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 3006,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 3042,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2574,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2610,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2574,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2610,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2574,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2610,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2574,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2610,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2142,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2178,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2142,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2178,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2142,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2178,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2142,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2178,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1710,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1746,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1710,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1746,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1710,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1746,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1710,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1746,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1278,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1314,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1278,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1314,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1278,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1314,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1278,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1314,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 846,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 882,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 846,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 882,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 846,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 882,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 846,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 882,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 414,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 450,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 414,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 450,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 414,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 450,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 414,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 450,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 3222,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3258,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3222,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3258,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3222,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 3258,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 3222,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 3258,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2790,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2826,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2790,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2826,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2790,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2826,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2790,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2826,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 2358,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 2394,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 2358,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 2394,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 2358,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 2394,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 2358,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 2394,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1962,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1962,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1962,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1962,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1494,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1530,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1494,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1530,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1494,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1530,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1494,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1530,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 1062,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 1098,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 1062,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 1098,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 1062,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 1098,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 1062,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 1098,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 630,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 666,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 630,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 666,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 630,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 666,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 630,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 666,
+                    "URy": 4348
+                },
+                {
+                    "LLx": 198,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 234,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 198,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 234,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 198,
+                    "LLy": 2348,
+                    "Physical Layer": "M1",
+                    "URx": 234,
+                    "URy": 3268
+                },
+                {
+                    "LLx": 198,
+                    "LLy": 3428,
+                    "Physical Layer": "M1",
+                    "URx": 234,
+                    "URy": 4348
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m3",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 1818,
+                            "LLy": 620,
+                            "Physical Layer": "M3",
+                            "URx": 1854,
+                            "URy": 3916
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 2034,
+                            "LLy": 728,
+                            "Physical Layer": "M3",
+                            "URx": 2070,
+                            "URy": 4024
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "G"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 1926,
+                            "LLy": 296,
+                            "Physical Layer": "M3",
+                            "URx": 1962,
+                            "URy": 3808
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 108,
+                            "LLy": 4518,
+                            "Physical Layer": "M2",
+                            "URx": 3564,
+                            "URy": 4554
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 3456
+        },
+        {
+            "Box": {
+                "LLx": 3672,
+                "LLy": 108,
+                "Physical Layer": "null",
+                "URx": 5400,
+                "URy": 2484
+            },
+            "Height": 2376,
+            "Internal Metal": [
+                {
+                    "LLx": 3860,
+                    "LLy": 738,
+                    "Physical Layer": "M2",
+                    "URx": 5212,
+                    "URy": 774
+                },
+                {
+                    "LLx": 3860,
+                    "LLy": 1818,
+                    "Physical Layer": "M2",
+                    "URx": 5212,
+                    "URy": 1854
+                },
+                {
+                    "LLx": 3968,
+                    "LLy": 630,
+                    "Physical Layer": "M2",
+                    "URx": 5320,
+                    "URy": 666
+                },
+                {
+                    "LLx": 3968,
+                    "LLy": 1710,
+                    "Physical Layer": "M2",
+                    "URx": 5320,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 306,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 342
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 414,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 450
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 522,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 558
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 1386,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 1422
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 1494,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 1530
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 1602,
+                    "Physical Layer": "M2",
+                    "URx": 5104,
+                    "URy": 1638
+                },
+                {
+                    "LLx": 3672,
+                    "LLy": 2358,
+                    "Physical Layer": "M1",
+                    "URx": 5400,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 3870,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3906,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3870,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3906,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4338,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4770,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4770,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5166,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5202,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5166,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5202,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3762,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 3798,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3762,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 3798,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4194,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4230,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4194,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4230,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4626,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4662,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4626,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4662,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5058,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5094,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5058,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5094,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4014,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4014,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4446,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 4878,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 4878,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 5274,
+                    "LLy": 188,
+                    "Physical Layer": "M1",
+                    "URx": 5310,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 5274,
+                    "LLy": 1268,
+                    "Physical Layer": "M1",
+                    "URx": 5310,
+                    "URy": 2188
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m4",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 4518,
+                            "LLy": 620,
+                            "Physical Layer": "M3",
+                            "URx": 4554,
+                            "URy": 1756
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 4302,
+                            "LLy": 728,
+                            "Physical Layer": "M3",
+                            "URx": 4338,
+                            "URy": 1864
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "G"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 4410,
+                            "LLy": 296,
+                            "Physical Layer": "M3",
+                            "URx": 4446,
+                            "URy": 1648
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 3672,
+                            "LLy": 2358,
+                            "Physical Layer": "M2",
+                            "URx": 5400,
+                            "URy": 2394
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 1728
+        },
+        {
+            "Box": {
+                "LLx": 3672,
+                "LLy": 2592,
+                "Physical Layer": "null",
+                "URx": 4536,
+                "URy": 3888
+            },
+            "Height": 1296,
+            "Internal Metal": [
+                {
+                    "LLx": 3860,
+                    "LLy": 3114,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 3150
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 2790,
+                    "Physical Layer": "M2",
+                    "URx": 4240,
+                    "URy": 2826
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 2898,
+                    "Physical Layer": "M2",
+                    "URx": 4240,
+                    "URy": 2934
+                },
+                {
+                    "LLx": 3752,
+                    "LLy": 3006,
+                    "Physical Layer": "M2",
+                    "URx": 4240,
+                    "URy": 3042
+                },
+                {
+                    "LLx": 3870,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 3906,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 4338,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 3762,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 3798,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 4194,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 4230,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 4014,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2672,
+                    "Physical Layer": "M1",
+                    "URx": 4446,
+                    "URy": 3592
+                },
+                {
+                    "LLx": 3672,
+                    "LLy": 3762,
+                    "Physical Layer": "M1",
+                    "URx": 4536,
+                    "URy": 3798
+                }
+            ],
+            "Internal Via": [],
+            "Name": "m5",
+            "Pins": [
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 4086,
+                            "LLy": 2780,
+                            "Physical Layer": "M3",
+                            "URx": 4122,
+                            "URy": 3484
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "D"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 3978,
+                            "LLy": 2780,
+                            "Physical Layer": "M3",
+                            "URx": 4014,
+                            "URy": 3484
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "S"
+                },
+                {
+                    "Internal Metal": [
+                        {
+                            "LLx": 3672,
+                            "LLy": 3762,
+                            "Physical Layer": "M2",
+                            "URx": 4536,
+                            "URy": 3798
+                        }
+                    ],
+                    "Internal Via": [],
+                    "Name": "BG"
+                }
+            ],
+            "Width": 864
+        }
+    ],
+    "Cell Name": "ota_asap7",
+    "Cell box": {
+        "LLx": 0,
+        "LLy": 0,
+        "Physical Layer": "null",
+        "URx": 13500,
+        "URy": 5076
+    },
+    "Istop": true,
+    "Nets": [
+        {
+            "Connected": [
+                {
+                    "Block name": "m0",
+                    "Pin name": "D",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m1",
+                    "Pin name": "D",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m2",
+                    "Pin name": "G",
+                    "Type": "Block"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 7218,
+                    "LLy": 1134,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1170
+                },
+                {
+                    "LLx": 7236,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 11016,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1152,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1296
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1326,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1362
+                },
+                {
+                    "LLx": 7236,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 11016,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1326,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1362
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1518,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1554
+                },
+                {
+                    "LLx": 7236,
+                    "LLy": 1512,
+                    "Physical Layer": "M4",
+                    "URx": 11016,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1536,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1620
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1710,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 7236,
+                    "LLy": 1704,
+                    "Physical Layer": "M4",
+                    "URx": 11016,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1710,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1746
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1490,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1582
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1512,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1682,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1774
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1704,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1490,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1582
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1512,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1682,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1774
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1704,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1490,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1582
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1512,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1682,
+                    "Physical Layer": "M3",
+                    "URx": 7254,
+                    "URy": 1774
+                },
+                {
+                    "LLx": 7196,
+                    "LLy": 1704,
+                    "Physical Layer": "M4",
+                    "URx": 7276,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1106,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1198
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1128,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1490,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1582
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1512,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1682,
+                    "Physical Layer": "M3",
+                    "URx": 11034,
+                    "URy": 1774
+                },
+                {
+                    "LLx": 10976,
+                    "LLy": 1704,
+                    "Physical Layer": "M4",
+                    "URx": 11056,
+                    "URy": 1752
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 7218,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1512,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1704,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1512,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1704,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1512,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 7218,
+                    "LLy": 1704,
+                    "Physical Layer": "V3",
+                    "URx": 7254,
+                    "URy": 1752
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1128,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1176
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1512,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1560
+                },
+                {
+                    "LLx": 10998,
+                    "LLy": 1704,
+                    "Physical Layer": "V3",
+                    "URx": 11034,
+                    "URy": 1752
+                }
+            ],
+            "Multi Connection": 2,
+            "Name": "net8",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "Null",
+                        "Pin name": "net8_Steiner_1",
+                        "Type": "Steiner"
+                    },
+                    "length": 4320,
+                    "source_pin": {
+                        "Block name": "m0",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m1",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    },
+                    "length": 1080,
+                    "source_pin": {
+                        "Block name": "Null",
+                        "Pin name": "net8_Steiner_1",
+                        "Type": "Steiner"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m2",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    },
+                    "length": 1080,
+                    "source_pin": {
+                        "Block name": "Null",
+                        "Pin name": "net8_Steiner_1",
+                        "Type": "Steiner"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m0",
+                    "Pin name": "G",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "Input2",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [],
+            "Internal Via": [],
+            "Multi Connection": 1,
+            "Name": "Input2",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m0",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    },
+                    "length": 0,
+                    "source_pin": {
+                        "Block name": "m0",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m0",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m3",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m4",
+                    "Pin name": "D",
+                    "Type": "Block"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 7110,
+                    "LLy": 366,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 402
+                },
+                {
+                    "LLx": 1944,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 7128,
+                    "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 366,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 402
+                },
+                {
+                    "LLx": 4512,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 4560,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 384,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 648
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 430
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 430
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 430
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 430
+                },
+                {
+                    "LLx": 4496,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 4576,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 430
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 430
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 430
+                },
+                {
+                    "LLx": 4496,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 4576,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 430
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 408
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 1926,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 4554,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 4554,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 408
+                }
+            ],
+            "Multi Connection": 1,
+            "Name": "net10",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m4",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    },
+                    "length": 3240,
+                    "source_pin": {
+                        "Block name": "m0",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m3",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    },
+                    "length": 4320,
+                    "source_pin": {
+                        "Block name": "m4",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m0",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m3",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m4",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m4",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m5",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m5",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "VSS",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 3564,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 5508,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2160,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4536
+                },
+                {
+                    "LLx": 4320,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4428,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 1620,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2160
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2862,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2898
+                },
+                {
+                    "LLx": 3996,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4320,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2862,
+                    "Physical Layer": "M3",
+                    "URx": 4014,
+                    "URy": 2898
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3762,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3762,
+                    "Physical Layer": "M2",
+                    "URx": 4338,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4508,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4564
+                },
+                {
+                    "LLx": 4400,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4508,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4564
+                },
+                {
+                    "LLx": 4400,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4508,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4564
+                },
+                {
+                    "LLx": 4400,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4014,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 3956,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4036,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 4280,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4360,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 3762,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3752,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 3808
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4508,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4564
+                },
+                {
+                    "LLx": 4400,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4014,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 3956,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4036,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 4280,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4360,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 3762,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3752,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 3808
+                },
+                {
+                    "LLx": 4292,
+                    "LLy": 4518,
+                    "Physical Layer": "M2",
+                    "URx": 4348,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4508,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 4564
+                },
+                {
+                    "LLx": 4400,
+                    "LLy": 2142,
+                    "Physical Layer": "M2",
+                    "URx": 4456,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2132,
+                    "Physical Layer": "M3",
+                    "URx": 4446,
+                    "URy": 2188
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4014,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 3956,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4036,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2834,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 2926
+                },
+                {
+                    "LLx": 4280,
+                    "LLy": 2856,
+                    "Physical Layer": "M4",
+                    "URx": 4360,
+                    "URy": 2904
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 4302,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4446,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4446,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4446,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4014,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4338,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3762,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4446,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4014,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4338,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 3762,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 3798
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 4518,
+                    "Physical Layer": "V2",
+                    "URx": 4338,
+                    "URy": 4554
+                },
+                {
+                    "LLx": 4410,
+                    "LLy": 2142,
+                    "Physical Layer": "V2",
+                    "URx": 4446,
+                    "URy": 2178
+                },
+                {
+                    "LLx": 3978,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4014,
+                    "URy": 2904
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 2856,
+                    "Physical Layer": "V3",
+                    "URx": 4338,
+                    "URy": 2904
+                }
+            ],
+            "Multi Connection": 1,
+            "Name": "VSS",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "Null",
+                        "Pin name": "VSS_Steiner_1",
+                        "Type": "Steiner"
+                    },
+                    "length": 3240,
+                    "source_pin": {
+                        "Block name": "m0",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m5",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    },
+                    "length": 918,
+                    "source_pin": {
+                        "Block name": "Null",
+                        "Pin name": "VSS_Steiner_1",
+                        "Type": "Steiner"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m5",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    },
+                    "length": 1080,
+                    "source_pin": {
+                        "Block name": "m5",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m4",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    },
+                    "length": 0,
+                    "source_pin": {
+                        "Block name": "m5",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m3",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    },
+                    "length": 2160,
+                    "source_pin": {
+                        "Block name": "Null",
+                        "Pin name": "VSS_Steiner_1",
+                        "Type": "Steiner"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m4",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    },
+                    "length": 3240,
+                    "source_pin": {
+                        "Block name": "m4",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m1",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m1",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m2",
+                    "Pin name": "S",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m2",
+                    "Pin name": "BG",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "VDD",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 11106,
+                    "LLy": 3054,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 3090
+                },
+                {
+                    "LLx": 11086,
+                    "LLy": 3048,
+                    "Physical Layer": "M4",
+                    "URx": 11174,
+                    "URy": 3096
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 3072,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 3200
+                },
+                {
+                    "LLx": 11092,
+                    "LLy": 3168,
+                    "Physical Layer": "M6",
+                    "URx": 11180,
+                    "URy": 3232
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 3200,
+                    "Physical Layer": "M7",
+                    "URx": 11168,
+                    "URy": 4736
+                },
+                {
+                    "LLx": 11092,
+                    "LLy": 4704,
+                    "Physical Layer": "M6",
+                    "URx": 11180,
+                    "URy": 4768
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 4724,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 4812
+                },
+                {
+                    "LLx": 11086,
+                    "LLy": 4776,
+                    "Physical Layer": "M4",
+                    "URx": 11174,
+                    "URy": 4824
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4800,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4860
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4842,
+                    "Physical Layer": "M2",
+                    "URx": 11142,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 768,
+                    "Physical Layer": "M7",
+                    "URx": 11168,
+                    "URy": 3200
+                },
+                {
+                    "LLx": 11092,
+                    "LLy": 736,
+                    "Physical Layer": "M6",
+                    "URx": 11180,
+                    "URy": 800
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 724,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 812
+                },
+                {
+                    "LLx": 11086,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 11174,
+                    "URy": 792
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 750,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 786
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2376,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 2808
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 11142,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 4842,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4832,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4888
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 3026,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 3118
+                },
+                {
+                    "LLx": 11084,
+                    "LLy": 3048,
+                    "Physical Layer": "M4",
+                    "URx": 11164,
+                    "URy": 3096
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4754,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4846
+                },
+                {
+                    "LLx": 11084,
+                    "LLy": 4776,
+                    "Physical Layer": "M4",
+                    "URx": 11164,
+                    "URy": 4824
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 3048,
+                    "Physical Layer": "M4",
+                    "URx": 11182,
+                    "URy": 3096
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 3026,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 3118
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 4776,
+                    "Physical Layer": "M4",
+                    "URx": 11182,
+                    "URy": 4824
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 4754,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 4846
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 3146,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 3254
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 3168,
+                    "Physical Layer": "M6",
+                    "URx": 11182,
+                    "URy": 3232
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 4682,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 4790
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 4704,
+                    "Physical Layer": "M6",
+                    "URx": 11182,
+                    "URy": 4768
+                },
+                {
+                    "LLx": 11082,
+                    "LLy": 3168,
+                    "Physical Layer": "M6",
+                    "URx": 11190,
+                    "URy": 3232
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 3146,
+                    "Physical Layer": "M7",
+                    "URx": 11168,
+                    "URy": 3254
+                },
+                {
+                    "LLx": 11082,
+                    "LLy": 4704,
+                    "Physical Layer": "M6",
+                    "URx": 11190,
+                    "URy": 4768
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 4682,
+                    "Physical Layer": "M7",
+                    "URx": 11168,
+                    "URy": 4790
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 4842,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4832,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4888
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 814
+                },
+                {
+                    "LLx": 11084,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 11164,
+                    "URy": 792
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 11182,
+                    "URy": 792
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 722,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 814
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 714,
+                    "Physical Layer": "M5",
+                    "URx": 11160,
+                    "URy": 822
+                },
+                {
+                    "LLx": 11090,
+                    "LLy": 736,
+                    "Physical Layer": "M6",
+                    "URx": 11182,
+                    "URy": 800
+                },
+                {
+                    "LLx": 11082,
+                    "LLy": 736,
+                    "Physical Layer": "M6",
+                    "URx": 11190,
+                    "URy": 800
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 714,
+                    "Physical Layer": "M7",
+                    "URx": 11168,
+                    "URy": 822
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 4842,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4832,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4888
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 2358,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2348,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 2404
+                },
+                {
+                    "LLx": 11096,
+                    "LLy": 4842,
+                    "Physical Layer": "M2",
+                    "URx": 11152,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4832,
+                    "Physical Layer": "M3",
+                    "URx": 11142,
+                    "URy": 4888
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 11106,
+                    "LLy": 4842,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 3048,
+                    "Physical Layer": "V3",
+                    "URx": 11142,
+                    "URy": 3096
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4776,
+                    "Physical Layer": "V3",
+                    "URx": 11142,
+                    "URy": 4824
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 3048,
+                    "Physical Layer": "V4",
+                    "URx": 11160,
+                    "URy": 3096
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 4776,
+                    "Physical Layer": "V4",
+                    "URx": 11160,
+                    "URy": 4824
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 3168,
+                    "Physical Layer": "V5",
+                    "URx": 11160,
+                    "URy": 3232
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 4704,
+                    "Physical Layer": "V5",
+                    "URx": 11160,
+                    "URy": 4768
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 3168,
+                    "Physical Layer": "V6",
+                    "URx": 11168,
+                    "URy": 3232
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 4704,
+                    "Physical Layer": "V6",
+                    "URx": 11168,
+                    "URy": 4768
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4842,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 11142,
+                    "URy": 792
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 744,
+                    "Physical Layer": "V4",
+                    "URx": 11160,
+                    "URy": 792
+                },
+                {
+                    "LLx": 11112,
+                    "LLy": 736,
+                    "Physical Layer": "V5",
+                    "URx": 11160,
+                    "URy": 800
+                },
+                {
+                    "LLx": 11104,
+                    "LLy": 736,
+                    "Physical Layer": "V6",
+                    "URx": 11168,
+                    "URy": 800
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4842,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 4878
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 2358,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 2394
+                },
+                {
+                    "LLx": 11106,
+                    "LLy": 4842,
+                    "Physical Layer": "V2",
+                    "URx": 11142,
+                    "URy": 4878
+                }
+            ],
+            "Multi Connection": 1,
+            "Name": "VDD",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m2",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    },
+                    "length": 0,
+                    "source_pin": {
+                        "Block name": "m1",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m1",
+                        "Pin name": "BG",
+                        "Type": "Block"
+                    },
+                    "length": 1998,
+                    "source_pin": {
+                        "Block name": "m1",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    }
+                },
+                {
+                    "dest_pin": {
+                        "Block name": "m2",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    },
+                    "length": 2160,
+                    "source_pin": {
+                        "Block name": "m1",
+                        "Pin name": "S",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m2",
+                    "Pin name": "D",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m3",
+                    "Pin name": "D",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "VOUT",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 11214,
+                    "LLy": 942,
+                    "Physical Layer": "M3",
+                    "URx": 11250,
+                    "URy": 978
+                },
+                {
+                    "LLx": 10944,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 11232,
+                    "URy": 984
+                },
+                {
+                    "LLx": 10920,
+                    "LLy": 884,
+                    "Physical Layer": "M5",
+                    "URx": 10968,
+                    "URy": 972
+                },
+                {
+                    "LLx": 10868,
+                    "LLy": 864,
+                    "Physical Layer": "M6",
+                    "URx": 10956,
+                    "URy": 928
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 896,
+                    "Physical Layer": "M7",
+                    "URx": 10912,
+                    "URy": 1152
+                },
+                {
+                    "LLx": 1920,
+                    "LLy": 1120,
+                    "Physical Layer": "M6",
+                    "URx": 10880,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1152,
+                    "Physical Layer": "M5",
+                    "URx": 1944,
+                    "URy": 1344
+                },
+                {
+                    "LLx": 1834,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 1922,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 1818,
+                    "LLy": 1326,
+                    "Physical Layer": "M3",
+                    "URx": 1854,
+                    "URy": 1362
+                },
+                {
+                    "LLx": 1818,
+                    "LLy": 1298,
+                    "Physical Layer": "M3",
+                    "URx": 1854,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 1796,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 1876,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 11214,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 11250,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 11192,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 11272,
+                    "URy": 984
+                },
+                {
+                    "LLx": 1874,
+                    "LLy": 1320,
+                    "Physical Layer": "M4",
+                    "URx": 1966,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1298,
+                    "Physical Layer": "M5",
+                    "URx": 1944,
+                    "URy": 1390
+                },
+                {
+                    "LLx": 10898,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 10990,
+                    "URy": 984
+                },
+                {
+                    "LLx": 10920,
+                    "LLy": 914,
+                    "Physical Layer": "M5",
+                    "URx": 10968,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1098,
+                    "Physical Layer": "M5",
+                    "URx": 1944,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 1874,
+                    "LLy": 1120,
+                    "Physical Layer": "M6",
+                    "URx": 1966,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10920,
+                    "LLy": 842,
+                    "Physical Layer": "M5",
+                    "URx": 10968,
+                    "URy": 950
+                },
+                {
+                    "LLx": 10898,
+                    "LLy": 864,
+                    "Physical Layer": "M6",
+                    "URx": 10990,
+                    "URy": 928
+                },
+                {
+                    "LLx": 10826,
+                    "LLy": 864,
+                    "Physical Layer": "M6",
+                    "URx": 10934,
+                    "URy": 928
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 842,
+                    "Physical Layer": "M7",
+                    "URx": 10912,
+                    "URy": 950
+                },
+                {
+                    "LLx": 10826,
+                    "LLy": 1120,
+                    "Physical Layer": "M6",
+                    "URx": 10934,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 1098,
+                    "Physical Layer": "M7",
+                    "URx": 10912,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 11214,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 11250,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 11192,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 11272,
+                    "URy": 984
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1098,
+                    "Physical Layer": "M5",
+                    "URx": 1944,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 1874,
+                    "LLy": 1120,
+                    "Physical Layer": "M6",
+                    "URx": 1966,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10826,
+                    "LLy": 1120,
+                    "Physical Layer": "M6",
+                    "URx": 10934,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 1098,
+                    "Physical Layer": "M7",
+                    "URx": 10912,
+                    "URy": 1206
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 1818,
+                    "LLy": 1320,
+                    "Physical Layer": "V3",
+                    "URx": 1854,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 11214,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 11250,
+                    "URy": 984
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1320,
+                    "Physical Layer": "V4",
+                    "URx": 1944,
+                    "URy": 1368
+                },
+                {
+                    "LLx": 10920,
+                    "LLy": 936,
+                    "Physical Layer": "V4",
+                    "URx": 10968,
+                    "URy": 984
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1120,
+                    "Physical Layer": "V5",
+                    "URx": 1944,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10920,
+                    "LLy": 864,
+                    "Physical Layer": "V5",
+                    "URx": 10968,
+                    "URy": 928
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 864,
+                    "Physical Layer": "V6",
+                    "URx": 10912,
+                    "URy": 928
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 1120,
+                    "Physical Layer": "V6",
+                    "URx": 10912,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 11214,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 11250,
+                    "URy": 984
+                },
+                {
+                    "LLx": 1896,
+                    "LLy": 1120,
+                    "Physical Layer": "V5",
+                    "URx": 1944,
+                    "URy": 1184
+                },
+                {
+                    "LLx": 10848,
+                    "LLy": 1120,
+                    "Physical Layer": "V6",
+                    "URx": 10912,
+                    "URy": 1184
+                }
+            ],
+            "Multi Connection": 1,
+            "Name": "VOUT",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m3",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    },
+                    "length": 10800,
+                    "source_pin": {
+                        "Block name": "m2",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m3",
+                    "Pin name": "G",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "Input1",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [],
+            "Internal Via": [],
+            "Multi Connection": 1,
+            "Name": "Input1",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m3",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    },
+                    "length": 0,
+                    "source_pin": {
+                        "Block name": "m3",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        },
+        {
+            "Connected": [
+                {
+                    "Block name": "m4",
+                    "Pin name": "G",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "m5",
+                    "Pin name": "D",
+                    "Type": "Block"
+                },
+                {
+                    "Block name": "Null",
+                    "Pin name": "Ids",
+                    "Type": "Terminal"
+                }
+            ],
+            "Internal Metal": [
+                {
+                    "LLx": 4302,
+                    "LLy": 942,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 978
+                },
+                {
+                    "LLx": 4128,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4320,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 960,
+                    "Physical Layer": "M5",
+                    "URx": 4152,
+                    "URy": 2688
+                },
+                {
+                    "LLx": 4072,
+                    "LLy": 2664,
+                    "Physical Layer": "M4",
+                    "URx": 4160,
+                    "URy": 2712
+                },
+                {
+                    "LLx": 4086,
+                    "LLy": 2688,
+                    "Physical Layer": "M3",
+                    "URx": 4122,
+                    "URy": 2808
+                },
+                {
+                    "LLx": 4086,
+                    "LLy": 2642,
+                    "Physical Layer": "M3",
+                    "URx": 4122,
+                    "URy": 2734
+                },
+                {
+                    "LLx": 4064,
+                    "LLy": 2664,
+                    "Physical Layer": "M4",
+                    "URx": 4144,
+                    "URy": 2712
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 4280,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4360,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4082,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4174,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 914,
+                    "Physical Layer": "M5",
+                    "URx": 4152,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 4082,
+                    "LLy": 2664,
+                    "Physical Layer": "M4",
+                    "URx": 4174,
+                    "URy": 2712
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 2642,
+                    "Physical Layer": "M5",
+                    "URx": 4152,
+                    "URy": 2734
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 4338,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 4280,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4360,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4082,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4174,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 914,
+                    "Physical Layer": "M5",
+                    "URx": 4152,
+                    "URy": 1006
+                }
+            ],
+            "Internal Via": [
+                {
+                    "LLx": 4086,
+                    "LLy": 2664,
+                    "Physical Layer": "V3",
+                    "URx": 4122,
+                    "URy": 2712
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 4338,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 936,
+                    "Physical Layer": "V4",
+                    "URx": 4152,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 2664,
+                    "Physical Layer": "V4",
+                    "URx": 4152,
+                    "URy": 2712
+                },
+                {
+                    "LLx": 4302,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 4338,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4104,
+                    "LLy": 936,
+                    "Physical Layer": "V4",
+                    "URx": 4152,
+                    "URy": 984
+                }
+            ],
+            "Multi Connection": 1,
+            "Name": "Ids",
+            "wire_segments": [
+                {
+                    "dest_pin": {
+                        "Block name": "m5",
+                        "Pin name": "D",
+                        "Type": "Block"
+                    },
+                    "length": 2160,
+                    "source_pin": {
+                        "Block name": "m4",
+                        "Pin name": "G",
+                        "Type": "Block"
+                    }
+                }
+            ]
+        }
+    ],
+    "Terminals": [
+        {
+            "Internal Metal": [],
+            "Name": "Ids"
+        },
+        {
+            "Internal Metal": [],
+            "Name": "VSS"
+        },
+        {
+            "Internal Metal": [],
+            "Name": "Input2"
+        },
+        {
+            "Internal Metal": [],
+            "Name": "VDD"
+        },
+        {
+            "Internal Metal": [],
+            "Name": "Input1"
+        },
+        {
+            "Internal Metal": [],
+            "Name": "VOUT"
+        }
+    ],
+    "Units": "0.5nm",
+    "x pitches": 108,
+    "y pitches": 108
+}
