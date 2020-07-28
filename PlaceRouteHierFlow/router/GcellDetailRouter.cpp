@@ -3708,6 +3708,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
      int start_pin_index = net.wire_segments[i].source_pin;
      int end_pin_index = net.wire_segments[i].dest_pin;
      int length = net.wire_segments[i].length;
+     int via_number = net.wire_segments[i].via_number;
      PnRDB::connectNode temp_connectNode;
      PnRDB::wire_segment temp_wire_segment;
 
@@ -3739,6 +3740,7 @@ void GcellDetailRouter::NetToNodeNet(PnRDB::hierNode& HierNode, RouterDB::Net& n
      }
      temp_wire_segment.dest_pin=temp_connectNode;
      temp_wire_segment.length = length;
+     temp_wire_segment.via_number = via_number;
      HierNode.Nets[net_index].wire_segments.push_back(temp_wire_segment);
 
   }

@@ -210,6 +210,7 @@ struct wire_segment{
   connectNode source_pin; // block, terminal, steiner
   connectNode dest_pin;
   int length;
+  int via_number=-1;
 };
 
 struct net {

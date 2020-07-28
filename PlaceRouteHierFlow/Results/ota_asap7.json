@@ -3586,7 +3586,8 @@
                         "Block name": "m0",
                         "Pin name": "D",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 2
                 },
                 {
                     "dest_pin": {
@@ -3599,7 +3600,8 @@
                         "Block name": "Null",
                         "Pin name": "net8_Steiner_1",
                         "Type": "Steiner"
-                    }
+                    },
+                    "via_number": 0
                 },
                 {
                     "dest_pin": {
@@ -3612,7 +3614,8 @@
                         "Block name": "Null",
                         "Pin name": "net8_Steiner_1",
                         "Type": "Steiner"
-                    }
+                    },
+                    "via_number": 0
                 }
             ]
         },
@@ -3631,7 +3634,7 @@
             ],
             "Internal Metal": [],
             "Internal Via": [],
-            "Multi Connection": 1,
+            "Multi Connection": 2,
             "Name": "Input2",
             "Steiner node": [],
             "wire_segments": [
@@ -3646,7 +3649,8 @@
                         "Block name": "m0",
                         "Pin name": "G",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 0
                 }
             ]
         },
@@ -3671,6 +3675,27 @@
             "Internal Metal": [
                 {
                     "LLx": 7110,
+                    "LLy": 192,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 324
+                },
+                {
+                    "LLx": 1944,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 7128,
+                    "URy": 216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 192,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 324
+                },
+                {
+                    "LLx": 7110,
                     "LLy": 366,
                     "Physical Layer": "M3",
                     "URx": 7146,
@@ -3691,18 +3716,144 @@
                     "URy": 402
                 },
                 {
-                    "LLx": 4512,
-                    "LLy": 360,
+                    "LLx": 4296,
+                    "LLy": 168,
                     "Physical Layer": "M4",
-                    "URx": 4560,
-                    "URy": 408
+                    "URx": 4344,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 192,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 576
+                },
+                {
+                    "LLx": 4320,
+                    "LLy": 552,
+                    "Physical Layer": "M4",
+                    "URx": 4536,
+                    "URy": 600
                 },
                 {
                     "LLx": 4518,
-                    "LLy": 384,
+                    "LLy": 576,
                     "Physical Layer": "M3",
                     "URx": 4554,
-                    "URy": 648
+                    "URy": 756
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4536,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 192,
+                    "Physical Layer": "M5",
+                    "URx": 4536,
+                    "URy": 768
+                },
+                {
+                    "LLx": 4480,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 4568,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 750,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 786
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 750,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 786
+                },
+                {
+                    "LLx": 4752,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 7128,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 768,
+                    "Physical Layer": "M3",
+                    "URx": 4770,
+                    "URy": 1080
+                },
+                {
+                    "LLx": 4536,
+                    "LLy": 1062,
+                    "Physical Layer": "M2",
+                    "URx": 4752,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1080,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1152
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 942,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 978
+                },
+                {
+                    "LLx": 4860,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 7128,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 960,
+                    "Physical Layer": "M3",
+                    "URx": 4878,
+                    "URy": 1188
+                },
+                {
+                    "LLx": 4536,
+                    "LLy": 1170,
+                    "Physical Layer": "M2",
+                    "URx": 4860,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1170,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 238
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 216
                 },
                 {
                     "LLx": 1926,
@@ -3720,6 +3871,20 @@
                 },
                 {
                     "LLx": 7110,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 238
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 216
+                },
+                {
+                    "LLx": 7110,
                     "LLy": 338,
                     "Physical Layer": "M3",
                     "URx": 7146,
@@ -3731,6 +3896,20 @@
                     "Physical Layer": "M4",
                     "URx": 7168,
                     "URy": 408
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 238
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 216
                 },
                 {
                     "LLx": 1926,
@@ -3748,17 +3927,45 @@
                 },
                 {
                     "LLx": 4518,
-                    "LLy": 338,
+                    "LLy": 530,
                     "Physical Layer": "M3",
                     "URx": 4554,
-                    "URy": 430
+                    "URy": 622
                 },
                 {
                     "LLx": 4496,
-                    "LLy": 360,
+                    "LLy": 552,
                     "Physical Layer": "M4",
                     "URx": 4576,
-                    "URy": 408
+                    "URy": 600
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 814
+                },
+                {
+                    "LLx": 4496,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 4576,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 238
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 216
                 },
                 {
                     "LLx": 7110,
@@ -3773,6 +3980,132 @@
                     "Physical Layer": "M4",
                     "URx": 7168,
                     "URy": 408
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 238
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 552,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 530,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 622
+                },
+                {
+                    "LLx": 4466,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4558,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4536,
+                    "URy": 238
+                },
+                {
+                    "LLx": 4466,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 4558,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 722,
+                    "Physical Layer": "M5",
+                    "URx": 4536,
+                    "URy": 814
+                },
+                {
+                    "LLx": 4508,
+                    "LLy": 1062,
+                    "Physical Layer": "M2",
+                    "URx": 4564,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1052,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4508,
+                    "LLy": 1170,
+                    "Physical Layer": "M2",
+                    "URx": 4564,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1160,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1216
+                },
+                {
+                    "LLx": 4724,
+                    "LLy": 1062,
+                    "Physical Layer": "M2",
+                    "URx": 4780,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 1052,
+                    "Physical Layer": "M3",
+                    "URx": 4770,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4832,
+                    "LLy": 1170,
+                    "Physical Layer": "M2",
+                    "URx": 4888,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 1160,
+                    "Physical Layer": "M3",
+                    "URx": 4878,
+                    "URy": 1216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 238
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 216
                 },
                 {
                     "LLx": 1926,
@@ -3790,17 +4123,59 @@
                 },
                 {
                     "LLx": 4518,
-                    "LLy": 338,
+                    "LLy": 530,
                     "Physical Layer": "M3",
                     "URx": 4554,
-                    "URy": 430
+                    "URy": 622
                 },
                 {
                     "LLx": 4496,
-                    "LLy": 360,
+                    "LLy": 552,
                     "Physical Layer": "M4",
                     "URx": 4576,
-                    "URy": 408
+                    "URy": 600
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 4770,
+                    "URy": 814
+                },
+                {
+                    "LLx": 4712,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 4792,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 4878,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 4820,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4900,
+                    "URy": 984
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 238
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 216
                 },
                 {
                     "LLx": 7110,
@@ -3815,15 +4190,323 @@
                     "Physical Layer": "M4",
                     "URx": 7168,
                     "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 814
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 238
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 552,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 530,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 622
+                },
+                {
+                    "LLx": 4466,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4558,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4536,
+                    "URy": 238
+                },
+                {
+                    "LLx": 4508,
+                    "LLy": 1062,
+                    "Physical Layer": "M2",
+                    "URx": 4564,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1052,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4508,
+                    "LLy": 1170,
+                    "Physical Layer": "M2",
+                    "URx": 4564,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1160,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 1216
+                },
+                {
+                    "LLx": 4724,
+                    "LLy": 1062,
+                    "Physical Layer": "M2",
+                    "URx": 4780,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 1052,
+                    "Physical Layer": "M3",
+                    "URx": 4770,
+                    "URy": 1108
+                },
+                {
+                    "LLx": 4832,
+                    "LLy": 1170,
+                    "Physical Layer": "M2",
+                    "URx": 4888,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 1160,
+                    "Physical Layer": "M3",
+                    "URx": 4878,
+                    "URy": 1216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 238
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 1962,
+                    "URy": 430
+                },
+                {
+                    "LLx": 1904,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 1984,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 530,
+                    "Physical Layer": "M3",
+                    "URx": 4554,
+                    "URy": 622
+                },
+                {
+                    "LLx": 4496,
+                    "LLy": 552,
+                    "Physical Layer": "M4",
+                    "URx": 4576,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 4770,
+                    "URy": 814
+                },
+                {
+                    "LLx": 4712,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 4792,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 4878,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 4820,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 4900,
+                    "URy": 984
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 146,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 238
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 216
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 338,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 430
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 360,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 722,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 814
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 744,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 914,
+                    "Physical Layer": "M3",
+                    "URx": 7146,
+                    "URy": 1006
+                },
+                {
+                    "LLx": 7088,
+                    "LLy": 936,
+                    "Physical Layer": "M4",
+                    "URx": 7168,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 238
+                },
+                {
+                    "LLx": 4274,
+                    "LLy": 552,
+                    "Physical Layer": "M4",
+                    "URx": 4366,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 530,
+                    "Physical Layer": "M5",
+                    "URx": 4344,
+                    "URy": 622
+                },
+                {
+                    "LLx": 4466,
+                    "LLy": 168,
+                    "Physical Layer": "M4",
+                    "URx": 4558,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 146,
+                    "Physical Layer": "M5",
+                    "URx": 4536,
+                    "URy": 238
                 }
             ],
             "Internal Via": [
                 {
                     "LLx": 1926,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 216
+                },
+                {
+                    "LLx": 1926,
                     "LLy": 360,
                     "Physical Layer": "V3",
                     "URx": 1962,
                     "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 216
                 },
                 {
                     "LLx": 7110,
@@ -3834,24 +4517,10 @@
                 },
                 {
                     "LLx": 1926,
-                    "LLy": 360,
+                    "LLy": 168,
                     "Physical Layer": "V3",
                     "URx": 1962,
-                    "URy": 408
-                },
-                {
-                    "LLx": 4518,
-                    "LLy": 360,
-                    "Physical Layer": "V3",
-                    "URx": 4554,
-                    "URy": 408
-                },
-                {
-                    "LLx": 7110,
-                    "LLy": 360,
-                    "Physical Layer": "V3",
-                    "URx": 7146,
-                    "URy": 408
+                    "URy": 216
                 },
                 {
                     "LLx": 1926,
@@ -3862,10 +4531,24 @@
                 },
                 {
                     "LLx": 4518,
-                    "LLy": 360,
+                    "LLy": 552,
                     "Physical Layer": "V3",
                     "URx": 4554,
-                    "URy": 408
+                    "URy": 600
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 4554,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 216
                 },
                 {
                     "LLx": 7110,
@@ -3873,9 +4556,261 @@
                     "Physical Layer": "V3",
                     "URx": 7146,
                     "URy": 408
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 552,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4536,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 744,
+                    "Physical Layer": "V4",
+                    "URx": 4536,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1062,
+                    "Physical Layer": "V2",
+                    "URx": 4554,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1170,
+                    "Physical Layer": "V2",
+                    "URx": 4554,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 1062,
+                    "Physical Layer": "V2",
+                    "URx": 4770,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 1170,
+                    "Physical Layer": "V2",
+                    "URx": 4878,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 552,
+                    "Physical Layer": "V3",
+                    "URx": 4554,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 4770,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 4878,
+                    "URy": 984
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 216
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 552,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4536,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1062,
+                    "Physical Layer": "V2",
+                    "URx": 4554,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 1170,
+                    "Physical Layer": "V2",
+                    "URx": 4554,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 1062,
+                    "Physical Layer": "V2",
+                    "URx": 4770,
+                    "URy": 1098
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 1170,
+                    "Physical Layer": "V2",
+                    "URx": 4878,
+                    "URy": 1206
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 216
+                },
+                {
+                    "LLx": 1926,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 1962,
+                    "URy": 408
+                },
+                {
+                    "LLx": 4518,
+                    "LLy": 552,
+                    "Physical Layer": "V3",
+                    "URx": 4554,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4734,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 4770,
+                    "URy": 792
+                },
+                {
+                    "LLx": 4842,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 4878,
+                    "URy": 984
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 168,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 216
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 360,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 408
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 744,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 792
+                },
+                {
+                    "LLx": 7110,
+                    "LLy": 936,
+                    "Physical Layer": "V3",
+                    "URx": 7146,
+                    "URy": 984
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 216
+                },
+                {
+                    "LLx": 4296,
+                    "LLy": 552,
+                    "Physical Layer": "V4",
+                    "URx": 4344,
+                    "URy": 600
+                },
+                {
+                    "LLx": 4488,
+                    "LLy": 168,
+                    "Physical Layer": "V4",
+                    "URx": 4536,
+                    "URy": 216
                 }
             ],
-            "Multi Connection": 1,
+            "Multi Connection": 2,
             "Name": "net10",
             "Steiner node": [],
             "wire_segments": [
@@ -3890,7 +4825,8 @@
                         "Block name": "m0",
                         "Pin name": "S",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 2
                 },
                 {
                     "dest_pin": {
@@ -3903,7 +4839,8 @@
                         "Block name": "m4",
                         "Pin name": "D",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 2
                 }
             ]
         },
@@ -11734,7 +12671,8 @@
                         "Block name": "m0",
                         "Pin name": "BG",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 0
                 },
                 {
                     "dest_pin": {
@@ -11747,7 +12685,8 @@
                         "Block name": "Null",
                         "Pin name": "VSS_Steiner_1",
                         "Type": "Steiner"
-                    }
+                    },
+                    "via_number": 2
                 },
                 {
                     "dest_pin": {
@@ -11760,7 +12699,8 @@
                         "Block name": "m5",
                         "Pin name": "BG",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 1
                 },
                 {
                     "dest_pin": {
@@ -11773,7 +12713,8 @@
                         "Block name": "m5",
                         "Pin name": "S",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 1
                 },
                 {
                     "dest_pin": {
@@ -11786,7 +12727,8 @@
                         "Block name": "Null",
                         "Pin name": "VSS_Steiner_1",
                         "Type": "Steiner"
-                    }
+                    },
+                    "via_number": 0
                 },
                 {
                     "dest_pin": {
@@ -11799,7 +12741,8 @@
                         "Block name": "m4",
                         "Pin name": "BG",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 1
                 }
             ]
         },
@@ -12011,7 +12954,8 @@
                         "Block name": "m1",
                         "Pin name": "S",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 1
                 },
                 {
                     "dest_pin": {
@@ -12024,7 +12968,8 @@
                         "Block name": "m1",
                         "Pin name": "S",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 9
                 },
                 {
                     "dest_pin": {
@@ -12037,7 +12982,8 @@
                         "Block name": "m1",
                         "Pin name": "S",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 8
                 }
             ]
         },
@@ -12274,7 +13220,8 @@
                         "Block name": "m2",
                         "Pin name": "D",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 8
                 }
             ]
         },
@@ -12308,7 +13255,8 @@
                         "Block name": "m3",
                         "Pin name": "G",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 0
                 }
             ]
         },
@@ -12454,7 +13402,8 @@
                         "Block name": "m4",
                         "Pin name": "G",
                         "Type": "Block"
-                    }
+                    },
+                    "via_number": 4
                 }
             ]
         }

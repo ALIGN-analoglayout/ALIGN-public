@@ -90,6 +90,7 @@ struct wire_segment{
   int source_pin; // block, terminal, steiner
   int dest_pin;
   int length;
+  int via_number;
 };
 
 

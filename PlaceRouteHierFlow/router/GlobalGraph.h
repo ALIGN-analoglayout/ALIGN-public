@@ -75,9 +75,10 @@ class GlobalGraph {
     //void Path_graph_total(GlobalGrid& grid, std::vector<int> &temp_path);
     std::vector<std::vector<RouterDB::wire_segment> > return_wire_segment();
     std::vector<int> found_pin_index(int index);
-    std::vector<RouterDB::wire_segment> generate_wire_segment(std::vector<int> source_set,std::vector<int> dest_set, int WireLength);
-    void Found_Source_Dest_Pair_WireLength(std::vector<int> temp_single_path, std::vector<RouterDB::wire_segment> &Wire_segment);
-    void Found_Wire_Segment(std::vector<std::vector<int> > temp_path, std::vector<RouterDB::wire_segment> &Wire_segment);
+    std::vector<RouterDB::wire_segment> generate_wire_segment(std::vector<int> source_set,std::vector<int> dest_set, int WireLength, int via_number);
+    void Found_Source_Dest_Pair_WireLength(std::vector<int> temp_single_path, std::vector<RouterDB::wire_segment> &Wire_segment, GlobalGrid& grid);
+    void Found_Wire_Segment(std::vector<std::vector<int> > temp_path, std::vector<RouterDB::wire_segment> &Wire_segment, GlobalGrid& grid);
+    int Calculate_via_number(std::vector<std::vector<int> > temp_path, GlobalGrid& grid);
 };
 
 #endif

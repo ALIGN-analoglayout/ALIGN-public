@@ -850,6 +850,7 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
           temp_wire_segment["source_pin"] = start_pin;
           temp_wire_segment["dest_pin"] = end_pin;
           temp_wire_segment["length"] = node.Nets[i].wire_segments[j].length;
+          temp_wire_segment["via_number"] = node.Nets[i].wire_segments[j].via_number;
           json_wire_segment.push_back(temp_wire_segment);
        }
        
