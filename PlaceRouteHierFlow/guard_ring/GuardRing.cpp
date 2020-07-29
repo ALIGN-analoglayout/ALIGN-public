@@ -1,9 +1,18 @@
 #include "GuardRing.h"
 
 //set guard ring primitive cell width and height information
-void GuardRing::Pcell_info(int pcell_width, int pcell_height){
-  pcell_size.width = pcell_width;
-  pcell_size.height = pcell_height;
+void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
+  std::cout<<"step1.0"<<std::endl;
+  //std::cout<<"guard ring primitive cell name"<<guard_ring<<std::endl;
+  if(lefData.find("guard_ring")==lefData.end()){
+    std::cout<<"Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file"<<std::endl;
+    assert(0);
+    }
+  const auto &uc = lefData.at("guard_ring");    
+  pcell_size.width = uc.macroPins[0].pinContacts[0].placedBox.UR.x - uc.macroPins[0].pinContacts[0].placedBox.LL.x;
+  pcell_size.height = uc.macroPins[0].pinContacts[0].placedBox.UR.y - uc.macroPins[0].pinContacts[0].placedBox.LL.y;
+  offset.width = uc.macroPins[0].pinContacts[0].placedBox.LL.x;
+  offset.height = uc.macroPins[0].pinContacts[0].placedBox.LL.y;
 };
 
 //set wrapped cell lower left & upper right coordinate and width & height
@@ -16,11 +25,18 @@ void GuardRing::Wcell_info(PnRDB::hierNode &node){
   wcell_size.height = node.height;
 }
 
+void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
+  minimal.width = drc_info.Guardring_info[0].xspace;
+  minimal.height = drc_info.Guardring_info[0].yspace;
+}
+
 //main function
-GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_height, PnRDB::hierNode &node){
+GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info){
   
-  Pcell_info(pcell_width, pcell_height);
+  Pcell_info(lefData);
   Wcell_info(node);
+  DRC_Read(drc_info);
+
   //Print wcell & pcell info
   //std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
   //std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
@@ -31,17 +47,14 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil((wcell_size.width + 2*Minimal_x )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil((wcell_size.height + 2*Minimal_y)/ pcell_size.height) + 1;//excluding corner
-
-  //x_number = ceil((wcell_size.width )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
-  //y_number = ceil((wcell_size.height )/ pcell_size.height) + 1;//excluding corner
+  x_number = ceil((wcell_size.width + 2*minimal.width )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil((wcell_size.height + 2*minimal.height)/ pcell_size.height) + 1;//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
   GuardRingDB::point southwest, southeast, northeast, northwest; //guard ring primitive cells at corner.
-  southwest.x = wcell_ll.x - Minimal_x - pcell_size.width - ((((x_number-2) * pcell_size.width) - (wcell_size.width + 2*Minimal_x))/2);
-  southwest.y = wcell_ll.y - Minimal_y - pcell_size.height - (((y_number * pcell_size.height) - (wcell_size.height + 2*Minimal_y))/2);
+  southwest.x = wcell_ll.x - minimal.width - pcell_size.width - ((((x_number-2) * pcell_size.width) - (wcell_size.width + 2*minimal.width))/2);
+  southwest.y = wcell_ll.y - minimal.height - pcell_size.height - (((y_number * pcell_size.height) - (wcell_size.height + 2*minimal.height))/2);
 
   temp_point.x = southwest.x;
   temp_point.y = southwest.y;
@@ -92,8 +105,8 @@ GuardRing::GuardRing(int Minimal_x, int Minimal_y, int pcell_width, int pcell_he
   
   //calculate shift distance
   //GuardRingDB::point shift;
-  shift.x = - southwest.x;
-  shift.y = - southwest.y;
+  shift.x = - southwest.x - offset.width;
+  shift.y = - southwest.y - offset.height;
   
   //recalculate lower left coordinates of stored points
   for (int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 

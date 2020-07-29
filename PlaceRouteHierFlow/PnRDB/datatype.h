@@ -559,6 +559,13 @@ struct Boundary{
   GdsDatatype gds_datatype;
 };
 
+struct guardring_info {
+  string name;
+  int xspace; // x dimension minimal space
+  int yspace; // y dimension minimal space
+  GdsDatatype gds_datatype;
+};
+
 struct Drc_info {
   int MaxLayer; //index
   map<string, int> Metalmap, Viamap; // map from metal/via's name(M1, M2, V1...) to metal/via's index in the below vectors
@@ -569,6 +576,7 @@ struct Drc_info {
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
   Boundary top_boundary;
+  vector<guardring_info> Guardring_info; //guardring info read from layers.json
 };
 
 
