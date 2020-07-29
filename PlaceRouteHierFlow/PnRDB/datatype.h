@@ -46,7 +46,6 @@ struct routing_net;
 struct Boundary;
 struct GuardRing;
 
-
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
 enum Omark {N, S, W, E, FN, FS, FW, FE};
@@ -576,7 +575,7 @@ struct Drc_info {
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
   Boundary top_boundary;
-  vector<guardring_info> Guardring_info; //guardring info read from layers.json
+  guardring_info Guardring_info; //guardring info read from layers.json
 };
 
 

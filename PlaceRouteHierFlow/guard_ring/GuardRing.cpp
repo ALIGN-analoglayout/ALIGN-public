@@ -26,8 +26,8 @@ void GuardRing::Wcell_info(PnRDB::hierNode &node){
 }
 
 void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
-  minimal.width = drc_info.Guardring_info[0].xspace;
-  minimal.height = drc_info.Guardring_info[0].yspace;
+  minimal.width = drc_info.Guardring_info.xspace;
+  minimal.height = drc_info.Guardring_info.yspace;
 }
 
 //main function
