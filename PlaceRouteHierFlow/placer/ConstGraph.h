@@ -175,6 +175,8 @@ class ConstGraph
     void AddLargePenalty();
     void UpdateDesignHierNode4AP(design& caseNL, design& reducedNL, SeqPair& reducedSP, PnRDB::hierNode& node);
     void UpdateSymmetryNetInfo(design& caseNL, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir);
+    double Random_Cost(design& caseNL, SeqPair& caseSP);
+
 };
 
 #endif

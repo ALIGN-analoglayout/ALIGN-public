@@ -3176,6 +3176,17 @@ void ConstGraph::OtherGeometricConstraintCore(design& caseNL) {
 
 }
 
+double ConstGraph::Random_Cost(design& caseNL, SeqPair& caseSP){
+
+  std::vector<std::vector<double> > feature_value;
+  std::vector<std::string> feature_name;
+  //ExtractFeatures_New(caseNL, caseSP, feature_value, feature_name);
+  srand(time(0));
+  double cost = rand() % 10;
+  return cost;
+
+}
+
 bool ConstGraph::ConstraintGraphAP(design& caseNL, Aplace& caseAP) {
   placerDB::Smark axis;
   //vector< pair<int,int> > sympair;
