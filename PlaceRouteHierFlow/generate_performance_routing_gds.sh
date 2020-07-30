@@ -41,13 +41,13 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/yaguang/Desktop/Research/src/tenso
 
 index=0
 
-for i in $(seq 1000 1 10000)
+for i in $(seq 1 1 10000)
 do
   index=$((i))
   mkdir $gds_folder$slash$index
   #cp $const_folder_file$slash$index$slash$const_file $file_name$slash$const_file &&
   #PNRDB_disable_io=1 ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && rm -r $source_folder
-  ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && cp $source_folder$slash$Json_file $gds_folder$slash$index$slash$Json_file && rm -r $source_folder  
+  PNRDB_disable_io=1 ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && cp $source_folder$slash$Json_file $gds_folder$slash$index$slash$Json_file && rm -r $source_folder  
 done
 
 
