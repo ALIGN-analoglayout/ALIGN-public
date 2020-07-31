@@ -39,7 +39,6 @@ class Pdk(object):
         assert 'Abstraction' in j
         for layer in j['Abstraction']:
             assert layer['Layer'] not in self.pdk, f"Cannot have multiple {layer['Layer']} layers with same name"
-            assert layer['Layer'][0].isupper(), f"Layer name {layer['Layer']} must start with capitalized letter"
             if layer['Layer'].startswith('M'):
                 self.addMetal(**layer)
             elif layer['Layer'].startswith('V'):
@@ -54,7 +53,7 @@ class Pdk(object):
         
 
         assert all( (x in parameters) or (x in optional_parameters) for x in kwargs.keys()), f"Entry {kwargs} has one or more spurious entries (Needs only {parameters})"
-
+        
     def _add(self, parameters, **kwargs):
         # Guarantee one is to one mapping between parameters & kwargs
         layername = kwargs.pop('Layer')
@@ -88,7 +87,7 @@ class Pdk(object):
             for x in params[5:6] if kwargs[x] is not None), \
             f"One or more of {params[4:6]} in {kwargs} not a multiple of two"
         # 1. Pitch, Width, MinL, MaxL, EndToEnd of type list
-        list_params = params[5:]
+        list_params = ['Pitch','Width','MinL','MaxL','EndToEnd','UnitC','UnitCC','UnitR']
         ll = set()
         for param in list_params:
             if isinstance(kwargs[param], list):
