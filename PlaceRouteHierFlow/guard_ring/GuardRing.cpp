@@ -8,15 +8,21 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
     std::cout<<"Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file"<<std::endl;
     assert(0);
     }
-  const auto &uc = lefData.at("guard_ring");    
-  pcell_size.width = uc.macroPins[0].pinContacts[0].placedBox.UR.x - uc.macroPins[0].pinContacts[0].placedBox.LL.x;
-  pcell_size.height = uc.macroPins[0].pinContacts[0].placedBox.UR.y - uc.macroPins[0].pinContacts[0].placedBox.LL.y;
-  offset.width = uc.macroPins[0].pinContacts[0].placedBox.LL.x;
-  offset.height = uc.macroPins[0].pinContacts[0].placedBox.LL.y;
-};
+  else
+  {
+    const auto &uc = lefData.at("guard_ring");
+    pcell_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x - uc.macroPins[0].pinContacts[0].originBox.LL.x;
+    pcell_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y - uc.macroPins[0].pinContacts[0].originBox.LL.y;
+    offset.width = uc.macroPins[0].pinContacts[0].originBox.LL.x;
+    offset.height = uc.macroPins[0].pinContacts[0].originBox.LL.y;
+    minimal_PC.width = uc.width - uc.macroPins[0].pinContacts[0].originBox.UR.x;
+    minimal_PC.height = uc.height - uc.macroPins[0].pinContacts[0].originBox.UR.y;
+  }
+}
 
 //set wrapped cell lower left & upper right coordinate and width & height
 void GuardRing::Wcell_info(PnRDB::hierNode &node){
+  std::cout<<"step2.0"<<std::endl;
   wcell_ll.x = 0;
   wcell_ll.y = 0;
   wcell_ur.x = node.width;
@@ -26,8 +32,11 @@ void GuardRing::Wcell_info(PnRDB::hierNode &node){
 }
 
 void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
+  std::cout<<"step3.0"<<std::endl;
   minimal.width = drc_info.Guardring_info.xspace;
   minimal.height = drc_info.Guardring_info.yspace;
+  minimal.width = minimal.width + minimal_PC.width;
+  minimal.height = minimal.height + minimal_PC.height;
 }
 
 //main function
@@ -38,17 +47,22 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   DRC_Read(drc_info);
 
   //Print wcell & pcell info
-  //std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
-  //std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
-  //std::cout << "node_width = " << node.width << std::endl;
-  //std::cout << "node_height = " << node.height << std::endl;
-  //std::cout << "node_ll[x,y] = " << node.LL.x << "," << node.LL.y << std::endl;
-  //std::cout << "node_ur[x,y] = " << node.UR.x << "," << node.UR.y << std::endl;
+  
+  std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
+  std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
+  std::cout << "node_width = " << node.width << std::endl;
+  std::cout << "node_height = " << node.height << std::endl;
+  std::cout << "node_ll[x,y] = " << node.LL.x << "," << node.LL.y << std::endl;
+  std::cout << "node_ur[x,y] = " << node.UR.x << "," << node.UR.y << std::endl;
+  std::cout << "pcell_ll width = " << pcell_size.width << " pcell_ll height = " << pcell_size.height << std::endl;
+  std::cout << "offset width = " << offset.width << " offset height = " << offset.height << std::endl;
+  std::cout << "minimal x = " << minimal.width << " minimal y = " << minimal.height << std::endl;
+  assert(0);
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil((wcell_size.width + 2*minimal.width )/ pcell_size.width) + 3;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil((wcell_size.height + 2*minimal.height)/ pcell_size.height) + 1;//excluding corner
+  x_number = ceil((wcell_size.width + 2*minimal.width )/ pcell_size.width) + 2;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil((wcell_size.height + 2*minimal.height)/ pcell_size.height);//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
@@ -105,8 +119,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   
   //calculate shift distance
   //GuardRingDB::point shift;
-  shift.x = - southwest.x - offset.width;
-  shift.y = - southwest.y - offset.height;
+  shift.x = - southwest.x + offset.width;
+  shift.y = - southwest.y + offset.height;
   
   //recalculate lower left coordinates of stored points
   for (int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 

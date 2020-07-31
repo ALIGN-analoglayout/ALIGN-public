@@ -331,7 +331,7 @@ struct layoutAS {
 
 struct GuardRing {
   std::string mastername = "";
-  string gdsFile="testcase_example/guardring.gds";
+  string gdsFile="testcase_guardring/guard_ring.gds";
   point LL;
   point UR;
   point center;

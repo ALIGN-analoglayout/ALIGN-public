@@ -32,6 +32,7 @@ class GuardRing {
     GuardRingDB::dimension wcell_size;
     GuardRingDB::dimension pcell_size;
     GuardRingDB::dimension offset;
+    GuardRingDB::dimension minimal_PC;
     GuardRingDB::dimension minimal;
     vector<GuardRingDB::point> stored_point_ll;
     vector<GuardRingDB::point> stored_point_ur;
