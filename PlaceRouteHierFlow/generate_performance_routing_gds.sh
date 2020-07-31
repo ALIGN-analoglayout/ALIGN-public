@@ -40,14 +40,14 @@ gds_folder=$file_name$gds
 
 mkdir $gds_folder
 
-source /home/yaguang/Desktop/Research/Performance_Driven/work_dir/general/bin/activate
+source /home/grads/l/liyg/master/ALIGN-public/general/bin/activate
 
 export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/yaguang/Desktop/Research/src/tensorflow/bazel-bin/tensorflow
 
 index=0
 
-for i in $(seq 1 1 3)
+for i in $(seq 1 1 10000)
 do
   index=$((i))
   mkdir $gds_folder$slash$index
