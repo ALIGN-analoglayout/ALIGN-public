@@ -57,7 +57,6 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   std::cout << "pcell_ll width = " << pcell_size.width << " pcell_ll height = " << pcell_size.height << std::endl;
   std::cout << "offset width = " << offset.width << " offset height = " << offset.height << std::endl;
   std::cout << "minimal x = " << minimal.width << " minimal y = " << minimal.height << std::endl;
-  assert(0);
 
   //calculate cell number
   int x_number, y_number;
