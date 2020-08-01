@@ -45,6 +45,7 @@ struct Router_report;
 struct routing_net;
 struct Boundary;
 struct GuardRing;
+struct Guardring_Const;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -386,6 +387,7 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
+  vector<Guardring_Const> Guardring_Consts;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
@@ -459,6 +461,12 @@ struct CCCap {
   int cap_r = -1;
   int cap_s = -1;
   bool dummy_flag = 1;
+};
+
+struct Guardring_Const {
+  string block_name;
+  string guard_ring_perimitives;
+  string global_pin;
 };
 
 struct R_const {
