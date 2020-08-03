@@ -8,7 +8,7 @@ from .transformation import Transformation
 
 import json
 from collections import defaultdict
-
+import re
 
 
 def extend( u, rng):
@@ -275,19 +275,30 @@ def main(args, tech):
   with open( gr_fn, "rt") as fp:
     global_router_results = json.load( fp)
 
-#  hack_gr( global_router_results, placer_results['bbox'])
+  #  hack_gr( global_router_results, placer_results['bbox'])
 
-#  wires = gr_hints(placer_results)
-#  global_router_results = { "wires": wires}
+  #  wires = gr_hints(placer_results)
+  #  global_router_results = { "wires": wires}
 
-  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(1,7) }
-  via_layer_map = { f'V{i}' : f'via{i}' for i in range(1,6) }
+  metal_layer_map = { f'M{i}' : f'metal{i}' for i in range(0,7) }
+  via_layer_map = { f'V{i}' : f'via{i}' for i in range(0,6) }
   layer_map = dict(list(metal_layer_map.items()) + list(via_layer_map.items()))
+
+
+  def colored_layer(term):
+    if 'color' in term and 'color' is not None:
+      mg = re.match(r'(metal|via)(\d+)', term['layer'])
+      assert mg, "Layer pattern not recognized"
+      layer = mg.group(1) + term['color'] + mg.group(2)
+    else:
+      layer = term['layer']
+    return layer
+
 
   print("Layer map:", layer_map)
 
   for leaf in placer_results['leaves']:
-  # Modify leaf terminals to only include terminals in the layer_map
+    # Modify leaf terminals to only include terminals in the layer_map
     terminals = []
     for term in leaf['terminals']:
       if term['layer'] in layer_map:
@@ -370,7 +381,7 @@ def main(args, tech):
 
     for term in leaf['terminals']:
       if term['net_name'] != '!kor':
-        adt.newWire( term['net_name'], Rect( *term['rect']), term['layer'])
+        adt.newWire( term['net_name'], Rect( *term['rect']), colored_layer(term))
 
   bbox = placer_results['bbox']
 
@@ -382,7 +393,7 @@ def main(args, tech):
     iN = inst['instance_name']
     tr = inst['transformation']
 
-#    print( tr)
+    # print( tr)
 
     adnetl.addInstance( ADI( adts[tN], iN, ADITransform( tr['oX'], tr['oY'], tr['sX'], tr['sY'])))
 
@@ -397,18 +408,19 @@ def main(args, tech):
   if 'preroutes' in placer_results:
     preroutes = placer_results['preroutes']
     for preroute in preroutes:
+      preroute['layer'] = colored_layer(preroute)
       adnetl.addPreroute( preroute)
 
   adnetl.genNetlist( netl)
 
   for wire in global_router_results['wires']:
     connected_pins = wire.get('connected_pins',None)
-# Enforce the new format
+    # Enforce the new format
     assert connected_pins is not None
 
     netl.newGR( wire['net_name'], Rect( *wire['rect']), wire['layer'], wire['width'], connected_pins=connected_pins)
 
-#  netl.semantic()
+    # netl.semantic()
 
   pathlib.Path("INPUT").mkdir(parents=True, exist_ok=True)
 

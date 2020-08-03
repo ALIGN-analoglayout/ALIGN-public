@@ -5,6 +5,7 @@ import math
 from collections import OrderedDict
 
 import json
+import re
 
 from . import techfile
 
@@ -339,7 +340,7 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal1","metal2","metal3","metal4","metal5","metal6","via1","via2","via3","via4","via5"], l
+      assert l in ["metal0","metal1","metal2","metal3","metal4","metal5","metal6","via0","via1","via2","via3","via4","via5"], l
       netl.newWire( '!kor', r, l)
       
     # ports no longer used
@@ -379,6 +380,7 @@ class Wire:
     self.rect = None
     self.layer = None
     self.gid = None
+    self.color = None
 
   def __str__( self):
     return "Wire  net=%s%s layer=%s rect=%s" % ( self.netName, ("" if self.gid is None else ( " gid=%d" % self.gid)), self.layer, self.rect)
@@ -419,7 +421,7 @@ def encode_GR( tech, obj):
 
     return { "netName" : obj.netName, "layer" : obj.layer, "width" : obj.width, "rect" : [llx, lly, urx, ury]}
   elif isinstance(obj, Wire):
-    return { "netName" : obj.netName, "layer" : obj.layer, "gid" : obj.gid, "rect" : [obj.rect.llx, obj.rect.lly, obj.rect.urx, obj.rect.ury]}
+    return { "netName" : obj.netName, "layer" : obj.layer, "gid" : obj.gid, "rect" : [obj.rect.llx, obj.rect.lly, obj.rect.urx, obj.rect.ury], "color": obj.color}
   else:
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
@@ -480,6 +482,18 @@ class Netlist:
       else:
         grGrid.append( self.bbox.toList())
             
+      def decolor_layer(layer):
+        mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
+        if mg:
+            lyr = mg.group(1) + mg.group(3)
+            clr = mg.group(2)
+        else:
+            lyr = layer
+            clr = None
+        return lyr,clr
+
+      for term in terminals:
+        term.layer, term.color = decolor_layer(term.layer)
 
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
@@ -544,8 +558,8 @@ class Netlist:
       fp.write( f"""# circuit-independent technology collateral
 Option name=layer_file          value=DR_COLLATERAL/layers.txt
 Option name=arch_file           value=DR_COLLATERAL/arch.txt
-Option name=generator_file      value=DR_COLLATERAL/car_generators.txt
-Option name=pattern_file        value=DR_COLLATERAL/v2_patterns.txt
+Option name=generator_file      value=DR_COLLATERAL/via_generators.txt
+Option name=pattern_file        value=DR_COLLATERAL/patterns.txt
 Option name=option_file         value=DR_COLLATERAL/design_rules.txt
 
 # technology collateral may vary for different circuits
@@ -711,7 +725,7 @@ Option name=upper_layer                          value={topmetal}
             print( "Metal GR:", gr, gr_r)
 
             tuples = [
-              ("metal1", ["metal1"]),
+              ("metal1", ["metal1","metal0"]),
               ("metal2", ["metal2","metal1"]),
               ("metal3", ["metal3","metal2","metal1"]),
               ("metal4", ["metal4","metal3","metal2"]),
@@ -749,9 +763,6 @@ Option name=upper_layer                          value={topmetal}
     self.write_global_routing_file( tech, dirname + "/" + self.nm + "_dr_globalrouting.txt")
     self.dumpGR( tech, dirname + "/" + self.nm + "_dr_globalrouting.json", no_grid=True)
 
-
-
-import re
 
 def parse_lgf( fp):
 
@@ -830,7 +841,7 @@ def parse_lgf( fp):
         layer = m.groups()[1]        
         rect = Rect( int(m.groups()[2]), int(m.groups()[3]), int(m.groups()[4]), int(m.groups()[5]))
 
-        if True or layer in ["via1","via2","via3","via4"]:
+        if True or layer in ["via0","via1","via2","via3","via4"]:
           w = netl.newWire( net, rect, layer)
           w.gid = None
 
@@ -967,7 +978,7 @@ def removeDuplicates( data):
                     sl.clear()
 
 
-      # print( layer, twice_center, len(v), len(sl.rects))
+            # print( layer, twice_center, len(v), len(sl.rects))
 
             for (rect, netName) in sl.rects:
                 terminals.append(
