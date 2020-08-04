@@ -493,7 +493,13 @@ class Netlist:
         return lyr,clr
 
       for term in terminals:
-        term.layer, term.color = decolor_layer(term.layer)
+        # print('term::', type(term), term)
+        if type(term) is dict:
+          lyr, clr = decolor_layer(term['layer'])
+          term['layer'] = lyr
+          term['color'] = clr
+        else:
+          term.layer, term.color = decolor_layer(term.layer)
 
       data = { "bbox" : [self.bbox.llx, self.bbox.lly, self.bbox.urx, self.bbox.ury], "globalRoutes" : grs, "globalRouteGrid" : grGrid, "terminals" : terminals}
 
