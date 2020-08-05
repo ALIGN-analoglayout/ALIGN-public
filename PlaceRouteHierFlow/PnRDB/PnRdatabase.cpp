@@ -83,6 +83,10 @@ void PnRdatabase::extend_pins(PnRDB::block &temp_block){
          
          //extend pins 
          extend_pin(temp_block.blockPins[i],temp_block.width,temp_block.height);
+         //put the extended pins into internal metals
+         for(unsigned int j=0;j<temp_block.blockPins[i].pinContacts.size();j++){
+            temp_block.interMetals.push_back(temp_block.blockPins[i].pinContacts[j]);
+         }
 
       }
 
@@ -111,7 +115,6 @@ void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
           temp_pin.pinContacts[i].originCenter.y = height/2;
 
         }
-
   }
 
   //might need to add the pin into internal metal
