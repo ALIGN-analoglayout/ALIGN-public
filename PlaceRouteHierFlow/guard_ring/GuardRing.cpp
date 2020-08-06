@@ -11,12 +11,14 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
   else
   {
     const auto &uc = lefData.at("guard_ring");
-    pcell_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x - uc.macroPins[0].pinContacts[0].originBox.LL.x;
-    pcell_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y - uc.macroPins[0].pinContacts[0].originBox.LL.y;
+    pcell_metal_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x - uc.macroPins[0].pinContacts[0].originBox.LL.x;
+    pcell_metal_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y - uc.macroPins[0].pinContacts[0].originBox.LL.y;
     offset.width = uc.macroPins[0].pinContacts[0].originBox.LL.x;
     offset.height = uc.macroPins[0].pinContacts[0].originBox.LL.y;
     minimal_PC.width = uc.width - uc.macroPins[0].pinContacts[0].originBox.UR.x;
     minimal_PC.height = uc.height - uc.macroPins[0].pinContacts[0].originBox.UR.y;
+    pcell_size.width = uc.width;
+    pcell_size.height = uc.height;
   }
 }
 
@@ -54,20 +56,21 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   std::cout << "node_height = " << node.height << std::endl;
   std::cout << "node_ll[x,y] = " << node.LL.x << "," << node.LL.y << std::endl;
   std::cout << "node_ur[x,y] = " << node.UR.x << "," << node.UR.y << std::endl;
-  std::cout << "pcell_ll width = " << pcell_size.width << " pcell_ll height = " << pcell_size.height << std::endl;
+  std::cout << "pcell_metal width = " << pcell_metal_size.width << " pcell_metal height = " << pcell_metal_size.height << std::endl;
+  std::cout << "pcell width = " << pcell_size.width << " pcell height = " << pcell_size.height << std::endl;
   std::cout << "offset width = " << offset.width << " offset height = " << offset.height << std::endl;
   std::cout << "minimal x = " << minimal.width << " minimal y = " << minimal.height << std::endl;
 
   //calculate cell number
   int x_number, y_number;
-  x_number = ceil((wcell_size.width + 2*minimal.width )/ pcell_size.width) + 2;//number of guard ring cells at the bottom or top, including corner
-  y_number = ceil((wcell_size.height + 2*minimal.height)/ pcell_size.height);//excluding corner
+  x_number = ceil(double((wcell_size.width + 2*minimal.width))/ double(pcell_metal_size.width)) + 2;//number of guard ring cells at the bottom or top, including corner
+  y_number = ceil(double((wcell_size.height + 2*minimal.height))/ double(pcell_metal_size.height));//excluding corner
 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
   GuardRingDB::point southwest, southeast, northeast, northwest; //guard ring primitive cells at corner.
-  southwest.x = wcell_ll.x - minimal.width - pcell_size.width - ((((x_number-2) * pcell_size.width) - (wcell_size.width + 2*minimal.width))/2);
-  southwest.y = wcell_ll.y - minimal.height - pcell_size.height - (((y_number * pcell_size.height) - (wcell_size.height + 2*minimal.height))/2);
+  southwest.x = wcell_ll.x - minimal.width - pcell_metal_size.width - ((((x_number-2) * pcell_metal_size.width) - (wcell_size.width + 2*minimal.width))/2);
+  southwest.y = wcell_ll.y - minimal.height - pcell_metal_size.height - (((y_number * pcell_metal_size.height) - (wcell_size.height + 2*minimal.height))/2);
 
   temp_point.x = southwest.x;
   temp_point.y = southwest.y;
@@ -76,7 +79,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //store south side pcell's coordinates
   for (int i_s=1; i_s<x_number; i_s++)
   {
-    temp_point.x = southwest.x + i_s*pcell_size.width;
+    temp_point.x = southwest.x + i_s*pcell_metal_size.width;
     temp_point.y = southwest.y;
     stored_point_ll.push_back(temp_point);
   }
@@ -87,7 +90,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   for (int i_e=1; i_e< y_number+2; i_e++)
   {
     temp_point.x = southeast.x;
-    temp_point.y = southeast.y + (i_e)*pcell_size.height;
+    temp_point.y = southeast.y + (i_e)*pcell_metal_size.height;
     stored_point_ll.push_back(temp_point);
   }
   northeast.x = temp_point.x;
@@ -96,7 +99,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //store north side pcell's coordinates
   for (int i_n=1; i_n<x_number; i_n++)
   {
-    temp_point.x = northeast.x - i_n*pcell_size.width;
+    temp_point.x = northeast.x - i_n*pcell_metal_size.width;
     temp_point.y = northeast.y;
     stored_point_ll.push_back(temp_point);
   }
@@ -107,7 +110,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   for (int i_w=1; i_w<y_number+1; i_w++)
   {
     temp_point.x = northwest.x;
-    temp_point.y = northwest.y - i_w*pcell_size.height;
+    temp_point.y = northwest.y - i_w*pcell_metal_size.height;
     stored_point_ll.push_back(temp_point);
   }
 
@@ -124,8 +127,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //recalculate lower left coordinates of stored points
   for (int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 
   {
-    stored_point_ll[i_ll].x = stored_point_ll[i_ll].x + shift.x;
-    stored_point_ll[i_ll].y = stored_point_ll[i_ll].y + shift.y;
+    stored_point_ll[i_ll].x = stored_point_ll[i_ll].x + shift.x - offset.width;
+    stored_point_ll[i_ll].y = stored_point_ll[i_ll].y + shift.y - offset.height;
   }
 
   //calculate upper right coordinates of stored points
