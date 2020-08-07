@@ -160,6 +160,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
 void GuardRing::storegrhierNode(PnRDB::hierNode &node){
   PnRDB::contact temp_contact;
   PnRDB::pin temp_pin;
+  PnRDB::connectNode temp_connectNode;
+  PnRDB::block temp_block;
   for (int i_store = 0; i_store < stored_point_ll.size(); i_store++) 
   {
     temp_gr.LL.x = stored_point_ll[i_store].x;
@@ -178,11 +180,25 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node){
     temp_contact.placedCenter.y = temp_gr.center.y;
     temp_gr.interMetals.push_back(temp_contact);
     //Write pin information
-    temp_pin.name = "";
+    temp_pin.name = "dummy_pin";
     temp_pin.type = "";
     temp_pin.use = "";
     temp_pin.pinContacts.push_back(temp_contact);
+    temp_pin.netIter = -2;
     temp_gr.blockPins.push_back(temp_pin);
+    //Create dummy connect pin
+    temp_connectNode.iter2 = i_store;
+    temp_connectNode.iter = temp_gr.blockPins.size();
+    //insert the dummy connection power power net
+      //if power net does not exist, then create a power net
+    for(unsigned powernet_index = 0;powernet_index<node.PowerNets.size();powernet_index++){
+      if(node.PowerNets[powernet_index].power==0){
+        node.PowerNets[powernet_index].dummy_connected.push_back(temp_connectNode);
+        break;
+        }
+     }
+
+
     //Write node GuardRings information
     node.GuardRings.push_back(temp_gr);
   }
