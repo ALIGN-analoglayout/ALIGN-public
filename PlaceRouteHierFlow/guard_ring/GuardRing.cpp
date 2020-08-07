@@ -1,9 +1,8 @@
 #include "GuardRing.h"
 
-//set guard ring primitive cell width and height information
+//read from lef file and set guard ring primitive cell width and height information
 void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
   std::cout<<"step1.0"<<std::endl;
-  //std::cout<<"guard ring primitive cell name"<<guard_ring<<std::endl;
   if(lefData.find("guard_ring")==lefData.end()){
     std::cout<<"Guard_ring primitive cell error, check guard ring primitive cell in lef, gds, and const file"<<std::endl;
     assert(0);
@@ -11,51 +10,49 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
   else
   {
     const auto &uc = lefData.at("guard_ring");
-    pcell_metal_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x - uc.macroPins[0].pinContacts[0].originBox.LL.x;
-    pcell_metal_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y - uc.macroPins[0].pinContacts[0].originBox.LL.y;
-    offset.width = uc.macroPins[0].pinContacts[0].originBox.LL.x;
+    pcell_metal_size.width = uc.macroPins[0].pinContacts[0].originBox.UR.x - uc.macroPins[0].pinContacts[0].originBox.LL.x; //calculate metal layer width of guard ring primitive cell
+    pcell_metal_size.height = uc.macroPins[0].pinContacts[0].originBox.UR.y - uc.macroPins[0].pinContacts[0].originBox.LL.y; //calculate metal layer height of guard ring primitive cell
+    offset.width = uc.macroPins[0].pinContacts[0].originBox.LL.x; //calculate offset(lower left coordinate) between Metal layer and FEOL layer of guard ring primitive cell 
     offset.height = uc.macroPins[0].pinContacts[0].originBox.LL.y;
-    minimal_PC.width = uc.width - uc.macroPins[0].pinContacts[0].originBox.UR.x;
+    minimal_PC.width = uc.width - uc.macroPins[0].pinContacts[0].originBox.UR.x; //calculate offset(upper right coordinate) between Metal layer and FEOL layer of guard ring primitive cell 
     minimal_PC.height = uc.height - uc.macroPins[0].pinContacts[0].originBox.UR.y;
-    pcell_size.width = uc.width;
-    pcell_size.height = uc.height;
+    pcell_size.width = uc.width; //store guard ring primitive cell's width
+    pcell_size.height = uc.height; //store guard ring primitive cell's height
   }
 }
 
-//set wrapped cell lower left & upper right coordinate and width & height
+//read from hierarchy node and set wrapped cell lower left & upper right coordinate and width & height
 void GuardRing::Wcell_info(PnRDB::hierNode &node){
   std::cout<<"step2.0"<<std::endl;
   wcell_ll.x = 0;
   wcell_ll.y = 0;
-  wcell_ur.x = node.width;
+  wcell_ur.x = node.width; //store wrapped cell upper right coordinate as (0 + wrapped cell width, 0 + wrapped cell height)
   wcell_ur.y = node.height;
   wcell_size.width = node.width;
   wcell_size.height = node.height;
 }
 
+//read drc info to obtain minimal space requirement
 void GuardRing::DRC_Read(const PnRDB::Drc_info& drc_info){
   std::cout<<"step3.0"<<std::endl;
-  minimal.width = drc_info.Guardring_info.xspace;
+  minimal.width = drc_info.Guardring_info.xspace; //this is the minimal space between feol layer of guard ring primitive cell to wrapped cell
   minimal.height = drc_info.Guardring_info.yspace;
-  minimal.width = minimal.width + minimal_PC.width;
+  minimal.width = minimal.width + minimal_PC.width; //this is the minimal space between metal layer of guard ring primitive cell to wrapped cell
   minimal.height = minimal.height + minimal_PC.height;
 }
 
 //main function
 GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info){
   
-  Pcell_info(lefData);
-  Wcell_info(node);
-  DRC_Read(drc_info);
+  Pcell_info(lefData); //read guard ring primitive cell information from lef file
+  Wcell_info(node); //read wrapped cell information from node
+  DRC_Read(drc_info); //read minimal space requirement from drc database
 
   //Print wcell & pcell info
-  
   std::cout << "wcell_ll[x,y] = " << wcell_ll.x << "," << wcell_ll.y << std::endl;
   std::cout << "wcell_ur[x,y] = " << wcell_ur.x << "," << wcell_ur.y << std::endl;
-  std::cout << "node_width = " << node.width << std::endl;
-  std::cout << "node_height = " << node.height << std::endl;
-  std::cout << "node_ll[x,y] = " << node.LL.x << "," << node.LL.y << std::endl;
-  std::cout << "node_ur[x,y] = " << node.UR.x << "," << node.UR.y << std::endl;
+  std::cout << "wcell_width = " << node.width << std::endl;
+  std::cout << "wcell_height = " << node.height << std::endl;
   std::cout << "pcell_metal width = " << pcell_metal_size.width << " pcell_metal height = " << pcell_metal_size.height << std::endl;
   std::cout << "pcell width = " << pcell_size.width << " pcell height = " << pcell_size.height << std::endl;
   std::cout << "offset width = " << offset.width << " offset height = " << offset.height << std::endl;
@@ -69,8 +66,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //store lower left coordinate of guard ring primitive cell
   //start from Pcell0 which is at the southwest corner of wrapped cell
   GuardRingDB::point southwest, southeast, northeast, northwest; //guard ring primitive cells at corner.
-  southwest.x = wcell_ll.x - minimal.width - pcell_metal_size.width - ((((x_number-2) * pcell_metal_size.width) - (wcell_size.width + 2*minimal.width))/2);
-  southwest.y = wcell_ll.y - minimal.height - pcell_metal_size.height - (((y_number * pcell_metal_size.height) - (wcell_size.height + 2*minimal.height))/2);
+  southwest.x = wcell_ll.x - minimal.width - pcell_metal_size.width - ((((x_number-2) * pcell_metal_size.width) - (wcell_size.width + 2*minimal.width))/2); //make sure left and right extra space the same
+  southwest.y = wcell_ll.y - minimal.height - pcell_metal_size.height - (((y_number * pcell_metal_size.height) - (wcell_size.height + 2*minimal.height))/2); //make sure top and down extra space the same
 
   temp_point.x = southwest.x;
   temp_point.y = southwest.y;
@@ -114,6 +111,7 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
     stored_point_ll.push_back(temp_point);
   }
 
+  //if the guard ring primitive cells are not set aligned, error info will be printed
   if(northwest.x != southwest.x)
   {
     std::cout << "Error: misaligned!!!\n";
@@ -127,8 +125,8 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
   //recalculate lower left coordinates of stored points
   for (int i_ll = 0; i_ll < stored_point_ll.size(); i_ll++) 
   {
-    stored_point_ll[i_ll].x = stored_point_ll[i_ll].x + shift.x - offset.width;
-    stored_point_ll[i_ll].y = stored_point_ll[i_ll].y + shift.y - offset.height;
+    stored_point_ll[i_ll].x = stored_point_ll[i_ll].x - southwest.x;
+    stored_point_ll[i_ll].y = stored_point_ll[i_ll].y - southwest.y;
   }
 
   //calculate upper right coordinates of stored points
@@ -138,22 +136,23 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
     temp_point.y = stored_point_ll[i_ur].y + pcell_size.height;
     stored_point_ur.push_back(temp_point);
   }
-    
+  
+  //Print stored guard ring primitive cells coordinates(lower left & upper right)
   std::cout << "\nThe stored points are:\n"; 
   for (int i_print = 0; i_print < stored_point_ll.size(); i_print++)
   {
     std::cout << "lower left: " << stored_point_ll[i_print].x << "," << stored_point_ll[i_print].y << " " << "upper right: " << stored_point_ur[i_print].x << "," << stored_point_ur[i_print].y <<std::endl;
   }
 
-  //update wcell ll & ur information
+  //update wrapped cell lower left & upper right information
   wcell_ll.x = wcell_ll.x + shift.x;
   wcell_ll.y = wcell_ll.y + shift.y;
   wcell_ur.x = wcell_ur.x + shift.x;
   wcell_ur.y = wcell_ur.y + shift.y;
 
   gnuplot();
-  storegrhierNode(node);
-  movehierNode(node);
+  storegrhierNode(node); //return hierarchy node with guard ring information
+  movehierNode(node); //move hierarchy node to make sure lower left coordinate to (0,0)
 
 };
 
@@ -192,16 +191,8 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node){
 
 //return hiernode for movement
 PnRDB::hierNode GuardRing::movehierNode(PnRDB::hierNode &node){
-  //node.LL.x = 0;
-  //node.LL.y = 0;
-  //node.UR.x = node.LL.x + node.width;
-  //node.UR.y = node.LL.y + node.height;
   node.width += 2*shift.x;
   node.height += 2*shift.y;
-  // LL
-  // movepoint(node.LL);
-  // UR
-  // movepoint(node.UR);
   // Blocks
   movevecblockcomplex(node.Blocks);
   //Nets

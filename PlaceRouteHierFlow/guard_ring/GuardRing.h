@@ -26,28 +26,29 @@
 class GuardRing {
 
   private:
-    GuardRingDB::point temp_point;
-    GuardRingDB::point wcell_ll;
-    GuardRingDB::point wcell_ur;
-    GuardRingDB::dimension wcell_size;
-    GuardRingDB::dimension pcell_metal_size;
-    GuardRingDB::dimension pcell_size;
-    GuardRingDB::dimension offset;
-    GuardRingDB::dimension minimal_PC;
-    GuardRingDB::dimension minimal;
-    vector<GuardRingDB::point> stored_point_ll;
-    vector<GuardRingDB::point> stored_point_ur;
-    GuardRingDB::point shift;
-    PnRDB::GuardRing temp_gr;
+    GuardRingDB::point temp_point;              //temporary point to save guard ring primitive cell
+    GuardRingDB::point wcell_ll;                //wrapped cell lower left coordinate
+    GuardRingDB::point wcell_ur;                //wrapped cell upper right coordinate
+    GuardRingDB::dimension wcell_size;          //wrapped cell dimension in width and height
+    GuardRingDB::dimension pcell_metal_size;    //metal layer in guard ring primitive cell dimension in width and height
+    GuardRingDB::dimension pcell_size;          //guard ring primitive cell dimension in width and height
+    GuardRingDB::dimension offset;              //offset(lower left coordinate) between Metal layer and FEOL layer of guard ring primitive cell 
+    GuardRingDB::dimension minimal_PC;          //offset(upper right coordinate) between Metal layer and FEOL layer of guard ring primitive cell 
+    GuardRingDB::dimension minimal;             //minimal space between metal layer of guard ring primitive cell to the wrapped cell
+    vector<GuardRingDB::point> stored_point_ll; //stored lower left coordinate of guard ring primitive cells
+    vector<GuardRingDB::point> stored_point_ur; //stored upper right coordinate of guard ring primitive cells
+    GuardRingDB::point shift;                   //shift vector to move wrapped cell
+    //PnRDB::GuardRing temp_gr;
   
   public:
-    void Pcell_info(const map<string, PnRDB::lefMacro>& lefData);
-    void Wcell_info(PnRDB::hierNode &node);
-    void DRC_Read(const PnRDB::Drc_info& drc_info);
-    GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info);
-    void storegrhierNode(PnRDB::hierNode &node);
-    PnRDB::hierNode movehierNode(PnRDB::hierNode &node);
-    void gnuplot();
+    void Pcell_info(const map<string, PnRDB::lefMacro>& lefData); //read from lef file and set guard ring primitive cell width and height information       
+    void Wcell_info(PnRDB::hierNode &node); //read from hierarchy node and set wrapped cell lower left & upper right coordinate and width & height
+    void DRC_Read(const PnRDB::Drc_info& drc_info); //read drc info to obtain minimal space requirement
+    GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& lefData, const PnRDB::Drc_info& drc_info); //main function
+    void storegrhierNode(PnRDB::hierNode &node); //return new hierarchy node with guard ring information
+    PnRDB::hierNode movehierNode(PnRDB::hierNode &node); //move hierarchy node to make sure lower left coordinate to (0,0)
+    void gnuplot(); //gnuplot function for plotting hierarchical node
+    //functions to move each element of node: Start
     void movepoint(PnRDB::point &point);
     void movebbox (PnRDB::bbox &bbox);
     void movecontact(PnRDB::contact &contact);
@@ -64,6 +65,7 @@ class GuardRing {
     void movevecpowernet(std::vector<PnRDB::PowerNet> &vecpowernet);
     void movevecmetal(std::vector<PnRDB::Metal> &vecmetal);
     void movevecblockcomplex(std::vector<PnRDB::blockComplex> &vecbc);
+    //functions to move each element of node: End
     
 };
 

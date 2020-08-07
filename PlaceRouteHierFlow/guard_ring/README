@@ -1,0 +1,27 @@
+GuardRing Configuration and Set up (Demo Flow):
+1. c++14 environment setting:
+    scl enable devtoolset-7 bash
+
+2. in bash set environment:
+    export LP_DIR=/home/grads/w/wbxu/share/opt/lp_solve
+    export JSON=/home/grads/w/wbxu/share/opt/json
+    export BOOST_LP=/home/grads/w/wbxu/share/opt/boost
+    export GTEST_DIR=/home/grads/l/liyg/Share/gtest/googletest/googletest/
+
+3. compile:
+    cd ALIGN-public/PlaceRouteHierFlow
+    make
+
+4. Set constraint for guardring:
+    for example, if guard ring for telescopic_ota is needed. Please add the following constraint in the related hierarchy node constraint file(here is testcase_guardring/telescopic_ota.const)
+    GuardRing ( {telescopic_ota} , {guard_ring} , {} )
+    <GuardRing ( {<module name>} , {<guard ring cell name>} , {} )>
+
+5. Run example testcase:
+    ./pnr_compiler ./testcase_guardring switched_capacitor_filter.lef switched_capacitor_filter.v switched_capacitor_filter.map layers.json switched_capacitor_filter 1 0 | tee log
+
+6. Check result in klayout:
+    cd Results
+    ../../align/gdsconv/json2gds.py switched_capacitor_filter_0.gds.json switched_capacitor_filter_0.gds
+    export the gds file and open klayout software to check the result
+
