@@ -209,15 +209,15 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.base .
 
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml && cp -rp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml && cp -rp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/ "
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=2500 -k 'Sanitized_Coarse_Comp_CK or Sanitized_EdgeComparator or BTSW or Sanitized_ResTune_Configure' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_2.xml "
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml && cp -rp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/ "
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=250 -k 'ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1_3.xml &&  find . -iname '*ota*' -exec cp --parents {} bkp/ \;"
           docker cp align_container:test-reports .
           docker rm align_container
       - run:
@@ -245,7 +245,7 @@ jobs:
 
       - run:
           command: |
-            docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml && cp -rp /ALIGN-public/build/tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/"
+              docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=1700 -k 'not SAR and not San and not BUFFER and not DLL and not ota' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit3.xml && find . -type f \( -name '*v' -o -name '*gds' -o -name '*png*' -o -name '*const' \) -exec cp --parents {} bkp/ \;"
           no_output_timeout: 30m
 
       - run: |
