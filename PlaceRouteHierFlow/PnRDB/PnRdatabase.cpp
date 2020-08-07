@@ -173,6 +173,7 @@ void PnRdatabase::TransformNode(PnRDB::hierNode& updatedNode, PnRDB::point trans
   TransformPins(updatedNode.blockPins, translate, width, height, ort, transform_type);
   TransformContacts(updatedNode.interMetals, translate, width, height, ort, transform_type);
   TransformVias(updatedNode.interVias, translate, width, height, ort, transform_type);
+  TransformGuardrings(updatedNode.GuardRings, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformTerminal(PnRDB::terminal& terminal, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
@@ -221,6 +222,21 @@ void PnRdatabase::TransformPins(std::vector<PnRDB::pin>& pins, PnRDB::point tran
 void PnRdatabase::TransformPin(PnRDB::pin& pin, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
   TransformContacts(pin.pinContacts, translate, width, height, ort, transform_type);
   TransformVias(pin.pinVias, translate, width, height, ort, transform_type);
+}
+
+void PnRdatabase::TransformGuardrings(std::vector<PnRDB::GuardRing>& guardrings, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  for (std::vector<PnRDB::GuardRing>::iterator git = guardrings.begin(); git != guardrings.end(); ++git) {
+    TransformGuardring(*git, translate, width, height, ort, transform_type);
+  }
+}
+
+void PnRdatabase::TransformGuardring(PnRDB::GuardRing& guardring, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
+  TransformPoint(guardring.LL, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.UR, translate, width, height, ort, transform_type);
+  TransformPoint(guardring.center, translate, width, height, ort, transform_type);
+  TransformPins(guardring.blockPins, translate, width, height, ort, transform_type);
+  TransformContacts(guardring.interMetals, translate, width, height, ort, transform_type);
+  TransformVias(guardring.interVias, translate, width, height, ort, transform_type);
 }
 
 void PnRdatabase::TransformVias(std::vector<PnRDB::Via>& vias, PnRDB::point translate, int width, int height, PnRDB::Omark ort, PnRDB::TransformType transform_type) {
