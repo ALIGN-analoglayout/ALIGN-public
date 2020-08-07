@@ -345,14 +345,18 @@ int main(int argc, char** argv ){
     // Placement
     std::vector<PnRDB::hierNode> nodeVec(numLayout, current_node);
     Placer curr_plc(nodeVec, opath, effort, const_cast<PnRDB::Drc_info&>(drcInfo)); // do placement and update data in current node
-
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
+    //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){
         GuardRing current_guard_ring(nodeVec[lidx], lefData, drcInfo);
       }
       DB.PrintHierNode(nodeVec[lidx]);
       DB.WriteJSON(nodeVec[lidx], true, false, false, false, nodeVec[lidx].name + "_PL_" + std::to_string(lidx), drcInfo, opath);
+    }
+
+
+    for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
       std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
