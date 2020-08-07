@@ -26,6 +26,7 @@
 class GuardRing {
 
   private:
+    string pcellpinmetal;                       //primitive cell pin metal layer
     GuardRingDB::point temp_point;              //temporary point to save guard ring primitive cell
     GuardRingDB::point wcell_ll;                //wrapped cell lower left coordinate
     GuardRingDB::point wcell_ur;                //wrapped cell upper right coordinate
@@ -37,6 +38,8 @@ class GuardRing {
     GuardRingDB::dimension minimal;             //minimal space between metal layer of guard ring primitive cell to the wrapped cell
     vector<GuardRingDB::point> stored_point_ll; //stored lower left coordinate of guard ring primitive cells
     vector<GuardRingDB::point> stored_point_ur; //stored upper right coordinate of guard ring primitive cells
+    vector<GuardRingDB::point> stored_pin_ll; //stored lower left coordinate of pin of guard ring primitive cells
+    vector<GuardRingDB::point> stored_pin_ur; //stored upper right coordinate of pin of guard ring primitive cells
     GuardRingDB::point shift;                   //shift vector to move wrapped cell
     PnRDB::GuardRing temp_gr;
   

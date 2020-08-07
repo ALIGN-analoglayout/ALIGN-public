@@ -349,6 +349,7 @@ int main(int argc, char** argv ){
     //insert guard ring
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
       if (nodeVec[lidx].Guardring_Consts.size()>0){
+      //if (1){
         GuardRing current_guard_ring(nodeVec[lidx], lefData, drcInfo);
       }
       DB.PrintHierNode(nodeVec[lidx]);

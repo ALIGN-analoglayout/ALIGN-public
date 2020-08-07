@@ -18,6 +18,7 @@ void GuardRing::Pcell_info(const map<string, PnRDB::lefMacro>& lefData){
     minimal_PC.height = uc.height - uc.macroPins[0].pinContacts[0].originBox.UR.y;
     pcell_size.width = uc.width; //store guard ring primitive cell's width
     pcell_size.height = uc.height; //store guard ring primitive cell's height
+    pcellpinmetal = uc.macroPins[0].pinContacts[0].metal;
   }
 }
 
@@ -136,7 +137,23 @@ GuardRing::GuardRing(PnRDB::hierNode &node, const map<string, PnRDB::lefMacro>& 
     temp_point.y = stored_point_ll[i_ur].y + pcell_size.height;
     stored_point_ur.push_back(temp_point);
   }
-  
+
+  //calculate lower left coordinates of stored points's pin
+  for (int ip_ll = 0; ip_ll < stored_point_ll.size(); ip_ll++) 
+  {
+    temp_point.x = stored_point_ll[ip_ll].x + offset.width;
+    temp_point.y = stored_point_ll[ip_ll].y + offset.height;
+    stored_pin_ll.push_back(temp_point);
+  }
+
+  //calculate upper right coordinates of stored points's pin
+  for (int ip_ur = 0; ip_ur < stored_point_ll.size(); ip_ur++) 
+  {
+    temp_point.x = stored_pin_ll[ip_ur].x + pcell_metal_size.width;
+    temp_point.y = stored_pin_ll[ip_ur].y + pcell_metal_size.height;
+    stored_pin_ur.push_back(temp_point);
+  }
+
   //Print stored guard ring primitive cells coordinates(lower left & upper right)
   std::cout << "\nThe stored points are:\n"; 
   for (int i_print = 0; i_print < stored_point_ll.size(); i_print++)
@@ -172,22 +189,30 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node){
     temp_gr.center.y = (stored_point_ll[i_store].y + stored_point_ur[i_store].y)/2;
     //write contact information
     //temp_contact.metal = "";
-    temp_contact.placedBox.LL.x = stored_point_ll[i_store].x;
-    temp_contact.placedBox.LL.y = stored_point_ll[i_store].y;
-    temp_contact.placedBox.UR.x = stored_point_ur[i_store].x;
-    temp_contact.placedBox.UR.y = stored_point_ur[i_store].y;
-    temp_contact.placedCenter.x = temp_gr.center.x;
-    temp_contact.placedCenter.y = temp_gr.center.y;
+    temp_contact.metal = pcellpinmetal;
+    temp_contact.originBox.LL.x = stored_pin_ll[i_store].x;
+    temp_contact.originBox.LL.y = stored_pin_ll[i_store].y;
+    temp_contact.originBox.UR.x = stored_pin_ur[i_store].x;
+    temp_contact.originBox.UR.y = stored_pin_ur[i_store].y;
+    temp_contact.placedBox.LL.x = stored_pin_ll[i_store].x;
+    temp_contact.placedBox.LL.y = stored_pin_ll[i_store].y;
+    temp_contact.placedBox.UR.x = stored_pin_ur[i_store].x;
+    temp_contact.placedBox.UR.y = stored_pin_ur[i_store].y;
+    temp_contact.originCenter.x = (stored_pin_ll[i_store].x + stored_pin_ur[i_store].x)/2;
+    temp_contact.originCenter.y = (stored_pin_ll[i_store].y + stored_pin_ur[i_store].y)/2;
+    temp_contact.placedCenter.x = (stored_pin_ll[i_store].x + stored_pin_ur[i_store].x)/2;
+    temp_contact.placedCenter.y = (stored_pin_ll[i_store].y + stored_pin_ur[i_store].y)/2;
     temp_gr.interMetals.push_back(temp_contact);
     //Write pin information
     temp_pin.name = "dummy_pin";
     temp_pin.type = "";
     temp_pin.use = "";
     temp_pin.pinContacts.push_back(temp_contact);
-    temp_pin.netIter = -2;
+    //temp_pin.netIter = -2;
     temp_gr.blockPins.push_back(temp_pin);
+    /*
     //Create dummy connect pin
-    temp_connectNode.iter2 = i_store;
+    temp_connectNode.iter2 = ;
     temp_connectNode.iter = temp_gr.blockPins.size();
     //insert the dummy connection power power net
       //if power net does not exist, then create a power net
@@ -197,8 +222,7 @@ void GuardRing::storegrhierNode(PnRDB::hierNode &node){
         break;
         }
      }
-
-
+     */
     //Write node GuardRings information
     node.GuardRings.push_back(temp_gr);
   }

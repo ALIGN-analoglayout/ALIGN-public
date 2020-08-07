@@ -1720,8 +1720,11 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
         temp_pin.name = node.GuardRings[i].blockPins[j].name;
         for(unsigned int k=0;k<node.GuardRings[i].blockPins[j].pinContacts.size();k++){
             temp_pin.pinContacts.push_back(node.GuardRings[i].blockPins[j].pinContacts[k]);
+            break;
         }
+        break;
      }
+     break;
   }
   if(temp_pin.pinContacts.size()>0){
     for(unsigned int i=0;i<node.PowerNets.size();i++){
