@@ -1713,6 +1713,26 @@ void PnRdatabase::Extract_RemovePowerPins(PnRDB::hierNode &node){
      
      }
 
+//extract power pin inside guard ring
+  PnRDB::pin temp_pin;
+  for(unsigned int i=0;i<node.GuardRings.size();i++){
+     for(unsigned int j=0;j<node.GuardRings[i].blockPins.size();j++){
+        temp_pin.name = node.GuardRings[i].blockPins[j].name;
+        for(unsigned int k=0;k<node.GuardRings[i].blockPins[j].pinContacts.size();k++){
+            temp_pin.pinContacts.push_back(node.GuardRings[i].blockPins[j].pinContacts[k]);
+        }
+     }
+  }
+  if(temp_pin.pinContacts.size()>0){
+    for(unsigned int i=0;i<node.PowerNets.size();i++){
+       if(node.PowerNets[i].power==0){
+         node.PowerNets[i].Pins.push_back(temp_pin);
+         break;
+       }
+    }
+  }
+
+
 //remove power pins in blocks
 
   for(unsigned int i=0;i<node.Blocks.size();i++){
