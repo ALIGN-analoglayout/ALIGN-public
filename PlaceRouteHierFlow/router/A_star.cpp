@@ -1282,17 +1282,19 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
   std::cout<<"source size "<<source.size()<<std::endl;
   std::cout<<"dest size "<<dest.size()<<std::endl;
   
-
+  
+  std::cout<<"A star source info"<<std::endl;
   for(int i=0;i<(int)source.size();i++){
     
       src_index.insert(source[i]);
+      std::cout<<"Source "<<grid.vertices_total[source[i]].metal<<" "<<grid.vertices_total[source[i]].x<<" "<<grid.vertices_total[source[i]].y<<std::endl;
       close_set.insert(source[i]);
 
      }
   
   std::set<int> dest_index;
   for(int i=0;i<(int)dest.size();i++){
-    
+      std::cout<<"Dest "<<grid.vertices_total[dest[i]].metal<<" "<<grid.vertices_total[dest[i]].x<<" "<<grid.vertices_total[dest[i]].y<<std::endl;
       dest_index.insert(dest[i]);
 
      }
@@ -1389,6 +1391,7 @@ std::vector<std::vector<int> > A_star::A_star_algorithm(Grid& grid, int left_up,
      std::cout<<"A_star fails to find a feasible path"<<std::endl;
     }else{
      std::cout<<"Trace back paths"<<std::endl;
+     std::cout<<"Source "<<grid.vertices_total[current_node].metal<<" "<<grid.vertices_total[current_node].x<<" "<<grid.vertices_total[current_node].y<<std::endl;
      temp_path = Trace_Back_Paths(grid, current_node, left_up, right_down, src_index, dest_index);
      std::cout<<"Trace back paths"<<std::endl;
     }
@@ -1674,7 +1677,7 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
   }
   std::cout<<"trace back flag4"<<std::endl;
   if(shielding){
-    if(temp_paths.size()>0){
+    if(temp_paths.size()>2){
       int path_size = temp_paths.size()-1;
       std::vector<int> temp_path_l = CovertToShieldingNet(grid, temp_paths[0]);
       temp_paths[0] = temp_path_l;

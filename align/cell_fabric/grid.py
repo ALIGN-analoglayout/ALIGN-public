@@ -10,7 +10,7 @@ class Grid:
     def __init__( self):
         """
         grid is a list of pairs: the grid coord and associated attributes (e.g., width, color)
-"""
+        """
         self.grid = []
         self.legalIndices = set()
 
