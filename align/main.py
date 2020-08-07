@@ -9,7 +9,7 @@ from .utils.gds2png import generate_png
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=True):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=True, regression=False):
 
     if log_level:
         logging.getLogger().setLevel(logging.getLevelName(log_level))
@@ -57,6 +57,10 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     primitive_dir.mkdir(exist_ok=True)
     pnr_dir = working_dir / '3_pnr'
     pnr_dir.mkdir(exist_ok=True)
+    if regression:
+        # Copy regression results in one dir
+        regression_dir = working_dir / 'regression'
+        regression_dir.mkdir(exist_ok=True)
 
     results = []
     for netlist in netlist_files:
@@ -89,5 +93,16 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
             # Generate PNG
             if generate:
                 generate_png(working_dir, variant)
+            if regression:
+                # Copy regression results in one dir
+                (regression_dir / filemap['gdsjson'].name).write_text(filemap['gdsjson'].read_text())
+                (regression_dir / filemap['python_gds_json'].name).write_text(filemap['python_gds_json'].read_text())
+                convert_GDSjson_GDS(filemap['python_gds_json'], regression_dir / f'{variant}.python.gds')                
+                convert_GDSjson_GDS(filemap['gdsjson'], regression_dir / f'{variant}.gds')
+                (regression_dir / filemap['lef'].name).write_text(filemap['lef'].read_text())
+                (regression_dir / f'{subckt}.v').write_text((topology_dir / f'{subckt}.v').read_text())
+                for file_ in topology_dir.iterdir():
+                    if file_.suffix == '.const':
+                        (regression_dir / file_.name).write_text(file_.read_text())
     return results
 
