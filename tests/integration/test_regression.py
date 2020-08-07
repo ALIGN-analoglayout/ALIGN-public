@@ -42,16 +42,13 @@ def test_A( pdk_dir, design_dir):
     run_dir.mkdir(parents=True, exist_ok=True)
     os.chdir(run_dir)
 
-    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check', '--generate']
+    args = [str(design_dir), '-f', str(design_dir / f"{nm}.sp"), '-s', nm, '-p', str(pdk_dir), '-flat',  str(1 if nm in run_flat else 0), '--check', '--generate', '--regression']
     results = align.CmdlineParser().parse_args(args)
     assert results is not None, f"{nm} :No results generated"
 
-    gold_dir =  pathlib.Path( os.environ['ALIGN_HOME']).resolve() / "tests" / "compiler" / "gold" / "FinFET14nm_Mock_PDK" / nm
+    gold_dir =  pathlib.Path( os.environ['ALIGN_HOME']).resolve() / "tests" / "gold" / "FinFET14nm_Mock_PDK" / nm / "regression"
+    result_dir = run_dir / "regression"
 
-    gds_dir = run_dir / "3_pnr"/ "Results"
-
-    for suffix in ['json']:
-        for p in gold_dir.rglob(f'nm.{suffix}'):
-            assert filecmp.cmp( gds_dir / p.name,
-                                gold_dir / p.name,
-                                False)
+    for suffix in ['v','const','lef']:
+        for p in gold_dir.rglob(f'*.{suffix}'):
+            assert filecmp.cmp( result_dir / p.name, gold_dir / p.name, False)
