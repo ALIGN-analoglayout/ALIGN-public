@@ -348,13 +348,13 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
-      DB.Extract_RemovePowerPins(nodeVec[lidx]);
       if (nodeVec[lidx].Guardring_Consts.size()>0){
         GuardRing current_guard_ring(nodeVec[lidx], lefData, drcInfo);
       }
       DB.PrintHierNode(nodeVec[lidx]);
       DB.WriteJSON(nodeVec[lidx], true, false, false, false, nodeVec[lidx].name + "_PL_" + std::to_string(lidx), drcInfo, opath);
+      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      DB.Extract_RemovePowerPins(nodeVec[lidx]);
       std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
       DB.CheckinHierNode(idx, nodeVec[lidx]);
       std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
