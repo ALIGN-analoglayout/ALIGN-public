@@ -357,7 +357,7 @@ int main(int argc, char** argv ){
 
 
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      std::cout<<"Checkpoint: extract power pins work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
       std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
       DB.CheckinHierNode(idx, nodeVec[lidx]);
