@@ -17,7 +17,7 @@ def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size
     updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
     return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, unit_size_mos , unit_size_cap)
 
-def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
+def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     """
     Reads input spice file, converts to a graph format and create hierarchies in the graph    
 
