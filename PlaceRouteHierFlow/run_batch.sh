@@ -1,2 +1,2 @@
-nohup sh generate_performance_routing_gds.sh
+nohup sh generate_performance_routing_gds.sh&
 
