@@ -5,11 +5,11 @@ file_name=ota_asap7
 #file_name=comparator_3
 
 #export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
-export LP_DIR=/home/grads/l/liyg/master/ALIGN-public/lpsolve
-export JSON=/home/grads/l/liyg/master/ALIGN-public/json
-export BOOST_LP=/home/grads/l/liyg/master/ALIGN-publict/boost
-export GTEST_DIR=/home/grads/l/liyg/master/ALIGN-public/googletest/googletest/
-export LD_LIBRARY_PATH=/home/grads/l/liyg/master/ALIGN-public/lpsolve/lp_solve_5.5.2.5_dev_ux64
+export LP_DIR=/home/grads/l/liyg/src/lpsolve
+export JSON=/home/grads/l/liyg/src/json
+export BOOST_LP=/home/grads/l/liyg/src/boost
+export GTEST_DIR=/home/grads/l/liyg/src/googletest/googletest/
+export LD_LIBRARY_PATH=/home/grads/l/liyg/src/lpsolve/lp_solve_5.5.2.5_dev_ux64
 #scl enable devtoolset-7 bash
 
 lef=.lef
