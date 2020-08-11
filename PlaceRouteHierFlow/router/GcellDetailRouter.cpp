@@ -872,12 +872,13 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
-    srand(time(0));
-    multi_number = rand() % 3;
-    if(multi_number == 0) multi_number = 1;
-    Nets[i].multi_connection = multi_number;
+    //srand(time(0));
+    //multi_number = rand() % 3;
+    //if(multi_number == 0) multi_number = 1;
+    //Nets[i].multi_connection = multi_number;
     //multi_number = 3;
-    for(unsigned int multi_index=0;multi_index<multi_number;multi_index++){
+    int upper_index = 1; 
+    for(unsigned int multi_index=0;multi_index<upper_index;multi_index++){ // upper_index used to be multi_number
       std::vector<int> Multi_Number =  Multi_Connection_Number(i);
       std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> Pset_current_net_via; //current net via conter and layer info
       std::set<RouterDB::SinkData, RouterDB::SinkDataComp> Set_current_net_contact; //current Net metal contact set
