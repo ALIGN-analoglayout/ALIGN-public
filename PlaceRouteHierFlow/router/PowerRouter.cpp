@@ -348,6 +348,21 @@ void PowerRouter::Update_powerrouter_report_info(PnRDB::routing_net& temp_routin
   temp_routing_net.pin_access.push_back(pathMark);
 };
 
+int PowerRouter::FindMulti_Connection_Number(int j, PnRDB::hierNode& node){
+  int multi_number = 1;
+  for(unsigned int i=0;i<node.Multi_connections.size();i++){
+     std::cout<<"node.Multi_connections[i].net_name "<<node.Multi_connections[i].net_name<<" "<<node.Multi_connections[i].multi_number<<std::endl;
+     std::cout<<"PowerNets[i].netName "<<PowerNets[i].netName<<std::endl;
+     if(node.Multi_connections[i].net_name == PowerNets[j].netName){
+       multi_number = node.Multi_connections[i].multi_number;
+       break;
+     }
+  }
+
+  return multi_number;
+
+};
+
 void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal){
   GetData(node, drc_info, Lmetal, Hmetal);
   
@@ -381,7 +396,8 @@ void PowerRouter::PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_inf
 
   for(unsigned int i=0;i<PowerNets.size();i++){
 
-      int multi_number = 3;
+      int multi_number = FindMulti_Connection_Number(i, node);
+      std::cout<<"Power routing multi_number "<<PowerNets[i].netName<<" "<<multi_number<<std::endl;
 
       for(unsigned int multi_index = 0; multi_index<multi_number;multi_index++){
 

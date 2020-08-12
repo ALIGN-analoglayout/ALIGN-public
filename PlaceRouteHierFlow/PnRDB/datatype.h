@@ -44,6 +44,7 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
+struct Multi_connection;
 
 
 /// Part 1: declaration of enum types
@@ -374,6 +375,7 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
+  vector<Multi_connection> Multi_connections;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
@@ -457,6 +459,13 @@ struct R_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> R;
+
+};
+
+struct Multi_connection{
+
+  string net_name;
+  int multi_number = 1;
 
 };
 

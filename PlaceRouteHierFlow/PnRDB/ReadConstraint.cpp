@@ -534,6 +534,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         node.R_Constraints.push_back(temp_r_const);
       }else if (temp[0].compare("Multi_Connection")==0){
         //PnRDB::Multi_Connection temp_multi_connection;
+        PnRDB:: Multi_connection temp_multi_Connection;
         string word=temp[2];
         word=word.substr(1);
         word=word.substr(0, word.length()-1);
@@ -542,6 +543,9 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         multi_number=multi_number.substr(1);
         multi_number=multi_number.substr(0, word.length()-1);
         //temp_multi_connection.multi_connection = atoi(multi_number.c_str());
+        temp_multi_Connection.net_name=word;
+        temp_multi_Connection.multi_number=atoi(multi_number.c_str());
+        node.Multi_connections.push_back(temp_multi_Connection);
         for(unsigned int j=0;j<node.Nets.size();j++){
            if(node.Nets[j].name==word){
               node.Nets[j].multi_connection = atoi(multi_number.c_str());
