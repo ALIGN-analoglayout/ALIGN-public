@@ -556,11 +556,11 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   int tile_size = 0;
   int chip_size = (UR.x-LL.x)*(UR.y-LL.y);
   if(chip_size<1000000){
-      tile_size = 5;
+      tile_size = 20;
     }else if(chip_size<10000000000){
-      tile_size = 10;
-    }else if(chip_size<1000000000000){
       tile_size = 100;
+    }else if(chip_size<1000000000000){
+      tile_size = 1000;
     }else if(chip_size<100000000000000){
       tile_size = 10000;
     }else {
