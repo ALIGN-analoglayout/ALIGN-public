@@ -1,5 +1,5 @@
-#file_name=ota_asap7
-file_name=cascode_current_mirror_ota
+file_name=ota_asap7
+#file_name=cascode_current_mirror_ota
 #file_name=current_mirror_ota
 #file_name=strong_arm_latch
 #file_name=comparator_3
@@ -40,18 +40,21 @@ gds_folder=$file_name$gds
 
 mkdir $gds_folder
 
-source /home/grads/l/liyg/master/ALIGN-public/general/bin/activate
+source /home/grads/l/liyg/src/general/bin/activate
 
 export LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/yaguang/Desktop/Research/src/tensorflow/bazel-bin/tensorflow
 
 index=0
+start_index=$1
+increment=$2
+end_index=`expr $start_index + $increment`
 
-for i in $(seq 1 1 1000)
+for i in $(seq $start_index 1 $end_index)
 do
   index=$((i))
   mkdir $gds_folder$slash$index
-  cp $const_folder_file$slash$index$slash$const_file $file_name$slash$const_file &&
+  #cp $const_folder_file$slash$index$slash$const_file $file_name$slash$const_file &&
   #PNRDB_disable_io=1 ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && rm -r $source_folder
   PNRDB_disable_io=1 ./pnr_compiler ./$file_name $lef_file $v_file $map_file layers.json $file_name 1 0 | tee log && python json2gds.py $source_folder$slash$source_file $target_file && cp $target_file $gds_folder$slash$index$slash$target_file && cp $source_folder$slash$Json_file $gds_folder$slash$index$slash$Json_file && rm -r $source_folder  
 done
