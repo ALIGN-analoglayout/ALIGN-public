@@ -60,7 +60,7 @@ class Pdk(object):
         self.pdk[layername] = {key: None if value == 'NA' else value for key, value in kwargs.items()}
 
     def addMetal(self, **kwargs):
-        optional_params = ['AdjacentAttacker']
+        optional_params = ['AdjacentAttacker','MagicLayerName']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',
@@ -107,7 +107,7 @@ class Pdk(object):
         self._add(params + optional_params, **kwargs)
 
     def addVia(self, **kwargs):
-        optional_params = ['ViaCut']
+        optional_params = ['ViaCut','MagicLayerName']
         params = ['Layer',
                   'GdsLayerNo',
                   'GdsDatatype',

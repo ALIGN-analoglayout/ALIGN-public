@@ -46,6 +46,8 @@ The ALIGN flow includes the following steps:
 You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install all the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation:
 
         # When you start it the first time you have to run the installation:
+        % git clone https://github.com/thesourcerer8/ALIGN-public
+        % cd ALIGN-public
         % bash install.sh  
         # After successfull installation, whenever you want to use Align, you have to set the required environment variables again by running: 
         % source setup.sh

@@ -9,10 +9,11 @@ import re
 from .db import hierNode
 from .checkers import gen_viewer_json
 from ..cell_fabric import gen_gds_json
+from ..cell_fabric import gen_magic
 
 logger = logging.getLogger(__name__)
 
-def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True ):
+def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, check=False, extract=False, input_dir=None, toplevel=True, gds_json=True , magic=True):
 
     logger.info( f"_generate_json: {dbfile} {variant} {primitive_dir} {pdk_dir} {output_dir} {check} {extract} {input_dir} {toplevel} {gds_json}")
 
@@ -63,6 +64,12 @@ def _generate_json( *, dbfile, variant, primitive_dir, pdk_dir, output_dir, chec
         with open( ret['json'], 'rt') as ifp:
             with open( ret['python_gds_json'], 'wt') as ofp:
                 gen_gds_json.translate( hN.name, '', 0, ifp, ofp, timestamp=None, p=cnv.pdk)
+
+    if magic:
+        ret['magic'] = output_dir / f'{variant}.mag'
+        with open( ret['json'], 'rt') as ifp:
+            with open( ret['magic'], 'wt') as ofp:
+                gen_magic.translate( hN.name, '', 0, ifp, ofp, timestamp='1', p=cnv.pdk)
 
     return ret
 
