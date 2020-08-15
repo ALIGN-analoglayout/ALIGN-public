@@ -33,7 +33,11 @@ endif
 
 # Convert schematic to gds & PNG
 ${OUTPUT_DIR}/${DESIGN}_0.png:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
+ifneq ("$(wildcard /usr/local/bin/schematic2layout.py)","")
+	$(call execute,align-service, /bin/bash -c "cd ${DESIGN} && python3 /usr/local/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g")
+else
 	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g")
+endif
 
 ${DESIGN}:
 	mkdir ${DESIGN}
