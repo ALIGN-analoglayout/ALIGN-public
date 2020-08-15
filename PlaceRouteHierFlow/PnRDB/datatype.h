@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "limits.h"
 #include <map>
 #include <utility>
 //#include "../router/Rdatatype.h"
@@ -44,6 +45,8 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
+struct LinearConst;
+struct Multi_LinearConst;
 struct Multi_connection;
 
 
@@ -224,6 +227,8 @@ struct net {
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
   int multi_connection = 1;
+  double upperBound = INT_MAX;
+  double lowerBound = INT_MIN;
 }; // structure of nets
 
 struct Metal{
@@ -376,6 +381,8 @@ struct hierNode {
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
   vector<Multi_connection> Multi_connections;
+  vector<LinearConst> L_Constraints;
+  vector<Multi_LinearConst> ML_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
@@ -459,6 +466,26 @@ struct R_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> R;
+
+};
+
+struct LinearConst {
+
+  string net_name;
+  //vector<string> start_pin;
+  //vector<string> end_pin;
+  std::vector<std::pair<int,int> > pins; //pair.first blocks id pair.second pin id 
+  std::vector<double> alpha;
+  double upperBound;
+  double lowerBound;
+
+};
+
+struct Multi_LinearConst {
+
+  std::vector<LinearConst> Multi_linearConst;
+  double upperBound;
+  double lowerBound;
 
 };
 
