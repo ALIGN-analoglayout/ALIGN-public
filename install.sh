@@ -27,16 +27,32 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     g++\
     cmake \
     libboost-container-dev \
+    libboost-all-dev \
     graphviz \
     gnuplot \
     curl \
     xvfb \
+    libx11-dev \
+    xorg-dev \
+    libglu1-mesa-dev \
+    freeglut3-dev \
+    libglew1.5 \
+    libglew1.5-dev \
+    libglu1-mesa \
+    libglu1-mesa-dev \
+    libgl1-mesa-glx \
+    libgl1-mesa-dev \
+    lp-solve \
+    liblpsolve55-dev \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
 curl -o ./klayout_0.26.3-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-18/klayout_0.26.3-1_amd64.deb
+curl -o ./klayout_0.27.7-1_amd64.deb https://www.klayout.org/downloads/Ubuntu-20/klayout_0.26.7-1_amd64.deb
 $SUDO apt-get install -yq ./klayout_0.26.3-1_amd64.deb
+$SUDO apt-get install -yq ./klayout_0.27.7-1_amd64.deb
 rm ./klayout_0.26.3-1_amd64.deb
+rm ./klayout_0.27.7-1_amd64.deb
 #** WSL users would need to install Xming for the display to work
 
 #### Install lpsolve
@@ -72,6 +88,8 @@ export VENV=$ALIGN_HOME/general
 
 # Install ALIGN python packages
 cd $ALIGN_HOME
+pip3 install --upgrade pip
+pip3 install -e .
 python3 -m venv $VENV
 source $VENV/bin/activate
 pip install --upgrade pip
@@ -83,10 +101,18 @@ export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/
 cd $ALIGN_HOME/PlaceRouteHierFlow/ && make
 cd $ALIGN_HOME
 
+# Setup environment variable script for next time:
+mkdir $ALIGN_WORK_DIR
+echo "# Run 'source env.source' in bash before using the commands" >$ALIGN_WORK_DIR/env.source
+echo "export ALIGN_HOME=$ALIGN_HOME" >>$ALIGN_WORK_DIR/env.source
+echo "export ALIGN_WORK_DIR=$ALIGN_WORK_DIR" >>$ALIGN_WORK_DIR/env.source
+echo "export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/" >>$ALIGN_WORK_DIR/env.source
+echo "export VENV=$VENV" >>$ALIGN_WORK_DIR/env.source
+
 ## Run first example
 #---------------------
-#mkdir $ALIGN_WORK_DIR
 #cd $ALIGN_WORK_DIR
-#ln -s $ALIGN_HOME/build/Makefile .
+#ln -s $ALIGN_HOME/build/Makefile .            
+
 ### for umn: module load gcc/8.2.0
 #make VENV=$VENV
