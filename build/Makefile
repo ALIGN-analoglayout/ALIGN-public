@@ -15,7 +15,7 @@ VENV=/opt/venv
 EXAMPLES=${ALIGN_HOME}/examples
 
 DESIGN=telescopic_ota
-PDK_DIR=pdks/FinFET14nm_Mock_PDK
+PDK_DIR=pdks/OSU180_PDK
 PDK_FILE=layers.json
 FLAT=0
 
