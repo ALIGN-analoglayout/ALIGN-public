@@ -41,7 +41,53 @@ The ALIGN flow includes the following steps:
 * Design JSON: Final layout which can be viewed using the ALIGN Viewer.
 * Layout image: .jpg format of the layout saved using the [KLayout tool](https://github.com/KLayout/klayout).
 
-## Getting started
+### Native Environment Flow with installer
+
+You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install all the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation:
+
+When you start it the first time you have to run the installation:
+	% bash install.sh  
+After successfull installation, whenever you want to use Align, you have to set the required environment variables again by running: 
+	% source setup.sh
+To build the first design:
+	% cd work
+	% make DESIGN=adder
+To view the generated design:
+	% klayout */*.gds
+
+### Native Environment Flow manually
+
+* Requirements
+  * Skip these steps if you are using [install.sh](install.sh)
+  * Python >= 3.6
+  * gcc >= 4.2
+  * Ubuntu >= 18.04/ RedHat
+  * [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
+  * [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
+  * [JSON]( https://github.com/nlohmann/json.git) >= 3.7.3
+  * [Googletest]( https://github.com/google/googletest) >= 1.10
+
+* Setting up local environment variables if installations are not in system search path.
+
+        % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
+        % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
+        % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
+        % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
+        % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
+        % export VENV= <python virtual environment path, e.g., $ALIGN_HOME/align_venv>  # VENV is not necessary anymore
+        % Skip these steps if you are using [install.sh](install.sh)
+
+* Installation
+
+        % cd PlaceRouteHierFlow
+        % make
+        % cd $ALIGN_HOME
+        % python3 -m venv $VENV         # Using a VENV is optional
+        % source $VENV/bin/activate     # Using a VENV is optional
+        % pip install --upgrade pip
+        % pip install -e .
+
+### Docker flow
 
 The suggested way to run the end-to-end ALIGN flow uses a Docker container-based flow for which the user must have docker-compose installed. The ALIGN software is installed in a container image and Make is used to run the flow through the containers. The user may also use the Makefile to run the ALIGN flow through the native Linux build of all the components in the current environment (assuming that all software prerequisites have been installed).
 Two environment variables must be set to run the Makefile in any environment. The first is the ALIGN_HOME variable, which should point the top directory of the ALIGN analog system.
@@ -53,41 +99,6 @@ The second is a working directory ALIGN_WORK_DIR, which can either be the full p
         % docker volume create <volumeName>
         % export ALIGN_WORK_DIR=<volumeName for docker flow / full work dir path for native flow>
 
-### Native Environment Flow
-
-You can use '[source install.sh](install.sh)' (for bash shell) or '[source install_tcsh.sh](install_tcsh.sh)' (for tcsh/ Red Hat) to install all the requirements and the native flow. Please go through [debug documentation](https://align-analoglayout.github.io/ALIGN-public/) for detailed explanation and common errors during installation.
-
-* Requirements
-  * Python >= 3.6
-  * gcc >= 4.2
-  * Ubuntu >= 18.04/ RedHat
-  * [Boost]( https://github.com/boostorg/boost.git) >= 1.68.0
-  * [Lpsolve](https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/lp_solve_5.5.2.5_source.tar.gz/download) >= 5.5.2.5
-  * [JSON]( https://github.com/nlohmann/json.git) >= 3.7.3
-  * [Googletest]( https://github.com/google/googletest) >= 1.10
-  * Skip these steps if you are using [install.sh](install.sh)
-
-* Setting up local environment variables if installations are not in system search path.
-
-        % export BOOST_LP= <boost installation path, e.g., $ALIGN_HOME/boost>
-        % export LP_DIR=<lpsolve installation path, e.g., $ALIGN_HOME/lpsolve>
-        % export JSON= <json installation path, e.g., $ALIGN_HOME/json>
-        % export LD_LIBRARY_PATH=<lpsolve library path, e.g., $ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/>
-        % export GTEST_DIR=<googletest installation path, e.g., $ALIGN_HOME/googletest/googletest/>
-        % export VENV= <python virtual environment path, e.g., ./align_venv>
-        % Skip these steps if you are using [install.sh](install.sh)
-
-* Installation
-
-        % cd PlaceRouteHierFlow
-        % make
-        % cd $ALIGN_HOME
-        % python3 -m venv $VENV 
-        % source $VENV/bin/activate 
-        % pip install --upgrade pip
-        % pip install -e .
-
-### Docker flow
 
 ALIGN also supports push button flow on docker.
 * Requirements
@@ -104,7 +115,7 @@ By default, the design directory is set to the examples directory. This can be m
 
         % mkdir $ALIGN_WORK_DIR
         % cd $ALIGN_WORK_DIR
-        % ln -s $ALIGN_HOME/build/Makefile
+        % ln -s $ALIGN_HOME/build/Makefile .
 
 * Run your first design "[telescopic_ota](examples/telescopic_ota/)" on ALIGN
 

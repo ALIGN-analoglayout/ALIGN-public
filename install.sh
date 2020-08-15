@@ -81,7 +81,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 #export BOOST_LP=$ALIGN_HOME/boost
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
-export VENV=$ALIGN_HOME/general
+export VENV=$ALIGN_HOME/align_venv
 
 ## Install ALIGN
 #---------------
@@ -103,16 +103,10 @@ cd $ALIGN_HOME
 
 # Setup environment variable script for next time:
 mkdir $ALIGN_WORK_DIR
-echo "# Run 'source env.source' in bash before using the commands" >$ALIGN_WORK_DIR/env.source
-echo "export ALIGN_HOME=$ALIGN_HOME" >>$ALIGN_WORK_DIR/env.source
-echo "export ALIGN_WORK_DIR=$ALIGN_WORK_DIR" >>$ALIGN_WORK_DIR/env.source
-echo "export LD_LIBRARY_PATH=$ALIGN_HOME/lpsolve/lp_solve_5.5.2.5_dev_ux64/" >>$ALIGN_WORK_DIR/env.source
-echo "export VENV=$VENV" >>$ALIGN_WORK_DIR/env.source
+ln -s $ALIGN_HOME/build/Makefile .
 
 ## Run first example
 #---------------------
 #cd $ALIGN_WORK_DIR
-#ln -s $ALIGN_HOME/build/Makefile .            
-
 ### for umn: module load gcc/8.2.0
 #make VENV=$VENV
