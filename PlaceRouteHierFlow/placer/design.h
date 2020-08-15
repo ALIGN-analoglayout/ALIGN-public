@@ -103,6 +103,7 @@ class design
     std::vector<placerDB::SymmBlock> SBlocks;
     std::vector<SymmPairBlock> SPBlocks;
     std::vector<PortPos> Port_Location;
+    std::vector<PnRDB::Multi_LinearConst> ML_Constraints;
 
     //added by ya
     
@@ -202,9 +203,9 @@ class design
     vector<int> GetRealBlockListfromSymmGroup(int sgid);
     vector<int> GetRealBlockPlusAxisListfromSymmGroup(int sgid);
     string GetBlockName(int blockid);
-    string GetBlockPinName(int blockid, int pinid);
+    string GetBlockPinName(int blockid, int pinid, int sel);
     string GetTerminalName(int termid);
-    int GetBlockPinNum(int blockid);
+    int GetBlockPinNum(int blockid,int sel);
     int GetBlockWidth(int blockid, placerDB::Omark ort, int sel); // Get width of block when it's placed
     int GetBlockHeight(int blockid, placerDB::Omark ort, int sel); // Get height of block when it's placed
     placerDB::point GetBlockCenter(int blockid, placerDB::Omark ort, int sel); // Get relative location of block center when it's placed at origin

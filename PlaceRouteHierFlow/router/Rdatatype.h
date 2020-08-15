@@ -107,6 +107,7 @@ struct vertex{
   int down=-1;
   int up=-1;
   int power; // i is vdd, 0 is gnd;
+  int graph_index = -1;
 };
 
 struct ViaModel {

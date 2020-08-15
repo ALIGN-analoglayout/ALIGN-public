@@ -572,10 +572,10 @@ MM8<0> net045_19_ net011 AVDD AVDD pch l=LA w=w3p
 
 .SUBCKT ND2D1LVT A1 A2 VDD VSS ZN
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMI1-M_u3 ZN A1 net1 VSS nch_lvt l=LF w=WE
-MMI1-M_u4 net1 A2 VSS VSS nch_lvt l=LF w=WE
-MMI1-M_u1 ZN A1 VDD VDD pch_lvt l=LF w=WF
-MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LF w=WF
+MMI1-M_u3 ZN A1 net1 VSS lvtnfet l=LF w=WE
+MMI1-M_u4 net1 A2 VSS VSS lvtnfet l=LF w=WE
+MMI1-M_u1 ZN A1 VDD VDD lvtpfet l=LF w=WF
+MMI1-M_u2 ZN A2 VDD VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -586,14 +586,14 @@ MMI1-M_u2 ZN A2 VDD VDD pch_lvt l=LF w=WF
 
 .SUBCKT INVD4LVT I VDD VSS ZN
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1_0-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_3-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_1-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_2-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_0-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_3-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_2-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
+MMU1_0-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_3-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_1-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_2-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_0-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_1-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_3-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_2-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -604,10 +604,10 @@ MMU1_2-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
 
 .SUBCKT INVD2LVT I VDD VSS ZN
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1_0-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_1-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_0-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
+MMU1_0-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_1-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_0-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_1-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -760,70 +760,70 @@ XI9<0> DVDD DVSS BE_0_ BO_0_ B_0_ CLKE CLKO / mux
 *.PININFO H_0_:I outa:O outb:O outc:O outd:O oute:O outf:O outg:O outh:O 
 *.PININFO AVDD:B AVSS:B In_1m:B In_3m:B In_5m:B In_7m:B Ip_1m:B Ip_3m:B 
 *.PININFO Ip_5m:B Ip_7m:B ntx:B
-MM56 outa A_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM54 outa A_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM50 outa A_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM52 outa A_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM115 outg G_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM111 oute E_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM97 oute E_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM83 oute E_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM64 oute E_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM113 outf F_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM109 outd D_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM95 outd D_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM81 outd D_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM62 outd D_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM107 outc C_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM93 outc C_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM79 outc C_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM60 outc C_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM101 outg G_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM87 outg G_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM99 outf F_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM105 outb B_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM91 outb B_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM73 outb B_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM58 outb B_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM117 outh H_3_ In_1m AVSS nch_lvt l=LF w=wnswitch
-MM103 outh H_2_ In_3m AVSS nch_lvt l=LF w=wnswitch
-MM85 outf F_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM68 outg G_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM89 outh H_1_ In_5m AVSS nch_lvt l=LF w=wnswitch
-MM70 outh H_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM66 outf F_0_ In_7m AVSS nch_lvt l=LF w=wnswitch
-MM53 outa A_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM49 outa A_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM51 outa A_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM55 outa A_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM104 outb B_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM100 outg G_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM98 outf F_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM112 outf F_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM86 outg G_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM96 oute E_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM82 oute E_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM63 oute E_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM110 oute E_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM94 outd D_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM80 outd D_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM108 outd D_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM61 outd D_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM116 outh H_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM92 outc C_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM75 outc C_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM59 outc C_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM106 outc C_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM67 outg G_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM114 outg G_4_ Ip_1m AVDD pch_lvt l=LF w=wpswitch
-MM102 outh H_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM90 outb B_5_ Ip_3m AVDD pch_lvt l=LF w=wpswitch
-MM71 outb B_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM57 outb B_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM88 outh H_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM84 outf F_6_ Ip_5m AVDD pch_lvt l=LF w=wpswitch
-MM65 outf F_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
-MM69 outh H_7_ Ip_7m AVDD pch_lvt l=LF w=wpswitch
+MM56 outa A_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM54 outa A_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM50 outa A_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM52 outa A_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM115 outg G_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM111 oute E_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM97 oute E_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM83 oute E_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM64 oute E_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM113 outf F_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM109 outd D_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM95 outd D_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM81 outd D_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM62 outd D_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM107 outc C_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM93 outc C_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM79 outc C_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM60 outc C_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM101 outg G_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM87 outg G_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM99 outf F_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM105 outb B_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM91 outb B_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM73 outb B_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM58 outb B_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM117 outh H_3_ In_1m AVSS lvtnfet l=LF w=wnswitch
+MM103 outh H_2_ In_3m AVSS lvtnfet l=LF w=wnswitch
+MM85 outf F_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM68 outg G_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM89 outh H_1_ In_5m AVSS lvtnfet l=LF w=wnswitch
+MM70 outh H_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM66 outf F_0_ In_7m AVSS lvtnfet l=LF w=wnswitch
+MM53 outa A_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM49 outa A_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM51 outa A_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM55 outa A_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM104 outb B_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM100 outg G_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM98 outf F_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM112 outf F_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM86 outg G_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM96 oute E_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM82 oute E_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM63 oute E_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM110 oute E_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM94 outd D_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM80 outd D_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM108 outd D_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM61 outd D_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM116 outh H_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM92 outc C_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM75 outc C_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM59 outc C_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM106 outc C_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM67 outg G_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM114 outg G_4_ Ip_1m AVDD lvtpfet l=LF w=wpswitch
+MM102 outh H_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM90 outb B_5_ Ip_3m AVDD lvtpfet l=LF w=wpswitch
+MM71 outb B_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM57 outb B_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM88 outh H_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM84 outf F_6_ Ip_5m AVDD lvtpfet l=LF w=wpswitch
+MM65 outf F_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
+MM69 outh H_7_ Ip_7m AVDD lvtpfet l=LF w=wpswitch
 XR23 outa ntx rppolyl l=LC w=WG
 XR3 oute ntx rppolyl l=LC w=WG
 XR4 outf ntx rppolyl l=LC w=WG
@@ -842,8 +842,8 @@ XR0 outb ntx rppolyl l=LC w=WG
 
 .SUBCKT INVD1LVT I VDD VSS ZN
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
+MMU1-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -854,38 +854,38 @@ MMU1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
 
 .SUBCKT INVD16LVT I VDD VSS ZN
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMI2_9-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_6-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_4-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_12-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_13-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_3-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_10-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_0-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_11-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_7-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_5-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_2-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_8-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_15-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_14-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMI2_12-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_15-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_3-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_14-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_4-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_1-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_0-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_13-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_8-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_5-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_7-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_6-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_9-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_2-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_11-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMI2_10-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
+MMI2_9-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_6-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_1-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_4-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_12-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_13-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_3-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_10-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_0-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_11-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_7-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_5-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_2-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_8-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_15-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_14-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMI2_12-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_15-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_3-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_14-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_4-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_1-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_0-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_13-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_8-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_5-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_7-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_6-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_9-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_2-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_11-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMI2_10-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
 .ENDS
 
 ************************************************************************
@@ -896,22 +896,22 @@ MMI2_10-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
 
 .SUBCKT INVD8LVT I VDD VSS ZN
 *.PININFO I:I ZN:O VDD:B VSS:B
-MMU1_5-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_0-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_3-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_7-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_4-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_1-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_6-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_2-M_u2 ZN I VSS VSS nch_lvt l=LF w=WE
-MMU1_0-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_4-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_5-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_1-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_3-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_7-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_6-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
-MMU1_2-M_u3 ZN I VDD VDD pch_lvt l=LF w=WF
+MMU1_5-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_0-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_3-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_7-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_4-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_1-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_6-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_2-M_u2 ZN I VSS VSS lvtnfet l=LF w=WE
+MMU1_0-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_4-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_5-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_1-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_3-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_7-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_6-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
+MMU1_2-M_u3 ZN I VDD VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -1310,10 +1310,10 @@ XI63<0> net025_31_ net041 DVSS net026_31_ / INVD8LVT
 
 .SUBCKT NR2D1LVT A1 A2 VDD VSS ZN
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMI1-M_u3 ZN A2 VSS VSS nch_lvt l=LF w=WE
-MMI1-M_u4 ZN A1 VSS VSS nch_lvt l=LF w=WE
-MMI1-M_u1 net13 A2 VDD VDD pch_lvt l=LF w=WF
-MMI1-M_u2 ZN A1 net13 VDD pch_lvt l=LF w=WF
+MMI1-M_u3 ZN A2 VSS VSS lvtnfet l=LF w=WE
+MMI1-M_u4 ZN A1 VSS VSS lvtnfet l=LF w=WE
+MMI1-M_u1 net13 A2 VDD VDD lvtpfet l=LF w=WF
+MMI1-M_u2 ZN A1 net13 VDD lvtpfet l=LF w=WF
 .ENDS
 
 ************************************************************************
@@ -1324,17 +1324,17 @@ MMI1-M_u2 ZN A1 net13 VDD pch_lvt l=LF w=WF
 
 .SUBCKT DFF_LVT CK D DGND DVDD Q QN
 *.PININFO CK:I D:I Q:O QN:O DGND:B DVDD:B
-MM7 Q QN DGND DGND nch_lvt l=LF w=WE
-MM2 QN CK NET4 DGND nch_lvt l=LF w=WB
-MM13 N1 D DGND DGND nch_lvt l=LF w=WB
-MM4 NET2 N1 NET3 DGND nch_lvt l=LF w=WB
-MM3 NET4 NET2 DGND DGND nch_lvt l=LF w=WE
-MM14 NET3 CK DGND DGND nch_lvt l=LF w=WB
-MM9 NET2 CK DVDD DVDD pch_lvt l=LF w=WB
-MM8 NET1 D DVDD DVDD pch_lvt l=LF w=WB
-MM12 Q QN DVDD DVDD pch_lvt l=LF w=WF
-MM11 QN NET2 DVDD DVDD pch_lvt l=LF w=WF
-MM15 N1 CK NET1 DVDD pch_lvt l=LF w=WB
+MM7 Q QN DGND DGND lvtnfet l=LF w=WE
+MM2 QN CK NET4 DGND lvtnfet l=LF w=WB
+MM13 N1 D DGND DGND lvtnfet l=LF w=WB
+MM4 NET2 N1 NET3 DGND lvtnfet l=LF w=WB
+MM3 NET4 NET2 DGND DGND lvtnfet l=LF w=WE
+MM14 NET3 CK DGND DGND lvtnfet l=LF w=WB
+MM9 NET2 CK DVDD DVDD lvtpfet l=LF w=WB
+MM8 NET1 D DVDD DVDD lvtpfet l=LF w=WB
+MM12 Q QN DVDD DVDD lvtpfet l=LF w=WF
+MM11 QN NET2 DVDD DVDD lvtpfet l=LF w=WF
+MM15 N1 CK NET1 DVDD lvtpfet l=LF w=WB
 .ENDS
 
 ************************************************************************
@@ -1345,12 +1345,12 @@ MM15 N1 CK NET1 DVDD pch_lvt l=LF w=WB
 
 .SUBCKT AN2D1LVT A1 A2 VDD VSS Z
 *.PININFO A1:I A2:I Z:O VDD:B VSS:B
-MM_u3-M_u3 Z net5 VDD VDD pch_lvt l=LF w=WF
-MM_u2-M_u1 net5 A1 VDD VDD pch_lvt l=LF w=WD
-MM_u2-M_u2 net5 A2 VDD VDD pch_lvt l=LF w=WD
-MM_u3-M_u2 Z net5 VSS VSS nch_lvt l=LF w=WE
-MM_u2-M_u4 net17 A2 VSS VSS nch_lvt l=LF w=WC
-MM_u2-M_u3 net5 A1 net17 VSS nch_lvt l=LF w=WC
+MM_u3-M_u3 Z net5 VDD VDD lvtpfet l=LF w=WF
+MM_u2-M_u1 net5 A1 VDD VDD lvtpfet l=LF w=WD
+MM_u2-M_u2 net5 A2 VDD VDD lvtpfet l=LF w=WD
+MM_u3-M_u2 Z net5 VSS VSS lvtnfet l=LF w=WE
+MM_u2-M_u4 net17 A2 VSS VSS lvtnfet l=LF w=WC
+MM_u2-M_u3 net5 A1 net17 VSS lvtnfet l=LF w=WC
 .ENDS
 
 ************************************************************************
@@ -1792,14 +1792,14 @@ XI266<0> DEC107_0_ DEC65_1_ DVDD DVSS net064_3_ / AN2D1LVT
 
 .SUBCKT AN3D1LVT A1 A2 A3 VDD VSS Z
 *.PININFO A1:I A2:I A3:I Z:O VDD:B VSS:B
-MM_u4-M_u6 net13 A3 VSS VSS nch_lvt l=LF w=WC
-MM_u3-M_u2 Z net11 VSS VSS nch_lvt l=LF w=WE
-MM_u4-M_u5 net5 A2 net13 VSS nch_lvt l=LF w=WC
-MM_u4-M_u4 net11 A1 net5 VSS nch_lvt l=LF w=WC
-MM_u3-M_u3 Z net11 VDD VDD pch_lvt l=LF w=WF
-MM_u4-M_u3 net11 A3 VDD VDD pch_lvt l=LF w=WD
-MM_u4-M_u1 net11 A1 VDD VDD pch_lvt l=LF w=WD
-MM_u4-M_u2 net11 A2 VDD VDD pch_lvt l=LF w=WD
+MM_u4-M_u6 net13 A3 VSS VSS lvtnfet l=LF w=WC
+MM_u3-M_u2 Z net11 VSS VSS lvtnfet l=LF w=WE
+MM_u4-M_u5 net5 A2 net13 VSS lvtnfet l=LF w=WC
+MM_u4-M_u4 net11 A1 net5 VSS lvtnfet l=LF w=WC
+MM_u3-M_u3 Z net11 VDD VDD lvtpfet l=LF w=WF
+MM_u4-M_u3 net11 A3 VDD VDD lvtpfet l=LF w=WD
+MM_u4-M_u1 net11 A1 VDD VDD lvtpfet l=LF w=WD
+MM_u4-M_u2 net11 A2 VDD VDD lvtpfet l=LF w=WD
 .ENDS
 
 ************************************************************************
@@ -1810,14 +1810,14 @@ MM_u4-M_u2 net11 A2 VDD VDD pch_lvt l=LF w=WD
 
 .SUBCKT ND2D2LVT A1 A2 VDD VSS ZN
 *.PININFO A1:I A2:I ZN:O VDD:B VSS:B
-MMU3_1-M_u1 ZN A1 VDD VDD pch_lvt l=LF w=WF
-MMU3_1-M_u2 ZN A2 VDD VDD pch_lvt l=LF w=WF
-MMU3_0-M_u2 ZN A2 VDD VDD pch_lvt l=LF w=WF
-MMU3_0-M_u1 ZN A1 VDD VDD pch_lvt l=LF w=WF
-MMU3_0-M_u4 net20 A2 VSS VSS nch_lvt l=LF w=WE
-MMU3_1-M_u3 ZN A1 net28 VSS nch_lvt l=LF w=WE
-MMU3_1-M_u4 net28 A2 VSS VSS nch_lvt l=LF w=WE
-MMU3_0-M_u3 ZN A1 net20 VSS nch_lvt l=LF w=WE
+MMU3_1-M_u1 ZN A1 VDD VDD lvtpfet l=LF w=WF
+MMU3_1-M_u2 ZN A2 VDD VDD lvtpfet l=LF w=WF
+MMU3_0-M_u2 ZN A2 VDD VDD lvtpfet l=LF w=WF
+MMU3_0-M_u1 ZN A1 VDD VDD lvtpfet l=LF w=WF
+MMU3_0-M_u4 net20 A2 VSS VSS lvtnfet l=LF w=WE
+MMU3_1-M_u3 ZN A1 net28 VSS lvtnfet l=LF w=WE
+MMU3_1-M_u4 net28 A2 VSS VSS lvtnfet l=LF w=WE
+MMU3_0-M_u3 ZN A1 net20 VSS lvtnfet l=LF w=WE
 .ENDS
 
 ************************************************************************

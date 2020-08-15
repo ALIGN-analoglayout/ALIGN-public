@@ -142,8 +142,10 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
         }
       for(unsigned int j=0;j<db.hierTree.size();j++){
            std::vector<PnRDB::net> temp_net;
+           bool powernet_found = 0;
            for(unsigned int k=0;k<db.hierTree[j].Nets.size();k++){
                if(db.hierTree[j].Nets[k].name == supply_name_full or db.hierTree[j].Nets[k].name == supply_name){
+                   powernet_found = 1;
                    PnRDB::PowerNet temp_PowerNet;
                    temp_PowerNet.name = db.hierTree[j].Nets[k].name;
                    temp_PowerNet.power = power;
@@ -153,6 +155,14 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
                    temp_net.push_back(db.hierTree[j].Nets[k]);
                  }
               }
+
+            if(powernet_found==0){
+              PnRDB::PowerNet temp_PowerNet;
+              temp_PowerNet.name = supply_name;
+              temp_PowerNet.power = power;
+              db.hierTree[j].PowerNets.push_back(temp_PowerNet);
+            }
+
             db.hierTree[j].Nets = temp_net;
          }
      }
@@ -190,6 +200,49 @@ db.hierTree[i].Terminals[db.hierTree[i].Nets[j].connected[k].iter].netIter = j;
               }
 
       }
+
+//Add LinearConst here
+
+      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+
+        PnRDB::LinearConst temp_LinearConst = db.hierTree[i].L_Constraints[j];
+
+        for(int k=0;k<db.hierTree[i].Nets.size();k++){
+           if(db.hierTree[i].Nets[k].name == temp_LinearConst.net_name){
+             db.hierTree[i].Nets[k].upperBound = temp_LinearConst.upperBound;
+             for(int h=0;h<db.hierTree[i].Nets[k].connected.size();h++){
+                std::cout<<"Connected "<<db.hierTree[i].Nets[k].connected[h].type<<" "<<db.hierTree[i].Nets[k].connected[h].iter<<" "<<db.hierTree[i].Nets[k].connected[h].iter2<<std::endl;
+                for(int l=0;l<temp_LinearConst.pins.size();l++){
+                  std::cout<<"LinearConst cont"<<temp_LinearConst.pins[l].first<<" "<<temp_LinearConst.pins[l].second<<" "<<temp_LinearConst.alpha[l]<<std::endl;
+                  if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Block and db.hierTree[i].Nets[k].connected[h].iter2 == temp_LinearConst.pins[l].first and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                  }else if(db.hierTree[i].Nets[k].connected[h].type == PnRDB::Terminal and temp_LinearConst.pins[l].first==-1 and db.hierTree[i].Nets[k].connected[h].iter == temp_LinearConst.pins[l].second){
+                    db.hierTree[i].Nets[k].connected[h].alpha = temp_LinearConst.alpha[l];
+                    std::cout<<"LinearConst alpha "<<temp_LinearConst.alpha[l]<<std::endl;
+                  }
+                 }
+             }
+           }
+        }
+      }
+
+      for(unsigned int j=0;j<db.hierTree[i].L_Constraints.size();j++){
+
+          for(unsigned int k=0;k<db.hierTree[i].L_Constraints[j].alpha.size();k++){
+              std::cout<<"LinearConst info "<<db.hierTree[i].L_Constraints[j].net_name<<" "<<db.hierTree[i].L_Constraints[j].alpha[k]<<std::endl;
+           }
+
+      }
+
+      for(unsigned int j=0;j<db.hierTree[i].Nets.size();j++){
+         for(unsigned int k =0;k<db.hierTree[i].Nets[j].connected.size();k++){
+            std::cout<<"Assign Linear "<<db.hierTree[i].Nets[j].upperBound<<" "<<db.hierTree[i].Nets[j].connected[k].alpha<<std::endl;
+         }
+      }
+
+      
+
   }
 }
 
@@ -452,3 +505,4 @@ bool PnRdatabase::MergeLEFMapData(PnRDB::hierNode& node){
   return 1;
   
 }
+

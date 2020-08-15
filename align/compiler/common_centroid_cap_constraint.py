@@ -101,7 +101,7 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                     cc_caps.append(ele)
         if len(n_cap)>0:
             available_cap_const = available_cap_const+ cc_caps
-            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} )'
+            unit_block_name = '} , {Cap_' + str(unit_size_cap) + 'f} , {nodummy} )'
             cap_line = "\nCC ( {"+','.join(cc_caps)+"} , {"+','.join(n_cap)+unit_block_name
             logger.debug("Cap constraint"+cap_line)
             new_const_fp.write(cap_line)

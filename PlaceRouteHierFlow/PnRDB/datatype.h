@@ -34,6 +34,8 @@ struct lefMacro;
 struct blockComplex;
 struct CCCap;
 struct R_const;
+struct LinearConst;
+struct Multi_LinearConst;
 struct C_const;
 struct SymmPairBlock;
 struct Metal;
@@ -201,6 +203,7 @@ struct connectNode {
   NType type; // 1: blockPin; 2. Terminal
   int iter; // 1: #blockPin; 2. #Terminal
   int iter2; // 1: #block
+  double alpha = 1;
 }; // structure of connected component of nets
 
 struct globalContact {
@@ -226,9 +229,9 @@ struct net {
   Smark axis_dir=V; // H: horizontal symmetry axis; V: veritcal symmetry axis
   int axis_coor=-1; //y coordinate: horizontal symmetry axis; x coordinate: vertical symmetry axis
   vector<std::vector<int>> connectedTile;
-  int multi_connection = 1;
   double upperBound = INT_MAX;
   double lowerBound = INT_MIN;
+  int multi_connection = 1;
 }; // structure of nets
 
 struct Metal{
@@ -257,7 +260,7 @@ struct Via{
 
 struct PowerNet {
   string name="";
-  bool power = 1; // 1 is vdd, 0 is gnd
+  bool power = 0; // 1 is vdd, 0 is gnd
   //bool shielding=false; // shielding constraint
   //bool sink2Terminal=false; // if connected to terminal
   //int degree=0;
@@ -380,13 +383,12 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
-  vector<Multi_connection> Multi_connections;
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   int bias_Hgraph=92;
   int bias_Vgraph=92;
   vector<Router_report> router_report;
-
+  vector<Multi_connection> Multi_connections;
 
 }; // structure of vertex in heirarchical tree
 
@@ -489,12 +491,6 @@ struct Multi_LinearConst {
 
 };
 
-struct Multi_connection{
-
-  string net_name;
-  int multi_number = 1;
-
-};
 
 struct C_const {
 
@@ -504,6 +500,13 @@ struct C_const {
   std::vector<std::pair<int,int> > start_pin; //pair.first blocks id pair.second pin id 
   std::vector<std::pair<int,int> > end_pin; // if pair.frist blocks id = -1 then it's terminal
   vector<double> C;
+
+};
+
+struct Multi_connection{
+
+  string net_name;
+  int multi_number = 1;
 
 };
 

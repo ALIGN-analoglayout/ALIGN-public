@@ -87,6 +87,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
             while delta > 0:
                 logger.debug("CHECKING stacked transistors")
                 add_stacked_transistor(G1)
+                add_parallel_transistor(G1)
                 delta = initial_size - len(G1)
                 initial_size = len(G1)
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
@@ -110,7 +111,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=True):
             "ports": circuit["ports"],
             "ports_weight": circuit["ports_weight"],
             "ports_match": circuit["connection"],
-            "size": len(Grest.nodes())
+            "size": len(Grest.nodes()),
+            "mos_body":circuit["mos_body"]
         })
 
         lib_names=[lib_ele['name'] for lib_ele in library]
@@ -161,7 +163,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug("writing spice file for cell generator")
 
     ## File pointer for spice generator
-    SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
+    #SP_FP = open(result_dir / (design_name + '_blocks.sp'), 'w')
     print_header(VERILOG_FP, design_name)
     design_setup=read_setup(input_dir / (input_ckt.stem + '.setup'))
     try:
@@ -196,7 +198,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 if key not in POWER_PINS:
                     inoutpin.append(key)
             if member["ports"]:
-                logger.debug(f'Found module ports: {member["ports"]}')
+                logger.debug(f'Found module ports: {member["ports"]} {member.keys()}')
                 floating_ports = set(inoutpin) - set(member["ports"]) - set(design_setup['POWER']) -set(design_setup['GND'])
                 if 'mos_body' in member:
                     floating_ports = floating_ports - set(member["mos_body"])
@@ -238,16 +240,16 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
         if name in ALL_LEF:
             logger.debug(f"writing spice for block: {name}")
-            ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
-            ws.print_subckt(SP_FP)
-            ws.print_mos_subckt(SP_FP,printed_mos)
+            #ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
+            #ws.print_subckt(SP_FP)
+            #ws.print_mos_subckt(SP_FP,printed_mos)
             continue
 
         logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
         if name not in  ALL_LEF or name.split('_type')[0] not in ALL_LEF:
-            ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
-            ws.print_subckt(SP_FP)
-            ws.print_mos_subckt(SP_FP,printed_mos)
+            #ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
+            #ws.print_subckt(SP_FP)
+            #ws.print_mos_subckt(SP_FP,printed_mos)
 
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
@@ -269,11 +271,11 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             generated_module.append(name)
     if len(POWER_PINS)>0:
         print_globals(VERILOG_FP,POWER_PINS)
-    SP_FP.close()
+    #SP_FP.close()
 
     logger.info("Topology identification done !!!")
     logger.info(f"OUTPUT verilog netlist at: {result_dir}/{design_name}.v")
-    logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
+    #logger.info(f"OUTPUT spice netlist at: {result_dir}/{design_name}_blocks.sp")
     logger.info(f"OUTPUT const file at: {result_dir}/{design_name}.const")
     print("compilation stage done")
     return primitives

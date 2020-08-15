@@ -22,6 +22,8 @@ double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
 double ConstGraph::PHI=1500;
+double ConstGraph::PI=1500;
+double ConstGraph::PII=1500;
 
 static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
@@ -347,9 +349,11 @@ int main(int argc, char** argv ){
 
     std::cout<<"Checkpoint: generated "<<nodeVec.size()<<" placements\n";
     for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-      //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
+      std::cout<<"Checkpoint: extract power pins work on layout "<<lidx<<std::endl;
       DB.Extract_RemovePowerPins(nodeVec[lidx]);
+      std::cout<<"Checkpoint: checkin node work on layout "<<lidx<<std::endl;
       DB.CheckinHierNode(idx, nodeVec[lidx]);
+      std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
     }
     DB.hierTree[idx].numPlacement = nodeVec.size();
 

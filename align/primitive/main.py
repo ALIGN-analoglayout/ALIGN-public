@@ -31,24 +31,24 @@ def get_parameters(primitive, parameters, nfin):
     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, parameters, pinswitch):
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
     # TODO: THIS SHOULD NOT BE NEEDED !!!
     fin = int(nfin)
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
-    gate = 2
+    gate = 1
     shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS","CMC","CCP"]) else 1
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff)
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack)
     x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
     parameters = get_parameters(primitive, parameters, nfin)
 
     def gen( pattern, routing):
         if 'NMOS' in primitive:
-            uc.addNMOSArray( x_cells, y_cells, pattern, routing, **parameters)
+            uc.addNMOSArray( x_cells, y_cells, pattern, vt_type, routing, **parameters)
         else:
-            uc.addPMOSArray( x_cells, y_cells, pattern, routing, **parameters)
+            uc.addPMOSArray( x_cells, y_cells, pattern, vt_type, routing, **parameters)
         return routing.keys()
 
     if primitive in ["Switch_NMOS", "Switch_PMOS"]:
@@ -158,12 +158,12 @@ def get_generator(name, pdkdir):
     return getattr(primitive, name)
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
     if 'MOS' in primitive:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, parameters, pinswitch)
+        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch)
     elif 'cap' in primitive.lower():
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()

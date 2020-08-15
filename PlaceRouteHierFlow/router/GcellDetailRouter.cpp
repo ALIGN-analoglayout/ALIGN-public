@@ -771,7 +771,6 @@ void GcellDetailRouter::create_detailrouter(){
       } //if suspending, then skip
 
       
-
       std::vector<std::vector<RouterDB::SinkData>> temp_pins; //routing pins
       RouterDB::point gridll;
       RouterDB::point gridur;
@@ -914,8 +913,8 @@ void GcellDetailRouter::create_detailrouter_old(){
       {
         InsertRoutingVia(a_star, grid, Pset_via);
         physical_path = a_star.ConvertPathintoPhysical(grid);
-        lastmile_source_new(physical_path, temp_source);
-        lastmile_dest_new(physical_path, temp_dest);
+        //lastmile_source_new(physical_path, temp_source);
+        //lastmile_dest_new(physical_path, temp_dest);
         returnPath(physical_path, Nets[i]);
       }
       else
@@ -2627,6 +2626,8 @@ void GcellDetailRouter::ExtendMetal(){
 
 
 void GcellDetailRouter::GetPhsical_Metal_Via(int i){
+
+  std::cout<<"Nets[i].netName "<<Nets[i].netName<<std::endl;
   
   for(unsigned int h=0;h<Nets[i].path_metal.size();h++){
 

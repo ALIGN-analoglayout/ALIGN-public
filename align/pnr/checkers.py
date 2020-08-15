@@ -32,7 +32,7 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
     generator = primitive.get_generator('MOSGenerator', pdkdir)
     # TODO: Remove these hardcoded widths & heights from __init__()
     #       (Height may be okay since it defines UnitCellHeight)
-    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1)
+    cnv = generator(pdk.Pdk().load(pdkdir / 'layers.json'),28,12,2,3,1,1)
 
     terminals = []
 
@@ -157,6 +157,8 @@ def gen_viewer_json( hN, *, pdkdir, draw_grid=False, global_route_json=None, jso
                 if nm is not None:
                     formal_name = f"{blk.name}/{nm}"
                     default_name = nm if nm in global_power_names else formal_name
+                    if nm in ["dummy_gnd_MINUS", "dummy_gnd_PLUS"]:
+                        default_name = hN.Gnd.name
                     term['netName'] = fa_map.get( formal_name, default_name)
                 if 'pin' in term:
                     del term['pin']
