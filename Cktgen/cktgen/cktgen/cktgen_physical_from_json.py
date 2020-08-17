@@ -286,7 +286,7 @@ def main(args, tech):
 
 
   def colored_layer(term):
-    if 'color' in term and 'color' is not None:
+    if 'color' in term and term['color'] is not None:
       mg = re.match(r'(metal|via)(\d+)', term['layer'])
       assert mg, "Layer pattern not recognized"
       layer = mg.group(1) + term['color'] + mg.group(2)

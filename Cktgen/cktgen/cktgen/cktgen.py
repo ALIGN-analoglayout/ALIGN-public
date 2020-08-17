@@ -340,7 +340,7 @@ class ADNetlist:
             netl.newWire( aN, r, l)
 
     for (r,l) in self.kors:
-      assert l in ["metal0","metal1","metal2","metal3","metal4","metal5","metal6","via0","via1","via2","via3","via4","via5"], l
+      assert l.startswith('metal') or l.startswith('via'), l
       netl.newWire( '!kor', r, l)
       
     # ports no longer used
@@ -680,7 +680,7 @@ Option name=upper_layer                          value={topmetal}
             fp.write( "ConnectedEntity terms=%s\n" % (','.join( [ str(gid) for gid in nlst])))
         else:
           # connect everything (no via preroutes)
-          skip_via_set = set(["via1","via2","via3","via4"])
+          skip_via_set = set(["via0","via1","via2","via3","via4"])
           for w in v.wires:
             ly = w.layer
             if ly in skip_via_set: continue
@@ -733,9 +733,9 @@ Option name=upper_layer                          value={topmetal}
             tuples = [
               ("metal1", ["metal1","metal0"]),
               ("metal2", ["metal2","metal1"]),
-              ("metal3", ["metal3","metal2","metal1"]),
-              ("metal4", ["metal4","metal3","metal2"]),
-              ("metal5", ["metal5","metal4","metal3"]),
+              ("metal3", ["metal3","metal2"]),
+              ("metal4", ["metal4","metal3"]),
+              ("metal5", ["metal5","metal4"]),
               ("metal6", ["metal6","metal5"])
               ]
 
