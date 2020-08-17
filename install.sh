@@ -44,6 +44,7 @@ $SUDO apt-get update && $SUDO apt-get install -yq \
     libgl1-mesa-dev \
     lp-solve \
     liblpsolve55-dev \
+    libgtest-dev \
 &&  $SUDO apt-get clean
 
 #### Install klayout 
