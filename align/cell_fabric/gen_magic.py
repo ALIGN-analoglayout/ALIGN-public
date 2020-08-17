@@ -16,7 +16,13 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
   else:
     ts = datetime.datetime.now()
 
-  top = "magic\ntech "+j1['Magic']['Techname']+"\ntimestamp "+ts+"\n"
+  techname="scmos"
+  if 'Magic' in j1:
+      techname=j1['Magic']['Techname']
+  else:
+      logger.warning("Warning: This PDK does not support MAGIC export, to make sure to get proper MAGIC export, please use the correct PDK or enhance the PDK for MAGIC.")
+
+  top = "magic\ntech "+techname+"\ntimestamp "+ts+"\n"
 
   def scale(x):
     result = x*4//j1['ScaleFactor']//1000
@@ -42,17 +48,22 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       if exclude_based_on_name( obj['netName']): continue
       r=list(map(scale,obj['rect']))
 
-      top+="<< "+j[k]['MagicLayerName']+" >>\n"
-      top+="rect "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
+      layername=k
+      if 'MagicLayerName' in j[k]:
+          layername=j[k]['MagicLayerName']
+
+      top+="<< "+layername+" >>\n"
+      top+="#NON-VIA:\nrect "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
       #strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
       #                  "datatype" : j[k]['GdsDatatype']['Draw'],
       #                  "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
-      #if ('color' in obj):
+      if ('color' in obj):
+          top+="#color "+str(j[k]['GdsDatatype'][obj['color']])+"\n"
       #    strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
       #                  "datatype" : j[k]['GdsDatatype'][obj['color']],
       #                  "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
       if ('pin' in obj) and pinSwitch !=0:
-          top+="pin "+j[k]['MagicLayerName']+" "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
+          top+="#pin "+layername+" "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
       #    strct["elements"].append ({"type": "boundary", "layer" : j[k]['GdsLayerNo'],
       #                  "datatype" : j[k]['GdsDatatype']['Pin'],
       #                  "xy" : flat_rect_to_boundary( list(map(scale,obj['rect'])))})
@@ -66,8 +77,11 @@ def translate_data( macro_name, exclude_pattern, pdkfile, pinSwitch, data, via_g
       r = list(map( scale, obj['rect']))
       xc = (r[0]+r[2])//2
       yc = (r[1]+r[3])//2
-      top+="<< "+j['Bbox']['MagicLayerName']+" >>\n"
-      top+="rect "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
+      layername=j['Bbox']['layer']
+      if 'MagicLayerName' in j['Bbox']:
+            layername=j['Bbox']['MagicLayerName']
+      top+="<< "+layername+" >>\n"
+      top+="#VIA:\nrect "+str(r[0])+" "+str(r[1])+" "+str(r[2])+" "+str(r[3])+"\n"
 
       #strct["elements"].append ({"type": "sref", "sname" : via_gen_tbl[k][0], "xy" : [xc, yc]})
 
