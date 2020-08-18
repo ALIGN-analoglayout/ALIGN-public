@@ -20,13 +20,13 @@ fi
 #-----------------------
 
 #### Install Packages
+$SUDO apt-get update && $SUDO apt-get install -yq libboost-container-dev
 $SUDO apt-get update && $SUDO apt-get install -yq \
     python3 \
     python3-pip \
     python3-venv \
     g++\
     cmake \
-    libboost-container-dev \
     libboost-all-dev \
     graphviz \
     gnuplot \
