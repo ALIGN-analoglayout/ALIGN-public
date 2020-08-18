@@ -104,6 +104,7 @@ cd $ALIGN_HOME
 
 # Setup environment variable script for next time:
 mkdir $ALIGN_WORK_DIR
+cd $ALGIN_WORK_DIR
 ln -s $ALIGN_HOME/build/Makefile .
 
 ## Run first example
