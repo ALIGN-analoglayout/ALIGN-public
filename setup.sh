@@ -18,9 +18,11 @@ source $VENV/bin/activate
 
 echo "ALIGN-public environment is now set up."
 echo "To run a first example, issue the following:"
-echo "   mkdir -p \$ALIGN_WORK_DIR/telescopic_ota"
-echo "   cd \$ALIGN_WORK_DIR/telescopic_ota"
-echo "   schematic2layout.py \$ALIGN_HOME/examples/telescopic_ota -c"
+#echo "   mkdir -p \$ALIGN_WORK_DIR/telescopic_ota"
+echo "   cd \$ALIGN_WORK_DIR"
+echo "   make DESIGN=telescopic_ota"
+# echo "   cd \$ALIGN_WORK_DIR/telescopic_ota"
+# echo "   schematic2layout.py \$ALIGN_HOME/examples/telescopic_ota -c -p ../../pdks/OSU180_PDK/"
 
 
 
