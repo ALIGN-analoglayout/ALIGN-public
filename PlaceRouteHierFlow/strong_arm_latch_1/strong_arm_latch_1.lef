@@ -1,0 +1,968 @@
+MACRO Switch_NMOS_n12_X17_Y1
+  ORIGIN 0 0 ;
+  FOREIGN Switch_NMOS_n12_X17_Y1 0 0 ;
+  SIZE 7.344 BY 0.648 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 7.196 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 7.196 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 7.196 0.225 ;
+      LAYER M3 ;
+        RECT 3.609 0.094 3.627 0.446 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 7.304 0.279 ;
+      LAYER M3 ;
+        RECT 3.663 0.094 3.681 0.446 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 7.250 0.333 ;
+      LAYER M3 ;
+        RECT 3.555 0.094 3.573 0.446 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 0.585 7.344 0.603 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 0.585 7.344 0.603 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.531 0.040 0.549 0.500 ;
+    LAYER M1 ;
+      RECT 0.747 0.040 0.765 0.500 ;
+    LAYER M1 ;
+      RECT 0.963 0.040 0.981 0.500 ;
+    LAYER M1 ;
+      RECT 1.179 0.040 1.197 0.500 ;
+    LAYER M1 ;
+      RECT 1.395 0.040 1.413 0.500 ;
+    LAYER M1 ;
+      RECT 1.611 0.040 1.629 0.500 ;
+    LAYER M1 ;
+      RECT 1.827 0.040 1.845 0.500 ;
+    LAYER M1 ;
+      RECT 2.043 0.040 2.061 0.500 ;
+    LAYER M1 ;
+      RECT 2.259 0.040 2.277 0.500 ;
+    LAYER M1 ;
+      RECT 2.475 0.040 2.493 0.500 ;
+    LAYER M1 ;
+      RECT 2.691 0.040 2.709 0.500 ;
+    LAYER M1 ;
+      RECT 2.907 0.040 2.925 0.500 ;
+    LAYER M1 ;
+      RECT 3.123 0.040 3.141 0.500 ;
+    LAYER M1 ;
+      RECT 3.339 0.040 3.357 0.500 ;
+    LAYER M1 ;
+      RECT 3.555 0.040 3.573 0.500 ;
+    LAYER M1 ;
+      RECT 3.771 0.040 3.789 0.500 ;
+    LAYER M1 ;
+      RECT 3.987 0.040 4.005 0.500 ;
+    LAYER M1 ;
+      RECT 4.203 0.040 4.221 0.500 ;
+    LAYER M1 ;
+      RECT 4.419 0.040 4.437 0.500 ;
+    LAYER M1 ;
+      RECT 4.635 0.040 4.653 0.500 ;
+    LAYER M1 ;
+      RECT 4.851 0.040 4.869 0.500 ;
+    LAYER M1 ;
+      RECT 5.067 0.040 5.085 0.500 ;
+    LAYER M1 ;
+      RECT 5.283 0.040 5.301 0.500 ;
+    LAYER M1 ;
+      RECT 5.499 0.040 5.517 0.500 ;
+    LAYER M1 ;
+      RECT 5.715 0.040 5.733 0.500 ;
+    LAYER M1 ;
+      RECT 5.931 0.040 5.949 0.500 ;
+    LAYER M1 ;
+      RECT 6.147 0.040 6.165 0.500 ;
+    LAYER M1 ;
+      RECT 6.363 0.040 6.381 0.500 ;
+    LAYER M1 ;
+      RECT 6.579 0.040 6.597 0.500 ;
+    LAYER M1 ;
+      RECT 6.795 0.040 6.813 0.500 ;
+    LAYER M1 ;
+      RECT 7.011 0.040 7.029 0.500 ;
+    LAYER M1 ;
+      RECT 7.227 0.040 7.245 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.477 0.040 0.495 0.500 ;
+    LAYER M1 ;
+      RECT 0.693 0.040 0.711 0.500 ;
+    LAYER M1 ;
+      RECT 0.909 0.040 0.927 0.500 ;
+    LAYER M1 ;
+      RECT 1.125 0.040 1.143 0.500 ;
+    LAYER M1 ;
+      RECT 1.341 0.040 1.359 0.500 ;
+    LAYER M1 ;
+      RECT 1.557 0.040 1.575 0.500 ;
+    LAYER M1 ;
+      RECT 1.773 0.040 1.791 0.500 ;
+    LAYER M1 ;
+      RECT 1.989 0.040 2.007 0.500 ;
+    LAYER M1 ;
+      RECT 2.205 0.040 2.223 0.500 ;
+    LAYER M1 ;
+      RECT 2.421 0.040 2.439 0.500 ;
+    LAYER M1 ;
+      RECT 2.637 0.040 2.655 0.500 ;
+    LAYER M1 ;
+      RECT 2.853 0.040 2.871 0.500 ;
+    LAYER M1 ;
+      RECT 3.069 0.040 3.087 0.500 ;
+    LAYER M1 ;
+      RECT 3.285 0.040 3.303 0.500 ;
+    LAYER M1 ;
+      RECT 3.501 0.040 3.519 0.500 ;
+    LAYER M1 ;
+      RECT 3.717 0.040 3.735 0.500 ;
+    LAYER M1 ;
+      RECT 3.933 0.040 3.951 0.500 ;
+    LAYER M1 ;
+      RECT 4.149 0.040 4.167 0.500 ;
+    LAYER M1 ;
+      RECT 4.365 0.040 4.383 0.500 ;
+    LAYER M1 ;
+      RECT 4.581 0.040 4.599 0.500 ;
+    LAYER M1 ;
+      RECT 4.797 0.040 4.815 0.500 ;
+    LAYER M1 ;
+      RECT 5.013 0.040 5.031 0.500 ;
+    LAYER M1 ;
+      RECT 5.229 0.040 5.247 0.500 ;
+    LAYER M1 ;
+      RECT 5.445 0.040 5.463 0.500 ;
+    LAYER M1 ;
+      RECT 5.661 0.040 5.679 0.500 ;
+    LAYER M1 ;
+      RECT 5.877 0.040 5.895 0.500 ;
+    LAYER M1 ;
+      RECT 6.093 0.040 6.111 0.500 ;
+    LAYER M1 ;
+      RECT 6.309 0.040 6.327 0.500 ;
+    LAYER M1 ;
+      RECT 6.525 0.040 6.543 0.500 ;
+    LAYER M1 ;
+      RECT 6.741 0.040 6.759 0.500 ;
+    LAYER M1 ;
+      RECT 6.957 0.040 6.975 0.500 ;
+    LAYER M1 ;
+      RECT 7.173 0.040 7.191 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+    LAYER M1 ;
+      RECT 0.585 0.040 0.603 0.500 ;
+    LAYER M1 ;
+      RECT 0.801 0.040 0.819 0.500 ;
+    LAYER M1 ;
+      RECT 1.017 0.040 1.035 0.500 ;
+    LAYER M1 ;
+      RECT 1.233 0.040 1.251 0.500 ;
+    LAYER M1 ;
+      RECT 1.449 0.040 1.467 0.500 ;
+    LAYER M1 ;
+      RECT 1.665 0.040 1.683 0.500 ;
+    LAYER M1 ;
+      RECT 1.881 0.040 1.899 0.500 ;
+    LAYER M1 ;
+      RECT 2.097 0.040 2.115 0.500 ;
+    LAYER M1 ;
+      RECT 2.313 0.040 2.331 0.500 ;
+    LAYER M1 ;
+      RECT 2.529 0.040 2.547 0.500 ;
+    LAYER M1 ;
+      RECT 2.745 0.040 2.763 0.500 ;
+    LAYER M1 ;
+      RECT 2.961 0.040 2.979 0.500 ;
+    LAYER M1 ;
+      RECT 3.177 0.040 3.195 0.500 ;
+    LAYER M1 ;
+      RECT 3.393 0.040 3.411 0.500 ;
+    LAYER M1 ;
+      RECT 3.609 0.040 3.627 0.500 ;
+    LAYER M1 ;
+      RECT 3.825 0.040 3.843 0.500 ;
+    LAYER M1 ;
+      RECT 4.041 0.040 4.059 0.500 ;
+    LAYER M1 ;
+      RECT 4.257 0.040 4.275 0.500 ;
+    LAYER M1 ;
+      RECT 4.473 0.040 4.491 0.500 ;
+    LAYER M1 ;
+      RECT 4.689 0.040 4.707 0.500 ;
+    LAYER M1 ;
+      RECT 4.905 0.040 4.923 0.500 ;
+    LAYER M1 ;
+      RECT 5.121 0.040 5.139 0.500 ;
+    LAYER M1 ;
+      RECT 5.337 0.040 5.355 0.500 ;
+    LAYER M1 ;
+      RECT 5.553 0.040 5.571 0.500 ;
+    LAYER M1 ;
+      RECT 5.769 0.040 5.787 0.500 ;
+    LAYER M1 ;
+      RECT 5.985 0.040 6.003 0.500 ;
+    LAYER M1 ;
+      RECT 6.201 0.040 6.219 0.500 ;
+    LAYER M1 ;
+      RECT 6.417 0.040 6.435 0.500 ;
+    LAYER M1 ;
+      RECT 6.633 0.040 6.651 0.500 ;
+    LAYER M1 ;
+      RECT 6.849 0.040 6.867 0.500 ;
+    LAYER M1 ;
+      RECT 7.065 0.040 7.083 0.500 ;
+    LAYER M1 ;
+      RECT 7.281 0.040 7.299 0.500 ;
+  END
+END Switch_NMOS_n12_X17_Y1
+MACRO Switch_NMOS_n12_X1_Y1
+  ORIGIN 0 0 ;
+  FOREIGN Switch_NMOS_n12_X1_Y1 0 0 ;
+  SIZE 0.432 BY 0.648 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 0.284 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 0.284 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 0.284 0.225 ;
+      LAYER M3 ;
+        RECT 0.153 0.094 0.171 0.446 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 0.392 0.279 ;
+      LAYER M3 ;
+        RECT 0.207 0.094 0.225 0.446 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 0.338 0.333 ;
+      LAYER M3 ;
+        RECT 0.099 0.094 0.117 0.446 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 0.585 0.432 0.603 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 0.585 0.432 0.603 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+  END
+END Switch_NMOS_n12_X1_Y1
+MACRO Switch_NMOS_n12_X3_Y2
+  ORIGIN 0 0 ;
+  FOREIGN Switch_NMOS_n12_X3_Y2 0 0 ;
+  SIZE 1.296 BY 1.188 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 1.148 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 1.148 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 1.148 0.225 ;
+      LAYER M2 ;
+        RECT 0.040 0.639 1.148 0.657 ;
+      LAYER M2 ;
+        RECT 0.040 0.693 1.148 0.711 ;
+      LAYER M2 ;
+        RECT 0.040 0.747 1.148 0.765 ;
+      LAYER M3 ;
+        RECT 0.585 0.094 0.603 0.770 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 1.256 0.279 ;
+      LAYER M2 ;
+        RECT 0.148 0.801 1.256 0.819 ;
+      LAYER M3 ;
+        RECT 0.639 0.256 0.657 0.824 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 1.202 0.333 ;
+      LAYER M2 ;
+        RECT 0.094 0.855 1.202 0.873 ;
+      LAYER M3 ;
+        RECT 0.531 0.310 0.549 0.878 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 1.125 1.296 1.188 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 1.125 1.296 1.188 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.099 0.580 0.117 1.040 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.580 0.333 1.040 ;
+    LAYER M1 ;
+      RECT 0.531 0.040 0.549 0.500 ;
+    LAYER M1 ;
+      RECT 0.531 0.580 0.549 1.040 ;
+    LAYER M1 ;
+      RECT 0.747 0.040 0.765 0.500 ;
+    LAYER M1 ;
+      RECT 0.747 0.580 0.765 1.040 ;
+    LAYER M1 ;
+      RECT 0.963 0.040 0.981 0.500 ;
+    LAYER M1 ;
+      RECT 0.963 0.580 0.981 1.040 ;
+    LAYER M1 ;
+      RECT 1.179 0.040 1.197 0.500 ;
+    LAYER M1 ;
+      RECT 1.179 0.580 1.197 1.040 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.580 0.063 1.040 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.580 0.279 1.040 ;
+    LAYER M1 ;
+      RECT 0.477 0.040 0.495 0.500 ;
+    LAYER M1 ;
+      RECT 0.477 0.580 0.495 1.040 ;
+    LAYER M1 ;
+      RECT 0.693 0.040 0.711 0.500 ;
+    LAYER M1 ;
+      RECT 0.693 0.580 0.711 1.040 ;
+    LAYER M1 ;
+      RECT 0.909 0.040 0.927 0.500 ;
+    LAYER M1 ;
+      RECT 0.909 0.580 0.927 1.040 ;
+    LAYER M1 ;
+      RECT 1.125 0.040 1.143 0.500 ;
+    LAYER M1 ;
+      RECT 1.125 0.580 1.143 1.040 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.580 0.171 1.040 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.580 0.387 1.040 ;
+    LAYER M1 ;
+      RECT 0.585 0.040 0.603 0.500 ;
+    LAYER M1 ;
+      RECT 0.585 0.580 0.603 1.040 ;
+    LAYER M1 ;
+      RECT 0.801 0.040 0.819 0.500 ;
+    LAYER M1 ;
+      RECT 0.801 0.580 0.819 1.040 ;
+    LAYER M1 ;
+      RECT 1.017 0.040 1.035 0.500 ;
+    LAYER M1 ;
+      RECT 1.017 0.580 1.035 1.040 ;
+    LAYER M1 ;
+      RECT 1.233 0.040 1.251 0.500 ;
+    LAYER M1 ;
+      RECT 1.233 0.580 1.251 1.040 ;
+  END
+END Switch_NMOS_n12_X3_Y2
+MACRO Switch_NMOS_n12_X5_Y4
+  ORIGIN 0 0 ;
+  FOREIGN Switch_NMOS_n12_X5_Y4 0 0 ;
+  SIZE 2.160 BY 2.268 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 2.012 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 2.012 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 2.012 0.225 ;
+      LAYER M2 ;
+        RECT 0.040 0.639 2.012 0.657 ;
+      LAYER M2 ;
+        RECT 0.040 0.693 2.012 0.711 ;
+      LAYER M2 ;
+        RECT 0.040 0.747 2.012 0.765 ;
+      LAYER M2 ;
+        RECT 0.040 1.179 2.012 1.197 ;
+      LAYER M2 ;
+        RECT 0.040 1.233 2.012 1.251 ;
+      LAYER M2 ;
+        RECT 0.040 1.287 2.012 1.305 ;
+      LAYER M2 ;
+        RECT 0.040 1.719 2.012 1.737 ;
+      LAYER M2 ;
+        RECT 0.040 1.773 2.012 1.791 ;
+      LAYER M2 ;
+        RECT 0.040 1.827 2.012 1.845 ;
+      LAYER M3 ;
+        RECT 1.017 0.094 1.035 1.850 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 2.120 0.279 ;
+      LAYER M2 ;
+        RECT 0.148 0.801 2.120 0.819 ;
+      LAYER M2 ;
+        RECT 0.148 1.341 2.120 1.359 ;
+      LAYER M2 ;
+        RECT 0.148 1.881 2.120 1.899 ;
+      LAYER M3 ;
+        RECT 1.071 0.256 1.089 1.904 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 2.066 0.333 ;
+      LAYER M2 ;
+        RECT 0.094 0.855 2.066 0.873 ;
+      LAYER M2 ;
+        RECT 0.094 1.395 2.066 1.413 ;
+      LAYER M2 ;
+        RECT 0.094 1.935 2.066 1.953 ;
+      LAYER M3 ;
+        RECT 0.963 0.310 0.981 1.958 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 2.205 2.16 2.223 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 2.205 2.16 2.223 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.099 0.580 0.117 1.040 ;
+    LAYER M1 ;
+      RECT 0.099 1.120 0.117 1.580 ;
+    LAYER M1 ;
+      RECT 0.099 1.660 0.117 2.120 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.580 0.333 1.040 ;
+    LAYER M1 ;
+      RECT 0.315 1.120 0.333 1.580 ;
+    LAYER M1 ;
+      RECT 0.315 1.660 0.333 2.120 ;
+    LAYER M1 ;
+      RECT 0.531 0.040 0.549 0.500 ;
+    LAYER M1 ;
+      RECT 0.531 0.580 0.549 1.040 ;
+    LAYER M1 ;
+      RECT 0.531 1.120 0.549 1.580 ;
+    LAYER M1 ;
+      RECT 0.531 1.660 0.549 2.120 ;
+    LAYER M1 ;
+      RECT 0.747 0.040 0.765 0.500 ;
+    LAYER M1 ;
+      RECT 0.747 0.580 0.765 1.040 ;
+    LAYER M1 ;
+      RECT 0.747 1.120 0.765 1.580 ;
+    LAYER M1 ;
+      RECT 0.747 1.660 0.765 2.120 ;
+    LAYER M1 ;
+      RECT 0.963 0.040 0.981 0.500 ;
+    LAYER M1 ;
+      RECT 0.963 0.580 0.981 1.040 ;
+    LAYER M1 ;
+      RECT 0.963 1.120 0.981 1.580 ;
+    LAYER M1 ;
+      RECT 0.963 1.660 0.981 2.120 ;
+    LAYER M1 ;
+      RECT 1.179 0.040 1.197 0.500 ;
+    LAYER M1 ;
+      RECT 1.179 0.580 1.197 1.040 ;
+    LAYER M1 ;
+      RECT 1.179 1.120 1.197 1.580 ;
+    LAYER M1 ;
+      RECT 1.179 1.660 1.197 2.120 ;
+    LAYER M1 ;
+      RECT 1.395 0.040 1.413 0.500 ;
+    LAYER M1 ;
+      RECT 1.395 0.580 1.413 1.040 ;
+    LAYER M1 ;
+      RECT 1.395 1.120 1.413 1.580 ;
+    LAYER M1 ;
+      RECT 1.395 1.660 1.413 2.120 ;
+    LAYER M1 ;
+      RECT 1.611 0.040 1.629 0.500 ;
+    LAYER M1 ;
+      RECT 1.611 0.580 1.629 1.040 ;
+    LAYER M1 ;
+      RECT 1.611 1.120 1.629 1.580 ;
+    LAYER M1 ;
+      RECT 1.611 1.660 1.629 2.120 ;
+    LAYER M1 ;
+      RECT 1.827 0.040 1.845 0.500 ;
+    LAYER M1 ;
+      RECT 1.827 0.580 1.845 1.040 ;
+    LAYER M1 ;
+      RECT 1.827 1.120 1.845 1.580 ;
+    LAYER M1 ;
+      RECT 1.827 1.660 1.845 2.120 ;
+    LAYER M1 ;
+      RECT 2.043 0.040 2.061 0.500 ;
+    LAYER M1 ;
+      RECT 2.043 0.580 2.061 1.040 ;
+    LAYER M1 ;
+      RECT 2.043 1.120 2.061 1.580 ;
+    LAYER M1 ;
+      RECT 2.043 1.660 2.061 2.120 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.580 0.063 1.040 ;
+    LAYER M1 ;
+      RECT 0.045 1.120 0.063 1.580 ;
+    LAYER M1 ;
+      RECT 0.045 1.660 0.063 2.120 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.580 0.279 1.040 ;
+    LAYER M1 ;
+      RECT 0.261 1.120 0.279 1.580 ;
+    LAYER M1 ;
+      RECT 0.261 1.660 0.279 2.120 ;
+    LAYER M1 ;
+      RECT 0.477 0.040 0.495 0.500 ;
+    LAYER M1 ;
+      RECT 0.477 0.580 0.495 1.040 ;
+    LAYER M1 ;
+      RECT 0.477 1.120 0.495 1.580 ;
+    LAYER M1 ;
+      RECT 0.477 1.660 0.495 2.120 ;
+    LAYER M1 ;
+      RECT 0.693 0.040 0.711 0.500 ;
+    LAYER M1 ;
+      RECT 0.693 0.580 0.711 1.040 ;
+    LAYER M1 ;
+      RECT 0.693 1.120 0.711 1.580 ;
+    LAYER M1 ;
+      RECT 0.693 1.660 0.711 2.120 ;
+    LAYER M1 ;
+      RECT 0.909 0.040 0.927 0.500 ;
+    LAYER M1 ;
+      RECT 0.909 0.580 0.927 1.040 ;
+    LAYER M1 ;
+      RECT 0.909 1.120 0.927 1.580 ;
+    LAYER M1 ;
+      RECT 0.909 1.660 0.927 2.120 ;
+    LAYER M1 ;
+      RECT 1.125 0.040 1.143 0.500 ;
+    LAYER M1 ;
+      RECT 1.125 0.580 1.143 1.040 ;
+    LAYER M1 ;
+      RECT 1.125 1.120 1.143 1.580 ;
+    LAYER M1 ;
+      RECT 1.125 1.660 1.143 2.120 ;
+    LAYER M1 ;
+      RECT 1.341 0.040 1.359 0.500 ;
+    LAYER M1 ;
+      RECT 1.341 0.580 1.359 1.040 ;
+    LAYER M1 ;
+      RECT 1.341 1.120 1.359 1.580 ;
+    LAYER M1 ;
+      RECT 1.341 1.660 1.359 2.120 ;
+    LAYER M1 ;
+      RECT 1.557 0.040 1.575 0.500 ;
+    LAYER M1 ;
+      RECT 1.557 0.580 1.575 1.040 ;
+    LAYER M1 ;
+      RECT 1.557 1.120 1.575 1.580 ;
+    LAYER M1 ;
+      RECT 1.557 1.660 1.575 2.120 ;
+    LAYER M1 ;
+      RECT 1.773 0.040 1.791 0.500 ;
+    LAYER M1 ;
+      RECT 1.773 0.580 1.791 1.040 ;
+    LAYER M1 ;
+      RECT 1.773 1.120 1.791 1.580 ;
+    LAYER M1 ;
+      RECT 1.773 1.660 1.791 2.120 ;
+    LAYER M1 ;
+      RECT 1.989 0.040 2.007 0.500 ;
+    LAYER M1 ;
+      RECT 1.989 0.580 2.007 1.040 ;
+    LAYER M1 ;
+      RECT 1.989 1.120 2.007 1.580 ;
+    LAYER M1 ;
+      RECT 1.989 1.660 2.007 2.120 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.580 0.171 1.040 ;
+    LAYER M1 ;
+      RECT 0.153 1.120 0.171 1.580 ;
+    LAYER M1 ;
+      RECT 0.153 1.660 0.171 2.120 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.580 0.387 1.040 ;
+    LAYER M1 ;
+      RECT 0.369 1.120 0.387 1.580 ;
+    LAYER M1 ;
+      RECT 0.369 1.660 0.387 2.120 ;
+    LAYER M1 ;
+      RECT 0.585 0.040 0.603 0.500 ;
+    LAYER M1 ;
+      RECT 0.585 0.580 0.603 1.040 ;
+    LAYER M1 ;
+      RECT 0.585 1.120 0.603 1.580 ;
+    LAYER M1 ;
+      RECT 0.585 1.660 0.603 2.120 ;
+    LAYER M1 ;
+      RECT 0.801 0.040 0.819 0.500 ;
+    LAYER M1 ;
+      RECT 0.801 0.580 0.819 1.040 ;
+    LAYER M1 ;
+      RECT 0.801 1.120 0.819 1.580 ;
+    LAYER M1 ;
+      RECT 0.801 1.660 0.819 2.120 ;
+    LAYER M1 ;
+      RECT 1.017 0.040 1.035 0.500 ;
+    LAYER M1 ;
+      RECT 1.017 0.580 1.035 1.040 ;
+    LAYER M1 ;
+      RECT 1.017 1.120 1.035 1.580 ;
+    LAYER M1 ;
+      RECT 1.017 1.660 1.035 2.120 ;
+    LAYER M1 ;
+      RECT 1.233 0.040 1.251 0.500 ;
+    LAYER M1 ;
+      RECT 1.233 0.580 1.251 1.040 ;
+    LAYER M1 ;
+      RECT 1.233 1.120 1.251 1.580 ;
+    LAYER M1 ;
+      RECT 1.233 1.660 1.251 2.120 ;
+    LAYER M1 ;
+      RECT 1.449 0.040 1.467 0.500 ;
+    LAYER M1 ;
+      RECT 1.449 0.580 1.467 1.040 ;
+    LAYER M1 ;
+      RECT 1.449 1.120 1.467 1.580 ;
+    LAYER M1 ;
+      RECT 1.449 1.660 1.467 2.120 ;
+    LAYER M1 ;
+      RECT 1.665 0.040 1.683 0.500 ;
+    LAYER M1 ;
+      RECT 1.665 0.580 1.683 1.040 ;
+    LAYER M1 ;
+      RECT 1.665 1.120 1.683 1.580 ;
+    LAYER M1 ;
+      RECT 1.665 1.660 1.683 2.120 ;
+    LAYER M1 ;
+      RECT 1.881 0.040 1.899 0.500 ;
+    LAYER M1 ;
+      RECT 1.881 0.580 1.899 1.040 ;
+    LAYER M1 ;
+      RECT 1.881 1.120 1.899 1.580 ;
+    LAYER M1 ;
+      RECT 1.881 1.660 1.899 2.120 ;
+    LAYER M1 ;
+      RECT 2.097 0.040 2.115 0.500 ;
+    LAYER M1 ;
+      RECT 2.097 0.580 2.115 1.040 ;
+    LAYER M1 ;
+      RECT 2.097 1.120 2.115 1.580 ;
+    LAYER M1 ;
+      RECT 2.097 1.660 2.115 2.120 ;
+  END
+END Switch_NMOS_n12_X5_Y4
+MACRO Switch_PMOS_n12_X1_Y1
+  ORIGIN 0 0 ;
+  FOREIGN Switch_PMOS_n12_X1_Y1 0 0 ;
+  SIZE 0.432 BY 0.648 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 0.284 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 0.284 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 0.284 0.225 ;
+      LAYER M3 ;
+        RECT 0.153 0.094 0.171 0.446 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 0.392 0.279 ;
+      LAYER M3 ;
+        RECT 0.207 0.094 0.225 0.446 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 0.338 0.333 ;
+      LAYER M3 ;
+        RECT 0.099 0.094 0.117 0.446 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 0.585 0.432 0.603 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 0.585 0.432 0.603 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+  END
+END Switch_PMOS_n12_X1_Y1
+MACRO Switch_PMOS_n12_X3_Y2
+  ORIGIN 0 0 ;
+  FOREIGN Switch_PMOS_n12_X3_Y2 0 0 ;
+  SIZE 1.296 BY 1.188 ;
+  PIN S
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.040 0.099 1.148 0.117 ;
+      LAYER M2 ;
+        RECT 0.040 0.153 1.148 0.171 ;
+      LAYER M2 ;
+        RECT 0.040 0.207 1.148 0.225 ;
+      LAYER M2 ;
+        RECT 0.040 0.639 1.148 0.657 ;
+      LAYER M2 ;
+        RECT 0.040 0.693 1.148 0.711 ;
+      LAYER M2 ;
+        RECT 0.040 0.747 1.148 0.765 ;
+      LAYER M3 ;
+        RECT 0.585 0.094 0.603 0.770 ;
+    END
+  END S
+  PIN D
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.148 0.261 1.256 0.279 ;
+      LAYER M2 ;
+        RECT 0.148 0.801 1.256 0.819 ;
+      LAYER M3 ;
+        RECT 0.639 0.256 0.657 0.824 ;
+    END
+  END D
+  PIN G
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.094 0.315 1.202 0.333 ;
+      LAYER M2 ;
+        RECT 0.094 0.855 1.202 0.873 ;
+      LAYER M3 ;
+        RECT 0.531 0.310 0.549 0.878 ;
+    END
+  END G
+  PIN Bg
+    DIRECTION INOUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER M2 ;
+        RECT 0.0 1.125 1.296 1.143 ;
+    END
+  END Bg
+  OBS
+    LAYER M1 ;
+      RECT 0.0 1.125 1.296 1.143 ;
+    LAYER M1 ;
+      RECT 0.099 0.040 0.117 0.500 ;
+    LAYER M1 ;
+      RECT 0.099 0.580 0.117 1.040 ;
+    LAYER M1 ;
+      RECT 0.315 0.040 0.333 0.500 ;
+    LAYER M1 ;
+      RECT 0.315 0.580 0.333 1.040 ;
+    LAYER M1 ;
+      RECT 0.531 0.040 0.549 0.500 ;
+    LAYER M1 ;
+      RECT 0.531 0.580 0.549 1.040 ;
+    LAYER M1 ;
+      RECT 0.747 0.040 0.765 0.500 ;
+    LAYER M1 ;
+      RECT 0.747 0.580 0.765 1.040 ;
+    LAYER M1 ;
+      RECT 0.963 0.040 0.981 0.500 ;
+    LAYER M1 ;
+      RECT 0.963 0.580 0.981 1.040 ;
+    LAYER M1 ;
+      RECT 1.179 0.040 1.197 0.500 ;
+    LAYER M1 ;
+      RECT 1.179 0.580 1.197 1.040 ;
+    LAYER M1 ;
+      RECT 0.045 0.040 0.063 0.500 ;
+    LAYER M1 ;
+      RECT 0.045 0.580 0.063 1.040 ;
+    LAYER M1 ;
+      RECT 0.261 0.040 0.279 0.500 ;
+    LAYER M1 ;
+      RECT 0.261 0.580 0.279 1.040 ;
+    LAYER M1 ;
+      RECT 0.477 0.040 0.495 0.500 ;
+    LAYER M1 ;
+      RECT 0.477 0.580 0.495 1.040 ;
+    LAYER M1 ;
+      RECT 0.693 0.040 0.711 0.500 ;
+    LAYER M1 ;
+      RECT 0.693 0.580 0.711 1.040 ;
+    LAYER M1 ;
+      RECT 0.909 0.040 0.927 0.500 ;
+    LAYER M1 ;
+      RECT 0.909 0.580 0.927 1.040 ;
+    LAYER M1 ;
+      RECT 1.125 0.040 1.143 0.500 ;
+    LAYER M1 ;
+      RECT 1.125 0.580 1.143 1.040 ;
+    LAYER M1 ;
+      RECT 0.153 0.040 0.171 0.500 ;
+    LAYER M1 ;
+      RECT 0.153 0.580 0.171 1.040 ;
+    LAYER M1 ;
+      RECT 0.369 0.040 0.387 0.500 ;
+    LAYER M1 ;
+      RECT 0.369 0.580 0.387 1.040 ;
+    LAYER M1 ;
+      RECT 0.585 0.040 0.603 0.500 ;
+    LAYER M1 ;
+      RECT 0.585 0.580 0.603 1.040 ;
+    LAYER M1 ;
+      RECT 0.801 0.040 0.819 0.500 ;
+    LAYER M1 ;
+      RECT 0.801 0.580 0.819 1.040 ;
+    LAYER M1 ;
+      RECT 1.017 0.040 1.035 0.500 ;
+    LAYER M1 ;
+      RECT 1.017 0.580 1.035 1.040 ;
+    LAYER M1 ;
+      RECT 1.233 0.040 1.251 0.500 ;
+    LAYER M1 ;
+      RECT 1.233 0.580 1.251 1.040 ;
+  END
+END Switch_PMOS_n12_X3_Y2
