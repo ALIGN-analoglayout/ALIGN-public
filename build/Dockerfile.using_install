@@ -1,0 +1,16 @@
+FROM ubuntu:18.04
+
+COPY . /ALIGN-public
+
+WORKDIR /ALIGN-public
+ENV USER=root
+
+RUN \
+    apt-get -qq update && apt-get -qq install \
+      vim \
+      git \
+      curl \
+&& apt-get -qq clean
+
+RUN \
+    bash -c "source ./install.sh"

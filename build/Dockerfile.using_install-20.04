@@ -1,0 +1,17 @@
+FROM ubuntu:20.04
+
+COPY . /ALIGN-public
+
+WORKDIR /ALIGN-public
+ENV USER=root
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN \
+    ln -fs /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && \
+    apt-get -qq update && \
+    apt-get -qq -y install tzdata && \
+    apt-get -qq install vim git curl && \
+    apt-get -qq clean
+
+RUN \
+    bash -c "source ./install.sh"
