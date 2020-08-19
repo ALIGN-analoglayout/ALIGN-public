@@ -6,6 +6,8 @@
 ./pnr_compiler ./cascode_current_mirror_ota cascode_current_mirror_ota.lef cascode_current_mirror_ota.v cascode_current_mirror_ota.map layers.json cascode_current_mirror_ota 1 0 | tee log
 ./pnr_compiler ./strong_arm_latch strong_arm_latch.lef strong_arm_latch.v strong_arm_latch.map layers.json strong_arm_latch 1 0 | tee log
 ./pnr_compiler ./comparator_1 comparator_1.lef comparator_1.v comparator_1.map layers.json comparator_1 1 0 | tee log
+./pnr_compiler ./strong_arm_latch_1 strong_arm_latch_1.lef strong_arm_latch_1.v strong_arm_latch_1.map layers.json strong_arm_latch_1 1 0 | tee log
+./pnr_compiler ./comparator_1_1 comparator_1_1.lef comparator_1_1.v comparator_1_1.map layers.json comparator_1_1 1 0 | tee log
 ./pnr_compiler ./comparator_3 comparator_3.lef comparator_3.v comparator_3.map layers.json comparator_3 1 0 | tee log
 ./pnr_compiler ./comparator_4 comparator_4.lef comparator_4.v comparator_4.map layers.json comparator_4 1 0 | tee log
 #./pnr_compiler ./testcase_latest2 sc.lef sc_block.v sc.map NO.rul switched_capacitor_filter 1 0 | tee log
