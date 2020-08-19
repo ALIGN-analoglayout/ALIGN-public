@@ -40,12 +40,14 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     logger.debug(f"Is input bipartite: {nx.is_bipartite(G)}")
     assert len(list_of_nodes) > 1
     #  print("Merging nodes",list_of_nodes)
-    new_node = ""
+    new_node = []
+    real_inst_types = []
     ports = {}
     subgraph = nx.Graph()
     max_value = {}
     for node in list_of_nodes:
-        new_node += '_' + node
+        new_node.append ( node)
+        real_inst_types.append (G.nodes[node]["real_inst_type"])
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
                           real_inst_type=G.nodes[node]["real_inst_type"],
@@ -83,10 +85,10 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
             else:
                 ports[ele] = G[node][ele]["weight"]
 
-    new_node = new_node[1:]
+    new_node='_'.join(new_node)
     G.add_node(new_node,
                inst_type=new_inst_type,
-               real_inst_type=new_inst_type,
+               real_inst_type='_'.join(real_inst_types),
                ports=list(matched_ports.keys()),
                edge_weight=list(ports.values()),
                ports_match=matched_ports,

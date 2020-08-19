@@ -13,11 +13,19 @@ def test_verilog_writer():
     VERILOG_FP = open(pathlib.Path(__file__).parent / 'ota.v', 'w')
     SP_FP = open(pathlib.Path(__file__).parent / 'ota_blocks.sp', 'w')
     available_cell_generator = ['Switch_PMOS', 'CMC_NMOS', 'CMC_PMOS', 'DP_NMOS', 'CMC_PMOS_S', 'DCL_NMOS', 'SCM_NMOS']
+    config_path=pathlib.Path(__file__).resolve().parent / 'design_config.json'
+    design_config={
+            "vt_type":["HVT","LVT","RVT"],
+            "unit_size_nmos":12,
+            "unit_size_pmos":12,
+            "unit_size_cap":12,
+            "unit_height_res":600
+            }
     for subckt in subckts:
         for _, attr in subckt['graph'].nodes(data=True):
             if 'values' in attr:
-                block_name, _ = generate_lef(attr['inst_type'], attr["values"],
-                            available_cell_generator, unit_mos, unit_cap)
+                block_name, _ = generate_lef(attr['inst_type'], attr,
+                            available_cell_generator, design_config )
                 block_name_ext = block_name.replace(attr['inst_type'],'')
         wv = WriteVerilog(subckt["graph"],subckt["name"]  , subckt["ports"], subckts,['vdd!','vss'])
         wv.print_module(VERILOG_FP)

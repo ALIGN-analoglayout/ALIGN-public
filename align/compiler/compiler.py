@@ -1,5 +1,6 @@
 import pathlib
 import pprint
+import json
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
@@ -13,9 +14,9 @@ from .read_lef import read_lef
 import logging
 logger = logging.getLogger(__name__)
 
-def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, unit_size_mos , unit_size_cap):
+def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_name):
     updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
-    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, unit_size_mos , unit_size_cap)
+    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_name)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     """
@@ -56,6 +57,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     user_lib = SpiceParser(lib_path)
     library += user_lib.sp_parser()
     library=sorted(library, key=lambda k: max_connectivity(k["graph"]), reverse=True)
+
     logger.info(f"dont use cells: {design_setup['DONT_USE_CELLS']}")
     logger.info(f"all library elements: {[ele['name'] for ele in library]}")
     if len(design_setup['DONT_USE_CELLS'])>0:
@@ -123,7 +125,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                 lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
     return updated_ckt_list, lib_names
 
-def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, unit_size_mos=12, unit_size_cap=12):
+def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_name="FinFET14nm_Mock_PDK"):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -138,10 +140,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.
     result_dir : TYPE. directoy path for writing results
         DESCRIPTION. writes out a verilog netlist, spice file and constraints
-    unit_size_mos : TYPE, Used as parameter for cell generator
-        DESCRIPTION. Cells are generated on a uniform grid
-    unit_size_cap : TYPE, Used as parameter for cell generator
-        DESCRIPTION. The default is 12.
+    pdk_name : Type, str
+        DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory 
 
     Raises
     ------
@@ -154,6 +154,12 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.
 
     """
+    config_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'design_config.json'
+    with open(config_path,"rt") as fp:
+        config_data=json.load(fp)
+    for pdk in config_data["design_info"]:
+        if pdk["pdk"]==pdk_name:
+            design_config=pdk
     
     if not result_dir.exists():
         result_dir.mkdir()
@@ -179,8 +185,6 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     logger.debug(f"Available library cells: {', '.join(ALL_LEF)}")
     # local hack for deisgn vco_dtype,
     #there requirement is different size for nmos and pmos
-    if 'vco_dtype_12' in  design_name:
-        unit_size_mos=37
     generated_module=[]
     primitives = {}
     duplicate_modules =[]
@@ -216,12 +220,12 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
             if 'net' in attr['inst_type']: continue
             #Dropping floating ports
-            #if attr['ports'
+
             lef_name = attr['inst_type'].split('_type')[0]
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name, block_args = generate_lef(
-                    lef_name, attr["values"],
-                    primitives, unit_size_mos, unit_size_cap)
+                    lef_name, attr,
+                    primitives, design_config)
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
                 # Only unit caps are generated
@@ -265,7 +269,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
                 WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
-                WriteCap(graph, result_dir, name, unit_size_cap,all_array)
+                WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 
             wv.print_module(VERILOG_FP)
