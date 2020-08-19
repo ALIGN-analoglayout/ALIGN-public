@@ -209,7 +209,7 @@ jobs:
           docker build -t align_image -f ./build/Dockerfile.base .
 
       - run: |
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml && cp -rp /tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/; find /test-reports/align-nightly/"
+          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd /ALIGN-public && export ALIGN_HOME=/ALIGN-public && mkdir -p build/tmp && export ALIGN_WORK_DIR=/ALIGN-public/build/tmp && pytest -vv --runnightly --tb=line --timeout=300 -k 'BUFFER and not BUFFER_VCM' -- tests/integration ; mkdir -p /test-reports/align-nightly && cp junit.xml /test-reports/align-nightly/junit1.xml && pwd && ls && cp -rp /tmp/FinFET14nm_Mock_PDK/* /test-reports/align-nightly/; find /test-reports/align-nightly/"
           docker cp align_container:test-reports .
           docker rm align_container
       - run: |
