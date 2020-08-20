@@ -119,8 +119,8 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
     nbrs2 = sorted(set(G.neighbors(node2)) - set(traversed))
     #remove dummies
     nbrs2 = sorted(set([nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]))
-    logger.debug(f"first node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
-    logger.debug(f"second node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
+    logger.debug(f"node1:{node1},property: {G.nodes[node1]},neigbors1: {nbrs1}")
+    logger.debug(f"node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
         if compare_two_nodes(G, node1, node2, ports_weight):
             match_pair[node1]=node2

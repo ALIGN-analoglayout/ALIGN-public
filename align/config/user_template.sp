@@ -109,8 +109,8 @@ M4 (DE DA S B) PMOS_VTL w=w l=90n
 .ends CMB_PMOS_4
 
 .subckt INV_LVT i zn SN SP
-xm0 zn i SN SN lvtnfet w=w0 l=l0
-xm1 zn i SP SP lvtpfet w=w1 l=l0
+M0 zn i SN SN NMOS_VTL w=w0 l=l0
+M1 zn i SP SP PMOS_VTL w=w1 l=l0
 .ends INV_LVT
 
 

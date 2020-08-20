@@ -266,8 +266,8 @@ class SpiceParser:
                         subckt_param_all.update(subckt_param)
                     else:
                         subckt_param_all = subckt_param
-                    #for param,value in subckt_param.items():
-                    #    logger.debug('Found subckt param: %s, value:%s', param, value);
+                    for param,value in subckt_param.items():
+                        logger.debug('Found subckt param: %s, value:%s', param, value);
                 line = self.get_next_line(fp_l, 1)
             else:
                 node1 = _parse_inst(line)
@@ -414,7 +414,7 @@ class SpiceParser:
                       connected_nets="",
                       inherited_param=None):
         """
-        Transform netlist to a hierarchical graph
+        Transform netlist to a hierarchical dictionary
 
         Parameters
         ----------
@@ -427,8 +427,8 @@ class SpiceParser:
 
         Returns
         -------
-        hier_design : TYPE, networkx graph
-            DESCRIPTION. hierarchical graph of netlist
+        hier_design : TYPE, list
+            DESCRIPTION. hierarchical list of netlist
 
         """
         logger.debug (f"subcktparameters: {inherited_param}")
@@ -449,13 +449,13 @@ class SpiceParser:
                 logger.debug(f"updated circuit params are: {inherited_param}")
             if node["inst_type"] in self.subckts:
                 logger.debug(f'FOUND hier_node: {node["inst_type"]}')
+
                 hier_node = {
                     "inst": node["inst"],
                     "inst_type": node["inst_type"],
                     "real_inst_type": node["real_inst_type"],
                     "ports": node["ports"],
                     "values": values,
-                    "edge_weight": node["edge_weight"],
                     "hier_nodes": self._hier_circuit(node["inst_type"], self.subckts[subckt_name]["ports"], values)
                 }
                 if 'mos' in node["inst_type"]:
@@ -478,6 +478,18 @@ class SpiceParser:
                 connection = {}
                 for idx, pin in enumerate(self.subckts[node["inst_type"]]["ports"]):
                         connection[pin] = node['ports'][idx]
+                self.subckts[node["inst_type"]]["ports"]
+                ports_weight=[]
+                for port in self.subckts[node["inst_type"]]["ports"]:
+                    port_weight=0
+                    if port in subgraph.nodes():
+                        #if statement is to skip ports which are only connected to body
+                        for nbr in subgraph.neighbors(port): 
+                            port_weight |= subgraph.get_edge_data(nbr, port)['weight']
+                    ports_weight.append(port_weight)
+                node['edge_weight']=ports_weight
+
+                # for node in hier_nodes: edge_wt | node["edge_weight"]
                 logger.debug(f"Creating sub-graph for node: {node}")
             else:
                 subgraph = None

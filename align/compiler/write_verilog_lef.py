@@ -269,16 +269,16 @@ def generate_lef(name, attr, available_block_lef, design_config):
             }
 
     else:
+        if 'nmos' in name.lower():
+            unit_size_mos = design_config["unit_size_nmos"]
+        else:
+            unit_size_mos = design_config["unit_size_pmos"]
         if "nfin" in values.keys():
             size = int(values["nfin"])
             if 'nf' in values.keys():
                 size=size*int(values["nf"])
             if 'm' in values.keys():
                 size=size*int(values["m"])
-            if 'nmos' in name.lower():
-                unit_size_mos = design_config["unit_size_nmos"]
-            else:
-                unit_size_mos = design_config["unit_size_pmos"]
             no_units = ceil(size / unit_size_mos)
 
         elif "l" in values.keys():

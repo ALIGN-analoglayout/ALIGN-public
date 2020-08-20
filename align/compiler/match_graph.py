@@ -597,30 +597,6 @@ def add_stacked_transistor(G):
     remove_nodes = []
     modified_edges = {}
     modified_nodes = {}
-    # for net, attr in G.nodes(data=True):
-    #     if 'net' in attr["inst_type"] and len(set(G.neighbors(net)))==2 \
-    #         and net not in remove_nodes and attr["net_type"]!="external":
-    #         nbr1,nbr2 = list(G.neighbors(net))
-    #         nbr1_type = G.nodes[nbr1]["inst_type"]
-    #         nbr2_type = G.nodes[nbr2]["inst_type"]
-    #         nbr1_wt = G.get_edge_data(nbr1, net)['weight']
-    #         nbr2_wt = G.get_edge_data(nbr2, net)['weight']
-    #         common_nets = set(G.neighbors(nbr1)) & set(G.neighbors(nbr2))
-
-    #         if nbr1_type==nbr2_type and 'mos' in nbr1_type and len (common_nets)==2:
-    #             if nbr1_wt==1 and nbr2_wt==4:
-    #                 logger.debug(f"stacking two transistors: {net}, {nbr1}, {nbr2}")
-    #             elif nbr1_wt==4 and nbr2_wt==1:
-    #                 temp=nbr1
-    #                 nbr1=nbr2
-    #                 nbr2=temp
-    #                 logger.debug(f"stacking two transistors: {net}, {nbr1}, {nbr2}")
-    #             else:
-    #                 continue
-
-    #             source_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==4][0]
-    #             gate_net = [next_net for next_net in G.neighbors(nbr1) if G.get_edge_data(nbr1, next_net)['weight']==2][0]
-    #             drain_net = [next_net for next_net in G.neighbors(nbr2) if G.get_edge_data(nbr2, next_net)['weight'] & 1 ==1][0]
     for node, attr in G.nodes(data=True):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
