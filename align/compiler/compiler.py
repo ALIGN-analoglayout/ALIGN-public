@@ -236,7 +236,8 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     graph.nodes[node]['inst_type'] = block_name
 
                 if block_name in primitives:
-                    assert block_args == primitives[block_name]
+                    if block_args != primitives[block_name]:
+                        logging.warning(f"two different primitve size got approximated to same unit size")
                 else:
                     primitives[block_name] = block_args
             else:

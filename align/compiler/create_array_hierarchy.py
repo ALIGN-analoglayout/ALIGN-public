@@ -13,7 +13,28 @@ from .write_constraint import compare_two_nodes
 import logging
 logger = logging.getLogger(__name__)
 
-def create_hierarchy(graph,node,traversed,ports_weight):
+def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
+    """
+    Creates array hierarchies starting from input node
+
+    Parameters
+    ----------
+    graph : TYPE
+        DESCRIPTION.
+    node : str
+        DESCRIPTION.
+    traversed : list
+        DESCRIPTION.
+    ports_weight : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    hier_of_node : TYPE
+        DESCRIPTION.
+
+    """
+
     hier_of_node ={}
     level1=list(set(graph.neighbors(node))- set(traversed))
     

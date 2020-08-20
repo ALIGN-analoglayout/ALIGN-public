@@ -305,6 +305,7 @@ def generate_lef(name, attr, available_block_lef, design_config):
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
             logger.debug("Generating parametric lef of: %s", block_name)
+            
             cell_gen_parameters= {
                 'primitive': name,
                 'value': unit_size_mos,
