@@ -679,7 +679,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   ReturnHierNode(node);
   PlotGlobalRouter();
   PlotGlobalRouter_Json(node);
-  assert(0);
+  //assert(0);
 };
 
 
