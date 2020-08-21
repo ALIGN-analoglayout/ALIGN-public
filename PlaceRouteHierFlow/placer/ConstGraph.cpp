@@ -2092,6 +2092,242 @@ double ConstGraph::CalculateWireLengthRetire(design& caseNL, SeqPair& caseSP) {
   return sum;
 }
 
+double ConstGraph::LinearConst(design& caseNL, SeqPair& caseSP){
+
+  double sum = 0;
+  std::vector<std::vector<double> > feature_value;
+  std::vector<std::vector<std::string> > feature_name;
+  ExtractLength(caseNL, caseSP, feature_value, feature_name);
+
+  for(int i=0;i< caseNL.Nets.size(); i++){
+     double temp_sum = 0;
+     for(int j=0;j<caseNL.Nets[i].connected.size();j++){
+        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha<<" "<<caseNL.Nets[i].upperBound<<std::endl;
+        temp_sum += caseNL.Nets[i].connected[j].alpha*feature_value[i][j];
+        std::cout<<"LinearConst Cost"<<caseNL.Nets[i].connected[j].alpha*feature_value[i][j]<<std::endl;
+     }
+     if(temp_sum<=caseNL.Nets[i].upperBound){
+        temp_sum = 0;
+
+     }else{
+        temp_sum = temp_sum - caseNL.Nets[i].upperBound;
+     }
+     sum += temp_sum;
+  }
+
+  return sum;
+
+}
+
+double ConstGraph::ML_LinearConst(design& caseNL, SeqPair& caseSP){
+
+  double sum = 0;
+  std::vector<std::vector<double> > feature_value;
+  std::vector<std::vector<std::string> > feature_name;
+  ExtractLength(caseNL, caseSP, feature_value, feature_name);
+
+  for(int i =0; i<feature_value.size();i++){
+     
+     for(int j=0;j<feature_value[i].size();j++){
+        //std::cout<<feature_value[i][j]<<" ";
+     }
+     //std::cout<<std::endl;
+
+  }
+
+  for(int i =0; i<feature_name.size();i++){
+
+     for(int j=0;j<feature_name[i].size();j++){
+        //std::cout<<feature_name[i][j]<<" ";
+     }
+     //std::cout<<std::endl;
+
+  }
+
+
+  for(int i=0;i<caseNL.ML_Constraints.size();i++){
+     double temp_sum = 0;
+     for(int j=0;j<caseNL.ML_Constraints[i].Multi_linearConst.size();j++){
+
+        for(int k=0;k<caseNL.ML_Constraints[i].Multi_linearConst[j].pins.size();k++){
+           int index_i=0;
+           int index_j=0;
+           //std::cout<<"ML Linear "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first<<" "<<caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+           for(int m=0;m<caseNL.Nets.size();m++){
+               for(int n=0;n<caseNL.Nets[m].connected.size();n++){
+
+                  //std::cout<<"searching" <<m<<" "<<n<<" "<<caseNL.Nets[m].connected[n].iter << " "<< caseNL.Nets[m].connected[n].iter2 << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+
+                  if(caseNL.Nets[m].connected[n].iter2 == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first and caseNL.Nets[m].connected[n].iter == caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second){
+
+                     //std::cout<<" found " <<caseNL.Nets[m].connected[n].iter2 << " "<< caseNL.Nets[m].connected[n].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+
+                     index_i=m;
+                     index_j=n;
+                     break;
+                  }
+               }
+              }
+         //std::cout<< caseNL.Nets[index_i].connected[index_j].iter2 << " "<< caseNL.Nets[index_i].connected[index_j].iter << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].first << " " << caseNL.ML_Constraints[i].Multi_linearConst[j].pins[k].second<<std::endl;
+         std::cout<<"MLLinearConst Cost: alpha "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]<<" upperbound "<<caseNL.ML_Constraints[i].upperBound<<" block idex "<<caseNL.Nets[index_i].connected[index_j].iter2<<" pin idx "<<caseNL.Nets[index_i].connected[index_j].iter<<" index_i "<<index_i<<" index_j "<<index_j<<" dist "<<feature_value[index_i][index_j]<<" alpha*dist "<<caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j]<<" pin_name "<<feature_name[index_i][index_j]<<std::endl;
+         temp_sum += caseNL.ML_Constraints[i].Multi_linearConst[j].alpha[k]*feature_value[index_i][index_j];
+         
+        }
+
+     }
+     if(temp_sum<=caseNL.ML_Constraints[i].upperBound){
+        temp_sum = 0;
+     }else{
+        temp_sum = caseNL.ML_Constraints[i].upperBound;
+     }
+     sum += temp_sum;
+  }
+
+  return sum;
+
+}
+
+
+void ConstGraph::ExtractLength(design& caseNL, SeqPair& caseSP, std::vector<std::vector<double> > &feature_value, std::vector<std::vector<std::string> > &feature_name){
+
+  vector<placerDB::point> pos; placerDB::point p, bp;
+  vector<placerDB::point> pos_pin;
+  std::map<string, std::vector<placerDB::point> > pin_maps;
+  std::string pin_name;
+
+
+  // for each net
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each pin
+    int net_pin_number = 0;
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      pos.clear();
+      if(ci->type==placerDB::Block) {
+        pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name + "_" + std::to_string(net_pin_number);
+        //pin_name = ni->name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        net_pin_number = net_pin_number + 1;
+        bp.x=this->HGraph.at(ci->iter2).position;
+        bp.y=this->VGraph.at(ci->iter2).position;
+        pos_pin =caseNL.GetPlacedBlockPinAbsPosition(ci->iter2, ci->iter, caseSP.GetBlockOrient(ci->iter2), bp, caseSP.GetBlockSelected(ci->iter2));
+        //std::cout<<"Print Pin Contact Info"<<std::endl;
+        for(unsigned int i=0;i<pos_pin.size();i++){
+          p = pos_pin[i];
+          std::cout<<"Pin Center (x, y)"<<p.x<<" "<<p.y<<std::endl;
+          pos.push_back(p);
+	}
+        pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
+      }
+    }
+  }
+
+  updateTerminalCenter(caseNL, caseSP);
+
+    // for each net
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each terminal
+      int net_terminal_number = 0;
+      for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      pos.clear();
+      if(ci->type==placerDB::Terminal) {
+        pin_name = ni->name +"_"+std::to_string(net_terminal_number);
+        net_terminal_number = net_terminal_number + 1;
+        std::cout<<"Terminal center (x,y) "<<caseNL.Terminals[ci->iter].center.x<<" "<<caseNL.Terminals[ci->iter].center.y<<std::endl;
+        pos.push_back(caseNL.Terminals[ci->iter].center);
+        pin_maps.insert(map<string, std::vector<placerDB::point> >::value_type (pin_name, pos));
+      }
+    }
+  }
+
+
+  std::vector<std::vector<placerDB::point> > center_points_all;
+  //extract pin_name, feature_value
+  for(vector<placerDB::net>::iterator ni=caseNL.Nets.begin(); ni!=caseNL.Nets.end(); ++ni) {
+    // for each pin
+    string net_name = ni->name;
+    int net_pin_number = 0;
+    int net_terminal_number = 0;
+    std::vector<std::vector<placerDB::point> > center_points;
+    std::vector<std::string> temp_feature_name;
+    for(vector<placerDB::Node>::iterator ci=(ni->connected).begin(); ci!=(ni->connected).end(); ++ci) {
+      if(ci->type==placerDB::Block) {
+        pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name+"_"+std::to_string(net_pin_number);
+        //pin_name = net_name + "_" + caseNL.Blocks[ci->iter2].back().name;
+        net_pin_number = net_pin_number + 1;
+        temp_feature_name.push_back(pin_name);
+        std::cout<<"Sorted Pin name "<<pin_name<<" pin contact size "<<pin_maps[pin_name].size()<<std::endl;
+        center_points.push_back(pin_maps[pin_name]);
+        center_points_all.push_back(pin_maps[pin_name]);
+      }else if(ci->type==placerDB::Terminal) {
+        pin_name = net_name +"_" + std::to_string(net_terminal_number);
+        net_terminal_number = net_terminal_number + 1;
+        temp_feature_name.push_back(pin_name);
+        std::cout<<"Sorted terminal name "<<pin_name<<" terminal contact size "<<pin_maps[pin_name].size()<<std::endl;
+        center_points.push_back(pin_maps[pin_name]);
+        center_points_all.push_back(pin_maps[pin_name]);
+      }
+     
+    }
+    feature_name.push_back(temp_feature_name);
+
+    std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
+    feature_value.push_back(temp_feature);
+    
+  }
+
+
+}
+
+std::vector<double> ConstGraph::Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> > &temp_contact){
+
+  std::vector<double> temp_x;
+  std::vector<double> temp_y;
+  double temp_value_x;
+  double temp_value_y;
+  std::vector<double> feature;
+  double sum_x;
+  double sum_y;
+
+  for(int i = 0;i < temp_contact.size();i++){
+
+     sum_x = 0;
+     sum_y = 0;
+
+     for(int j=0;j < temp_contact[i].size();j++){
+       sum_x = sum_x + (double) temp_contact[i][j].x;
+       sum_y = sum_y + (double) temp_contact[i][j].y;
+     }
+
+    sum_x = sum_x / (double) temp_contact[i].size();
+    sum_y = sum_y / (double) temp_contact[i].size();
+    temp_x.push_back(sum_x);
+    temp_y.push_back(sum_y);
+
+  }
+
+  sum_x=0;
+  sum_y=0;
+
+  for(int i=0; i< temp_x.size();i++){
+
+    sum_x = sum_x + temp_x[i];
+    sum_y = sum_y + temp_y[i];
+
+  }
+
+  double center_x = sum_x/ (double) temp_x.size();
+  double center_y = sum_y/ (double) temp_y.size();
+
+  for(int i=0;i<temp_x.size();i++){
+
+     feature.push_back( abs(center_x - (double) temp_x[i]) + abs(center_y - (double) temp_y[i]) );
+
+  }
+
+  return feature;
+
+}
+
+
 double ConstGraph::CalculateWireLength(design& caseNL, SeqPair& caseSP) {
   double sum=0;
   //CalculateLongestPath(sourceNode, this->HGraph, false);
@@ -2465,6 +2701,8 @@ double ConstGraph::CalculateCost(design& caseNL, SeqPair& caseSP) {
   cost += CalculateRatio()*SIGMA;
   cost += CalculateArea();
   cost += CalculateDeadArea(caseNL, caseSP)*PHI;
+  cost += LinearConst(caseNL, caseSP)*PI;
+  cost += ML_LinearConst(caseNL, caseSP)*PII;
   //cout<<"GAMAR:"<<GAMAR<<" BETA "<<BETA<<"LAMBDA "<<LAMBDA<<endl;
   //cout<<"Penalt: "<<  (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph))*GAMAR<<" vs "<< (CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)) << endl;
   //cout<<"WL: "<<CalculateWireLength(caseNL, caseSP)*LAMBDA<<" vs "<<CalculateWireLength(caseNL, caseSP)<<endl;
@@ -2489,6 +2727,8 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   cost += CalculateRatio()*SIGMA;
   cost += CalculateArea();
   cost += CalculateDeadArea(caseNL, caseSP)*PHI;
+  cost += LinearConst(caseNL, caseSP)*PI;
+  cost += ML_LinearConst(caseNL, caseSP)*PII;
   if(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph)>0){
   GAMAR=cost/(CalculatePenalty(this->HGraph)+CalculatePenalty(this->VGraph));
   }
@@ -2503,6 +2743,12 @@ void ConstGraph::Update_parameters(design& caseNL, SeqPair& caseSP) {
   }
   if(CalculateDeadArea(caseNL, caseSP)) {
   PHI = cost/CalculateDeadArea(caseNL, caseSP) *1.8;
+  }
+  if(LinearConst(caseNL, caseSP)>0){
+  PI = cost/LinearConst(caseNL, caseSP) * 2.0;
+  }
+  if(ML_LinearConst(caseNL, caseSP)>0){
+  PII = cost/ML_LinearConst(caseNL, caseSP) * 2.0;
   }
   //cout<<"NEW GAMAR:"<<GAMAR<<" BETA:"<<BETA<<" LAMBDA:"<<LAMBDA<<" SIGMA:"<<SIGMA<<" PHI:"<<PHI<<endl;
   //cout<<"NEW_BETA:"<<BETA<<endl;
