@@ -10,7 +10,9 @@
 #   % ln -sf $ALIGN_HOME/build/Makefile $ALIGN_WORK_DIR
 #   % make DESIGN=<design in $ALIGN_HOME/examples"
 
-VENV=/opt/venv
+ifndef NO_VENV
+  VENV=/opt/venv
+endif
 
 EXAMPLES=${ALIGN_HOME}/examples
 
@@ -20,6 +22,12 @@ PDK_FILE=layers.json
 FLAT=0
 
 OUTPUT_DIR=${DESIGN}
+
+PREFIX="" 
+ifndef NO_VENV
+   PREFIX="source ${VENV}/bin/activate && " 
+endif
+
 
 ifeq ($(BUILD),docker)
 	execute = docker-compose -p build exec $(1) $(2)
@@ -33,7 +41,7 @@ endif
 
 # Convert schematic to gds & PNG
 ${OUTPUT_DIR}/${DESIGN}_0.png:	${EXAMPLES}/${DESIGN}/${DESIGN}.sp  ${DESIGN}
-	$(call execute,align-service, /bin/bash -c "source ${VENV}/bin/activate && cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g")
+	$(call execute,align-service, /bin/bash -c ${PREFIX}"cd ${DESIGN} && python ${VENV}/bin/schematic2layout.py ${EXAMPLES}/${DESIGN} -f ${EXAMPLES}/${DESIGN}/${DESIGN}.sp -s ${DESIGN} -p ${ALIGN_HOME}/${PDK_DIR} -flat ${FLAT} -c -g")
 
 ${DESIGN}:
 	mkdir ${DESIGN}

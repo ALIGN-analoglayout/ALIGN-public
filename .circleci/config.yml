@@ -145,9 +145,10 @@ jobs:
           at: /work/workspace
 
       - run: |
-          docker build -t align_image -f ./build/Dockerfile.base .
-
-          docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
+          #docker build -t align_image -f ./build/Dockerfile.base .
+          #docker run --name align_container align_image bash -c "source /opt/venv/bin/activate && cd ALIGN-public && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
+          docker build --build-arg ubuntu_build=18.04 -f build/Dockerfile.using_install -t align_using_install_image:18.04 .
+          docker run --name align_container align_using_install_image:18.04 bash -c "cd /ALIGN-public && source setup.sh && unset ALIGN_WORKING_DIR && pip install pytest pytest-cov pytest-timeout coverage-badge && coverage run --source=align,tests setup.py pytest && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/align && cp junit.xml /test-reports/align && mkdir -p /coverage-reports/align && cp -r coverage.xml htmlcov /coverage-reports/align"
 
           docker cp align_container:coverage-reports .
           docker cp align_container:test-reports .

@@ -132,3 +132,53 @@ Note that services that are 'up' are live and have live filesystems.
 Edits there will impact the overall flow, so you can check changes by
 modifying files inside the relevant containers.  You can git push from
 those containers as well.
+
+### New installation using install.sh and setup.sh
+
+You can install ALIGN using this simple scripts on Ubuntu 18.04 and Ubuntu 20.04. We recommend using a virtual enviornment.
+
+If you want to use a virtual environment, 
+```bash
+source ./install.sh
+```
+then, to setup, 
+```bash
+source ./setup.sh
+```
+
+This will build your python virtual environment at `$PWD/general`.
+If you want to build it somewhere else:
+```bash
+VENV=/full/path/to/venv source ./install.sh
+```
+then, to setup, 
+```bash
+VENV=/full/path/to/venv source ./setup.sh
+```
+
+If you don't want to use a virual enviornment
+```bash
+NO_VENV= source ./install.sh
+```
+then, to setup, 
+```bash
+NO_VENV= source ./setup.sh
+```
+
+You can test the builds using docker, for both Ubuntu 18.04 and 20.04.
+```bash
+cd $ALIGN_HOME
+docker build --build-arg ubuntu_build=18.04 -f build/Dockerfile.using_install -t align_using_install_image:18.04 .
+docker build --build-arg ubuntu_build=20.04 -f build/Dockerfile.using_install -t align_using_install_image:20.04 .
+docker build --build-arg ubuntu_build=18.04 -f build/Dockerfile.using_install-no_venv -t align_using_install_image-no_venv:18.04 .
+docker build --build-arg ubuntu_build=20.04 -f build/Dockerfile.using_install-no_venv -t align_using_install_image-no_venv:20.04 .
+```
+To run the tests:
+```
+docker run -it align_using_install_image:18.04 /bin/bash -c "source setup.sh && pip install pytest && unset ALIGN_WORK_DIR && pytest"
+docker run -it align_using_install_image:20.04 /bin/bash -c "source setup.sh && pip install pytest && unset ALIGN_WORK_DIR && pytest"
+docker run -it align_using_install_image-no_venv:18.04 /bin/bash -c "NO_VENV= source setup.sh && pip3 install pytest && unset ALIGN_WORK_DIR && pytest"
+docker run -it align_using_install_image-no_venv:20.04 /bin/bash -c "NO_VENV= source setup.sh && pip3 install pytest && unset ALIGN_WORK_DIR && pytest"
+```
+
+
