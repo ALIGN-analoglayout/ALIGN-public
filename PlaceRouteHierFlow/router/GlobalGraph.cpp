@@ -318,7 +318,7 @@ void GlobalGraph::MST(int & WireLength, std::vector<pair<int,int> > &temp_path, 
          std::cout<<"End setting src and dest"<<std::endl;
          std::vector<int> temp_single_path = dijkstra(grid);
          std::cout<<"temp_single_path size "<<temp_single_path.size()<<std::endl;
-         for(unsigned int p=0;p<temp_single_path.size();p++){std::cout<<temp_single_path[p];}
+         for(unsigned int p=0;p<temp_single_path.size();p++){std::cout<<temp_single_path[p]<<" ";}
          std::cout<<std::endl;
          std::cout<<"End dijkstra"<<std::endl;
          MST_path.push_back(temp_single_path);

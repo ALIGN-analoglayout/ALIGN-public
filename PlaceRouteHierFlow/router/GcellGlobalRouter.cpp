@@ -679,6 +679,7 @@ GcellGlobalRouter::GcellGlobalRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc
   ReturnHierNode(node);
   PlotGlobalRouter();
   PlotGlobalRouter_Json(node);
+  assert(0);
 };
 
 
@@ -989,24 +990,34 @@ int GcellGlobalRouter::SymNetTerminal_PrimeSet(GlobalGrid &grid, std::set<Router
 std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> t, std::set<RouterDB::tile, RouterDB::tileComp> &Tile_Set, GlobalGrid &grid){
 
     std::vector<RouterDB::tile> Temp_tile;
+
+    std::set<RouterDB::tile, RouterDB::tileComp> terminal_set;
+
     for(unsigned int i=0;i<t.size();++i){
+
+        terminal_set.insert(grid.tiles_total[t[i]]);
+
         for(unsigned int j=0;j<t.size();++j){
             if(i!=j){
                 RouterDB::tile temp_tile;
-                temp_tile = grid.tiles_total[t[i]];
-                temp_tile.y = grid.tiles_total[t[j]].y;
-                Temp_tile.push_back(temp_tile);
-                temp_tile.y = grid.tiles_total[t[i]].y;
-                temp_tile.x = grid.tiles_total[t[j]].x;
-                Temp_tile.push_back(temp_tile);
+                if(grid.tiles_total[t[i]].x!=grid.tiles_total[t[j]].x and grid.tiles_total[t[i]].y!=grid.tiles_total[t[j]].y){
+                   temp_tile = grid.tiles_total[t[i]];
+                   temp_tile.y = grid.tiles_total[t[j]].y;
+                   Temp_tile.push_back(temp_tile);
 
-                temp_tile = grid.tiles_total[t[j]];
-                temp_tile.y = grid.tiles_total[t[i]].y;
-                Temp_tile.push_back(temp_tile);
-                temp_tile.y = grid.tiles_total[t[j]].y;
-                temp_tile.x = grid.tiles_total[t[i]].x;
-                Temp_tile.push_back(temp_tile);
-                
+                   temp_tile.y = grid.tiles_total[t[i]].y;
+                   temp_tile.x = grid.tiles_total[t[j]].x;
+                   Temp_tile.push_back(temp_tile);
+
+                   temp_tile = grid.tiles_total[t[j]];
+                   temp_tile.y = grid.tiles_total[t[i]].y;
+                   Temp_tile.push_back(temp_tile);
+
+                   temp_tile.y = grid.tiles_total[t[j]].y;
+                   temp_tile.x = grid.tiles_total[t[i]].x;
+                   Temp_tile.push_back(temp_tile);
+                   
+                  }
               }
            }
        }
@@ -1016,10 +1027,12 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
 
     std::set<RouterDB::tile, RouterDB::tileComp>::iterator it;
 
+    std::cout<<"Temp_tile size "<<Temp_tile.size()<<std::endl;
+
     for(unsigned int i=0;i<Temp_tile.size();++i){
 
           it = Tile_Set.find(Temp_tile[i]);
-          if(it!=Tile_Set.end()){
+          if(it!=Tile_Set.end() and terminal_set.find(Temp_tile[i]) == terminal_set.end()){
           stiner_node_set.insert(it->index); 
           }         
 
@@ -1036,6 +1049,7 @@ std::vector<int> GcellGlobalRouter::Get_Potential_Steiner_node(std::vector<int> 
        }
     
     return stiner_node;
+
 
 
 };
