@@ -243,7 +243,10 @@ def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight
     logger.debug(f"symmetry start point {node1} {node2}")
     pair ={}
     compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
-    all_match_pairs[node1+node2]=pair                         
+    if not pair:
+        logger.debug(f"no pair found from {node1} {node2}")
+        return
+    all_match_pairs[node1+node2]=pair                        
     logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
 
     for k,pair in all_match_pairs.items():
