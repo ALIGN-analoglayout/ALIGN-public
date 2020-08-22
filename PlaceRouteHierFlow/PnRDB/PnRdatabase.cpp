@@ -97,6 +97,9 @@ void PnRdatabase::extend_pins(PnRDB::block &temp_block){
 
 void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
 
+  int h_margin = 4;
+  int v_margin = 4;
+
   //extend pin
   for(unsigned int i=0;i<temp_pin.pinContacts.size();i++){
 
@@ -104,14 +107,14 @@ void PnRdatabase::extend_pin(PnRDB::pin &temp_pin, int width, int height){
  
       if(DRC_info.Metal_info[metal_index].direct==1){//h
 
-          temp_pin.pinContacts[i].originBox.LL.x = 0;
-          temp_pin.pinContacts[i].originBox.UR.x = width;
+          temp_pin.pinContacts[i].originBox.LL.x = 0+h_margin;
+          temp_pin.pinContacts[i].originBox.UR.x = width-h_margin;
           temp_pin.pinContacts[i].originCenter.x = width/2;
           
         }else{
 
-          temp_pin.pinContacts[i].originBox.LL.y = 0;
-          temp_pin.pinContacts[i].originBox.UR.y = height;
+          temp_pin.pinContacts[i].originBox.LL.y = 0+v_margin;
+          temp_pin.pinContacts[i].originBox.UR.y = height-v_margin;
           temp_pin.pinContacts[i].originCenter.y = height/2;
 
         }
