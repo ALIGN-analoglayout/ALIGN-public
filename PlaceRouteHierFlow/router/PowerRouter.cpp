@@ -895,6 +895,9 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
   
   int Power_width = 1; 
 
+  vector<int> Factor;
+  
+
   for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
       
     auto& mi = PowerGrid_Drc_info.Metal_info[i];
@@ -908,12 +911,25 @@ void PowerRouter::CreatePowerGridDrc_info( int h_skip_factor, int v_skip_factor)
     } else {
       assert( 0);
     }
-
+    Factor.push_back(factor);
     // This is weird changing them both, but the code did this before
     // Probably only need to expand the x for vertical wires and the y for horizontal wires
-    mi.grid_unit_x *= factor;
-    mi.grid_unit_y *= factor;
-    mi.width *= Power_width;
+    //mi.grid_unit_x *= factor;
+    //mi.grid_unit_y *= factor;
+    //mi.width *= Power_width;
+
+  }
+
+  //Factor[0] = 1; //means current m1 pitch = 1 * m1 origin pitch
+  //Factor[1] = 2; //for m2
+  //configurate the number here
+
+  for(unsigned int i=0;i<PowerGrid_Drc_info.Metal_info.size();i++){
+     auto& mi = PowerGrid_Drc_info.Metal_info[i];
+     int factor = Factor[i];
+     mi.grid_unit_x *=factor;
+     mi.grid_unit_y *=factor;
+     mi.width *=Power_width;
 
   }
 
