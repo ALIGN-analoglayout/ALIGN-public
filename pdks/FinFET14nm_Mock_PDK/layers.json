@@ -3,9 +3,14 @@
 
 "ScaleFactor":1,
 
+"Magic": {
+"Techname": "scmos"
+},
+
 "Abstraction": [
 {
 "Layer": "Poly",
+"MagicLayerName": "polysilicon",
 "GdsLayerNo": 1,
 "GdsDatatype": {"Draw":0},
 "Direction": "V",
@@ -22,6 +27,7 @@
 
 {
 "Layer": "Fin",
+"MagicLayerName": "fin",
 "GdsLayerNo": 3,
 "GdsDatatype": {"Draw":0},
 "Direction": "H",
@@ -35,6 +41,7 @@
 
 {
 "Layer": "M1",
+"MagicLayerName": "metal1",
 "GdsLayerNo": 13,
 "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -53,6 +60,7 @@
 
 {
 "Layer": "V0",
+"MagicLayerName": "contact",
 "GdsLayerNo": 12,
 "GdsDatatype": {"Draw":0}, 
 "Stack": [null, "M1"],
@@ -69,6 +77,7 @@
 
 {
 "Layer": "M2",
+"MagicLayerName": "metal2",
 "GdsLayerNo": 15,
 "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -86,6 +95,7 @@
 
 {
 "Layer": "V1",
+"MagicLayerName": "m3contact",
 "GdsLayerNo": 14,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M1", "M2"],
@@ -102,6 +112,7 @@
 
 {
 "Layer": "M3",
+"MagicLayerName": "metal3",
 "GdsLayerNo": 19,
 "GdsDatatype": {"Draw":0, "c1":1, "c2":2, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -119,6 +130,7 @@
 
 {
 "Layer": "V2",
+"MagicLayerName": "m3contact",
 "GdsLayerNo": 16,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M2", "M3"],
@@ -135,6 +147,7 @@
 
 {
 "Layer": "M4",
+"MagicLayerName": "metal4",
 "GdsLayerNo": 21,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -152,6 +165,7 @@
 
 {
 "Layer": "V3",
+"MagicLayerName": "m4contact",
 "GdsLayerNo": 17,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M3", "M4"],
@@ -168,6 +182,7 @@
 
 {
 "Layer": "M5",
+"MagicLayerName": "metal5",
 "GdsLayerNo": 23,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -185,6 +200,7 @@
 
 {
 "Layer": "V4",
+"MagicLayerName": "m5contact",
 "GdsLayerNo": 22,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M4", "M5"],
@@ -201,6 +217,7 @@
 
 {
 "Layer": "M6",
+"MagicLayerName": "metal6",
 "GdsLayerNo": 25,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -218,6 +235,7 @@
 
 {
 "Layer": "V5",
+"MagicLayerName": "m6contact",
 "GdsLayerNo": 24,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M5", "M6"],
@@ -234,6 +252,7 @@
 
 {
 "Layer": "M7",
+"MagicLayerName": "metal7",
 "GdsLayerNo": 27,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -251,6 +270,7 @@
 
 {
 "Layer": "V6",
+"MagicLayerName": "m7contact",
 "GdsLayerNo": 26,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M6", "M7"],
@@ -267,6 +287,7 @@
 
 {
 "Layer": "M8",
+"MagicLayerName": "metal8",
 "GdsLayerNo": 29,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -284,6 +305,7 @@
 
 {
 "Layer": "V7",
+"MagicLayerName": "m8contact",
 "GdsLayerNo": 28,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M7", "M8"],
@@ -300,6 +322,7 @@
 
 {
 "Layer": "M9",
+"MagicLayerName": "metal9",
 "GdsLayerNo": 31,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -317,6 +340,7 @@
 
 {
 "Layer": "V8",
+"MagicLayerName": "m9contact",
 "GdsLayerNo": 30,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M8", "M9"],
@@ -333,6 +357,7 @@
 
 {
 "Layer": "M10",
+"MagicLayerName": "metal10",
 "GdsLayerNo": 55,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -350,6 +375,7 @@
 
 {
 "Layer": "V9",
+"MagicLayerName": "m10contact",
 "GdsLayerNo": 32,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M9", "M10"],
@@ -366,6 +392,7 @@
 
 {
 "Layer": "M11",
+"MagicLayerName": "metal11",
 "GdsLayerNo": 60,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -383,6 +410,7 @@
 
 {
 "Layer": "V10",
+"MagicLayerName": "m11contact",
 "GdsLayerNo": 62,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M10", "M11"],
@@ -399,6 +427,7 @@
 
 {
 "Layer": "M12",
+"MagicLayerName": "metal12",
 "GdsLayerNo": 65,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -416,6 +445,7 @@
 
 {
 "Layer": "V11",
+"MagicLayerName": "m12contact",
 "GdsLayerNo": 68,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M11", "M12"],
@@ -433,6 +463,7 @@
 
 {
 "Layer": "M13",
+"MagicLayerName": "metal13",
 "GdsLayerNo": 70,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -450,6 +481,7 @@
 
 {
 "Layer": "V12",
+"MagicLayerName": "m13contact",
 "GdsLayerNo": 72,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M12", "M13"],
@@ -467,6 +499,7 @@
 
 {
 "Layer": "M14",
+"MagicLayerName": "metal14",
 "GdsLayerNo": 75,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "H",
@@ -484,6 +517,7 @@
 
 {
 "Layer": "V13",
+"MagicLayerName": "m14contact",
 "GdsLayerNo": 80,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M13", "M14"],
@@ -501,6 +535,7 @@
 
 {
 "Layer": "M15",
+"MagicLayerName": "metal15",
 "GdsLayerNo": 78,
 "GdsDatatype": {"Draw":0, "Pin":3, "Label":4, "Blockage":5},
 "Direction": "V",
@@ -518,6 +553,7 @@
 
 {
 "Layer": "V14",
+"MagicLayerName": "m15contact",
 "GdsLayerNo": 85,
 "GdsDatatype": {"Draw":0},
 "Stack": ["M14", "M15"],
@@ -535,12 +571,14 @@
 
 {
 "Layer": "Nwell",
+"MagicLayerName": "nwell",
 "GdsLayerNo": 2,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Active",
+"MagicLayerName": "active",
 "GdsLayerNo": 5,
 "GdsDatatype": {"Draw":0},
 "activebWidth": 168,
@@ -551,24 +589,28 @@
 
 {
 "Layer": "Nselect",
+"MagicLayerName": "nselect",
 "GdsLayerNo": 7,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Pselect",
+"MagicLayerName": "pselect",
 "GdsLayerNo": 8,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Gcut",
+"MagicLayerName": "gcut",
 "GdsLayerNo": 4,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Lisd",
+"MagicLayerName": "lisd",
 "GdsLayerNo": 98,
 "GdsDatatype": {"Draw":0},
 "LisdWidth": 40
@@ -576,18 +618,21 @@
 
 {
 "Layer": "Rvt",
+"MagicLayerName": "rvt",
 "GdsLayerNo": 11,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Lvt",
+"MagicLayerName": "lvt",
 "GdsLayerNo": 131,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Hvt",
+"MagicLayerName": "hvt",
 "GdsLayerNo": 151,
 "GdsDatatype": {"Draw":0}
 },
@@ -595,6 +640,7 @@
 
 {
 "Layer": "Pb",
+"MagicLayerName": "pb",
 "GdsLayerNo": 150,
 "GdsDatatype": {"Draw":0},
 "pbWidth":180,
@@ -603,6 +649,7 @@
 
 {
 "Layer": "Pc",
+"MagicLayerName": "pc",
 "GdsLayerNo": 99,
 "GdsDatatype": {"Draw":0},
 "PcWidth": 32,
@@ -611,36 +658,42 @@
 
 {
 "Layer": "Bbox",
+"MagicLayerName": "bbox",
 "GdsLayerNo": 100,
 "GdsDatatype": {"Draw":5}
 },
 
 {
 "Layer": "Boundary",
+"MagicLayerName": "boundary",
 "GdsLayerNo": 101,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Rboundary",
+"MagicLayerName": "rboundary",
 "GdsLayerNo": 102,
 "GdsDatatype": {"Draw":0}
 },
 
 {
 "Layer": "Cboundary",
+"MagicLayerName": "cboundary",
 "GdsLayerNo": 103,
 "GdsDatatype": {"Draw":0}
 },
     
 {
 "Layer": "Outline",
+"MagicLayerName": "outline",
 "GdsLayerNo": 104,
 "GdsDatatype": {"Draw":0}
 },    
 
 {
 "Layer": "Cap",
+"MagicLayerName": "cap",
 "m1Pitch": 64,
 "m2Pitch": 64,
 "m3Pitch": 64,
