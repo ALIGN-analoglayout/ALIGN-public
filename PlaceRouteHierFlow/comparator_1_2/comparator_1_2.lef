@@ -148,22 +148,22 @@ MACRO Switch_NMOS_n12_X3_Y1
       RECT 1.233 0.040 1.251 0.500 ;
   END
 END Switch_NMOS_n12_X3_Y1
-MACRO Switch_PMOS_n12_X1_Y1
+MACRO Switch_PMOS_n12_X2_Y1
   ORIGIN 0 0 ;
-  FOREIGN Switch_PMOS_n12_X1_Y1 0 0 ;
-  SIZE 0.432 BY 0.648 ;
+  FOREIGN Switch_PMOS_n12_X2_Y1 0 0 ;
+  SIZE 0.864 BY 0.648 ;
   PIN S
     DIRECTION INOUT ;
     USE SIGNAL ;
     PORT
       LAYER M2 ;
-        RECT 0.040 0.099 0.284 0.117 ;
+        RECT 0.040 0.099 0.716 0.117 ;
       LAYER M2 ;
-        RECT 0.040 0.153 0.284 0.171 ;
+        RECT 0.040 0.153 0.716 0.171 ;
       LAYER M2 ;
-        RECT 0.040 0.207 0.284 0.225 ;
+        RECT 0.040 0.207 0.716 0.225 ;
       LAYER M3 ;
-        RECT 0.153 0.094 0.171 0.446 ;
+        RECT 0.369 0.094 0.387 0.446 ;
     END
   END S
   PIN D
@@ -171,9 +171,9 @@ MACRO Switch_PMOS_n12_X1_Y1
     USE SIGNAL ;
     PORT
       LAYER M2 ;
-        RECT 0.148 0.261 0.392 0.279 ;
+        RECT 0.148 0.261 0.824 0.279 ;
       LAYER M3 ;
-        RECT 0.207 0.094 0.225 0.446 ;
+        RECT 0.423 0.094 0.441 0.446 ;
     END
   END D
   PIN G
@@ -181,9 +181,9 @@ MACRO Switch_PMOS_n12_X1_Y1
     USE SIGNAL ;
     PORT
       LAYER M2 ;
-        RECT 0.094 0.315 0.338 0.333 ;
+        RECT 0.094 0.315 0.770 0.333 ;
       LAYER M3 ;
-        RECT 0.099 0.094 0.117 0.446 ;
+        RECT 0.315 0.094 0.333 0.446 ;
     END
   END G
   PIN Bg
@@ -191,26 +191,38 @@ MACRO Switch_PMOS_n12_X1_Y1
     USE SIGNAL ;
     PORT
       LAYER M2 ;
-        RECT 0.0 0.585 0.432 0.603 ;
+        RECT 0.0 0.585 0.864 0.603 ;
     END
   END Bg
   OBS
     LAYER M1 ;
-      RECT 0.0 0.585 0.432 0.603 ;
+      RECT 0.0 0.585 0.864 0.603 ;
     LAYER M1 ;
       RECT 0.099 0.040 0.117 0.500 ;
     LAYER M1 ;
       RECT 0.315 0.040 0.333 0.500 ;
     LAYER M1 ;
+      RECT 0.531 0.040 0.549 0.500 ;
+    LAYER M1 ;
+      RECT 0.747 0.040 0.765 0.500 ;
+    LAYER M1 ;
       RECT 0.045 0.040 0.063 0.500 ;
     LAYER M1 ;
       RECT 0.261 0.040 0.279 0.500 ;
     LAYER M1 ;
+      RECT 0.477 0.040 0.495 0.500 ;
+    LAYER M1 ;
+      RECT 0.693 0.040 0.711 0.500 ;
+    LAYER M1 ;
       RECT 0.153 0.040 0.171 0.500 ;
     LAYER M1 ;
       RECT 0.369 0.040 0.387 0.500 ;
+    LAYER M1 ;
+      RECT 0.585 0.040 0.603 0.500 ;
+    LAYER M1 ;
+      RECT 0.801 0.040 0.819 0.500 ;
   END
-END Switch_PMOS_n12_X1_Y1
+END Switch_PMOS_n12_X2_Y1
 MACRO Switch_PMOS_n12_X5_Y1
   ORIGIN 0 0 ;
   FOREIGN Switch_PMOS_n12_X5_Y1 0 0 ;
