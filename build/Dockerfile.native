@@ -11,7 +11,7 @@ RUN \
 
 RUN \
     python3 -m venv general && \
-    bash -c "source general/bin/activate; pip install --upgrade pip && pip install wheel pytest general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii"
+    bash -c "source general/bin/activate; pip install --upgrade pip && pip install wheel pytest==5.4.3 general networkx pygraphviz coverage pytest-cov protobuf matplotlib pyyaml python-gdsii"
 
 COPY . /ALIGN-public
 
