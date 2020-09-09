@@ -811,6 +811,8 @@ void GcellDetailRouter::create_detailrouter(){
         //add path metal to set_current_net_contact
         //add via conatct to set_current_net_contact
         InsertRoutingContact(a_star, grid, Pset_current_net_via, Set_current_net_contact, i);
+        // should added to the set_net_contact to avoid drcs for same net YG-2020/9/9
+        InsertContact2Contact(Set_current_net_contact, Set_net_contact);
       }
       else
       {
@@ -822,11 +824,13 @@ void GcellDetailRouter::create_detailrouter(){
       Update_Grid_Src_Dest(grid, source_lock, src_dest_plist, temp_source, temp_dest, physical_path);
       UpdatePlistNets(physical_path, add_plist);
 
+      //-----drcs for same net YG--2020/9/9
+      //include grid which belong to the box but not in the inner box
       std::vector<std::vector<RouterDB::point>> add_plist_exclude_inner_box; // new feasible grid for routed net
       add_plist_exclude_inner_box.resize(this->layerNo);
-
       UpdatePlistNets_exclude_inner_box(physical_path, add_plist_exclude_inner_box);
       InsertPlistToSet_x(Set_net, add_plist_exclude_inner_box);
+      
     }
     Symmetry_Routing(sym_flag, i, Set_net);
     std::cout << "Detail Router check point 11" << std::endl;
