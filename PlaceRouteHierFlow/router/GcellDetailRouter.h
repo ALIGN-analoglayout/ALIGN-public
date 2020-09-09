@@ -177,6 +177,10 @@ class GcellDetailRouter : public GcellGlobalRouter{
     void InsertRoutingContact(A_star &a_star, Grid &grid, std::set<std::pair<int, RouterDB::point>, RouterDB::pointSetComp> &Pset_via,
                               std::set<RouterDB::SinkData, RouterDB::SinkDataComp> &contacts, int net_num);
     void ExtendMetals(int i);
+
+    void ConvertRect2GridPoints_exclude_inner_box(std::vector<std::vector<RouterDB::point> >& plist, int mIdx, int LLx, int LLy, int URx, int URy);
+    void UpdatePlistNets_exclude_inner_box(std::vector<std::vector<RouterDB::Metal> > &physical_path, std::vector<std::vector<RouterDB::point> > &plist);
+    void CreatePlistSingleContact_exclude_inner_box(std::vector<std::vector<RouterDB::point> >& plist, RouterDB::contact& Contacts);
 };
 
 #endif
