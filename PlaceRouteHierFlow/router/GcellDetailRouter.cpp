@@ -872,6 +872,7 @@ void GcellDetailRouter::create_detailrouter(){
 
     //int multi_number = R_constraint_based_Parallel_routing_number(i);
     int multi_number = Nets[i].multi_connection;
+    if(multi_number == 0) multi_number = 1;
     bool random = false;
     if(random){
       srand(time(0));
