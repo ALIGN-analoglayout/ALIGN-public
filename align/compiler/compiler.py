@@ -4,19 +4,20 @@ import json
 
 from .util import _write_circuit_graph, max_connectivity
 from .read_netlist import SpiceParser
-from .match_graph import read_inputs, read_setup,_mapped_graph_list,add_stacked_transistor,add_parallel_transistor,reduce_graph,define_SD,check_nodes,add_parallel_caps,add_series_res
+from .preprocess import define_SD, preprocess_stack_parallel
+from .match_graph import read_inputs, read_setup,_mapped_graph_list,check_nodes,reduce_graph
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, CopyConstFile, FindSymmetry
-from .create_array_hierarchy import FindArray
+#from .create_array_hierarchy import FindArray
 from .read_lef import read_lef
 
 import logging
 logger = logging.getLogger(__name__)
 
-def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_name):
+def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_name, uniform_height):
     updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
-    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_name)
+    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_name, uniform_height)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     """
@@ -73,26 +74,19 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 
     updated_ckt_list = []
     check_duplicates={}
+    for circuit_name, circuit in hier_graph_dict.items():   
+        logger.debug(f"START preprocessing")
+        G1 = circuit["graph"]
+        if circuit_name not in design_setup['DIGITAL']:
+            define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
+            preprocess_stack_parallel(hier_graph_dict,circuit_name,G1)
+
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"START MATCHING in circuit: {circuit_name}")
         G1 = circuit["graph"]
         if circuit_name in design_setup['DIGITAL']:
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND'] ,design_setup['CLOCK'], True )
         else:
-            define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-            logger.debug(f"no of nodes: {len(G1)}")
-            add_parallel_caps(G1)
-            add_series_res(G1)
-            add_stacked_transistor(G1)
-            add_parallel_transistor(G1)
-            initial_size=len(G1)
-            delta =1
-            while delta > 0:
-                logger.debug("CHECKING stacked transistors")
-                add_stacked_transistor(G1)
-                add_parallel_transistor(G1)
-                delta = initial_size - len(G1)
-                initial_size = len(G1)
             mapped_graph_list = _mapped_graph_list(G1, library, design_setup['POWER']+design_setup['GND']  ,design_setup['CLOCK'], False )
         # reduce graph converts input hierarhical graph to dictionary
         updated_circuit, Grest = reduce_graph(G1, mapped_graph_list,library,check_duplicates,design_setup)
@@ -102,7 +96,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 
         stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
         if circuit_name not in design_setup['DIGITAL']:
-            symmetry_blocks=FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
+            symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
             for symm_blocks in symmetry_blocks.values():
                 if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
                     logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
@@ -125,7 +119,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                 lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
     return updated_ckt_list, lib_names
 
-def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_name="FinFET14nm_Mock_PDK"):
+def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_name="FinFET14nm_Mock_PDK", uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -142,6 +136,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION. writes out a verilog netlist, spice file and constraints
     pdk_name : Type, str
         DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory 
+    uniform_height : creates cells of uniform height
 
     Raises
     ------
@@ -154,12 +149,10 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.
 
     """
-    config_path=pathlib.Path(__file__).resolve().parent.parent / 'config' / 'design_config.json'
-    with open(config_path,"rt") as fp:
-        config_data=json.load(fp)
-    for pdk in config_data["design_info"]:
-        if pdk["pdk"]==pdk_name:
-            design_config=pdk
+    pdk_path=pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / pdk_name / 'layers.json'
+    with open(pdk_path,"rt") as fp:
+        pdk_data=json.load(fp)
+    design_config = pdk_data["design_info"]
     
     if not result_dir.exists():
         result_dir.mkdir()
@@ -225,7 +218,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name, block_args = generate_lef(
                     lef_name, attr,
-                    primitives, design_config)
+                    primitives, design_config, uniform_height)
                 #block_name_ext = block_name.replace(lef_name,'')
                 logger.debug(f"Created new lef for: {block_name}")
                 # Only unit caps are generated
@@ -259,8 +252,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
-            logger.debug(f"call array finder for block: {name}")
-            all_array=FindArray(graph, input_dir, name,member["ports_weight"] )
+            #logger.debug(f"call array finder for block: {name}")
+            #all_array=FindArray(graph, input_dir, name,member["ports_weight"] )
+            all_array={}
             logger.debug(f"Copy const file for: {name}")
             const_file = CopyConstFile(name, input_dir, result_dir)
             logger.debug(f"cap constraint gen for block: {name}")

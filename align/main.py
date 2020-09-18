@@ -9,7 +9,7 @@ from .utils.gds2png import generate_png
 import logging
 logger = logging.getLogger(__name__)
 
-def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=True, regression=False):
+def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, working_dir=None, flatten=False, unit_size_mos=10, unit_size_cap=10, nvariants=1, effort=0, check=False, extract=False, log_level=None, generate=False, python_gds_json=True, regression=False, uniform_height=False):
 
     if log_level:
         logging.getLogger().setLevel(logging.getLevelName(log_level))
@@ -66,7 +66,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     for netlist in netlist_files:
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
-        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir.name)
+        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir.name, uniform_height)
         # Generate primitives
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive: {block_name}")

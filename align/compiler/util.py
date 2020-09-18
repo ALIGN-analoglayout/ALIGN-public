@@ -12,8 +12,86 @@ from networkx.algorithms import bipartite
 import logging
 logger = logging.getLogger(__name__)
 
-#library_graphs = glob.glob("L1*.yaml")
+def get_next_level(G, tree_l1):
+    tree_next=[]
+    for node in list(tree_l1):
+        if node not in G.nodes:
+            continue
+        #logger.debug(f"neighbors of {node}: {list(G.neighbors(node))}")
+        if 'mos' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if G.get_edge_data(node, nbr)['weight']!=2:
+                    tree_next.append(nbr)
+        elif 'net' in G.nodes[node]["inst_type"]:
+            for nbr in list(G.neighbors(node)):
+                if 'mos' in G.nodes[nbr]["inst_type"] and \
+                G.get_edge_data(node, nbr)['weight']!=2:
+                    tree_next.append(nbr)
+                elif 'mos' not in G.nodes[nbr]["inst_type"]:
+                    tree_next.append(nbr)               
+        else:
+            tree_next.extend(list(G.neighbors(node)))
+    return tree_next
+def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
+    """
+    compare two node properties. It uses 1st level of neighbourhood for comparison of nets
+
+    Parameters
+    ----------
+    G : TYPE, networkx graph
+        DESCRIPTION. it consist of all subckt properties
+    node1, node2 : TYPE  string
+        DESCRIPTION. node name
+    ports_weight : TYPE list
+        DESCRIPTION. port weights 
+
+    Returns
+    -------
+    bool
+        DESCRIPTION. True for matching node
+
+    """
+    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
+    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
+    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]
+    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]
+    logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
+
+    # Add some heuristic here in future
     
+    nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
+    nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
+    if nbrs1_type != nbrs2_type:
+        logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
+        return False
+    if G.nodes[node1]["inst_type"]=="net": 
+        if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
+            if not ports_weight:
+                return True
+            elif sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
+                logger.debug("True")
+                return True
+            else:
+                logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
+                return False
+        elif G.nodes[node1]["net_type"] == 'internal':
+            weight1=[(G.get_edge_data(node1, nbr)['weight'] & ~2) for nbr in nbrs1]
+            weight2=[(G.get_edge_data(node2, nbr)['weight'] & ~2) for nbr in nbrs2]
+            if weight2==weight1:
+                logger.debug("True")
+                return True
+            else:
+                logger.debug(f'internal port weight mismatch {weight1},{weight2}')
+                return False
+    else: 
+        if 'values' in G.nodes[node1].keys() and \
+        G.nodes[node1]["values"]==G.nodes[node2]["values"]:
+            logger.debug(" True")
+            return True
+        else:
+            logger.debug(" False, value mismatch")
+            return False  
+  
 def max_connectivity(G):
     conn_value =0
     #internal_nets =[x for x,y in G.nodes(data=True) if y['inst_type']=='net' and len(G.edges(x)) > 1]

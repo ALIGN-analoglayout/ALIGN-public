@@ -8,6 +8,9 @@ Created on Wed Feb 21 13:12:15 2020
 import pprint
 from itertools import combinations,combinations_with_replacement
 import logging
+from .create_array_hierarchy import create_hierarchy
+from .util import compare_two_nodes
+
 logger = logging.getLogger(__name__)
 
 def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
@@ -22,69 +25,10 @@ def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
                     match[node1]=node2
         if node1 not in match:
             return False
-
     return match
         
     
-def compare_two_nodes(G,node1:str,node2:str ,ports_weight):
-    """
-    compare two node properties. It uses 1st level of neighbourhood for comparison of nets
 
-    Parameters
-    ----------
-    G : TYPE, networkx graph
-        DESCRIPTION. it consist of all subckt properties
-    node1, node2 : TYPE  string
-        DESCRIPTION. node name
-    ports_weight : TYPE list
-        DESCRIPTION. port weights 
-
-    Returns
-    -------
-    bool
-        DESCRIPTION. True for matching node
-
-    """
-    nbrs1= [nbr for nbr in G.neighbors(node1) if G.get_edge_data(node1, nbr)['weight'] !=2]
-    nbrs2= [nbr for nbr in G.neighbors(node2) if G.get_edge_data(node2, nbr)['weight'] !=2]
-    nbrs1= [nbr for nbr in nbrs1 if G.get_edge_data(node1, nbr)['weight'] !=7]
-    nbrs2= [nbr for nbr in nbrs2 if G.get_edge_data(node2, nbr)['weight'] !=7]
-    logger.debug(f"comparing_nodes: {node1},{node2},{nbrs1},{nbrs2}")
-
-    # Add some heuristic here in future
-    
-    nbrs1_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs1]) + [G.nodes[node1]["inst_type"]]
-    nbrs2_type= sorted([G.nodes[nbr]["inst_type"] for nbr in nbrs2]) + [G.nodes[node2]["inst_type"]]
-    if nbrs1_type != nbrs2_type:
-        logger.debug(f"type mismatch {nbrs1}:{nbrs1_type} {nbrs2}:{sorted(nbrs2_type)}")
-        return False
-    if G.nodes[node1]["inst_type"]=="net": 
-        if G.nodes[node1]["net_type"] == G.nodes[node2]["net_type"] == 'external':
-            if not ports_weight:
-                return True
-            elif sorted(ports_weight[node1]) == sorted(ports_weight[node2]):
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f'external port weight mismatch {ports_weight[node1]},{ports_weight[node2]}')
-                return False
-        elif G.nodes[node1]["net_type"] == 'internal':
-            weight1=[(G.get_edge_data(node1, nbr)['weight'] & ~2) for nbr in nbrs1]
-            weight2=[(G.get_edge_data(node2, nbr)['weight'] & ~2) for nbr in nbrs2]
-            if weight2==weight1:
-                logger.debug("True")
-                return True
-            else:
-                logger.debug(f'internal port weight mismatch {weight1},{weight2}')
-                return False
-    else: 
-        if 'values' in G.nodes[node1].keys() and \
-        G.nodes[node1]["values"]==G.nodes[node2]["values"]:
-            logger.debug(" True")
-            return True
-        else:
-            logger.debug(" False, value mismatch")
-            return False
 
 
 def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weight):
@@ -123,14 +67,22 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
     logger.debug(f"node2:{node2},property: {G.nodes[node2]},neigbors2: {nbrs2}")
     if not nbrs1 or not nbrs2:
         if compare_two_nodes(G, node1, node2, ports_weight):
-            match_pair[node1]=node2
+            match_pair[node1] = node2
         logger.debug(f"no new neihbours, returning recursion {match_pair}")
         return
     elif len(nbrs1)> 10:
+        if "start_point" in match_pair.keys():
+            match_pair["start_point"]+=[node1,node2]
+        else:
+            match_pair["start_point"]=[node1,node2]
         logger.debug(f"skipping high fanout nets due to large computation,  {node1} {nbrs1}")
         traversed.append(node1)
         return
     elif len(nbrs2)> 10:
+        if "start_point" in match_pair.keys():
+            match_pair["start_point"]+=[node1,node2]
+        else:
+            match_pair["start_point"]=[node1,node2]
         traversed.append(node2)
         logger.debug(f"skipping high fanout nets due to large computation,  {node2} {nbrs2}")
         return
@@ -317,7 +269,6 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     const_file = (input_dir / (name + '.const'))
     logger.debug("writing constraints: %s",const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
-
 
     # Read contents of input constraint file
     # Check if there are any other constraints except cap constraints
@@ -507,3 +458,4 @@ def CopyConstFile(name, input_dir, working_dir):
         else:
             const_file.write_text(input_const_file.read_text())
     return const_file
+

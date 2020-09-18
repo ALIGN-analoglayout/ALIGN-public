@@ -88,7 +88,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     new_node='_'.join(new_node)
     G.add_node(new_node,
                inst_type=new_inst_type,
-               real_inst_type='_'.join(real_inst_types),
+               real_inst_type=real_inst_types,
                ports=list(matched_ports.keys()),
                edge_weight=list(ports.values()),
                ports_match=matched_ports,

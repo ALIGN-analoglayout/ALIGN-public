@@ -131,8 +131,7 @@ class SpiceParser:
             elif self.top_ckt_name in self.subckts.keys():
                 design=self.resolve_hierarchy()
                 subckt_ports = self.subckts[self.top_ckt_name]["ports"]
-                circuit_graph = self._create_bipartite_circuit_graph(
-                    design, subckt_ports)
+                circuit_graph = self._create_bipartite_circuit_graph(design, subckt_ports)
                 self.circuits_list.append({
                     "name": self.top_ckt_name,
                     "graph": circuit_graph,
@@ -143,18 +142,15 @@ class SpiceParser:
                 return 0
 
             logger.debug(
-                "################### PARSING DONE \
-                #################### \n")
+                "################### PARSING DONE #################### \n")
 
             logger.debug(
                 "\n###################\
-                FINAL CIRCUIT AFTER initialization\
-                #################### \n"
+                FINAL CIRCUIT AFTER initialization #################### \n"
             )
             for node in design:
                 logger.debug(node)
 
-            #self._show_circuit_graph("circuit", self.circuit_graph,"./circuit_graph_images/")
             return self.circuits_list
     def resolve_hierarchy(self):
         if self.flat:
@@ -191,7 +187,6 @@ class SpiceParser:
                 logger.error(f'No sizing info:{node["inst"]}')
     def _remove_source(self):
         no_of_source = 0
-        #source_ports = []
         for ckt_name, elements in self.subckts.items():
             reduced_subckt = []
             source_ports =[]
@@ -401,6 +396,7 @@ class SpiceParser:
                     "values": values,
                     "edge_weight": node["edge_weight"]
                 }
+                logger.debug(f'{flat_node}')
                 if 'mos' in node["inst_type"]:
                     flat_node["body_pin"]=node["body_pin"]
                 flatdesign.append(flat_node)
@@ -461,6 +457,7 @@ class SpiceParser:
                 if 'mos' in node["inst_type"]:
                     hier_node["body_pin"]=node["body_pin"]
                 hier_design.append(hier_node)
+                logger.debug(f"updated node info: {node}")
             else:
                 hier_design.append(node)
                 hier_design[-1]["values"]=values
@@ -471,10 +468,8 @@ class SpiceParser:
         circuit_graph = nx.Graph()
         for node in all_nodes:
             if "hier_nodes" in node.keys():
-                subgraph = self._create_bipartite_circuit_graph(
-                    node["hier_nodes"],
-                    self.subckts[node["inst_type"]]["ports"])
-                                # Define ports for subblock
+                subgraph = self._create_bipartite_circuit_graph( node["hier_nodes"], self.subckts[node["inst_type"]]["ports"])
+                # Define ports for subblock
                 connection = {}
                 for idx, pin in enumerate(self.subckts[node["inst_type"]]["ports"]):
                         connection[pin] = node['ports'][idx]

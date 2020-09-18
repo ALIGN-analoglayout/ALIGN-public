@@ -8,36 +8,36 @@ Created on Wed July 08 13:12:15 2020
 from collections import Counter
 from itertools import combinations
 from .merge_nodes import merge_nodes
-from .write_constraint import compare_two_nodes
+from .util import compare_two_nodes
 
 import logging
 logger = logging.getLogger(__name__)
 
-def FindArray(graph,input_dir,name,ports_weight):
+# def FindArray(graph,input_dir,name,ports_weight):
     
-    templates = {}
-    array_of_node = {}
-    visited =[]
-    all_array = {}
+#     templates = {}
+#     array_of_node = {}
+#     visited =[]
+#     all_array = {}
 
-    for node, attr in graph.nodes(data=True):
-        if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>2:
-            logger.debug(f"extracting array starting from net {node}")
-            level1 = [l1 for l1 in graph.neighbors(node) if l1 not in visited]
-            array_of_node[node] = matching_groups(graph,level1,ports_weight)
-            logger.debug("finding array:%s,%s,%s",node,array_of_node[node],level1)
-            if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
-                for group in array_of_node[node]:
-                    similar_node_groups = {}
-                    for el in group:
-                        similar_node_groups[el]=[el]
-                    templates[node]=[el]
-                    visited=group+[node]
-                    array=similar_node_groups.copy()
-                    trace_template(graph,similar_node_groups,visited,templates[node],array)
-                    logger.debug("similar groups final, %s",array)
-                    all_array[node]=array
-    return all_array
+#     for node, attr in graph.nodes(data=True):
+#         if  'net' in attr["inst_type"] and len(list(graph.neighbors(node)))>2:
+#             logger.debug(f"extracting array starting from net {node}")
+#             level1 = [l1 for l1 in graph.neighbors(node) if l1 not in visited]
+#             array_of_node[node] = matching_groups(graph,level1,ports_weight)
+#             logger.debug(f"group of matching nodes connected to net {node}: {array_of_node[node]}")
+#             if len(array_of_node[node]) > 0 and len(array_of_node[node][0])>1:
+#                 for group in array_of_node[node]:
+#                     similar_node_groups = {}
+#                     for el in group:
+#                         similar_node_groups[el]=[el]
+#                     templates[node] = [el]
+#                     visited = group+[node]
+#                     array = similar_node_groups.copy()
+#                     trace_template(graph,similar_node_groups,visited,templates[node],array)
+#                     logger.debug(f"similar groups final from net {node}:{array}")
+#                     all_array[node] = array
+#     return all_array
 
 def matching_groups(G,level1,ports_weight):
     """
@@ -82,86 +82,7 @@ def matching_groups(G,level1,ports_weight):
                 similar_groups.append([l1_node1,l1_node2])
     return similar_groups
 
-def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
-    """
-    Creates array hierarchies starting from input node
 
-    Parameters
-    ----------
-    graph : TYPE
-        DESCRIPTION.
-    node : str
-        DESCRIPTION.
-    traversed : list
-        DESCRIPTION.
-    ports_weight : dict
-        DESCRIPTION.
-
-    Returns
-    -------
-    hier_of_node : TYPE
-        DESCRIPTION.
-
-    """
-
-    hier_of_node ={}
-    level1=list(set(graph.neighbors(node))- set(traversed))
-    
-    hier_of_node[node]=matching_groups(graph,level1,None)
-    logger.debug(f"new hierarchy points {hier_of_node} {level1}")
-
-    if len(hier_of_node[node]) > 0:
-        for group in sorted(hier_of_node[node] , key=lambda group: len(hier_of_node[node][group])):
-            if len(group)>0:
-                templates={}
-                similar_node_groups = {}
-                for el in sorted(group):
-                    similar_node_groups[el]=[el]
-                templates[node]=[el]
-                visited=group+[node]
-                array=similar_node_groups.copy()
-                trace_template(graph,similar_node_groups,visited,templates[node],array)
-                logger.debug("similar groups final, %s",array)
-                
-        all_inst = []
-        if array and len(array.values())>1 and len(list(array.values())[0])>1:
-            matched_ports = {}
-            for branch in  array.values():
-                for node_hier in branch:
-                    if graph.nodes[node_hier]['inst_type'] != 'net' \
-                        and node_hier not in all_inst \
-                        and not graph.nodes[node_hier]['inst_type'].lower().startswith('cap'):  
-                        all_inst.append(node_hier)
-                
-        else:
-            hier_of_node[node]=[]
-            for inst in array.keys():
-                if graph.nodes[inst]['inst_type']!='net':
-                    hier_of_node[node].append(inst)
-        if len(all_inst)>1:
-            all_inst=sorted(all_inst)
-            h_ports_weight={}
-            for inst in  all_inst:
-                for node_hier in list(set(graph.neighbors(inst))):
-                    if graph.nodes[node_hier]['inst_type']== 'net':
-                        if (set(graph.neighbors(node_hier))- set(all_inst)):
-                            matched_ports[node_hier]=node_hier
-                            h_ports_weight[node_hier] = []
-                            for nbr in list(graph.neighbors(node_hier)):
-                                h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])
-                       
-            logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
-            graph, subgraph,_ = merge_nodes(
-                    graph, 'dummy_hier_'+node,all_inst , matched_ports)
-            hier_of_node[node]={
-                        "name": 'dummy_hier_'+node,
-                        "graph": subgraph,
-                        "ports": list(matched_ports.keys()),
-                        "ports_match": matched_ports,
-                        "ports_weight": h_ports_weight,
-                        "size": len(subgraph.nodes())
-                    }
-        return hier_of_node
 
 def trace_template(graph, similar_node_groups,visited,template,array):
     
@@ -223,3 +144,83 @@ def check_convergence(match:dict):
             vals+=val
 
 
+def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
+    """
+    Creates array hierarchies starting from input node
+
+    Parameters
+    ----------
+    graph : TYPE
+        DESCRIPTION.
+    node : str
+        DESCRIPTION.
+    traversed : list
+        DESCRIPTION.
+    ports_weight : dict
+        DESCRIPTION.
+
+    Returns
+    -------
+    hier_of_node : TYPE
+        DESCRIPTION.
+
+    """
+
+    hier_of_node ={}
+    level1=list(set(graph.neighbors(node))- set(traversed))
+    
+    hier_of_node[node]=matching_groups(graph,level1,None)
+    logger.debug(f"new hierarchy points {hier_of_node}")
+
+    if len(hier_of_node[node]) > 0:
+        for group in sorted(hier_of_node[node] , key=lambda group: len(group)):
+            if len(group)>0:
+                templates = {}
+                similar_node_groups = {}
+                for el in sorted(group):
+                    similar_node_groups[el]=[el]
+                templates[node]=[el]
+                visited=group+[node]
+                array=similar_node_groups.copy()
+                trace_template(graph,similar_node_groups,visited,templates[node],array)
+                logger.debug(f"similar groups final from net {node}:{array}")
+                
+        all_inst = []
+        if array and len(array.values())>1 and len(list(array.values())[0])>1:
+            matched_ports = {}
+            for branch in  array.values():
+                for node_hier in branch:
+                    if graph.nodes[node_hier]['inst_type'] != 'net' \
+                        and node_hier not in all_inst \
+                        and not graph.nodes[node_hier]['inst_type'].lower().startswith('cap'):  
+                        all_inst.append(node_hier)
+                
+        else:
+            hier_of_node[node]=[]
+            for inst in array.keys():
+                if graph.nodes[inst]['inst_type']!='net':
+                    hier_of_node[node].append(inst)
+        if len(all_inst)>1:
+            all_inst=sorted(all_inst)
+            h_ports_weight={}
+            for inst in  all_inst:
+                for node_hier in list(set(graph.neighbors(inst))):
+                    if graph.nodes[node_hier]['inst_type']== 'net':
+                        if (set(graph.neighbors(node_hier))- set(all_inst)):
+                            matched_ports[node_hier]=node_hier
+                            h_ports_weight[node_hier] = []
+                            for nbr in list(graph.neighbors(node_hier)):
+                                h_ports_weight[node_hier].append(graph.get_edge_data(node_hier, nbr)['weight'])
+                       
+            logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
+            graph, subgraph,_ = merge_nodes(
+                    graph, 'dummy_hier_'+node,all_inst , matched_ports)
+            hier_of_node[node]={
+                        "name": 'dummy_hier_'+node,
+                        "graph": subgraph,
+                        "ports": list(matched_ports.keys()),
+                        "ports_match": matched_ports,
+                        "ports_weight": h_ports_weight,
+                        "size": len(subgraph.nodes())
+                    }
+        return hier_of_node
