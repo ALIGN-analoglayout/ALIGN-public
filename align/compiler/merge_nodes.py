@@ -54,10 +54,12 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=merged_value({},G.nodes[node]['values']))
+        if G.nodes[node]["inst_type"] in ['pmos', 'nmos']:
+            subgraph.nodes[node]["body_pin"] = G.nodes[node]["body_pin"]
+
         if 'ports_match' in G.nodes[node].keys():
             subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
             
-
         logger.debug(f"removing node {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 

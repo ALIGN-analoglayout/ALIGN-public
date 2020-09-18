@@ -344,12 +344,9 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
 
                 if len(remove_these_nodes) == 1:
                     logger.debug(f"One node element: {sub_block_name}")
-                    G1.nodes[
-                        remove_these_nodes[0]]["inst_type"] = sub_block_name
-                    G1.nodes[
-                        remove_these_nodes[0]]["ports_match"] = matched_ports
+                    G1.nodes[remove_these_nodes[0]]["inst_type"] = sub_block_name
+                    G1.nodes[remove_these_nodes[0]]["ports_match"] = matched_ports
                     updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
-                    check_values(updated_values)
                     G1.nodes[remove_these_nodes[0]]["values"] = updated_values
                    
                 else:
@@ -358,15 +355,14 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                         G1, sub_block_name, remove_these_nodes, matched_ports)
                     logger.debug(f'Calling recursive for bock: {sub_block_name}')
                     mapped_subgraph_list = _mapped_graph_list(
-                        G2, [
+                        subgraph, [
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
                         ])
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
-                        G2, mapped_subgraph_list,liblist,check_duplicates)
-                    check_nodes(updated_subgraph_circuit)
-
+                        subgraph, mapped_subgraph_list,liblist,check_duplicates)
+                    
                     updated_circuit.extend(updated_subgraph_circuit)
                     logger.debug(f"adding new sub_ckt: {sub_block_name}")
                     check_nodes(updated_circuit)
@@ -405,7 +401,8 @@ def check_values(values):
     for param,value in values.items():
         logger.debug(f"param, value: {param}, {value}")
         if param == 'model': continue
-        assert(isinstance(value, int) or isinstance(value, float)), f"ERROR: Parameter value {value} not defined. Check match log"
+        assert (isinstance(value, int) or isinstance(value, float)), \
+            "ERROR: Parameter value {value} of type %r not defined. Check match log" % type(value)
 
 def check_nodes(graph_list):
     logger.debug("Checking all values")

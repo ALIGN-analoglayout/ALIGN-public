@@ -71,16 +71,20 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
-
-    updated_ckt_list = []
-    check_duplicates={}
+    
+    stacked_subcircuit=[]
     for circuit_name, circuit in hier_graph_dict.items():   
         logger.debug(f"START preprocessing")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
-            preprocess_stack_parallel(hier_graph_dict,circuit_name,G1)
+            stacked_subcircuit.append(preprocess_stack_parallel(hier_graph_dict,circuit_name,G1))
+    for circuit_name in stacked_subcircuit:
+        if circuit_name in hier_graph_dict.keys():
+            del hier_graph_dict[circuit_name]
 
+    updated_ckt_list = []
+    check_duplicates={}
     for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"START MATCHING in circuit: {circuit_name}")
         G1 = circuit["graph"]
@@ -230,7 +234,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
 
                 if block_name in primitives:
                     if block_args != primitives[block_name]:
-                        logging.warning(f"two different primitve size got approximated to same unit size")
+                        logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
                 else:
                     primitives[block_name] = block_args
             else:

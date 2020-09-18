@@ -58,7 +58,9 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
                     attr["edge_weight"] = attributes[0]["edge_weight"]
                     attr["connection"]= None
                                                                    
-
+        return circuit_name
+    else:
+        return None
         #print(circuit_name,circuit,attributes)
         #print(hier_graph_dict)
         

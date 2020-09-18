@@ -289,8 +289,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 size=size*int(values["nf"])
         if 'm' in values.keys():
                 size=size*int(values["m"])
-        if 'stack' in values.keys():
-                size=size*int(values["stack"])
+
         no_units = ceil(size / unit_size_mos)
 
         logger.debug('Generating lef for: %s %s', name, str(size))
@@ -309,18 +308,25 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
             logger.debug("Generating parametric lef of: %s", block_name)
-            
+            values["real_inst_type"]=attr["real_inst_type"]
             cell_gen_parameters= {
                 'primitive': name,
                 'value': unit_size_mos,
                 'x_cells': xval,
                 'y_cells': yval,
-                'parameters': attr
+                'parameters':values
             }
-            # read these from config file later
+            if 'stack' in values.keys():
+                cell_gen_parameters['stack']=values["stack"]
+                block_name = block_name+'_ST'+str(values["stack"])
+            #cell generator takes only one VT so doing a string search
+            #To be fixed:
+            if isinstance(attr["real_inst_type"],list):
+                merged_vt='_'.join(attr["real_inst_type"])
+            else:
+                merged_vt=attr["real_inst_type"]
             
-            vt= [vt for vt in design_config["vt_type"] if vt.lower() in  attr["real_inst_type"]]
-
+            vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
             if vt:
                 block_name = block_name+'_'+vt[0]
                 cell_gen_parameters['vt_type']=vt[0]
