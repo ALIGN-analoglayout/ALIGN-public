@@ -31,11 +31,11 @@ jobs:
 
       - run: |
           apk update
-          apk add py-pip bash make
+          apk add py3-pip bash make
 
       - run: |
-          apk add python-dev libffi-dev openssl-dev gcc libc-dev make
-          pip install docker-compose
+          apk add python3-dev libffi-dev openssl-dev gcc libc-dev make
+          pip3 install docker-compose
 
       - setup_remote_docker
 
