@@ -66,7 +66,7 @@ def schematic2layout(netlist_dir, pdk_dir, netlist_file=None, subckt=None, worki
     for netlist in netlist_files:
         logger.info(f"READ file: {netlist} subckt={subckt}, flat={flatten}")
         # Generate hierarchy
-        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir.name, uniform_height)
+        primitives = generate_hierarchy(netlist, subckt, topology_dir, flatten, pdk_dir, uniform_height)
         # Generate primitives
         for block_name, block_args in primitives.items():
             logger.debug(f"Generating primitive: {block_name}")

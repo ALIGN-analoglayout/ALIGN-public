@@ -15,9 +15,9 @@ from .read_lef import read_lef
 import logging
 logger = logging.getLogger(__name__)
 
-def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_name, uniform_height):
+def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, uniform_height):
     updated_ckt_list,library = compiler(netlist, subckt, flatten_heirarchy)
-    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_name, uniform_height)
+    return compiler_output(netlist, library, updated_ckt_list, subckt, output_dir, pdk_dir, uniform_height)
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     """
@@ -123,7 +123,7 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
                 lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
     return updated_ckt_list, lib_names
 
-def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_name="FinFET14nm_Mock_PDK", uniform_height=False):
+def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, result_dir:pathlib.Path, pdk_dir:pathlib.Path, uniform_height=False):
     """
     search for constraints and write output in verilog format
     Parameters
@@ -138,7 +138,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.
     result_dir : TYPE. directoy path for writing results
         DESCRIPTION. writes out a verilog netlist, spice file and constraints
-    pdk_name : Type, str
+    pdk_dir : TYPE. directory path containing pdk layers.json file
         DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory 
     uniform_height : creates cells of uniform height
 
@@ -153,11 +153,11 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
         DESCRIPTION.
 
     """
-    pdk_path=pathlib.Path(__file__).resolve().parent.parent.parent / 'pdks' / pdk_name / 'layers.json'
-    with open(pdk_path,"rt") as fp:
+    layers_json = pdk_dir / 'layers.json'
+    with open(layers_json,"rt") as fp:
         pdk_data=json.load(fp)
     design_config = pdk_data["design_info"]
-    
+
     if not result_dir.exists():
         result_dir.mkdir()
     logger.debug(f"Writing results in dir: {result_dir} {updated_ckt_list}")
