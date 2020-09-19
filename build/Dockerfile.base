@@ -43,7 +43,7 @@ RUN python3 -m venv $venv
 # Note: Package dependencies are in setup.py
 RUN $pip install --upgrade pip -q
 RUN $pip install -q \
-    pytest==5.4.3 \
+    pytest \
     pytest-cov \
     pytest-timeout \
     coverage-badge
