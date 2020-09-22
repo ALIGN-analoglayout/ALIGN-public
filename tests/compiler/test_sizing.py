@@ -13,5 +13,7 @@ def test_sizing():
 def test_sizing_output():
     updated_ckt,library = test_sizing()
     # Every example should contain a setup file
-    test_path=pathlib.Path(__file__).resolve().parent / 'test3_sizing.sp'
-    compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', 'FinFET14nm_Mock_PDK' )
+    mydir = pathlib.Path(__file__).resolve()
+    test_path = mydir.parent / 'test3_sizing.sp'
+    pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
+    compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
