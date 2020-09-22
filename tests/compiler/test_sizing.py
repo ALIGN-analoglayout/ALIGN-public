@@ -7,7 +7,6 @@ def test_sizing():
     updated_ckt,library = compiler(test_path, "sizing",0 )
     all_subckt_list = [ele["name"] for ele in updated_ckt]
     assert 'DP_NMOS' in all_subckt_list
-    assert 'stack_of_three' in all_subckt_list
     assert 'sizing' in all_subckt_list
 
     return(updated_ckt,library)
