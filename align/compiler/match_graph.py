@@ -327,6 +327,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                 for g1_n, g2_n in Gsub.items():
                     if 'net' not in G1.nodes[g1_n]["inst_type"]:
                         G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
+                        G2.nodes[g2_n]['real_inst_type'] = G1.nodes[g1_n]['real_inst_type']
 
                         if 'MOS' in sub_block_name and 'mos' in G1.nodes[g1_n]['inst_type']:
                             matched_ports['B'] = G1.nodes[g1_n]['body_pin']
@@ -355,13 +356,13 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                         G1, sub_block_name, remove_these_nodes, matched_ports)
                     logger.debug(f'Calling recursive for bock: {sub_block_name}')
                     mapped_subgraph_list = _mapped_graph_list(
-                        subgraph, [
+                        G2, [
                             i for i in liblist
                             if not (i['name'] == sub_block_name)
                         ])
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
-                        subgraph, mapped_subgraph_list,liblist,check_duplicates)
+                        G2, mapped_subgraph_list,liblist,check_duplicates)
                     
                     updated_circuit.extend(updated_subgraph_circuit)
                     logger.debug(f"adding new sub_ckt: {sub_block_name}")

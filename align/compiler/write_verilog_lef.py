@@ -273,22 +273,30 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
+        
         if "nfin" in values.keys():
             #FinFET design
             size = int(values["nfin"])
+            name_arg ='nfin'+str(size)
 
         elif "w" in values.keys():
             #Bulk design
             size = int(values["w"]*1E+9/design_config["Gate_pitch"])
             values["nfin"]=size
+            name_arg ='w'+str(size)
+
 
         else: 
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'nf' in values.keys():
                 size=size*int(values["nf"])
+                name_arg =name_arg+'_nf'+str(values["nf"])
+
         if 'm' in values.keys():
                 size=size*int(values["m"])
+                name_arg =name_arg+'_m'+str(values["nf"])
+
 
         no_units = ceil(size / unit_size_mos)
 
@@ -303,7 +311,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 square_y -= 1
             yval = square_y
             xval = int(no_units / square_y)
-            block_name = f"{name}_n{unit_size_mos}_X{xval}_Y{yval}"
+            block_name = f"{name}_{name_arg}_n{unit_size_mos}_X{xval}_Y{yval}"
 
             if block_name in available_block_lef:
                 return block_name, available_block_lef[block_name]
@@ -329,7 +337,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
             if vt:
                 block_name = block_name+'_'+vt[0]
-                cell_gen_parameters['vt_type']=vt[0]
+                #cell_gen_parameters['vt_type']=vt[0]
             return block_name, cell_gen_parameters
         else:
             logger.debug("No proper parameters found for cell generation")

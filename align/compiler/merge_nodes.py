@@ -47,7 +47,8 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     max_value = {}
     for node in list_of_nodes:
         new_node.append ( node)
-        real_inst_types.append (G.nodes[node]["real_inst_type"])
+        if G.nodes[node]["real_inst_type"] not in G.nodes[node]["real_inst_type"]:
+            real_inst_types.append (G.nodes[node]["real_inst_type"])
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
                           real_inst_type=G.nodes[node]["real_inst_type"],
@@ -86,7 +87,8 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                 
             else:
                 ports[ele] = G[node][ele]["weight"]
-
+    if len(real_inst_types)==1:
+        real_inst_types=real_inst_types[0]
     new_node='_'.join(new_node)
     G.add_node(new_node,
                inst_type=new_inst_type,
@@ -180,6 +182,7 @@ def check_values(values):
 def check_nodes(graph):
     """ Checking node paramters to be dict type"""
     for node, attr in graph.nodes(data=True):
+        logger.debug(f"checking node {node} {attr}")
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
 
