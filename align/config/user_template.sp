@@ -31,6 +31,18 @@ M1 (DB DA SB B) NMOS w=w l=90n
 M2 (DC DA SC B) NMOS w=w l=90n
 .ends LSB_NMOS_2
 
+.subckt LSB_NMOS_7 DA DB DC DD DE DF DG DH SA SB SC SD SE SF SG SH
+**UT austin  array BUFFER_VREFP2
+M0 (DA DA SA B) NMOS w=w l=90n
+M1 (DB DA SB B) NMOS w=w l=90n
+M2 (DC DA SC B) NMOS w=w l=90n
+M3 (DD DA SD B) NMOS w=w l=90n
+M4 (DE DA SE B) NMOS w=w l=90n
+M5 (DF DA SF B) NMOS w=w l=90n
+M6 (DG DA SG B) NMOS w=w l=90n
+M7 (DH DA SH B) NMOS w=w l=90n
+.ends LSB_NMOS_2
+
 .subckt LSB_PMOS_2 DA DB DC SA SB SC
 **UT austin  array VCM5
 M0 (DA DA SA B) PMOS w=w l=90n
@@ -97,8 +109,8 @@ M4 (DE DA S B) PMOS_VTL w=w l=90n
 .ends CMB_PMOS_4
 
 .subckt INV_LVT i zn SN SP
-xm0 zn i SN SN lvtnfet w=w0 l=l0
-xm1 zn i SP SP lvtpfet w=w1 l=l0
+M0 zn i SN SN NMOS_VTL w=w0 l=l0
+M1 zn i SP SP PMOS_VTL w=w1 l=l0
 .ends INV_LVT
 
 

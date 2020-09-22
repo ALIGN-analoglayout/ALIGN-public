@@ -40,22 +40,27 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     logger.debug(f"Is input bipartite: {nx.is_bipartite(G)}")
     assert len(list_of_nodes) > 1
     #  print("Merging nodes",list_of_nodes)
-    new_node = ""
+    new_node = []
+    real_inst_types = []
     ports = {}
     subgraph = nx.Graph()
     max_value = {}
     for node in list_of_nodes:
-        new_node += '_' + node
+        new_node.append ( node)
+        if G.nodes[node]["real_inst_type"] not in G.nodes[node]["real_inst_type"]:
+            real_inst_types.append (G.nodes[node]["real_inst_type"])
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
                           real_inst_type=G.nodes[node]["real_inst_type"],
                           ports=G.nodes[node]['ports'],
                           edge_weight=G.nodes[node]['edge_weight'],
                           values=merged_value({},G.nodes[node]['values']))
+        if G.nodes[node]["inst_type"] in ['pmos', 'nmos']:
+            subgraph.nodes[node]["body_pin"] = G.nodes[node]["body_pin"]
+
         if 'ports_match' in G.nodes[node].keys():
             subgraph.nodes[node]["ports_match"]= G.nodes[node]['ports_match']
             
-
         logger.debug(f"removing node {G.nodes[node]}")
         max_value = merged_value(max_value, G.nodes[node]['values'])
 
@@ -82,11 +87,12 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                 
             else:
                 ports[ele] = G[node][ele]["weight"]
-
-    new_node = new_node[1:]
+    if len(real_inst_types)==1:
+        real_inst_types=real_inst_types[0]
+    new_node='_'.join(new_node)
     G.add_node(new_node,
                inst_type=new_inst_type,
-               real_inst_type=new_inst_type,
+               real_inst_type=real_inst_types,
                ports=list(matched_ports.keys()),
                edge_weight=list(ports.values()),
                ports_match=matched_ports,
@@ -145,9 +151,6 @@ def convert_unit(value:str):
     elif value.endswith('k') and is_val:
         value = float(value.replace('k', ""))
         value = value * 1000
-    elif 'K' in value and is_val:
-        value = float(value.replace('K', ""))
-        value = value * 1000
     elif 'm' in value and is_val:
         value = float(value.replace('m', ""))
         value = value * 1E6
@@ -161,14 +164,13 @@ def convert_unit(value:str):
         value = float(value.replace('u', ""))
         value = value * 1E-6
     elif 'f' in value and is_val:
-        #value='{:.2e}'.format(float(re.sub("[^0-9]", "", value)))
         value = float(value.replace('f', ""))
         value = value * 1e-15
     else:
         try:
             value = float(value)
         except ValueError:
-            logger.error(f"Parameter {value} not defined. Using value=12n. Please fix netlist")
+            logger.error(f"Parameter {value} not defined. Using value=10n. Please fix netlist")
             value = 1e-8
     return mult*value
 
@@ -180,6 +182,7 @@ def check_values(values):
 def check_nodes(graph):
     """ Checking node paramters to be dict type"""
     for node, attr in graph.nodes(data=True):
+        logger.debug(f"checking node {node} {attr}")
         if  not attr["inst_type"] == "net":
             check_values(attr["values"])
 

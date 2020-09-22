@@ -84,6 +84,14 @@ class CmdlineParser():
                             choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
                             default='DEBUG',
                             help="Set the logging level (default: %(default)s)")
+        parser.add_argument("-r",
+                            "--regression",
+                            action='store_true',
+                            help='Set to true to copy <dsign>.gds.json to top level (Default False)')
+        parser.add_argument("-u",
+                            "--uniform_height",
+                            action='store_true',
+                            help='Set to true to use cells of uniform height (Default False)')
         parser.add_argument('--version',
                             action='version',
                             version='%(prog)s ' + __version__)

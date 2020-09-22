@@ -12,6 +12,7 @@ __pycache__/
 *.gds
 *_cand
 *.pyc
+*.swp
 tmp/
 LOG/
 pycharm/
