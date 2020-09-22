@@ -291,11 +291,11 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             size = '_'.join(param+str(values[param]) for param in values)
         if 'nf' in values.keys():
                 size=size*int(values["nf"])
-                name_arg =name_arg+'_nf'+str(values["nf"])
+                name_arg =name_arg+'_nf'+str(int(values["nf"]))
 
         if 'm' in values.keys():
                 size=size*int(values["m"])
-                name_arg =name_arg+'_m'+str(values["nf"])
+                name_arg =name_arg+'_m'+str(int(values["m"]))
 
 
         no_units = ceil(size / unit_size_mos)
