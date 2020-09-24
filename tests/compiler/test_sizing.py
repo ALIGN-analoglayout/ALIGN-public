@@ -2,7 +2,7 @@ import pathlib
 
 from align.compiler.compiler import compiler, compiler_output
 
-def test_sizing1():
+def test_sizing():
     mydir = pathlib.Path(__file__).resolve()
     test_path = mydir.parent / 'test_circuits' / 'intel_circuit.sp'
     updated_ckt,library = compiler(test_path, "intel_circuit",0 )
