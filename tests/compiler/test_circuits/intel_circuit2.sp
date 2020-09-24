@@ -15,7 +15,7 @@ Mi[1] n0 g  n1 b psvt w=180e-9 m=1 nf=1
 Mi[2] n1 g  s  b psvt w=180e-9 m=1 nf=1
 .ENDS
 
-.SUBCKT intel_circuit
+.SUBCKT intel_circuit2
 
 Xi0 d0 g0 s0 vcc stack3_p_cell m=4
 Xi1 d1 g1 s1 vcc stack3_psvt_cell m=4
