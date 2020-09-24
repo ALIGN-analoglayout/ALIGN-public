@@ -49,6 +49,7 @@ def preprocess_stack_parallel(hier_graph_dict:dict,circuit_name,G):
         for ckt in hier_graph_dict.values():
             for node,attr in ckt["graph"].nodes(data=True):
                 if 'net' not in attr["inst_type"] and attr["real_inst_type"]==circuit_name:
+                    logger.debug(f"updating instance {node} {attr} with stacked device {attributes}")
                     attr["inst_type"]=attributes[0]["inst_type"]
                     attr["real_inst_type"]=attributes[0]["real_inst_type"]
                     attr["values"]={**attributes[0]["values"],**attr["values"]}
@@ -210,7 +211,7 @@ def add_series_res(G):
         #to remove 3 in series
         add_series_res(G)
 def add_parallel_transistor(G):
-    logger.debug(f"merging all parallel transistors, initial graph size: {len(G)}")
+    logger.debug(f"CHECKING parallel transistors, initial graph size: {len(G)}")
     remove_nodes = []
     for node, attr in G.nodes(data=True):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
@@ -246,10 +247,13 @@ def add_stacked_transistor(G):
         if 'mos' in attr["inst_type"] and node not in remove_nodes:
             for net in G.neighbors(node):
                 edge_wt = G.get_edge_data(node, net)['weight']
-                if edge_wt == 4 and len(list(G.neighbors(net))) == 2 :
+                if edge_wt == 4 and len(list(G.neighbors(net))) == 2:
                     for next_node in G.neighbors(net):
-                        logger.debug(f" checking nodes: {node}:{list(G.neighbors(node))}, {next_node}:{list(G.neighbors(next_node))} {net}")
-                        if not next_node == node and G.nodes[next_node][
+                        logger.debug(f" checking nodes: {node}, {next_node} {net} {modified_nodes} {remove_nodes} ")
+                        if len( {node,next_node}- (set(modified_nodes.keys()) | set(remove_nodes)) )!=2:
+                            logger.debug(f"skipping {node} {next_node} as they are accessed before")
+                            continue
+                        elif not next_node == node and G.nodes[next_node][
                                 "inst_type"] == G.nodes[node][
                                     "inst_type"] and G.get_edge_data(
                                         next_node, net)['weight'] == 1:
@@ -262,27 +266,31 @@ def add_stacked_transistor(G):
                             else:
                                 continue
                             logger.debug(f"stacking two transistors: {node}, {next_node}, {gate_net}, {source_net},{common_nets}")
-                            if G.nodes[net]["net_type"]!="external" and next_node not in modified_nodes:
+                            if G.nodes[net]["net_type"]!="external" :
                                 if G.get_edge_data( node, gate_net)['weight'] >= 2 :
+                                    logger.debug(f"checking values {G.nodes[next_node]},{G.nodes[next_node]}")
                                     if 'stack' in G.nodes[next_node]["values"]:
                                         stack=G.nodes[next_node]["values"].pop("stack")
-                                    elif 'stack' in G.nodes[node]["values"]:
-                                        stack=G.nodes[node]["values"].pop("stack")
                                     else:
-                                        stack = 1
+                                        stack=1
+                                    if 'stack' in G.nodes[node]["values"]:
+                                        stack=stack+G.nodes[node]["values"].pop("stack")
+                                    else:
+                                        stack =stack+1
                                     if G.nodes[next_node]["values"]==G.nodes[node]["values"]:
-                                         modified_nodes[node] = stack +1
+                                        modified_nodes[node] = stack
                                     remove_nodes.append(net)
                                     if G.has_edge(node,source_net):
                                         wt= G[next_node][source_net]["weight"]+G[node][source_net]["weight"]
                                     else:
                                          wt= G[next_node][source_net]["weight"]
                                     modified_edges[node] = [ source_net, wt ]
-                                    logger.debug("success")
+                                    logger.debug(f"successfully modified node {modified_nodes}")
                                     remove_nodes.append(next_node)
     for node, attr in modified_edges.items():
         #Change source connection and port name
         G.add_edge(node, attr[0], weight=attr[1])
+        logger.debug(f"updating port names{G.nodes[node]['ports']} with {attr}")
         G.nodes[node]["ports"][2]=attr[0]
 
     for node, attr in modified_nodes.items():

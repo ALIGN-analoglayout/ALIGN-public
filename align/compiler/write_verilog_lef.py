@@ -283,7 +283,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             #Bulk design
             size = int(values["w"]*1E+9/design_config["Gate_pitch"])
             values["nfin"]=size
-            name_arg ='w'+str(size)
+            name_arg ='nfin'+str(size)
 
 
         else: 
@@ -337,7 +337,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
             if vt:
                 block_name = block_name+'_'+vt[0]
-                #cell_gen_parameters['vt_type']=vt[0]
+                cell_gen_parameters['vt_type']=vt[0]
             return block_name, cell_gen_parameters
         else:
             logger.debug("No proper parameters found for cell generation")

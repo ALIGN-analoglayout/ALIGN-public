@@ -46,7 +46,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     input_dir=input_ckt.parents[0]
     logger.debug(f"Reading subckt {input_ckt}")
     sp = SpiceParser(input_ckt, design_name, flat)
-    circuit = sp.sp_parser()[0]
+    circuit_graphs = sp.sp_parser()
+    assert circuit_graphs !=None  , f"No subcircuit with name {design_name} found in spice {input_ckt}"
+    circuit = circuit_graphs[0]
 
     design_setup=read_setup(input_dir / f'{input_ckt.stem}.setup')
     logger.debug(f"template parent path: {pathlib.Path(__file__).parent}")
@@ -80,7 +82,8 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             define_SD(G1,design_setup['POWER'],design_setup['GND'], design_setup['CLOCK'])
             stacked_subcircuit.append(preprocess_stack_parallel(hier_graph_dict,circuit_name,G1))
     for circuit_name in stacked_subcircuit:
-        if circuit_name in hier_graph_dict.keys():
+        if circuit_name in hier_graph_dict.keys() and circuit_name is not design_name:
+            logger.debug(f"removing stacked subcircuit {circuit_name}")
             del hier_graph_dict[circuit_name]
 
     updated_ckt_list = []
