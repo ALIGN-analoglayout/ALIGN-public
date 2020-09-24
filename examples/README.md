@@ -2,12 +2,12 @@
 ### Transistor Basics
 A transistor shall include either w or nfin parameter where w (nfin) refers to the width (the number of fins) in planar (finfet) process:
 ```
-# A transistor in a planar process
-Mi0 d g s b pmos w=90n l=14nm m=4
+# A transistor in a planar process (Four instances of two-fingered transistor)
+Mi0 d g s b pmos w=90n l=14nm m=4 nf=2
 ```
 ```
-# A transistor in a finfet process
-Mi0 d g s b pmos nfin=4 l=14nm m=4
+# A transistor in a finfet process (Four instances of two-fingered transistor)
+Mi0 d g s b pmos nfin=4 l=14nm m=4 nf=2
 ```
 
 ### Parallel Transistors
@@ -24,11 +24,10 @@ Mi0 d g s b pmos w=90n l=14nm m=4 nf=2
 ### Series (stacked) Transistors
 An array of stacked transistors shall be defined and instantiated as below where stack size is 3 and array size is 4: 
 ```
-.SUBCKT pmos_stack_of_three d g s b
-.PARAMS m=1
-Mi0 d  g n0 b pmos m=m w=90n l=14nm
-Mi1 n0 g n1 b pmos m=m w=90n l=14nm
-Mi2 n1 g s  b pmos m=m w=90n l=14nm
+.SUBCKT stack_of_three_p d g s b
+Mi0 d  g n0 b p w=90n l=14nm m=1
+Mi1 n0 g n1 b p w=90n l=14nm m=1
+Mi2 n1 g s  b p w=90n l=14nm m=1
 .ENDS
 Xi0 d g s b pmos_stack_of_three m=4
 ```
