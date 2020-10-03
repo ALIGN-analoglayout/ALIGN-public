@@ -781,11 +781,17 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
     //Nets
     json jsonNets=json::array();
     
+    double routing_area =  0;
     for(unsigned int i=0;i<node.Nets.size();i++){
        json json_temp_net;
        json_temp_net["Name"]=node.Nets[i].name;
        //connected
        json json_connected=json::array();
+
+       for(unsigned int j=0;j<node.Nets[i].path_metal.size();j++){
+           double area = abs(node.Nets[i].path_metal[j].LinePoint[0].x-node.Nets[i].path_metal[j].LinePoint[1].x)+abs(node.Nets[i].path_metal[j].LinePoint[0].y-node.Nets[i].path_metal[j].LinePoint[1].y)*node.Nets[i].path_metal[j].width;
+           routing_area = routing_area + area;
+       }
        
        for(unsigned int j=0;j<node.Nets[i].connected.size();j++){
            json temp_connected;
@@ -882,6 +888,7 @@ PnRdatabase::WriteJSON_Routability_Analysis (PnRDB::hierNode& node, const string
     }
 
     jsonTop["Nets"] = jsonNets;
+    jsonTop["Routing_Area"] = routing_area;
  
     jsonStream << std::setw(4) << jsonTop;
     jsonStream.close();
