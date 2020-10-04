@@ -47,7 +47,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
     max_value = {}
     for node in list_of_nodes:
         new_node.append ( node)
-        if G.nodes[node]["real_inst_type"] not in G.nodes[node]["real_inst_type"]:
+        if G.nodes[node]["real_inst_type"] not in real_inst_types:
             real_inst_types.append (G.nodes[node]["real_inst_type"])
         subgraph.add_node(node,
                           inst_type=G.nodes[node]["inst_type"],
@@ -97,7 +97,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
                edge_weight=list(ports.values()),
                ports_match=matched_ports,
                values=max_value)
-    #logger.debug(f"creating a super node of combination of nodes: {new_inst_type}")
+    logger.debug(f"creating a super node of combination of nodes: {new_inst_type} {real_inst_types}")
     for pins in list(ports):
         if set(G.neighbors(pins)) <= set(list_of_nodes) and G.nodes[pins]["net_type"]=='internal':
             del ports[pins]
@@ -110,9 +110,7 @@ def merge_nodes(G: nx.classes.graph.Graph, new_inst_type: str, list_of_nodes: li
 
     check_nodes(subgraph)
 
-    return G, subgraph,new_node
-
-
+    return G, subgraph, new_node
 
 #%%
 def convert_unit(value:str):
