@@ -50,3 +50,17 @@ def test_sizing3():
     assert  len(primitives) ==6
     assert primitives['Switch_PMOS_nfin4_nf1_m4_n12_X2_Y1_ST3']['stack']==3
     assert primitives['Switch_PMOS_nfin6_nf4_m3_n12_X3_Y2_LVT']['vt_type']=='LVT'
+
+def test_sizing4():
+    mydir = pathlib.Path(__file__).resolve()
+    test_path = mydir.parent / 'test_circuits' / 'intel_circuit4.sp'
+    updated_ckt,library = compiler(test_path, "intel_circuit4",0 )
+    all_subckt_list = [ele["name"] for ele in updated_ckt]
+    assert 'SCM_PMOS' in all_subckt_list
+    assert 'CMB_PMOS_2' in all_subckt_list
+    assert 'INV_LVT' in all_subckt_list
+    assert 'INV_LVT<1>' in all_subckt_list
+    assert 'intel_circuit4' in all_subckt_list
+    pdk_path = mydir.parent.parent.parent / 'pdks' / 'FinFET14nm_Mock_PDK' 
+    primitives = compiler_output(test_path, library, updated_ckt, 'sizing', pathlib.Path(__file__).parent / 'Results', pdk_path )
+    assert  len(primitives) ==9

@@ -191,6 +191,8 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
                             logger.debug(f"Matched Circuit: {' '.join(Gsub)} power:{POWER}")
                     else:
                         logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
+                elif sub_block_name.startswith('SCM') and G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
+                    logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
                 # elif sub_block_name=='INV_LVT' and POWER is not None:
                 #     if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
                 #         map_list.append(Gsub)
@@ -365,23 +367,27 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                         G2, mapped_subgraph_list,liblist,check_duplicates)
                     
                     updated_circuit.extend(updated_subgraph_circuit)
-                    logger.debug(f"adding new sub_ckt: {sub_block_name}")
+                    logger.debug(f"adding new sub_ckt: {sub_block_name} {check_duplicates.keys()}")
                     check_nodes(updated_circuit)
-                    logger.debug(f"adding remaining ckt: {sub_block_name}")
+                    val_n_type=G1.nodes[new_node]["values"].copy()
+                    val_n_type["real_inst_type"]=G1.nodes[new_node]["real_inst_type"]
                     if sub_block_name not in check_duplicates.keys() or \
-                        G1.nodes[new_node]["values"] == check_duplicates[sub_block_name][0]:
+                        val_n_type in check_duplicates[sub_block_name]:
                         update_name = sub_block_name
-                   
-                        check_duplicates[sub_block_name]=[G1.nodes[new_node]["values"]]
+                        logger.debug(f"adding sub_ckt: {update_name} {G1.nodes[new_node]['values']} {check_duplicates} ")
+                        check_duplicates[sub_block_name]=[val_n_type]
+
                     elif G1.nodes[new_node]["values"] in check_duplicates[sub_block_name]:
-                        update_name= sub_block_name+'_type'+ str(check_duplicates[sub_block_name].index(G1.nodes[new_node]["values"]))
-                        G1.nodes[new_node]["inst_type"]=update_name
+                        update_name = sub_block_name+'_type'+ str(check_duplicates[sub_block_name].index(G1.nodes[new_node]["values"]))
+                        check_duplicates[update_name] = [val_n_type]
+                        logger.debug(f"adding modified sub_ckt: {update_name} {check_duplicates.keys()}")
+                        G1.nodes[new_node]["inst_type"] = update_name
                         
                     else:
-                        update_name = sub_block_name+'_type'+ str(len(check_duplicates[sub_block_name]))
-                        G1.nodes[new_node]["inst_type"]=update_name
+                        update_name = sub_block_name+'<'+ str(len(check_duplicates[sub_block_name]))+'>'
+                        G1.nodes[new_node]["inst_type"] = update_name
 
-                        check_duplicates[sub_block_name]+=[G1.nodes[new_node]["values"]]
+                        check_duplicates[sub_block_name]+=[val_n_type]
                     updated_circuit.append({
                             "name": update_name,
                             "graph": Grest,
