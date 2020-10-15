@@ -1,0 +1,29 @@
+CC ( {c0} , {6} , {cap_12f} , {nodummy} )
+CC ( {c1_c3} ,  {3,6}  ,  {cap_12f} )
+SymmBlock ( {c0} , {c1_c3} , {m0_m3} ) 
+
+[
+    {
+        "const":"CC",
+        "instance":"c0",
+        "nblock":[6],
+        "master":"cap_12f",
+        "nodummy":true
+    },
+    {
+        "const":"CC",
+        "instance":"c1_c3",
+        "nblock":[3,6],
+        "master":"cap_12f",
+        "nodummy":false
+    },
+    {
+        "const":"SymmBlock",
+        "instances":[
+            ["c0"],
+            ["c1_c3"],
+            ["m0_m3"]
+        ]
+    }
+]
+
