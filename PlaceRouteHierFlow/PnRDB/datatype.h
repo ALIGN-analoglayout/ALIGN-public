@@ -381,8 +381,8 @@ struct hierNode {
   vector<PortPos> Port_Location;
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
-  int bias_Hgraph=92;
-  int bias_Vgraph=92;
+  int bias_Hgraph=0;
+  int bias_Vgraph=0;
   vector<Router_report> router_report;
 
 
