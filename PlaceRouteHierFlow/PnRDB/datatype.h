@@ -394,6 +394,7 @@ struct hierNode {
 struct SymmNet {
   net net1, net2;
   int iter1, iter2; // iterator to the list of real nets
+  Smark axis_dir=PnRDB::V;
 };
 
 //struct SymmBlock {
@@ -405,6 +406,7 @@ struct SymmNet {
 struct SymmPairBlock {
   vector< pair<int,int> > sympair;
   vector< pair<int,Smark> > selfsym;
+  Smark axis_dir=PnRDB::V;
 };
 
 struct Preplace {
