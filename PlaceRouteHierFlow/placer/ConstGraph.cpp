@@ -3231,11 +3231,11 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
     // 5. Update Lslack(x) according to U1,U2
     for(int j=0;j<(int)sympair.size(); j++) 
       UpdateLslackElement(caseNL, sympair, caseNL.SBlocks.at(i).selfsym, Lslack, xL, j, axis);
-    //if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
+    if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
     // 6. while some constraints in L2 are not satisfied
     while( (vio=CheckIfL2Violation(caseNL, sympair, xL, axis)).first !=-1 ) {
      // for any violation on L2 constraint x+y>=b
-      //if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
+      if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
       // if x+y<b
       // x = min{x+slack(x), x+Lslack(x), b-y}
       int newxL=xL.at(vio.first)+slack.at(vio.first);
