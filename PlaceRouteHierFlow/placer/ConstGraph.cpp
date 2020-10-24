@@ -2794,11 +2794,12 @@ vector<int> ConstGraph::GenerateSlack(vector<int>& x) {
 void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympair, placerDB::Smark axis, int i) {
   // Keep all symmetry pairs aligned in vertical(horizontal) graph and reorganize the symmetry pairs
   pair<int,int> tp;
-  
+  /*
   if(caseNL.SBlocks.at(i).sympair.size()!=0 or caseNL.SBlocks.at(i).selfsym.size()!=0){
     tp.first=sourceNode; tp.second=sinkNode;
     sympair.push_back(tp);
   }
+  */
 
   if(axis==placerDB::V) {
     // Vertical symmetry axis
@@ -3230,11 +3231,11 @@ bool ConstGraph::SymmetryConstraintCore(design& caseNL, placerDB::Smark axis, in
     // 5. Update Lslack(x) according to U1,U2
     for(int j=0;j<(int)sympair.size(); j++) 
       UpdateLslackElement(caseNL, sympair, caseNL.SBlocks.at(i).selfsym, Lslack, xL, j, axis);
-    if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
+    //if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
     // 6. while some constraints in L2 are not satisfied
     while( (vio=CheckIfL2Violation(caseNL, sympair, xL, axis)).first !=-1 ) {
      // for any violation on L2 constraint x+y>=b
-      if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
+      //if(CheckIfLslackViolation(Lslack)) {return false;} // Violation of constraints
       // if x+y<b
       // x = min{x+slack(x), x+Lslack(x), b-y}
       int newxL=xL.at(vio.first)+slack.at(vio.first);
