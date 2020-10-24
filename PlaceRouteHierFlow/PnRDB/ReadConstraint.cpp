@@ -334,6 +334,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
               if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
                 temp_selfsym.second = axis_dir;
+                //temp_selfsym.second = PnRDB::H;
                 temp_SymmPairBlock.selfsym.push_back(temp_selfsym);
                 break;
               }

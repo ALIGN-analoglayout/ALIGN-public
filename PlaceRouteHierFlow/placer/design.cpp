@@ -178,6 +178,9 @@ design::design(design& other, int mode) {
           SB.sympair.push_back( m1<m2 ? make_pair( m1,m2 ) : make_pair(m2,m1) );
         }
       }
+      //add by Yaguang 10/21/2020
+      SB.axis_dir=sbit->axis_dir;
+      //end add
       // new self-symmetry block
       for(vector< pair<int,placerDB::Smark> >::iterator sfit=sbit->selfsym.begin(); sfit!=sbit->selfsym.end(); ++sfit) {
         if(sfit->first>=(int)other.Blocks.size()) {continue;}
@@ -205,9 +208,6 @@ design::design(design& other, int mode) {
         }
         SB.dnode=sbno; sbno++;
         SB.mapIdx=sbit-other.SBlocks.begin();
-        //add by Yaguang 10/21/2020
-        SB.axis_dir=sbit->axis_dir;
-        //end add
         sbit->mapIdx=this->SBlocks.size();
         //std::cout<<"wbxu-map new "<<SB.mapIdx<<" ; old "<<sbit->mapIdx<<std::endl;
         this->SBlocks.push_back(SB);
