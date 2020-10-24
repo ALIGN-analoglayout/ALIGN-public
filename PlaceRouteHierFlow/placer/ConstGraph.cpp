@@ -2794,6 +2794,12 @@ vector<int> ConstGraph::GenerateSlack(vector<int>& x) {
 void ConstGraph::AlignReorganize(design& caseNL, vector< pair<int,int> >& sympair, placerDB::Smark axis, int i) {
   // Keep all symmetry pairs aligned in vertical(horizontal) graph and reorganize the symmetry pairs
   pair<int,int> tp;
+  
+  if(caseNL.SBlocks.at(i).sympair.size()!=0 or caseNL.SBlocks.at(i).selfsym.size()!=0){
+    tp.first=sourceNode; tp.second=sinkNode;
+    sympair.push_back(tp);
+  }
+
   if(axis==placerDB::V) {
     // Vertical symmetry axis
     CalculateLongestPath(sourceNode, this->HGraph, false);
