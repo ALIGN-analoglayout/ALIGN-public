@@ -1716,7 +1716,7 @@ void design::constructSymmGroup() {
           //placerDB::point p2=GetMultPolyCenterPoint(p2V);
           //placerDB::point p1=Blocks.at(sni->net1.connected.at(i).iter2).blockPins.at(sni->net1.connected.at(i).iter).center;
           //placerDB::point p2=Blocks.at(sni->net2.connected.at(i).iter2).blockPins.at(sni->net2.connected.at(i).iter).center;
-          placerDB::Smark tsmark= placerDB::H;
+          placerDB::Smark tsmark= axis_dir;
           //placerDB::Smark tsmark= ( abs(p1.x-p2.x)<abs(p1.y-p2.y) ) ? placerDB::V : placerDB::H;
           tmpselfsym.push_back(make_pair(tpair.first, tsmark));
         } else {cout<<"Placer-Warning: self-symmetric terminal found! Skip this object..."<<endl;continue;}
