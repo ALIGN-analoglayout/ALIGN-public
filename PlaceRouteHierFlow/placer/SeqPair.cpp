@@ -125,12 +125,14 @@ void SeqPair::InsertNewSBlock(design& originNL, int originIdx) {
   vector<placerDB::SymmBlock>::iterator bit=originNL.SBlocks.begin()+originIdx;
     //axis=bit->axis_dir;
     //axis=placerDB::V; // initialize veritcal symmetry
+    /*
     if ( !(bit->selfsym).empty() ) {
       switch( (bit->selfsym).at(0).second ) {
         case placerDB::H: axis=placerDB::V;break;
         case placerDB::V: axis=placerDB::H;break;
       }
     }
+   */
     axis=bit->axis_dir;
     //cout<<"axis"<<axis<<endl;
     this->symAxis.at(originIdx)=axis;
@@ -386,12 +388,14 @@ SeqPair::SeqPair(design& caseNL) {
   for(vector<placerDB::SymmBlock>::iterator bit=caseNL.SBlocks.begin(); bit!=caseNL.SBlocks.end(); ++bit) {
     //axis = bit->axis_dir;
     //axis=placerDB::V; // initialize veritcal symmetry
+    /*
     if ( !(bit->selfsym).empty() ) {
       switch( (bit->selfsym).at(0).second ) {
         case placerDB::H: axis=placerDB::V;break;
         case placerDB::V: axis=placerDB::H;break;
       }
     }
+    */
     axis = bit->axis_dir;
     //cout<<"axis"<<axis<<endl;
     symAxis.push_back(axis);
