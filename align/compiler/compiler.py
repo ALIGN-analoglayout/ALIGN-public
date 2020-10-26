@@ -9,7 +9,6 @@ from .match_graph import read_inputs, read_setup,_mapped_graph_list,check_nodes,
 from .write_verilog_lef import WriteVerilog, print_globals,print_header,generate_lef
 from .common_centroid_cap_constraint import WriteCap, check_common_centroid
 from .write_constraint import WriteConst, CopyConstFile, FindSymmetry
-#from .create_array_hierarchy import FindArray
 from .read_lef import read_lef
 
 import logging
@@ -86,6 +85,12 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             logger.debug(f"removing stacked subcircuit {circuit_name}")
             del hier_graph_dict[circuit_name]
 
+    logger.debug( "\n################### FINAL CIRCUIT AFTER preprocessing #################### \n")
+    for name,circuit in hier_graph_dict.items():
+        for node in circuit["graph"].nodes(data=True):
+            if node[1]["inst_type"]!='net':
+                logger.debug(node)
+
     updated_ckt_list = []
     check_duplicates={}
     for circuit_name, circuit in hier_graph_dict.items():
@@ -102,12 +107,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 
 
         stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-        if circuit_name not in design_setup['DIGITAL']:
-            symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
-            for symm_blocks in symmetry_blocks.values():
-                if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
-                    logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
-                    updated_ckt_list.append(symm_blocks)
+        #if circuit_name not in design_setup['DIGITAL']:
+        #    symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
+        #    for symm_blocks in symmetry_blocks.values():
+        #        logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
+        #        if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
+        #            logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
+        #            updated_ckt_list.append(symm_blocks)
 
         updated_ckt_list.append({
             "name": circuit_name,
@@ -215,7 +221,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             inoutpin = member["ports"]
 
         graph = member["graph"].copy()
-        logger.debug(f"Reading nodes from graph: {graph}")
+        logger.debug(f"Reading nodes from graph: {name}")
         for node, attr in graph.nodes(data=True):
             #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
             if 'net' in attr['inst_type']: continue
