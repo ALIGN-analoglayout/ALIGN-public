@@ -1,29 +1,127 @@
-CC ( {c0} , {6} , {cap_12f} , {nodummy} )
-CC ( {c1_c3} ,  {3,6}  ,  {cap_12f} )
+CC ( {c1_c3} ,  {3,6} , {cap_12f} )
 SymmBlock ( {c0} , {c1_c3} , {m0_m3} ) 
+MatchBlock ( c0 , c1 )
+SymmNet ( {vinp,m3_m0/GB,vinp} , {vinn,m3_m0/GA,vinn} )
+CritNet ( net3 , 100 )
+ShieldNet ( Vin )
+R_Const ( {net10} , {A/a,B/b,10} )
+PortLocation ( input , BL )
+Multi_Connection ( {net10} , {5} )
+bias_Hgraph ( 108 )
+bias_Vgraph ( 108 )
+ShieldNet ( Vin )
+AlignBlock ( H , R0 , R1 )
 
-[
-    {
-        "const":"CC",
-        "instance":"c0",
-        "nblock":[6],
-        "master":"cap_12f",
-        "nodummy":true
-    },
-    {
-        "const":"CC",
-        "instance":"c1_c3",
-        "nblock":[3,6],
-        "master":"cap_12f",
-        "nodummy":false
-    },
-    {
-        "const":"SymmBlock",
-        "instances":[
-            ["c0"],
-            ["c1_c3"],
-            ["m0_m3"]
-        ]
-    }
-]
+{
+    "constraints":[
+        {
+            "const":"CC",
+            "instance":"c1_c3",
+            "nblock":[3,6],
+            "master":"cap_12f",
+            "nodummy":false
+        },
+        {
+            "const":"SymmBlock",
+            "instances":[
+                ["c0"],
+                ["c1_c3"],
+                ["m0_m3"]
+            ]
+        },
+        {
+            "const":"MatchBlock",
+            "instances":[
+                "c0",
+                "c1"
+            ]
+        },
+        {
+            "const":"SymmNet",
+            "net1":{
+                "name":"vinp",
+                "blocks":[
+                    {
+                        "type":"pin",
+                        "name":"m3_m0",
+                        "pin":"GB"
+                    },
+                    {
+                        "type":"terminal",
+                        "name":"vinp",
+                        "pin":""
+                    }
+                ]
+            },
+            "net2":{
+                "name":"vinn",
+                "blocks":[
+                    {
+                        "type":"pin",
+                        "name":"m3_m0",
+                        "pin":"GA"
+                    },
+                    {
+                        "type":"terminal",
+                        "name":"vinn",
+                        "pin":""
+                    }
+                ]
+            }
+        },
+        {
+            "const":"CritNet",
+            "net_name":"net3",
+            "parameter":100
+        },
+        {
+            "const":"ShieldNet",
+            "net_name":"Vin"
+        },
+        {
+            "const":"R_Const",
+            "net_name":"Vin",
+            "pin1":{
+                "block_name":"A",
+                "pin_name":"a"
+            },
+            "pin2":{
+                "block_name":"B",
+                "pin_name":"b"
+            },
+            "value":10
+        },
+        {
+            "const":"PortLocation",
+            "termianl_name":"input",
+            "location":"BL"
+        },
+        {
+            "const":"Multi_Connection",
+            "net_name":"net10",
+            "number": 5
+        },
+        {
+            "const":"bias_Hgraph",
+            "distance":108
+        },
+        {
+            "const":"bias_Vgraph",
+            "distance":108
+        },
+        {
+            "const":"ShieldNet",
+            "net_name":"Vin"
+        },
+        {
+            "const": "AlignBlock",
+            "direction": "H",
+            "blocks": [
+                "R0", 
+                "R1"
+            ]
+        }
+    ]
+}
+
 
