@@ -598,6 +598,16 @@ Option name=create_fake_line_end_grids           value=1
 Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
 Option name=upper_layer                          value={topmetal}
+
+Option name=disable_optimization value=1
+
+#OPT3
+#Option opt_minimize_direct_i_routes=0
+#OPT4
+#Option opt_maximize_ties_between_trunks=0
+#OPT5
+#Option opt_maximize_ties_between_trunks_and_terminals=0
+
 """)
 
 
