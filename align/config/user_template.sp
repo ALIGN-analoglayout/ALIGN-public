@@ -113,6 +113,10 @@ M0 zn i SN SN NMOS_VTL w=w0 l=l0
 M1 zn i SP SP PMOS_VTL w=w1 l=l0
 .ends INV_LVT
 
+.subckt INV_2 i zn SN SP PB
+M0 zn i SN SN NMOS_VTL w=w0 l=l0
+M1 zn i SP PB PMOS_VTL w=w1 l=l0
+.ends INV_2
 
 .subckt stage2_inv G1 G2 SN SP
 MM0 G1 D SN SN NMOS l=60n w=1u m=1

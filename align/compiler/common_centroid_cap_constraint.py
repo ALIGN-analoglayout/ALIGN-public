@@ -67,17 +67,18 @@ def WriteCap(graph,input_dir,name,unit_size_cap,all_array):
                 caps_in_line = line[line.find("{")+1:line.find("}")]
                 cap_blocks = caps_in_line.strip().split(',')
                 available_cap_const = available_cap_const+cap_blocks
+                logger.debug(f"updated const {line}")
             elif line.startswith("SymmBlock"):
                 blocks_in_line = [blocks[blocks.find("{")+1:blocks.find("}")] for blocks in line.split(' , ') if ',' in blocks]
-                logger.info("place symmetrical cap as CC:%s",blocks_in_line)
+                logger.info("place pairs in constraints:%s",blocks_in_line)
                 for pair in blocks_in_line:
-                    
-                    if graph.nodes[pair.split(',')[0]]['inst_type'].lower().startswith('cap'):
+                    inst = pair.split(',')[0]
+                    if inst in graph and graph.nodes[inst]['inst_type'].lower().startswith('cap'):
                         p1,p2=sorted(pair.split(','), key=lambda c:graph.nodes[c]['values']["cap"]*1E15)
                         all_array[p1]={p1:[p1,p2]}
                         line=line.replace(pair,p1+'_'+p2).replace('(,','(').replace(',)',')').replace(',,',',')
+                logger.debug(f"updated const {line}")
             new_const_fp.write(line)
-            logger.debug(f"cap const {line}")
             line=const_fp.readline()
         const_fp.close()
     else:

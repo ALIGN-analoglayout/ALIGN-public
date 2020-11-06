@@ -20,7 +20,7 @@ def generate_hierarchy(netlist, subckt, output_dir, flatten_heirarchy, pdk_dir, 
 
 def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
     """
-    Reads input spice file, converts to a graph format and create hierarchies in the graph    
+    Reads input spice file, converts to a graph format and create hierarchies in the graph
 
     Parameters
     ----------
@@ -72,9 +72,9 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
             _write_circuit_graph(lib_circuit["name"], lib_circuit["graph"],
                                          "./circuit_graphs/")
     hier_graph_dict=read_inputs(circuit["name"],circuit["graph"])
-    
+
     stacked_subcircuit=[]
-    for circuit_name, circuit in hier_graph_dict.items():   
+    for circuit_name, circuit in hier_graph_dict.items():
         logger.debug(f"START preprocessing")
         G1 = circuit["graph"]
         if circuit_name not in design_setup['DIGITAL']:
@@ -107,13 +107,13 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
 
 
         stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-        #if circuit_name not in design_setup['DIGITAL']:
-        #    symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
-        #    for symm_blocks in symmetry_blocks.values():
-        #        logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
-        #        if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
-        #            logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
-        #            updated_ckt_list.append(symm_blocks)
+        if circuit_name not in design_setup['DIGITAL']:
+            symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
+            for symm_blocks in symmetry_blocks.values():
+                logger.info(f"generated constraints: {pprint.pformat(symm_blocks, indent=4)}")
+                if isinstance(symm_blocks, dict) and "graph" in symm_blocks.keys():
+                    logger.debug(f"added new hierarchy: {symm_blocks['name']} {symm_blocks['graph'].nodes()}")
+                    updated_ckt_list.append(symm_blocks)
 
         updated_ckt_list.append({
             "name": circuit_name,
@@ -128,7 +128,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         lib_names=[lib_ele['name'] for lib_ele in library]
         for lib_name, dupl in check_duplicates.items():
             if len(dupl)>1:
-                print(dupl)
                 lib_names+=[lib_name+'_type'+str(n) for n in range(len(dupl))]
     return updated_ckt_list, lib_names
 
@@ -148,7 +147,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
     result_dir : TYPE. directoy path for writing results
         DESCRIPTION. writes out a verilog netlist, spice file and constraints
     pdk_dir : TYPE. directory path containing pdk layers.json file
-        DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory 
+        DESCRIPTION. reads design info like cell height,cap size, routing layer from design_config file in config directory
     uniform_height : creates cells of uniform height
 
     Raises
@@ -200,7 +199,61 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             continue
         else:
             duplicate_modules.append(name)
-        logger.debug(f"Found module: {name}")
+        logger.debug(f"Found module: {name} {member['graph'].nodes()}")
+
+        graph = member["graph"]
+        logger.debug(f"Reading nodes from graph: {name}")
+        for node, attr in graph.nodes(data=True):
+            #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
+            if 'net' in attr['inst_type']: continue
+            #Dropping floating ports
+
+            lef_name = attr['inst_type']
+
+            if "values" in attr and (lef_name in ALL_LEF):
+                block_name, block_args = generate_lef(
+                    lef_name, attr,
+                    primitives, design_config, uniform_height)
+                #block_name_ext = block_name.replace(lef_name,'')
+                logger.debug(f"Created new lef for: {block_name}")
+                #Multiple instances of same module
+                if 'inst_copy' in attr:
+                    for member in updated_ckt_list:
+                        if member["name"] == lef_name + attr['inst_copy']:
+                            member["name"] = block_name
+                    member["graph"].nodes[node]["inst_type"]=block_name
+                    ALL_LEF.append(block_name)
+
+
+                # Only unit caps are generated
+                if  block_name.lower().startswith('cap'):
+                    graph.nodes[node]['inst_type'] = block_args['primitive']
+                    block_args['primitive']=block_name
+                else:
+                    graph.nodes[node]['inst_type'] = block_name
+
+                if block_name in primitives:
+                    if block_args != primitives[block_name]:
+                        logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
+                else:
+                    primitives[block_name] = block_args
+            elif "values" in attr and 'inst_copy' in attr:
+                member["graph"].nodes[node]["inst_type"]= lef_name+attr["inst_copy"]
+                ALL_LEF.append(block_name)
+
+            else:
+                logger.info(f"No physical information found for: {name}")
+        logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
+
+    duplicate_modules =[]
+    for member in updated_ckt_list:
+        name = member["name"]
+        graph = member["graph"]
+        if name in duplicate_modules:
+            continue
+        else:
+            duplicate_modules.append(name)
+        logger.debug(f"Found module: {name} {graph.nodes()}")
         inoutpin = []
         logger.debug(f'found ports match: {member["ports_match"]}')
         floating_ports=[]
@@ -219,54 +272,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     raise SystemExit('Please remove floating ports')
         else:
             inoutpin = member["ports"]
-
-        graph = member["graph"].copy()
-        logger.debug(f"Reading nodes from graph: {name}")
-        for node, attr in graph.nodes(data=True):
-            #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])
-            if 'net' in attr['inst_type']: continue
-            #Dropping floating ports
-
-            lef_name = attr['inst_type'].split('_type')[0]
-            if "values" in attr and (lef_name in ALL_LEF):
-                block_name, block_args = generate_lef(
-                    lef_name, attr,
-                    primitives, design_config, uniform_height)
-                #block_name_ext = block_name.replace(lef_name,'')
-                logger.debug(f"Created new lef for: {block_name}")
-                # Only unit caps are generated
-                if  block_name.lower().startswith('cap'):
-                    graph.nodes[node]['inst_type'] = block_args['primitive']
-                    block_args['primitive']=block_name
-                else:
-                    graph.nodes[node]['inst_type'] = block_name
-
-                if block_name in primitives:
-                    if block_args != primitives[block_name]:
-                        logging.warning(f"two different primitve {block_name} of size {primitives[block_name]} {block_args}got approximated to same unit size")
-                else:
-                    primitives[block_name] = block_args
-            else:
-                logger.info(f"No physical information found for: {name}")
-
-
-        if name in ALL_LEF:
-            logger.debug(f"writing spice for block: {name}")
-            #ws = WriteSpice(graph, name+block_name_ext, inoutpin, updated_ckt_list, lib_names)
-            #ws.print_subckt(SP_FP)
-            #ws.print_mos_subckt(SP_FP,printed_mos)
-            continue
-
-        logger.debug(f"generated data for {name} : {pprint.pformat(primitives, indent=4)}")
-        if name not in  ALL_LEF or name.split('_type')[0] not in ALL_LEF:
-            #ws = WriteSpice(graph, name, inoutpin, updated_ckt_list, lib_names)
-            #ws.print_subckt(SP_FP)
-            #ws.print_mos_subckt(SP_FP,printed_mos)
-
+        if name not in  ALL_LEF:
             logger.debug(f"call verilog writer for block: {name}")
             wv = WriteVerilog(graph, name, inoutpin, updated_ckt_list, POWER_PINS)
-            #logger.debug(f"call array finder for block: {name}")
-            #all_array=FindArray(graph, input_dir, name,member["ports_weight"] )
             all_array={}
             logger.debug(f"Copy const file for: {name}")
             const_file = CopyConstFile(name, input_dir, result_dir)
@@ -276,7 +284,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
+                #WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 

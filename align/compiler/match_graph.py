@@ -86,41 +86,6 @@ def read_inputs(name,hier_graph):
     logger.debug(f"read graph {hier_graph_dict}")
     return hier_graph_dict
 
-
-#%%
-def read_lib(lib_dir_path):
-    """
-    read all library graphs
-    """
-    library_dir_path = lib_dir_path
-    lib_files = os.listdir(library_dir_path)
-    if os.path.isfile("dont_use_cells.txt"):
-        logger.debug("Reading Dont Use cells: dont_use_cells.txt")
-        with open('dont_use_cells.txt') as dont_use_file:
-            dont_use_library = dont_use_file.read().splitlines()
-    else:
-        dont_use_library = []
-        logger.debug("no dont use list defined")
-
-    library = []
-    for sub_block_name in lib_files:
-        graph = nx.read_yaml(library_dir_path + sub_block_name)
-        if sub_block_name[:-5] not in dont_use_library:
-            subgraph_ports = []
-            for node, attr in graph.nodes(data=True):
-                if 'net' in attr['inst_type']:
-                    if 'external' in attr['net_type']:
-                        subgraph_ports.append(node)
-            library.append({
-                "name": sub_block_name[:-5],
-                "graph": graph,
-                "ports": subgraph_ports,
-                "conn": max_connectivity(graph)
-            })
-            logger.debug(f"Read lib: {sub_block_name}, {subgraph_ports}")
-
-    return sorted(library, key=lambda k: k['conn'], reverse=True)
-
 def fix_order_for_multimatch(G1,map_list,Gsub):
     for previous_match in map_list[:-1]:
         if set(Gsub.keys())==set(previous_match.keys()):
@@ -136,8 +101,6 @@ def fix_order_for_multimatch(G1,map_list,Gsub):
                 logger.debug(f'removing new match')
                 map_list.remove(Gsub)
 
-                
-  
 #%%
 def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
     """
@@ -149,14 +112,17 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
 
     for lib_ele in liblist:
         G2 = lib_ele['graph']
-        # DIgital blocks only transistors:
+        # Digital blocks only transistors:
         nd = [node for node in G2.nodes()
                 if 'net' not in G2.nodes[node]["inst_type"]]
+        lib_body = [G2.nodes[node]['body_pin'] for node in nd if 'body_pin' in G2.nodes[node] \
+                        and G2.nodes[node]['body_pin'] not in G2.nodes[node]['ports']]
+        lib_body = set(lib_body)
         if DIGITAL and len(nd)>1:
             continue
 
         sub_block_name = lib_ele['name']
-        logger.debug(f"Matching: {sub_block_name} : {' '.join(G2.nodes())}")
+        #logger.debug(f"Matching: {sub_block_name} : {' '.join(G2.nodes())}")
         GM = isomorphism.GraphMatcher(
             G1, G2,
             node_match=isomorphism.categorical_node_match(['inst_type'],
@@ -166,13 +132,18 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
         if GM.subgraph_is_isomorphic():
             logger.debug(f"ISOMORPHIC : {sub_block_name}")
             map_list = []
+
             for Gsub in GM.subgraph_isomorphisms_iter():
-                    
+
                 all_nd = [key for key in Gsub.keys() if 'net' not in G1.nodes[key]["inst_type"]]
                 logger.debug(f"matched inst: {all_nd}")
-                
+                match_mos_body = [G1.nodes[node]['body_pin'] for node in all_nd if 'body_pin' in G1.nodes[node] \
+                                    and G1.nodes[node]['body_pin'] not in G1.nodes[node]['ports']]
                 if len(all_nd)>1 and dont_touch_clk(Gsub,CLOCK):
                     logger.debug("Discarding match due to clock")
+                    continue
+                elif len(all_nd)>1 and len(lib_body) != len(set(match_mos_body)):
+                    logger.debug("Discarding match due to body bias mismatch")
                     continue
                 if sub_block_name.startswith('DP')  or sub_block_name.startswith('CMC'):
                     if G1.nodes[all_nd[0]]['values'] == G1.nodes[all_nd[1]]['values'] and \
@@ -193,19 +164,14 @@ def _mapped_graph_list(G1, liblist,POWER=None,CLOCK=None, DIGITAL=False):
                         logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
                 elif sub_block_name.startswith('SCM') and G1.nodes[all_nd[0]]['values'] != G1.nodes[all_nd[1]]['values']:
                     logger.debug(f"Discarding match {sub_block_name}, {G1.nodes[all_nd[0]]['values']}, {G1.nodes[all_nd[1]]['values']}")
-                # elif sub_block_name=='INV_LVT' and POWER is not None:
-                #     if get_key(Gsub,'SN') in POWER and get_key(Gsub,'SP') in POWER:                     
-                #         map_list.append(Gsub)
-                        
-                #     else:
-                #         logger.debug('skipped inverters')                   
+
                 else:
                     map_list.append(Gsub)
                     logger.debug(f"Matched Lib: {' '.join(Gsub.values())}")
                     logger.debug(f"Matched Circuit: {' '.join(Gsub)}")
-                if len(map_list)>1:    
+                if len(map_list)>1:
                     fix_order_for_multimatch(G1,map_list,map_list[-1])
-                    
+
 
             mapped_graph_list[sub_block_name] = map_list
 
@@ -304,7 +270,6 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
     for lib_ele in liblist:
         G2 = lib_ele['graph']
         sub_block_name = lib_ele['name']
-
         if sub_block_name in mapped_graph_list:
             logger.debug(f"Reducing ISOMORPHIC sub_block: {sub_block_name}{mapped_graph_list[sub_block_name]}")
 
@@ -340,7 +305,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                         ports_weight[g2_n] = []
                         for nbr in list(G2.neighbors(g2_n)):
                             ports_weight[g2_n].append(G2.get_edge_data(g2_n, nbr)['weight'])
-                        
+
                 logger.debug(f"match: {' '.join(Gsub)}")
                 logger.debug(f"Matched ports: {' '.join(matched_ports)}")
                 logger.debug(f"Matched nets : {' '.join(matched_ports.values())}")
@@ -351,7 +316,7 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                     G1.nodes[remove_these_nodes[0]]["ports_match"] = matched_ports
                     updated_values = merged_value({}, G1.nodes[remove_these_nodes[0]]["values"])
                     G1.nodes[remove_these_nodes[0]]["values"] = updated_values
-                   
+
                 else:
                     logger.debug(f"Multi node element: {sub_block_name}")
                     _, subgraph,new_node = merge_nodes(
@@ -365,56 +330,54 @@ def reduce_graph(circuit_graph, mapped_graph_list, liblist, check_duplicates=Non
                     logger.debug("Recursive calling to find sub_sub_ckt")
                     updated_subgraph_circuit, Grest = reduce_graph(
                         G2, mapped_subgraph_list,liblist,check_duplicates)
-                    
+
                     updated_circuit.extend(updated_subgraph_circuit)
                     logger.debug(f"adding new sub_ckt: {sub_block_name} {check_duplicates.keys()}")
                     check_nodes(updated_circuit)
                     val_n_type=G1.nodes[new_node]["values"].copy()
                     val_n_type["real_inst_type"]=G1.nodes[new_node]["real_inst_type"]
-                    if sub_block_name not in check_duplicates.keys() or \
-                        val_n_type in check_duplicates[sub_block_name]:
+                    if sub_block_name not in check_duplicates.keys():
                         update_name = sub_block_name
                         logger.debug(f"adding sub_ckt: {update_name} {G1.nodes[new_node]['values']} {check_duplicates} ")
                         check_duplicates[sub_block_name]=[val_n_type]
 
-                    elif G1.nodes[new_node]["values"] in check_duplicates[sub_block_name]:
-                        update_name = sub_block_name+'_type'+ str(check_duplicates[sub_block_name].index(G1.nodes[new_node]["values"]))
-                        check_duplicates[update_name] = [val_n_type]
-                        logger.debug(f"adding modified sub_ckt: {update_name} {check_duplicates.keys()}")
-                        G1.nodes[new_node]["inst_type"] = update_name
-                        
+                    elif val_n_type in check_duplicates[sub_block_name]:
+                        inst_copy = '<'+ str(check_duplicates[sub_block_name].index(val_n_type))+'>'
+                        if inst_copy != '<0>':
+                            update_name = sub_block_name + inst_copy
+                            G1.nodes[new_node]["inst_type"] = sub_block_name
+                            G1.nodes[new_node]["inst_copy"] = inst_copy
+                            logger.debug(f"adding modified sub_ckt: {update_name} {check_duplicates.keys()}")
                     else:
-                        update_name = sub_block_name+'<'+ str(len(check_duplicates[sub_block_name]))+'>'
-                        G1.nodes[new_node]["inst_type"] = update_name
+                        inst_copy = '<'+ str(len(check_duplicates[sub_block_name]))+'>'
+                        update_name = sub_block_name + inst_copy
+                        G1.nodes[new_node]["inst_type"] = sub_block_name
+                        G1.nodes[new_node]["inst_copy"] = inst_copy
+                        logger.debug(f"different size inst {check_duplicates[sub_block_name]} {val_n_type} {inst_copy}")
 
                         check_duplicates[sub_block_name]+=[val_n_type]
-                    updated_circuit.append({
+                    logger.debug(f"list all copies {sub_block_name} {check_duplicates[sub_block_name]}")
+
+                    super_node = {
                             "name": update_name,
                             "graph": Grest,
                             "ports": list(matched_ports.keys()),
                             "ports_match": matched_ports,
                             "ports_weight": ports_weight,
                             "size": len(subgraph.nodes())
-                        })
+                        }
+                    updated_circuit.append(super_node)
 
-                        
                     check_nodes(updated_circuit)
     logger.debug(f"Finished one branch: {sub_block_name}")
-
     return updated_circuit, G1
 
 
-def check_values(values):
-    for param,value in values.items():
-        logger.debug(f"param, value: {param}, {value}")
-        if param == 'model': continue
-        assert (isinstance(value, int) or isinstance(value, float)), \
-            "ERROR: Parameter value {value} of type %r not defined. Check match log" % type(value)
-
 def check_nodes(graph_list):
-    logger.debug("Checking all values")
     for local_subckt in graph_list:
         for node, attr in local_subckt["graph"].nodes(data=True):
-            logger.debug(f":{node}, {attr}")
             if  not attr["inst_type"] == "net":
-                check_values(attr["values"])
+                for param,value in attr["values"].items():
+                    if param == 'model': continue
+                    assert (isinstance(value, int) or isinstance(value, float)), \
+                        "ERROR: Parameter value %r not defined" %(str(value)+' of '+ node)

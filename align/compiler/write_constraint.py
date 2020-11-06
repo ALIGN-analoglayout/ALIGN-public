@@ -26,10 +26,6 @@ def find_unique_matching_branches(G,nbrs1,nbrs2,ports_weight):
         if node1 not in match:
             return False
     return match
-        
-    
-
-
 
 def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weight):
     """
@@ -193,45 +189,43 @@ def compare_nodes(G,all_match_pairs,match_pair,traversed,node1,node2, ports_weig
 
 def recursive_start_points(G,all_match_pairs,traversed,node1,node2, ports_weight):
     logger.debug(f"symmetry start point {node1} {node2}")
-    pair ={}
+    pair = {}
     compare_nodes(G,all_match_pairs, pair, traversed, node1, node2,ports_weight)
     if not pair:
         logger.debug(f"no pair found from {node1} {node2}")
         return
     all_match_pairs[node1+node2]=pair                        
-    logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-
+    logger.debug(f"updating match pairs (start): {pprint.pformat(all_match_pairs, indent=4)}")
+    #CHECk for array start points 
+    hier_start_points = []
     for k,pair in all_match_pairs.items():
         logger.debug(f"all pairs from {k}:{pair}")
         if "start_point" in pair.keys():
-            hier_start_points=pair["start_point"]    
+            hier_start_points.extend(pair["start_point"])
             del pair["start_point"]
             logger.debug(f"New symmetrical start points {pair}")
-    all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>0}
     logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-    try: 
-        for sp in sorted(hier_start_points):
-            logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed}")
-            if sp not in G.nodes():
-                continue
-            multifanout = create_hierarchy(G,sp,traversed,ports_weight)
-            if  multifanout and isinstance(multifanout[sp], list):
-                logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
-                all_match_pairs[node1+node2+'_align']=multifanout[sp]
-            elif multifanout and isinstance(multifanout[sp], dict):
-                logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
-                traversed+=[node1,node2]
-                all_match_pairs[sp+'_new_hier']=multifanout[sp]
-                
-                logger.debug("new hier list %s %s",sp, multifanout)
-                #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
-                #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])   
-            else:
-                logger.debug(f"no symmetry from {sp}")
-            logger.debug(f"updating match pairs: {pprint.pformat(all_match_pairs, indent=4)}")
-    except NameError:
-        logger.debug("")
-        
+    if not 'hier_start_points':
+        return
+    for sp in sorted(hier_start_points):
+        logger.debug(f"starting new node from binary branch:{sp} {hier_start_points} traversed {traversed} existing {pprint.pformat(all_match_pairs, indent=4)}")
+        if sp not in G.nodes():
+            logger.debug(f"{sp} not found in graph {G.nodes()}")
+            continue
+        multifanout = create_hierarchy(G,sp,traversed,ports_weight)
+        if  multifanout and isinstance(multifanout[sp], list):
+            logger.debug(f"only one level matched so putting as align block:{multifanout[sp]}")
+            all_match_pairs[node1+node2+'_align']=multifanout[sp]
+        elif multifanout and isinstance(multifanout[sp], dict):
+            logger.debug(f"more than one depth matched so creating new hierarchy :{multifanout[sp]}")
+            traversed+=[node1,node2]
+            all_match_pairs[sp+'_new_hier']=multifanout[sp].copy()
+            #all_match_pairs['vin1vin2']=multifanout[sp]
+            #for  h_port1, h_port2 in combinations(multifanout[sp]['ports'],2):
+            #     recursive_start_points(multifanout[sp]['graph'],all_match_pairs,traversed.copy(),h_port1, h_port2, multifanout[sp]['ports_weight'])   
+        else:
+            logger.debug(f"no symmetry from {sp}")
+    logger.debug(f"updating match pairs end: {pprint.pformat(all_match_pairs, indent=4)}")
 
 def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
     """
@@ -261,7 +255,8 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
         if sorted(ports_weight[port1]) == sorted(ports_weight[port2]) !=[0]:
             traversed+=[port1,port2]
             recursive_start_points(graph,all_match_pairs,traversed,port1,port2, ports_weight)
-            logger.debug(f"all matches found starting from {port1} and {port2} pair: {all_match_pairs}")
+            all_match_pairs = {k:v for k,v in all_match_pairs.items() if len(v)>0}
+            logger.debug(f"all matches found starting from {port1} and {port2} pair: {pprint.pformat(all_match_pairs, indent=4)}")
 
     return all_match_pairs
 
