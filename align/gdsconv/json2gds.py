@@ -63,11 +63,11 @@ def convert_GDSjson_GDS_fps( ifile, ofile):
                     elif t == 'path':
                         store_data ('PATH', None)
                         if 'layer' in elem:        store_data ("LAYER", str(elem['layer']))
-                        if 'datatype' in elem:    store_data ("DATATYPE", str(elem['datatype']))
-                        if 'pathtype' in elem:    store_data ("PATHTYPE", str(elem['pathtype']))
+                        if 'datatype' in elem:     store_data ("DATATYPE", str(elem['datatype']))
+                        if 'pathtype' in elem:     store_data ("PATHTYPE", str(elem['pathtype']))
                         if 'width' in elem:        store_data ("WIDTH", str(elem['width']))
-                        if 'bgnextn' in elem:     store_data ("BGNEXTN", str(elem['bgnextn']))
-                        if 'endextn' in elem:     store_data ("ENDEXTN", str(elem['endextn']))
+                        if 'bgnextn' in elem:      store_data ("BGNEXTN", str(elem['bgnextn']))
+                        if 'endextn' in elem:      store_data ("ENDEXTN", str(elem['endextn']))
                         if 'xy' in elem:           store_data ("XY", unbracket(elem['xy']))
                     elif t == 'text':
                         store_data ("TEXT", None)
