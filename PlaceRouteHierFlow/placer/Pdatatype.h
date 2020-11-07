@@ -48,7 +48,7 @@ struct SymmBlock {
   int dnode;
   int mapIdx=-1;
   int axis_coor;
-  Smark axis_dir;
+  Smark axis_dir=placerDB::V;
 };
 
 struct nodeStructComp {
