@@ -743,11 +743,11 @@ Option name=upper_layer                          value={topmetal}
 
             tuples = [
               ("metal1", ["metal1","metal0"]),
-              ("metal2", ["metal2","metal1"]),
-              ("metal3", ["metal3","metal2"]),
-              ("metal4", ["metal4","metal3"]),
-              ("metal5", ["metal5","metal4"]),
-              ("metal6", ["metal6","metal5"])
+              ("metal2", ["metal3","metal2","metal1"]),
+              ("metal3", ["metal4","metal3","metal2"]),
+              ("metal4", ["metal5","metal4","metal3"]),
+              ("metal5", ["metal6","metal5","metal4"]),
+              ("metal6", ["metal7","metal6","metal5"])
               ]
 
             for gr_layer, w_layers in tuples:
