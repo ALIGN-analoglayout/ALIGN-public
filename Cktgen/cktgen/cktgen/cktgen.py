@@ -425,6 +425,18 @@ def encode_GR( tech, obj):
   else:
     raise TypeError(repr(obj) + " is not JSON serializable.")
 
+
+def decolor_layer(layer):
+  mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
+  if mg:
+    lyr = mg.group(1) + mg.group(3)
+    clr = mg.group(2)
+  else:
+    lyr = layer
+    clr = None
+  return lyr, clr
+
+
 class Net:
   def __init__( self, nm):
     self.nm = nm
@@ -481,16 +493,6 @@ class Netlist:
             grGrid.append( [x,y,x+dx,y+dy])
       else:
         grGrid.append( self.bbox.toList())
-            
-      def decolor_layer(layer):
-        mg = re.match(r'(metal|via)(\D+)(\d+)', layer)
-        if mg:
-            lyr = mg.group(1) + mg.group(3)
-            clr = mg.group(2)
-        else:
-            lyr = layer
-            clr = None
-        return lyr,clr
 
       for term in terminals:
         # print('term::', type(term), term)
@@ -599,8 +601,7 @@ Option name=auto_fix_global_routing              value=0
 Option name=pin_checker_mode                     value=0
 Option name=upper_layer                          value={topmetal}
 
-Option name=disable_optimization value=1
-
+#Option name=disable_optimization value=1
 #OPT3
 #Option opt_minimize_direct_i_routes=0
 #OPT4
@@ -752,7 +753,7 @@ Option name=disable_optimization value=1
             for gr_layer, w_layers in tuples:
               if gr.layer == gr_layer:
                 for w in v.wires:
-                  if w.layer in w_layers:
+                  if decolor_layer(w.layer)[0] in w_layers:
                     if touching( gr_r, w.rect):
                       fp.write( "Tie term0=%d gr0=%d\n" % (w.gid, gr.gid))
                       print( "Tie", gr, gr_r, w)
