@@ -39,7 +39,7 @@ def test_match_ota():
     assert 'CMC_NMOS' in mapped_graph_list.keys()
     assert 'DP_NMOS' in mapped_graph_list.keys()
     subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list)
-    assert len(reduced_graph.nodes()) == 16
+    assert len(reduced_graph.nodes()) == 23
     subckts_created.append({
             "name": "ota",
             "graph":reduced_graph ,

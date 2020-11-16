@@ -236,24 +236,24 @@ def compare_balanced_tree(G, node1:str, node2:str, traversed1:list, traversed2:l
     traversed1.append(node1)
     traversed2.append(node2)
     if tree1==tree2:
-        logger.debug("common net or device")
+        #logger.debug("common net or device")
         return True
     while(len(list(tree1))== len(list(tree2)) > 0):
         logger.debug(f"tree1 {tree1} tree2 {tree2} traversed1 {traversed1} traversed2 {traversed2}")
         tree1 = set(tree1) - set(traversed1)
         tree2 = set(tree2) - set(traversed2)
-        logger.debug(f"removed traversed elements tree1 {tree1} tree2 {tree2}")
+        #logger.debug(f"removed traversed elements tree1 {tree1} tree2 {tree2}")
         #type1 = [G.nodes[node]["inst_type"] for node in list(tree1)]
         #type2 = [G.nodes[node]["inst_type"] for node in list(tree2)]
         if tree1.intersection(tree2) or len(list(tree1))== len(list(tree2))==0:
-            logger.debug("matched subgraph")
+            #logger.debug("matched subgraph")
             return True
         else:
             traversed1+=list(tree1)
             traversed2+=list(tree2)
             tree1=set(get_next_level(G,tree1))
             tree2=set(get_next_level(G,tree2))
-            logger.debug(f"checking next level:tree1 {tree1} tree2: {tree2}")
+            #logger.debug(f"checking next level:tree1 {tree1} tree2: {tree2}")
 
     logger.debug(f"Non symmetrical branches for nets: {node1}, {node2}")
     return False

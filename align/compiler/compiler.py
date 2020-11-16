@@ -105,7 +105,6 @@ def compiler(input_ckt:pathlib.Path, design_name:str, flat=0,Debug=False):
         check_nodes(updated_circuit)
         updated_ckt_list.extend(updated_circuit)
 
-
         stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
         if circuit_name not in design_setup['DIGITAL']:
             symmetry_blocks = FindSymmetry(Grest, circuit["ports"], circuit["ports_weight"], stop_points)
@@ -209,6 +208,9 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             #Dropping floating ports
 
             lef_name = attr['inst_type']
+            #considerign instance of body and without body same in case we have generator for non body pin instances
+            if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
+                lef_name = lef_name[0:-2]
 
             if "values" in attr and (lef_name in ALL_LEF):
                 block_name, block_args = generate_lef(
