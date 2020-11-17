@@ -381,7 +381,7 @@ def multiple_instances(G1,new_node,sub_block_name,check_duplicates):
             G1.nodes[new_node]["inst_copy"] = inst_copy
             logger.debug(f"adding modified sub_ckt: {update_name} {check_duplicates.keys()}")
     else:
-        inst_copy = '<'+ str(len(check_duplicates[sub_block_name]))+'>'
+        inst_copy = '<'+ str(len(check_duplicates[sub_block_name])) + '>'
         update_name = sub_block_name + inst_copy
         G1.nodes[new_node]["inst_type"] = sub_block_name
         G1.nodes[new_node]["inst_copy"] = inst_copy

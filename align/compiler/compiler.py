@@ -210,7 +210,10 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             lef_name = attr['inst_type']
             #considerign instance of body and without body same in case we have generator for non body pin instances
             if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
-                ALL_LEF.append(lef_name)
+                if 'inst_copy' in attr:
+                    ALL_LEF.append(lef_name + attr['inst_copy'])
+                else:
+                    ALL_LEF.append(lef_name)
                 lef_name = lef_name[0:-2]
 
             if "values" in attr and (lef_name in ALL_LEF):
@@ -218,13 +221,13 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
                     lef_name, attr,
                     primitives, design_config, uniform_height)
                 #block_name_ext = block_name.replace(lef_name,'')
-                logger.debug(f"Created new lef for: {block_name}")
+                logger.debug(f"Created new lef for: {block_name} {lef_name}")
                 #Multiple instances of same module
                 if 'inst_copy' in attr:
                     for member in updated_ckt_list:
                         if member["name"] == lef_name + attr['inst_copy']:
                             member["name"] = block_name
-                    member["graph"].nodes[node]["inst_type"]=block_name
+                    graph.nodes[node]["inst_type"]=block_name
                     ALL_LEF.append(block_name)
 
 
