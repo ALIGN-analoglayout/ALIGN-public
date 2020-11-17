@@ -43,26 +43,12 @@ M2 SA DB S B PMOS w=27e-9 l=20e-9 nfin=10
 M3 SB DB S B PMOS w=27e-9 l=20e-9 nfin=5
 .ends CASCODED_CMC_PMOS_B
 
-.subckt CASCODED_CMC_PMOS DA GA DB S
-M0 DA GA SA S PMOS w=27e-9 l=20e-9 nfin=120
-M1 DB GA SB S PMOS w=27e-9 l=20e-9 nfin=60
-M2 SA DB S S PMOS w=27e-9 l=20e-9 nfin=10
-M3 SB DB S S PMOS w=27e-9 l=20e-9 nfin=5
-.ends CASCODED_CMC_PMOS
-
 .subckt CASCODED_CMC_NMOS_B DA S DB GA B
 M0 DA GA SA B NMOS w=27e-9 l=20e-9 nfin=24
 M1 DB GA SB B NMOS w=27e-9 l=20e-9 nfin=24
 M2 SA DA S B NMOS w=27e-9 l=20e-9 nfin=30
 M3 SB DA S B NMOS w=27e-9 l=20e-9 nfin=30
 .ends CASCODED_CMC_NMOS_B
-
-.subckt CASCODED_CMC_NMOS DA S DB GA
-M0 DA GA SA S NMOS w=27e-9 l=20e-9 nfin=24
-M1 DB GA SB S NMOS w=27e-9 l=20e-9 nfin=24
-M2 SA DA S S NMOS w=27e-9 l=20e-9 nfin=30
-M3 SB DA S S NMOS w=27e-9 l=20e-9 nfin=30
-.ends CASCODED_CMC_NMOS
 
 .subckt CMC_NMOS_B DA DB SA SB G B
 M0 (DA G SA B) NMOS w=w l=90n
