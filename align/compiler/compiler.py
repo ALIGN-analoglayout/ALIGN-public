@@ -287,7 +287,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             if name not in design_setup['DIGITAL'] and name not in lib_names:
                 logger.debug(f"call constraint generator writer for block: {name}")
                 stop_points=design_setup['POWER']+design_setup['GND']+design_setup['CLOCK']
-                #WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
+                WriteConst(graph, result_dir, name, inoutpin, member["ports_weight"],all_array, stop_points)
                 WriteCap(graph, result_dir, name, design_config["unit_size_cap"],all_array)
                 check_common_centroid(graph,const_file,inoutpin)
 

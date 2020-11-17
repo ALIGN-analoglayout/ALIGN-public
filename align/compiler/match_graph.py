@@ -259,7 +259,7 @@ def copy_matched_subcircuit_attributes(G1,G2, Gsub,g2_ports,num,pg):
     matched_ports = {}
     ports_weight = {}
     for g1_n, g2_n in Gsub.items():
-        if 'net' not in G1.nodes[g1_n]["inst_type"]:
+        if 'mos' in G1.nodes[g1_n]["inst_type"]:
             G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
             G2.nodes[g2_n]['real_inst_type'] = G1.nodes[g1_n]['real_inst_type']
             g2n_body = G2.nodes[g2_n]['body_pin']
@@ -273,15 +273,19 @@ def copy_matched_subcircuit_attributes(G1,G2, Gsub,g2_ports,num,pg):
                     matched_ports[G2.nodes[g2_n]['body_pin']] = G1.nodes[g1_n]['body_pin']
                     ports_weight[G2.nodes[g2_n]['body_pin']] = [0]
                     logger.debug(f'Adding body pin: {g1_n}')
-        elif 'external' in G2.nodes[g2_n]["net_type"]:
-            if num > 1 and g1_n in pg:
-                # remove power connections
-                G2=nx.relabel_nodes(G2,{g2_n:g1_n},copy=False)
-            else:
-                matched_ports[g2_n] = g1_n
-                ports_weight[g2_n] = []
-                for nbr in list(G2.neighbors(g2_n)):
-                    ports_weight[g2_n].append(G2.get_edge_data(g2_n, nbr)['weight'])
+        elif 'net' in G2.nodes[g2_n]["inst_type"]:
+            if 'external' in G2.nodes[g2_n]["net_type"]:
+                if num > 1 and g1_n in pg:
+                    # remove power connections
+                    G2=nx.relabel_nodes(G2,{g2_n:g1_n},copy=False)
+                else:
+                    matched_ports[g2_n] = g1_n
+                    ports_weight[g2_n] = []
+                    for nbr in list(G2.neighbors(g2_n)):
+                        ports_weight[g2_n].append(G2.get_edge_data(g2_n, nbr)['weight'])
+        else:
+            G2.nodes[g2_n]['values'] = G1.nodes[g1_n]['values']
+            G2.nodes[g2_n]['real_inst_type'] = G1.nodes[g1_n]['real_inst_type']
     logger.debug(f"match: {' '.join(Gsub)}")
     logger.debug(f"Matched ports: {' '.join(matched_ports)}")
     logger.debug(f"Matched nets : {' '.join(matched_ports.values())}")
