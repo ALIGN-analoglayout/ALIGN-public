@@ -32,13 +32,15 @@ def test_parser3():
 
 def test_match_ota():
     g,lib_list =test_parser3()
+    design_setup = {'POWER':['vdd'],'GND':['vss']}
+    duplicate = {}
     mapped_graph_list = _mapped_graph_list(g, lib_list,)
     assert 'Switch_NMOS' in mapped_graph_list.keys()
     assert 'Switch_PMOS' in mapped_graph_list.keys()
     assert 'CMC_PMOS_S' in mapped_graph_list.keys()
     assert 'CMC_NMOS' in mapped_graph_list.keys()
     assert 'DP_NMOS' in mapped_graph_list.keys()
-    subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list)
+    subckts_created, reduced_graph = reduce_graph(g, mapped_graph_list, lib_list,duplicate,design_setup)
     assert len(reduced_graph.nodes()) == 23
     subckts_created.append({
             "name": "ota",

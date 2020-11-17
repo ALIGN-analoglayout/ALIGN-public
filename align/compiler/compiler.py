@@ -210,6 +210,7 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             lef_name = attr['inst_type']
             #considerign instance of body and without body same in case we have generator for non body pin instances
             if lef_name.split('_')[-1]=='B' and  lef_name[0:-2] in ALL_LEF:
+                ALL_LEF.append(lef_name)
                 lef_name = lef_name[0:-2]
 
             if "values" in attr and (lef_name in ALL_LEF):
