@@ -167,7 +167,7 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
     """
 
     hier_of_node ={}
-    level1=list(set(graph.neighbors(node))- set(traversed))
+    level1=list(set(graph.neighbors(node))-set(traversed))
     
     hier_of_node[node]=matching_groups(graph,level1,None)
     logger.debug(f"new hierarchy points {hier_of_node}")
@@ -179,14 +179,17 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                 similar_node_groups = {}
                 for el in sorted(group):
                     similar_node_groups[el]=[el]
-                templates[node]=[el]
-                visited=group+[node]
-                array=similar_node_groups.copy()
+                templates[node] = [el]
+                visited = group+[node]
+                array = similar_node_groups.copy()
                 trace_template(graph,similar_node_groups,visited,templates[node],array)
                 logger.debug(f"similar groups final from net {node}:{array}")
-                
+        
+        #check number of levels in detected array
+        #single hierarchy arrays can be handled using simple approaches
         all_inst = []
         if array and len(array.values())>1 and len(list(array.values())[0])>1:
+            #Multiple hierarchy identified in array
             matched_ports = {}
             for branch in  array.values():
                 for node_hier in branch:
@@ -214,9 +217,9 @@ def create_hierarchy(graph,node:str,traversed:list,ports_weight:dict):
                        
             logger.debug(f"creating a new hierarchy for {node}, {all_inst}, {matched_ports}")
             graph, subgraph,_ = merge_nodes(
-                    graph, 'dummy_hier_'+node,all_inst , matched_ports)
+                    graph, 'array_hier_'+node,all_inst , matched_ports)
             hier_of_node[node]={
-                        "name": 'dummy_hier_'+node,
+                        "name": 'array_hier_'+node,
                         "graph": subgraph,
                         "ports": list(matched_ports.keys()),
                         "ports_match": matched_ports,

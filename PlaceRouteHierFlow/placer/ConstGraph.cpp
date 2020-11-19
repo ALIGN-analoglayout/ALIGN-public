@@ -4577,6 +4577,26 @@ void ConstGraph::UpdateTerminalinHierNode(design& caseNL, PnRDB::hierNode& node)
       temp_pin.name = node.Terminals.at(i).name;
       temp_pin.type = node.Terminals.at(i).type;
       
+      /*
+      //added by yaguang - 10/28/2020
+      //should add the power pin into blockpins here, since the placer is bottom up and router is top down
+      for(unsigned int j=0;j<node.Nets.size();j++){
+         if(node.Nets[j].name==temp_pin.name){
+           for(unsigned int k=0;k<node.Nets[j].connected.size();k++){
+              if(node.Nets[j].connected[k].type==PnRDB::Block){
+                 int iter = node.Nets[j].connected[k].iter;
+                 int iter2 = node.Nets[j].connected[k].iter2;
+                 PnRDB::pin temp_pnr_pin=node.Blocks[iter2].instance.back().blockPins[iter];
+                 for(unsigned int l=0;l<temp_pnr_pin.pinContacts.size();l++)
+                     temp_pin.pinContacts.push_back(temp_pnr_pin.pinContacts[l]);
+              }
+           }
+            
+         }
+         
+      }
+      */
+
       node.blockPins.push_back(temp_pin);
     }
 
