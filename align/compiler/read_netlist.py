@@ -231,7 +231,7 @@ class SpiceParser:
         logger.debug(f'started reading subckt: {line.strip()}')
         subckt_nodes = line.strip().split()
         subckt_name = subckt_nodes[1]
-        
+
         #added to avoid assertion for string in PnR
         if subckt_name[0].isdigit():
             subckt_name = "align_"+subckt_name
@@ -302,7 +302,7 @@ class SpiceParser:
         self.option = line.strip().split()
 
     def _resolve_param(self, inherited_param, node, values):
-        logger.debug(f"inherited parameter: {inherited_param}" )
+        logger.debug(f"node {node} inherited parameter: {inherited_param}" )
         if "values" in node.keys():
             for param, value in node["values"].items():
                 logger.debug(f"checking parameter: {param} = {value}")
@@ -479,7 +479,7 @@ class SpiceParser:
                     port_weight=0
                     if port in subgraph.nodes():
                         #if statement is to skip ports which are only connected to body
-                        for nbr in subgraph.neighbors(port): 
+                        for nbr in subgraph.neighbors(port):
                             port_weight |= subgraph.get_edge_data(nbr, port)['weight']
                     ports_weight.append(port_weight)
                 node['edge_weight']=ports_weight
