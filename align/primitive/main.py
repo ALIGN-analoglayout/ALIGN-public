@@ -54,32 +54,80 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     if primitive in ["Switch_NMOS", "Switch_PMOS"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
                             'D': [('M1', 'D')],
+                            'G': [('M1', 'G')],
+                            'B': [('M1', 'B')]})
+
+    elif primitive in ["Switch_NMOS_B", "Switch_PMOS_B"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'B')],
+                            'D': [('M1', 'D')],
                             'G': [('M1', 'G')]})
 
     elif primitive in ["DCL_NMOS", "DCL_PMOS"]:
         cell_pin = gen( 0, {'S': [('M1', 'S')],
+                            'D': [('M1', 'G'), ('M1', 'D')],
+                            'B': [('M1', 'B')]})
+
+    elif primitive in ["DCL_NMOS_B", "DCL_PMOS_B"]:
+        cell_pin = gen( 0, {'S': [('M1', 'S'), ('M1', 'B')],
                             'D': [('M1', 'G'), ('M1', 'D')]})
 
     elif primitive in ["CM_NMOS", "CM_PMOS"]:
         cell_pin = gen( 3,      {'S':  [('M1', 'S'), ('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')]})
+                                 'DB': [('M2', 'D')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
+
+    elif primitive in ["CM_NMOS_B", "CM_PMOS_B"]:
+        cell_pin = gen( 3,     {'S':  [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
+                                'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
+                                'DB': [('M2', 'D')]})
 
     elif primitive in ["CMFB_NMOS", "CMFB_PMOS"]:
-        cell_pin = gen( 3,      {'S':  [('M1', 'S'), ('M2', 'S')],
-                                 'DA': [('M1', 'D'), ('M1', 'G')],
-                                 'DB': [('M2', 'D')],
-                                 'GB': [('M2', 'G')]})
+        cell_pin = gen( 3,     {'S':  [('M1', 'S'), ('M2', 'S')],
+                                'DA': [('M1', 'D'), ('M1', 'G')],
+                                'DB': [('M2', 'D')],
+                                'GB': [('M2', 'G')],
+                                'B':  [('M1', 'B'), ('M2', 'B')]})
+
+    elif primitive in ["CMFB_NMOS_B", "CMFB_PMOS_B"]:
+        cell_pin = gen( 3,     {'S':  [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
+                                'DA': [('M1', 'D'), ('M1', 'G')],
+                                'DB': [('M2', 'D')],
+                                'GB': [('M2', 'G')]})
+
     elif primitive in ["Dummy_NMOS", "Dummy_PMOS"]:
-        cell_pin = gen( 0,      {'S': [('M1', 'S'), ('M1', 'G')],
-                                 'D': [('M1', 'D')]})
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'G')],
+                                'D': [('M1', 'D')],
+                                'B': [('M1', 'B')]})
+
+    elif primitive in ["Dummy_NMOS_B", "Dummy_PMOS_B"]:
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'G'), ('M1', 'B')],
+                                'D': [('M1', 'D')]})
+
     elif primitive in ["Dcap_NMOS", "Dcap_PMOS"]:
-        cell_pin = gen( 0,      {'S': [('M1', 'S'), ('M1', 'D')],
-                                'G': [('M1', 'G')]})
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'D')],
+                                'G': [('M1', 'G')],
+                                'B': [('M1', 'B')]})
+
+    elif primitive in ["Dcap_NMOS_B", "Dcap_PMOS_B"]:
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'B')],
+                               'G': [('M1', 'G')]})
+
     elif primitive in ["Dummy1_NMOS", "Dummy1_PMOS"]:
-        cell_pin = gen( 0,      {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')]})
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G')],
+                                'B': [('M1', 'B')]})
+
+    elif primitive in ["Dummy1_NMOS_B", "Dummy1_PMOS_B"]:
+        cell_pin = gen( 0,     {'S': [('M1', 'S'), ('M1', 'D'), ('M1', 'G'), ('M1', 'B')]})
+
     elif primitive in ["SCM_NMOS", "SCM_PMOS"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
+                                 'DB': [('M2', 'D')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
+
+    elif primitive in ["SCM_NMOS_B", "SCM_PMOS_B"]:
+        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
                                  'DB': [('M2', 'D')]})
 
@@ -88,11 +136,18 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'DA': [('M1', 'D')],
                                  'SB': [('M2', 'S')],
                                  'DB': [('M2', 'D')],
-                                 'G':  [('M1', 'G'), ('M2', 'G')]})
-
+                                 'G':  [('M1', 'G'), ('M2', 'G')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     elif primitive in ["CMC_NMOS_S", "CMC_PMOS_S"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D')],
+                                 'DB': [('M2', 'D')],
+                                 'G':  [('M1', 'G'), ('M2', 'G')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
+
+    elif primitive in ["CMC_NMOS_S_B", "CMC_PMOS_S_B"]:
+        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
                                  'DA': [('M1', 'D')],
                                  'DB': [('M2', 'D')],
                                  'G':  [('M1', 'G'), ('M2', 'G')]})
@@ -102,16 +157,31 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
                                  'DA': [('M1', 'D')],
                                  'DB': [('M2', 'D')],
                                  'GA': [('M1', 'G')],
+                                 'GB': [('M2', 'G')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
+
+    elif primitive in ["DP_NMOS_B", "DP_PMOS_B"]:
+        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
+                                 'DA': [('M1', 'D')],
+                                 'DB': [('M2', 'D')],
+                                 'GA': [('M1', 'G')],
                                  'GB': [('M2', 'G')]})
 
     elif primitive in ["LS_NMOS", "LS_PMOS"]:
         cell_pin = gen(pattern, {'SA':  [('M1', 'S')],
                                  'SB': [('M2', 'S')],
                                  'DA': [('M1', 'D'), ('M1', 'G'), ('M2', 'G')],
-                                 'DB': [('M2', 'D')]})
+                                 'DB': [('M2', 'D')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
 
     elif primitive in ["CCP_NMOS_S", "CCP_PMOS_S"]:
         cell_pin = gen(pattern, {'S':  [('M1', 'S'), ('M2', 'S')],
+                                 'DA': [('M1', 'D'),('M2', 'G')],
+                                 'DB': [('M2', 'D'), ('M1', 'G')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]})
+
+    elif primitive in ["CCP_NMOS_S_B", "CCP_PMOS_S_B"]:
+        cell_pin = gen(pattern, {'S': [('M1', 'S'), ('M2', 'S'), ('M1', 'B'), ('M2', 'B')],
                                  'DA': [('M1', 'D'),('M2', 'G')],
                                  'DB': [('M2', 'D'), ('M1', 'G')]})
 
@@ -119,7 +189,8 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
         cell_pin = gen(pattern, {'SA': [('M1', 'S')],
                                  'SB': [('M2','S')],
                                  'DA': [('M1', 'D'),('M2', 'G')],
-                                 'DB': [('M2', 'D'), ('M1', 'G')]}) 
+                                 'DB': [('M2', 'D'), ('M1', 'G')],
+                                 'B':  [('M1', 'B'), ('M2', 'B')]}) 
 
     else:
         raise NotImplementedError(f"Unrecognized primitive {primitive}")

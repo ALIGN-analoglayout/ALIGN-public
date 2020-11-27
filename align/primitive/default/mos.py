@@ -200,7 +200,7 @@ class MOSGenerator(DefaultCanvas):
                 _connect_diffusion(gate_x - x_terminal, terminal)
                 _connect_diffusion(gate_x + x_terminal, terminal)
 
-    def _connectDevicePins(self, y, connections):
+    def _connectDevicePins(self, y, y_cells, connections):
         center_track = y * self.m2PerUnitCell + self.m2PerUnitCell // 2 # Used for m1 extension
         grid_y1 = (y+1)*self.m2PerUnitCell-5
         gate_track = 0
@@ -217,6 +217,9 @@ class MOSGenerator(DefaultCanvas):
                     if pin == 'G':
                         current_track = grid_y1 + 2 + gate_track
                         gate_track = gate_track+1
+                    elif pin == 'B':
+                        if y != y_cells-1:continue
+                        current_track = y_cells * self.m2PerUnitCell + self.lFin//4
                     else:
                         current_track = y * self.m2PerUnitCell + len(connections) * j + diff_track
                         diff_track = diff_track + 1
@@ -265,7 +268,7 @@ class MOSGenerator(DefaultCanvas):
                         minx, maxx = _get_wire_terminators([*locs, current_track])
                         self.addWire(self.m2, net, None, i, (minx, -1), (maxx, 1))
 
-        self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1))
+        #self.addWire( self.m2, 'B', 'B', (y_cells)* self.m2PerUnitCell + self.lFin//4, (0, 1), (x_cells*self.gatesPerUnitCell+2*self.gateDummy*self.shared_diff, -1))
 
     def _addBodyContact(self, x, y, x_cells, yloc=None, name='M1'):
         fullname = f'{name}_X{x}_Y{y}'
@@ -284,7 +287,7 @@ class MOSGenerator(DefaultCanvas):
             self.addWire( self.pb_diff, None, None, y, (x,1), (x+1,-1))
         self.addWire( self.m1, None, None, gate_x, ((y+1)*h+3, -1), ((y+1)*h+self.lFin//2-3, 1))
         self.addVia( self.va, f'{fullname}:B', None, gate_x, (y+1)*h + self.lFin//4)
-        self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
+        #self.addVia( self.v1, 'B', None, gate_x, (y+1)*h + self.lFin//4)
 
     def _addMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, minvias = 1, **parameters):
         if minvias * len(connections) > self.m2PerUnitCell - 1:
@@ -298,34 +301,40 @@ class MOSGenerator(DefaultCanvas):
             self._xpins = collections.defaultdict(lambda: collections.defaultdict(list)) # inst:pin:m1tracks (Updated by self._addMOS)
             
             for x in range(x_cells):
+                if y == y_cells-1 and pattern == 0:
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[0])
+                elif y == y_cells-1 and pattern != 0:
+                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[x%2])
+                else:
+                    pass
                 if pattern == 0: # None (single transistor)
                     # TODO: Not sure this works without dummies. Currently:
                     # A A A A A A
                     self._addMOS(x, y, x_cells, vt_type, names[0], False, **parameters)
-                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[0])
+                    #self._addBodyContact(x, y, x_cells, y_cells - 1, names[0])
                 elif pattern == 1: # CC
                     # TODO: Think this can be improved. Currently:
                     # A B B A A' B' B' A'
                     # B A A B B' A' A' B'
                     # A B B A A' B' B' A'
                     self._addMOS(x, y, x_cells, vt_type, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2], x >= x_cells // 2,  **parameters)
-                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
+                    #self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x // 2) % 2 + x % 2 + (y % 2)) % 2])
                 elif pattern == 2: # interdigitated
                     # TODO: Evaluate if this is truly interdigitated. Currently:
                     # A B A B A B
                     # B A B A B A
                     # A B A B A B
                     self._addMOS(x, y, x_cells, vt_type, names[((x % 2) + (y % 2)) % 2], False,  **parameters)
-                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2])
+                    #self._addBodyContact(x, y, x_cells, y_cells - 1, names[((x % 2) + (y % 2)) % 2])
                 elif pattern == 3: # CurrentMirror
                     # TODO: Evaluate if this needs to change. Currently:
                     # B B B A A B B B
                     # B B B A A B B B
                     self._addMOS(x, y, x_cells, vt_type, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1], False,  **parameters)
-                    self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
+                    #self._addBodyContact(x, y, x_cells, y_cells - 1, names[0 if 0 <= ((x_cells // 2) - x) <= 1 else 1])
                 else:
                     assert False, "Unknown pattern"
-            self._connectDevicePins(y, connections)
+            self._connectDevicePins(y, y_cells, connections)
         self._connectNets(x_cells, y_cells) 
 
     def addNMOSArray( self, x_cells, y_cells, pattern, vt_type, connections, **parameters):
