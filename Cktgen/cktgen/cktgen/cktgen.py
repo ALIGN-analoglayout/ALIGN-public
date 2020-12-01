@@ -602,13 +602,34 @@ Option name=pin_checker_mode                     value=0
 Option name=upper_layer                          value={topmetal}
 
 #Option name=disable_optimization value=1
-#OPT3
-#Option opt_minimize_direct_i_routes=0
-#OPT4
-#Option opt_maximize_ties_between_trunks=0
-#OPT5
-#Option opt_maximize_ties_between_trunks_and_terminals=0
-
+# #OPT4 
+# Option name=opt_maximize_ties_between_trunks value=1
+# #OPT5
+# Option name=opt_maximize_ties_between_trunks_and_terminals value=1
+# Option name=opt_minimize_trunk_tracks value=1
+# Option name=opt_optimize_trunk_positions value=0
+# #OPT 6
+# Option name=opt_minimize_preroute_extensions value=0
+# #OPT 7
+# Option name=opt_minimize_wire_tracks_soft value=0
+# #OPT 8
+# Option name=opt_minimize_ties_between_terminals value=0
+# #OPT 9
+# Option name=opt_maximize_routes_between_trunks_and_terminals value=0
+# #OPT 10
+# Option name=opt_minimize_wire_tracks_heavy value=0
+# #OPT 11
+# Option name=opt_maximize_routes_between_terminals value=0
+# #OPT 12
+# Option name=opt_maximize_routes_between_trunks value=0
+# #OPT 13
+# Option name=opt_optimize_width_of_trunks value=0
+# #OPT 14
+# Option name=opt_optimize_width_of_shunt_wires value=0
+# #OPT 15
+# Option name=opt_optimize_connections_to_terminals value=0
+# #OPT 16
+# Option name=opt_optimize_length_of_shunt_wires value=0
 """)
 
 
