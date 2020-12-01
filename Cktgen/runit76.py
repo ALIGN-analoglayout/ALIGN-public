@@ -16,7 +16,7 @@ def main( name, generate=False, args=None):
 
     assert 'ALIGN_HOME' in os.environ
     ALIGN_HOME = os.environ['ALIGN_HOME']
-    PDK_DIR = os.environ['PDK_DIR']
+    PDK_HOME = os.environ['PDK_HOME']
 
     spec = importlib.util.spec_from_file_location("flow", f'{ALIGN_HOME}/Cktgen/flow.py')
     flow = importlib.util.module_from_spec(spec)
@@ -31,7 +31,7 @@ def main( name, generate=False, args=None):
         g = importlib.import_module( f'intel_p1276p31.generate_{name}')
         g.generate()
 
-    td = f'{ALIGN_HOME}/{PDK_DIR}/DR_COLLATERAL'
+    td = f'{PDK_HOME}/intel_p1276p31/DR_COLLATERAL'
 
     cmd = f'-sgr -src {name} -td {td} --placer_json __json --gr_json __json_grs --no_interface'
 
