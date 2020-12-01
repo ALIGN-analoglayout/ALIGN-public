@@ -101,7 +101,7 @@ class WriteVerilog:
                         check_short.append(a[i])
                     if a[i] in self.power_pins:
                         mapped_pins= mapped_pins[:-1]
-                
+
                 return sorted(mapped_pins)
 
         else:
@@ -142,7 +142,7 @@ class WriteSpice:
                     self.all_mos.append({"name":attr['inst_type'], "model": 'nmos_rvt',"values": attr['values']})
                     line= "\nx" + node + ' '
                 elif attr['real_inst_type'] in ['cap', 'res', '']:
-                    line= "\n" + node + ' '                    
+                    line= "\n" + node + ' '
                 else:
                     line= "\n" + node + ' '
                 ports = []
@@ -273,7 +273,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             unit_size_mos = design_config["unit_size_nmos"]
         else:
             unit_size_mos = design_config["unit_size_pmos"]
-        
+
         if "nfin" in values.keys():
             #FinFET design
             size = int(values["nfin"])
@@ -286,7 +286,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
             name_arg ='nfin'+str(size)
 
 
-        else: 
+        else:
             convert_to_unit(values)
             size = '_'.join(param+str(values[param]) for param in values)
         if 'nf' in values.keys():
@@ -296,7 +296,6 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
         if 'm' in values.keys():
                 size=size*int(values["m"])
                 name_arg =name_arg+'_m'+str(int(values["m"]))
-
 
         no_units = ceil(size / unit_size_mos)
 
@@ -333,7 +332,7 @@ def generate_lef(name:str, attr:dict, available_block_lef:list, design_config:di
                 merged_vt='_'.join(attr["real_inst_type"])
             else:
                 merged_vt=attr["real_inst_type"]
-            
+
             vt= [vt for vt in design_config["vt_type"] if vt.lower() in  merged_vt]
             if vt:
                 block_name = block_name+'_'+vt[0]
@@ -353,4 +352,3 @@ def check_ports_match(subckt_list,port,subckt):
         else:
             logger.info("ports match: %s %s",subckt,port)
             return 1
-

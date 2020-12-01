@@ -11,8 +11,15 @@ def test_gds_json_roundtrip ():
     convert_GDSjson_GDS (mydir / "fromgds.json", mydir / "fromjson.gds")
     assert (filecmp.cmp (mydir / "file.gds", mydir / "fromjson.gds"))
 
+    convert_GDS_GDSjson (mydir / "only_paths.gds", mydir / "only_paths_fromgds.json")
+    convert_GDSjson_GDS (mydir / "only_paths_fromgds.json", mydir / "only_paths_fromjson.gds")
+    assert (filecmp.cmp (mydir / "only_paths.gds", mydir / "only_paths_fromjson.gds"))
+
 def test_json_gds_roundtrip ():
     convert_GDSjson_GDS (mydir / "file.json", mydir / "fromjson2.gds")
     convert_GDS_GDSjson (mydir / "fromjson2.gds", mydir / "fromgds2.json")
     assert (filecmp.cmp (mydir / "file.json", mydir / "fromgds2.json"))
 
+    convert_GDSjson_GDS (mydir / "only_paths.json", mydir / "only_paths_fromjson2.gds")
+    convert_GDS_GDSjson (mydir / "only_paths_fromjson2.gds", mydir / "only_paths_fromgds2.json")
+    assert (filecmp.cmp (mydir / "only_paths.json", mydir / "only_paths_fromgds2.json"))

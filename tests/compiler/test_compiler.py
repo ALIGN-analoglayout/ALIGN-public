@@ -9,8 +9,8 @@ def test_compiler():
     assert 'CMC_PMOS_S' in all_subckt_list
     assert 'CMC_PMOS' in all_subckt_list
     assert 'SCM_NMOS' in all_subckt_list
-    assert 'CMC_NMOS' in all_subckt_list
-    assert 'DP_NMOS' in all_subckt_list
+    assert 'CMC_NMOS_B' in all_subckt_list
+    assert 'DP_NMOS_B' in all_subckt_list
     assert 'ota' in all_subckt_list
 
     return(updated_ckt,library)

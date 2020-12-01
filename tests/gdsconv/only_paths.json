@@ -1,0 +1,89 @@
+{
+    "header": 600,
+    "bgnlib": [
+        {
+            "time": [
+                2019,
+                4,
+                24,
+                9,
+                46,
+                15,
+                2019,
+                4,
+                24,
+                9,
+                46,
+                15
+            ],
+            "libname": "test",
+            "units": [
+                0.00025,
+                2.5e-10
+            ],
+            "bgnstr": [
+                {
+                    "time": [
+                        2019,
+                        4,
+                        24,
+                        9,
+                        46,
+                        17,
+                        2019,
+                        4,
+                        24,
+                        9,
+                        46,
+                        17
+                    ],
+                    "strname": "path_with_default_extn",
+                    "elements": [
+                        {
+                            "type": "path",
+                            "layer": 10,
+                            "datatype": 0,
+                            "pathtype": 2,
+                            "width": 150,
+                            "xy": [
+                                2000,
+                                200,
+                                2800,
+                                200
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "time": [
+                        2019,
+                        4,
+                        24,
+                        9,
+                        46,
+                        27,
+                        2019,
+                        4,
+                        24,
+                        9,
+                        46,
+                        27
+                    ],
+                    "strname": "wrapper",
+                    "elements": [
+                        {
+                            "type": "sref",
+                            "sname": "path_with_default_extn",
+                            "strans": 0,
+                            "angle": 0.0,
+                            "xy": [
+                                100,
+                                200
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

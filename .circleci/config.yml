@@ -64,6 +64,16 @@ jobs:
           shell: /bin/bash
           command: |
             cd build/
+            make docker DESIGN=test_vga && \
+            docker cp align_cont:/dataVolume/test_vga ..
+
+      - store_artifacts:
+          path: test_vga/test_vga_0.png
+
+      - run:
+          shell: /bin/bash
+          command: |
+            cd build/
             make docker DESIGN=switched_capacitor_filter && \
             docker cp align_cont:/dataVolume/switched_capacitor_filter ..
 
