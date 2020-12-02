@@ -58,10 +58,11 @@ void ReadVerilogHelper::semantic( const string& fpath, const string& topcell)
 		curr_node.bias_Hgraph=db.DRC_info.Metal_info[1].grid_unit_x;
 	    }
 	    //added one nodes to the class
-	    if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
-	    //if(!db.ReadConstraint_Json(curr_node, fpath, "const.json")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
-	    else{std::cout<<"Finished reading contraint file"<<std::endl;}
-	}
+	    //if(!db.ReadConstraint(curr_node, fpath, "const")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
+            db.ReadConstraint_Json(curr_node, fpath, "const.json");
+            // if(!db.ReadConstraint_Json(curr_node, fpath, "const.json")) {cerr<<"PnRDB-Error: fail to read constraint file of module "<<curr_node.name<<endl;}
+            // else{std::cout<<"Finished reading contraint file"<<std::endl;}
+        }
     }
 
 
