@@ -31,7 +31,7 @@ def get_parameters(primitive, parameters, nfin):
     return parameters
 
 # TODO: Pass cell_pin and pattern to this function to begin with
-def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch):
+def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch):
 
     pdk = Pdk().load(pdkdir / 'layers.json')
     generator = get_generator('MOSGenerator', pdkdir)
@@ -40,7 +40,7 @@ def generate_MOS_primitive(pdkdir, block_name, primitive, height, nfin, x_cells,
     gateDummy = 3 ### Total Dummy gates per unit cell: 2*gateDummy
     gate = 1
     shared_diff = 0 if any(primitive.startswith(f'{x}_') for x in ["LS","CMC","CCP"]) else 1
-    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack)
+    uc = generator(pdk, height, fin, gate, gateDummy, shared_diff, stack, bodyswitch)
     x_cells, pattern = get_xcells_pattern(primitive, pattern, x_cells)
     parameters = get_parameters(primitive, parameters, nfin)
 
@@ -229,12 +229,12 @@ def get_generator(name, pdkdir):
     return getattr(primitive, name)
 
 # WARNING: Bad code. Changing these default values breaks functionality.
-def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
+def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, pattern=1, value=12, vt_type='RVT', stack=1, parameters=None, pinswitch=0, bodyswitch=1, pdkdir=pathlib.Path.cwd(), outputdir=pathlib.Path.cwd()):
 
     assert pdkdir.exists() and pdkdir.is_dir(), "PDK directory does not exist"
 
     if 'MOS' in primitive:
-        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch)
+        uc, cell_pin = generate_MOS_primitive(pdkdir, block_name, primitive, height, value, x_cells, y_cells, pattern, vt_type, stack, parameters, pinswitch, bodyswitch)
     elif 'cap' in primitive.lower():
         uc, cell_pin = generate_Cap(pdkdir, block_name, value)
         uc.setBboxFromBoundary()
@@ -258,7 +258,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 1
     else:
         blockM = 0         
-    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM, uc.pdk)
+    gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, bodyswitch, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
         gen_gds_json.translate(block_name, '', pinswitch, fp0, fp1, datetime.datetime( 2019, 1, 1, 0, 0, 0), uc.pdk)

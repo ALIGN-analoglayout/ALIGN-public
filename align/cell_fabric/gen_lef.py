@@ -3,7 +3,7 @@ import json
 import collections
 
 
-def gen_lef_data(data, fp, macro_name, cell_pin):
+def gen_lef_data(data, fp, macro_name, cell_pin, bodyswitch):
     def s(x):
         return "%.4f" % (x/10000.0)
 
@@ -19,6 +19,7 @@ def gen_lef_data(data, fp, macro_name, cell_pin):
 # O(npins * nsegments) algorithm. Could be O(npins + nsegments) FIX!
 
     for i in cell_pin:
+        if i == 'B' and bodyswitch==0:continue
         fp.write("  PIN %s\n" % i)
         #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
         fp.write("    DIRECTION INOUT ;\n")
@@ -44,16 +45,16 @@ def gen_lef_data(data, fp, macro_name, cell_pin):
     fp.write("END %s\n" % macro_name)
 
 
-def gen_lef_json_fp(json_fp, lef_fp, macro_name, cell_pin):
+def gen_lef_json_fp(json_fp, lef_fp, macro_name, cell_pin, bodyswitch):
     gen_lef_data(json.load(json_fp), lef_fp, macro_name, cell_pin)
 
 
-def gen_lef_json(json_fn, lef_fn, macro_name, cell_pin):
+def gen_lef_json(json_fn, lef_fn, macro_name, cell_pin, bodyswitch):
     with open(json_fn, "rt") as json_fp, open(lef_fn, "wt") as lef_fp:
         gen_lef_json_fp(json_fp, lef_fp, macro_name, cell_pin)
 
 
-def json_lef(input_json, out_lef, cell_pin, blockM, p):
+def json_lef(input_json, out_lef, cell_pin, bodyswitch, blockM, p):
 
     exclude_layers = p.get_lef_exclude()
 
@@ -93,13 +94,9 @@ def json_lef(input_json, out_lef, cell_pin, blockM, p):
 
         fp.write("  SIZE %s BY %s ;\n" % (s(j['bbox'][2]), s(j['bbox'][3])))
         cell_pin = list(cell_pin)
-        '''if cell_pin[0] != "PLUS":
-            # add body contact to the pin list of transistors
-            cell_pin.append('B')
-        else:
-            pass'''
 
         for i in cell_pin:
+            if i == 'B' and bodyswitch==0:continue
             fp.write("  PIN %s\n" % i)
             #fp.write( "    DIRECTION %s ;\n" % obj['ported'])
             fp.write("    DIRECTION INOUT ;\n")
