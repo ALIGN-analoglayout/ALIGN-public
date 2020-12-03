@@ -46,7 +46,7 @@ def gen_lef_data(data, fp, macro_name, cell_pin, bodyswitch):
 
 
 def gen_lef_json_fp(json_fp, lef_fp, macro_name, cell_pin, bodyswitch):
-    gen_lef_data(json.load(json_fp), lef_fp, macro_name, cell_pin)
+    gen_lef_data(json.load(json_fp), lef_fp, macro_name, cell_pin, bodyswitch)
 
 
 def gen_lef_json(json_fn, lef_fn, macro_name, cell_pin, bodyswitch):
