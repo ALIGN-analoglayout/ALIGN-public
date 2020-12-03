@@ -200,17 +200,14 @@ def compiler_output(input_ckt, lib_names , updated_ckt_list, design_name:str, re
             duplicate_modules.append(name)
         logger.debug(f"Found module: {name} {member['graph'].nodes()}")
 
-<<<<<<< HEAD
-                if len(list(floating_ports))> 0:
-                    logger.error(f"floating ports found: {name} {floating_ports}")
-                    raise SystemExit('Please remove floating ports')
-        else:
-            inoutpin = member["ports"]
+        # if len(list(floating_ports))> 0:
+        #     logger.error(f"floating ports found: {name} {floating_ports}")
+        #     raise SystemExit('Please remove floating ports')
+        # else:
+        #     inoutpin = member["ports"]
 
-        graph = member["graph"].copy()
-=======
+        # graph = member["graph"].copy()
         graph = member["graph"]
->>>>>>> b143b125feaf28bec8b5c5b7e44613190744d10c
         logger.debug(f"Reading nodes from graph: {name}")
         for node, attr in graph.nodes(data=True):
             #lef_name = '_'.join(attr['inst_type'].split('_')[0:-1])

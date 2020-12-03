@@ -10,6 +10,7 @@ from itertools import combinations,combinations_with_replacement
 import logging
 from .create_array_hierarchy import create_hierarchy
 from .util import compare_two_nodes
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -262,6 +263,8 @@ def FindSymmetry(graph, ports:list, ports_weight:dict, stop_points:list):
 
 def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_points=None):
     const_file = (input_dir / (name + '.const'))
+    json_const_file = (input_dir / (name + '.const.json'))
+
     logger.debug("writing constraints: %s",const_file)
     logger.debug(f"ports weight: {ports_weight} stop_points : {stop_points}")
 
@@ -281,6 +284,10 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     all_match_pairs={k: v for k, v in all_match_pairs.items() if len(v)>1}
     logger.debug(f"all symmetry matching pairs {pprint.pformat(all_match_pairs, indent=4)}")
     written_symmetries = ''
+    json_const = {}
+    json_const["constraints"] = []
+
+
     ## ALIGN block constraints
     const_all=[]
     align_const_keys =[key for key,value in all_match_pairs.items() if isinstance(value,list)]
@@ -303,7 +310,7 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
     all_pairs=sorted(all_match_pairs.values(), key=lambda k: len ([k1 for k1,v1 in k.items() if k1!=v1]), reverse=True)
     logger.debug(f"all symmtry matching pairs {pprint.pformat(all_pairs, indent=4)}")
     for pairs in all_pairs:
-        symmBlock='\nSymmBlock ('
+        pairsj = []
         pairs=sorted(pairs.items(),key=lambda k: k[0])
         logger.debug(f"all symmblock pairs {pairs} {written_symmetries}")
         for key, value in pairs:
@@ -325,12 +332,14 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 continue
             if graph.nodes[key]["inst_type"]=="net" :
                 if key!=value  :
-                    pairs = symmnet_device_pairs(graph,key,value,written_symmetries)
+                    pairs,s1,s2 = symmnet_device_pairs(graph,key,value,written_symmetries)
                     if pairs:
                         symmNet = "\nSymmNet ( {"+key+','+','.join(pairs.keys()) + \
                                 '} , {'+value+','+','.join(pairs.values()) +'} )'
-                        written_symmetries += symmNet
-                        logger.debug(f"adding symmetries: {symmNet}")
+                        written_symmetries+=symmNet
+                        symmNetj = {"const_name":"SymmNet","axis_dir":"V","net1":s1,"net2":s2}
+                        json_const["constraints"].append(symmNetj)
+                        logger.debug(f"adding symmetries: {symmNetj}")
                     else:
                         logger.debug("skipping symmetry between large fanout nets {key} {value}")
                         logger.debug("TBF:Need update in placer to simplify this")
@@ -340,20 +349,29 @@ def WriteConst(graph, input_dir, name, ports, ports_weight, all_array, stop_poin
                 logger.debug(f"skipping symmetry for dcaps {key} {value}")
             else:
                 if key !=value:
-                    symmBlock += ' {'+key+ ','+value+'} ,'
+                    sj = {"type":"sympair","block1":key,"block2":value}
+                    pairsj.append(sj)
                 elif "Switch_" in graph.nodes[key]["inst_type"]:
                     logger.debug(f"TBF:skipping self symmetry for single transistor {key} {value}")
                 else:
-                    symmBlock +=' {' + key +'} ,'
-        if ',' in symmBlock[:-1]:
-            symmBlock = symmBlock[:-1]+')'
-            written_symmetries += symmBlock
-            logger.debug(f"one axis of written symmetries: {written_symmetries}")
-    if written_symmetries:
+                    sj = {"type":"selfsym","block":key}
+                    pairsj.append(sj)
+
+        if len(pairsj)> 1 or (len(pairsj)>0 and 'block1' in pairsj[0].keys()):
+            symmBlock = {'const_name': "SymmBlock","axis_dir":"V","pairs":pairsj}
+            written_symmetries += ' '.join([a['block'] for a in pairsj if 'block' in a.keys()])
+            written_symmetries += ' '.join([a['block1'] for a in pairsj if 'block1' in a.keys()])
+            written_symmetries += ' '.join([a['block2'] for a in pairsj if 'block2' in a.keys()])
+            json_const["constraints"].append(symmBlock)
+            logger.debug(f"one axis of written symmetries: {symmBlock}")
+    if json_const:
         const_fp = open(const_file, 'a+')
         const_fp.write("// ALIGN generated automatic constraints")
         const_fp.write(written_symmetries)
         const_fp.close()
+        with open(json_const_file, 'w') as outfile:
+            json.dump(json_const, outfile, indent=4)
+
 
 def symmnet_device_pairs(G, net_A, net_B,existing):
     """
@@ -373,24 +391,37 @@ def symmnet_device_pairs(G, net_A, net_B,existing):
     conn_B = connection(G,net_B)
 
     pairs={}
+    blocksA = []
+    blocksB = []
     for ele_A in conn_A.keys():
         for ele_B in conn_B.keys():
-            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[ele_A.split('/')[0]]["inst_type"]==G.nodes[ele_B.split('/')[0]]["inst_type"]:
+            if '/' in ele_A:
+                blockA,pinA = ele_A.split('/')
+            else:
+                blockA =  ele_A
+                pinA = None
+            if '/' in ele_B:
+                blockB,pinB = ele_B.split('/')
+            else:
+                blockA = ele_B
+                pinB = None
+            if conn_A[ele_A]==conn_B[ele_B] and G.nodes[blockA]["inst_type"]==G.nodes[blockB]["inst_type"]:
                 if ele_B in pairs.values():
                     logger.debug(f"skipping symmetry due to multiple possible matching of net {net_B} nbr {ele_B} to {pairs.values()} ")
-                    pairs = {}
-                    return pairs
-                elif ele_A.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
+                    return [None,None,None]
+                elif ele_A.split('/')[0] in existing and blockA+','+blockB not in existing:
                     continue
-                elif ele_B.split('/')[0] in existing and ele_A.split('/')[0]+','+ele_B.split('/')[0] not in existing:
+                elif ele_B.split('/')[0] in existing and blockA+','+blockB not in existing:
                     continue
                 else:
-                    pairs[ele_A]=ele_B
+                    pairs[ele_A] = ele_B
+                    blocksA.append({"type":"pin" if pinA else "terminal","name":blockA,"pin":pinA})
+                    blocksB.append({"type":"pin" if pinB else "terminal","name":blockB,"pin":pinB})
     if len(pairs.keys())>1:
-        return pairs
+        return pairs,{"name":net_A,"blocks":blocksA},{"name":net_B,"blocks":blocksB}
     else:
         logger.debug(f"skipping symmnet as: symmetry of net is between two devices")
-
+        return [None,None,None]
 
 def connection(graph,net:str):
     """

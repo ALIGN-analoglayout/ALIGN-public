@@ -41,7 +41,7 @@ M4 (DE DA SE B) NMOS w=w l=90n
 M5 (DF DA SF B) NMOS w=w l=90n
 M6 (DG DA SG B) NMOS w=w l=90n
 M7 (DH DA SH B) NMOS w=w l=90n
-.ends LSB_NMOS_2
+.ends LSB_NMOS_7
 
 .subckt LSB_PMOS_2 DA DB DC SA SB SC
 **UT austin  array VCM5
