@@ -59,6 +59,26 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+### Install superLU
+cd $ALIGN_HOME
+mkdir superlu
+cd superlu
+
+#version 1
+wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz
+tar -zxvf superlu_5.2.1.tar.gz 
+cd SuperLU_5.2.1/
+
+#version 2
+#git clone https://github.com/xiaoyeli/superlu.git
+#git checkout v5.2.1
+#mv superlu SuperLU_5.2.1 && cd SuperLU_5.2.1
+
+mkdir build
+cd build
+cmake ..
+make
+
 ## Set prerequisite paths
 #------------------------
 export LP_DIR=$ALIGN_HOME/lpsolve
@@ -66,6 +86,7 @@ export LP_DIR=$ALIGN_HOME/lpsolve
 export JSON=$ALIGN_HOME/json
 export GTEST_DIR=$ALIGN_HOME/googletest/googletest/
 export VENV=$ALIGN_HOME/general
+export SuperLu_DIR=$ALIGN_HOME/superlu
 
 ## Install ALIGN
 #---------------

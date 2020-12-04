@@ -50,6 +50,20 @@ make
 mkdir googletest/mybuild
 cp -r lib googletest/mybuild/.
 
+### Install superLU
+cd $ALIGN_HOME
+mkdir superlu
+cd superlu
+wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz
+tar -zxvf superlu_5.2.1.tar.gz
+
+cd SuperLU_5.2.1/
+mkdir build
+cd build
+cmake ..
+make
+
+
 ## Set prerequisite paths
 #------------------------
 setenv LP_DIR $ALIGN_HOME/lpsolve
