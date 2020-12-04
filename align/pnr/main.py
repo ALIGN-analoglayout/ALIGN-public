@@ -105,7 +105,7 @@ def generate_pnr(topology_dir, primitive_dir, pdk_dir, output_dir, subckt, nvari
     # Copy verilog & const files
     (input_dir / verilog_file).write_text((topology_dir / verilog_file).read_text())
     for file_ in topology_dir.iterdir():
-        if file_.suffix == '.const':
+        if file_.suffix == '.json':
             (input_dir / file_.name).write_text(file_.read_text())
 
     # Copy pdk file
