@@ -35,7 +35,7 @@ class PowerRouter : public DetailRouter {
     vector<double> utilization;//drc_info something like this
     
     PnRDB::Drc_info PowerGrid_Drc_info;
-    
+    std::string inputfile;
     //return PowerGrid to PnRDB
     
 
@@ -46,7 +46,7 @@ class PowerRouter : public DetailRouter {
     //create some dummy net with source and dest in nets
     //call detail router
 
-    PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate);
+    PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate, std::string inputfile);
     void PowerNetRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate);
     void CreatePowerGrid(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, double rate);
     void returnPath(std::vector<std::vector<RouterDB::Metal> > temp_path, RouterDB::PowerNet& temp_net);

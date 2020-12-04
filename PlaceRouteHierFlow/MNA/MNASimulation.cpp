@@ -1,14 +1,17 @@
 	#include "MNASimulation.h"
 	#include <iostream>
+#include <cstdlib>
+#include <ctime>
 #include "slu_ddefs.h"
 //#include </home/grads/w/wbxu/share/opt/boost/numeric/ublas/operation.hpp>
 
-MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info){
+MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem){
 //MNASimulation::MNASimulation(boost_matrix &out_R, boost_matrix &out_I){
 
 boost_matrix out_R, out_I; 
 std::vector<std::vector<double> > Istore,Vstore,Rstore;
 std::vector<int> mark_point;
+//double vianumber[12];
 this->R = out_R;
 this->I = out_I;
 
@@ -16,7 +19,7 @@ this->I = out_I;
 
 //ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
 std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
-ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set);
+ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
   
   std::set<MDB::metal_point, MDB::Compare_metal_point> vdd_point_set;
   std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
@@ -478,9 +481,9 @@ for (k = 0; k < B.nrow; ++k){
 std::cout<<"dp[" << k << "]=" << dp[k] <<std::endl;
 }
 
-// Print_Result(point_set, dp);
+ Print_Result(point_set, dp, outputfile);
 // Print_Grid(point_set,Power_Grid_devices);
-Print_EM(point_set,Power_Grid_devices,B.nrow,dp);
+Print_EM(point_set,Power_Grid_devices,B.nrow,dp, outputem);
 /*	
 for (int j = 0; j < n; j++){
  std::cout<<"volt[" << j << "]=" << volt[j] <<std::endl;
@@ -564,13 +567,27 @@ std::cout<<"check point11"<<std::endl;
 
 //result = 0.9;
 };
-
-void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,double* dp){
+/*
+void MNASimulation::Print_Input(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,double* vianumber){
 
   std::ofstream pythonfile;
-  pythonfile.open("Powergridresult.txt");
+  pythonfile.open("Inputresult.txt",ios::app));
+
   for(auto it = point_set.begin(); it != point_set.end(); it++){
 	 pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+  }
+  pythonfile.close();
+};*/
+
+void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set,double* dp, std::string outputfile){
+
+  std::ofstream pythonfile;
+  //pythonfile.open("Powergridresult.txt");
+  pythonfile.open(outputfile);
+  for(auto it = point_set.begin(); it != point_set.end(); it++){
+	if(it->metal_layer == 2 && it->power != 0){
+	 pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+	}
   }
   pythonfile.close();
 };
@@ -596,10 +613,10 @@ for(int i=0;i<temp_devices.size();i++){
   pythonfile.close();
 };
 
-void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp){
+void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &temp_devices, int size, double* dp, std::string outputem){
 
   std::ofstream pythonfile;
-  pythonfile.open("EMresult.txt");
+  pythonfile.open(outputem);
   double area[13] = {32.0,32.0,40.0,40.0,64.0,64.0,64.0,64.0,128.0,128.0,256.0,256.0,1200.0};
  //int size = dp.size(); 
  std::vector<double> em(size,0);
@@ -631,7 +648,8 @@ for(int i=0;i<temp_devices.size();i++){
   	}
 	int layer = layer1;
 	if (layer2 < layer1) layer = layer2;
-	double diff = v1-v2;
+	double diff = abs(v1-v2);
+/*
 	if (diff<0) flag = 1;
 	if (diff==0) flag = 2;
 	if (flag ==0){
@@ -640,11 +658,17 @@ for(int i=0;i<temp_devices.size();i++){
 	else if (flag == 1){
 	em[index1]=em[index1]+(-diff)/(area[layer]*area[layer]*resistance);
 	}
-	
-	
+*/
+	if (diff > em[index1]){
+		em[index1]=diff;
+	}	
+	if (diff > em[index2]){
+		em[index2]=diff;
+	}
   }
 }
 	std::cout<<"finish em"<<std::endl;
+	/*
 	double max = 0;
 	for (int i = 0; i < em.size(); i++){
 		if (em[i]>=max) max = em[i];	
@@ -652,10 +676,12 @@ for(int i=0;i<temp_devices.size();i++){
 	for (int i = 0; i < em.size(); i++){
 		em[i] = em[i]/max;
 		std::cout <<"em[" << i <<"]="<<em[i]<<std::endl;	
-	}
+	}*/
 	for(auto it = point_set.begin(); it != point_set.end(); it++){
-	 pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< em[it->index - 1] << " " << it->power <<std::endl;
-  	}
+	if(it->metal_layer == 2 && it->power != 0){
+	 	pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< em[it->index - 1] << " " << it->power <<std::endl;
+  		}
+	}
 
   pythonfile.close();
 };
@@ -983,16 +1009,17 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
 
 };
 
-void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, double power){
+void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, double power, int vianumber[]){
 
    for(unsigned int i=0;i<temp_grid.vias.size();++i){
      
        MDB::device temp_device;
        MDB::metal_point temp_point;
-	double vianumber[12] = {27.0, 27.0, 27.0, 27.0, 24.0, 24.0, 24.0, 24.0, 6.0, 6.0, 2.0, 2.0};
+	
        int model_index = temp_grid.vias[i].model_index;
        int x = temp_grid.vias[i].placedpos.x;
        int y = temp_grid.vias[i].placedpos.y;
+	   
 
        temp_point.metal_layer = drc_info.Via_model[model_index].LowerIdx;
        
@@ -1021,7 +1048,9 @@ void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<M
        temp_device.end_point_index = end_index;
 	//temp_device.metal_layer2 = temp_point.metal_layer;
 	//temp_device.value = drc_info.Via_model[model_index].R/4.0;
-       temp_device.value = drc_info.Via_model[model_index].R / vianumber[drc_info.Via_model[model_index].LowerIdx];
+	//int number = rand() % vianumber[drc_info.Via_model[model_index].LowerIdx] + 1;
+	double number = vianumber[drc_info.Via_model[model_index].LowerIdx];
+       temp_device.value = drc_info.Via_model[model_index].R / number ;
 	// temp_device.value = 1;  
      Power_Grid_devices.push_back(temp_device);
 
@@ -1113,12 +1142,61 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
 
 
 
-void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set){
+void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::string inputfile){
 
   
   //std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
  // std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
+std::cout<<"open file"<<std::endl;
+       unsigned seed;
+    	seed = time(0);
+    	srand(seed);
+	int via[12] = {27, 27, 27, 27, 24, 24, 24, 24, 6, 6, 2, 2};
+	int vianumber[12];
+std::cout<<"open file"<<std::endl;
+	for (int i = 0; i<12; i++){
+		vianumber[i] = via[i];
+	}
+//test for cnn model//
+/*
+std::cout<<"open file"<<std::endl;
+	for (int i = 2; i<=8; i=i+3){
+		vianumber[i] =  (rand()%via[i] + 1);
+	}
+  std::ofstream pythonfile;
+std::cout<<"open file"<<std::endl;
+  pythonfile.open(inputfile,std::ios::app);
+ for (int i = 2; i<=8; i=i+3){
+		pythonfile<<vianumber[i]<< " ";
+	}
+ pythonfile<<std::endl;
+ pythonfile.close();
+*/
 
+	std::ifstream in("InputCurrent_initial.txt");
+  //std::ifstream inputfile;
+  //inputfile.open("InputCurrent.txt");
+   	std::string line;
+	//vector<vector<double>> vv;
+	getline(in, line);
+	getline(in, line);
+	//while (getline(in, line)){
+		std::stringstream ss(line);
+		std::string tmp;
+		std::vector<double> v;
+		while (getline(ss, tmp, ' ')){
+			v.push_back(stod(tmp));//stod: string->double
+		}
+		for(int i = 0; i<=2; i++){
+			vianumber[2+i*3] = v[i];
+		}
+		//currentstore.push_back(v);
+	//}
+/*
+	vianumber[2]= 26;
+	vianumber[5]=17;
+	vianumber[8]=6;
+*/
   int highest_metal = INT_MIN;
   int lowest_metal = INT_MAX;
     double VDD = 0.8;
@@ -1167,8 +1245,8 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
   ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices,VDD);
   ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices,0.0);
 
-  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices,VDD);
-  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices,0.0);
+  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices,VDD,vianumber);
+  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices,0.0,vianumber);
 
   std::vector<MDB::metal_point> vdd_points;
   std::vector<MDB::metal_point> gnd_points;
@@ -1189,15 +1267,46 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 //  std::cout<< "vdd points "<< vdd_points.size()<<" gnd points "<< gnd_points.size() << " I point v "<< I_points_v.size() << " I point g"<< I_points_g.size()<< std::endl;
   AddingPower(vdd_points, point_set, Power_Grid_devices, VDD);
   AddingPower(gnd_points, point_set, Power_Grid_devices, 0.0);
-  double current = 0.001;
+  //double current = 0.001;
   std::vector<std::vector<double>> currentstore;
- /* std::vector<double> test;
+  int length = 90000;
+  int width = 50000;
+/*  std::vector<double> test;
   test.push_back(10000.0);
   test.push_back(10000.0);
   test.push_back(10000.0);
   test.push_back(10000.0);
   test.push_back(0.005);
   currentstore.push_back(test);*/
+double totalcurrent = 0.072;
+ int cnumber = rand()%20 + 1;
+double eachcurrent = (double) totalcurrent/(double)cnumber;
+std::cout<<"each="<<eachcurrent<<" cnumber="<<cnumber<<std::endl;
+//std::ofstream pythonfile;
+//std::cout<<"open file"<<std::endl;
+//test for cnn model
+/*
+  pythonfile.open(inputfile,std::ios::app);
+for (int i = 0 ; i < cnumber; i++){
+	int x,y;
+	x = rand()%length + 1;
+	y = rand()%width + 1;
+	
+// for (int i = 2; i<=8; i=i+3){
+		pythonfile<<x<< " "<<y<<" "<<x<<" "<<y<<" "<<eachcurrent;
+	//}
+ pythonfile<<std::endl;
+
+  std::vector<double> test;
+  test.push_back(x);
+  test.push_back(y);
+  test.push_back(x);
+  test.push_back(y);
+  test.push_back(eachcurrent);
+  currentstore.push_back(test);
+}
+ pythonfile.close();
+*/
   ReadCurrent(currentstore);
   Map(currentstore,point_set,Power_Grid_devices,lowest_metal);  
 //  AddingI(I_points_v, I_points_g, point_set, Power_Grid_devices, current);
@@ -1207,11 +1316,13 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 }
 
 void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
-  std::ifstream in("InputCurrent.txt");
+  std::ifstream in("InputCurrent_initial.txt");
   //std::ifstream inputfile;
   //inputfile.open("InputCurrent.txt");
    std::string line;
 	//vector<vector<double>> vv;
+	getline(in, line);
+	getline(in, line);
 	while (getline(in, line)){
 		std::stringstream ss(line);
 		std::string tmp;

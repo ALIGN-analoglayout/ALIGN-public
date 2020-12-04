@@ -1,5 +1,6 @@
 #include "PowerRouter.h"
-
+#include <iostream>
+#include <cstdlib>
 //one : creation of power gird
 //create power grid (creation: drc-info; return to node: based on node grid, create source and dest) create once or separately?
   //1. separately, LL, UR and drc_info for different blocks (creation)
@@ -14,10 +15,10 @@
 
 //detail router for the rest
 
-PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate){
+PowerRouter::PowerRouter(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int Lmetal, int Hmetal, int power_grid, double rate, std::string inputfile){
   
   //power_grid 1 create power_grid, 0 power net routing
-
+  this->inputfile = inputfile;
   if(power_grid == 1){
      std::cout<<"CheckPoint 1"<<std::endl;
      CreatePowerGrid(node, drc_info, Lmetal, Hmetal, rate);
@@ -538,6 +539,52 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
 	utilization[8] = 0.8;
 	utilization[7] = 0.8;
 	utilization[6] = 0.8;
+*/
+/*
+	unsigned seed;
+    	seed = time(0);
+    	srand(seed);
+	//test for cnn
+
+	for (int i = 1; i<=7; i=i+3){
+		int number = rand() % 8 + 1;
+		double u = (double) number/10.0; 
+		utilization[i] = u ;
+	}
+  std::ofstream pythonfile;
+  pythonfile.open(this->inputfile);
+ for (int i = 1; i<=7; i=i+3){
+		pythonfile<<utilization[i]<< " ";
+	}
+ pythonfile<<std::endl;
+ pythonfile.close();
+*/
+
+	std::ifstream in("InputCurrent_initial.txt");
+  //std::ifstream inputfile;
+  //inputfile.open("InputCurrent.txt");
+   	std::string line;
+	//vector<vector<double>> vv;
+	getline(in, line);
+	//getline(in, line);
+	//while (getline(in, line)){
+		std::stringstream ss(line);
+		std::string tmp;
+		std::vector<double> v;
+		while (getline(ss, tmp, ' ')){
+			v.push_back(stod(tmp));//stod: string->double
+		}
+		for(int i = 0; i<=2; i++){
+			utilization[1+i*3] = v[i];
+		}
+		//currentstore.push_back(v);
+	//}
+
+
+/*
+	utilization[1] = 0.2 ;
+	utilization[4] = 0.8 ;
+	utilization[7] = 0.8 ;
 */
 for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       std::cout<<"utility["<<i<<"]= " << utilization[i] <<std::endl;
