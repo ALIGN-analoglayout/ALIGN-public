@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <thread>
+#include <assert.h>
 
 using std::string;
 using std::cout;
@@ -38,7 +39,7 @@ static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_no
   std::cout << ltag << std::endl;
 }
 
-static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode)
+static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInfo, PnRDB::hierNode& current_node, int lidx, const string& opath, const string& binary_directory, bool skip_saving_state, bool adr_mode, std::string inputfile, std::string outputfile, std::string outputem)
 {
   std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   DB.Extract_RemovePowerPins(current_node);
@@ -60,7 +61,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     if ( adr_mode) {
       global_router_mode = 6;
     }
-    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate, inputfile);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Ending Gcell Global Routing", skip_saving_state);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
@@ -68,12 +69,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Starting Gcell Detail Routing", skip_saving_state);
-    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate, inputfile);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Ending Gcell Detail Routing", skip_saving_state);
   } else {
     // Global Routing (old version)
     save_state( DB, current_node, lidx, opath, ".pre_gr", "Checkpoint : global route", skip_saving_state);
-    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate, inputfile);
     save_state( DB, current_node, lidx, opath, ".post_gr", "Checkpoint : after global route", skip_saving_state);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
@@ -82,7 +83,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
     // Detail Routing
     save_state( DB, current_node, lidx, opath, ".pre_dr", "Checkpoint : detail route", skip_saving_state);
-    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 5, 6, binary_directory, rate, inputfile);
     save_state( DB, current_node, lidx, opath, ".post_dr", "Checkpoint : after detail route", skip_saving_state);
   }
 
@@ -100,10 +101,11 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 //  DC Power Grid Simulation
  //   while(Power_mesh_optimize and worst < th and rate<1){
 
-      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate);
+      curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate, inputfile);
     
       std::cout<<"Start MNA "<<std::endl;
-      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo));
+	//string filename = ar
+      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), inputfile, outputfile, outputem);
    
       worst = Test_MNA.Return_Worst_Voltage();
       std::cout<<"worst voltage is "<< worst << std::endl;
@@ -114,7 +116,8 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
        
    // }
 //
-    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate);
+	return ;
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate, inputfile);
 
     save_state( DB, current_node, lidx, opath, ".post_pg", "Checkpoint : End Power Grid Creation", skip_saving_state);
 
@@ -122,7 +125,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
         
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
     save_state( DB, current_node, lidx, opath, ".pre_pr", "Checkpoint : Starting Power Routing", skip_saving_state);
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 2, binary_directory, rate);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 0, 2, binary_directory, rate, inputfile);
     save_state( DB, current_node, lidx, opath, ".post_pr", "Checkpoint : End Power Routing", skip_saving_state);
 
     DB.WriteJSON (current_node, true, false, true, true, current_node.name+"_PR_"+std::to_string(lidx), drcInfo, opath);
@@ -181,6 +184,9 @@ int main(int argc, char** argv ){
   string topcell=argv[6];
   int numLayout=std::stoi(argv[7]);
   int effort=std::stoi(argv[8]);
+  string inputfile = argv[9];
+  string outputfile = argv[10];
+  string outputem = argv[11];
   if(fpath.back()=='/') {fpath.erase(fpath.end()-1);}
   if(opath.back()!='/') {opath+="/";}
 
@@ -247,14 +253,14 @@ int main(int argc, char** argv ){
       std::thread t[nodeVec.size()];
       for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
         t[lidx] = std::thread(route_single_variant, std::ref(DB), std::ref(drcInfo), std::ref(nodeVec[lidx]), lidx, 
-                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode);
+                              std::ref(opath), std::ref(binary_directory), skip_saving_state, adr_mode, std::ref(inputfile), std::ref(outputfile),std::ref(outputem));
       }
       for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
         t[lidx].join();
       }
     }else{
       for(unsigned int lidx=0; lidx<nodeVec.size(); ++lidx) {
-        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode);
+        route_single_variant( DB, drcInfo, nodeVec[lidx], lidx, opath, binary_directory, skip_saving_state, adr_mode, inputfile, outputfile, outputem);
       }
     }
         
