@@ -14,7 +14,7 @@ OPTS?=-g -O3
 WARNS?=-Wall
 JSON?=/opt/json
 SuperLu_DIR?=/opt/superlu
-SuperLu=$(SuperLu_DIR)/SuperLU_5.2.1/SRC/
+SuperLu=$(SuperLu_DIR)/SRC/
 
 export CXXFLAGS = $(OPTS) $(WARNS) -w -std=c++14 -m64 -pthread -DNDEBUG -DPRNTlevel=0 -DAdd_ -isystem $(LIB_LP) -isystem $(SOURCE_LP) -I$(BOOST_LP) -I$(SuperLu) -I$(JSON)/include $(COVERAGE) -isystem $(GTEST_DIR)/include 
 export CXX=g++
@@ -28,8 +28,8 @@ placer_path=placer
 router_path=router
 MNA_path=MNA
 
-SuperLu_path1=$(SuperLu_DIR)/SuperLU_5.2.1/build/SRC
-SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
+SuperLu_path1=$(SuperLu_DIR)/build/SRC
+SuperLu_path2=$(SuperLu_DIR)/build/CBLAS
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
