@@ -719,38 +719,32 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
   MDB::metal_point temp_point;
   temp_point.metal_layer = metal_layer;
   temp_point.power = power;
-//  std::cout<<"size of point set"<< point_set.size() <<std::endl;
+  //std::cout<<"size of point set"<< point_set.size() <<std::endl;
   for(auto it = point_set.begin(); it != point_set.end(); ++it){
-//	std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
+  //std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
        if(it->metal_layer == metal_layer and it->power == power){
          power_point_set.insert(*it);
          x_set.insert(it->x);
          y_set.insert(it->y);
        }
-
-     }
+  }
   std::cout <<"size of x_set= " << x_set.size()<<std::endl;
   std::cout <<"size of y_set= " << y_set.size()<<std::endl;
   for(auto it = x_set.begin(); it != x_set.end(); ++it){
-
      x_v.push_back(*it);
-
-     }
+  }
   std::cout <<"size of x_v= " << x_v.size()<<std::endl;
   for(auto it = y_set.begin(); it != y_set.end(); ++it){
-
      y_v.push_back(*it);
-
-     }
+  }
   std::cout <<"size of y_v= " << y_v.size()<<std::endl;
   //need revise
-
   int x_number = sqrt(power_number);
   int y_number = sqrt(power_number);
   int xsize, ysize;
 	xsize = x_v.size();
 	ysize = y_v.size();
-//	if (x_v.size()%x_number == 0) x
+  //if (x_v.size()%x_number == 0) x
 	int xstep = ceil((double) x_v.size()/x_number);
 	int ystep = ceil((double) y_v.size()/y_number);
 	int xstep_s = xstep/2;
@@ -766,181 +760,174 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
 	      std::cout<<"i="<<i<<"j="<<j<<std::endl;
       }
   }
-
   std::cout<<"in find power point size = " << power_points.size()<<std::endl;
-
 };
 
 
 
 void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::string inputfile){
 
-//std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
-// std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
-std::cout<<"open file"<<std::endl;
-unsigned seed;
-seed = time(0);
-srand(seed);
-int via[12] = {27, 27, 27, 27, 24, 24, 24, 24, 6, 6, 2, 2};
-int vianumber[12];
-std::cout<<"open file"<<std::endl;
-for (int i = 0; i<12; i++){
-	vianumber[i] = via[i];
-}
-//test for cnn model//
-/*
-std::cout<<"open file"<<std::endl;
-	for (int i = 2; i<=8; i=i+3){
-		vianumber[i] =  (rand()%via[i] + 1);
-	}
-  std::ofstream pythonfile;
-std::cout<<"open file"<<std::endl;
-  pythonfile.open(inputfile,std::ios::app);
- for (int i = 2; i<=8; i=i+3){
+   //std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
+   // std::set<MDB::metal_point, MDB::Compare_metal_point> gnd_point_set;
+   std::cout<<"open file"<<std::endl;
+   unsigned seed;
+   seed = time(0);
+   srand(seed);
+   int via[12] = {27, 27, 27, 27, 24, 24, 24, 24, 6, 6, 2, 2};
+   int vianumber[12];
+   std::cout<<"open file"<<std::endl;
+   for (int i = 0; i<12; i++){
+	   vianumber[i] = via[i];
+   }
+   //test for cnn model//
+   /*
+   std::cout<<"open file"<<std::endl;
+	 for (int i = 2; i<=8; i=i+3){
+		 vianumber[i] =  (rand()%via[i] + 1);
+	   }
+   std::ofstream pythonfile;
+   std::cout<<"open file"<<std::endl;
+   pythonfile.open(inputfile,std::ios::app);
+   for (int i = 2; i<=8; i=i+3){
 		pythonfile<<vianumber[i]<< " ";
-	}
- pythonfile<<std::endl;
- pythonfile.close();
-*/
+	 }
+   pythonfile<<std::endl;
+   pythonfile.close();
+   */
 
-std::ifstream in("InputCurrent_initial.txt");
-//std::ifstream inputfile;
-//inputfile.open("InputCurrent.txt");
-std::string line;
-//vector<vector<double>> vv;
-getline(in, line);
-getline(in, line);
-//while (getline(in, line)){
-std::stringstream ss(line);
-std::string tmp;
-std::vector<double> v;
-while (getline(ss, tmp, ' ')){
-	v.push_back(stod(tmp));//stod: string->double
-}
-for(int i = 0; i<=2; i++){
-	vianumber[2+i*3] = v[i];
-}
-//currentstore.push_back(v);
-//}
-/*
-vianumber[2]= 26;
-vianumber[5]=17;
-vianumber[8]=6;
-*/
-int highest_metal = INT_MIN;
-int lowest_metal = INT_MAX;
-double VDD = 0.8;
-//ExtractPowerGridPoint(vdd, vdd_point_set);
-//ExtractPowerGridPoint(gnd, gnd_point_set);
+   std::ifstream in("InputCurrent_initial.txt");
+   //std::ifstream inputfile;
+   //inputfile.open("InputCurrent.txt");
+   std::string line;
+   //vector<vector<double>> vv;
+   getline(in, line);
+   getline(in, line);
+   //while (getline(in, line)){
+   std::stringstream ss(line);
+   std::string tmp;
+   std::vector<double> v;
+   while (getline(ss, tmp, ' ')){
+	   v.push_back(stod(tmp));//stod: string->double
+   }
+   for(int i = 0; i<=2; i++){
+	   vianumber[2+i*3] = v[i];
+   }
+   //currentstore.push_back(v);
+   //}
+   /*
+   vianumber[2]= 26;
+   vianumber[5]=17;
+   vianumber[8]=6;
+   */
+   int highest_metal = INT_MIN;
+   int lowest_metal = INT_MAX;
+   double VDD = 0.8;
+   //ExtractPowerGridPoint(vdd, vdd_point_set);
+   //ExtractPowerGridPoint(gnd, gnd_point_set);
 
-ExtractPowerGridPoint(vdd, point_set, highest_metal, lowest_metal, VDD);
-ExtractPowerGridPoint(gnd, point_set, highest_metal, lowest_metal, 0.0);
+   ExtractPowerGridPoint(vdd, point_set, highest_metal, lowest_metal, VDD);
+   ExtractPowerGridPoint(gnd, point_set, highest_metal, lowest_metal, 0.0);
 
-int refresh_index = 1;
-std::cout<<"Gnd Point Set"<<std::endl;
-for(auto it = point_set.begin(); it != point_set.end(); ++it){
-    it->index = refresh_index;
-	  if(it->metal_layer == lowest_metal || it->metal_layer == lowest_metal + 1){
-	    mark_point.push_back(refresh_index);
-	  }
-    //std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-    std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-    refresh_index = refresh_index + 1;
-}
+   int refresh_index = 1;
+   std::cout<<"Gnd Point Set"<<std::endl;
+   for(auto it = point_set.begin(); it != point_set.end(); ++it){
+       it->index = refresh_index;
+	     if(it->metal_layer == lowest_metal || it->metal_layer == lowest_metal + 1){
+	     mark_point.push_back(refresh_index);
+	 }
+   //std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
+   std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
+   refresh_index = refresh_index + 1;
+  }
 
-refresh_index = 1;
+  refresh_index = 1;
 
-/*
-  std::cout<<"Vdd Point Set"<<std::endl;
-  for(auto it = vdd_point_set.begin(); it != vdd_point_set.end(); ++it){
-       
+  /*
+   std::cout<<"Vdd Point Set"<<std::endl;
+   for(auto it = vdd_point_set.begin(); it != vdd_point_set.end(); ++it){
        it->index = refresh_index;
        //std::cout<<"(x,y) index metal "<<it->x<<" "<<it->y<<" "<<it->index<<" "<<it->metal_layer<<std::endl;
-	std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
-	refresh_index = refresh_index + 1;
-     
+	     std::cout<<it->x<<"\t"<<it->y<<"\t"<<it->index<<"\t"<<it->metal_layer<<std::endl;
+	     refresh_index = refresh_index + 1;
      }
-*/
-/*
-  ExtractPowerGridWireR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
-  ExtractPowerGridWireR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
+   */
+   /*
+   ExtractPowerGridWireR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
+   ExtractPowerGridWireR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
 
-  ExtractPowerGridViaR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
-  ExtractPowerGridViaR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
-*/
+   ExtractPowerGridViaR(vdd, vdd_point_set, drc_info, Power_Grid_devices_Vdd);
+   ExtractPowerGridViaR(gnd, gnd_point_set, drc_info, Power_Grid_devices_Gnd);
+   */
   
-  ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices,VDD);
-  ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices,0.0);
+   ExtractPowerGridWireR(vdd, point_set, drc_info, Power_Grid_devices,VDD);
+   ExtractPowerGridWireR(gnd, point_set, drc_info, Power_Grid_devices,0.0);
 
-  ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices,VDD,vianumber);
-  ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices,0.0,vianumber);
+   ExtractPowerGridViaR(vdd, point_set, drc_info, Power_Grid_devices,VDD,vianumber);
+   ExtractPowerGridViaR(gnd, point_set, drc_info, Power_Grid_devices,0.0,vianumber);
 
-  std::vector<MDB::metal_point> vdd_points;
-  std::vector<MDB::metal_point> gnd_points;
-  std::vector<MDB::metal_point> I_points_v;
-  std::vector<MDB::metal_point> I_points_g;
+   std::vector<MDB::metal_point> vdd_points;
+   std::vector<MDB::metal_point> gnd_points;
+   std::vector<MDB::metal_point> I_points_v;
+   std::vector<MDB::metal_point> I_points_g;
 
-  int power_number = 4;
-  int current_number = 1;
-  FindPowerPoints(point_set, VDD, highest_metal, power_number, vdd_points);
-  FindPowerPoints(point_set, 0.0, highest_metal, power_number, gnd_points);
-  //what if I_points_v!=I_points_g
-  //what if I_points_g.size()<4?
-  //need revise this part
-  FindPowerPoints(point_set, VDD, lowest_metal, current_number, I_points_v);
-  FindPowerPoints(point_set, 0.0, lowest_metal, current_number, I_points_g);
+   int power_number = 4;
+   int current_number = 1;
+   FindPowerPoints(point_set, VDD, highest_metal, power_number, vdd_points);
+   FindPowerPoints(point_set, 0.0, highest_metal, power_number, gnd_points);
+   //what if I_points_v!=I_points_g
+   //what if I_points_g.size()<4?
+   //need revise this part
+   FindPowerPoints(point_set, VDD, lowest_metal, current_number, I_points_v);
+   FindPowerPoints(point_set, 0.0, lowest_metal, current_number, I_points_g);
 
-  //here some function to calculate vdd_points, gnd_points, I_points_v and I_points_g;
-  //std::cout<< "vdd points "<< vdd_points.size()<<" gnd points "<< gnd_points.size() << " I point v "<< I_points_v.size() << " I point g"<< I_points_g.size()<< std::endl;
-  AddingPower(vdd_points, point_set, Power_Grid_devices, VDD);
-  AddingPower(gnd_points, point_set, Power_Grid_devices, 0.0);
-  //double current = 0.001;
-  std::vector<std::vector<double>> currentstore;
-  int length = 90000;
-  int width = 50000;
-  /*std::vector<double> test;
-  test.push_back(10000.0);
-  test.push_back(10000.0);
-  test.push_back(10000.0);
-  test.push_back(10000.0);
-  test.push_back(0.005);
-  currentstore.push_back(test);*/
-  double totalcurrent = 0.072;
-  int cnumber = rand()%20 + 1;
-  double eachcurrent = (double) totalcurrent/(double)cnumber;
-  std::cout<<"each="<<eachcurrent<<" cnumber="<<cnumber<<std::endl;
-  //std::ofstream pythonfile;
-  //std::cout<<"open file"<<std::endl;
-  //test for cnn model
-  /*
-  pythonfile.open(inputfile,std::ios::app);
-  for (int i = 0 ; i < cnumber; i++){
-	int x,y;
-	x = rand()%length + 1;
-	y = rand()%width + 1;
-	
-  // for (int i = 2; i<=8; i=i+3){
-		pythonfile<<x<< " "<<y<<" "<<x<<" "<<y<<" "<<eachcurrent;
-	//}
-  pythonfile<<std::endl;
-
-  std::vector<double> test;
-  test.push_back(x);
-  test.push_back(y);
-  test.push_back(x);
-  test.push_back(y);
-  test.push_back(eachcurrent);
-  currentstore.push_back(test);
-}
- pythonfile.close();
-  */
-  ReadCurrent(currentstore);
-  Map(currentstore,point_set,Power_Grid_devices,lowest_metal);  
-  //  AddingI(I_points_v, I_points_g, point_set, Power_Grid_devices, current);
-  //  std::cout<<"Vdd device number "<<Power_Grid_devices_Vdd.size()<<std::endl;
-  //  std::cout<<"Gnd device number "<<Power_Grid_devices_Gnd.size()<<std::endl;
-
-  }
+   //here some function to calculate vdd_points, gnd_points, I_points_v and I_points_g;
+   //std::cout<< "vdd points "<< vdd_points.size()<<" gnd points "<< gnd_points.size() << " I point v "<< I_points_v.size() << " I point g"<< I_points_g.size()<< std::endl;
+   AddingPower(vdd_points, point_set, Power_Grid_devices, VDD);
+   AddingPower(gnd_points, point_set, Power_Grid_devices, 0.0);
+   //double current = 0.001;
+   std::vector<std::vector<double>> currentstore;
+   int length = 90000;
+   int width = 50000;
+   /*std::vector<double> test;
+   test.push_back(10000.0);
+   test.push_back(10000.0);
+   test.push_back(10000.0);
+   test.push_back(10000.0);
+   test.push_back(0.005);
+   currentstore.push_back(test);*/
+   double totalcurrent = 0.072;
+   int cnumber = rand()%20 + 1;
+   double eachcurrent = (double) totalcurrent/(double)cnumber;
+   std::cout<<"each="<<eachcurrent<<" cnumber="<<cnumber<<std::endl;
+   //std::ofstream pythonfile;
+   //std::cout<<"open file"<<std::endl;
+   //test for cnn model
+   /*
+   pythonfile.open(inputfile,std::ios::app);
+   for (int i = 0 ; i < cnumber; i++){
+	   int x,y;
+	   x = rand()%length + 1;
+	   y = rand()%width + 1;
+     // for (int i = 2; i<=8; i=i+3){
+	  	pythonfile<<x<< " "<<y<<" "<<x<<" "<<y<<" "<<eachcurrent;
+	   //}
+     pythonfile<<std::endl;
+     std::vector<double> test;
+     test.push_back(x);
+     test.push_back(y);
+     test.push_back(x);
+     test.push_back(y);
+     test.push_back(eachcurrent);
+     currentstore.push_back(test);
+     }
+   pythonfile.close();
+   */
+   ReadCurrent(currentstore);
+   Map(currentstore,point_set,Power_Grid_devices,lowest_metal);  
+   //AddingI(I_points_v, I_points_g, point_set, Power_Grid_devices, current);
+   //std::cout<<"Vdd device number "<<Power_Grid_devices_Vdd.size()<<std::endl;
+   //std::cout<<"Gnd device number "<<Power_Grid_devices_Gnd.size()<<std::endl;
+ }
 
 void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
   std::ifstream in("InputCurrent_initial.txt");
@@ -972,266 +959,55 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
 
 void MNASimulation::Map(std::vector<std::vector<double>> &currentstore, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::vector<MDB::device> &Power_Grid_devices, int metal_layer){
 
-//std::cout<<"current size"<< I_point_v.size()<<std::endl;
-for(unsigned int i=0;i<currentstore.size();++i){
-	double startx,starty,endx,endy,value;
+  //std::cout<<"current size"<< I_point_v.size()<<std::endl;
+  for(unsigned int i=0;i<currentstore.size();++i){
+	  double startx,starty,endx,endy,value;
 	
-	startx = currentstore[i][0];
-	starty = currentstore[i][1];
-	endx = currentstore[i][2];
-	endy = currentstore[i][3];
-	value = currentstore[i][4];
-	int start_index,end_index;
-	double vdd_maxx,vdd_maxy,gnd_maxx,gnd_maxy;
-	for(auto it = point_set.end(); it != point_set.begin(); it--){
-	if (it->metal_layer == metal_layer && it->power != 0){
-		vdd_maxx = it->x;
-		vdd_maxy = it->y;
-		break;
-		}
-	}
-	for(auto it = point_set.end(); it != point_set.begin(); it--){
-	if (it->metal_layer == metal_layer && it->power == 0){
-		gnd_maxx = it->x;
-		gnd_maxy = it->y;
-		break;
-		}
-	}
+	  startx = currentstore[i][0];
+	  starty = currentstore[i][1];
+	  endx = currentstore[i][2];
+	  endy = currentstore[i][3];
+	  value = currentstore[i][4];
+	  int start_index,end_index;
+	  double vdd_maxx,vdd_maxy,gnd_maxx,gnd_maxy;
+	  for(auto it = point_set.end(); it != point_set.begin(); it--){
+	    if (it->metal_layer == metal_layer && it->power != 0){
+		    vdd_maxx = it->x;
+		    vdd_maxy = it->y;
+		    break;
+	    }
+	  }
+	  for(auto it = point_set.end(); it != point_set.begin(); it--){
+	    if (it->metal_layer == metal_layer && it->power == 0){
+		    gnd_maxx = it->x;
+		    gnd_maxy = it->y;
+		    break;
+	   	}
+	  }
+	  //maxx = flag->x;
+	  //maxy = flag->y;
+	  if(startx > vdd_maxx) startx = vdd_maxx;
+	  if(starty > vdd_maxy) starty = vdd_maxy;
+	  if(endx > gnd_maxx) endx = gnd_maxx;
+	  if(endy > gnd_maxy) endy = gnd_maxy;
 	
-	//maxx = flag->x;
-	//maxy = flag->y;
-	if(startx > vdd_maxx) startx = vdd_maxx;
-	if(starty > vdd_maxy) starty = vdd_maxy;
-	if(endx > gnd_maxx) endx = gnd_maxx;
-	if(endy > gnd_maxy) endy = gnd_maxy;
-	
-       for(auto it = point_set.begin(); it != point_set.end(); ++it){
-	if (it->x >= startx && it->y >= starty && it->metal_layer == metal_layer && it->power != 0){
-		start_index = it->index;
-		break;
-		}
-	}
-	for(auto it = point_set.begin(); it != point_set.end(); ++it){
-	if (it->x >= endx && it->y >= endy && it->metal_layer == metal_layer && it->power == 0){
-		end_index = it->index;
-		break;
-		}
-	}
-	MDB::device temp_device;
-	temp_device.device_type = MDB::I;
-       temp_device.start_point_index = start_index;
-       temp_device.end_point_index = end_index;  
-       temp_device.value = value;
-       Power_Grid_devices.push_back(temp_device);
-}
-
+    for(auto it = point_set.begin(); it != point_set.end(); ++it){
+	    if (it->x >= startx && it->y >= starty && it->metal_layer == metal_layer && it->power != 0){
+		    start_index = it->index;
+		    break;
+		  }
+	  }
+  	for(auto it = point_set.begin(); it != point_set.end(); ++it){
+	     if (it->x >= endx && it->y >= endy && it->metal_layer == metal_layer && it->power == 0){
+		     end_index = it->index;
+		     break;
+	 	    }
+	  }
+	  MDB::device temp_device;
+	  temp_device.device_type = MDB::I;
+    temp_device.start_point_index = start_index;
+    temp_device.end_point_index = end_index;  
+    temp_device.value = value;
+    Power_Grid_devices.push_back(temp_device);
+  }
 };
-//should end here for the code
-
-void MNASimulation::ConstructI(std::vector<std::vector<double>> Istore, std::vector<std::vector<double>> Vstore, std::vector<std::vector<double>> Rstore){
- int Rsize = 0, size;
- for (int i = 0; i < Rstore.size(); i++){
- if (Rsize < Rstore[i][0])
-	Rsize = Rstore[i][0];
- if (Rsize < Rstore[i][1])
-	Rsize = Rstore[i][1];
-}
- size = Rsize + Vstore.size();
- boost_matrix II (size, 1);
- for (unsigned j = 0 ; j < II.size1 (); ++j)
- 	II (j, 0) = 0;
-
-
-if (Istore.size() > 0){
- for (int i = 0; i < Istore.size(); i++){
- 	 int start = Istore[i][0]-1;
-	 int end = Istore[i][1]-1;
-	 double value = Istore[i][2];
-	//std::cout << "start I" << start <<", end I" << end << std::endl;
-		if (start >= 0 )
-		II (start, 0) = value;
-		if (end >= 0 )
-		II (end, 0) = -value;
-	}
-}
-
-
-
- for (int i = 0; i < Vstore.size(); i++){
- int start = Vstore[i][0] - 1;
- double value = Vstore[i][2];
-	if (start >= 0 )
- 	II (Rsize + i, 0) = value;
-}
-
- for (unsigned i = 0; i < II.size1 (); ++ i)
-        for (unsigned j = 0; j < II.size2 (); ++ j)
-            std::cout << "I(" << i <<"," << j <<")=" << II (i, j)  << std::endl;
-
-
-  I=II;
-}
-
-void MNASimulation::ConstructR(std::vector<std::vector<double>> Rstore, std::vector<std::vector<double>> Vstore){
- int size = 0, Rsize = 0;
- for (int i = 0; i < Rstore.size(); i++){
- if (size < Rstore[i][0])
-	size = Rstore[i][0];
- if (size < Rstore[i][1])
-	size = Rstore[i][1];
-}
-	//std::cout << "size=" << size << std::endl;
- Rsize = size;
- size += Vstore.size();
- boost_matrix RR (size, size);
- // boost matrix start the index from 1
- for (unsigned i = 0; i < RR.size1 (); ++ i)
-        for (unsigned j = 0; j < RR.size2 (); ++ j)
-            RR (i, j) = 0;
-
- for (int i = 0; i < Rstore.size(); i++){
- int col,row;
- double value;
- col = Rstore[i][0]-1;
- row = Rstore[i][1]-1;
- value = 1.0/Rstore[i][2];
-// std::cout << "R is " << Rstore[i][2] << " 1/R value is "<< value << std::endl;
- if (col >= 0)
- RR(col,col) += value;
- if (row >= 0)
- RR(row,row) += value;
- if (row >= 0 && col >= 0){
- 	RR(col,row) -= value;
- 	RR(row,col) -= value;
- 	}
- }
- 
-
-
- for (int i = 0; i <Vstore.size(); i++){
- int start,end;
- start = Vstore[i][0]-1;
- end = Vstore[i][1]-1;
- if (start >= 0){
- RR(start, Rsize + i) = 1;
- RR(Rsize + i, start) = 1;
- }
- if (end >= 0){
- RR(end, Rsize + i) = -1;
- RR(Rsize + i, end) = -1;
- }
- 
-}
-
-for (unsigned i = 0; i < RR.size1 (); ++ i){
-  for (unsigned j = 0; j < RR.size2 (); ++ j){
-            std::cout << RR (i, j) <<"\t";
-//"R(" << i <<"," << j <<")=" 
-	}
-	std::cout<<std::endl;
-}
-
- R = RR;
-}
-
-
-double MNASimulation::SolveIR_drop(int Rsize){
-  int width = R.size1();	
-  boost_matrix VV (width,1);
-  //V=prod(R,I);
-  bool flag = false;
-  boost_matrix inv (width,width);
-  //std::cout << "R is " << R << std::endl;
-  inv = gjinverse(R,flag);
-  //std::cout<< inv << std::endl;
-  //bool init = true
-  //std::cout << R << std::endl;
-  VV = prod (inv,I);
-  V = VV;
-  for (unsigned i = 0; i < V.size1(); ++i){
-      std::cout<< V(i,0)<<std::endl;
-  }
-  //std::cout << "V is " << V << std::endl;
-  double max = 1.0;
-  for (unsigned i = 0; i < Rsize; ++i){
-      if (max > V(i, 0) && V(i,0) > 0.5)
-      max = V(i, 0);
-  }
-  max = 1 - max;	
-  return max;
-}
-
-void MNASimulation::Test_superlu()
-{
-/*
- * Purpose
- * =======
- * 
- * This is the small 5x5 example used in the Sections 2 and 3 of the 
- * Users' Guide to illustrate how to call a SuperLU routine, and the
- * matrix data structures used by SuperLU.
- *
- */
-    SuperMatrix A, L, U, B;
-    double   *a, *rhs;
-    double   s, u, p, e, r, l;
-    int      *asub, *xa;
-    int      *perm_r; /* row permutations from partial pivoting */
-    int      *perm_c; /* column permutation vector */
-    int      nrhs, info, i, m, n, nnz, permc_spec;
-    superlu_options_t options;
-    SuperLUStat_t stat;
-
-    /* Initialize matrix A. */
-    m = n = 5;
-    nnz = 12;
-    if ( !(a = doubleMalloc(nnz)) ) ABORT("Malloc fails for a[].");
-    if ( !(asub = intMalloc(nnz)) ) ABORT("Malloc fails for asub[].");
-    if ( !(xa = intMalloc(n+1)) ) ABORT("Malloc fails for xa[].");
-    s = 19.0; u = 21.0; p = 16.0; e = 5.0; r = 18.0; l = 12.0;
-	//for
-    a[0] = s; a[1] = l; a[2] = l; a[3] = u; a[4] = l; a[5] = l;
-    a[6] = u; a[7] = p; a[8] = u; a[9] = e; a[10]= u; a[11]= r;
-    asub[0] = 0; asub[1] = 1; asub[2] = 4; asub[3] = 1;
-    asub[4] = 2; asub[5] = 4; asub[6] = 0; asub[7] = 2;
-    asub[8] = 0; asub[9] = 3; asub[10]= 3; asub[11]= 4;
-    xa[0] = 0; xa[1] = 3; xa[2] = 6; xa[3] = 8; xa[4] = 10; xa[5] = 12;
-
-    /* Create matrix A in the format expected by SuperLU. */
-    dCreate_CompCol_Matrix(&A, m, n, nnz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);
-    
-    /* Create right-hand side matrix B. */
-    nrhs = 1;
-    if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
-    for (i = 0; i < m; ++i) rhs[i] = 1.0;
-    dCreate_Dense_Matrix(&B, m, nrhs, rhs, m, SLU_DN, SLU_D, SLU_GE);
-
-    if ( !(perm_r = intMalloc(m)) ) ABORT("Malloc fails for perm_r[].");
-    if ( !(perm_c = intMalloc(n)) ) ABORT("Malloc fails for perm_c[].");
-
-    /* Set the default input options. */
-    set_default_options(&options);
-    options.ColPerm = NATURAL;
-
-    /* Initialize the statistics variables. */
-    StatInit(&stat);
-
-    /* Solve the linear system. */
-    dgssv(&options, &A, perm_c, perm_r, &L, &U, &B, &stat, &info);
-    
-    dPrint_CompCol_Matrix("A", &A);
-    dPrint_CompCol_Matrix("U", &U);
-    dPrint_SuperNode_Matrix("L", &L);
-    print_int_vec("\nperm_r", m, perm_r);
-
-    /* De-allocate storage */
-    SUPERLU_FREE (rhs);
-    SUPERLU_FREE (perm_r);
-    SUPERLU_FREE (perm_c);
-    Destroy_CompCol_Matrix(&A);
-    Destroy_SuperMatrix_Store(&B);
-    Destroy_SuperNode_Matrix(&L);
-    Destroy_CompCol_Matrix(&U);
-    StatFree(&stat);
-}
-
