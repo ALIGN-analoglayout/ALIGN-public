@@ -307,7 +307,7 @@ void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_p
   std::ofstream pythonfile;
   pythonfile.open(outputfile);
   for(auto it = point_set.begin(); it != point_set.end(); it++){
-	  if(it->metal_layer == target_metal_layer_index && it->power == target_power_grid_index){
+	  if(it->metal_layer == target_metal_layer_index && it->power != 0){
 	    pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
 	  }
   }
@@ -382,7 +382,7 @@ void MNASimulation::Print_EM(std::set<MDB::metal_point, MDB::Compare_metal_point
   int target_power_grid_index = 1;
   std::cout<<"finish em"<<std::endl;
   for(auto it = point_set.begin(); it != point_set.end(); it++){
-    if(it->metal_layer == target_metal_layer_index && it->power ==target_power_grid_index){
+    if(it->metal_layer == target_metal_layer_index && it->power !=0){
       pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< em[it->index - 1] << " " << it->power <<std::endl;
       }
   }
