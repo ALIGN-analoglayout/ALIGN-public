@@ -9,7 +9,7 @@
 #include <boost/numeric/ublas/vector_proxy.hpp>
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/lu.hpp>
-#include "MatrixInverse.hpp"
+//#include "MatrixInverse.hpp"
 #include <sstream>
 #include <fstream>
 #include <string>
