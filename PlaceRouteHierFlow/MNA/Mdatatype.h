@@ -30,8 +30,8 @@ namespace MDB {
     double power;
   };
 
-  struct Compare_metal_point {
-bool operator() (const metal_point& lhs, const metal_point& rhs) const{
+struct Compare_metal_point {
+  bool operator() (const metal_point& lhs, const metal_point& rhs) const{
       if(lhs.x==rhs.x){
          if(lhs.y==rhs.y){
            if(lhs.power==rhs.power){
@@ -47,8 +47,6 @@ bool operator() (const metal_point& lhs, const metal_point& rhs) const{
          }
     }
   };
-
-
 }
 
 #endif

@@ -13,9 +13,6 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   this->R = out_R;
   this->I = out_I;
 
-  //Test_superlu();
-
-  //ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices_Vdd, Power_Grid_devices_Gnd);
   std::set<MDB::metal_point, MDB::Compare_metal_point> point_set;
   ExtractPowerGrid(current_node.Vdd, current_node.Gnd, drc_info, Power_Grid_devices, mark_point, point_set, inputfile);
   
@@ -307,9 +304,9 @@ void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_p
   //pythonfile.open("Powergridresult.txt");
   pythonfile.open(outputfile);
   for(auto it = point_set.begin(); it != point_set.end(); it++){
-	if(it->metal_layer == 2 && it->power != 0){
-	 pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
-	}
+	  if(it->metal_layer == 2 && it->power != 0){
+	    pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+	  }
   }
   pythonfile.close();
 };
@@ -320,15 +317,15 @@ void MNASimulation::Print_Grid(std::set<MDB::metal_point, MDB::Compare_metal_poi
   pythonfile.open("gridresult.txt");
   for(int i=0;i<temp_devices.size();i++){
     if(temp_devices[i].device_type==0){
-  	int first = temp_devices[i].start_point_index;
-	  int second = temp_devices[i].end_point_index;
-	  for(auto it = point_set.begin(); it != point_set.end(); it++){
-		  if(it->index == first)
-		   pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " " << it->power << " ";
-  	}
-	  for(auto it = point_set.begin(); it != point_set.end(); it++){
-		  if(it->index == second)
-		   pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " " << it->power <<std::endl;
+  	  int first = temp_devices[i].start_point_index;
+	    int second = temp_devices[i].end_point_index;
+	    for(auto it = point_set.begin(); it != point_set.end(); it++){
+		    if(it->index == first)
+		      pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " " << it->power << " ";
+  	  }
+	    for(auto it = point_set.begin(); it != point_set.end(); it++){
+		    if(it->index == second)
+		     pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " " << it->power <<std::endl;
   	  }
     }
   }
@@ -409,51 +406,6 @@ int MNASimulation::nodenum(std::vector<MDB::device> &temp_devices){
      if (num < end) num = end;//}
      }
   return num;
-}
-
-void MNASimulation::Transfer(std::vector<MDB::device> &temp_devices, std::vector<MDB::device> &temp2_devices, std::vector<std::vector<double> > &Rstore, std::vector<std::vector<double> > &Istore, std::vector<std::vector<double> > &Vstore){
-	int start,end,flag;
-	flag = 0;
-	double value;
-	std::vector<std::vector<double> > store;
-	// std::vector<double> temp;
-	for(int i=0;i<temp_devices.size();i++){
-		 if (temp_devices[i].device_type == 0){
-		   start = temp_devices[i].start_point_index;
-		   end = temp_devices[i].end_point_index;
-		   value = temp_devices[i].value;
-		   store.push_back(std::vector<double>{start,end,value});
-		   if (flag < start) flag = start;
-		   if (flag < end) flag = end;
-		 }
-	}
-	flag++;
-  Rstore = store;
-	store.clear();
-	for(int i=0;i<temp_devices.size();i++){
-		 if (temp_devices[i].device_type == 1){
-		   start = temp_devices[i].start_point_index;
-		   end = temp_devices[i].end_point_index;
-		   value = temp_devices[i].value;
-		   store.push_back(std::vector<double>{start,end,value});
-		   if (flag < start) flag = start;
-		   if (flag < end) flag = end;
-		 }
-	}
-	Istore = store;
-	store.clear();
-	for(int i=0;i<temp_devices.size();i++){
-		 if (temp_devices[i].device_type == 2){
-		   start = temp_devices[i].start_point_index;
-		   end = temp_devices[i].end_point_index;
-		   value = temp_devices[i].value;
-		   store.push_back(std::vector<double>{start,end,value});
-		   if (flag < start) flag = start;
-		   if (flag < end) flag = end;
-		 }
-	}
-	Vstore = store;
-	store.clear();
 }
 
 int MNASimulation::MapX(std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, int match){
