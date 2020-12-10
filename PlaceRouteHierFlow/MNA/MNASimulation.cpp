@@ -854,6 +854,8 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore, 
   //std::ifstream inputfile;
   //inputfile.open("InputCurrent.txt");
   std::string line;
+  getline(in, line);
+  getline(in, line);
   //vector<vector<double>> vv;
   while (getline(in, line)){
     std::stringstream ss(line);
