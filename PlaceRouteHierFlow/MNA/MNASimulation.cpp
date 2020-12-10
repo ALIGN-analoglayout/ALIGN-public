@@ -781,8 +781,9 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 	   vianumber.push_back(temp_via_number);
    }
 
-   std::ifstream in("Via_number.txt");
+   std::ifstream in("Power_Grid_Conf.txt");
    std::string line;
+   getline(in, line);
    getline(in, line);
    std::stringstream ss(line);
    std::string tmp;
@@ -854,8 +855,6 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore, 
   //std::ifstream inputfile;
   //inputfile.open("InputCurrent.txt");
   std::string line;
-  getline(in, line);
-  getline(in, line);
   //vector<vector<double>> vv;
   while (getline(in, line)){
     std::stringstream ss(line);
