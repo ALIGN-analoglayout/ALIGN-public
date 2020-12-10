@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "slu_ddefs.h"
+#include "assert.h"
 
 MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc_info, std::string inputfile, std::string outputfile, std::string outputem){
 
@@ -780,22 +781,20 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
 	   vianumber.push_back(temp_via_number);
    }
 
-   /*
-   std::ifstream in("InputCurrent_initial.txt");
+   std::ifstream in("Via_number.txt");
    std::string line;
-   getline(in, line);
    getline(in, line);
    std::stringstream ss(line);
    std::string tmp;
    std::vector<double> v;
-
    while (getline(ss, tmp, ' ')){
 	   v.push_back(stod(tmp));//stod: string->double
    }
-   for(int i = 0; i<=2; i++){
-	   vianumber[2+i*3] = v[i];
+   std::cout<<"v number "<<v.size()<<" vianumber size "<<vianumber.size()<<std::endl;
+   //assert(0);
+   for(int i=0;i<v.size();i++){
+     vianumber[i]=v[i];
    }
-   */
 
    int highest_metal = INT_MIN;
    int lowest_metal = INT_MAX;
