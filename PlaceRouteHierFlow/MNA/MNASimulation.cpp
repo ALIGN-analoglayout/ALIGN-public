@@ -844,19 +844,17 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    AddingPower(gnd_points, point_set, Power_Grid_devices, 0.0);
    //double current = 0.001;
    std::vector<std::vector<double>> currentstore;
-   ReadCurrent(currentstore);
+   ReadCurrent(currentstore,inputfile);
    Map(currentstore,point_set,Power_Grid_devices,lowest_metal);
 
  };
 
-void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
-  std::ifstream in("InputCurrent_initial.txt");
+void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore, std::string inputfile){
+  std::ifstream in(inputfile);
   //std::ifstream inputfile;
   //inputfile.open("InputCurrent.txt");
   std::string line;
   //vector<vector<double>> vv;
-  getline(in, line);
-  getline(in, line);
   while (getline(in, line)){
     std::stringstream ss(line);
     std::string tmp;
@@ -864,6 +862,7 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
     while (getline(ss, tmp, ' ')){
       v.push_back(stod(tmp));//stod: string->double
     }
+    //Q: what is the unit, how to generate those current?
     for(int i = 0; i<=3; i++){
       v[i] = v[i] * 2000;
     }
