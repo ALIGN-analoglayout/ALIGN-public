@@ -492,7 +492,7 @@ int MNASimulation::MapPoint(std::set<MDB::metal_point, MDB::Compare_metal_point>
   }
 
   for(auto it = temp_set1.begin(); it != temp_set1.end(); ++it){
-    if (it -> x == bestx && it ->y == besty){
+    if (it -> x == bestx && it ->y == besty && it->metal_layer==layer){
       //Q: need it->metal_layer==layer?
 	    match = it->index;
 	  }
