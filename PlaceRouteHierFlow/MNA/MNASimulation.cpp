@@ -863,10 +863,6 @@ void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore, 
     while (getline(ss, tmp, ' ')){
       v.push_back(stod(tmp));//stod: string->double
     }
-    //Q: what is the unit, how to generate those current?
-    for(int i = 0; i<=3; i++){
-      v[i] = v[i] * 2000;
-    }
     currentstore.push_back(v);
   }
 };

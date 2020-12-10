@@ -100,11 +100,19 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 
 //  DC Power Grid Simulation
  //   while(Power_mesh_optimize and worst < th and rate<1){
-
+      bool dataset_generation = 0;
+      if(dataset_generation){
+        double total_current = 0.036;
+        int current_number = 20;
+        string current_outputfile = inputfile;
+        string power_mesh_congfile = "Power_Grid_Conf.txt";
+        DB.Write_Current_Workload(current_node, total_current, current_number, current_outputfile);
+        DB.Write_Power_Mesh_Conf(power_mesh_congfile);
+      }
+      
       curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), 2, 11, binary_directory, rate, inputfile);
-    
+      
       std::cout<<"Start MNA "<<std::endl;
-	//string filename = ar
       MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), inputfile, outputfile, outputem);
    
       worst = Test_MNA.Return_Worst_Voltage();

@@ -532,63 +532,24 @@ void PowerRouter::GetData(PnRDB::hierNode& node, PnRDB::Drc_info& drc_info, int 
   for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
       utilization.push_back(rate); 
      }
-/*
-	utilization[5] = 0.8;
-	utilization[10] = 0.8;
-	utilization[9] = 0.8;
-	utilization[8] = 0.8;
-	utilization[7] = 0.8;
-	utilization[6] = 0.8;
-*/
-/*
-	unsigned seed;
-    	seed = time(0);
-    	srand(seed);
-	//test for cnn
-
-	for (int i = 1; i<=7; i=i+3){
-		int number = rand() % 8 + 1;
-		double u = (double) number/10.0; 
-		utilization[i] = u ;
-	}
-  std::ofstream pythonfile;
-  pythonfile.open(this->inputfile);
- for (int i = 1; i<=7; i=i+3){
-		pythonfile<<utilization[i]<< " ";
-	}
- pythonfile<<std::endl;
- pythonfile.close();
-*/
-
-	std::ifstream in("InputCurrent_initial.txt");
-  //std::ifstream inputfile;
-  //inputfile.open("InputCurrent.txt");
-   	std::string line;
-	//vector<vector<double>> vv;
-	getline(in, line);
-	//getline(in, line);
-	//while (getline(in, line)){
-		std::stringstream ss(line);
-		std::string tmp;
-		std::vector<double> v;
-		while (getline(ss, tmp, ' ')){
-			v.push_back(stod(tmp));//stod: string->double
-		}
-		for(int i = 0; i<=2; i++){
-			utilization[1+i*3] = v[i];
-		}
-		//currentstore.push_back(v);
-	//}
 
 
-/*
-	utilization[1] = 0.2 ;
-	utilization[4] = 0.8 ;
-	utilization[7] = 0.8 ;
-*/
-for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
-      std::cout<<"utility["<<i<<"]= " << utilization[i] <<std::endl;
-     }
+  std::ifstream in("Power_Grid_Conf.txt");
+  std::string line;
+  getline(in, line);
+  std::stringstream ss(line);
+  std::string tmp;
+  std::vector<double> v;
+  while (getline(ss, tmp, ' ')){
+    v.push_back(stod(tmp));//stod: string->double
+  }
+  for(int i = 0; i<=v.size(); i++){
+    utilization[i] = v[i];
+  }
+
+  for(unsigned int i=0;i<drc_info.Metal_info.size();i++){
+    std::cout<<"utility["<<i<<"]= " << utilization[i] <<std::endl;
+  }
   std::cout<<"Checkpoint get Data 8"<<std::endl;
 };
 
