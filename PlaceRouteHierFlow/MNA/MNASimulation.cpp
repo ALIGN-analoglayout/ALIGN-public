@@ -600,7 +600,7 @@ void MNASimulation::ExtractPowerGridWireR(PnRDB::PowerGrid &temp_grid, std::set<
      }
 };
 
-void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, double power, int vianumber[]){
+void MNASimulation::ExtractPowerGridViaR(PnRDB::PowerGrid &temp_grid, std::set<MDB::metal_point, MDB::Compare_metal_point> &temp_set, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, double power, std::vector<int> vianumber){
    //Q value number is a fixed number? now seems is fixed in the pdk json?
    for(unsigned int i=0;i<temp_grid.vias.size();++i){
        MDB::device temp_device;
@@ -695,20 +695,92 @@ void MNASimulation::FindPowerPoints(std::set<MDB::metal_point, MDB::Compare_meta
   std::cout<<"in find power point size = " << power_points.size()<<std::endl;
 };
 
+void MNASimulation::FindPowerPoints_New(std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, double power, int metal_layer, int power_number, std::vector<MDB::metal_point> &power_points){
+  //need to change this code, this code is meaningless
+  std::set<MDB::metal_point, MDB::Compare_metal_point> power_point_set;
+  std::vector<MDB::metal_point> prime_power_points;
+  std::set<int> x_set;
+  std::set<int> y_set;
+  std::vector<int> x_v;
+  std::vector<int> y_v;
+  MDB::metal_point temp_point;
+  temp_point.metal_layer = metal_layer;
+  temp_point.power = power;
+  //std::cout<<"size of point set"<< point_set.size() <<std::endl;
+  for(auto it = point_set.begin(); it != point_set.end(); ++it){
+  //std::cout<<"metal layer = " << metal_layer <<" it layer = "<< it->metal_layer <<" power = "<<power << " it power = "<< it->power << std::endl;
+       if(it->metal_layer == metal_layer and it->power == power){
+         power_point_set.insert(*it);
+         x_set.insert(it->x);
+         y_set.insert(it->y);
+       }
+  }
+  std::cout <<"size of x_set= " << x_set.size()<<std::endl;
+  std::cout <<"size of y_set= " << y_set.size()<<std::endl;
+  for(auto it = x_set.begin(); it != x_set.end(); ++it){
+     x_v.push_back(*it);
+  }
+  std::cout <<"size of x_v= " << x_v.size()<<std::endl;
+  for(auto it = y_set.begin(); it != y_set.end(); ++it){
+     y_v.push_back(*it);
+  }
+  std::cout <<"size of y_v= " << y_v.size()<<std::endl;
+  //need revise
+  int x_number = sqrt(power_number);
+  int y_number = power_number/x_number;
+
+  int xsize, ysize;
+	xsize = x_v.size();
+	ysize = y_v.size();
+
+  double range_x = (double)(x_v[xsize-1]-x_v[0])/x_number;
+  double range_y = (double) (y_v[ysize-1]-y_v[0])/y_number;
+
+  vector<double> candidate_x;
+  vector<double> candidate_y;
+
+  for(int i=1;i<=x_number;i++){
+     candidate_x.push_back((double)x_v[0]+i*range_x);
+  }
+
+  for(int i=1;i<=y_number;i++){
+     candidate_y.push_back((double) y_v[0]+i*range_y);
+  }
+
+  for(int i =0;i<candidate_x.size();i++){
+    for(int j=0;j<candidate_y.size();j++){
+      temp_point.x = find_nearest(candidate_x[i],x_v);
+      temp_point.y = find_nearest(candidate_y[i],y_v);
+      power_points.push_back(temp_point);
+    }
+  }
+};
+
+int MNASimulation::find_nearest(double x, vector<int> &x_v){
+    int index=0;
+    double error=INT_MAX;
+    for(int i=0;i<x_v.size();i++){
+      if(abs( (double) x_v[i]-x)<error){
+        error = abs((double) x_v[i]-x);
+        index = i;
+      }
+    }
+    return x_v[index];      
+}
+
 void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gnd, PnRDB::Drc_info &drc_info, std::vector<MDB::device> &Power_Grid_devices, std::vector<int> &mark_point, std::set<MDB::metal_point, MDB::Compare_metal_point> &point_set, std::string inputfile){
 
-   std::cout<<"open file"<<std::endl;
    unsigned seed;
    seed = time(0);
    srand(seed);
    //Q: fixed via and via number?
-   int via[12] = {27, 27, 27, 27, 24, 24, 24, 24, 6, 6, 2, 2};
-   int vianumber[12];
-   std::cout<<"open file"<<std::endl;
-   for (int i = 0; i<12; i++){
-	   vianumber[i] = via[i];
+   vector<int> vianumber;
+   int temp_via_number = 4;
+   for (int i = 0; i<drc_info.Via_info.size(); i++){
+	   vianumber.push_back(temp_via_number);
    }
 
+   /*
    std::ifstream in("InputCurrent_initial.txt");
    std::string line;
    getline(in, line);
@@ -716,12 +788,14 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    std::stringstream ss(line);
    std::string tmp;
    std::vector<double> v;
+
    while (getline(ss, tmp, ' ')){
 	   v.push_back(stod(tmp));//stod: string->double
    }
    for(int i = 0; i<=2; i++){
 	   vianumber[2+i*3] = v[i];
    }
+   */
 
    int highest_metal = INT_MIN;
    int lowest_metal = INT_MAX;
@@ -771,37 +845,31 @@ void MNASimulation::ExtractPowerGrid(PnRDB::PowerGrid &vdd, PnRDB::PowerGrid &gn
    AddingPower(gnd_points, point_set, Power_Grid_devices, 0.0);
    //double current = 0.001;
    std::vector<std::vector<double>> currentstore;
-
-   double totalcurrent = 0.072;
-   int cnumber = rand()%20 + 1;
-   double eachcurrent = (double) totalcurrent/(double)cnumber;
-   std::cout<<"each="<<eachcurrent<<" cnumber="<<cnumber<<std::endl;
-
    ReadCurrent(currentstore);
    Map(currentstore,point_set,Power_Grid_devices,lowest_metal);
 
- }
+ };
 
 void MNASimulation::ReadCurrent(std::vector<std::vector<double>> &currentstore){
   std::ifstream in("InputCurrent_initial.txt");
   //std::ifstream inputfile;
   //inputfile.open("InputCurrent.txt");
   std::string line;
-	//vector<vector<double>> vv;
-	getline(in, line);
-	getline(in, line);
-	while (getline(in, line)){
-		std::stringstream ss(line);
-		std::string tmp;
-		std::vector<double> v;
-		while (getline(ss, tmp, ' ')){
-			v.push_back(stod(tmp));//stod: string->double
-		}
-		for(int i = 0; i<=3; i++){
-			v[i] = v[i] * 2000;
-		}
-		currentstore.push_back(v);
-	}
+  //vector<vector<double>> vv;
+  getline(in, line);
+  getline(in, line);
+  while (getline(in, line)){
+    std::stringstream ss(line);
+    std::string tmp;
+    std::vector<double> v;
+    while (getline(ss, tmp, ' ')){
+      v.push_back(stod(tmp));//stod: string->double
+    }
+    for(int i = 0; i<=3; i++){
+      v[i] = v[i] * 2000;
+    }
+    currentstore.push_back(v);
+  }
 };
 
 
