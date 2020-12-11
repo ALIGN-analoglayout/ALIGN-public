@@ -257,7 +257,8 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
   float per = 0.1;
   float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
   int updateThrd=100;
-  while(T>T_MIN) {
+  int fail_number = 0;
+  while(T>T_MIN && fail_number < 10) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;
@@ -317,6 +318,7 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
       //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ConstGraph trial_sol;
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
+        fail_number=0;
         trial_cost=trial_sol.CalculateCost(designData, trial_sp);
 
         delta_cost=trial_cost-curr_cost;
@@ -331,6 +333,8 @@ void Placer::PlacementCore(design& designData, SeqPair& curr_sp, ConstGraph& cur
           curr_sp=trial_sp;
           curr_sol=trial_sol;
         }
+      }else{
+        fail_number++;
       }
       #endif
 
@@ -375,8 +379,9 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   int T_index=0;
   float per = 0.1;
   int updateThrd=100;
+  int fail_number=0;
   float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
-  while(T>T_MIN) {
+  while(T>T_MIN && fail_number < 10) {
     int i=1;
     int MAX_Iter=1;
     if(effort==0) { MAX_Iter=1;
@@ -442,6 +447,7 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
       //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ConstGraph trial_sol;
       if(GenerateValidSolution(designData, trial_sp, trial_sol, mode)) {
+        fail_number = 0;
         double trial_cost=trial_sol.CalculateCost(designData, trial_sp);
         bool Smark=false;
         delta_cost=trial_cost-curr_cost;
@@ -462,6 +468,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
             ReshapeSeqPairMap(oData, nodeSize);
           }
         }
+      }else{
+        fail_number++;
       }
       #endif
 
@@ -485,6 +493,8 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
     //cout<<T<<endl;
   }
   // Write out placement results
+  oData[curr_cost]=curr_sp;
+  ReshapeSeqPairMap(oData,nodeSize);
   cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
   //curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();

@@ -188,6 +188,8 @@ class PnRdatabase
     void WriteGcellGlobalRoute(const PnRDB::hierNode &node, const string &rofile, const string &opath) const;
     void WriteLef(const PnRDB::hierNode &node, const string &file, const string &opath) const;
     void Write_Router_Report(PnRDB::hierNode &node, const string &opath);
+    void Write_Power_Mesh_Conf(std::string outputfile);
+    void Write_Current_Workload(PnRDB::hierNode &node, double total_current, int current_number, std::string outputfile);
     
 };
 

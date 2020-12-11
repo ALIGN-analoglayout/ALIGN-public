@@ -25,6 +25,8 @@ RUN apt-get -qq update && DEBIAN_FRONTEND=noninterative apt-get -qq install \
     graphviz \
     gnuplot \
     curl \
+    wget \
+    gfortran \
     xvfb < /dev/null > /dev/null \
     # libgraphviz-dev \
     # protobuf-compiler \
@@ -52,6 +54,19 @@ RUN $pip install -q \
 RUN \
     git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  /usr/local/lib/lpsolve
 ENV LD_LIBRARY_PATH=/usr/local/lib/lpsolve/lp_solve_5.5.2.5_dev_ux64
+
+# SuperLU
+RUN \
+    mkdir -p /opt/superlu && \
+    cd /opt/superlu && \
+    wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz && \
+    tar -zxvf superlu_5.2.1.tar.gz && \
+    cd SuperLU_5.2.1 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make
+ENV SuperLu_DIR=/opt/superlu
 
 # Googletest
 RUN cd /opt && \
