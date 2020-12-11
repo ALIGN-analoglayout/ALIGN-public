@@ -169,6 +169,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
       std::cout<<"End MNA "<<std::endl;
       Test_MNA.Clear_Power_Grid(current_node.Vdd);
       Test_MNA.Clear_Power_Grid(current_node.Gnd);
+      return;
     }
               
     
