@@ -115,7 +115,7 @@ void PnRdatabase::Write_Power_Mesh_Conf(std::string outputfile){
 
 
   for(int i=0;i<DRC_info.Metal_info.size();i++){
-    PMCfile<<(double) (rand()%10)/10<<" ";
+    PMCfile<<(double) (rand()%10+1)/10<<" ";
   }
   PMCfile<<std::endl;  
 
