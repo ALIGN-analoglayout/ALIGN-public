@@ -33,7 +33,7 @@ MNA_path=MNA
 SuperLu_path1=$(SuperLu_DIR)/SuperLU_5.2.1/build/SRC
 SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
 
-OBJS=main.o
+OBJS=main.o toplevel.o
 SRCS=$(OBJS:.o=.cpp)
 LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a
 
