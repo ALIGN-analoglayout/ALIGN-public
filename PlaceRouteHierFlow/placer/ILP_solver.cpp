@@ -14,12 +14,23 @@ ILP_solver::ILP_solver(const ILP_solver& solver) {
   Blocks = solver.Blocks;
   LL = solver.LL;
   UR = solver.UR;
+  area = solver.area;
+  HPWL = solver.HPWL;
+  ratio = solver.ratio;
+  dead_area = solver.dead_area;
+  linear_const = solver.linear_const;
+  multi_linear_const = solver.multi_linear_const;
 }
 
 ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
   Blocks = solver.Blocks;
   LL = solver.LL;
   UR = solver.UR;
+  area = solver.area;
+  HPWL = solver.HPWL;
+  ratio = solver.ratio;
+  dead_area = solver.dead_area;
+  multi_linear_const = solver.multi_linear_const;
   return *this;
 }
 
@@ -70,7 +81,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           // i is right of j
           double sparserow[2] = {1, -1};
           int colno[2] = {i * 4 + 1, j * 4 + 1};
-          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width - mydesign.bias_Hgraph)) printf("error\n");
+          if (!add_constraintex(lp, 2, sparserow, colno, GE, mydesign.Blocks[j][curr_sp.selected[j]].width + mydesign.bias_Hgraph)) printf("error\n");
         }
       }
     }
@@ -97,7 +108,6 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
 
   // symmetry block constraint
   for (auto SPBlock : mydesign.SPBlocks) {
-    break;
     if (SPBlock.axis_dir == placerDB::H) {
       // constraint inside one pair
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
@@ -121,13 +131,13 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       // constraint between two pairs
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
-        int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 2;
-        int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 2;
+        int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 4;
+        int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 4;
         for (int j = i + 1; j < SPBlock.sympair.size(); j++) {
           // the y center of the two pairs are the same
           int j_first_id = SPBlock.sympair[j].first, j_second_id = SPBlock.sympair[j].second;
-          int j_first_y_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].height / 2;
-          int j_second_y_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].height / 2;
+          int j_first_y_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].height / 4;
+          int j_second_y_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].height / 4;
           double sparserow[4] = {0.5, 0.5, -0.5, -0.5};
           int colno[4] = {i_first_id * 4 + 2, i_second_id * 4 + 2, j_first_id * 4 + 2, j_second_id * 4 + 2};
           int bias = -i_first_y_center - i_second_y_center + j_first_y_center + j_second_y_center;
@@ -138,8 +148,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       // constraint between a pair and a selfsym
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
-        int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 2;
-        int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 2;
+        int i_first_y_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].height / 4;
+        int i_second_y_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].height / 4;
         for (int j = 0; j < SPBlock.selfsym.size(); j++) {
           // the y center of the pair and the selfsym are the same
           int j_id = SPBlock.selfsym[j].first;
@@ -155,7 +165,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       for (int i = 0; i < SPBlock.selfsym.size(); i++) {
         int i_id = SPBlock.selfsym[i].first;
         int i_y_center = mydesign.Blocks[i_id][curr_sp.selected[i_id]].height / 2;
-        for (int j = 0; j < SPBlock.selfsym.size(); j++) {
+        for (int j = i + 1; j < SPBlock.selfsym.size(); j++) {
           // the y center of the two selfsyms are the same
           int j_id = SPBlock.selfsym[j].first;
           int j_y_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].height / 2;
@@ -189,13 +199,13 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       // constraint between two pairs
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
-        int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 2;
-        int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 2;
+        int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 4;
+        int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 4;
         for (int j = i + 1; j < SPBlock.sympair.size(); j++) {
           // the x center of the two pairs are the same
           int j_first_id = SPBlock.sympair[j].first, j_second_id = SPBlock.sympair[j].second;
-          int j_first_x_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].width / 2;
-          int j_second_x_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].width / 2;
+          int j_first_x_center = mydesign.Blocks[j_first_id][curr_sp.selected[j_first_id]].width / 4;
+          int j_second_x_center = mydesign.Blocks[j_second_id][curr_sp.selected[j_second_id]].width / 4;
           double sparserow[4] = {0.5, 0.5, -0.5, -0.5};
           int colno[4] = {i_first_id * 4 + 1, i_second_id * 4 + 1, j_first_id * 4 + 1, j_second_id * 4 + 1};
           int bias = -i_first_x_center - i_second_x_center + j_first_x_center + j_second_x_center;
@@ -206,8 +216,8 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       // constraint between a pair and a selfsym
       for (int i = 0; i < SPBlock.sympair.size(); i++) {
         int i_first_id = SPBlock.sympair[i].first, i_second_id = SPBlock.sympair[i].second;
-        int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 2;
-        int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 2;
+        int i_first_x_center = mydesign.Blocks[i_first_id][curr_sp.selected[i_first_id]].width / 4;
+        int i_second_x_center = mydesign.Blocks[i_second_id][curr_sp.selected[i_second_id]].width / 4;
         for (int j = 0; j < SPBlock.selfsym.size(); j++) {
           // the x center of the pair and the selfsym are the same
           int j_id = SPBlock.selfsym[j].first;
@@ -223,7 +233,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
       for (int i = 0; i < SPBlock.selfsym.size(); i++) {
         int i_id = SPBlock.selfsym[i].first;
         int i_x_center = mydesign.Blocks[i_id][curr_sp.selected[i_id]].width / 2;
-        for (int j = 0; j < SPBlock.selfsym.size(); j++) {
+        for (int j = i + 1; j < SPBlock.selfsym.size(); j++) {
           // the x center of the two selfsyms are the same
           int j_id = SPBlock.selfsym[j].first;
           int j_x_center = mydesign.Blocks[j_id][curr_sp.selected[j_id]].width / 2;
@@ -238,16 +248,17 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
 
   // set_add_rowmode(lp, FALSE);
   {
+    double row[N_var] = {0};
     for (int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
       if (curr_sp.negPair[i] < mydesign.Blocks.size()) {
-        double sparserow[] = {1, 1};
-        int colno[2] = {curr_sp.negPair[i] * 4 + 1, curr_sp.negPair[i] * 4 + 2};
-        set_obj_fnex(lp, 2, sparserow, colno);
-        set_minim(lp);
-        solve(lp);
+        row[curr_sp.negPair[i] * 4 + 1] = 1;
+        row[curr_sp.negPair[i] * 4 + 2] = 1;
         break;
       }
     }
+    set_obj_fn(lp, row);
+    set_minim(lp);
+    solve(lp);
   }
   double var[N_var];
   get_variables(lp, var);
@@ -267,17 +278,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   }
   // calculate area
   area = (UR.x - LL.x) * (UR.y - LL.y);
+  // calculate dead area
+  dead_area = area;
+  for (int i = 0; i < mydesign.Blocks.size(); i++) {
+    dead_area -= mydesign.Blocks[i][curr_sp.selected[i]].width * mydesign.Blocks[i][curr_sp.selected[i]].height;
+  }
+  // calculate ratio
+  ratio = std::max((UR.x - LL.x) / (UR.y - LL.y), (UR.y - LL.y) / (UR.x - LL.x));
   // calculate HPWL
   HPWL = 0;
-  for (int i = 0; i < mydesign.Nets.size(); i++) {
+  for (auto neti : mydesign.Nets) {
     int HPWL_min_x = UR.x, HPWL_min_y = UR.y, HPWL_max_x = 0, HPWL_max_y = 0;
-    for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
-      if (mydesign.Nets[i].connected[j].type == placerDB::Block) {
-        int iter2 = mydesign.Nets[i].connected[j].iter2, iter = mydesign.Nets[i].connected[j].iter;
-        for (int k = 0; k < mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].center.size(); k++) {
+    for (auto connectedj : neti.connected) {
+      if (connectedj.type == placerDB::Block) {
+        int iter2 = connectedj.iter2, iter = connectedj.iter;
+        for (auto centerk : mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].center) {
           // calculate contact center
-          int pin_x = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].center[k].x;
-          int pin_y = mydesign.Blocks[iter2][curr_sp.selected[iter2]].blockPins[iter].center[k].y;
+          int pin_x = centerk.x;
+          int pin_y = centerk.y;
           if (Blocks[iter2].H_flip) pin_x = mydesign.Blocks[iter2][curr_sp.selected[iter2]].width - pin_x;
           if (Blocks[iter2].V_flip) pin_y = mydesign.Blocks[iter2][curr_sp.selected[iter2]].height - pin_y;
           pin_x += Blocks[iter2].x;
@@ -292,6 +310,61 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
     }
   }
 
+  // calculate linear constraint
+  linear_const = 0;
+  std::vector<std::vector<double> > feature_value;
+  for (auto neti : mydesign.Nets) {
+    std::vector<std::vector<placerDB::point> > center_points;
+    for (auto connectedj : neti.connected) {
+      if (connectedj.type == placerDB::Block) {
+        std::vector<placerDB::point> pos;
+        for (auto ci : mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].blockPins[connectedj.iter].center) {
+          placerDB::point newp;
+          newp.x = ci.x;
+          newp.y = ci.y;
+          if (Blocks[connectedj.iter2].H_flip) newp.x = mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].width - newp.x;
+          if (Blocks[connectedj.iter2].V_flip) newp.y = mydesign.Blocks[connectedj.iter2][curr_sp.selected[connectedj.iter2]].height - newp.y;
+          newp.x += Blocks[connectedj.iter2].x;
+          newp.y += Blocks[connectedj.iter2].y;
+          pos.push_back(newp);
+        }
+        center_points.push_back(pos);
+      } else if (connectedj.type == placerDB::Terminal) {
+        center_points.push_back({mydesign.Terminals[connectedj.iter].center});
+      }
+    }
+    std::vector<double> temp_feature = Calculate_Center_Point_feature(center_points);
+    feature_value.push_back(temp_feature);
+    double temp_sum = 0;
+    for (int j = 0; j < neti.connected.size(); j++) temp_sum += neti.connected[j].alpha * temp_feature[j];
+    temp_sum = std::max(temp_sum - neti.upperBound, double(0));
+    linear_const += temp_sum;
+  }
+
+  // calculate multi linear constraint
+  multi_linear_const = 0;
+  for (auto constrainti : mydesign.ML_Constraints) {
+    double temp_sum = 0;
+    for (auto constraintj : constrainti.Multi_linearConst) {
+      for (int k = 0; k < constraintj.pins.size(); k++) {
+        int index_i = 0;
+        int index_j = 0;
+        for (int m = 0; m < mydesign.Nets.size(); m++) {
+          for (int n = 0; n < mydesign.Nets[m].connected.size(); n++) {
+            if (mydesign.Nets[m].connected[n].iter2 == constraintj.pins[k].first && mydesign.Nets[m].connected[n].iter == constraintj.pins[k].second) {
+              index_i = m;
+              index_j = n;
+              break;
+            }
+          }
+        }
+        temp_sum += constraintj.alpha[k] * feature_value[index_i][index_j];
+      }
+    }
+    temp_sum = std::min(temp_sum, constrainti.upperBound);
+    multi_linear_const += temp_sum;
+  }
+
   double cost = CalculateCost(mydesign, curr_sp);
   return cost;
 }
@@ -301,6 +374,18 @@ double ILP_solver::CalculateCost(design& mydesign, SeqPair& curr_sp) {
   double cost = 0;
   cost += area;
   cost += HPWL * const_graph.LAMBDA;
+  double match_cost = 0;
+  for (auto mbi : mydesign.Match_blocks) {
+    match_cost += abs(Blocks[mbi.blockid1].x + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].width / 2 - Blocks[mbi.blockid2].x -
+                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].width / 2) +
+                  abs(Blocks[mbi.blockid1].y + mydesign.Blocks[mbi.blockid1][curr_sp.selected[mbi.blockid1]].height / 2 - Blocks[mbi.blockid2].y -
+                      mydesign.Blocks[mbi.blockid2][curr_sp.selected[mbi.blockid2]].height / 2);
+  }
+  cost += match_cost * const_graph.BETA;
+  cost += ratio * const_graph.SIGMA;
+  cost += dead_area / area * const_graph.PHI;
+  cost += linear_const * const_graph.PI;
+  cost += multi_linear_const * const_graph.PII;
   return cost;
 }
 
@@ -324,11 +409,11 @@ void ILP_solver::WritePlacement(design& mydesign, SeqPair& curr_sp, string outfi
     fout << mydesign.Blocks.at(i).back().name << "\t" << Blocks[i].x << "\t" << Blocks[i].y << "\t" << ort << endl;
   }
   fout << endl;
-  for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
+  for (auto ni : mydesign.Nets) {
     // for each pin
-    for (vector<placerDB::Node>::iterator ci = (ni->connected).begin(); ci != (ni->connected).end(); ++ci) {
-      if (ci->type == placerDB::Terminal) {
-        int tno = ci->iter;
+    for (auto ci : ni.connected) {
+      if (ci.type == placerDB::Terminal) {
+        int tno = ci.iter;
         fout << mydesign.Terminals.at(tno).name << "\t" << mydesign.Terminals.at(tno).center.x << "\t" << mydesign.Terminals.at(tno).center.y << endl;
         break;
       }
@@ -373,6 +458,8 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
         newp.y = mydesign.Blocks[i][curr_sp.selected[i]].blockPins[j].center[k].y;
         if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][curr_sp.selected[i]].width - newp.x;
         if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][curr_sp.selected[i]].height - newp.y;
+        newp.x += Blocks[i].x;
+        newp.y += Blocks[i].y;
         fout << "\nset label \"" << mydesign.Blocks[i][curr_sp.selected[i]].blockPins[j].name << "\" at " << newp.x << " , " << newp.y << endl;
         fout << endl;
       }
@@ -381,11 +468,11 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
 
   // set labels for terminals
   cout << "set labels for terminals..." << endl;
-  for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
+  for (auto ni : mydesign.Nets) {
     // for each pin
-    for (vector<placerDB::Node>::iterator ci = (ni->connected).begin(); ci != (ni->connected).end(); ++ci) {
-      if (ci->type == placerDB::Terminal) {
-        int tno = ci->iter;
+    for (auto ci : ni.connected) {
+      if (ci.type == placerDB::Terminal) {
+        int tno = ci.iter;
         fout << "\nset label \"" << mydesign.Terminals.at(tno).name << "\" at " << mydesign.Terminals.at(tno).center.x << " , "
              << mydesign.Terminals.at(tno).center.y << " center                " << endl;
         break;
@@ -416,6 +503,8 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
           newp.y = mydesign.Blocks[i][curr_sp.selected[i]].blockPins[j].boundary[k].polygon[it].y;
           if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][curr_sp.selected[i]].width - newp.x;
           if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][curr_sp.selected[i]].height - newp.y;
+          newp.x += Blocks[i].x;
+          newp.y += Blocks[i].y;
           fout << "\t" << newp.x << "\t" << newp.y << endl;
         }
         placerDB::point newp;
@@ -423,6 +512,8 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
         newp.y = mydesign.Blocks[i][curr_sp.selected[i]].blockPins[j].boundary[k].polygon[0].y;
         if (Blocks[i].H_flip) newp.x = mydesign.Blocks[i][curr_sp.selected[i]].width - newp.x;
         if (Blocks[i].V_flip) newp.y = mydesign.Blocks[i][curr_sp.selected[i]].height - newp.y;
+        newp.x += Blocks[i].x;
+        newp.y += Blocks[i].y;
         fout << "\t" << newp.x << "\t" << newp.y << endl;
         fout << endl;
       }
@@ -431,11 +522,11 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   fout << "\nEOF" << endl;
 
   // plot terminals
-  for (vector<placerDB::net>::iterator ni = mydesign.Nets.begin(); ni != mydesign.Nets.end(); ++ni) {
+  for (auto ni : mydesign.Nets) {
     // for each pin
-    for (vector<placerDB::Node>::iterator ci = (ni->connected).begin(); ci != (ni->connected).end(); ++ci) {
-      if (ci->type == placerDB::Terminal) {
-        int tno = ci->iter;
+    for (auto ci : ni.connected) {
+      if (ci.type == placerDB::Terminal) {
+        int tno = ci.iter;
         int bias = 20;
         fout << endl;
         fout << "\t" << mydesign.Terminals.at(tno).center.x - bias << "\t" << mydesign.Terminals.at(tno).center.y - bias << endl;
@@ -454,15 +545,19 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
     placerDB::point tp;
     vector<placerDB::point> pins;
     // for each pin
-    for (vector<placerDB::Node>::iterator ci = (ni->connected).begin(); ci != (ni->connected).end(); ++ci) {
-      if (ci->type == placerDB::Block) {
-        if (mydesign.Blocks[ci->iter2][curr_sp.selected[ci->iter2]].blockPins[ci->iter].center.size() > 0) {
-          tp.x = mydesign.Blocks[ci->iter2][curr_sp.selected[ci->iter2]].blockPins[ci->iter].center[0].x;
-          tp.y = mydesign.Blocks[ci->iter2][curr_sp.selected[ci->iter2]].blockPins[ci->iter].center[0].y;
+    for (auto ci : ni->connected) {
+      if (ci.type == placerDB::Block) {
+        if (mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size() > 0) {
+          tp.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[0].x;
+          tp.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[0].y;
+          if (Blocks[ci.iter2].H_flip) tp.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - tp.x;
+          if (Blocks[ci.iter2].V_flip) tp.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - tp.y;
+          tp.x += Blocks[ci.iter2].x;
+          tp.y += Blocks[ci.iter2].y;
           pins.push_back(tp);
         }
-      } else if (ci->type == placerDB::Terminal) {
-        pins.push_back(mydesign.Terminals.at(ci->iter).center);
+      } else if (ci.type == placerDB::Terminal) {
+        pins.push_back(mydesign.Terminals.at(ci.iter).center);
       }
     }
     fout << "\n#Net: " << ni->name << endl;
@@ -474,8 +569,760 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
       }
     }
   }
-
   fout << "\nEOF" << endl;
   fout << endl << "pause -1 \'Press any key\'";
   fout.close();
+}
+
+std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact) {
+  std::vector<double> temp_x;
+  std::vector<double> temp_y;
+  std::vector<double> feature;
+  double sum_x;
+  double sum_y;
+  for (int i = 0; i < temp_contact.size(); i++) {
+    sum_x = 0;
+    sum_y = 0;
+    for (int j = 0; j < temp_contact[i].size(); j++) {
+      sum_x = sum_x + (double)temp_contact[i][j].x;
+      sum_y = sum_y + (double)temp_contact[i][j].y;
+    }
+    sum_x = sum_x / (double)temp_contact[i].size();
+    sum_y = sum_y / (double)temp_contact[i].size();
+    temp_x.push_back(sum_x);
+    temp_y.push_back(sum_y);
+  }
+
+  sum_x = 0;
+  sum_y = 0;
+  for (int i = 0; i < temp_x.size(); i++) {
+    sum_x = sum_x + temp_x[i];
+    sum_y = sum_y + temp_y[i];
+  }
+  double center_x = sum_x / (double)temp_x.size();
+  double center_y = sum_y / (double)temp_y.size();
+  for (int i = 0; i < temp_x.size(); i++) {
+    feature.push_back(abs(center_x - (double)temp_x[i]) + abs(center_y - (double)temp_y[i]));
+  }
+  return feature;
+}
+
+void ILP_solver::updateTerminalCenter(design& mydesign, SeqPair& curr_sp) {
+  int Xmax = UR.x;
+  int Ymax = UR.y;
+  vector<placerDB::point> pos;
+  placerDB::point p, bp;
+  int alpha;
+  vector<placerDB::point> pos_pin;
+  std::set<int> solved_terminals;
+  // for each terminal
+  for (int i = 0; i < mydesign.Terminals.size(); i++) {
+    if (solved_terminals.find(i) != solved_terminals.end()) continue;
+    solved_terminals.insert(i);
+    int netIdx = mydesign.Terminals.at(i).netIter;
+    int sbIdx = mydesign.Terminals.at(i).SBidx;
+    int cp = mydesign.Terminals.at(i).counterpart;
+    if (netIdx < 0 || netIdx >= mydesign.Nets.size()) {
+      std::cout << "Placer-Warning: terminal " << i << " is dangling; set it on origin\n";
+      mydesign.Terminals.at(i).center = {0, 0};
+      continue;
+    }
+    if ((mydesign.Nets.at(netIdx).priority).compare("min") == 0) {
+      alpha = 4;
+    } else if ((mydesign.Nets.at(netIdx).priority).compare("mid") == 0) {
+      alpha = 2;
+    } else {
+      alpha = 1;
+    }
+    alpha *= mydesign.Nets.at(netIdx).weight;  // add weight to reflect the modification for bigMacros
+    if (sbIdx != -1) {                         // in symmetry group
+      placerDB::Smark axis = curr_sp.GetSymmBlockAxis(sbIdx);
+      if (cp == (int)i) {  // self-symmetric
+        if (axis == placerDB::V) {
+          int axis_X = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].x +
+                       mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[sbIdx].selfsym[0].first]].width / 2;
+          int distTerm = INT_MAX;
+          placerDB::point tp(axis_X, 0);
+          for (auto ci : mydesign.Nets[netIdx].connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.y < distTerm) {
+                  distTerm = p.y;
+                  tp.y = 0;
+                }
+                if (Ymax - p.y < distTerm) {
+                  distTerm = Ymax - p.y;
+                  tp.y = Ymax;
+                }
+              }
+            }
+          }
+          mydesign.Terminals.at(i).center = tp;
+        } else if (axis == placerDB::H) {
+          int axis_Y = Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first].y +
+                       mydesign.Blocks[mydesign.SBlocks[sbIdx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[sbIdx].selfsym[0].first]].height / 2;
+          int distTerm = INT_MAX;
+          placerDB::point tp(0, axis_Y);
+          for (auto ci : mydesign.Nets.at(netIdx).connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.x < distTerm) {
+                  distTerm = p.x;
+                  tp.x = 0;
+                }
+                if (Xmax - p.x < distTerm) {
+                  distTerm = Xmax - p.x;
+                  tp.x = Xmax;
+                }
+              }
+            }
+          }
+          mydesign.Terminals.at(i).center = tp;
+        } else {
+          std::cout << "Placer-Error: incorrect axis direction\n";
+        }
+      } else {  // symmetry pair
+        if (solved_terminals.find(cp) != solved_terminals.end()) continue;
+        solved_terminals.insert(cp);
+        int netIdx2 = mydesign.Terminals.at(cp).netIter;
+        if (netIdx2 < 0 or netIdx2 >= mydesign.Nets.size()) {
+          std::cout << "Placer-Error: terminal " << i << " is not dangling, but its counterpart " << cp << " is dangling; set them on origin\n";
+          mydesign.Terminals.at(i).center = {0, 0};
+          mydesign.Terminals.at(cp).center = {0, 0};
+          continue;
+        }
+        int alpha2;
+        if ((mydesign.Nets.at(netIdx2).priority).compare("min") == 0) {
+          alpha2 = 4;
+        } else if ((mydesign.Nets.at(netIdx2).priority).compare("mid") == 0) {
+          alpha2 = 2;
+        } else {
+          alpha2 = 1;
+        }
+        alpha2 *= mydesign.Nets.at(netIdx2).weight;  // add weight to reflect the modification for bigMacros
+        if (axis == placerDB::V) {
+          placerDB::point tpL1, tpR1;
+          int distTermL = INT_MAX, distTermR = INT_MAX;
+          for (auto ci : mydesign.Nets.at(netIdx).connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.x < distTermL) {
+                  distTermL = p.x;
+                  tpL1.x = 0;
+                  tpL1.y = p.y;
+                }
+                if (Xmax - p.x < distTermR) {
+                  distTermR = Xmax - p.x;
+                  tpR1.x = Xmax;
+                  tpR1.y = p.y;
+                }
+              }
+            }
+          }
+          placerDB::point tpL2, tpR2;
+          int distTermL2 = INT_MAX, distTermR2 = INT_MAX;
+          for (auto ci : mydesign.Nets.at(netIdx2).connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.x < distTermL2) {
+                  distTermL2 = p.x;
+                  tpL2.x = 0;
+                  tpL2.y = p.y;
+                }
+                if (Xmax - p.x < distTermR2) {
+                  distTermR2 = Xmax - p.x;
+                  tpR2.x = Xmax;
+                  tpR2.y = p.y;
+                }
+              }
+            }
+          }
+          if (distTermL * alpha + distTermR2 * alpha2 < distTermR * alpha + distTermL2 * alpha2) {
+            mydesign.Terminals.at(i).center = tpL1;
+            mydesign.Terminals.at(cp).center = tpR2;
+          } else {
+            mydesign.Terminals.at(i).center = tpR1;
+            mydesign.Terminals.at(cp).center = tpL2;
+          }
+        } else if (axis == placerDB::H) {
+          placerDB::point tpL1, tpU1;
+          int distTermL = INT_MAX, distTermU = INT_MAX;
+          for (auto ci : mydesign.Nets.at(netIdx).connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.y < distTermL) {
+                  distTermL = p.y;
+                  tpL1.x = p.x;
+                  tpL1.y = 0;
+                }
+                if (Ymax - p.y < distTermU) {
+                  distTermU = Ymax - p.y;
+                  tpU1.x = p.x;
+                  tpU1.y = Ymax;
+                }
+              }
+            }
+          }
+          placerDB::point tpL2, tpU2;
+          int distTermL2 = INT_MAX, distTermU2 = INT_MAX;
+          for (auto ci : mydesign.Nets.at(netIdx2).connected) {
+            if (ci.type == placerDB::Block) {
+              bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+              for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+                p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+                if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+                if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+                p += bp;
+                if (p.y < distTermL2) {
+                  distTermL2 = p.y;
+                  tpL2.x = p.x;
+                  tpL2.y = 0;
+                }
+                if (Ymax - p.y < distTermU2) {
+                  distTermU2 = Ymax - p.y;
+                  tpU2.x = p.x;
+                  tpU2.y = Ymax;
+                }
+              }
+            }
+          }
+          if (distTermL * alpha + distTermU2 * alpha2 < distTermU * alpha + distTermL2 * alpha2) {
+            mydesign.Terminals.at(i).center = tpL1;
+            mydesign.Terminals.at(cp).center = tpU2;
+          } else {
+            mydesign.Terminals.at(i).center = tpU1;
+            mydesign.Terminals.at(cp).center = tpL2;
+          }
+        } else {
+          std::cout << "Placer-Error: incorrect axis direction\n";
+        }
+      }
+    } else {  // not in symmetry group
+      int tar = -1;
+      for (int j = 0; j < mydesign.Port_Location.size(); j++) {
+        if (mydesign.Port_Location.at(j).tid == (int)i) {
+          tar = j;
+          break;
+        }
+      }
+      if (tar != -1) {  // specifiy PortLocation constraint
+        int x1 = Xmax / 3, x2 = Xmax * 2 / 3, x3 = Xmax;
+        int y1 = Ymax / 3, y2 = Ymax * 2 / 3, y3 = Ymax;
+        placerDB::point tp;
+        pos.clear();
+        for (auto ci : mydesign.Nets.at(netIdx).connected) {
+          if (ci.type == placerDB::Block) {
+            bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+            for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+              p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+              if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+              if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+              p += bp;
+              pos.push_back(p);
+            }
+          }
+        }
+        int shot = -1;
+        int distTerm = INT_MAX;
+        for (int k = 0; k < pos.size(); k++) {
+          p = pos.at(k);
+          // Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
+          switch (mydesign.Port_Location.at(tar).pos) {
+            case placerDB::TL:
+              if (p.x >= 0 and p.x <= x1) {
+                if (Ymax - p.y < distTerm) {
+                  distTerm = Ymax - p.y;
+                  shot = k;
+                  tp = {p.x, Ymax};
+                }
+              } else {
+                if (std::abs(p.x - 0) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - 0) + Ymax - p.y;
+                  shot = k;
+                  tp = {0, Ymax};
+                }
+                if (std::abs(p.x - x1) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - x1) + Ymax - p.y;
+                  shot = k;
+                  tp = {x1, Ymax};
+                }
+              }
+              break;
+            case placerDB::TC:
+              if (p.x >= x1 and p.x <= x2) {
+                if (Ymax - p.y < distTerm) {
+                  distTerm = Ymax - p.y;
+                  shot = k;
+                  tp = {p.x, Ymax};
+                }
+              } else {
+                if (std::abs(p.x - x2) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - x2) + Ymax - p.y;
+                  shot = k;
+                  tp = {x2, Ymax};
+                }
+                if (std::abs(p.x - x1) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - x1) + Ymax - p.y;
+                  shot = k;
+                  tp = {x1, Ymax};
+                }
+              }
+              break;
+            case placerDB::TR:
+              if (p.x >= x2 and p.x <= x3) {
+                if (Ymax - p.y < distTerm) {
+                  distTerm = Ymax - p.y;
+                  shot = k;
+                  tp = {p.x, Ymax};
+                }
+              } else {
+                if (std::abs(p.x - x2) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - x2) + Ymax - p.y;
+                  shot = k;
+                  tp = {x2, Ymax};
+                }
+                if (std::abs(p.x - x3) + Ymax - p.y < distTerm) {
+                  distTerm = std::abs(p.x - x3) + Ymax - p.y;
+                  shot = k;
+                  tp = {x3, Ymax};
+                }
+              }
+              break;
+            case placerDB::RT:
+              if (p.y >= y2 and p.y <= y3) {
+                if (Xmax - p.x < distTerm) {
+                  distTerm = Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, p.y};
+                }
+              } else {
+                if (std::abs(p.y - y2) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - y2) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, y2};
+                }
+                if (std::abs(p.y - y3) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - y3) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, y3};
+                }
+              }
+              break;
+            case placerDB::RC:
+              if (p.y >= y1 and p.y <= y2) {
+                if (Xmax - p.x < distTerm) {
+                  distTerm = Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, p.y};
+                }
+              } else {
+                if (std::abs(p.y - y2) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - y2) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, y2};
+                }
+                if (std::abs(p.y - y1) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - y1) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, y1};
+                }
+              }
+              break;
+            case placerDB::RB:
+              if (p.y >= 0 and p.y <= y1) {
+                if (Xmax - p.x < distTerm) {
+                  distTerm = Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, p.y};
+                }
+              } else {
+                if (std::abs(p.y - 0) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - 0) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, 0};
+                }
+                if (std::abs(p.y - y1) + Xmax - p.x < distTerm) {
+                  distTerm = std::abs(p.y - y1) + Xmax - p.x;
+                  shot = k;
+                  tp = {Xmax, y1};
+                }
+              }
+              break;
+            case placerDB::BL:
+              if (p.x >= 0 and p.x <= x1) {
+                if (p.y < distTerm) {
+                  distTerm = p.y;
+                  shot = k;
+                  tp = {p.x, 0};
+                }
+              } else {
+                if (std::abs(p.x - 0) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - 0) + p.y;
+                  shot = k;
+                  tp = {0, 0};
+                }
+                if (std::abs(p.x - x1) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - x1) + p.y;
+                  shot = k;
+                  tp = {x1, 0};
+                }
+              }
+              break;
+            case placerDB::BC:
+              if (p.x >= x1 and p.x <= x2) {
+                if (p.y < distTerm) {
+                  distTerm = p.y;
+                  shot = k;
+                  tp = {p.x, 0};
+                }
+              } else {
+                if (std::abs(p.x - x2) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - x2) + p.y;
+                  shot = k;
+                  tp = {x2, 0};
+                }
+                if (std::abs(p.x - x1) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - x1) + p.y;
+                  shot = k;
+                  tp = {x1, 0};
+                }
+              }
+              break;
+            case placerDB::BR:
+              if (p.x >= x2 and p.x <= x3) {
+                if (p.y < distTerm) {
+                  distTerm = p.y;
+                  shot = k;
+                  tp = {p.x, 0};
+                }
+              } else {
+                if (std::abs(p.x - x2) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - x2) + p.y;
+                  shot = k;
+                  tp = {x2, 0};
+                }
+                if (std::abs(p.x - x3) + p.y < distTerm) {
+                  distTerm = std::abs(p.x - x3) + p.y;
+                  shot = k;
+                  tp = {x3, 0};
+                }
+              }
+              break;
+            case placerDB::LT:
+              if (p.y >= y2 and p.y <= y3) {
+                if (p.x < distTerm) {
+                  distTerm = p.x;
+                  shot = k;
+                  tp = {0, p.y};
+                }
+              } else {
+                if (std::abs(p.y - y2) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - y2) + p.x;
+                  shot = k;
+                  tp = {0, y2};
+                }
+                if (std::abs(p.y - y3) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - y3) + p.x;
+                  shot = k;
+                  tp = {0, y3};
+                }
+              }
+              break;
+            case placerDB::LC:
+              if (p.y >= y1 and p.y <= y2) {
+                if (p.x < distTerm) {
+                  distTerm = p.x;
+                  shot = k;
+                  tp = {0, p.y};
+                }
+              } else {
+                if (std::abs(p.y - y2) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - y2) + p.x;
+                  shot = k;
+                  tp = {0, y2};
+                }
+                if (std::abs(p.y - y1) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - y1) + p.x;
+                  shot = k;
+                  tp = {0, y1};
+                }
+              }
+              break;
+            case placerDB::LB:
+              if (p.y >= 0 and p.y <= y1) {
+                if (p.x < distTerm) {
+                  distTerm = p.x;
+                  shot = k;
+                  tp = {0, p.y};
+                }
+              } else {
+                if (std::abs(p.y - 0) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - 0) + p.x;
+                  shot = k;
+                  tp = {0, 0};
+                }
+                if (std::abs(p.y - y1) + p.x < distTerm) {
+                  distTerm = std::abs(p.y - y1) + p.x;
+                  shot = k;
+                  tp = {0, y1};
+                }
+              }
+              break;
+            default:
+              std::cout << "Placer-Warning: incorrect port position\n";
+          }
+        }
+        if (shot != -1) {
+          mydesign.Terminals.at(i).center = tp;
+        }
+      } else {  // no constraint
+        placerDB::point tp;
+        int distTerm = INT_MAX;
+        for (auto ci : mydesign.Nets.at(netIdx).connected) {
+          if (ci.type == placerDB::Block) {
+            bp = placerDB::point(Blocks[ci.iter2].x, Blocks[ci.iter2].y);
+            for (int k = 0; k < mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center.size(); k++) {
+              p = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].blockPins[ci.iter].center[k];
+              if (Blocks[ci.iter2].H_flip) p.x = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].width - p.x;
+              if (Blocks[ci.iter2].V_flip) p.y = mydesign.Blocks[ci.iter2][curr_sp.selected[ci.iter2]].height - p.y;
+              p += bp;
+              if (p.x < distTerm) {
+                distTerm = p.x;
+                tp = {0, p.y};
+              }
+              if (Xmax - p.x < distTerm) {
+                distTerm = Xmax - p.x;
+                tp = {Xmax, p.y};
+              }
+              if (p.y < distTerm) {
+                distTerm = p.y;
+                tp = {p.x, 0};
+              }
+              if (Ymax - p.y < distTerm) {
+                distTerm = Ymax - p.y;
+                tp = {p.x, Ymax};
+              }
+            }
+          }
+        }
+        mydesign.Terminals.at(i).center = tp;
+      }
+    }
+  }
+}
+
+void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo) {
+  node.width = UR.x;
+  node.height = UR.y;
+  for (int i = 0; i < mydesign.Blocks.size(); ++i) {
+    node.Blocks.at(i).selectedInstance = curr_sp.GetBlockSelected(i);
+    placerDB::Omark ort;
+    if (Blocks[i].H_flip) {
+      if (Blocks[i].V_flip)
+        ort = placerDB::S;
+      else
+        ort = placerDB::FN;
+    } else {
+      if (Blocks[i].V_flip)
+        ort = placerDB::FS;
+      else
+        ort = placerDB::N;
+    }
+    UpdateBlockinHierNode(mydesign, ort, node, i, curr_sp.GetBlockSelected(i), drcInfo);
+  }
+  UpdateTerminalinHierNode(mydesign, node);
+  for (unsigned int i = 0; i < mydesign.SNets.size(); ++i) {
+    int SBidx = mydesign.SNets.at(i).SBidx;
+    placerDB::Smark axis_dir = curr_sp.GetSymmBlockAxis(SBidx);
+    UpdateSymmetryNetInfo(mydesign, node, i, SBidx, axis_dir, curr_sp);
+  }
+}
+
+void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo) {
+  vector<vector<placerDB::point> > boundary;
+  vector<placerDB::point> center;
+  vector<placerDB::point> bbox;
+  placerDB::point bpoint;
+
+  int x = Blocks[i].x;
+  int y = Blocks[i].y;
+
+  // SMB Hack
+  auto roundup = [](int& v, int pitch) { v = pitch * ((v + pitch - 1) / pitch); };
+  int v_metal_index = -1;
+  int h_metal_index = -1;
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 0) {
+      v_metal_index = i;
+      break;
+    }
+  }
+  for (unsigned int i = 0; i < drcInfo.Metal_info.size(); ++i) {
+    if (drcInfo.Metal_info[i].direct == 1) {
+      h_metal_index = i;
+      break;
+    }
+  }
+
+  int x_pitch = drcInfo.Metal_info[v_metal_index].grid_unit_x;
+  int y_pitch = drcInfo.Metal_info[h_metal_index].grid_unit_y;
+  roundup(x, x_pitch);
+  roundup(y, y_pitch);
+
+  placerDB::point LL = {x, y};
+  bbox = mydesign.GetPlacedBlockAbsBoundary(i, ort, LL, sel);
+  bpoint = mydesign.GetBlockAbsCenter(i, ort, LL, sel);
+  auto& nd = node.Blocks.at(i).instance.at(sel);
+
+  nd.orient = PnRDB::Omark(ort);
+  nd.placedBox = ConvertBoundaryData(bbox);
+  nd.placedCenter = ConvertPointData(bpoint);
+  for (int j = 0; j < mydesign.GetBlockPinNum(i, sel); j++) {
+    boundary = mydesign.GetPlacedBlockPinAbsBoundary(i, j, ort, LL, sel);
+    center = mydesign.GetPlacedBlockPinAbsPosition(i, j, ort, LL, sel);
+    for (unsigned int k = 0; k < nd.blockPins.at(j).pinContacts.size(); k++) {
+      nd.blockPins.at(j).pinContacts.at(k).placedBox = ConvertBoundaryData(boundary.at(k));
+      nd.blockPins.at(j).pinContacts.at(k).placedCenter = ConvertPointData(center.at(k));
+    }
+    // update pin vias
+    for (unsigned int k = 0; k < node.Blocks.at(i).instance.at(sel).blockPins.at(j).pinVias.size(); k++) {
+      auto& pv = nd.blockPins.at(j).pinVias.at(k);
+      pv.placedpos = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.originpos, LL, sel);
+      pv.UpperMetalRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, pv.UpperMetalRect.originBox, LL, sel);
+      pv.LowerMetalRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, pv.LowerMetalRect.originBox, LL, sel);
+      pv.ViaRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, pv.ViaRect.originBox, LL, sel);
+      pv.UpperMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.UpperMetalRect.originCenter, LL, sel);
+      pv.LowerMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.LowerMetalRect.originCenter, LL, sel);
+      pv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, pv.ViaRect.originCenter, LL, sel);
+    }
+  }
+  // update internal metals
+  for (unsigned int j = 0; j < node.Blocks.at(i).instance.at(sel).interMetals.size(); j++) {
+    auto& im = nd.interMetals.at(j);
+    im.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, im.originBox, LL, sel);
+    im.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, im.originCenter, LL, sel);
+  }
+  // update internal vias
+  for (unsigned int j = 0; j < node.Blocks.at(i).instance.at(sel).interVias.size(); j++) {
+    auto& iv = nd.interVias.at(j);
+    iv.placedpos = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.originpos, LL, sel);
+    iv.UpperMetalRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, iv.UpperMetalRect.originBox, LL, sel);
+    iv.LowerMetalRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, iv.LowerMetalRect.originBox, LL, sel);
+    iv.ViaRect.placedBox = mydesign.GetPlacedBlockInterMetalAbsBox(i, ort, iv.ViaRect.originBox, LL, sel);
+    iv.UpperMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.UpperMetalRect.originCenter, LL, sel);
+    iv.LowerMetalRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.LowerMetalRect.originCenter, LL, sel);
+    iv.ViaRect.placedCenter = mydesign.GetPlacedBlockInterMetalAbsPoint(i, ort, iv.ViaRect.originCenter, LL, sel);
+  }
+}
+
+void ILP_solver::UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node) {
+  for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    node.Terminals.at(i).termContacts.clear();
+    node.Terminals.at(i).termContacts.resize(node.Terminals.at(i).termContacts.size() + 1);
+    node.Terminals.at(i).termContacts.back().placedCenter = ConvertPointData(mydesign.GetTerminalCenter(i));
+  }
+  PnRDB::pin temp_pin;
+  for (int i = 0; i < (int)mydesign.GetSizeofTerminals(); i++) {
+    temp_pin.name = node.Terminals.at(i).name;
+    temp_pin.type = node.Terminals.at(i).type;
+    temp_pin.netIter = node.Terminals.at(i).netIter;
+    temp_pin.pinContacts = node.Terminals.at(i).termContacts;
+    temp_pin.name = node.Terminals.at(i).name;
+    temp_pin.type = node.Terminals.at(i).type;
+    node.blockPins.push_back(temp_pin);
+  }
+}
+
+void ILP_solver::UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp) {
+  int axis_coor = 0;
+  if (axis_dir == placerDB::V) {
+    if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
+      // self sym x axis coordinate
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].x +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].width / 2;
+    } else {
+      // sym pair x axis coordinate
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].x / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].width / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].x / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].width / 4;
+    }
+  } else if (axis_dir == placerDB::H) {
+    if (mydesign.SBlocks[SBidx].selfsym.size() > 0) {
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].selfsym[0].first].y +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].selfsym[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].selfsym[0].first]].height / 2;
+    } else {
+      axis_coor = Blocks[mydesign.SBlocks[SBidx].sympair[0].first].y / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].first][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].first]].height / 4 +
+                  Blocks[mydesign.SBlocks[SBidx].sympair[0].second].y / 2 +
+                  mydesign.Blocks[mydesign.SBlocks[SBidx].sympair[0].second][curr_sp.selected[mydesign.SBlocks[SBidx].sympair[0].second]].height / 4;
+    }
+  } else {
+    std::cout << "Placer-Error: incorrect symmetry axis direction" << std::endl;
+  }
+  string net1 = mydesign.SNets.at(i).net1.name;
+  string net2 = mydesign.SNets.at(i).net2.name;
+  for (std::vector<PnRDB::net>::iterator it = node.Nets.begin(); it != node.Nets.end(); ++it) {
+    if (it->name.compare(net1) == 0 or it->name.compare(net2) == 0) {
+      it->axis_dir = PnRDB::Smark(int(axis_dir));
+      it->axis_coor = axis_coor;
+    }
+  }
+}
+
+PnRDB::bbox ILP_solver::ConvertBoundaryData(vector<placerDB::point> Bdata) {
+  PnRDB::bbox newBdata;
+  PnRDB::point tmpp;
+  int x = Bdata.at(0).x, X = Bdata.at(0).x, y = Bdata.at(0).y, Y = Bdata.at(0).y;
+  for (vector<placerDB::point>::iterator it = Bdata.begin(); it != Bdata.end(); ++it) {
+    tmpp.x = it->x;
+    tmpp.y = it->y;
+    if ((it->x) < x) {
+      x = it->x;
+    }
+    if ((it->x) > X) {
+      X = it->x;
+    }
+    if ((it->y) < y) {
+      y = it->y;
+    }
+    if ((it->y) > Y) {
+      Y = it->y;
+    }
+  }
+  newBdata.LL = {x, y};
+  newBdata.UR = {X, Y};
+  return newBdata;
+}
+
+PnRDB::point ILP_solver::ConvertPointData(placerDB::point Pdata) {
+  PnRDB::point newPdata;
+  newPdata.x = Pdata.x;
+  newPdata.y = Pdata.y;
+  return newPdata;
 }

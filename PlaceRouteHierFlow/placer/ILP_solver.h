@@ -41,7 +41,7 @@ class ILP_solver {
   };
   vector<Block> Blocks;
   placerDB::point LL, UR;
-  int area = 0, HPWL = 0;
+  int area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
 
   public:
   ILP_solver();
@@ -52,6 +52,14 @@ class ILP_solver {
   double CalculateCost(design& mydesign, SeqPair& curr_sp);
   void WritePlacement(design& caseNL, SeqPair& curr_sp, string outfile);
   void PlotPlacement(design& caseNL, SeqPair& curr_sp, string outfile);
+  std::vector<double> Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact);
+  void updateTerminalCenter(design& mydesign, SeqPair& caseSP);
+  void UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierNode& node, PnRDB::Drc_info& drcInfo);
+  void UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo);
+  void UpdateTerminalinHierNode(design& mydesign, PnRDB::hierNode& node);
+  void UpdateSymmetryNetInfo(design& mydesign, PnRDB::hierNode& node, int i, int SBidx, placerDB::Smark axis_dir, SeqPair& curr_sp);
+  PnRDB::bbox ConvertBoundaryData(vector<placerDB::point> Bdata);
+  PnRDB::point ConvertPointData(placerDB::point Pdata);
 };
 
 #endif

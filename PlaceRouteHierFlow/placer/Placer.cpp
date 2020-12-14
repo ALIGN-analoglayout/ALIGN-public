@@ -492,112 +492,130 @@ std::map<double, SeqPair> Placer::PlacementCoreAspectRatio(design& designData, S
   return oData;
 }
 
-std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode, int nodeSize, int effort) {
-// Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
-  //cout<<"PlacementCore\n";
+std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRatio_ILP(design& designData, SeqPair& curr_sp, ILP_solver& curr_sol, int mode,
+                                                                                      int nodeSize, int effort) {
+  // Mode 0: graph bias; Mode 1: graph bias + net margin; Others: no bias/margin
+  // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
-  double curr_cost=curr_sol.GenerateValidSolution(designData, curr_sp);
-  cout<<"Placer-Info: initial cost = "<<curr_cost<<endl;
+  double curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp);
+  cout << "Placer-Info: initial cost = " << curr_cost << endl;
 
-  cout<<"Placer-Info: status ";cout.flush();
+  cout << "Placer-Info: status ";
+  cout.flush();
   // Aimulate annealing
-  double T=T_INT;
+  double T = T_INT;
   double delta_cost;
-  int update_index =0;
-  int T_index=0;
+  int update_index = 0;
+  int T_index = 0;
   float per = 0.1;
-  int updateThrd=100;
-  float total_update_number = log(T_MIN/T_INT)/log(ALPHA);
-  while(T>T_MIN) {
-    int i=1;
-    int MAX_Iter=1;
-    if(effort==0) { MAX_Iter=1;
-    } else if (effort==1) { MAX_Iter=4;
-    } else {MAX_Iter=8;}
-    while(i<=MAX_Iter) {
-      #ifdef MTMODE
-      double trial_cost; 
-      int id; int good_idx=-1;
+  int updateThrd = 100;
+  float total_update_number = log(T_MIN / T_INT) / log(ALPHA);
+  while (T > T_MIN) {
+    int i = 1;
+    int MAX_Iter = 1;
+    if (effort == 0) {
+      MAX_Iter = 1;
+    } else if (effort == 1) {
+      MAX_Iter = 4;
+    } else {
+      MAX_Iter = 8;
+    }
+    while (i <= MAX_Iter) {
+#ifdef MTMODE
+      double trial_cost;
+      int id;
+      int good_idx = -1;
       Thread_data td[NUM_THREADS];
       std::vector<std::thread> threads;
       // Create threads
-      for( id = 0; id < NUM_THREADS; id++ ) {
-        //cout <<"Placer-Info: creating thread, " << id << endl;
+      for (id = 0; id < NUM_THREADS; id++) {
+        // cout <<"Placer-Info: creating thread, " << id << endl;
         td[id].thread_id = id;
-        td[id].thread_designData=designData;
-        td[id].thread_trial_sp=curr_sp;
-        td[id].thread_mode=mode;
-        threads.push_back(std::thread(&Placer::ThreadFunc, this, td+id) );
+        td[id].thread_designData = designData;
+        td[id].thread_trial_sp = curr_sp;
+        td[id].thread_mode = mode;
+        threads.push_back(std::thread(&Placer::ThreadFunc, this, td + id));
       }
       // Join threads
-      for( id = 0; id < NUM_THREADS; id++ ) {
+      for (id = 0; id < NUM_THREADS; id++) {
         threads.at(id).join();
-        //cout<<"Placer-Info: joining thread, "<<id<<endl;
+        // cout<<"Placer-Info: joining thread, "<<id<<endl;
       }
 
-      for( id = 0; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed) {trial_cost=td[id].thread_trial_cost; good_idx=id; break;}
-      }
-      for( ; id < NUM_THREADS; id++ ) {
-        if( td[id].thread_succeed and td[id].thread_trial_cost<trial_cost) {
-          trial_cost=td[id].thread_trial_cost; good_idx=id;
+      for (id = 0; id < NUM_THREADS; id++) {
+        if (td[id].thread_succeed) {
+          trial_cost = td[id].thread_trial_cost;
+          good_idx = id;
+          break;
         }
       }
-      if(good_idx!=-1) {
-        bool Smark=false;
-        delta_cost=trial_cost-curr_cost;
-        if(delta_cost<0) { Smark=true;
+      for (; id < NUM_THREADS; id++) {
+        if (td[id].thread_succeed and td[id].thread_trial_cost < trial_cost) {
+          trial_cost = td[id].thread_trial_cost;
+          good_idx = id;
+        }
+      }
+      if (good_idx != -1) {
+        bool Smark = false;
+        delta_cost = trial_cost - curr_cost;
+        if (delta_cost < 0) {
+          Smark = true;
         } else {
           double r = (double)rand() / RAND_MAX;
-          if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
+          if (r < exp((-1.0 * delta_cost) / T)) {
+            Smark = true;
+          }
         }
-        if(Smark) {
-          std::cout<<"cost: "<<trial_cost<<std::endl;
-          curr_cost=trial_cost;
-          curr_sp=td[good_idx].thread_trial_sp;
-          curr_sol=td[good_idx].thread_trial_sol;
-          if(update_index>updateThrd) {
-            //std::cout<<"Insert\n";
-            oData[curr_cost]=curr_sp;
+        if (Smark) {
+          std::cout << "cost: " << trial_cost << std::endl;
+          curr_cost = trial_cost;
+          curr_sp = td[good_idx].thread_trial_sp;
+          curr_sol = td[good_idx].thread_trial_sol;
+          if (update_index > updateThrd) {
+            // std::cout<<"Insert\n";
+            oData[curr_cost] = curr_sp;
             ReshapeSeqPairMap(oData, nodeSize);
           }
         }
       }
-      #endif
+#endif
 
-      #ifndef MTMODE
-      //cout<<"T "<<T<<" i "<<i<<endl;
+#ifndef MTMODE
+      // cout<<"T "<<T<<" i "<<i<<endl;
       // Trival moves
-      SeqPair trial_sp(curr_sp);  
-      //cout<<"before per"<<endl; trial_sp.PrintSeqPair();
+      SeqPair trial_sp(curr_sp);
+      // cout<<"before per"<<endl; trial_sp.PrintSeqPair();
       trial_sp.PerturbationNew(designData);
-      //cout<<"after per"<<endl; trial_sp.PrintSeqPair();
+      // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
-      double trial_cost=trial_sol.GenerateValidSolution(designData, trial_sp);
-      bool Smark=false;
-      delta_cost=trial_cost-curr_cost;
-      if(delta_cost<0) {Smark=true;
+      double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp);
+      bool Smark = false;
+      delta_cost = trial_cost - curr_cost;
+      if (delta_cost < 0) {
+        Smark = true;
       } else {
         double r = (double)rand() / RAND_MAX;
-        if( r < exp( (-1.0 * delta_cost)/T ) ) {Smark=true;}
-      }
-      if(Smark) {
-        std::cout<<"cost: "<<trial_cost<<std::endl;
-        curr_cost=trial_cost;
-        curr_sp=trial_sp;
-        curr_sol=trial_sol;
-        if(update_index>updateThrd) {
-          std::cout<<"Insert\n";
-          oData[curr_cost]=std::make_pair(curr_sp,curr_sol);
-          ReshapeSeqPairMap(oData, nodeSize);
+        if (r < exp((-1.0 * delta_cost) / T)) {
+          Smark = true;
         }
       }
-      #endif
+      if (Smark) {
+        std::cout << "cost: " << trial_cost << std::endl;
+        curr_cost = trial_cost;
+        curr_sp = trial_sp;
+        curr_sol = trial_sol;
+        // if(update_index>updateThrd) {
+        std::cout << "Insert\n";
+        oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+        ReshapeSeqPairMap(oData, nodeSize);
+        //}
+      }
+#endif
 
       i++;
       update_index++;
-      //cout<<update_index<<endl;
+      // cout<<update_index<<endl;
       /**
       if(update_index==updateThrd){
         curr_sol.Update_parameters(designData, curr_sp);
@@ -608,19 +626,20 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       }
       **/
     }
-    T_index ++;
-    if(total_update_number*per<T_index){
-      cout<<"....."<<per*100<<"%"; cout.flush();
-      per=per+0.1;
+    T_index++;
+    if (total_update_number * per < T_index) {
+      cout << "....." << per * 100 << "%";
+      cout.flush();
+      per = per + 0.1;
     }
-    T*=ALPHA;
-    //cout<<T<<endl;
+    T *= ALPHA;
+    // cout<<T<<endl;
   }
   // Write out placement results
-  cout<<endl<<"Placer-Info: optimal cost = "<<curr_cost<<endl;
-  //curr_sol.PrintConstGraph();
+  cout << endl << "Placer-Info: optimal cost = " << curr_cost << endl;
+  // curr_sol.PrintConstGraph();
   curr_sp.PrintSeqPair();
-  //curr_sol.updateTerminalCenter(designData, curr_sp);
+  // curr_sol.updateTerminalCenter(designData, curr_sp);
   return oData;
 }
 
@@ -679,9 +698,10 @@ void Placer::PlacementRegularAspectRatio_ILP(std::vector<PnRDB::hierNode>& nodeV
     //designData.PrintDesign();
     //it->second.PrintSeqPair();
     //std::cout<<"write design "<<idx<<std::endl;
+    it->second.second.updateTerminalCenter(designData, it->second.first);
     it->second.second.WritePlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".pl");
     it->second.second.PlotPlacement(designData, it->second.first, opath + nodeVec.back().name + "_" + std::to_string(idx) + ".plt");
-    // vec_sol.UpdateHierNode(designData, it->second, nodeVec[idx], drcInfo);
+    it->second.second.UpdateHierNode(designData, it->second.first, nodeVec[idx], drcInfo);
   }
 }
 
