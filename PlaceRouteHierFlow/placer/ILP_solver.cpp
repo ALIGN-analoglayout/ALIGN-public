@@ -246,6 +246,24 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
     }
   }
 
+  // align block constraint
+  for (auto alignment_unit : mydesign.Align_blocks) {
+    for (int j = 0; j < alignment_unit.blocks.size() - 1; j++) {
+      int first_id = alignment_unit.blocks[j], second_id = alignment_unit.blocks[j + 1];
+      if (alignment_unit.horizon == 1) {
+        // same y
+        double sparserow[2] = {1, -1};
+        int colno[2] = {first_id * 4 + 2, second_id * 4 + 2};
+        add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+      } else {
+        // same x
+        double sparserow[2] = {1, -1};
+        int colno[2] = {first_id * 4 + 1, second_id * 4 + 1};
+        add_constraintex(lp, 2, sparserow, colno, EQ, 0);
+      }
+    }
+  }
+
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var] = {0};
