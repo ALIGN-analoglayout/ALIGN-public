@@ -499,6 +499,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
   double curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp);
+  oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+  ReshapeSeqPairMap(oData, nodeSize);
   cout << "Placer-Info: initial cost = " << curr_cost << endl;
 
   cout << "Placer-Info: status ";
@@ -592,7 +594,7 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp);
       bool Smark = false;
       delta_cost = trial_cost - curr_cost;
-      if (delta_cost < 0) {
+      if (delta_cost <= 0) {
         Smark = true;
       } else {
         double r = (double)rand() / RAND_MAX;
