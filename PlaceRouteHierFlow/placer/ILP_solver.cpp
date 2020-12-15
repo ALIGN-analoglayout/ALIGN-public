@@ -267,6 +267,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var] = {0};
+    ConstGraph const_graph;
+
+    // add HPWL in cost
     for (int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
       for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
@@ -274,7 +277,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
                                             mydesign.Nets[i].connected[j].iter));
       }
-      sort(blockids.begin(), blockids.end());
+      sort(blockids.begin(), blockids.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.first <= b.first; });
       int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
       int LLblock_width = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].width,
           LLblock_height = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].height;
@@ -285,21 +288,50 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
       int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
           URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;
-      row[LLblock_id * 4 + 1] -= 1;
-      row[LLblock_id * 4 + 2] -= 1;
-      row[URblock_id * 4 + 1] += 1;
-      row[URblock_id * 4 + 2] += 1;
+      row[LLblock_id * 4 + 1] -= const_graph.LAMBDA;
+      row[LLblock_id * 4 + 2] -= const_graph.LAMBDA;
+      row[URblock_id * 4 + 1] += const_graph.LAMBDA;
+      row[URblock_id * 4 + 2] += const_graph.LAMBDA;
       // pin.x if flip==0, width-pin.x if flip==1
-      row[LLblock_id + 3] -= LLblock_width - 2 * LLpin_x;
-      row[LLblock_id + 4] -= LLblock_height - 2 * LLpin_y;
-      row[URblock_id + 3] += URblock_width - 2 * URpin_x;
-      row[URblock_id + 4] += URblock_height - 2 * URpin_y;
+      row[LLblock_id * 4 + 3] -= double(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA;
+      row[LLblock_id * 4 + 4] -=double(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA;
+      row[URblock_id * 4 + 3] +=double(URblock_width - 2 * URpin_x) * const_graph.LAMBDA;
+      row[URblock_id * 4 + 4] +=double(URblock_height - 2 * URpin_y) * const_graph.LAMBDA;
     }
+
+    // add area in cost
+    int URblock_pos_id = 0, URblock_neg_id = 0;
+    int estimated_width = 0, estimated_height = 0;
+    for (int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
+      if (curr_sp.negPair[i] < mydesign.Blocks.size()) {
+        URblock_neg_id = i;
+        break;
+      }
+    }
+    URblock_pos_id = find(curr_sp.posPair.begin(), curr_sp.posPair.end(), curr_sp.negPair[URblock_neg_id]) - curr_sp.posPair.begin();
+    // estimate width
+    for (int i = URblock_pos_id; i >= 0; i--) {
+      if (curr_sp.posPair[i] < mydesign.Blocks.size()) {
+        estimated_width += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].width;
+      }
+    }
+    //add estimated area
+    row[curr_sp.negPair[URblock_neg_id] * 4 + 2] += estimated_width / 2;
+    // estimate height
+    for (int i = URblock_pos_id; i < curr_sp.posPair.size(); i++) {
+      if (curr_sp.posPair[i] < mydesign.Blocks.size()) {
+        estimated_height += mydesign.Blocks[curr_sp.posPair[i]][curr_sp.selected[curr_sp.posPair[i]]].height;
+      }
+    }
+    //add estimated area
+    row[curr_sp.negPair[URblock_neg_id] * 4 + 1] += estimated_height / 2;
+
     set_obj_fn(lp, row);
     set_minim(lp);
     int ret = solve(lp);
     if (ret != 0 && ret != 1) return -1;
   }
+
   double var[N_var];
   get_variables(lp, var);
   delete_lp(lp);
