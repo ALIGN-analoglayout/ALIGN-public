@@ -276,10 +276,12 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
     }
     set_obj_fn(lp, row);
     set_minim(lp);
-    solve(lp);
+    int ret=solve(lp);
+    if (ret != 0 && ret != 1) return -1;
   }
   double var[N_var];
   get_variables(lp, var);
+  delete_lp(lp);
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     Blocks[i].x = var[i * 4];
     Blocks[i].y = var[i * 4 + 1];
@@ -299,7 +301,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   // calculate dead area
   dead_area = area;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
-    dead_area -= mydesign.Blocks[i][curr_sp.selected[i]].width * mydesign.Blocks[i][curr_sp.selected[i]].height;
+    dead_area -= double(mydesign.Blocks[i][curr_sp.selected[i]].width) * double(mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
   // calculate ratio
   ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
