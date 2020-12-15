@@ -55,9 +55,11 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   std::cout<<"power dev = " << powerdev << std::endl;
 	nrhs = 1;
   m = node_num1 + powerdev;
+
+  //handing rhs only, current source is -J or J, voltage source is V
   if ( !(rhs = doubleMalloc(m * nrhs)) ) ABORT("Malloc fails for rhs[].");
   for (int i = 0; i < m; ++i) rhs[i] = 0.0;
-  for (int i =0.0 ; i < node_num1; i++){
+  for (int i =0.0 ; i < node_num1; i++){ //start is -current, end is current
 	  for(int it=0;it<Power_Grid_devices.size();++it){
 	    if(Power_Grid_devices[it].device_type == MDB::I){
 		    int start = Power_Grid_devices[it].start_point_index-1;
@@ -68,13 +70,13 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 		      rhs[end] = current;
 		  }
 	
-	    if (Power_Grid_devices[it].device_type == MDB::V){
+	    if (Power_Grid_devices[it].device_type == MDB::V){ //start is +1, end is -1
 		    int start = Power_Grid_devices[it].start_point_index-1;
 		    int end = Power_Grid_devices[it].end_point_index;
 		    //end = -1;
 		    double power = Power_Grid_devices[it].value;
 		    if (power > 0){
-		    rhs[node_num1 -1 - end] = power;
+		    rhs[node_num1 -1 - end] = power; //this is strange, why node_num1 - end ; end is a nagetive number; one only one Q: need to combine some when the voltage have some start node number
         }
 		  }
 	  }
@@ -103,13 +105,14 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   xa[n] = count;
   count = 0;
 
+  //changing A matrix into the superlu format
   for(int i = 0; i < node_num1 + powerdev; i++){
-	  std::vector<double> temp(node_num1+powerdev,0);
+	  std::vector<double> temp(node_num1+powerdev,0);//powerdev should be number of voltage source
 	  int flag = 0;
     if(i<node_num1){
 	    double self = 0.0;	
 	    for(int j = 0; j<Power_Grid_devices.size(); ++j){
-	      if(Power_Grid_devices[j].device_type== 0 && Power_Grid_devices[j].start_point_index == i+1){
+	      if(Power_Grid_devices[j].device_type== 0 && Power_Grid_devices[j].start_point_index == i+1){//Resistance
 		      int position = Power_Grid_devices[j].end_point_index-1;
 		      double value = Power_Grid_devices[j].value;
 		      double data = temp[position];
@@ -128,12 +131,12 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 	      if(Power_Grid_devices[j].device_type == 2 && Power_Grid_devices[j].start_point_index == i+1){
 		    double value = Power_Grid_devices[j].value;
 		    int flag = -1;
-		    if(value > 0) flag = 0;		
-		    int position = node_num1 -Power_Grid_devices[j].end_point_index - 0.5*powerdev*flag - 1;
-		    temp[position] = 1.0;
+		    if(value > 0) flag = 0; //Q: why need to distinguish this one?		
+		    int position = node_num1 -Power_Grid_devices[j].end_point_index - 0.5*powerdev*flag - 1; //vdd and gnd power devices have different index? or their end?
+		    temp[position] = 1.0; // here is only 1, the other node is gnd, so can be ignored
 		    }
 	    }
-	    temp[i] = self;
+	    temp[i] = self; // this flag might be some problem?
 	    for (int j = 0;j <temp.size();++j){
 		    if (temp[j]!=0){
 			    if (flag == 0){
@@ -153,7 +156,7 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
 			    if(-Power_Grid_devices[j].end_point_index == i+1-node_num1){
 				    temp[start] = 1.0;
 			    }
-		    }
+		    } //why we need this one? seems we have some power devices, which have 0 values //Vdd and gnd Values?
 		    if (Power_Grid_devices[j].device_type == 2 && Power_Grid_devices[j].value == 0){
 			    int start = Power_Grid_devices[j].start_point_index-1;
 			    if (-Power_Grid_devices[j].end_point_index == i+1-node_num1 - 0.5 *powerdev){

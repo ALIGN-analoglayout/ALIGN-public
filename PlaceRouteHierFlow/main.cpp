@@ -145,7 +145,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     int power_routing_metal_l = 0;
     int power_routing_metal_u = 6;
  
-    bool PDN_mode = false;
+    bool PDN_mode = true;
     //DC Power Grid Simulation
     if(PDN_mode){
       bool dataset_generation = false;
