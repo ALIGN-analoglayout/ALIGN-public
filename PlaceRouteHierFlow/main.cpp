@@ -7,6 +7,7 @@
 #include "./router/Router.h"
 #include "./cap_placer/capplacer.h"
 #include "./MNA/MNASimulation.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cstdlib>
@@ -22,6 +23,8 @@ double ConstGraph::GAMAR=30;
 double ConstGraph::BETA=100;
 double ConstGraph::SIGMA=1000;
 double ConstGraph::PHI=1500;
+double ConstGraph::PI=1500;
+double ConstGraph::PII=1500;
 
 static void save_state( const PnRdatabase& DB, const PnRDB::hierNode& current_node, int lidx,
 			const string& opath, const string& tag, const string& ltag, bool skip)
@@ -48,7 +51,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
 {
   //std::cout<<"Checkpoint: work on layout "<<lidx<<std::endl;
   //DB.Extract_RemovePowerPins(current_node);
-
+  string dummy_file;
   std::cout<<"Checkpoint : before route"<<std::endl;
   DB.PrintHierNode(current_node);
 
@@ -70,7 +73,7 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     if ( adr_mode) {
       global_router_mode = 6;
     }
-    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(global_router_mode, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
     std::cout << "***WriteGcellGlobalRoute Debugging***" << std::endl;
     if (current_node.isTop) {
@@ -85,19 +88,19 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     }
     std::cout << "***End WriteGcellGlobalRoute Debugging***" << std::endl;
 
-    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(5, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
   } else {
     // Global Routing (old version)
 
-    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(0, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
     DB.WriteJSON (current_node, true, true, false, false, current_node.name+"_GR_"+std::to_string(lidx), drcInfo, opath);
     // The following line is used to write global route results for Intel router (only for old version)
     DB.WriteGlobalRoute(current_node, current_node.name+"_GlobalRoute_"+std::to_string(lidx)+".json", opath);
 
     // Detail Routing
-    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(1, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), signal_routing_metal_l, signal_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
   }
 
   if (current_node.isTop) {
@@ -137,18 +140,45 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
        
     }
 */
-
     int power_grid_metal_l = 5;
     int power_grid_metal_u = 6;
     int power_routing_metal_l = 0;
     int power_routing_metal_u = 6;
-
-    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+ 
+    bool PDN_mode = false;
+    //DC Power Grid Simulation
+    if(PDN_mode){
+      bool dataset_generation = false;
+      string current_file = "InputCurrent_initial.txt";
+      string power_mesh_conffile = "Power_Grid_Conf.txt";
+      if(dataset_generation){
+        double total_current = 0.036;
+        int current_number = 20;
+        DB.Write_Current_Workload(current_node, total_current, current_number, current_file);
+        DB.Write_Power_Mesh_Conf(power_mesh_conffile);
+      }
+      power_grid_metal_l = 2;
+      power_grid_metal_u = 11;
+      curr_route.RouteWork(7, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor, power_mesh_conffile);
+      std::cout<<"Start MNA "<<std::endl;
+      string output_file_IR = "IR_drop.txt";
+      string output_file_EM = "EM.txt";
+      MNASimulation Test_MNA(current_node, const_cast<PnRDB::Drc_info&>(drcInfo), current_file, output_file_IR, output_file_EM);
+      double worst = Test_MNA.Return_Worst_Voltage();
+      std::cout<<"worst voltage is "<< worst << std::endl;
+      std::cout<<"End MNA "<<std::endl;
+      Test_MNA.Clear_Power_Grid(current_node.Vdd);
+      Test_MNA.Clear_Power_Grid(current_node.Gnd);
+      return;
+    }
+              
+    
+    curr_route.RouteWork(2, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_grid_metal_l, power_grid_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
 
     DB.WriteJSON(current_node, true, true, false, true, current_node.name + "_PG_" + std::to_string(lidx), drcInfo, opath);
 
     std::cout<<"Checkpoint : Starting Power Routing"<<std::endl;
-    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor);
+    curr_route.RouteWork(3, current_node, const_cast<PnRDB::Drc_info&>(drcInfo), power_routing_metal_l, power_routing_metal_u, binary_directory, h_skip_factor, v_skip_factor,dummy_file);
     
     DB.WriteJSON(current_node, true, false, true, true, current_node.name + "_PR_" + std::to_string(lidx), drcInfo, opath);
     

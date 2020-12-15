@@ -3,8 +3,22 @@ FROM darpaalign/with_protobuf:2019sept30 as placeroute_coverage_image
 RUN \
     git clone https://www.github.com/ALIGN-analoglayout/lpsolve.git  && \
     cp -r lpsolve /usr/local/lib/ && \
-    apt-get update && \
-    apt-get clean
+    apt-get -qq update && \
+    DEBIAN_FRONTEND=noninterative apt-get -qq install wget gfortran && \
+    apt-get -qq clean
+
+# SuperLU
+RUN \
+    mkdir -p /opt/superlu && \
+    cd /opt/superlu && \
+    wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz && \
+    tar -zxvf superlu_5.2.1.tar.gz && \
+    cd SuperLU_5.2.1 && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make
+ENV SuperLu_DIR=/opt/superlu
 
 COPY . /PlaceRouteHierFlow
 

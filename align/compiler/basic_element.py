@@ -235,6 +235,7 @@ def _parse_inst(line):
         device = element.inductor()
     elif line.strip().lower().startswith('x') \
             or line.strip().startswith('I'):
+        #split the line into four fileds instance name,ports,instance type,parameters
         device_param_list = {}
 
         if ' / ' in line:
@@ -243,29 +244,29 @@ def _parse_inst(line):
             line = line.replace('(', '').replace(')', '')
 
         if line:
-            all_nodes = line.strip().split()
+            fields = line.strip().split()
             hier_nodes = []
-            for idx, unique_param in enumerate(all_nodes):
-                if '=' in unique_param:
-                    [param, value] = unique_param.split('=')
+            for idx, field in enumerate(fields):
+                if '=' in field:
+                    [param, value] = field.split('=')
                     if not param:
-                        param = all_nodes[idx - 1]
+                        param = fields[idx - 1]
                         del (hier_nodes[-1])
                     if not value:
-                        value = all_nodes[idx + 1]
+                        value = fields[idx + 1]
                         pass
                     logger.debug(f'Found subckt parameter values: {param}, value: {value}')
                     device_param_list[param] = value
 
                 else:
-                    hier_nodes.append(unique_param)
+                    hier_nodes.append(field)
 
         device = {
             "inst": hier_nodes[0][0:],
             "inst_type": hier_nodes[-1],
             "real_inst_type": hier_nodes[-1],
             "ports": hier_nodes[1:-1],
-            "edge_weight": list(range(len(hier_nodes[1:-1]))),
+            #"edge_weight": list(range(len(hier_nodes[1:-1]))),
             "values": device_param_list
         }
         logger.debug(f'FOUND subckt instance: {device["inst"]}, type {device["inst_type"]}')

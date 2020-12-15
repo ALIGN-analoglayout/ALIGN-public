@@ -466,15 +466,15 @@ m2 cs<0> c_sel<0> _net1 vss lvtnfet w=w29 l=l0
 m1 cs<1> c_sel<1> _net1 vss lvtnfet w=w23 l=l0
 m0 cs<2> c_sel<2> _net1 vss lvtnfet w=w22 l=l0
 xi181 vdd vss ib _net1 _net0 _net2 _net3 vcas vcmi OTA_FF_2s_v3
-c11 vdd vss vdd cap
-c6 cs<0> _net3 vdd cap
-c5 cs<1> _net3 vdd cap
-c1 cs<2> _net3 vdd cap
-c0 _net1 _net3 vdd cap
-c10 _net0 _net2 vdd cap
-c9 net028 _net2 vdd cap
-c8 net035 _net2 vdd cap
-c7 net037 _net2 vdd cap
+c11 vdd vss cap cap=10f
+c6 cs<0> _net3 cap cap=10f
+c5 cs<1> _net3 cap cap=10f
+c1 cs<2> _net3 cap cap=10f
+c0 _net1 _net3 cap cap=10f
+c10 _net0 _net2 cap cap=10f
+c9 net028 _net2 cap cap=10f
+c8 net035 _net2 cap cap=10f
+c7 net037 _net2 cap cap=10f
 .ends INT_V3
 
 .subckt INVX12 i vdd vss zn

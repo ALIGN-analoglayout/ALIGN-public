@@ -1,4 +1,5 @@
 #include "MNASimulation.h"
+#include "slu_ddefs.h"
 
 int main(){
 
