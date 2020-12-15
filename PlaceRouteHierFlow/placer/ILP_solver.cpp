@@ -295,14 +295,14 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
     UR.y = std::max(UR.y, Blocks[i].y + mydesign.Blocks[i][curr_sp.selected[i]].height);
   }
   // calculate area
-  area = (UR.x - LL.x) * (UR.y - LL.y);
+  area = double(UR.x - LL.x) * double(UR.y - LL.y);
   // calculate dead area
   dead_area = area;
   for (int i = 0; i < mydesign.Blocks.size(); i++) {
     dead_area -= mydesign.Blocks[i][curr_sp.selected[i]].width * mydesign.Blocks[i][curr_sp.selected[i]].height;
   }
   // calculate ratio
-  ratio = std::max((UR.x - LL.x) / (UR.y - LL.y), (UR.y - LL.y) / (UR.x - LL.x));
+  ratio = std::max(double(UR.x - LL.x) / double(UR.y - LL.y), double(UR.y - LL.y) / double(UR.x - LL.x));
   // calculate HPWL
   HPWL = 0;
   for (auto neti : mydesign.Nets) {

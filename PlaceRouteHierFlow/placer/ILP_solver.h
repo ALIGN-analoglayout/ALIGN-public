@@ -36,12 +36,12 @@ using std::vector;
 class ILP_solver {
   private:
   struct Block {
-    int x = 0, y = 0;            // LL of each block
+    int x = 0, y = 0;         // LL of each block
     int H_flip = 0, V_flip = 0;  // flip along V axis and H axis
   };
   vector<Block> Blocks;
   placerDB::point LL, UR;
-  int area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
+  double area = 0, HPWL = 0, ratio = 0, dead_area = 0, linear_const = 0, multi_linear_const = 0;
 
   public:
   ILP_solver();
