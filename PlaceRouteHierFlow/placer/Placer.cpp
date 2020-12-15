@@ -508,7 +508,8 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
   // cout<<"PlacementCore\n";
   std::map<double, std::pair<SeqPair, ILP_solver>> oData;
   curr_sp.PrintSeqPair();
-  double curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp);
+  double curr_cost = 0;
+  while ((curr_cost = curr_sol.GenerateValidSolution(designData, curr_sp)) < 0) curr_sp.PerturbationNew(designData);
   oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
   ReshapeSeqPairMap(oData, nodeSize);
   cout << "Placer-Info: initial cost = " << curr_cost << endl;
