@@ -62,15 +62,9 @@ cp -r lib googletest/mybuild/.
 ### Install superLU // this now is not correct
 #version 1
 cd $ALIGN_HOME
-mkdir superlu
+git clone https://www.github.com/ALIGN-analoglayout/superlu.git
 cd superlu
-wget http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_5.2.1.tar.gz
-tar -zxvf superlu_5.2.1.tar.gz 
-
-#version 2
-#git clone https://github.com/xiaoyeli/superlu.git
-#git checkout v5.2.1
-#mv superlu SuperLU_5.2.1 && cd SuperLU_5.2.1
+tar xvfz superlu_5.2.1.tar.gz 
 
 cd SuperLU_5.2.1/
 mkdir build
