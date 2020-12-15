@@ -303,7 +303,7 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
         }
       } else if (temp[0].compare("SymmBlock")==0) { 
         PnRDB::SymmPairBlock temp_SymmPairBlock;
-        pair<int,int> temp_pair;
+        pair<int,int> temp_pair={-1,-1};
         pair<int,PnRDB::Smark> temp_selfsym;
         PnRDB::Smark axis_dir=PnRDB::V;
         for(unsigned int i=2;i<temp.size();i=i+2){
@@ -324,12 +324,12 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
             } else if (temp_pair.first==temp_pair.second) {
               std::cerr<<"PnRDB-Error: same block in paired symmetry group"<<std::endl;
             }
-            temp_SymmPairBlock.sympair.push_back(temp_pair);
-          } else if(word=="H"){ 
-             axis_dir = PnRDB::H;
-          } else if(word=="V"){
-             axis_dir = PnRDB::V;
-          } else { // selfsym
+            if (temp_pair.first >= 0 && temp_pair.second >= 0) temp_SymmPairBlock.sympair.push_back(temp_pair);
+          } else if (word == "H") {
+            axis_dir = PnRDB::H;
+          } else if (word == "V") {
+            axis_dir = PnRDB::V;
+          } else {  // selfsym
             for(int j=0;j<(int)node.Blocks.size();j++) {
               if(node.Blocks.at(j).instance.back().name.compare(word)==0) {
                 temp_selfsym.first =  j;
@@ -340,7 +340,6 @@ bool PnRdatabase::ReadConstraint(PnRDB::hierNode& node, string fpath, string suf
               }
             }
           }
-          
         }
         temp_SymmPairBlock.axis_dir = axis_dir;
         
