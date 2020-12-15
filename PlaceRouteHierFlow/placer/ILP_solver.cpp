@@ -270,9 +270,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
     for (int i = 0; i < mydesign.Nets.size(); i++) {
       vector<pair<int, int>> blockids;
       for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
-        if (mydesign.Nets[i].connected[j].type == placerDB::Terminal)
+        if (mydesign.Nets[i].connected[j].type == placerDB::Block)
           blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
-                                            mydesign.Nets[i].connected[j].iter2));
+                                            mydesign.Nets[i].connected[j].iter));
       }
       sort(blockids.begin(), blockids.end());
       int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
