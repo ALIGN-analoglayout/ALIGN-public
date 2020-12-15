@@ -602,27 +602,30 @@ std::map<double, std::pair<SeqPair, ILP_solver>> Placer::PlacementCoreAspectRati
       // cout<<"after per"<<endl; trial_sp.PrintSeqPair();
       ILP_solver trial_sol(designData);
       double trial_cost = trial_sol.GenerateValidSolution(designData, trial_sp);
-      bool Smark = false;
-      delta_cost = trial_cost - curr_cost;
-      if (delta_cost <= 0) {
-        Smark = true;
-      } else {
-        double r = (double)rand() / RAND_MAX;
-        if (r < exp((-1.0 * delta_cost) / T)) {
+      if (trial_cost >= 0) {
+        bool Smark = false;
+        delta_cost = trial_cost - curr_cost;
+        if (delta_cost <= 0) {
           Smark = true;
+        } else {
+          double r = (double)rand() / RAND_MAX;
+          if (r < exp((-1.0 * delta_cost) / T)) {
+            Smark = true;
+          }
+        }
+        if (Smark) {
+          std::cout << "cost: " << trial_cost << std::endl;
+          curr_cost = trial_cost;
+          curr_sp = trial_sp;
+          curr_sol = trial_sol;
+          // if(update_index>updateThrd) {
+          std::cout << "Insert\n";
+          oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
+          ReshapeSeqPairMap(oData, nodeSize);
+          //}
         }
       }
-      if (Smark) {
-        std::cout << "cost: " << trial_cost << std::endl;
-        curr_cost = trial_cost;
-        curr_sp = trial_sp;
-        curr_sol = trial_sol;
-        // if(update_index>updateThrd) {
-        std::cout << "Insert\n";
-        oData[curr_cost] = std::make_pair(curr_sp, curr_sol);
-        ReshapeSeqPairMap(oData, nodeSize);
-        //}
-      }
+
 #endif
 
       i++;
