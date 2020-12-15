@@ -267,16 +267,37 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   // set_add_rowmode(lp, FALSE);
   {
     double row[N_var] = {0};
-    for (int i = curr_sp.negPair.size() - 1; i >= 0; i--) {
-      if (curr_sp.negPair[i] < mydesign.Blocks.size()) {
-        row[curr_sp.negPair[i] * 4 + 1] = 1;
-        row[curr_sp.negPair[i] * 4 + 2] = 1;
-        break;
+    for (int i = 0; i < mydesign.Nets.size(); i++) {
+      vector<pair<int, int>> blockids;
+      for (int j = 0; j < mydesign.Nets[i].connected.size(); j++) {
+        if (mydesign.Nets[i].connected[j].type == placerDB::Terminal)
+          blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
+                                            mydesign.Nets[i].connected[j].iter2));
       }
+      sort(blockids.begin(), blockids.end());
+      int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
+      int LLblock_width = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].width,
+          LLblock_height = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].height;
+      int LLpin_x = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().x,
+          LLpin_y = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].blockPins[LLpin_id].center.front().y;
+      int URblock_id = curr_sp.negPair[blockids.back().first], URpin_id = blockids.back().second;
+      int URblock_width = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].width,
+          URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
+      int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
+          URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;
+      row[LLblock_id * 4 + 1] -= 1;
+      row[LLblock_id * 4 + 2] -= 1;
+      row[URblock_id * 4 + 1] += 1;
+      row[URblock_id * 4 + 2] += 1;
+      // pin.x if flip==0, width-pin.x if flip==1
+      row[LLblock_id + 3] -= LLblock_width - 2 * LLpin_x;
+      row[LLblock_id + 4] -= LLblock_height - 2 * LLpin_y;
+      row[URblock_id + 3] += URblock_width - 2 * URpin_x;
+      row[URblock_id + 4] += URblock_height - 2 * URpin_y;
     }
     set_obj_fn(lp, row);
     set_minim(lp);
-    int ret=solve(lp);
+    int ret = solve(lp);
     if (ret != 0 && ret != 1) return -1;
   }
   double var[N_var];
@@ -332,9 +353,9 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
 
   // calculate linear constraint
   linear_const = 0;
-  std::vector<std::vector<double> > feature_value;
+  std::vector<std::vector<double>> feature_value;
   for (auto neti : mydesign.Nets) {
-    std::vector<std::vector<placerDB::point> > center_points;
+    std::vector<std::vector<placerDB::point>> center_points;
     for (auto connectedj : neti.connected) {
       if (connectedj.type == placerDB::Block) {
         std::vector<placerDB::point> pos;
@@ -594,7 +615,7 @@ void ILP_solver::PlotPlacement(design& mydesign, SeqPair& curr_sp, string outfil
   fout.close();
 }
 
-std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point> >& temp_contact) {
+std::vector<double> ILP_solver::Calculate_Center_Point_feature(std::vector<std::vector<placerDB::point>>& temp_contact) {
   std::vector<double> temp_x;
   std::vector<double> temp_y;
   std::vector<double> feature;
@@ -1184,7 +1205,7 @@ void ILP_solver::UpdateHierNode(design& mydesign, SeqPair& curr_sp, PnRDB::hierN
 }
 
 void ILP_solver::UpdateBlockinHierNode(design& mydesign, placerDB::Omark ort, PnRDB::hierNode& node, int i, int sel, PnRDB::Drc_info& drcInfo) {
-  vector<vector<placerDB::point> > boundary;
+  vector<vector<placerDB::point>> boundary;
   vector<placerDB::point> center;
   vector<placerDB::point> bbox;
   placerDB::point bpoint;
