@@ -19,6 +19,10 @@ enum Bmark {TL, TC, TR, RT, RC, RB, BR, BC, BL, LB, LC, LT};
 struct point {
   int x=0;
   int y=0;
+  point (int ix, int iy) : x(ix), y(iy) {}
+  point () : x(0), y(0) {}
+  point& operator += (const point& other) { x += other.x; y += other.y; return *this; }
+  point& operator = (const point& other) { x = other.x; y = other.y; return *this; }
 };
 
 struct Node {

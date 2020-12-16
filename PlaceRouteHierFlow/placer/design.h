@@ -29,19 +29,21 @@ class design
     friend class ConstGraph;
     friend class SeqPair;
     friend class Aplace;
-//    enum NType {Block, Terminal};
-//    struct Node {
-//      NType type; // 1: blockPin; 2. Terminal
-//      int iter; // 1: #blockPin; 2. #Terminal
-//      int iter2; // 1: #block
-//    };
-//    struct point {
-//      int x;
-//      int y;
-//    };
-//    struct bbox {
-//      vector<point> polygon;
-//    };
+    friend class Placer;
+    friend class ILP_solver;
+    //    enum NType {Block, Terminal};
+    //    struct Node {
+    //      NType type; // 1: blockPin; 2. Terminal
+    //      int iter; // 1: #blockPin; 2. #Terminal
+    //      int iter2; // 1: #block
+    //    };
+    //    struct point {
+    //      int x;
+    //      int y;
+    //    };
+    //    struct bbox {
+    //      vector<point> polygon;
+    //    };
     struct block {
       string name="";
       placerDB::bbox boundary;
