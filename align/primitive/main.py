@@ -203,7 +203,7 @@ def generate_primitive(block_name, primitive, height=28, x_cells=1, y_cells=1, p
         blockM = 1
     else:
         blockM = 0
-    positive_coord.json_pos(outputdir / (block_name + '.json'))         
+    #positive_coord.json_pos(outputdir / (block_name + '.json'))         
     gen_lef.json_lef(outputdir / (block_name + '.json'), block_name, cell_pin, blockM, uc.pdk)
     with open( outputdir / (block_name + ".json"), "rt") as fp0, \
          open( outputdir / (block_name + ".gds.json"), 'wt') as fp1:
