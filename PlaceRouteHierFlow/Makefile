@@ -29,13 +29,15 @@ cap_placer_path=cap_placer
 placer_path=placer
 router_path=router
 MNA_path=MNA
+GuardRing_path=guard_ring
 
 SuperLu_path1=$(SuperLu_DIR)/SuperLU_5.2.1/build/SRC
 SuperLu_path2=$(SuperLu_DIR)/SuperLU_5.2.1/build/CBLAS
 
 OBJS=main.o
 SRCS=$(OBJS:.o=.cpp)
-LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a
+LIBS=$(placer_path)/placer.a $(router_path)/router.a $(cap_placer_path)/cap_placer.a $(PnRDB_path)/PnRDB.a $(MNA_path)/MNA.a $(SuperLu_path1)/libsuperlu.a $(SuperLu_path2)/libblas.a $(GuardRing_path)/GuardRing.a
+
 
 all: depend subsystem pnr_compiler unit_tests
 
@@ -50,6 +52,7 @@ subsystem:
 	$(MAKE) -C $(router_path)
 	$(MAKE) -C $(cap_placer_path)
 	$(MAKE) -C $(MNA_path)
+	$(MAKE) -C $(GuardRing_path)
 
 pnr_compiler: subsystem $(OBJS) 
 	$(CXX) -o $@ $(OBJS) $(LIBS) -L$(GTEST_LIB_DIR) -lgtest $(LDFLAGS) 
@@ -64,3 +67,4 @@ clean:
 	make -C $(router_path) clean
 	make -C $(cap_placer_path) clean
 	$(MAKE) -C $(MNA_path) clean
+	$(MAKE) -C $(GuardRing_path) clean

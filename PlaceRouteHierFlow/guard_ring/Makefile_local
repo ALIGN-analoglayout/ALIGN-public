@@ -1,0 +1,13 @@
+CC = g++ -w -Wall -g -O3 -lm -ldl -m64
+
+main: main.o GuardRing.o
+	$(CC) main.o GuardRing.o -o main
+
+main.o: main.cpp GuardRing.h
+	$(CC) -c main.cpp
+
+Hello.o: GuardRing.cpp GuardRing.h Gdatatype.h
+	$(CC) -c GuardRing.cpp
+
+clean:
+	rm -rf *.o

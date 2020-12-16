@@ -47,7 +47,8 @@ struct PortPos;
 struct Router_report;
 struct routing_net;
 struct Boundary;
-
+struct GuardRing;
+struct Guardring_Const;
 
 /// Part 1: declaration of enum types
 enum NType {Block, Terminal};
@@ -298,6 +299,7 @@ struct block {
   vector<contact> interMetals;
   vector<Via> interVias;
   vector<pin> dummy_power_pin; //power pins below to this block, but needs updated hierachy
+  vector<GuardRing> GuardRings;
 }; // structure of block
 
 struct terminal {
@@ -335,6 +337,17 @@ struct layoutAS {
   //vector<Via> interVias;
 };
 
+struct GuardRing {
+  std::string mastername = "";
+  string gdsFile="testcase_guardring/guard_ring.gds";
+  point LL;
+  point UR;
+  point center;
+  vector<pin> blockPins;
+  vector<contact> interMetals;
+  vector<Via> interVias;
+};
+
 struct hierNode {
   bool isCompleted=false;
   bool isTop=false;
@@ -359,6 +372,7 @@ struct hierNode {
   PowerGrid Gnd;
   vector<PowerNet> PowerNets;
 //added by yg
+  vector<GuardRing> GuardRings;
 
   //Updated
   vector<pin> blockPins;//need
@@ -380,6 +394,7 @@ struct hierNode {
   vector<R_const> R_Constraints;
   vector<C_const> C_Constraints;
   vector<PortPos> Port_Location;
+  vector<Guardring_Const> Guardring_Consts;
   vector<LinearConst> L_Constraints;
   vector<Multi_LinearConst> ML_Constraints;
   int bias_Hgraph=0;
@@ -457,6 +472,12 @@ struct CCCap {
   int cap_r = -1;
   int cap_s = -1;
   bool dummy_flag = 1;
+};
+
+struct Guardring_Const {
+  string block_name;
+  string guard_ring_perimitives;
+  string global_pin;
 };
 
 struct R_const {
@@ -572,7 +593,14 @@ struct via_info {
 
 struct Boundary{
   string name = "Boundary";
-  int layerNo;
+  int layerNo = 0;
+  GdsDatatype gds_datatype;
+};
+
+struct guardring_info {
+  string name;
+  int xspace; // x dimension minimal space
+  int yspace; // y dimension minimal space
   GdsDatatype gds_datatype;
 };
 
@@ -586,6 +614,7 @@ struct Drc_info {
   vector<string> MaskID_Metal; //str type LayerNo of each Layer
   vector<string> MaskID_Via;
   Boundary top_boundary;
+  guardring_info Guardring_info; //guardring info read from layers.json
 };
 
 
