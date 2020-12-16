@@ -1643,15 +1643,35 @@ std::vector<std::vector<int> > A_star::Trace_Back_Paths(Grid& grid, int current_
     assert(0);
   }
   std::cout<<"trace back flag3"<<std::endl;
+
+  std::cout<<"src_index"<<std::endl;
+
+  for(auto it=src_index.begin();it!=src_index.end();++it){
+      std::cout<<*it<<" ";
+  }
+
+  std::cout<<std::endl;
+
+  std::cout<<"dest_index"<<std::endl;
+
+  for(auto it=dest_index.begin();it!=dest_index.end();++it){
+      std::cout<<*it<<" ";
+  }
+
+  std::cout<<std::endl;
+
   for(int i=0;i<nodes.size();i++){
+
      std::cout<<"trace back flag3.1"<<std::endl;
+     std::cout<<"trace back node nodes "<<nodes[i]<<" "<<grid.vertices_total[nodes[i]].x<<" "<<grid.vertices_total[nodes[i]].y<<"metal "<<grid.vertices_total[nodes[i]].metal<<
+" i "<<i<<std::endl;
      std::vector<int> temp_path = Trace_Back_Path_trace_back_node(grid, nodes[i], src_index);
      //std::vector<int> temp_path = Trace_Back_Path_parent(grid, nodes[i], src_index);
      std::cout<<"trace back flag3.2"<<std::endl;
      if(temp_path.size()<2){
         std::cout<<"temp_path size "<<temp_path.size()<<std::endl;
         std::cout<<"Trace_Back_Paths bug 2 "<<std::endl;
-        assert(0);      
+        //assert(0);      
      }
      temp_paths.push_back(temp_path);
   }
@@ -1720,7 +1740,7 @@ std::vector<int> A_star::Trace_Back_Path_trace_back_node(Grid& grid, int current
   //temp_parents.insert(temp_parent);
   //std::cout<<"start trace back"<<std::endl;
   int count = 0;
-  //src_index.insert(-1);
+  src_index.insert(-1);
   while(src_index.find(temp_parent)==src_index.end()){
   //while(temp_parent!=-1){
       /*
