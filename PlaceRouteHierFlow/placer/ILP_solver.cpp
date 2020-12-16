@@ -36,7 +36,7 @@ ILP_solver& ILP_solver::operator=(const ILP_solver& solver) {
 
 double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
   // each block has 4 vars, x, y, H_flip, V_flip;
-  int N_var = mydesign.Blocks.size() * 4;
+  int N_var = mydesign.Blocks.size() * 4 + mydesign.Nets.size() * 2;
   // i*4+1: x
   // i*4+2:y
   // i*4+3:H_flip
@@ -276,6 +276,7 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           blockids.push_back(std::make_pair(find(curr_sp.negPair.begin(), curr_sp.negPair.end(), mydesign.Nets[i].connected[j].iter2) - curr_sp.negPair.begin(),
                                             mydesign.Nets[i].connected[j].iter));
       }
+      if (blockids.size() < 2) continue;
       sort(blockids.begin(), blockids.end(), [](const pair<int, int>& a, const pair<int, int>& b) { return a.first <= b.first; });
       int LLblock_id = curr_sp.negPair[blockids.front().first], LLpin_id = blockids.front().second;
       int LLblock_width = mydesign.Blocks[LLblock_id][curr_sp.selected[LLblock_id]].width,
@@ -287,18 +288,22 @@ double ILP_solver::GenerateValidSolution(design& mydesign, SeqPair& curr_sp) {
           URblock_height = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].height;
       int URpin_x = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().x,
           URpin_y = mydesign.Blocks[URblock_id][curr_sp.selected[URblock_id]].blockPins[URpin_id].center.front().y;
-      if ((find(curr_sp.posPair.begin(), curr_sp.posPair.end(), LLblock_id) - curr_sp.posPair.begin()) <
-          (find(curr_sp.posPair.begin(), curr_sp.posPair.end(), URblock_id) - curr_sp.posPair.begin())) {
-        row[LLblock_id * 4 + 1] -= const_graph.LAMBDA;
-        row[URblock_id * 4 + 1] += const_graph.LAMBDA;
-        row[LLblock_id * 4 + 3] -= double(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA;
-        row[URblock_id * 4 + 3] += double(URblock_width - 2 * URpin_x) * const_graph.LAMBDA;
-      } else {
-        row[LLblock_id * 4 + 2] -= const_graph.LAMBDA;
-        row[URblock_id * 4 + 2] += const_graph.LAMBDA;
-        // pin.x if flip==0, width-pin.x if flip==1
-        row[LLblock_id * 4 + 4] -= double(LLblock_height - 2 * LLpin_y) * const_graph.LAMBDA;
-        row[URblock_id * 4 + 4] += double(URblock_height - 2 * URpin_y) * const_graph.LAMBDA;
+      // min abs(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)=HPWLx
+      //-> (LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
+      //  -(LLx+(LLwidth-2LLpinx)*LLHflip+LLpinx-URx-(URwidth-2URpinx)*URHflip-URpinx)<=HPWLx
+      {
+        double sparserow[5] = {const_graph.LAMBDA, (LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, -const_graph.LAMBDA,
+                               -(URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
+        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 1};
+        add_constraintex(lp, 5, sparserow, colno, LE, -LLpin_x + URpin_x);
+        row[mydesign.Blocks.size() * 4 + i * 2 + 1] = 1;
+      }
+      {
+        double sparserow[5] = {-const_graph.LAMBDA, -(LLblock_width - 2 * LLpin_x) * const_graph.LAMBDA, const_graph.LAMBDA,
+                               (URblock_width - 2 * URpin_x) * const_graph.LAMBDA, -1};
+        int colno[5] = {LLblock_id * 4 + 1, LLblock_id * 4 + 3, URblock_id * 4 + 1, URblock_id * 4 + 3, mydesign.Blocks.size() * 4 + i * 2 + 2};
+        add_constraintex(lp, 5, sparserow, colno, LE, LLpin_x - URpin_x);
+        row[mydesign.Blocks.size() * 4 + i * 2 + 2] = 1;
       }
     }
 
