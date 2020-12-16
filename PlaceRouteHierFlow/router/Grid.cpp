@@ -845,6 +845,12 @@ void Grid::CollectPointSet(std::vector< std::set<RouterDB::point, RouterDB::poin
 }
 
 Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, int Lmetal, int Hmetal, int grid_scale):LL(ll),UR(ur),GridLL(ll),GridUR(ur) {
+
+  for(int i=0;i<drc_info.Metal_info.size();i++){
+    std::cout<<"grid info "<<drc_info.Metal_info.at(i).grid_unit_x<<" "<<drc_info.Metal_info.at(i).grid_unit_y<<std::endl;
+  }
+  assert(0);
+
   // Limitation: assume that neighboring layers have different routing diretions
   // 1. Initialize member variables I
   //this->LL=ll;
@@ -910,6 +916,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         int LLy_2=(LL.y%y_unit.at(i+1)==0) ? (LL.y) : ( (LL.y/y_unit.at(i+1))*y_unit.at(i+1)<LL.y ? (LL.y/y_unit.at(i+1)+1)*y_unit.at(i+1) : (LL.y/y_unit.at(i+1))*y_unit.at(i+1) );
         LLy=(LLy_1<LLy_2)?LLy_1:LLy_2;
       }
+      std::cout<<"Create grid on layer test1"<<i<<std::endl;
       for(int X=LLx; X<=UR.x; X+=curlayer_unit) {
         Power = !Power;
         for(int Y=LLy; Y<=UR.y; Y+=nexlayer_unit) {
@@ -963,6 +970,7 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         }
       }
     } else if (drc_info.Metal_info.at(i).direct==1) { // if horizontal layer
+      std::cout<<"Create grid on layer test2"<<i<<std::endl;
       int curlayer_unit=y_unit.at(i); // current layer direction: horizontal
       int nexlayer_unit; // neighboring layer direction: vertical
       int LLy=(LL.y%curlayer_unit==0)?(LL.y):( (LL.y/curlayer_unit)*curlayer_unit<LL.y ? (LL.y/curlayer_unit+1)*curlayer_unit : (LL.y/curlayer_unit)*curlayer_unit ); // Y lower boudary
@@ -979,6 +987,8 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
         int LLx_2=(LL.x%x_unit.at(i+1)==0) ? (LL.x) : ( (LL.x/x_unit.at(i+1))*x_unit.at(i+1)<LL.x ? (LL.x/x_unit.at(i+1)+1)*x_unit.at(i+1) : (LL.x/x_unit.at(i+1))*x_unit.at(i+1) );
         LLx=(LLx_1<LLx_2)?LLx_1:LLx_2;
       }
+      std::cout<<"LLx , URx, LLy, URy "<<LLx<<" "<<UR.x<<" "<<LLy<<" "<<UR.y<<std::endl;
+      std::cout<<curlayer_unit<<" "<<nexlayer_unit<<std::endl;
       for(int Y=LLy; Y<=UR.y; Y+=curlayer_unit) {
         Power=!Power;
         for(int X=LLx; X<=UR.x; X+=nexlayer_unit) {
@@ -1035,7 +1045,9 @@ Grid::Grid(PnRDB::Drc_info& drc_info, RouterDB::point ll, RouterDB::point ur, in
       std::cout<<"Router-Error: incorrect routing direction on metal layer "<<i<<std::endl; continue;
     }
     this->End_index_metal_vertices.at(i)=vertices_total.size()-1;
+    std::cout<<"Finished Create grid on layer "<<i<<" "<<this->highest_metal<<std::endl;
   } 
+  
   // 5. Add up/down infom for grid points
   std::map<RouterDB::point, int, RouterDB::pointXYComp>::iterator mit; // improve runtime of up/down edges - [wbxu: 20190505]
   for(int k=this->lowest_metal; k<this->highest_metal; k++) {

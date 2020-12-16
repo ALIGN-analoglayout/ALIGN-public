@@ -277,14 +277,13 @@ MNASimulation::MNASimulation(PnRDB::hierNode &current_node, PnRDB::Drc_info &drc
   std::cout<<"check point10"<<std::endl;
   double max = 0.8;
   for (int i = 0; i < B.nrow; i++){
-    if (max > dp[i] ){
+    if (dp[i] > max ){
        for(auto it = point_set.begin(); it != point_set.end(); it++){
          //pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
          if (it->power != 0 && it->index == i + 1)  max = dp[i];			
          }		
     }
   }
-  max = 0.8 - max;
   result = max;
   std::cout<<"result=" << result <<std::endl;
 
@@ -311,9 +310,15 @@ void MNASimulation::Print_Result(std::set<MDB::metal_point, MDB::Compare_metal_p
   std::ofstream pythonfile;
   pythonfile.open(outputfile);
   for(auto it = point_set.begin(); it != point_set.end(); it++){
+          pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+          /*
 	  if(it->metal_layer == target_metal_layer_index && it->power != 0){
 	    pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
 	  }
+	  if(it->metal_layer == target_metal_layer_index && it->power == 0){
+	    pythonfile<< it->x << " " << it->y << " " << it->metal_layer << " "<< dp[it->index - 1] << " " << it->power <<std::endl;
+	  }
+          */
   }
   pythonfile.close();
 };

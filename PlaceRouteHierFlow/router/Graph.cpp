@@ -232,15 +232,54 @@ void Graph::CreatePower_Grid(Grid& grid){ //grid function needs to be changed...
 
 };
 
+void Graph::collect_nodes(Grid &grid, vector<int> temp_vector, vector<int>& adjacent_nodes, int power){
+
+       for(unsigned int j=0;j<temp_vector.size();++j) 
+          {   
+             if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
+               {
+                  int index = grid.total2graph[temp_vector[j]];
+                  std::cout<<"temp "<<temp_vector[j]<<"index"<<index<<std::endl;
+                  std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
+                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                    {  
+                      adjacent_nodes.push_back(index);
+                    }
+               }
+                   
+         }
+};
+
+void Graph::collect_node(Grid &grid, int temp_vector, vector<int>& adjacent_nodes, int power){
+   
+             if(grid.total2graph.find(temp_vector)!=grid.total2graph.end())
+               {
+                  int index = grid.total2graph[temp_vector];
+                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                    {  
+                      adjacent_nodes.push_back(index);
+                    }
+               }
+
+};
+
 void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_graph_number, int power){
 
-  //std::cout<<"power_grid_dsf checkpoint 1"<<std::endl;
+  if(i<0 or i>grid.vertices_graph.size()-1){
+     return;
+  }
+
+  std::cout<<"power_grid_dsf checkpoint 1"<<std::endl;
+
+  std::cout<<"i "<<i<<" "<<grid.vertices_graph.size()<<std::endl;
 
   grid.vertices_graph[i].graph_index = graph_index;
+
   connection_graph_number++;
 
   std::vector<int> adjacent_nodes;
 
+  /*
   auto collect_nodes = [&](auto&temp_vector){
 
        for(unsigned int j=0;j<temp_vector.size();++j) 
@@ -248,8 +287,9 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
              if(grid.total2graph.find(temp_vector[j])!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector[j]];
-                  //std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
-                  if( grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  //std::cout<<"temp "<<temp_vector[j]<<"index"<<index<<std::endl;
+                  std::cout<<"index edge "<<index<<" graph size "<<grid.vertices_graph.size()<<" temp_vector[j] "<<temp_vector[j]<<std::endl;
+                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
@@ -264,43 +304,60 @@ void Graph::power_grid_dsf(Grid& grid, int i, int graph_index, int& connection_g
              if(grid.total2graph.find(temp_vector)!=grid.total2graph.end())
                {
                   int index = grid.total2graph[temp_vector];
-                  //std::cout<<"index via "<<index<<" graph size "<<grid.vertices_graph.size()<<std::endl;
-                  if( grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
+                  //std::cout<<"temp down/up"<<temp_vector<<"index"<<index<<std::endl;
+                  std::cout<<"index via "<<index<<" graph size "<<grid.vertices_graph.size()<<std::endl;
+                  if( index<grid.vertices_graph.size() and index>=0 and grid.vertices_graph[index].active and grid.vertices_graph[index].power == power and grid.vertices_graph[index].graph_index==-1) 
                     {  
                       adjacent_nodes.push_back(index);
                     }
                }
                    
   };
+  */
 
-  //std::cout<<"power_grid_dsf checkpoint 2"<<std::endl;
+  std::cout<<"power_grid_dsf checkpoint 2"<<std::endl;
+  std::cout<<"north"<<std::endl;
+  std::cout<<"north size "<<grid.vertices_graph[i].north.size()<<std::endl;
+  collect_nodes(grid,grid.vertices_graph[i].north,adjacent_nodes,power);
 
-  collect_nodes(grid.vertices_graph[i].north);
+  std::cout<<"power_grid_dsf checkpoint 3"<<std::endl;
+  std::cout<<"south"<<std::endl;
+  std::cout<<"south size "<<grid.vertices_graph[i].south.size()<<std::endl;  
+  collect_nodes(grid,grid.vertices_graph[i].south,adjacent_nodes,power);
 
-  //std::cout<<"power_grid_dsf checkpoint 3"<<std::endl;
-  collect_nodes(grid.vertices_graph[i].south);
+  std::cout<<"power_grid_dsf checkpoint 4"<<std::endl;
+  std::cout<<"east"<<std::endl;
+  std::cout<<"east size "<<grid.vertices_graph[i].east.size()<<std::endl;
+  collect_nodes(grid,grid.vertices_graph[i].east,adjacent_nodes,power);
 
-  //std::cout<<"power_grid_dsf checkpoint 4"<<std::endl;
-  collect_nodes(grid.vertices_graph[i].east);
+  std::cout<<"power_grid_dsf checkpoint 5"<<std::endl;
+  std::cout<<"west"<<std::endl;
+  std::cout<<"west size "<<grid.vertices_graph[i].west.size()<<std::endl;
+  collect_nodes(grid,grid.vertices_graph[i].west,adjacent_nodes,power);
 
-  //std::cout<<"power_grid_dsf checkpoint 5"<<std::endl;
-  collect_nodes(grid.vertices_graph[i].west);
+  std::cout<<"power_grid_dsf checkpoint 6"<<std::endl;
+  std::cout<<"up"<<std::endl;
+  std::cout<<"up size "<<grid.vertices_graph[i].up<<std::endl;
+  collect_node(grid,grid.vertices_graph[i].up,adjacent_nodes,power);
 
-  //std::cout<<"power_grid_dsf checkpoint 6"<<std::endl;
-  collect_node(grid.vertices_graph[i].up);
+  std::cout<<"power_grid_dsf checkpoint 7"<<std::endl;
+  std::cout<<"down"<<std::endl;
+  std::cout<<"down size "<<grid.vertices_graph[i].down<<std::endl;
+  collect_node(grid,grid.vertices_graph[i].down,adjacent_nodes,power);
 
-  //std::cout<<"power_grid_dsf checkpoint 7"<<std::endl;
-  collect_node(grid.vertices_graph[i].down);
+  std::cout<<"power_grid_dsf checkpoint 8"<<std::endl;
 
-  //std::cout<<"power_grid_dsf checkpoint 8"<<std::endl;
+  std::cout<<"power_grid_dsf checkpoint 8.5"<<std::endl;
 
   for(unsigned int j=0;j<adjacent_nodes.size();++j){
+
+     std::cout<<"power_grid_dsf checkpoint 8.6"<<std::endl;
 
      power_grid_dsf(grid,adjacent_nodes[j],graph_index,connection_graph_number,power);
 
   }
 
- //std::cout<<"power_grid_dsf checkpoint 9"<<std::endl;
+ std::cout<<"power_grid_dsf checkpoint 9"<<std::endl;
   
 };
 
@@ -310,18 +367,20 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
   std::vector<int> number_connection_graph;
   int graph_index = 0;
 
-  //std::cout<<"Connection_Check_Power_Grid checkpoint1"<<std::endl;
+  std::cout<<"Connection_Check_Power_Grid checkpoint1"<<std::endl;
   for(unsigned int i=0;i<grid.vertices_graph.size();++i){
       
       if(grid.vertices_graph[i].graph_index==-1 and grid.vertices_graph[i].power==power and grid.vertices_graph[i].active){
           int connection_graph_number = 0;
+          std::cout<<"start dsf"<<std::endl;
           power_grid_dsf(grid,i,graph_index,connection_graph_number,power);
+          std::cout<<"end dsf"<<std::endl;
           graph_index++;
           number_connection_graph.push_back(connection_graph_number);
         }
 
   }
-  //std::cout<<"Connection_Check_Power_Grid checkpoint2"<<std::endl;
+  std::cout<<"Connection_Check_Power_Grid checkpoint2"<<std::endl;
   int max_index = -1;
   int max_number = -1;
 
@@ -333,7 +392,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
        }
 
   }
-  //std::cout<<"Connection_Check_Power_Grid checkpoint3"<<std::endl;
+  std::cout<<"Connection_Check_Power_Grid checkpoint3"<<std::endl;
 
   //std::cout<<"max_index "<<max_index<<" max number "<<number_connection_graph[max_index]<<std::endl;
   //assert(0);
@@ -345,7 +404,7 @@ void Graph::Connection_Check_Power_Grid(Grid& grid, int power){
         }
 
   }
-  //std::cout<<"Connection_Check_Power_Grid checkpoint4"<<std::endl;
+  std::cout<<"Connection_Check_Power_Grid checkpoint4"<<std::endl;
 };
 
 bool Graph::CheckActive(Grid& grid, int index){

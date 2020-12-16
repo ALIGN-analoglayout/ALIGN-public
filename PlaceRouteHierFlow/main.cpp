@@ -148,12 +148,12 @@ static void route_single_variant( PnRdatabase& DB, const PnRDB::Drc_info& drcInf
     bool PDN_mode = true;
     //DC Power Grid Simulation
     if(PDN_mode){
-      bool dataset_generation = false;
+      bool dataset_generation = true;
       string current_file = "InputCurrent_initial.txt";
       string power_mesh_conffile = "Power_Grid_Conf.txt";
       if(dataset_generation){
         double total_current = 0.036;
-        int current_number = 20;
+        int current_number = 40;
         DB.Write_Current_Workload(current_node, total_current, current_number, current_file);
         DB.Write_Power_Mesh_Conf(power_mesh_conffile);
       }
