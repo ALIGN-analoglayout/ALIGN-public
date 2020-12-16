@@ -36,7 +36,7 @@ def readincurrent(filename):
   return data
 
 def transferdata(data):
-  metal = 2
+  metal = 3
   power = 0.8
   X = []
   Y = []
@@ -86,11 +86,17 @@ def transferdata(data):
             z[i][j] = non_zero
         else:
             non_zero=z[i][j]
-
+  '''
+  non_zero = np.mean(z)
+  for i in range(z.shape[0]):
+    for j in range(z.shape[1]):
+        if z[i][j]==0:
+            z[i][j] = non_zero
+  '''
   return Xmesh,Ymesh,z,line_x,line_y
 
 def transfercurrent(data,line_x,line_y):
-  metal = 2
+  metal = 3
   #metal2 = 6
   power = 0.8
   #print(data.shape)
